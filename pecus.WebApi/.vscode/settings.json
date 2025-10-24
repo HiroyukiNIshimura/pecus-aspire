@@ -1,0 +1,18 @@
+{
+  "editor.formatOnSave": false,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.formatOnSave": true
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "csharpier.csharpier-vscode",
+    "editor.formatOnSave": true
+  },
+  "omnisharp.enableEditorConfigSupport": true,
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Generate a concise and descriptive git commit message based on the code changes made. Focus on summarizing the key modifications, additions, or deletions in a clear manner."
+    }
+  ]
+}
