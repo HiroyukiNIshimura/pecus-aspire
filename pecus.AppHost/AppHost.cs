@@ -1,4 +1,4 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+var builder = DistributedApplication.CreateBuilder(args);
 
 var username = builder.AddParameter("username", secret: true);
 var password = builder.AddParameter("password", secret: true);
@@ -17,8 +17,6 @@ var pecusApi = builder.AddProject<Projects.pecus_WebApi>("pecusapi")
     .WithReference(pecusDb)
     .WaitFor(pecusDb)
     .WithHttpHealthCheck("/");
-
-builder.AddProject<Projects.pecus_BackFire>("pecus-backfire");
 
 builder.Build().Run();
 
