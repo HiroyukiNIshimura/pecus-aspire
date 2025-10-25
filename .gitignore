@@ -133,3 +133,5 @@ $RECYCLE.BIN/
 _NCrunch*
 
 .vs
+# Aspire uploads directory (shared volume for attachments)
+uploads/

@@ -3,12 +3,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
-using Serilog.Events;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -143,7 +141,7 @@ public static class Extensions
     public static TBuilder AddSerilogLogging<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        Pecus.ServiceDefaults.SerilogHelper.CreateLogger(builder.Environment.ApplicationName);
+        Pecus.Libs.SerilogHelper.CreateLogger(builder.Environment.ApplicationName);
         builder.Services.AddSerilog(dispose: true);
 
         return builder;

@@ -1,7 +1,7 @@
-using Pecus.ServiceDefaults;
+using Pecus.Libs;
 using Serilog;
 
-// Serilogの初期化（pecus.ServiceDefaultsの共通設定を使用）
+// Serilogの初期化（pecus.Libsの共通設定を使用）
 SerilogHelper.CreateLogger("pecus-apphost");
 
 try

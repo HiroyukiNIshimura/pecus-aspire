@@ -1,7 +1,7 @@
 using Serilog;
 using Serilog.Events;
 
-namespace Pecus.ServiceDefaults;
+namespace Pecus.Libs;
 
 /// <summary>
 /// Serilog設定のヘルパークラス
