@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\pecus.BackFire\pecus.BackFire.csproj" />
     <ProjectReference Include="..\pecus.WebApi\pecus.WebApi.csproj" />
+    <ProjectReference Include="..\pecus.DbManager\pecus.DbManager.csproj" />
   </ItemGroup>
 </Project>

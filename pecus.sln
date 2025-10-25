@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pecus.BackFire", "pecus.Bac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pecus.Libs", "pecus.Libs\pecus.Libs.csproj", "{06A83A52-2931-4E19-B5F8-98CECC8EBFA6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pecus.DbManager", "pecus.DbManager\pecus.DbManager.csproj", "{1688FC39-36D3-425C-B2BC-B833883AB8D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,18 @@ Global
 		{06A83A52-2931-4E19-B5F8-98CECC8EBFA6}.Release|x64.Build.0 = Release|Any CPU
 		{06A83A52-2931-4E19-B5F8-98CECC8EBFA6}.Release|x86.ActiveCfg = Release|Any CPU
 		{06A83A52-2931-4E19-B5F8-98CECC8EBFA6}.Release|x86.Build.0 = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|x64.Build.0 = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Debug|x86.Build.0 = Debug|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|x64.ActiveCfg = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|x64.Build.0 = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|x86.ActiveCfg = Release|Any CPU
+		{1688FC39-36D3-425C-B2BC-B833883AB8D9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -23,4 +23,9 @@ var pecusApi = builder
     .WaitFor(redis)
     .WithHttpHealthCheck("/");
 
+var dbManager = builder
+    .AddProject<Projects.pecus_DbManager>("dbmanager")
+    .WithReference(pecusDb)
+    .WaitFor(pecusDb);
+
 builder.Build().Run();
