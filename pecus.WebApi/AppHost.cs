@@ -1,5 +1,7 @@
 using System.Reflection;
 using System.Text;
+using Hangfire;
+using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -10,6 +12,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Models.Config;
 using Pecus.Services;
+using StackExchange.Redis;
 
 // NLog: Setup the logger first to catch all errors
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -44,6 +47,25 @@ try
     builder.Services.AddScoped<WorkspaceService>();
     builder.Services.AddScoped<GenreService>();
     builder.Services.AddScoped<FileUploadService>();
+
+    // Redisクライアントの設定（Aspireから取得）
+    builder.AddRedisClient("redis");
+
+    // Hangfireの設定
+    builder.Services.AddHangfire(
+        (serviceProvider, configuration) =>
+        {
+            var redisConnection = serviceProvider.GetRequiredService<IConnectionMultiplexer>();
+            configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseRedisStorage(redisConnection);
+        }
+    );
+
+    // Hangfireサーバーの追加
+    builder.Services.AddHangfireServer();
 
     builder
         .Services.AddAuthentication(options =>
@@ -153,6 +175,18 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // Hangfireダッシュボード（開発環境のみ）
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseHangfireDashboard(
+            "/hangfire",
+            new DashboardOptions
+            {
+                Authorization = new[] { new AllowAllDashboardAuthorizationFilter() },
+            }
+        );
+    }
 
     app.MapControllers();
 

@@ -18,7 +18,9 @@ var backfire = builder
 var pecusApi = builder
     .AddProject<Projects.pecus_WebApi>("pecusapi")
     .WithReference(pecusDb)
+    .WithReference(redis)
     .WaitFor(pecusDb)
+    .WaitFor(redis)
     .WithHttpHealthCheck("/");
 
 builder.Build().Run();
