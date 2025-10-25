@@ -231,6 +231,30 @@ builder.Services.AddScoped<EmailTasks>();
 
 ## Development Workflow
 
+### Build Verification
+**CRITICAL: Always verify build after code changes**:
+```bash
+# Build entire solution to catch errors early
+dotnet build e:\git\pecus-aspire\pecus.sln
+
+# Check for warnings - treat warnings as potential issues
+# Review all compiler errors and warnings before proceeding
+```
+
+**When to verify**:
+- After modifying shared code in `pecus.Libs` (impacts all services)
+- After entity model changes (check Services, Controllers, Response DTOs)
+- After removing properties/methods (search all usages first)
+- After adding new dependencies or NuGet packages
+- Before creating database migrations
+- Before committing code changes
+
+**Common scenarios requiring extra verification**:
+- Removing entity properties → Check Services, Controllers, Response/Request DTOs
+- Changing method signatures in shared services → Check all calling code
+- Modifying DbContext → Check all repository/service code
+- Adding/removing navigation properties → Check Include() statements
+
 ### Running the Application
 ```bash
 # Start all services via Aspire
@@ -373,6 +397,7 @@ BackgroundJob.Enqueue<EmailTasks>(x =>
 - ❌ Manual `Database.Migrate()` in WebApi (use pecus.DbManager for migrations)
 - ❌ Hard-coded service URLs (Aspire handles service discovery)
 - ❌ Seed data in migration files (use DatabaseSeeder for idempotent seeding)
+- ❌ Skipping build verification after code changes (always run `dotnet build` to catch errors early)
 
 ## Key Files Reference
 - **pecus.AppHost/AppHost.cs**: Service topology, infrastructure resources, startup order
