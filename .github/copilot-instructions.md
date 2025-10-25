@@ -112,6 +112,25 @@ public async Task<User> CreateUserAsync(CreateUserRequest request, int? createdB
 public async Task<User> CreateUserAsync(string username, string email, ...)
 ```
 
+**Pagination Pattern**:
+- Page number (`page`) is accepted from client as query parameter
+- Page size (`pageSize`) is **NOT** accepted from client - always use server-defined default (e.g., 20)
+- This prevents clients from requesting excessive data and ensures consistent API performance
+
+```csharp
+// ✅ CORRECT - pageSize is hardcoded
+[HttpGet]
+public async Task<Results<...>> GetItems([FromQuery] int page = 1)
+{
+    const int pageSize = 20;  // Server-defined
+    var (items, totalCount) = await _service.GetItemsAsync(page, pageSize);
+}
+
+// ❌ WRONG - accepting pageSize from client
+[HttpGet]
+public async Task<Results<...>> GetItems([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+```
+
 ### 3. Typed Exception Handling (WebApi Layer)
 Use custom exceptions (`Exceptions/NotFoundException.cs`, `Exceptions/DuplicateException.cs`) instead of message inspection. See pecus.WebApi instructions for full pattern.
 
