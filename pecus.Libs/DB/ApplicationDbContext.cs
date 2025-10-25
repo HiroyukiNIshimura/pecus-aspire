@@ -66,6 +66,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<WorkspaceItemPin> WorkspaceItemPins { get; set; }
 
+    /// <summary>
+    /// ワークスペースアイテム添付ファイルテーブル
+    /// </summary>
+    public DbSet<WorkspaceItemAttachment> WorkspaceItemAttachments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -342,6 +347,37 @@ public class ApplicationDbContext : DbContext
             // インデックス
             entity.HasIndex(wip => wip.UserId);
             entity.HasIndex(wip => wip.CreatedAt);
+        });
+
+        // WorkspaceItemAttachmentエンティティの設定
+        modelBuilder.Entity<WorkspaceItemAttachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.MimeType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.DownloadUrl).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.ThumbnailMediumPath).HasMaxLength(500);
+            entity.Property(e => e.ThumbnailSmallPath).HasMaxLength(500);
+
+            // WorkspaceItemAttachment と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(a => a.WorkspaceItem)
+                .WithMany(wi => wi.WorkspaceItemAttachments)
+                .HasForeignKey(a => a.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemAttachment と UploadedByUser の多対一リレーションシップ
+            entity
+                .HasOne(a => a.UploadedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.UploadedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(a => a.WorkspaceItemId);
+            entity.HasIndex(a => a.UploadedByUserId);
+            entity.HasIndex(a => a.UploadedAt);
         });
     }
 }

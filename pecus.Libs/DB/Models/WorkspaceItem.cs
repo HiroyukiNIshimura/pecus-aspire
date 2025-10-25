@@ -107,4 +107,10 @@ public class WorkspaceItem
     /// </summary>
     public ICollection<WorkspaceItemPin> WorkspaceItemPins { get; set; } =
         new List<WorkspaceItemPin>();
+
+    /// <summary>
+    /// このアイテムに添付されているファイル
+    /// </summary>
+    public ICollection<WorkspaceItemAttachment> WorkspaceItemAttachments { get; set; } =
+        new List<WorkspaceItemAttachment>();
 }
