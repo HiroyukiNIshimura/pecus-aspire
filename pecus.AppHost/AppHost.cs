@@ -6,7 +6,7 @@ var password = builder.AddParameter("password", secret: true);
 var redis = builder.AddRedis("redis");
 
 var postgres = builder
-    .AddPostgres("postgres", userName: username, password: password)
+    .AddPostgres("postgres", userName: username, password: password, port: 5432)
     .WithDataVolume(isReadOnly: false);
 var pecusDb = postgres.AddDatabase("pecusdb");
 

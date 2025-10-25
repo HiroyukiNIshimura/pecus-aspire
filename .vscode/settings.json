@@ -8,10 +8,7 @@
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
-      "text": "Generate a concise and descriptive git commit message based on the code changes made. Focus on summarizing the key modifications, additions, or deletions in a clear manner."
+      "text": "コードの変更内容に基づいて、簡潔で説明的なgitコミットメッセージを日本語で生成します。主要な変更、追加、または削除を分かりやすく要約することに重点を置きます。"
     },
-    {
-      "text": "メッセージは日本語で作成してください。"
-    }
   ]
 }

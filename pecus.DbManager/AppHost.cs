@@ -1,14 +1,37 @@
 using Microsoft.EntityFrameworkCore;
+using Pecus.DbManager;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Aspire Service Defaultsの追加
+builder.AddServiceDefaults();
+
 // DbContextの登録 - Aspireの接続文字列を使用
-builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
+builder.AddNpgsqlDbContext<ApplicationDbContext>(
+    "pecusdb",
+    null,
+    optionsBuilder =>
+        optionsBuilder.UseNpgsql(npgsqlBuilder =>
+            npgsqlBuilder.MigrationsAssembly("pecus.DbManager")
+        )
+);
 
 // DatabaseSeederの登録
 builder.Services.AddScoped<DatabaseSeeder>();
+
+// OpenTelemetryの設定
+builder
+    .Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(DbInitializer.ActivitySourceName));
+
+// DbInitializerをシングルトンとして登録
+builder.Services.AddSingleton<DbInitializer>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<DbInitializer>());
+
+// ヘルスチェックの登録
+builder.Services.AddHealthChecks().AddCheck<DbInitializerHealthCheck>("DbInitializer", null);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -27,61 +50,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// 起動時にマイグレーションを自動適用
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        logger.LogInformation("Starting database migration...");
-
-        var context = services.GetRequiredService<ApplicationDbContext>();
-
-        // 保留中のマイグレーションを確認
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        var pendingMigrationsList = pendingMigrations.ToList();
-
-        if (pendingMigrationsList.Any())
-        {
-            logger.LogInformation(
-                "Found {Count} pending migrations. Applying...",
-                pendingMigrationsList.Count
-            );
-            foreach (var migration in pendingMigrationsList)
-            {
-                logger.LogInformation("  - {Migration}", migration);
-            }
-
-            // マイグレーションを適用
-            await context.Database.MigrateAsync();
-            logger.LogInformation("Database migration completed successfully");
-        }
-        else
-        {
-            logger.LogInformation("No pending migrations found. Database is up to date.");
-        }
-
-        // シードデータを投入（環境に応じて）
-        var seeder = services.GetRequiredService<DatabaseSeeder>();
-        var isDevelopment = app.Environment.IsDevelopment();
-
-        logger.LogInformation(
-            "Seeding data for {Environment} environment...",
-            isDevelopment ? "Development" : "Production"
-        );
-
-        await seeder.SeedAllAsync(isDevelopment);
-        logger.LogInformation("Seed data completed successfully");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while migrating or seeding the database");
-        // エラーが発生してもアプリケーションは起動を続行
-    }
-}
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -90,9 +58,26 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Pecus Database Manager API v1");
         options.RoutePrefix = string.Empty;
     });
+
+    // 開発環境専用: データベースリセットエンドポイント
+    app.MapPost(
+        "/reset-db",
+        async (
+            ApplicationDbContext dbContext,
+            DatabaseSeeder seeder,
+            DbInitializer dbInitializer,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            // データベースを削除して再作成
+            await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+            await dbInitializer.InitializeDatabaseAsync(dbContext, seeder, cancellationToken);
+        }
+    );
 }
 
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapDefaultEndpoints();
 
-app.Run();
+await app.RunAsync();
