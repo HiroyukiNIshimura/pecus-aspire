@@ -34,10 +34,8 @@ try
 
     // Add services to the container.
 
-    // DbContextの登録
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
+    // DbContextの登録 - Aspireの接続文字列を使用
+    builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
 
     // サービスの登録
     builder.Services.AddScoped<UserService>();
