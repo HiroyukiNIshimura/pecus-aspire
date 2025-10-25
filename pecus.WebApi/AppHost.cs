@@ -107,7 +107,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Title = pecusConfig.Application.Name,
             Version = pecusConfig.Application.Version,
-            Description = "ユーザー、ロール、権限管理のためのAPI",
+            Description = "AIを社畜扱いして作成するWebAPIです。",
         }
     );
     options.AddSecurityDefinition(
