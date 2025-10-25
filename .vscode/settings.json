@@ -9,6 +9,9 @@
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
       "text": "Generate a concise and descriptive git commit message based on the code changes made. Focus on summarizing the key modifications, additions, or deletions in a clear manner."
+    },
+    {
+      "text": "メッセージは日本語で作成してください。"
     }
   ]
 }
