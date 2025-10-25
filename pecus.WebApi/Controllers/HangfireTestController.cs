@@ -133,6 +133,21 @@ public class HangfireTestController : ControllerBase
     }
 
     /// <summary>
+    /// 失敗したジョブを削除
+    /// </summary>
+    /// <param name="jobId">削除するジョブID</param>
+    [HttpDelete("failed/{jobId}")]
+    public IActionResult DeleteFailedJob(string jobId)
+    {
+        var deleted = BackgroundJob.Delete(jobId);
+        if (deleted)
+        {
+            return Ok(new { Message = $"Failed job '{jobId}' deleted successfully" });
+        }
+        return NotFound(new { Message = $"Job '{jobId}' not found or could not be deleted" });
+    }
+
+    /// <summary>
     /// 長時間実行ジョブのテスト
     /// </summary>
     /// <param name="durationSeconds">実行時間（秒）</param>
