@@ -74,4 +74,9 @@ public class Organization
     /// この組織に所属するワークスペース
     /// </summary>
     public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
+
+    /// <summary>
+    /// この組織で管理されているタグ
+    /// </summary>
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

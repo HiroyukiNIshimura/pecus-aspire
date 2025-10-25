@@ -51,6 +51,16 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<WorkspaceItem> WorkspaceItems { get; set; }
 
+    /// <summary>
+    /// タグテーブル
+    /// </summary>
+    public DbSet<Tag> Tags { get; set; }
+
+    /// <summary>
+    /// ワークスペースアイテムタグテーブル（中間テーブル）
+    /// </summary>
+    public DbSet<WorkspaceItemTag> WorkspaceItemTags { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -247,6 +257,62 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wi => wi.Priority);
             entity.HasIndex(wi => wi.IsArchived);
             entity.HasIndex(wi => wi.IsDraft);
+        });
+
+        // Tagエンティティの設定
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+
+            // Tag と Organization の多対一リレーションシップ
+            entity
+                .HasOne(t => t.Organization)
+                .WithMany(o => o.Tags)
+                .HasForeignKey(t => t.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Tag と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(t => t.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(t => new { t.OrganizationId, t.Name }).IsUnique();
+            entity.HasIndex(t => t.CreatedByUserId);
+        });
+
+        // WorkspaceItemTagエンティティの設定（中間テーブル）
+        modelBuilder.Entity<WorkspaceItemTag>(entity =>
+        {
+            entity.HasKey(wit => new { wit.WorkspaceItemId, wit.TagId });
+
+            // WorkspaceItemTag と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(wit => wit.WorkspaceItem)
+                .WithMany(wi => wi.WorkspaceItemTags)
+                .HasForeignKey(wit => wit.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemTag と Tag の多対一リレーションシップ
+            entity
+                .HasOne(wit => wit.Tag)
+                .WithMany(t => t.WorkspaceItemTags)
+                .HasForeignKey(wit => wit.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemTag と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(wit => wit.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(wit => wit.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(wit => wit.TagId);
+            entity.HasIndex(wit => wit.CreatedByUserId);
         });
     }
 }

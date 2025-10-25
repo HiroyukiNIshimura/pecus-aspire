@@ -95,4 +95,10 @@ public class WorkspaceItem
     /// コミッターユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User? Committer { get; set; }
+
+    /// <summary>
+    /// このアイテムに付与されているタグとの関連（多対多）
+    /// </summary>
+    public ICollection<WorkspaceItemTag> WorkspaceItemTags { get; set; } =
+        new List<WorkspaceItemTag>();
 }
