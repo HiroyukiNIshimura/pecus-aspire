@@ -134,7 +134,54 @@ public async Task<Results<...>> GetItems([FromQuery] int page = 1, [FromQuery] i
 ### 3. Typed Exception Handling (WebApi Layer)
 Use custom exceptions (`Exceptions/NotFoundException.cs`, `Exceptions/DuplicateException.cs`) instead of message inspection. See pecus.WebApi instructions for full pattern.
 
-### 4. Hangfire Task Sharing Pattern
+### 4. Transaction Pattern for Multiple Table Operations (WebApi Layer)
+**CRITICAL: Always use explicit transactions when modifying multiple tables** to ensure data consistency and atomicity.
+
+**When to use transactions**:
+- Creating/updating records across 2+ tables (e.g., Workspace + WorkspaceUser)
+- Deleting parent records with child records (e.g., Organization + Users)
+- Adding/removing many-to-many relationships (e.g., WorkspaceItem + Tags + WorkspaceItemTags)
+- Any operation where partial success would leave data in an inconsistent state
+
+**When code changes increase table operations**: If refactoring adds more table operations to an existing method, **you MUST wrap the entire method in a transaction**. Never assume existing code is safe without transactions.
+
+**Transaction Pattern** (all DB operations must use this pattern):
+```csharp
+public async Task<TEntity> MethodAsync(...)
+{
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        // All database operations here
+        _context.Entities.Add(entity1);
+        await _context.SaveChangesAsync();
+
+        _context.RelatedEntities.Add(entity2);
+        await _context.SaveChangesAsync();
+
+        // More operations...
+
+        await transaction.CommitAsync();
+        return result;
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;  // Re-throw to let exception filter handle it
+    }
+}
+```
+
+**Examples of methods requiring transactions**:
+- `OrganizationService.CreateOrganizationAsync`: Creates Organization + User
+- `WorkspaceService.CreateWorkspaceAsync`: Creates Workspace + WorkspaceUser
+- `WorkspaceItemService.CreateWorkspaceItemAsync`: Creates WorkspaceItem + Tags + WorkspaceItemTags
+- `WorkspaceItemService.SetTagsToItemAsync`: Deletes old + creates new WorkspaceItemTags
+- `OrganizationService.DeleteOrganizationAsync`: Deletes Users + Organization
+
+**Single-table operations**: Methods that modify only one table with one `SaveChangesAsync()` call don't need explicit transactions (EF Core handles atomicity automatically).
+
+### 5. Hangfire Task Sharing Pattern
 **Tasks must be in shared library** to be callable from WebApi and executable in BackFire:
 ```csharp
 // pecus.Libs/Hangfire/Tasks/HangfireTasks.cs
@@ -159,13 +206,13 @@ for (int i = 0; i < items.Count; i++)
 }
 ```
 
-### 5. Environment-Aware Seeding
+### 6. Environment-Aware Seeding
 **DatabaseSeeder checks environment** via `IWebHostEnvironment.IsDevelopment()`:
 - Production deploys: Only master data (Permissions, Roles, Genres)
 - Development: Master data + mock data (sample Org, Users, Workspaces)
 - Manual override: `/api/database/seed?isDevelopment=true` forces dev seed in production
 
-### 6. Migration File Location
+### 7. Migration File Location
 **EF Core migrations live in pecus.DbManager** (moved from pecus.WebApi):
 ```bash
 cd pecus.DbManager
@@ -417,6 +464,8 @@ BackgroundJob.Enqueue<EmailTasks>(x =>
 - ❌ Hard-coded service URLs (Aspire handles service discovery)
 - ❌ Seed data in migration files (use DatabaseSeeder for idempotent seeding)
 - ❌ Skipping build verification after code changes (always run `dotnet build` to catch errors early)
+- ❌ Multiple table operations without explicit transactions (always wrap in `BeginTransactionAsync()`)
+- ❌ Adding table operations to existing methods without adding transaction wrapper (refactoring may introduce data inconsistency risks)
 
 ## Key Files Reference
 - **pecus.AppHost/AppHost.cs**: Service topology, infrastructure resources, startup order

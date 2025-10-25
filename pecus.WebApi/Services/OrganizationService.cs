@@ -185,24 +185,35 @@ public class OrganizationService
     /// </summary>
     public async Task<bool> DeleteOrganizationAsync(int organizationId)
     {
-        var organization = await _context
-            .Organizations.Include(o => o.Users)
-            .FirstOrDefaultAsync(o => o.Id == organizationId);
-
-        if (organization == null)
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            return false;
-        }
+            var organization = await _context
+                .Organizations.Include(o => o.Users)
+                .FirstOrDefaultAsync(o => o.Id == organizationId);
 
-        // 所属ユーザーも一緒に削除
-        if (organization.Users.Any())
+            if (organization == null)
+            {
+                return false;
+            }
+
+            // 所属ユーザーも一緒に削除
+            if (organization.Users.Any())
+            {
+                _context.Users.RemoveRange(organization.Users);
+            }
+
+            _context.Organizations.Remove(organization);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
         {
-            _context.Users.RemoveRange(organization.Users);
+            await transaction.RollbackAsync();
+            throw;
         }
-
-        _context.Organizations.Remove(organization);
-        await _context.SaveChangesAsync();
-        return true;
     }
 
     /// <summary>

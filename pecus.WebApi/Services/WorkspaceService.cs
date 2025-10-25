@@ -24,46 +24,56 @@ public class WorkspaceService
         int? createdByUserId = null
     )
     {
-        // 組織の存在確認
-        var organization = await _context.Organizations.FindAsync(request.OrganizationId);
-        if (organization == null)
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            throw new NotFoundException("組織が見つかりません。");
-        }
-
-        // 組織内でユニークなワークスペースコードを生成
-        var code = await GenerateUniqueWorkspaceCodeAsync(_context, request.OrganizationId);
-
-        var workspace = new Workspace
-        {
-            Name = request.Name,
-            Code = code,
-            Description = request.Description,
-            OrganizationId = request.OrganizationId,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUserId = createdByUserId,
-            IsActive = true,
-        };
-
-        _context.Workspaces.Add(workspace);
-        await _context.SaveChangesAsync();
-
-        // ワークスペースを作成したユーザーを自動的にOwnerとして参加させる
-        if (createdByUserId.HasValue)
-        {
-            var workspaceUser = new WorkspaceUser
+            // 組織の存在確認
+            var organization = await _context.Organizations.FindAsync(request.OrganizationId);
+            if (organization == null)
             {
-                WorkspaceId = workspace.Id,
-                UserId = createdByUserId.Value,
-                WorkspaceRole = "Owner",
-                JoinedAt = DateTime.UtcNow,
+                throw new NotFoundException("組織が見つかりません。");
+            }
+
+            // 組織内でユニークなワークスペースコードを生成
+            var code = await GenerateUniqueWorkspaceCodeAsync(_context, request.OrganizationId);
+
+            var workspace = new Workspace
+            {
+                Name = request.Name,
+                Code = code,
+                Description = request.Description,
+                OrganizationId = request.OrganizationId,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = createdByUserId,
                 IsActive = true,
             };
-            _context.WorkspaceUsers.Add(workspaceUser);
-            await _context.SaveChangesAsync();
-        }
 
-        return workspace;
+            _context.Workspaces.Add(workspace);
+            await _context.SaveChangesAsync();
+
+            // ワークスペースを作成したユーザーを自動的にOwnerとして参加させる
+            if (createdByUserId.HasValue)
+            {
+                var workspaceUser = new WorkspaceUser
+                {
+                    WorkspaceId = workspace.Id,
+                    UserId = createdByUserId.Value,
+                    WorkspaceRole = "Owner",
+                    JoinedAt = DateTime.UtcNow,
+                    IsActive = true,
+                };
+                _context.WorkspaceUsers.Add(workspaceUser);
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return workspace;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>
