@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Image;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
 using Pecus.Models.Responses.Common;
@@ -961,7 +962,17 @@ public class WorkspaceItemController : ControllerBase
             var downloadUrl =
                 $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{uniqueFileName}";
 
-            // DBに保存（サムネイルはnullで保存）
+            // 画像ファイルの場合、サムネイルパスを事前に計算
+            string? thumbnailMediumPath = null;
+            string? thumbnailSmallPath = null;
+
+            if (ThumbnailHelper.IsImageFile(mimeType))
+            {
+                thumbnailMediumPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "medium");
+                thumbnailSmallPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "small");
+            }
+
+            // DBに保存（サムネイルパスも保存）
             var attachment = await _workspaceItemService.AddAttachmentAsync(
                 workspaceId,
                 itemId,
@@ -970,13 +981,13 @@ public class WorkspaceItemController : ControllerBase
                 mimeType,
                 filePath,
                 downloadUrl,
-                null, // サムネイルはバックグラウンドで生成
-                null,
+                thumbnailMediumPath,
+                thumbnailSmallPath,
                 userId.Value
             );
 
             // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
-            if (IsImageFile(mimeType))
+            if (ThumbnailHelper.IsImageFile(mimeType))
             {
                 var mediumSize = _config.FileUpload.ThumbnailMediumSize;
                 var smallSize = _config.FileUpload.ThumbnailSmallSize;
@@ -1144,22 +1155,5 @@ public class WorkspaceItemController : ControllerBase
             _logger.LogError(ex, "添付ファイル削除中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-
-    /// <summary>
-    /// ファイルが画像かどうかを判定
-    /// </summary>
-    private static bool IsImageFile(string mimeType)
-    {
-        var imageMimeTypes = new[]
-        {
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "image/gif",
-            "image/webp",
-            "image/bmp",
-        };
-        return imageMimeTypes.Contains(mimeType.ToLowerInvariant());
     }
 }

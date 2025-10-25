@@ -1,6 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using SixLaborsImage = SixLabors.ImageSharp.Image;
 
 namespace Pecus.Libs;
 
@@ -25,7 +26,7 @@ public static class ImageHelper
         int quality = 85
     )
     {
-        using var image = await Image.LoadAsync(inputFilePath);
+        using var image = await SixLaborsImage.LoadAsync(inputFilePath);
 
         // アスペクト比を保持してリサイズ（中央切り抜き）
         image.Mutate(x =>
@@ -73,7 +74,7 @@ public static class ImageHelper
     {
         try
         {
-            using var image = await Image.LoadAsync(filePath);
+            using var image = await SixLaborsImage.LoadAsync(filePath);
             return image.Width > maxWidth || image.Height > maxHeight;
         }
         catch

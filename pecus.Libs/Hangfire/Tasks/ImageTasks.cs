@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.Image;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 
@@ -67,7 +68,7 @@ public class ImageTasks
             }
 
             // 画像ファイルかチェック
-            if (!IsImageFile(attachment.MimeType))
+            if (!ThumbnailHelper.IsImageFile(attachment.MimeType))
             {
                 _logger.LogInformation(
                     "画像ファイルではないためスキップ: MimeType={MimeType}",
@@ -76,46 +77,38 @@ public class ImageTasks
                 return;
             }
 
-            var outputDir = Path.GetDirectoryName(sourceFilePath);
-            if (string.IsNullOrEmpty(outputDir))
+            // DBに既にサムネイルパスが保存されているか確認
+            if (
+                string.IsNullOrEmpty(attachment.ThumbnailMediumPath)
+                || string.IsNullOrEmpty(attachment.ThumbnailSmallPath)
+            )
             {
-                _logger.LogError(
-                    "出力ディレクトリを取得できません: {SourceFilePath}",
-                    sourceFilePath
+                _logger.LogWarning(
+                    "サムネイルパスがDBに保存されていません: AttachmentId={AttachmentId}",
+                    attachmentId
                 );
                 return;
             }
 
-            var fileName = Path.GetFileName(sourceFilePath);
-
             // Mediumサムネイル生成
-            var thumbnailMediumPath = await GenerateThumbnailAsync(
+            var thumbnailMediumSuccess = await GenerateThumbnailAsync(
                 sourceFilePath,
-                outputDir,
-                fileName,
-                "medium",
+                attachment.ThumbnailMediumPath,
                 mediumSize
             );
 
             // Smallサムネイル生成
-            var thumbnailSmallPath = await GenerateThumbnailAsync(
+            var thumbnailSmallSuccess = await GenerateThumbnailAsync(
                 sourceFilePath,
-                outputDir,
-                fileName,
-                "small",
+                attachment.ThumbnailSmallPath,
                 smallSize
             );
 
-            // DBを更新
-            attachment.ThumbnailMediumPath = thumbnailMediumPath;
-            attachment.ThumbnailSmallPath = thumbnailSmallPath;
-            await _context.SaveChangesAsync();
-
             _logger.LogInformation(
-                "サムネイル生成完了: AttachmentId={AttachmentId}, Medium={Medium}, Small={Small}",
+                "サムネイル生成完了: AttachmentId={AttachmentId}, Medium={MediumSuccess}, Small={SmallSuccess}",
                 attachmentId,
-                thumbnailMediumPath,
-                thumbnailSmallPath
+                thumbnailMediumSuccess,
+                thumbnailSmallSuccess
             );
         }
         catch (Exception ex)
@@ -132,42 +125,39 @@ public class ImageTasks
     /// <summary>
     /// サムネイルを生成
     /// </summary>
-    private async Task<string?> GenerateThumbnailAsync(
+    /// <param name="sourceFilePath">元ファイルのパス</param>
+    /// <param name="thumbnailPath">生成するサムネイルのパス</param>
+    /// <param name="maxDimension">最大サイズ（px）</param>
+    /// <returns>生成成功の場合true</returns>
+    private async Task<bool> GenerateThumbnailAsync(
         string sourceFilePath,
-        string outputDir,
-        string uniqueFileName,
-        string size,
+        string thumbnailPath,
         int maxDimension
     )
     {
         try
         {
-            var thumbnailFileName =
-                $"{Path.GetFileNameWithoutExtension(uniqueFileName)}_{size}{Path.GetExtension(uniqueFileName)}";
-            var thumbnailPath = Path.Combine(outputDir, thumbnailFileName);
-
             // 現在は簡易実装としてファイルをコピー
             // TODO: ImageSharp等の画像処理ライブラリを使用してリサイズ
             await Task.Run(() => File.Copy(sourceFilePath, thumbnailPath, true));
 
             _logger.LogDebug(
-                "サムネイル生成: Size={Size}, MaxDimension={MaxDimension}, Path={Path}",
-                size,
+                "サムネイル生成: MaxDimension={MaxDimension}, Path={Path}",
                 maxDimension,
                 thumbnailPath
             );
 
-            return thumbnailPath;
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex,
-                "サムネイル生成エラー: Size={Size}, SourceFile={SourceFile}",
-                size,
+                "サムネイル生成エラー: ThumbnailPath={ThumbnailPath}, SourceFile={SourceFile}",
+                thumbnailPath,
                 sourceFilePath
             );
-            return null;
+            return false;
         }
     }
 
@@ -176,15 +166,6 @@ public class ImageTasks
     /// </summary>
     private static bool IsImageFile(string mimeType)
     {
-        var imageMimeTypes = new[]
-        {
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "image/gif",
-            "image/webp",
-            "image/bmp",
-        };
-        return imageMimeTypes.Contains(mimeType.ToLowerInvariant());
+        return ThumbnailHelper.IsImageFile(mimeType);
     }
 }
