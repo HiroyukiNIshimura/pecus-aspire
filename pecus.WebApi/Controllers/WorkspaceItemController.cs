@@ -1,7 +1,9 @@
+using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
 using Pecus.Models.Responses.Common;
@@ -885,5 +887,279 @@ public class WorkspaceItemController : ControllerBase
             _logger.LogError(ex, "PIN済みアイテム一覧取得中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムに添付ファイルをアップロード
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="file">アップロードするファイル</param>
+    /// <returns>アップロードされた添付ファイル情報</returns>
+    [HttpPost("{itemId}/attachments")]
+    [ProducesResponseType(typeof(WorkspaceItemAttachmentResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Created<WorkspaceItemAttachmentResponse>,
+            BadRequest<ErrorResponse>,
+            UnauthorizedHttpResult,
+            NotFound<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > UploadAttachment(int workspaceId, int itemId, IFormFile file)
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            int? userId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            if (!userId.HasValue)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse { Message = "ファイルが指定されていません。" }
+                );
+            }
+
+            // ファイル名とMIMEタイプを取得
+            var fileName = Path.GetFileName(file.FileName);
+            var mimeType = file.ContentType;
+
+            // ファイルを保存するパスを生成
+            var uploadsDir = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "uploads",
+                "workspaces",
+                workspaceId.ToString(),
+                "items",
+                itemId.ToString()
+            );
+            Directory.CreateDirectory(uploadsDir);
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+            var filePath = Path.Combine(uploadsDir, uniqueFileName);
+
+            // ファイルを保存
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // ダウンロードURLを生成
+            var downloadUrl =
+                $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{uniqueFileName}";
+
+            // DBに保存（サムネイルはnullで保存）
+            var attachment = await _workspaceItemService.AddAttachmentAsync(
+                workspaceId,
+                itemId,
+                fileName,
+                file.Length,
+                mimeType,
+                filePath,
+                downloadUrl,
+                null, // サムネイルはバックグラウンドで生成
+                null,
+                userId.Value
+            );
+
+            // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
+            if (IsImageFile(mimeType))
+            {
+                var mediumSize = _config.FileUpload.ThumbnailMediumSize;
+                var smallSize = _config.FileUpload.ThumbnailSmallSize;
+
+                BackgroundJob.Enqueue<ImageTasks>(x =>
+                    x.GenerateThumbnailsAsync(attachment.Id, filePath, mediumSize, smallSize)
+                );
+            }
+
+            var response = new WorkspaceItemAttachmentResponse
+            {
+                Id = attachment.Id,
+                WorkspaceItemId = attachment.WorkspaceItemId,
+                FileName = attachment.FileName,
+                FileSize = attachment.FileSize,
+                MimeType = attachment.MimeType,
+                DownloadUrl = attachment.DownloadUrl,
+                ThumbnailMediumUrl = attachment.ThumbnailMediumPath,
+                ThumbnailSmallUrl = attachment.ThumbnailSmallPath,
+                UploadedAt = attachment.UploadedAt,
+                UploadedByUserId = attachment.UploadedByUserId,
+                UploadedByUsername = attachment.UploadedByUser?.Username,
+            };
+
+            return TypedResults.Created(
+                $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/{attachment.Id}",
+                response
+            );
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return TypedResults.BadRequest(new ErrorResponse { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "添付ファイルのアップロード中にエラーが発生しました。");
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムの添付ファイル一覧を取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <returns>添付ファイル一覧</returns>
+    [HttpGet("{itemId}/attachments")]
+    [ProducesResponseType(typeof(List<WorkspaceItemAttachmentResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<List<WorkspaceItemAttachmentResponse>>,
+            NotFound<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > GetAttachments(int workspaceId, int itemId)
+    {
+        try
+        {
+            var attachments = await _workspaceItemService.GetAttachmentsAsync(workspaceId, itemId);
+
+            var response = attachments
+                .Select(a => new WorkspaceItemAttachmentResponse
+                {
+                    Id = a.Id,
+                    WorkspaceItemId = a.WorkspaceItemId,
+                    FileName = a.FileName,
+                    FileSize = a.FileSize,
+                    MimeType = a.MimeType,
+                    DownloadUrl = a.DownloadUrl,
+                    ThumbnailMediumUrl = a.ThumbnailMediumPath,
+                    ThumbnailSmallUrl = a.ThumbnailSmallPath,
+                    UploadedAt = a.UploadedAt,
+                    UploadedByUserId = a.UploadedByUserId,
+                    UploadedByUsername = a.UploadedByUser?.Username,
+                })
+                .ToList();
+
+            return TypedResults.Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "添付ファイル一覧取得中にエラーが発生しました。");
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// 添付ファイルを削除
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="attachmentId">添付ファイルID</param>
+    /// <returns>削除結果</returns>
+    [HttpDelete("{itemId}/attachments/{attachmentId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<NoContent, UnauthorizedHttpResult, NotFound<ErrorResponse>, StatusCodeHttpResult>
+    > DeleteAttachment(int workspaceId, int itemId, int attachmentId)
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            int? userId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            if (!userId.HasValue)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var attachment = await _workspaceItemService.DeleteAttachmentAsync(
+                workspaceId,
+                itemId,
+                attachmentId,
+                userId.Value
+            );
+
+            // 物理ファイルを削除
+            if (System.IO.File.Exists(attachment.FilePath))
+            {
+                System.IO.File.Delete(attachment.FilePath);
+            }
+
+            // サムネイルも削除
+            if (
+                !string.IsNullOrEmpty(attachment.ThumbnailMediumPath)
+                && System.IO.File.Exists(attachment.ThumbnailMediumPath)
+            )
+            {
+                System.IO.File.Delete(attachment.ThumbnailMediumPath);
+            }
+
+            if (
+                !string.IsNullOrEmpty(attachment.ThumbnailSmallPath)
+                && System.IO.File.Exists(attachment.ThumbnailSmallPath)
+            )
+            {
+                System.IO.File.Delete(attachment.ThumbnailSmallPath);
+            }
+
+            return TypedResults.NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "添付ファイル削除中にエラーが発生しました。");
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ファイルが画像かどうかを判定
+    /// </summary>
+    private static bool IsImageFile(string mimeType)
+    {
+        var imageMimeTypes = new[]
+        {
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "image/bmp",
+        };
+        return imageMimeTypes.Contains(mimeType.ToLowerInvariant());
     }
 }

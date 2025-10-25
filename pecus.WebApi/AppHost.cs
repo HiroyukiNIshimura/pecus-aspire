@@ -43,6 +43,7 @@ builder.Services.AddScoped<TagService>();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();
+builder.Services.AddScoped<ImageTasks>();
 
 // Redisクライアントの設定（Aspireから取得）
 builder.AddRedisClient("redis");

@@ -1,11 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Pecus.Services;
 
@@ -223,7 +223,11 @@ public class UserService
     /// <summary>
     /// ユーザーを更新
     /// </summary>
-    public async Task<User> UpdateUserAsync(int userId, string? email = null, string? password = null)
+    public async Task<User> UpdateUserAsync(
+        int userId,
+        string? email = null,
+        string? password = null
+    )
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
