@@ -113,52 +113,6 @@ public class TagController : ControllerBase
     }
 
     /// <summary>
-    /// タグ取得
-    /// </summary>
-    [HttpGet("{tagId}")]
-    [ProducesResponseType(typeof(TagDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<TagDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetTag(int organizationId, int tagId)
-    {
-        try
-        {
-            var tag = await _tagService.GetTagByIdAsync(organizationId, tagId);
-
-            var response = new TagDetailResponse
-            {
-                Id = tag.Id,
-                OrganizationId = tag.OrganizationId,
-                Name = tag.Name,
-                CreatedAt = tag.CreatedAt,
-                CreatedByUserId = tag.CreatedByUserId,
-                CreatedByUsername = tag.CreatedByUser?.Username,
-                UpdatedAt = tag.UpdatedAt,
-                ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
-            };
-
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ取得中にエラーが発生しました。TagId: {TagId}", tagId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    /// <summary>
     /// 組織のタグ一覧取得
     /// </summary>
     [HttpGet]

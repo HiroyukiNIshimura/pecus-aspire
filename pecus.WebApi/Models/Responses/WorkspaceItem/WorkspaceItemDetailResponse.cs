@@ -109,4 +109,9 @@ public class WorkspaceItemDetailResponse
     /// 更新日時
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// タグのリスト
+    /// </summary>
+    public List<TagInfoResponse> Tags { get; set; } = new List<TagInfoResponse>();
 }

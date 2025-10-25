@@ -40,4 +40,9 @@ public class CreateWorkspaceItemRequest
     /// 下書き中フラグ
     /// </summary>
     public bool IsDraft { get; set; } = true;
+
+    /// <summary>
+    /// タグ名のリスト（存在しないタグは自動作成）
+    /// </summary>
+    public List<string>? TagNames { get; set; }
 }

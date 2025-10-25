@@ -107,6 +107,51 @@ public class WorkspaceItemService
         _context.WorkspaceItems.Add(item);
         await _context.SaveChangesAsync();
 
+        // タグの処理
+        if (request.TagNames != null && request.TagNames.Any())
+        {
+            // ワークスペースの組織IDを取得
+            var organizationId = workspace.OrganizationId;
+
+            foreach (var tagName in request.TagNames.Distinct())
+            {
+                if (string.IsNullOrWhiteSpace(tagName))
+                    continue;
+
+                // タグが存在するか確認
+                var tag = await _context.Tags.FirstOrDefaultAsync(t =>
+                    t.OrganizationId == organizationId && t.Name == tagName
+                );
+
+                // タグが存在しない場合は作成
+                if (tag == null)
+                {
+                    tag = new Tag
+                    {
+                        OrganizationId = organizationId,
+                        Name = tagName,
+                        CreatedByUserId = ownerId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+                    _context.Tags.Add(tag);
+                    await _context.SaveChangesAsync();
+                }
+
+                // アイテムとタグを関連付け
+                var workspaceItemTag = new WorkspaceItemTag
+                {
+                    WorkspaceItemId = item.Id,
+                    TagId = tag.Id,
+                    CreatedByUserId = ownerId,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                _context.WorkspaceItemTags.Add(workspaceItemTag);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
         await _context.Entry(item).Reference(wi => wi.Owner).LoadAsync();
@@ -114,6 +159,7 @@ public class WorkspaceItemService
         {
             await _context.Entry(item).Reference(wi => wi.Assignee).LoadAsync();
         }
+        await _context.Entry(item).Collection(wi => wi.WorkspaceItemTags).LoadAsync();
 
         return item;
     }
@@ -128,6 +174,8 @@ public class WorkspaceItemService
             .Include(wi => wi.Owner)
             .Include(wi => wi.Assignee)
             .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
             .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Id == itemId);
 
         if (item == null)
@@ -156,6 +204,8 @@ public class WorkspaceItemService
             .Include(wi => wi.Owner)
             .Include(wi => wi.Assignee)
             .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
             .Where(wi => wi.WorkspaceId == workspaceId);
 
         // フィルタリング
@@ -391,5 +441,106 @@ public class WorkspaceItemService
 
         _context.WorkspaceItems.Remove(item);
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムのタグを一括設定（既存のタグをすべて置き換える）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="tagNames">設定するタグ名のリスト（空の場合はすべてのタグを削除）</param>
+    /// <param name="userId">実行ユーザーID</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    /// <exception cref="NotFoundException">アイテムまたはワークスペースが見つからない場合</exception>
+    /// <exception cref="InvalidOperationException">権限がない場合</exception>
+    public async Task<WorkspaceItem> SetTagsToItemAsync(
+        int workspaceId,
+        int itemId,
+        List<string>? tagNames,
+        int userId
+    )
+    {
+        // アイテムの存在確認
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId
+        );
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var workspace = await _context
+            .Workspaces.Include(w => w.WorkspaceUsers)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var isMember = workspace.WorkspaceUsers.Any(wu => wu.UserId == userId && wu.IsActive);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがタグを設定できます。"
+            );
+        }
+
+        // 既存のタグ関連をすべて削除
+        var existingTags = await _context
+            .WorkspaceItemTags.Where(wit => wit.WorkspaceItemId == itemId)
+            .ToListAsync();
+
+        _context.WorkspaceItemTags.RemoveRange(existingTags);
+
+        // 新しいタグを設定（タグ名がある場合のみ）
+        if (tagNames != null && tagNames.Any())
+        {
+            // タグ名をクリーンアップ（重複排除、空文字除外、トリミング）
+            var cleanedTagNames = tagNames
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name.Trim())
+                .Distinct()
+                .ToList();
+
+            foreach (var tagName in cleanedTagNames)
+            {
+                // タグを取得または作成
+                var tag = await _context.Tags.FirstOrDefaultAsync(t =>
+                    t.OrganizationId == workspace.OrganizationId && t.Name == tagName
+                );
+
+                if (tag == null)
+                {
+                    tag = new Tag
+                    {
+                        OrganizationId = workspace.OrganizationId,
+                        Name = tagName,
+                        CreatedByUserId = userId,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    _context.Tags.Add(tag);
+                    await _context.SaveChangesAsync(); // タグIDを取得するため保存
+                }
+
+                // WorkspaceItemTagを作成
+                var workspaceItemTag = new WorkspaceItemTag
+                {
+                    WorkspaceItemId = itemId,
+                    TagId = tag.Id,
+                    CreatedByUserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                _context.WorkspaceItemTags.Add(workspaceItemTag);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        // 更新後のアイテムを取得
+        return await GetWorkspaceItemAsync(workspaceId, itemId);
     }
 }

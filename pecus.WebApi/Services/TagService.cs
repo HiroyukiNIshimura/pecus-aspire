@@ -72,25 +72,6 @@ public class TagService
     }
 
     /// <summary>
-    /// タグ取得
-    /// </summary>
-    public async Task<Tag> GetTagByIdAsync(int organizationId, int tagId)
-    {
-        var tag = await _context
-            .Tags.Include(t => t.Organization)
-            .Include(t => t.CreatedByUser)
-            .Include(t => t.WorkspaceItemTags)
-            .FirstOrDefaultAsync(t => t.Id == tagId && t.OrganizationId == organizationId);
-
-        if (tag == null)
-        {
-            throw new NotFoundException("タグが見つかりません。");
-        }
-
-        return tag;
-    }
-
-    /// <summary>
     /// 組織のタグ一覧取得
     /// </summary>
     public async Task<List<Tag>> GetTagsByOrganizationAsync(int organizationId)

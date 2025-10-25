@@ -224,6 +224,14 @@ public class WorkspaceItemController : ControllerBase
                         : null,
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
+                Tags =
+                    item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                        {
+                            Id = wit.Tag?.Id ?? 0,
+                            Name = wit.Tag?.Name ?? string.Empty,
+                        })
+                        .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                        .ToList() ?? new List<TagInfoResponse>(),
             };
 
             return TypedResults.Ok(response);
@@ -333,6 +341,14 @@ public class WorkspaceItemController : ControllerBase
                             : null,
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
+                    Tags =
+                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                            {
+                                Id = wit.Tag?.Id ?? 0,
+                                Name = wit.Tag?.Name ?? string.Empty,
+                            })
+                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                            .ToList() ?? new List<TagInfoResponse>(),
                 })
                 .ToList();
 
@@ -458,6 +474,14 @@ public class WorkspaceItemController : ControllerBase
                             : null,
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
+                    Tags =
+                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                            {
+                                Id = wit.Tag?.Id ?? 0,
+                                Name = wit.Tag?.Name ?? string.Empty,
+                            })
+                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                            .ToList() ?? new List<TagInfoResponse>(),
                 },
             };
 
@@ -596,6 +620,14 @@ public class WorkspaceItemController : ControllerBase
                             : null,
                     CreatedAt = item.CreatedAt,
                     UpdatedAt = item.UpdatedAt,
+                    Tags =
+                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                            {
+                                Id = wit.Tag?.Id ?? 0,
+                                Name = wit.Tag?.Name ?? string.Empty,
+                            })
+                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                            .ToList() ?? new List<TagInfoResponse>(),
                 },
             };
 
@@ -710,6 +742,153 @@ public class WorkspaceItemController : ControllerBase
                 "ワークスペースアイテム削除中にエラーが発生しました。ItemId: {ItemId}",
                 itemId
             );
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムのタグを一括設定
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="request">タグ一括設定リクエスト</param>
+    /// <param name="httpContext">HTTPコンテキスト</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    [HttpPut("/api/workspaces/{workspaceId}/items/{itemId}/tags")]
+    [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<WorkspaceItemResponse>,
+            NotFound<ErrorResponse>,
+            BadRequest<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > SetTagsToItem(
+        int workspaceId,
+        int itemId,
+        [FromBody] SetTagsToItemRequest request,
+        HttpContext httpContext
+    )
+    {
+        try
+        {
+            // 認証チェック
+            if (!httpContext.User.Identity?.IsAuthenticated ?? true)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status401Unauthorized,
+                        Message = "認証が必要です。",
+                    }
+                );
+            }
+
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(httpContext.User);
+
+            // タグを一括設定
+            var item = await _workspaceItemService.SetTagsToItemAsync(
+                workspaceId,
+                itemId,
+                request.TagNames,
+                userId
+            );
+
+            // レスポンスを構築
+            var response = new WorkspaceItemResponse
+            {
+                Success = true,
+                Message = "タグを設定しました。",
+                WorkspaceItem = new WorkspaceItemDetailResponse
+                {
+                    Id = item.Id,
+                    WorkspaceId = item.WorkspaceId,
+                    WorkspaceName = item.Workspace?.Name,
+                    Code = item.Code,
+                    Subject = item.Subject,
+                    Body = item.Body,
+                    OwnerId = item.OwnerId,
+                    OwnerUsername = item.Owner?.Username,
+                    OwnerAvatarUrl =
+                        item.Owner != null
+                            ? IdentityIconHelper.GetIdentityIconUrl(
+                                item.Owner.AvatarType,
+                                item.Owner.Id,
+                                item.Owner.Username,
+                                item.Owner.Email,
+                                item.Owner.AvatarUrl
+                            )
+                            : null,
+                    AssigneeId = item.AssigneeId,
+                    AssigneeUsername = item.Assignee?.Username,
+                    AssigneeAvatarUrl =
+                        item.Assignee != null
+                            ? IdentityIconHelper.GetIdentityIconUrl(
+                                item.Assignee.AvatarType,
+                                item.Assignee.Id,
+                                item.Assignee.Username,
+                                item.Assignee.Email,
+                                item.Assignee.AvatarUrl
+                            )
+                            : null,
+                    Priority = item.Priority,
+                    DueDate = item.DueDate,
+                    IsArchived = item.IsArchived,
+                    IsDraft = item.IsDraft,
+                    CommitterId = item.CommitterId,
+                    CommitterUsername = item.Committer?.Username,
+                    CommitterAvatarUrl =
+                        item.Committer != null
+                            ? IdentityIconHelper.GetIdentityIconUrl(
+                                item.Committer.AvatarType,
+                                item.Committer.Id,
+                                item.Committer.Username,
+                                item.Committer.Email,
+                                item.Committer.AvatarUrl
+                            )
+                            : null,
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt,
+                    Tags =
+                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                            {
+                                Id = wit.Tag?.Id ?? 0,
+                                Name = wit.Tag?.Name ?? string.Empty,
+                            })
+                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                            .ToList() ?? new List<TagInfoResponse>(),
+                },
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return TypedResults.BadRequest(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "タグ一括設定中にエラーが発生しました。ItemId: {ItemId}", itemId);
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
