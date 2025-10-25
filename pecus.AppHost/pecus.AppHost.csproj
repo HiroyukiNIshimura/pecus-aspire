@@ -11,6 +11,7 @@
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.2" />
     <PackageReference Include="Aspire.Hosting.Redis" Version="9.5.2" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\pecus.BackFire\pecus.BackFire.csproj" />

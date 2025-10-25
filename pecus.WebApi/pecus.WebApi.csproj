@@ -20,13 +20,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NLog" Version="6.0.5" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="6.0.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\pecus.Libs\pecus.Libs.csproj" />
+    <ProjectReference Include="..\pecus.ServiceDefaults\pecus.ServiceDefaults.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
