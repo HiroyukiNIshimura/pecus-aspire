@@ -36,6 +36,7 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<WorkspaceService>();
+builder.Services.AddScoped<WorkspaceItemService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 
