@@ -36,11 +36,6 @@ public class WorkspaceUser
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// 招待者ユーザーID
-    /// </summary>
-    public int? InvitedByUserId { get; set; }
-
-    /// <summary>
     /// 最終アクセス日時
     /// </summary>
     public DateTime? LastAccessedAt { get; set; }
