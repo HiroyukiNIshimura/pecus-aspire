@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -8,8 +10,6 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Models.Config;
 using Pecus.Services;
-using System.Reflection;
-using System.Text;
 
 // NLog: Setup the logger first to catch all errors
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
