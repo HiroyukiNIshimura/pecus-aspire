@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Pecus.DB;
 using Pecus.Libs;
+using Pecus.Libs.DB;
 using Pecus.Models.Config;
 
 namespace Pecus.Services;

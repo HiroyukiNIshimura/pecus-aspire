@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
@@ -199,7 +200,7 @@ public class WorkspaceController : ControllerBase
             var validatedPage = PaginationHelper.ValidatePageNumber(page);
             var pageSize = _config.Pagination.DefaultPageSize;
 
-            List<DB.Models.Workspace> workspaces;
+            List<Workspace> workspaces;
             int totalCount;
 
             if (organizationId.HasValue)

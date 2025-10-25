@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Pecus.DB;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Genre;
@@ -107,7 +108,7 @@ public class GenreService
             throw new DuplicateException("このジャンル名は既に使用されています。");
         }
 
-        var genre = new DB.Models.Genre
+        var genre = new Genre
         {
             Name = request.Name,
             Description = request.Description,

@@ -1,9 +1,9 @@
+using Microsoft.IdentityModel.Tokens;
+using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Pecus.DB.Models;
-using Pecus.Models.Config;
 
 namespace Pecus.Libs
 {

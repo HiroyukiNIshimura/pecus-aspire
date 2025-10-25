@@ -1,44 +1,49 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// 組織エンティティ
+/// ワークスペースエンティティ
 /// </summary>
-public class Organization
+public class Workspace
 {
     /// <summary>
-    /// 組織ID
+    /// ワークスペースID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// 組織名
+    /// ワークスペース名
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// 組織コード
+    /// ワークスペースコード
     /// </summary>
     public string? Code { get; set; }
 
     /// <summary>
-    /// 組織の説明
+    /// ワークスペースの説明
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// 代表者名
+    /// 組織ID
     /// </summary>
-    public string? RepresentativeName { get; set; }
+    public int OrganizationId { get; set; }
 
     /// <summary>
-    /// 電話番号
+    /// 所属する組織
     /// </summary>
-    public required string PhoneNumber { get; set; }
+    public Organization Organization { get; set; } = null!;
 
     /// <summary>
-    /// メールアドレス
+    /// ジャンルID
     /// </summary>
-    public string? Email { get; set; }
+    public int? GenreId { get; set; }
+
+    /// <summary>
+    /// ジャンル
+    /// </summary>
+    public Genre? Genre { get; set; }
 
     /// <summary>
     /// 作成日時
@@ -66,12 +71,7 @@ public class Organization
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// この組織に所属するユーザー
+    /// このワークスペースに参加しているユーザー
     /// </summary>
-    public ICollection<User> Users { get; set; } = new List<User>();
-
-    /// <summary>
-    /// この組織に所属するワークスペース
-    /// </summary>
-    public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
+    public ICollection<WorkspaceUser> WorkspaceUsers { get; set; } = new List<WorkspaceUser>();
 }

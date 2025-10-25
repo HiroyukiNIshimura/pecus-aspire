@@ -1,34 +1,44 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// ワークスペースジャンルマスタエンティティ
+/// 組織エンティティ
 /// </summary>
-public class Genre
+public class Organization
 {
     /// <summary>
-    /// ジャンルID
+    /// 組織ID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// ジャンル名
+    /// 組織名
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// ジャンルの説明
+    /// 組織コード
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// 組織の説明
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// ジャンルアイコン
+    /// 代表者名
     /// </summary>
-    public string? Icon { get; set; }
+    public string? RepresentativeName { get; set; }
 
     /// <summary>
-    /// 表示順
+    /// 電話番号
     /// </summary>
-    public int DisplayOrder { get; set; }
+    public required string PhoneNumber { get; set; }
+
+    /// <summary>
+    /// メールアドレス
+    /// </summary>
+    public string? Email { get; set; }
 
     /// <summary>
     /// 作成日時
@@ -56,7 +66,12 @@ public class Genre
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// このジャンルを持つワークスペース
+    /// この組織に所属するユーザー
+    /// </summary>
+    public ICollection<User> Users { get; set; } = new List<User>();
+
+    /// <summary>
+    /// この組織に所属するワークスペース
     /// </summary>
     public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
 }

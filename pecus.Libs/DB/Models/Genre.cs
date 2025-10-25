@@ -1,24 +1,34 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// ロールエンティティ
+/// ワークスペースジャンルマスタエンティティ
 /// </summary>
-public class Role
+public class Genre
 {
     /// <summary>
-    /// ロールID
+    /// ジャンルID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// ロール名
+    /// ジャンル名
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// ロールの説明
+    /// ジャンルの説明
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// ジャンルアイコン
+    /// </summary>
+    public string? Icon { get; set; }
+
+    /// <summary>
+    /// 表示順
+    /// </summary>
+    public int DisplayOrder { get; set; }
 
     /// <summary>
     /// 作成日時
@@ -41,12 +51,12 @@ public class Role
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
-    /// このロールに関連付けられた権限
+    /// アクティブフラグ
     /// </summary>
-    public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+    public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// このロールを持つユーザー
+    /// このジャンルを持つワークスペース
     /// </summary>
-    public ICollection<User> Users { get; set; } = new List<User>();
+    public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
 }

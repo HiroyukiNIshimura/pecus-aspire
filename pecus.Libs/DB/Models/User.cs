@@ -1,4 +1,4 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// ログインユーザーエンティティ
@@ -11,7 +11,7 @@ public class User
     public int Id { get; set; }
 
     /// <summary>
-    /// ログインID（システム内でユニークなハッシュ文字列）
+    /// ログインID(システム内でユニークなハッシュ文字列)
     /// </summary>
     public required string LoginId { get; set; }
 

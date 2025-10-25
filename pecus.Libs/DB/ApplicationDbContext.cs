@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Pecus.DB.Models;
+using Pecus.Libs.DB.Models;
 
-namespace Pecus.DB;
+namespace Pecus.Libs.DB;
 
 /// <summary>
 /// アプリケーションのDbContext

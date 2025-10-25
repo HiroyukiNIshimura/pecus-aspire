@@ -1,29 +1,24 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// 権限エンティティ
+/// ロールエンティティ
 /// </summary>
-public class Permission
+public class Role
 {
     /// <summary>
-    /// 権限ID
+    /// ロールID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// 権限名（例: "User.Read", "User.Write", "Admin.Access"）
+    /// ロール名
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// 権限の説明
+    /// ロールの説明
     /// </summary>
     public string? Description { get; set; }
-
-    /// <summary>
-    /// 権限カテゴリ（例: "User", "Admin", "Report"）
-    /// </summary>
-    public string? Category { get; set; }
 
     /// <summary>
     /// 作成日時
@@ -46,7 +41,12 @@ public class Permission
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
-    /// この権限を持つロール
+    /// このロールに関連付けられた権限
     /// </summary>
-    public ICollection<Role> Roles { get; set; } = new List<Role>();
+    public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+
+    /// <summary>
+    /// このロールを持つユーザー
+    /// </summary>
+    public ICollection<User> Users { get; set; } = new List<User>();
 }

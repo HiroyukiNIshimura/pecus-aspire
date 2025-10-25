@@ -1,7 +1,7 @@
-namespace Pecus.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
-/// ワークスペースユーザーエンティティ（ワークスペースとユーザーの多対多中間テーブル）
+/// ワークスペースユーザーエンティティ(ワークスペースとユーザーの多対多中間テーブル)
 /// </summary>
 public class WorkspaceUser
 {
@@ -26,7 +26,7 @@ public class WorkspaceUser
     public User User { get; set; } = null!;
 
     /// <summary>
-    /// ワークスペース内での役割（例: Owner, Member, Guest）
+    /// ワークスペース内での役割(例: Owner, Member, Guest)
     /// </summary>
     public string? WorkspaceRole { get; set; }
 
