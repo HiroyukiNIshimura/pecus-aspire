@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\pecus.ServiceDefaults\pecus.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\pecus.Libs\pecus.Libs.csproj" />
   </ItemGroup>
 
 </Project>

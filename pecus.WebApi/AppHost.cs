@@ -10,6 +10,7 @@ using NLog.Web;
 using Pecus.Filters;
 using Pecus.Libs;
 using Pecus.Libs.DB;
+using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
 using Pecus.Services;
 using StackExchange.Redis;
@@ -47,6 +48,9 @@ try
     builder.Services.AddScoped<WorkspaceService>();
     builder.Services.AddScoped<GenreService>();
     builder.Services.AddScoped<FileUploadService>();
+
+    // Hangfireタスクの登録
+    builder.Services.AddScoped<HangfireTasks>();
 
     // Redisクライアントの設定（Aspireから取得）
     builder.AddRedisClient("redis");
