@@ -61,6 +61,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<WorkspaceItemTag> WorkspaceItemTags { get; set; }
 
+    /// <summary>
+    /// ワークスペースアイテムPINテーブル（中間テーブル）
+    /// </summary>
+    public DbSet<WorkspaceItemPin> WorkspaceItemPins { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -313,6 +318,30 @@ public class ApplicationDbContext : DbContext
             // インデックス
             entity.HasIndex(wit => wit.TagId);
             entity.HasIndex(wit => wit.CreatedByUserId);
+        });
+
+        // WorkspaceItemPinエンティティの設定（中間テーブル）
+        modelBuilder.Entity<WorkspaceItemPin>(entity =>
+        {
+            entity.HasKey(wip => new { wip.WorkspaceItemId, wip.UserId });
+
+            // WorkspaceItemPin と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(wip => wip.WorkspaceItem)
+                .WithMany(wi => wi.WorkspaceItemPins)
+                .HasForeignKey(wip => wip.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemPin と User の多対一リレーションシップ
+            entity
+                .HasOne(wip => wip.User)
+                .WithMany(u => u.WorkspaceItemPins)
+                .HasForeignKey(wip => wip.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // インデックス
+            entity.HasIndex(wip => wip.UserId);
+            entity.HasIndex(wip => wip.CreatedAt);
         });
     }
 }

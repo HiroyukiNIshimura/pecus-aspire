@@ -114,4 +114,14 @@ public class WorkspaceItemDetailResponse
     /// タグのリスト
     /// </summary>
     public List<TagInfoResponse> Tags { get; set; } = new List<TagInfoResponse>();
+
+    /// <summary>
+    /// ログイン中のユーザーがこのアイテムをPINしているか
+    /// </summary>
+    public bool IsPinned { get; set; }
+
+    /// <summary>
+    /// このアイテムのPIN総数
+    /// </summary>
+    public int PinCount { get; set; }
 }

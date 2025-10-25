@@ -176,6 +176,7 @@ public class WorkspaceItemService
             .Include(wi => wi.Committer)
             .Include(wi => wi.WorkspaceItemTags)
             .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
             .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Id == itemId);
 
         if (item == null)
@@ -196,7 +197,8 @@ public class WorkspaceItemService
         bool? isDraft = null,
         bool? isArchived = null,
         int? assigneeId = null,
-        int? priority = null
+        int? priority = null,
+        int? pinnedByUserId = null
     )
     {
         var query = _context
@@ -206,6 +208,7 @@ public class WorkspaceItemService
             .Include(wi => wi.Committer)
             .Include(wi => wi.WorkspaceItemTags)
             .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
             .Where(wi => wi.WorkspaceId == workspaceId);
 
         // フィルタリング
@@ -229,11 +232,53 @@ public class WorkspaceItemService
             query = query.Where(wi => wi.Priority == priority.Value);
         }
 
+        if (pinnedByUserId.HasValue)
+        {
+            query = query.Where(wi =>
+                wi.WorkspaceItemPins.Any(wip => wip.UserId == pinnedByUserId.Value)
+            );
+        }
+
         var totalCount = await query.CountAsync();
 
         // ページネーション
         var items = await query
             .OrderByDescending(wi => wi.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    /// <summary>
+    /// ユーザーがPINしたワークスペースアイテム一覧を取得
+    /// </summary>
+    public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetPinnedWorkspaceItemsAsync(
+        int userId,
+        int page = 1,
+        int pageSize = 20
+    )
+    {
+        var query = _context
+            .WorkspaceItems.Include(wi => wi.Workspace)
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
+            .Where(wi => wi.WorkspaceItemPins.Any(wip => wip.UserId == userId));
+
+        var totalCount = await query.CountAsync();
+
+        // ページネーション（PIN作成日時の降順）
+        var items = await query
+            .OrderByDescending(wi =>
+                wi.WorkspaceItemPins.Where(wip => wip.UserId == userId)
+                    .Select(wip => wip.CreatedAt)
+                    .FirstOrDefault()
+            )
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -538,6 +583,112 @@ public class WorkspaceItemService
             }
         }
 
+        await _context.SaveChangesAsync();
+
+        // 更新後のアイテムを取得
+        return await GetWorkspaceItemAsync(workspaceId, itemId);
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムにPINを追加
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    /// <exception cref="NotFoundException">アイテムが見つからない場合</exception>
+    /// <exception cref="InvalidOperationException">既にPIN済み、または権限がない場合</exception>
+    public async Task<WorkspaceItem> AddPinToItemAsync(int workspaceId, int itemId, int userId)
+    {
+        // アイテムの存在確認
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId
+        );
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
+            wu.WorkspaceId == workspaceId && wu.UserId == userId && wu.IsActive
+        );
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがPINを追加できます。"
+            );
+        }
+
+        // 既にPIN済みか確認
+        var existingPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(wip =>
+            wip.WorkspaceItemId == itemId && wip.UserId == userId
+        );
+
+        if (existingPin != null)
+        {
+            throw new InvalidOperationException("このアイテムは既にPIN済みです。");
+        }
+
+        // PINを作成
+        var pin = new WorkspaceItemPin
+        {
+            WorkspaceItemId = itemId,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        _context.WorkspaceItemPins.Add(pin);
+        await _context.SaveChangesAsync();
+
+        // 更新後のアイテムを取得
+        return await GetWorkspaceItemAsync(workspaceId, itemId);
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムからPINを削除
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    /// <exception cref="NotFoundException">アイテムまたはPINが見つからない場合</exception>
+    /// <exception cref="InvalidOperationException">権限がない場合</exception>
+    public async Task<WorkspaceItem> RemovePinFromItemAsync(int workspaceId, int itemId, int userId)
+    {
+        // アイテムの存在確認
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId
+        );
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
+            wu.WorkspaceId == workspaceId && wu.UserId == userId && wu.IsActive
+        );
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがPINを削除できます。"
+            );
+        }
+
+        // PINを取得
+        var pin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(wip =>
+            wip.WorkspaceItemId == itemId && wip.UserId == userId
+        );
+
+        if (pin == null)
+        {
+            throw new NotFoundException("このアイテムはPINされていません。");
+        }
+
+        _context.WorkspaceItemPins.Remove(pin);
         await _context.SaveChangesAsync();
 
         // 更新後のアイテムを取得

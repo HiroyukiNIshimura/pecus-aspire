@@ -101,4 +101,10 @@ public class WorkspaceItem
     /// </summary>
     public ICollection<WorkspaceItemTag> WorkspaceItemTags { get; set; } =
         new List<WorkspaceItemTag>();
+
+    /// <summary>
+    /// このアイテムをPINしているユーザーとの関連（多対多）
+    /// </summary>
+    public ICollection<WorkspaceItemPin> WorkspaceItemPins { get; set; } =
+        new List<WorkspaceItemPin>();
 }

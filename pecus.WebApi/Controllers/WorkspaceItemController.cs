@@ -31,6 +31,83 @@ public class WorkspaceItemController : ControllerBase
     }
 
     /// <summary>
+    /// WorkspaceItemからWorkspaceItemDetailResponseを構築するヘルパーメソッド
+    /// </summary>
+    /// <param name="item">ワークスペースアイテム</param>
+    /// <param name="currentUserId">ログイン中のユーザーID（null可）</param>
+    /// <returns>WorkspaceItemDetailResponse</returns>
+    private WorkspaceItemDetailResponse BuildItemDetailResponse(
+        Pecus.Libs.DB.Models.WorkspaceItem item,
+        int? currentUserId
+    )
+    {
+        return new WorkspaceItemDetailResponse
+        {
+            Id = item.Id,
+            WorkspaceId = item.WorkspaceId,
+            WorkspaceName = item.Workspace?.Name,
+            Code = item.Code,
+            Subject = item.Subject,
+            Body = item.Body,
+            OwnerId = item.OwnerId,
+            OwnerUsername = item.Owner?.Username,
+            OwnerAvatarUrl =
+                item.Owner != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        item.Owner.AvatarType,
+                        item.Owner.Id,
+                        item.Owner.Username,
+                        item.Owner.Email,
+                        item.Owner.AvatarUrl
+                    )
+                    : null,
+            AssigneeId = item.AssigneeId,
+            AssigneeUsername = item.Assignee?.Username,
+            AssigneeAvatarUrl =
+                item.Assignee != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        item.Assignee.AvatarType,
+                        item.Assignee.Id,
+                        item.Assignee.Username,
+                        item.Assignee.Email,
+                        item.Assignee.AvatarUrl
+                    )
+                    : null,
+            Priority = item.Priority,
+            DueDate = item.DueDate,
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
+            CommitterId = item.CommitterId,
+            CommitterUsername = item.Committer?.Username,
+            CommitterAvatarUrl =
+                item.Committer != null
+                    ? IdentityIconHelper.GetIdentityIconUrl(
+                        item.Committer.AvatarType,
+                        item.Committer.Id,
+                        item.Committer.Username,
+                        item.Committer.Email,
+                        item.Committer.AvatarUrl
+                    )
+                    : null,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+            Tags =
+                item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
+                    {
+                        Id = wit.Tag?.Id ?? 0,
+                        Name = wit.Tag?.Name ?? string.Empty,
+                    })
+                    .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
+                    .ToList() ?? new List<TagInfoResponse>(),
+            IsPinned =
+                currentUserId.HasValue
+                && item.WorkspaceItemPins != null
+                && item.WorkspaceItemPins.Any(wip => wip.UserId == currentUserId.Value),
+            PinCount = item.WorkspaceItemPins?.Count ?? 0,
+        };
+    }
+
+    /// <summary>
     /// ワークスペースアイテム作成
     /// </summary>
     [HttpPost]
@@ -77,57 +154,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "ワークスペースアイテムを作成しました。",
-                WorkspaceItem = new WorkspaceItemDetailResponse
-                {
-                    Id = item.Id,
-                    WorkspaceId = item.WorkspaceId,
-                    WorkspaceName = item.Workspace?.Name,
-                    Code = item.Code,
-                    Subject = item.Subject,
-                    Body = item.Body,
-                    OwnerId = item.OwnerId,
-                    OwnerUsername = item.Owner?.Username,
-                    OwnerAvatarUrl =
-                        item.Owner != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Owner.AvatarType,
-                                item.Owner.Id,
-                                item.Owner.Username,
-                                item.Owner.Email,
-                                item.Owner.AvatarUrl
-                            )
-                            : null,
-                    AssigneeId = item.AssigneeId,
-                    AssigneeUsername = item.Assignee?.Username,
-                    AssigneeAvatarUrl =
-                        item.Assignee != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Assignee.AvatarType,
-                                item.Assignee.Id,
-                                item.Assignee.Username,
-                                item.Assignee.Email,
-                                item.Assignee.AvatarUrl
-                            )
-                            : null,
-                    Priority = item.Priority,
-                    DueDate = item.DueDate,
-                    IsArchived = item.IsArchived,
-                    IsDraft = item.IsDraft,
-                    CommitterId = item.CommitterId,
-                    CommitterUsername = item.Committer?.Username,
-                    CommitterAvatarUrl =
-                        item.Committer != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Committer.AvatarType,
-                                item.Committer.Id,
-                                item.Committer.Username,
-                                item.Committer.Email,
-                                item.Committer.AvatarUrl
-                            )
-                            : null,
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                },
+                WorkspaceItem = BuildItemDetailResponse(item, ownerId.Value),
             };
 
             return TypedResults.Ok(response);
@@ -174,65 +201,14 @@ public class WorkspaceItemController : ControllerBase
         {
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
-            var response = new WorkspaceItemDetailResponse
+            // ログイン中のユーザーIDを取得（任意）
+            int? currentUserId = null;
+            if (User.Identity?.IsAuthenticated == true)
             {
-                Id = item.Id,
-                WorkspaceId = item.WorkspaceId,
-                WorkspaceName = item.Workspace?.Name,
-                Code = item.Code,
-                Subject = item.Subject,
-                Body = item.Body,
-                OwnerId = item.OwnerId,
-                OwnerUsername = item.Owner?.Username,
-                OwnerAvatarUrl =
-                    item.Owner != null
-                        ? IdentityIconHelper.GetIdentityIconUrl(
-                            item.Owner.AvatarType,
-                            item.Owner.Id,
-                            item.Owner.Username,
-                            item.Owner.Email,
-                            item.Owner.AvatarUrl
-                        )
-                        : null,
-                AssigneeId = item.AssigneeId,
-                AssigneeUsername = item.Assignee?.Username,
-                AssigneeAvatarUrl =
-                    item.Assignee != null
-                        ? IdentityIconHelper.GetIdentityIconUrl(
-                            item.Assignee.AvatarType,
-                            item.Assignee.Id,
-                            item.Assignee.Username,
-                            item.Assignee.Email,
-                            item.Assignee.AvatarUrl
-                        )
-                        : null,
-                Priority = item.Priority,
-                DueDate = item.DueDate,
-                IsArchived = item.IsArchived,
-                IsDraft = item.IsDraft,
-                CommitterId = item.CommitterId,
-                CommitterUsername = item.Committer?.Username,
-                CommitterAvatarUrl =
-                    item.Committer != null
-                        ? IdentityIconHelper.GetIdentityIconUrl(
-                            item.Committer.AvatarType,
-                            item.Committer.Id,
-                            item.Committer.Username,
-                            item.Committer.Email,
-                            item.Committer.AvatarUrl
-                        )
-                        : null,
-                CreatedAt = item.CreatedAt,
-                UpdatedAt = item.UpdatedAt,
-                Tags =
-                    item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                        {
-                            Id = wit.Tag?.Id ?? 0,
-                            Name = wit.Tag?.Name ?? string.Empty,
-                        })
-                        .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
-                        .ToList() ?? new List<TagInfoResponse>(),
-            };
+                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            var response = BuildItemDetailResponse(item, currentUserId);
 
             return TypedResults.Ok(response);
         }
@@ -274,11 +250,37 @@ public class WorkspaceItemController : ControllerBase
         [FromQuery] bool? isDraft = null,
         [FromQuery] bool? isArchived = null,
         [FromQuery] int? assigneeId = null,
-        [FromQuery] int? priority = null
+        [FromQuery] int? priority = null,
+        [FromQuery] bool? pinned = null
     )
     {
         try
         {
+            // ログイン中のユーザーIDを取得（任意）
+            int? currentUserId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            // pinnedフィルタを使用する場合は認証が必要
+            int? pinnedByUserId = null;
+            if (pinned.HasValue && pinned.Value)
+            {
+                if (!currentUserId.HasValue)
+                {
+                    // 認証されていない場合は空の結果を返す
+                    var emptyResponse = PaginationHelper.CreatePagedResponse(
+                        new List<WorkspaceItemDetailResponse>(),
+                        page,
+                        _config.Pagination.DefaultPageSize,
+                        0
+                    );
+                    return TypedResults.Ok(emptyResponse);
+                }
+                pinnedByUserId = currentUserId.Value;
+            }
+
             var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
                 workspaceId,
@@ -287,69 +289,12 @@ public class WorkspaceItemController : ControllerBase
                 isDraft,
                 isArchived,
                 assigneeId,
-                priority
+                priority,
+                pinnedByUserId
             );
 
             var itemResponses = items
-                .Select(item => new WorkspaceItemDetailResponse
-                {
-                    Id = item.Id,
-                    WorkspaceId = item.WorkspaceId,
-                    WorkspaceName = item.Workspace?.Name,
-                    Code = item.Code,
-                    Subject = item.Subject,
-                    Body = item.Body,
-                    OwnerId = item.OwnerId,
-                    OwnerUsername = item.Owner?.Username,
-                    OwnerAvatarUrl =
-                        item.Owner != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Owner.AvatarType,
-                                item.Owner.Id,
-                                item.Owner.Username,
-                                item.Owner.Email,
-                                item.Owner.AvatarUrl
-                            )
-                            : null,
-                    AssigneeId = item.AssigneeId,
-                    AssigneeUsername = item.Assignee?.Username,
-                    AssigneeAvatarUrl =
-                        item.Assignee != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Assignee.AvatarType,
-                                item.Assignee.Id,
-                                item.Assignee.Username,
-                                item.Assignee.Email,
-                                item.Assignee.AvatarUrl
-                            )
-                            : null,
-                    Priority = item.Priority,
-                    DueDate = item.DueDate,
-                    IsArchived = item.IsArchived,
-                    IsDraft = item.IsDraft,
-                    CommitterId = item.CommitterId,
-                    CommitterUsername = item.Committer?.Username,
-                    CommitterAvatarUrl =
-                        item.Committer != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Committer.AvatarType,
-                                item.Committer.Id,
-                                item.Committer.Username,
-                                item.Committer.Email,
-                                item.Committer.AvatarUrl
-                            )
-                            : null,
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Tags =
-                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                            {
-                                Id = wit.Tag?.Id ?? 0,
-                                Name = wit.Tag?.Name ?? string.Empty,
-                            })
-                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
-                            .ToList() ?? new List<TagInfoResponse>(),
-                })
+                .Select(item => BuildItemDetailResponse(item, currentUserId))
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(
@@ -424,65 +369,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "ワークスペースアイテムを更新しました。",
-                WorkspaceItem = new WorkspaceItemDetailResponse
-                {
-                    Id = item.Id,
-                    WorkspaceId = item.WorkspaceId,
-                    WorkspaceName = item.Workspace?.Name,
-                    Code = item.Code,
-                    Subject = item.Subject,
-                    Body = item.Body,
-                    OwnerId = item.OwnerId,
-                    OwnerUsername = item.Owner?.Username,
-                    OwnerAvatarUrl =
-                        item.Owner != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Owner.AvatarType,
-                                item.Owner.Id,
-                                item.Owner.Username,
-                                item.Owner.Email,
-                                item.Owner.AvatarUrl
-                            )
-                            : null,
-                    AssigneeId = item.AssigneeId,
-                    AssigneeUsername = item.Assignee?.Username,
-                    AssigneeAvatarUrl =
-                        item.Assignee != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Assignee.AvatarType,
-                                item.Assignee.Id,
-                                item.Assignee.Username,
-                                item.Assignee.Email,
-                                item.Assignee.AvatarUrl
-                            )
-                            : null,
-                    Priority = item.Priority,
-                    DueDate = item.DueDate,
-                    IsArchived = item.IsArchived,
-                    IsDraft = item.IsDraft,
-                    CommitterId = item.CommitterId,
-                    CommitterUsername = item.Committer?.Username,
-                    CommitterAvatarUrl =
-                        item.Committer != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Committer.AvatarType,
-                                item.Committer.Id,
-                                item.Committer.Username,
-                                item.Committer.Email,
-                                item.Committer.AvatarUrl
-                            )
-                            : null,
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Tags =
-                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                            {
-                                Id = wit.Tag?.Id ?? 0,
-                                Name = wit.Tag?.Name ?? string.Empty,
-                            })
-                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
-                            .ToList() ?? new List<TagInfoResponse>(),
-                },
+                WorkspaceItem = BuildItemDetailResponse(item, currentUserId.Value),
             };
 
             return TypedResults.Ok(response);
@@ -570,65 +457,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "ワークスペースアイテムのステータスを更新しました。",
-                WorkspaceItem = new WorkspaceItemDetailResponse
-                {
-                    Id = item.Id,
-                    WorkspaceId = item.WorkspaceId,
-                    WorkspaceName = item.Workspace?.Name,
-                    Code = item.Code,
-                    Subject = item.Subject,
-                    Body = item.Body,
-                    OwnerId = item.OwnerId,
-                    OwnerUsername = item.Owner?.Username,
-                    OwnerAvatarUrl =
-                        item.Owner != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Owner.AvatarType,
-                                item.Owner.Id,
-                                item.Owner.Username,
-                                item.Owner.Email,
-                                item.Owner.AvatarUrl
-                            )
-                            : null,
-                    AssigneeId = item.AssigneeId,
-                    AssigneeUsername = item.Assignee?.Username,
-                    AssigneeAvatarUrl =
-                        item.Assignee != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Assignee.AvatarType,
-                                item.Assignee.Id,
-                                item.Assignee.Username,
-                                item.Assignee.Email,
-                                item.Assignee.AvatarUrl
-                            )
-                            : null,
-                    Priority = item.Priority,
-                    DueDate = item.DueDate,
-                    IsArchived = item.IsArchived,
-                    IsDraft = item.IsDraft,
-                    CommitterId = item.CommitterId,
-                    CommitterUsername = item.Committer?.Username,
-                    CommitterAvatarUrl =
-                        item.Committer != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Committer.AvatarType,
-                                item.Committer.Id,
-                                item.Committer.Username,
-                                item.Committer.Email,
-                                item.Committer.AvatarUrl
-                            )
-                            : null,
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Tags =
-                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                            {
-                                Id = wit.Tag?.Id ?? 0,
-                                Name = wit.Tag?.Name ?? string.Empty,
-                            })
-                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
-                            .ToList() ?? new List<TagInfoResponse>(),
-                },
+                WorkspaceItem = BuildItemDetailResponse(item, currentUserId.Value),
             };
 
             return TypedResults.Ok(response);
@@ -803,65 +632,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "タグを設定しました。",
-                WorkspaceItem = new WorkspaceItemDetailResponse
-                {
-                    Id = item.Id,
-                    WorkspaceId = item.WorkspaceId,
-                    WorkspaceName = item.Workspace?.Name,
-                    Code = item.Code,
-                    Subject = item.Subject,
-                    Body = item.Body,
-                    OwnerId = item.OwnerId,
-                    OwnerUsername = item.Owner?.Username,
-                    OwnerAvatarUrl =
-                        item.Owner != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Owner.AvatarType,
-                                item.Owner.Id,
-                                item.Owner.Username,
-                                item.Owner.Email,
-                                item.Owner.AvatarUrl
-                            )
-                            : null,
-                    AssigneeId = item.AssigneeId,
-                    AssigneeUsername = item.Assignee?.Username,
-                    AssigneeAvatarUrl =
-                        item.Assignee != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Assignee.AvatarType,
-                                item.Assignee.Id,
-                                item.Assignee.Username,
-                                item.Assignee.Email,
-                                item.Assignee.AvatarUrl
-                            )
-                            : null,
-                    Priority = item.Priority,
-                    DueDate = item.DueDate,
-                    IsArchived = item.IsArchived,
-                    IsDraft = item.IsDraft,
-                    CommitterId = item.CommitterId,
-                    CommitterUsername = item.Committer?.Username,
-                    CommitterAvatarUrl =
-                        item.Committer != null
-                            ? IdentityIconHelper.GetIdentityIconUrl(
-                                item.Committer.AvatarType,
-                                item.Committer.Id,
-                                item.Committer.Username,
-                                item.Committer.Email,
-                                item.Committer.AvatarUrl
-                            )
-                            : null,
-                    CreatedAt = item.CreatedAt,
-                    UpdatedAt = item.UpdatedAt,
-                    Tags =
-                        item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                            {
-                                Id = wit.Tag?.Id ?? 0,
-                                Name = wit.Tag?.Name ?? string.Empty,
-                            })
-                            .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
-                            .ToList() ?? new List<TagInfoResponse>(),
-                },
+                WorkspaceItem = BuildItemDetailResponse(item, userId),
             };
 
             return TypedResults.Ok(response);
@@ -889,6 +660,229 @@ public class WorkspaceItemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "タグ一括設定中にエラーが発生しました。ItemId: {ItemId}", itemId);
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムにPINを追加
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    [HttpPost("{itemId}/pin")]
+    [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<WorkspaceItemResponse>,
+            BadRequest<ErrorResponse>,
+            NotFound<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > AddPinToItem(int workspaceId, int itemId)
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            int? userId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            if (!userId.HasValue)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "認証が必要です。",
+                    }
+                );
+            }
+
+            var item = await _workspaceItemService.AddPinToItemAsync(
+                workspaceId,
+                itemId,
+                userId.Value
+            );
+
+            var response = new WorkspaceItemResponse
+            {
+                Success = true,
+                Message = "PINを追加しました。",
+                WorkspaceItem = BuildItemDetailResponse(item, userId.Value),
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return TypedResults.BadRequest(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PIN追加中にエラーが発生しました。ItemId: {ItemId}", itemId);
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムからPINを削除
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <returns>更新されたワークスペースアイテム</returns>
+    [HttpDelete("{itemId}/pin")]
+    [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<WorkspaceItemResponse>,
+            BadRequest<ErrorResponse>,
+            NotFound<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > RemovePinFromItem(int workspaceId, int itemId)
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            int? userId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            if (!userId.HasValue)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "認証が必要です。",
+                    }
+                );
+            }
+
+            var item = await _workspaceItemService.RemovePinFromItemAsync(
+                workspaceId,
+                itemId,
+                userId.Value
+            );
+
+            var response = new WorkspaceItemResponse
+            {
+                Success = true,
+                Message = "PINを削除しました。",
+                WorkspaceItem = BuildItemDetailResponse(item, userId.Value),
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (InvalidOperationException ex)
+        {
+            return TypedResults.BadRequest(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PIN削除中にエラーが発生しました。ItemId: {ItemId}", itemId);
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ログインユーザーがPINしたアイテム一覧を取得
+    /// </summary>
+    [HttpGet("/api/users/me/pinned-items")]
+    [ProducesResponseType(
+        typeof(PagedResponse<WorkspaceItemDetailResponse>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<PagedResponse<WorkspaceItemDetailResponse>>,
+            UnauthorizedHttpResult,
+            StatusCodeHttpResult
+        >
+    > GetMyPinnedItems([FromQuery] int page = 1)
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            int? userId = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            }
+
+            if (!userId.HasValue)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var pageSize = _config.Pagination.DefaultPageSize;
+            var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
+                userId.Value,
+                page,
+                pageSize
+            );
+
+            var itemResponses = items
+                .Select(item => BuildItemDetailResponse(item, userId.Value))
+                .ToList();
+
+            var response = PaginationHelper.CreatePagedResponse(
+                itemResponses,
+                page,
+                pageSize,
+                totalCount
+            );
+
+            return TypedResults.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PIN済みアイテム一覧取得中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

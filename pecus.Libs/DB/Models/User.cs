@@ -89,4 +89,10 @@ public class User
     /// このユーザーが参加しているワークスペース
     /// </summary>
     public ICollection<WorkspaceUser> WorkspaceUsers { get; set; } = new List<WorkspaceUser>();
+
+    /// <summary>
+    /// このユーザーがPINしているワークスペースアイテム
+    /// </summary>
+    public ICollection<WorkspaceItemPin> WorkspaceItemPins { get; set; } =
+        new List<WorkspaceItemPin>();
 }
