@@ -36,11 +36,6 @@ public class WorkspaceUserDetailResponse
     public DateTime JoinedAt { get; set; }
 
     /// <summary>
-    /// 招待者ユーザーID
-    /// </summary>
-    public int? InvitedByUserId { get; set; }
-
-    /// <summary>
     /// 最終アクセス日時
     /// </summary>
     public DateTime? LastAccessedAt { get; set; }

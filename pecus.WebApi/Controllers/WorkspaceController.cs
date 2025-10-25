@@ -515,7 +515,6 @@ public class WorkspaceController : ControllerBase
                     Email = workspaceUser.User?.Email,
                     WorkspaceRole = workspaceUser.WorkspaceRole,
                     JoinedAt = workspaceUser.JoinedAt,
-                    InvitedByUserId = workspaceUser.InvitedByUserId,
                     LastAccessedAt = workspaceUser.LastAccessedAt,
                     IsActive = workspaceUser.IsActive,
                 },
@@ -646,7 +645,6 @@ public class WorkspaceController : ControllerBase
                     Email = m.User?.Email,
                     WorkspaceRole = m.WorkspaceRole,
                     JoinedAt = m.JoinedAt,
-                    InvitedByUserId = m.InvitedByUserId,
                     LastAccessedAt = m.LastAccessedAt,
                     IsActive = m.IsActive,
                 })

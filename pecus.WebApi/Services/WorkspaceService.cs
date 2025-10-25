@@ -57,7 +57,6 @@ public class WorkspaceService
                 UserId = createdByUserId.Value,
                 WorkspaceRole = "Owner",
                 JoinedAt = DateTime.UtcNow,
-                InvitedByUserId = createdByUserId.Value,
                 IsActive = true,
             };
             _context.WorkspaceUsers.Add(workspaceUser);
@@ -296,7 +295,6 @@ public class WorkspaceService
             UserId = request.UserId,
             WorkspaceRole = request.WorkspaceRole ?? "Member",
             JoinedAt = DateTime.UtcNow,
-            InvitedByUserId = invitedByUserId,
             IsActive = true,
         };
 
