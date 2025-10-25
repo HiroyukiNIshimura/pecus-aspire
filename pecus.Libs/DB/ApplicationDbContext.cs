@@ -46,6 +46,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<Genre> Genres { get; set; }
 
+    /// <summary>
+    /// ワークスペースアイテムテーブル
+    /// </summary>
+    public DbSet<WorkspaceItem> WorkspaceItems { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -192,6 +197,56 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Icon).HasMaxLength(50);
             entity.HasIndex(e => e.Name).IsUnique();
             entity.HasIndex(e => e.DisplayOrder);
+        });
+
+        // WorkspaceItemエンティティの設定
+        modelBuilder.Entity<WorkspaceItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Body).IsRequired();
+            entity.Property(e => e.Priority).HasDefaultValue(2);
+            entity.Property(e => e.IsArchived).HasDefaultValue(false);
+            entity.Property(e => e.IsDraft).HasDefaultValue(true);
+
+            // WorkspaceItem と Workspace の多対一リレーションシップ
+            entity
+                .HasOne(wi => wi.Workspace)
+                .WithMany(w => w.WorkspaceItems)
+                .HasForeignKey(wi => wi.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItem と Owner(User) の多対一リレーションシップ
+            entity
+                .HasOne(wi => wi.Owner)
+                .WithMany()
+                .HasForeignKey(wi => wi.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WorkspaceItem と Assignee(User) の多対一リレーションシップ
+            entity
+                .HasOne(wi => wi.Assignee)
+                .WithMany()
+                .HasForeignKey(wi => wi.AssigneeId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // WorkspaceItem と Committer(User) の多対一リレーションシップ
+            entity
+                .HasOne(wi => wi.Committer)
+                .WithMany()
+                .HasForeignKey(wi => wi.CommitterId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // インデックス
+            entity.HasIndex(wi => new { wi.WorkspaceId, wi.Code }).IsUnique();
+            entity.HasIndex(wi => wi.OwnerId);
+            entity.HasIndex(wi => wi.AssigneeId);
+            entity.HasIndex(wi => wi.CommitterId);
+            entity.HasIndex(wi => wi.DueDate);
+            entity.HasIndex(wi => wi.Priority);
+            entity.HasIndex(wi => wi.IsArchived);
+            entity.HasIndex(wi => wi.IsDraft);
         });
     }
 }

@@ -74,4 +74,9 @@ public class Workspace
     /// このワークスペースに参加しているユーザー
     /// </summary>
     public ICollection<WorkspaceUser> WorkspaceUsers { get; set; } = new List<WorkspaceUser>();
+
+    /// <summary>
+    /// このワークスペースに属するアイテム
+    /// </summary>
+    public ICollection<WorkspaceItem> WorkspaceItems { get; set; } = new List<WorkspaceItem>();
 }
