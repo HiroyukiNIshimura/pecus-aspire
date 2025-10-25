@@ -32,7 +32,7 @@ public class SpecsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetOpenApiSchema(string documentName = "v1")
+    public IActionResult GetOpenApiSchema(string documentName = "v1")
     {
         try
         {
@@ -82,7 +82,7 @@ public class SpecsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetOpenApiSchemaYaml(string documentName = "v1")
+    public IActionResult GetOpenApiSchemaYaml(string documentName = "v1")
     {
         try
         {
