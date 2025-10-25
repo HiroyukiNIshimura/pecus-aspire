@@ -122,7 +122,7 @@ public async Task<User> CreateUserAsync(string username, string email, ...)
 [HttpGet]
 public async Task<Results<...>> GetItems([FromQuery] int page = 1)
 {
-    const int pageSize = 20;  // Server-defined
+    var pageSize = _config.Pagination.DefaultPageSize;  // Server-defined
     var (items, totalCount) = await _service.GetItemsAsync(page, pageSize);
 }
 

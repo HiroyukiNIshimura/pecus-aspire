@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.WorkspaceItem;
@@ -17,14 +18,17 @@ public class WorkspaceItemController : ControllerBase
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly ILogger<WorkspaceItemController> _logger;
+    private readonly PecusConfig _config;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
-        ILogger<WorkspaceItemController> logger
+        ILogger<WorkspaceItemController> logger,
+        PecusConfig config
     )
     {
         _workspaceItemService = workspaceItemService;
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -260,7 +264,6 @@ public class WorkspaceItemController : ControllerBase
     > GetWorkspaceItems(
         int workspaceId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
         [FromQuery] bool? isDraft = null,
         [FromQuery] bool? isArchived = null,
         [FromQuery] int? assigneeId = null,
@@ -269,6 +272,7 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
+            var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
                 workspaceId,
                 page,
