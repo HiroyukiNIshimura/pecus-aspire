@@ -951,7 +951,7 @@ public class WorkspaceItemController : ControllerBase
             // ファイルを保存するパスを生成
             var uploadsDir = Path.Combine(
                 Directory.GetCurrentDirectory(),
-                "uploads",
+                _config.FileUpload.StoragePath,
                 "workspaces",
                 workspaceId.ToString(),
                 "items",
@@ -1022,10 +1022,7 @@ public class WorkspaceItemController : ControllerBase
                 UploadedByUsername = attachment.UploadedByUser?.Username,
             };
 
-            return TypedResults.Created(
-                $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/{attachment.Id}",
-                response
-            );
+            return TypedResults.Created(attachment.DownloadUrl, response);
         }
         catch (NotFoundException ex)
         {
