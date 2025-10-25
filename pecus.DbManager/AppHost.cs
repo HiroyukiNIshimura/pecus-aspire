@@ -33,32 +33,10 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<DbInitializer>());
 // ヘルスチェックの登録
 builder.Services.AddHealthChecks().AddCheck<DbInitializerHealthCheck>("DbInitializer", null);
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc(
-        "v1",
-        new Microsoft.OpenApi.Models.OpenApiInfo
-        {
-            Title = "Pecus Database Manager API",
-            Version = "v1",
-            Description = "データベースのマイグレーションとシードデータ管理用API",
-        }
-    );
-});
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Pecus Database Manager API v1");
-        options.RoutePrefix = string.Empty;
-    });
-
     // 開発環境専用: データベースリセットエンドポイント
     app.MapPost(
         "/reset-db",
@@ -76,8 +54,6 @@ if (app.Environment.IsDevelopment())
     );
 }
 
-app.UseHttpsRedirection();
-app.MapControllers();
 app.MapDefaultEndpoints();
 
 await app.RunAsync();
