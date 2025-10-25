@@ -143,23 +143,7 @@ public static class Extensions
     public static TBuilder AddSerilogLogging<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
-            .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithEnvironmentName()
-            .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
-            .WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
-            )
-            .WriteTo.File(
-                path: $"logs/{builder.Environment.ApplicationName}-.log",
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
-            )
-            .CreateLogger();
-
+        Pecus.ServiceDefaults.SerilogHelper.CreateLogger(builder.Environment.ApplicationName);
         builder.Services.AddSerilog(dispose: true);
 
         return builder;

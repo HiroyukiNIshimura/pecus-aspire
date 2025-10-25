@@ -17,5 +17,6 @@
     <ProjectReference Include="..\pecus.BackFire\pecus.BackFire.csproj" />
     <ProjectReference Include="..\pecus.WebApi\pecus.WebApi.csproj" />
     <ProjectReference Include="..\pecus.DbManager\pecus.DbManager.csproj" />
+    <ProjectReference Include="..\pecus.ServiceDefaults\pecus.ServiceDefaults.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 </Project>
