@@ -19,16 +19,25 @@ namespace Pecus.Controllers;
 public class WorkspaceItemController : ControllerBase
 {
     private readonly WorkspaceItemService _workspaceItemService;
+    private readonly WorkspaceItemAttachmentService _attachmentService;
+    private readonly WorkspaceItemPinService _pinService;
+    private readonly WorkspaceItemTagService _tagService;
     private readonly ILogger<WorkspaceItemController> _logger;
     private readonly PecusConfig _config;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
+        WorkspaceItemAttachmentService attachmentService,
+        WorkspaceItemPinService pinService,
+        WorkspaceItemTagService tagService,
         ILogger<WorkspaceItemController> logger,
         PecusConfig config
     )
     {
         _workspaceItemService = workspaceItemService;
+        _attachmentService = attachmentService;
+        _pinService = pinService;
+        _tagService = tagService;
         _logger = logger;
         _config = config;
     }
@@ -623,12 +632,15 @@ public class WorkspaceItemController : ControllerBase
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(httpContext.User);
 
             // タグを一括設定
-            var item = await _workspaceItemService.SetTagsToItemAsync(
+            var tags = await _tagService.SetTagsToItemAsync(
                 workspaceId,
                 itemId,
                 request.TagNames,
                 userId
             );
+
+            // 更新後のアイテムを取得
+            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
             // レスポンスを構築
             var response = new WorkspaceItemResponse
@@ -707,11 +719,10 @@ public class WorkspaceItemController : ControllerBase
                 );
             }
 
-            var item = await _workspaceItemService.AddPinToItemAsync(
-                workspaceId,
-                itemId,
-                userId.Value
-            );
+            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, userId.Value);
+
+            // 更新後のアイテムを取得
+            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
             var response = new WorkspaceItemResponse
             {
@@ -789,11 +800,10 @@ public class WorkspaceItemController : ControllerBase
                 );
             }
 
-            var item = await _workspaceItemService.RemovePinFromItemAsync(
-                workspaceId,
-                itemId,
-                userId.Value
-            );
+            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, userId.Value);
+
+            // 更新後のアイテムを取得
+            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
             var response = new WorkspaceItemResponse
             {
@@ -973,7 +983,7 @@ public class WorkspaceItemController : ControllerBase
             }
 
             // DBに保存（サムネイルパスも保存）
-            var attachment = await _workspaceItemService.AddAttachmentAsync(
+            var attachment = await _attachmentService.AddAttachmentAsync(
                 workspaceId,
                 itemId,
                 fileName,
@@ -1052,7 +1062,7 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
-            var attachments = await _workspaceItemService.GetAttachmentsAsync(workspaceId, itemId);
+            var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
 
             var response = attachments
                 .Select(a => new WorkspaceItemAttachmentResponse
@@ -1114,7 +1124,7 @@ public class WorkspaceItemController : ControllerBase
                 return TypedResults.Unauthorized();
             }
 
-            var attachment = await _workspaceItemService.DeleteAttachmentAsync(
+            var attachment = await _attachmentService.DeleteAttachmentAsync(
                 workspaceId,
                 itemId,
                 attachmentId,

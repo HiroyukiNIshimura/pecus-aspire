@@ -455,6 +455,52 @@ BackgroundJob.Enqueue<EmailTasks>(x =>
 
 **Testing**: Delete DB (via DbManager `/reset` endpoint) and restart to see changes.
 
+## Service Layer Best Practices
+
+### Code Size and Responsibility Distribution
+**Service classes exceeding 1000 lines should be reviewed for responsibility distribution**:
+
+**When to refactor**:
+- Service file exceeds 1000 lines of code
+- Service handles multiple unrelated concerns (e.g., CRUD + attachments + tags + PINs)
+- Methods can be grouped by clear responsibility boundaries
+
+**How to refactor**:
+1. **Identify responsibility groups**: Analyze methods and group by domain concern
+2. **Create specialized services**: Extract groups into dedicated service classes
+   - Example: `WorkspaceItemService` (630 lines) → split into:
+     - `WorkspaceItemService` (core CRUD, ~200 lines)
+     - `WorkspaceItemAttachmentService` (attachment management, ~180 lines)
+     - `WorkspaceItemPinService` (PIN management, ~150 lines)
+     - `WorkspaceItemTagService` (tag management, ~100 lines)
+3. **Update DI registration**: Register new services in `AppHost.cs` in dependency order
+4. **Update controllers**: Inject specialized services alongside main service
+5. **Verify build**: Run `dotnet build` to ensure no breaking changes
+
+**Benefits**:
+- Improved maintainability and testability
+- Clearer separation of concerns
+- Easier to navigate and understand codebase
+- Reduced merge conflicts in team development
+
+**Example**:
+```csharp
+// Before: Bloated service
+public class WorkspaceItemService  // 630 lines
+{
+    // CRUD methods
+    // Attachment methods
+    // PIN methods
+    // Tag methods
+}
+
+// After: Distributed responsibilities
+public class WorkspaceItemService  // ~200 lines - Core CRUD only
+public class WorkspaceItemAttachmentService  // ~180 lines
+public class WorkspaceItemPinService  // ~150 lines
+public class WorkspaceItemTagService  // ~100 lines
+```
+
 ## Anti-Patterns to Avoid
 - ❌ Direct service-to-service project references (use pecus.Libs for sharing)
 - ❌ Connection strings in service projects (use Aspire resource names: `"pecusdb"`, `"redis"`)
@@ -466,6 +512,7 @@ BackgroundJob.Enqueue<EmailTasks>(x =>
 - ❌ Skipping build verification after code changes (always run `dotnet build` to catch errors early)
 - ❌ Multiple table operations without explicit transactions (always wrap in `BeginTransactionAsync()`)
 - ❌ Adding table operations to existing methods without adding transaction wrapper (refactoring may introduce data inconsistency risks)
+- ❌ Service classes exceeding 1000 lines without responsibility distribution review
 
 ## Key Files Reference
 - **pecus.AppHost/AppHost.cs**: Service topology, infrastructure resources, startup order
