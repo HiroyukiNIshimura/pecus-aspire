@@ -11,10 +11,10 @@ This is a **microservices project orchestrated by .NET Aspire 9.0**, not a monol
 **Project Structure**:
 - **pecus.AppHost**: Aspire orchestration host - defines service topology, dependencies, and startup order
 - **pecus.WebApi**: Main REST API with JWT auth, Hangfire client, Swagger UI
-- **pecus.BackFire**: Hangfire background job server (worker process)
-- **pecus.DbManager**: Database migration manager - auto-migrates on startup, provides manual endpoints
-- **pecus.Libs**: Shared class library for DB models, Hangfire tasks, seed data
-- **pecus.ServiceDefaults**: Aspire service defaults (health checks, telemetry)
+- **pecus.BackFire**: Hangfire background job server (worker process) - executes email tasks and other background jobs
+- **pecus.DbManager**: Database migration manager - auto-migrates on startup via `DbInitializer`
+- **pecus.Libs**: Shared class library for DB models, Hangfire tasks, email services, seed data
+- **pecus.ServiceDefaults**: Aspire service defaults (Serilog, health checks, OpenTelemetry)
 
 **Infrastructure** (defined in `pecus.AppHost/AppHost.cs`):
 - **PostgreSQL**: `pecusdb` database with username/password parameters
@@ -41,9 +41,15 @@ This is a **microservices project orchestrated by .NET Aspire 9.0**, not a monol
 - `SeedDevelopmentDataAsync()`: Explicitly seed mock data only
 
 ### Background Jobs Architecture (Hangfire with Redis)
-**Shared Tasks** (`pecus.Libs/Hangfire/Tasks/HangfireTasks.cs`):
-- 8 task methods: LogMessage, LongRunningTask, ThrowError, ProcessBatch, SendEmail, GenerateReport, CleanupOldData, HealthCheck
-- Registered in DI as `AddScoped<HangfireTasks>()` in both WebApi and BackFire
+**Shared Tasks** (`pecus.Libs/Hangfire/Tasks/`):
+- `HangfireTasks.cs`: 8 general task methods (LogMessage, LongRunningTask, ThrowError, ProcessBatch, SendEmail, GenerateReport, CleanupOldData, HealthCheck)
+- `EmailTasks.cs`: Email-specific tasks using MailKit + RazorLight templates
+  - `SendSimpleEmailAsync`: Direct HTML/text email
+  - `SendTemplatedEmailAsync<TModel>`: Single recipient with Razor template
+  - `SendCustomTemplatedEmailAsync<TModel>`: Multiple recipients, attachments, custom headers
+  - `SendBulkTemplatedEmailAsync<TModel>`: Same content to multiple recipients
+  - `SendPersonalizedBulkEmailAsync<TModel>`: Different models per recipient
+- Registered in DI as `AddScoped<HangfireTasks>()` and `AddScoped<EmailTasks>()` in both WebApi and BackFire
 
 **Client** (pecus.WebApi):
 - Enqueues jobs via `BackgroundJob.Enqueue<HangfireTasks>(x => x.MethodName(...))`
@@ -57,25 +63,18 @@ This is a **microservices project orchestrated by .NET Aspire 9.0**, not a monol
 **CRITICAL**: Use type parameters in `BackgroundJob.Enqueue<T>()` for cross-project serialization. Lambda closures in loops require local variable copies.
 
 ### Database Migration Strategy (pecus.DbManager)
-**Auto-Migration on Startup** (`AppHost.cs`):
+**Auto-Migration on Startup** (`DbInitializer.cs`):
 ```csharp
-// Startup code in pecus.DbManager/AppHost.cs
-using (var scope = app.Services.CreateScope())
+// Startup code in pecus.DbManager/DbInitializer.cs (IHostedService)
+public async Task StartAsync(CancellationToken cancellationToken)
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.Database.MigrateAsync();  // Apply pending migrations
-
-    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-    await seeder.SeedAllAsync(app.Environment.IsDevelopment());  // Environment-aware seed
+    await _context.Database.MigrateAsync(cancellationToken);  // Apply pending migrations
+    await _seeder.SeedAllAsync(_environment.IsDevelopment());  // Environment-aware seed
 }
 ```
 
-**Manual Endpoints** (`Controllers/DatabaseController.cs`):
-- `POST /api/database/reset`: Drop + recreate + migrate + seed (DANGEROUS)
-- `POST /api/database/migrate`: Apply pending migrations + seed missing data
-- `GET /api/database/status`: Migration history, data statistics
-- `POST /api/database/seed?isDevelopment=true`: Manual seeding with environment override
-- `POST /api/database/seed/development`: Explicitly seed mock data only
+**Manual Endpoints** (`/reset-db` in AppHost.cs):
+- `POST /reset-db` (dev only): Drop + recreate + migrate + seed - endpoint in AppHost.cs, not controller
 
 **Entry Point**: File is named `AppHost.cs` (not `Program.cs`) for consistency with pecus.AppHost project structure.
 
@@ -148,14 +147,87 @@ for (int i = 0; i < items.Count; i++)
 - Manual override: `/api/database/seed?isDevelopment=true` forces dev seed in production
 
 ### 6. Migration File Location
-**EF Core migrations live in pecus.WebApi** (historical reasons - project started as monolith):
+**EF Core migrations live in pecus.DbManager** (moved from pecus.WebApi):
 ```bash
-cd pecus.WebApi
+cd pecus.DbManager
 dotnet ef migrations add MigrationName
-dotnet ef database update  # Dev only - use DbManager in production
+# Migration will auto-apply on next DbManager startup
 ```
 
-Despite migrations being in WebApi, pecus.DbManager and pecus.BackFire can execute them because they reference pecus.Libs which contains the DbContext.
+All services can execute migrations because they reference pecus.Libs which contains the DbContext.
+
+## Logging Architecture (Serilog)
+
+### Unified Logging with Serilog
+**All projects use Serilog** (migrated from NLog in WebApi):
+- Configuration in `pecus.ServiceDefaults/Extensions.cs` via `AddSerilogLogging()`
+- Console output: `[HH:mm:ss LEVEL] SourceContext: Message`
+- File output: `logs/{ApplicationName}-YYYYMMDD.log` (daily rotation, 7-day retention)
+- Enrichers: MachineName, EnvironmentName, ApplicationName
+
+### Environment-Specific Log Levels
+**Control EF Core SQL logging** in `appsettings.json` / `appsettings.Development.json`:
+```json
+// Production (appsettings.json) - Hide SQL
+"Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+
+// Development (appsettings.Development.json) - Show SQL
+"Microsoft.EntityFrameworkCore.Database.Command": "Information",
+"Microsoft.EntityFrameworkCore.Query": "Debug"
+```
+
+### Structured Logging Pattern
+```csharp
+// ✅ CORRECT - Structured logging
+_logger.LogInformation("User {UserId} logged in from {IpAddress}", userId, ipAddress);
+
+// ❌ WRONG - String interpolation
+_logger.LogInformation($"User {userId} logged in from {ipAddress}");
+```
+
+## Email System Architecture (MailKit + RazorLight)
+
+### Mail Infrastructure (`pecus.Libs/Mail/`)
+**Services**:
+- `IEmailService` / `EmailService`: MailKit SMTP implementation
+- `ITemplateService` / `RazorTemplateService`: Razor template rendering
+
+**Models**:
+- `EmailMessage`: To/Cc/Bcc, attachments, custom headers, priority
+- `EmailAttachment`: File data with MIME type
+- `EmailSettings`: SMTP config, from address, template path
+
+**Templates** (`pecus.Libs/Mail/Templates/`):
+- `*.html.cshtml`: HTML email templates
+- `*.text.cshtml`: Plain text fallback templates
+- `Models/`: Template model classes (e.g., `WelcomeEmailModel`)
+
+### Email Service Registration
+```csharp
+// In WebApi/BackFire AppHost.cs
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<EmailTasks>();
+```
+
+### Email Configuration (`appsettings.json`)
+```json
+{
+  "Email": {
+    "SmtpHost": "smtp.example.com",
+    "SmtpPort": 587,
+    "UseSsl": true,
+    "Username": "",
+    "Password": "",
+    "FromEmail": "noreply@example.com",
+    "FromName": "Pecus Application",
+    "TemplateRootPath": "Mail/Templates"
+  }
+}
+```
+
+**Development**: Use MailHog (`localhost:1025`) or Papercut-SMTP for local testing without real email sending.
 
 ## Development Workflow
 
@@ -182,10 +254,28 @@ dotnet run --project pecus.AppHost
 
 ### Adding a Migration
 ```bash
-cd pecus.WebApi
+cd pecus.DbManager
 dotnet ef migrations add MigrationName
 # Migration will auto-apply on next DbManager startup
 ```
+
+### Creating Email Templates
+1. **Create template files** in `pecus.Libs/Mail/Templates/`:
+   - `templatename.html.cshtml` (HTML version)
+   - `templatename.text.cshtml` (text fallback)
+2. **Create model class** in `pecus.Libs/Mail/Templates/Models/`:
+   ```csharp
+   public class TemplateNameModel
+   {
+       public string PropertyName { get; set; }
+   }
+   ```
+3. **Use `@model` directive** in templates:
+   ```cshtml
+   @model Pecus.Libs.Mail.Templates.Models.TemplateNameModel
+   <p>Hello @Model.PropertyName</p>
+   ```
+4. **Enqueue email job** from controller/service
 
 ### Testing Background Jobs
 1. Start application via `pecus.AppHost`
@@ -224,10 +314,42 @@ builder.Services.AddScoped<WorkspaceService>();     // Depends on Organization
 - Shared utilities → `pecus.Libs/` (e.g., `CodeGenerator.cs`, `JwtBearerUtil.cs`)
 
 ### Adding a Hangfire Task
-1. **Add method to `HangfireTasks.cs`** in pecus.Libs
+1. **Add method to appropriate task class** in pecus.Libs/Hangfire/Tasks/
+   - General tasks → `HangfireTasks.cs`
+   - Email tasks → `EmailTasks.cs`
 2. **Build solution** (ensures BackFire sees new task)
-3. **Enqueue from WebApi**: `BackgroundJob.Enqueue<HangfireTasks>(x => x.NewTask(...))`
+3. **Enqueue from WebApi**: `BackgroundJob.Enqueue<EmailTasks>(x => x.SendTemplatedEmailAsync(...))`
 4. **No changes needed in BackFire** (auto-discovers via DI)
+
+### Sending Emails via Hangfire
+```csharp
+// Simple templated email
+BackgroundJob.Enqueue<EmailTasks>(x =>
+    x.SendTemplatedEmailAsync(
+        "user@example.com",
+        "Welcome!",
+        "welcome",
+        new WelcomeEmailModel {
+            UserName = "John",
+            Email = "user@example.com",
+            OrganizationName = "Acme Corp",
+            LoginUrl = "https://app.example.com"
+        }
+    )
+);
+
+// Bulk email with attachments
+var message = new EmailMessage {
+    To = new List<string> { "user1@example.com", "user2@example.com" },
+    Subject = "Monthly Report",
+    Attachments = new List<EmailAttachment> {
+        new EmailAttachment("report.pdf", pdfBytes, "application/pdf")
+    }
+};
+BackgroundJob.Enqueue<EmailTasks>(x =>
+    x.SendCustomTemplatedEmailAsync(message, "monthly-report", reportModel)
+);
+```
 
 ### Adding a Database Entity
 1. **Entity**: Create in `pecus.Libs/DB/Models/`
@@ -257,10 +379,14 @@ builder.Services.AddScoped<WorkspaceService>();     // Depends on Organization
 - **pecus.Libs/DB/ApplicationDbContext.cs**: Shared DbContext for all services
 - **pecus.Libs/DB/Seed/DatabaseSeeder.cs**: Environment-aware seed data management
 - **pecus.Libs/Hangfire/Tasks/HangfireTasks.cs**: Background job implementations
+- **pecus.Libs/Hangfire/Tasks/EmailTasks.cs**: Email-specific background jobs
+- **pecus.Libs/Mail/Services/EmailService.cs**: MailKit email sending implementation
+- **pecus.Libs/Mail/Services/RazorTemplateService.cs**: Razor template rendering
+- **pecus.ServiceDefaults/Extensions.cs**: Serilog configuration, service defaults
 - **pecus.WebApi/AppHost.cs**: WebApi service configuration (JWT, Hangfire client, Swagger)
 - **pecus.BackFire/AppHost.cs**: Hangfire server configuration
 - **pecus.DbManager/AppHost.cs**: Auto-migration on startup + manual endpoints
-- **pecus.DbManager/Controllers/DatabaseController.cs**: Migration/seed API endpoints
+- **pecus.DbManager/DbInitializer.cs**: IHostedService for database initialization
 - **pecus.WebApi/.github/copilot-instructions.md**: Detailed WebApi patterns (request DTOs, auth, exceptions)
 
 ## Project-Specific Conventions
@@ -269,7 +395,9 @@ builder.Services.AddScoped<WorkspaceService>();     // Depends on Organization
 3. **All services reference pecus.Libs**, never each other
 4. **JWT auth in WebApi only** (BackFire/DbManager are internal services)
 5. **Seed data environment-aware**: Master data always, mock data only in dev
-6. **Migrations in pecus.WebApi**, executed by pecus.DbManager
+6. **Migrations in pecus.DbManager**, executed by DbInitializer on startup
+7. **Logging with Serilog**: Structured logging, environment-specific EF Core SQL output
+8. **Email templates in pecus.Libs/Mail/Templates**: HTML + Text versions with Razor syntax
 
 ## Questions to Clarify
 When implementing features across services:
