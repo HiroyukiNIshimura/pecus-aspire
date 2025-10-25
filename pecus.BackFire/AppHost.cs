@@ -1,14 +1,24 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Configuration;
+using Pecus.Libs.Mail.Services;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddRedisClient("redis");
 
+// EmailSettings設定
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+
+// メール関連サービスの登録
+builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();
+builder.Services.AddScoped<EmailTasks>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
