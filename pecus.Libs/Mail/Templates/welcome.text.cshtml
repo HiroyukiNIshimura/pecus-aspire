@@ -1,0 +1,35 @@
+@model Pecus.Libs.Mail.Templates.Models.WelcomeEmailModel
+========================================
+ようこそ、@Model.UserName さん!
+========================================
+
+こんにちは、@Model.UserName さん
+
+@Model.OrganizationName へのご登録ありがとうございます。
+アカウントが正常に作成されました。
+
+@if (!string.IsNullOrEmpty(Model.WorkspaceName))
+{
+@:あなたは @Model.WorkspaceName ワークスペースに招待されています。
+@:
+}
+
+----------------------------------------
+アカウント情報
+----------------------------------------
+
+ユーザー名: @Model.UserName
+メールアドレス: @Model.Email
+組織: @Model.OrganizationName
+登録日: @Model.CreatedAt.ToString("yyyy年MM月dd日")
+
+今すぐログイン: @Model.LoginUrl
+
+----------------------------------------
+
+このメールに心当たりがない場合は、このメールを無視していただいて構いません。
+
+========================================
+© @DateTime.UtcNow.Year @Model.OrganizationName. All rights reserved.
+このメールは自動送信されています。返信しないでください。
+========================================

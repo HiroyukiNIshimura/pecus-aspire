@@ -1,0 +1,114 @@
+@model Pecus.Libs.Mail.Templates.Models.WelcomeEmailModel
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ようこそ!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .content h2 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 20px 0;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ようこそ、@Model.UserName さん!</h1>
+        </div>
+
+        <div class="content">
+            <h2>アカウント登録が完了しました</h2>
+
+            <p>こんにちは、@Model.UserName さん</p>
+
+            <p>@Model.OrganizationName へのご登録ありがとうございます。アカウントが正常に作成されました。</p>
+
+            @if (!string.IsNullOrEmpty(Model.WorkspaceName))
+            {
+                <p>あなたは <strong>@Model.WorkspaceName</strong> ワークスペースに招待されています。</p>
+            }
+
+            <div class="divider"></div>
+
+            <p><strong>アカウント情報:</strong></p>
+            <ul>
+                <li>ユーザー名: @Model.UserName</li>
+                <li>メールアドレス: @Model.Email</li>
+                <li>組織: @Model.OrganizationName</li>
+                <li>登録日: @Model.CreatedAt.ToString("yyyy年MM月dd日")</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a href="@Model.LoginUrl" class="button">今すぐログイン</a>
+            </div>
+
+            <div class="divider"></div>
+
+            <p style="font-size: 14px; color: #666;">
+                このメールに心当たりがない場合は、このメールを無視していただいて構いません。
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; @DateTime.UtcNow.Year @Model.OrganizationName. All rights reserved.</p>
+            <p>このメールは自動送信されています。返信しないでください。</p>
+        </div>
+    </div>
+</body>
+</html>
