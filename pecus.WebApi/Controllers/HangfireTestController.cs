@@ -15,10 +15,18 @@ namespace Pecus.Controllers;
 public class HangfireTestController : ControllerBase
 {
     private readonly ILogger<HangfireTestController> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly IRecurringJobManager _recurringJobManager;
 
-    public HangfireTestController(ILogger<HangfireTestController> logger)
+    public HangfireTestController(
+        ILogger<HangfireTestController> logger,
+        IBackgroundJobClient backgroundJobClient,
+        IRecurringJobManager recurringJobManager
+    )
     {
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
+        _recurringJobManager = recurringJobManager;
     }
 
     /// <summary>
@@ -29,7 +37,7 @@ public class HangfireTestController : ControllerBase
     [HttpPost("fire-and-forget")]
     public IActionResult FireAndForget([FromQuery] string message = "Hello from Hangfire!")
     {
-        var jobId = BackgroundJob.Enqueue<HangfireTasks>(x => x.LogMessage(message));
+        var jobId = _backgroundJobClient.Enqueue<HangfireTasks>(x => x.LogMessage(message));
         return Ok(
             new
             {
@@ -52,7 +60,7 @@ public class HangfireTestController : ControllerBase
         [FromQuery] int delaySeconds = 10
     )
     {
-        var jobId = BackgroundJob.Schedule<HangfireTasks>(
+        var jobId = _backgroundJobClient.Schedule<HangfireTasks>(
             x => x.LogMessage(message),
             TimeSpan.FromSeconds(delaySeconds)
         );
@@ -78,8 +86,10 @@ public class HangfireTestController : ControllerBase
         [FromQuery] string childMessage = "Child job"
     )
     {
-        var parentJobId = BackgroundJob.Enqueue<HangfireTasks>(x => x.LogMessage(parentMessage));
-        var childJobId = BackgroundJob.ContinueJobWith<HangfireTasks>(
+        var parentJobId = _backgroundJobClient.Enqueue<HangfireTasks>(x =>
+            x.LogMessage(parentMessage)
+        );
+        var childJobId = _backgroundJobClient.ContinueJobWith<HangfireTasks>(
             parentJobId,
             x => x.LogMessage(childMessage)
         );
@@ -106,7 +116,7 @@ public class HangfireTestController : ControllerBase
     )
     {
         var recurringJobId = $"test-recurring-{Guid.NewGuid():N}";
-        RecurringJob.AddOrUpdate<HangfireTasks>(
+        _recurringJobManager.AddOrUpdate<HangfireTasks>(
             recurringJobId,
             x => x.LogMessage(message),
             cronExpression
@@ -128,7 +138,7 @@ public class HangfireTestController : ControllerBase
     [HttpDelete("recurring/{recurringJobId}")]
     public IActionResult DeleteRecurring(string recurringJobId)
     {
-        RecurringJob.RemoveIfExists(recurringJobId);
+        _recurringJobManager.RemoveIfExists(recurringJobId);
         return Ok(new { Message = $"Recurring job '{recurringJobId}' removed" });
     }
 
@@ -139,7 +149,7 @@ public class HangfireTestController : ControllerBase
     [HttpDelete("failed/{jobId}")]
     public IActionResult DeleteFailedJob(string jobId)
     {
-        var deleted = BackgroundJob.Delete(jobId);
+        var deleted = _backgroundJobClient.Delete(jobId);
         if (deleted)
         {
             return Ok(new { Message = $"Failed job '{jobId}' deleted successfully" });
@@ -155,7 +165,9 @@ public class HangfireTestController : ControllerBase
     [HttpPost("long-running")]
     public IActionResult LongRunning([FromQuery] int durationSeconds = 30)
     {
-        var jobId = BackgroundJob.Enqueue<HangfireTasks>(x => x.LongRunningTask(durationSeconds));
+        var jobId = _backgroundJobClient.Enqueue<HangfireTasks>(x =>
+            x.LongRunningTask(durationSeconds)
+        );
         return Ok(
             new
             {
@@ -173,7 +185,7 @@ public class HangfireTestController : ControllerBase
     [HttpPost("error")]
     public IActionResult Error([FromQuery] string errorMessage = "Test error")
     {
-        var jobId = BackgroundJob.Enqueue<HangfireTasks>(x => x.ThrowError(errorMessage));
+        var jobId = _backgroundJobClient.Enqueue<HangfireTasks>(x => x.ThrowError(errorMessage));
         return Ok(new { JobId = jobId, Message = "Error job enqueued" });
     }
 
@@ -189,7 +201,7 @@ public class HangfireTestController : ControllerBase
         for (int i = 0; i < count; i++)
         {
             var index = i; // ローカル変数にコピー
-            var jobId = BackgroundJob.Enqueue<HangfireTasks>(x =>
+            var jobId = _backgroundJobClient.Enqueue<HangfireTasks>(x =>
                 x.LogMessage($"Batch job {index + 1}/{count}")
             );
             jobIds.Add(jobId);

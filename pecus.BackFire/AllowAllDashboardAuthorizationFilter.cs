@@ -1,6 +1,6 @@
 using Hangfire.Dashboard;
 
-namespace Pecus.Filters;
+namespace Pecus.BackFire;
 
 /// <summary>
 /// Hangfireダッシュボードへのアクセスを全て許可するフィルター（開発環境専用）

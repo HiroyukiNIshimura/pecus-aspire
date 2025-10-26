@@ -52,24 +52,18 @@ builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<HangfireTasks>();
 builder.Services.AddScoped<ImageTasks>();
 
-// Redisクライアントの設定（Aspireから取得）
-builder.AddRedisClient("redis");
-
 // Hangfireの設定
 builder.Services.AddHangfire(
     (serviceProvider, configuration) =>
     {
-        var redisConnection = serviceProvider.GetRequiredService<IConnectionMultiplexer>();
+        var redis = builder.Configuration.GetConnectionString("redis");
         configuration
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UseRedisStorage(redisConnection);
+            .UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
     }
 );
-
-// Hangfireサーバーの追加
-builder.Services.AddHangfireServer();
 
 builder
     .Services.AddAuthentication(options =>
@@ -179,18 +173,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Hangfireダッシュボード（開発環境のみ）
-if (app.Environment.IsDevelopment())
-{
-    app.UseHangfireDashboard(
-        "/hangfire",
-        new DashboardOptions
-        {
-            Authorization = new[] { new AllowAllDashboardAuthorizationFilter() },
-        }
-    );
-}
 
 app.MapControllers();
 app.MapDefaultEndpoints();

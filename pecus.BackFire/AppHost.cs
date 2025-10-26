@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using Pecus.BackFire;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Configuration;
@@ -29,12 +30,25 @@ builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddHangfire(
     (serviceProvider, config) =>
     {
-        var redis = serviceProvider.GetRequiredService<IConnectionMultiplexer>();
-        config.UseRedisStorage(redis);
+        var redis = builder.Configuration.GetConnectionString("redis");
+        config.UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
     }
 );
 
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();
+
+// Hangfireダッシュボード（開発環境のみ）
+if (app.Environment.IsDevelopment())
+{
+    app.UseHangfireDashboard(
+        "/hangfire",
+        new DashboardOptions
+        {
+            Authorization = new[] { new AllowAllDashboardAuthorizationFilter() },
+        }
+    );
+}
+
 app.Run();
