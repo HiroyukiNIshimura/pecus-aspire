@@ -54,25 +54,10 @@ public class WorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!userId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ログインユーザーの情報を取得して組織IDを取得
-            var user = await _userService.GetUserByIdAsync(userId.Value);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
                 return TypedResults.NotFound(
@@ -314,11 +299,7 @@ public class WorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, userId);
 
@@ -433,11 +414,7 @@ public class WorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var result = await _workspaceService.DeactivateWorkspaceAsync(id, userId);
             if (!result)
@@ -480,11 +457,7 @@ public class WorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var result = await _workspaceService.ActivateWorkspaceAsync(id, userId);
             if (!result)
@@ -533,11 +506,7 @@ public class WorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
                 id,

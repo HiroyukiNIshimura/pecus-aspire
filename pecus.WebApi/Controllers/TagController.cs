@@ -43,28 +43,9 @@ public class TagController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? createdByUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                createdByUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var createdByUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            if (!createdByUserId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
-
-            var tag = await _tagService.CreateTagAsync(
-                organizationId,
-                request,
-                createdByUserId.Value
-            );
+            var tag = await _tagService.CreateTagAsync(organizationId, request, createdByUserId);
 
             var response = new TagResponse
             {

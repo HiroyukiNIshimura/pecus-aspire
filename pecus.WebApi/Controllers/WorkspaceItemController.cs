@@ -139,34 +139,19 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? ownerId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                ownerId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!ownerId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
+            var ownerId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var item = await _workspaceItemService.CreateWorkspaceItemAsync(
                 workspaceId,
                 request,
-                ownerId.Value
+                ownerId
             );
 
             var response = new WorkspaceItemResponse
             {
                 Success = true,
                 Message = "ワークスペースアイテムを作成しました。",
-                WorkspaceItem = BuildItemDetailResponse(item, ownerId.Value),
+                WorkspaceItem = BuildItemDetailResponse(item, ownerId),
             };
 
             return TypedResults.Ok(response);
@@ -353,35 +338,20 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? currentUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!currentUserId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var item = await _workspaceItemService.UpdateWorkspaceItemAsync(
                 workspaceId,
                 itemId,
                 request,
-                currentUserId.Value
+                currentUserId
             );
 
             var response = new WorkspaceItemResponse
             {
                 Success = true,
                 Message = "ワークスペースアイテムを更新しました。",
-                WorkspaceItem = BuildItemDetailResponse(item, currentUserId.Value),
+                WorkspaceItem = BuildItemDetailResponse(item, currentUserId),
             };
 
             return TypedResults.Ok(response);
@@ -441,35 +411,20 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? currentUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!currentUserId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var item = await _workspaceItemService.UpdateWorkspaceItemStatusAsync(
                 workspaceId,
                 itemId,
                 request,
-                currentUserId.Value
+                currentUserId
             );
 
             var response = new WorkspaceItemResponse
             {
                 Success = true,
                 Message = "ワークスペースアイテムのステータスを更新しました。",
-                WorkspaceItem = BuildItemDetailResponse(item, currentUserId.Value),
+                WorkspaceItem = BuildItemDetailResponse(item, currentUserId),
             };
 
             return TypedResults.Ok(response);
@@ -525,27 +480,12 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? currentUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!currentUserId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             await _workspaceItemService.DeleteWorkspaceItemAsync(
                 workspaceId,
                 itemId,
-                currentUserId.Value
+                currentUserId
             );
 
             var response = new SuccessResponse
@@ -617,18 +557,7 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
-            // 認証チェック
-            if (!httpContext.User.Identity?.IsAuthenticated ?? true)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status401Unauthorized,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
-
+            // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(httpContext.User);
 
             // タグを一括設定
@@ -702,24 +631,9 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            if (!userId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
-
-            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, userId.Value);
+            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, userId);
 
             // 更新後のアイテムを取得
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -728,7 +642,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "PINを追加しました。",
-                WorkspaceItem = BuildItemDetailResponse(item, userId.Value),
+                WorkspaceItem = BuildItemDetailResponse(item, userId),
             };
 
             return TypedResults.Ok(response);
@@ -783,24 +697,9 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            if (!userId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "認証が必要です。",
-                    }
-                );
-            }
-
-            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, userId.Value);
+            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, userId);
 
             // 更新後のアイテムを取得
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -809,7 +708,7 @@ public class WorkspaceItemController : ControllerBase
             {
                 Success = true,
                 Message = "PINを削除しました。",
-                WorkspaceItem = BuildItemDetailResponse(item, userId.Value),
+                WorkspaceItem = BuildItemDetailResponse(item, userId),
             };
 
             return TypedResults.Ok(response);
@@ -862,26 +761,17 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!userId.HasValue)
-            {
-                return TypedResults.Unauthorized();
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
-                userId.Value,
+                userId,
                 page,
                 pageSize
             );
 
             var itemResponses = items
-                .Select(item => BuildItemDetailResponse(item, userId.Value))
+                .Select(item => BuildItemDetailResponse(item, userId))
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(
@@ -926,16 +816,7 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!userId.HasValue)
-            {
-                return TypedResults.Unauthorized();
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             if (file == null || file.Length == 0)
             {
@@ -993,7 +874,7 @@ public class WorkspaceItemController : ControllerBase
                 downloadUrl,
                 thumbnailMediumPath,
                 thumbnailSmallPath,
-                userId.Value
+                userId
             );
 
             // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
@@ -1110,22 +991,13 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
-
-            if (!userId.HasValue)
-            {
-                return TypedResults.Unauthorized();
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var attachment = await _attachmentService.DeleteAttachmentAsync(
                 workspaceId,
                 itemId,
                 attachmentId,
-                userId.Value
+                userId
             );
 
             // 物理ファイルを削除

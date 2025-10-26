@@ -1,9 +1,9 @@
-using Microsoft.IdentityModel.Tokens;
-using Pecus.Libs.DB.Models;
-using Pecus.Models.Config;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 
 namespace Pecus.Libs
 {
@@ -159,12 +159,20 @@ namespace Pecus.Libs
         /// </summary>
         /// <param name="principal">ClaimsPrincipal（HttpContext.Userなど）</param>
         /// <returns>ユーザーID</returns>
-        /// <exception cref="InvalidOperationException">ユーザーIDクレームが見つからない場合</exception>
+        /// <exception cref="InvalidOperationException">認証されていない場合、またはユーザーIDクレームが見つからない場合</exception>
         public static int GetUserIdFromPrincipal(ClaimsPrincipal principal)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
+            }
+
+            // 認証チェック（認証フィルターで既にチェックされているはずなので、ここで失敗するのは実装ミス）
+            if (principal.Identity?.IsAuthenticated != true)
+            {
+                throw new InvalidOperationException(
+                    "ユーザーが認証されていません。認証が必要ないエンドポイントでGetUserIdFromPrincipalを呼び出した可能性があります。"
+                );
             }
 
             // userIdクレームを取得

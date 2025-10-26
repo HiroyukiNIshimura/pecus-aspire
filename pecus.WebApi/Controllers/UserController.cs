@@ -322,11 +322,7 @@ public class UserController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            int? userId = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            }
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var user = await _userService.UpdateUserAsync(id, request, userId);
 
