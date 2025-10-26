@@ -18,14 +18,14 @@ namespace Pecus.Controllers.Backend;
 [Route("api/backend/permissions")]
 [Produces("application/json")]
 [Authorize(Roles = "Backend")]
-public class PermissionController : ControllerBase
+public class BackendPermissionController : ControllerBase
 {
     private readonly PermissionService _permissionService;
-    private readonly ILogger<PermissionController> _logger;
+    private readonly ILogger<BackendPermissionController> _logger;
 
-    public PermissionController(
+    public BackendPermissionController(
         PermissionService permissionService,
-        ILogger<PermissionController> logger
+        ILogger<BackendPermissionController> logger
     )
     {
         _permissionService = permissionService;

@@ -19,15 +19,15 @@ namespace Pecus.Controllers.Backend;
 [Route("api/backend/organizations")]
 [Produces("application/json")]
 [Authorize(Roles = "Backend")]
-public class OrganizationController : ControllerBase
+public class BackendOrganizationController : ControllerBase
 {
     private readonly OrganizationService _organizationService;
-    private readonly ILogger<OrganizationController> _logger;
+    private readonly ILogger<BackendOrganizationController> _logger;
     private readonly PecusConfig _config;
 
-    public OrganizationController(
+    public BackendOrganizationController(
         OrganizationService organizationService,
-        ILogger<OrganizationController> logger,
+        ILogger<BackendOrganizationController> logger,
         PecusConfig config
     )
     {
@@ -304,19 +304,24 @@ public class OrganizationController : ControllerBase
     }
 
     /// <summary>
-    /// 組織を無効化
+    /// 組織のアクティブ状態を設定
     /// </summary>
-    [HttpPatch("{id}/deactivate")]
+    /// <param name="id">組織ID</param>
+    /// <param name="request">アクティブ状態設定リクエスト</param>
+    [HttpPut("{id}/active-status")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeactivateOrganization(int id)
+    > SetOrganizationActiveStatus(int id, [FromBody] SetActiveStatusRequest request)
     {
         try
         {
-            var result = await _organizationService.DeactivateOrganizationAsync(id);
+            var result = await _organizationService.SetOrganizationActiveStatusAsync(
+                id,
+                request.IsActive
+            );
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -328,66 +333,30 @@ public class OrganizationController : ControllerBase
                 );
             }
 
+            var message = request.IsActive ? "組織を有効化しました。" : "組織を無効化しました。";
             return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "組織を無効化しました。",
-                }
+                new SuccessResponse { StatusCode = StatusCodes.Status200OK, Message = message }
             );
         }
         catch (Exception ex)
         {
             _logger.LogError(
                 ex,
-                "組織無効化中にエラーが発生しました。OrganizationId: {OrganizationId}",
+                "組織アクティブ状態設定中にエラーが発生しました。OrganizationId: {OrganizationId}",
                 id
             );
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+}
 
+/// <summary>
+/// アクティブ状態設定リクエスト
+/// </summary>
+public class SetActiveStatusRequest
+{
     /// <summary>
-    /// 組織を有効化
+    /// アクティブ状態（true: 有効, false: 無効）
     /// </summary>
-    [HttpPatch("{id}/activate")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > ActivateOrganization(int id)
-    {
-        try
-        {
-            var result = await _organizationService.ActivateOrganizationAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "組織が見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "組織を有効化しました。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "組織有効化中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
+    public required bool IsActive { get; set; }
 }

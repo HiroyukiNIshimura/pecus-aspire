@@ -12,14 +12,14 @@ namespace Pecus.Controllers.Backend;
 [Route("api/backend/hangfire-test")]
 [Produces("application/json")]
 [Authorize(Roles = "Backend")]
-public class HangfireTestController : ControllerBase
+public class BackendHangfireTestController : ControllerBase
 {
-    private readonly ILogger<HangfireTestController> _logger;
+    private readonly ILogger<BackendHangfireTestController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly IRecurringJobManager _recurringJobManager;
 
-    public HangfireTestController(
-        ILogger<HangfireTestController> logger,
+    public BackendHangfireTestController(
+        ILogger<BackendHangfireTestController> logger,
         IBackgroundJobClient backgroundJobClient,
         IRecurringJobManager recurringJobManager
     )

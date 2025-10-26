@@ -18,12 +18,12 @@ namespace Pecus.Controllers.Backend;
 [Route("api/backend/roles")]
 [Produces("application/json")]
 [Authorize(Roles = "Backend")]
-public class RoleController : ControllerBase
+public class BackendRoleController : ControllerBase
 {
     private readonly RoleService _roleService;
-    private readonly ILogger<RoleController> _logger;
+    private readonly ILogger<BackendRoleController> _logger;
 
-    public RoleController(RoleService roleService, ILogger<RoleController> logger)
+    public BackendRoleController(RoleService roleService, ILogger<BackendRoleController> logger)
     {
         _roleService = roleService;
         _logger = logger;

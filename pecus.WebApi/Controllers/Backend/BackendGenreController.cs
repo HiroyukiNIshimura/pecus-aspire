@@ -17,16 +17,16 @@ namespace Pecus.Controllers.Backend;
 [ApiController]
 [Route("api/backend/genres")]
 [Authorize(Roles = "Backend")]
-public class GenreController : ControllerBase
+public class BackendGenreController : ControllerBase
 {
     private readonly GenreService _genreService;
     private readonly PecusConfig _config;
-    private readonly ILogger<GenreController> _logger;
+    private readonly ILogger<BackendGenreController> _logger;
 
-    public GenreController(
+    public BackendGenreController(
         GenreService genreService,
         PecusConfig config,
-        ILogger<GenreController> logger
+        ILogger<BackendGenreController> logger
     )
     {
         _genreService = genreService;
@@ -230,11 +230,12 @@ public class GenreController : ControllerBase
     }
 
     /// <summary>
-    /// ジャンルを有効化
+    /// ジャンルのアクティブ状態を設定
     /// </summary>
     /// <param name="id">ジャンルID</param>
-    /// <returns>有効化結果</returns>
-    [HttpPatch("{id}/activate")]
+    /// <param name="request">アクティブ状態設定リクエスト</param>
+    /// <returns>設定結果</returns>
+    [HttpPut("{id}/active-status")]
     [ProducesResponseType(typeof(SuccessResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
@@ -246,15 +247,16 @@ public class GenreController : ControllerBase
             NotFound<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > ActivateGenre(int id)
+    > SetGenreActiveStatus(int id, [FromBody] SetActiveStatusRequest request)
     {
         try
         {
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            await _genreService.ActivateGenreAsync(id, userId);
-            return TypedResults.Ok(
-                new SuccessResponse { StatusCode = 200, Message = "ジャンルを有効化しました。" }
-            );
+            await _genreService.SetGenreActiveStatusAsync(id, request.IsActive, userId);
+            var message = request.IsActive
+                ? "ジャンルを有効化しました。"
+                : "ジャンルを無効化しました。";
+            return TypedResults.Ok(new SuccessResponse { StatusCode = 200, Message = message });
         }
         catch (NotFoundException ex)
         {
@@ -270,53 +272,11 @@ public class GenreController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ジャンルの有効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(500);
-        }
-    }
-
-    /// <summary>
-    /// ジャンルを無効化
-    /// </summary>
-    /// <param name="id">ジャンルID</param>
-    /// <returns>無効化結果</returns>
-    [HttpPatch("{id}/deactivate")]
-    [ProducesResponseType(typeof(SuccessResponse), 200)]
-    [ProducesResponseType(typeof(ErrorResponse), 400)]
-    [ProducesResponseType(typeof(ErrorResponse), 404)]
-    [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > DeactivateGenre(int id)
-    {
-        try
-        {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            await _genreService.DeactivateGenreAsync(id, userId);
-            return TypedResults.Ok(
-                new SuccessResponse { StatusCode = 200, Message = "ジャンルを無効化しました。" }
+            _logger.LogError(
+                ex,
+                "ジャンルのアクティブ状態設定中にエラーが発生しました。ID: {Id}",
+                id
             );
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse { StatusCode = 404, Message = ex.Message }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse { StatusCode = 400, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンルの無効化中にエラーが発生しました。ID: {Id}", id);
             return TypedResults.StatusCode(500);
         }
     }

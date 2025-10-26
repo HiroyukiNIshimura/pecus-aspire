@@ -12,12 +12,15 @@ namespace Pecus.Controllers.Backend;
 [Route("api/backend/specs")]
 [Produces("application/json")]
 [Authorize(Roles = "Backend")]
-public class SpecsController : ControllerBase
+public class BackendSpecsController : ControllerBase
 {
     private readonly ISwaggerProvider _swaggerProvider;
-    private readonly ILogger<SpecsController> _logger;
+    private readonly ILogger<BackendSpecsController> _logger;
 
-    public SpecsController(ISwaggerProvider swaggerProvider, ILogger<SpecsController> logger)
+    public BackendSpecsController(
+        ISwaggerProvider swaggerProvider,
+        ILogger<BackendSpecsController> logger
+    )
     {
         _swaggerProvider = swaggerProvider;
         _logger = logger;

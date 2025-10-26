@@ -218,9 +218,9 @@ public class GenreService
     }
 
     /// <summary>
-    /// ジャンルを有効化
+    /// ジャンルのアクティブ状態を設定
     /// </summary>
-    public async Task ActivateGenreAsync(int id, int? updatedByUserId = null)
+    public async Task SetGenreActiveStatusAsync(int id, bool isActive, int? updatedByUserId = null)
     {
         var genre = await _context.Genres.FindAsync(id);
         if (genre == null)
@@ -228,35 +228,13 @@ public class GenreService
             throw new NotFoundException("ジャンルが見つかりません。");
         }
 
-        if (genre.IsActive)
+        if (genre.IsActive == isActive)
         {
-            throw new InvalidOperationException("このジャンルは既に有効です。");
+            var statusText = isActive ? "有効" : "無効";
+            throw new InvalidOperationException($"このジャンルは既に{statusText}です。");
         }
 
-        genre.IsActive = true;
-        genre.UpdatedByUserId = updatedByUserId;
-        genre.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// ジャンルを無効化
-    /// </summary>
-    public async Task DeactivateGenreAsync(int id, int? updatedByUserId = null)
-    {
-        var genre = await _context.Genres.FindAsync(id);
-        if (genre == null)
-        {
-            throw new NotFoundException("ジャンルが見つかりません。");
-        }
-
-        if (!genre.IsActive)
-        {
-            throw new InvalidOperationException("このジャンルは既に無効です。");
-        }
-
-        genre.IsActive = false;
+        genre.IsActive = isActive;
         genre.UpdatedByUserId = updatedByUserId;
         genre.UpdatedAt = DateTime.UtcNow;
 

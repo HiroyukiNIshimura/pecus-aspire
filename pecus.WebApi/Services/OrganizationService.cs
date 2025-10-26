@@ -220,10 +220,11 @@ public class OrganizationService
     }
 
     /// <summary>
-    /// 組織を無効化
+    /// 組織のアクティブ状態を設定
     /// </summary>
-    public async Task<bool> DeactivateOrganizationAsync(
+    public async Task<bool> SetOrganizationActiveStatusAsync(
         int organizationId,
+        bool isActive,
         int? updatedByUserId = null
     )
     {
@@ -233,28 +234,7 @@ public class OrganizationService
             return false;
         }
 
-        organization.IsActive = false;
-        organization.UpdatedAt = DateTime.UtcNow;
-        organization.UpdatedByUserId = updatedByUserId;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    /// <summary>
-    /// 組織を有効化
-    /// </summary>
-    public async Task<bool> ActivateOrganizationAsync(
-        int organizationId,
-        int? updatedByUserId = null
-    )
-    {
-        var organization = await _context.Organizations.FindAsync(organizationId);
-        if (organization == null)
-        {
-            return false;
-        }
-
-        organization.IsActive = true;
+        organization.IsActive = isActive;
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
         await _context.SaveChangesAsync();
