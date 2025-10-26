@@ -53,14 +53,20 @@ This is a **microservices project orchestrated by .NET Aspire 9.0**, not a monol
 
 **Client** (pecus.WebApi):
 - Enqueues jobs via `BackgroundJob.Enqueue<HangfireTasks>(x => x.MethodName(...))`
+- **Uses DI-injected operation classes**: All task classes are registered in DI container and resolved automatically by Hangfire
 - Dashboard at `/hangfire` (dev only) with `AllowAllDashboardAuthorizationFilter`
 - Test endpoints in `Controllers/HangfireTestController.cs`
 
 **Server** (pecus.BackFire):
 - Executes jobs from Redis queue
+- **Uses DI-injected operation classes**: Task classes are resolved from DI container during job execution
 - No controllers, just `AddHangfireServer()` + task registration
 
-**CRITICAL**: Use type parameters in `BackgroundJob.Enqueue<T>()` for cross-project serialization. Lambda closures in loops require local variable copies.
+**CRITICAL**:
+- Use type parameters in `BackgroundJob.Enqueue<T>()` for cross-project serialization
+- **All task classes must be registered in DI** in both WebApi (client) and BackFire (server)
+- Lambda closures in loops require local variable copies
+- Hangfire automatically resolves dependencies (DbContext, services, etc.) for task classes via DI
 
 ### Database Migration Strategy (pecus.DbManager)
 **Auto-Migration on Startup** (`DbInitializer.cs`):
@@ -256,22 +262,89 @@ public async Task<TEntity> MethodAsync(...)
 // pecus.Libs/Hangfire/Tasks/HangfireTasks.cs
 public class HangfireTasks
 {
-    public void TaskMethod(string param) { /* implementation */ }
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<HangfireTasks> _logger;
+
+    // Constructor injection - dependencies resolved by DI
+    public HangfireTasks(ApplicationDbContext context, ILogger<HangfireTasks> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    public void TaskMethod(string param)
+    {
+        // Use injected dependencies
+        _logger.LogInformation("Processing task with param: {Param}", param);
+        // Database operations using _context
+    }
 }
 
 // pecus.WebApi controller
-BackgroundJob.Enqueue<HangfireTasks>(x => x.TaskMethod(localVariable));  // Type parameter required
+public class MyController : ControllerBase
+{
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
-// pecus.BackFire AppHost.cs
-builder.Services.AddScoped<HangfireTasks>();  // Must register in worker
+    public MyController(IBackgroundJobClient backgroundJobClient)
+    {
+        _backgroundJobClient = backgroundJobClient;
+    }
+
+    public IActionResult EnqueueTask()
+    {
+        _backgroundJobClient.Enqueue<HangfireTasks>(x => x.TaskMethod(localVariable));
+        return Ok();
+    }
+}
+
+// pecus.BackFire AppHost.cs - Must register task classes for DI resolution
+builder.Services.AddScoped<HangfireTasks>();
+// pecus.WebApi AppHost.cs - Must also register for client-side usage
+builder.Services.AddScoped<HangfireTasks>();
+```
+
+**DI Integration Benefits**:
+- **Automatic dependency resolution**: DbContext, ILogger, custom services automatically injected
+- **Consistent service lifecycle**: Same DI scope and lifetime management as regular services
+- **Configuration access**: `IConfiguration`, `IOptions<T>` available via constructor injection
+- **Cross-cutting concerns**: Automatic transaction management, logging, error handling
+
+**CRITICAL: Avoid Hangfire static methods** - Always use DI-injected services:
+```csharp
+// ✅ CORRECT - Use injected IBackgroundJobClient
+public class MyController : ControllerBase
+{
+    private readonly IBackgroundJobClient _backgroundJobClient;
+
+    public MyController(IBackgroundJobClient backgroundJobClient)
+    {
+        _backgroundJobClient = backgroundJobClient;
+    }
+
+    public IActionResult EnqueueJob()
+    {
+        _backgroundJobClient.Enqueue<HangfireTasks>(x => x.TaskMethod("param"));
+        return Ok();
+    }
+}
+
+// ❌ WRONG - Using static BackgroundJob class
+BackgroundJob.Enqueue<HangfireTasks>(x => x.TaskMethod("param"));
 ```
 
 **Loop Variable Capture**: Always copy to local variable before lambda:
 ```csharp
+foreach (var item in items)
+{
+    var localItem = item;  // Local copy required for closure
+    _backgroundJobClient.Enqueue<HangfireTasks>(x => x.ProcessItem(localItem));
+}
+
+// For loops also need local copies
 for (int i = 0; i < items.Count; i++)
 {
-    var item = items[i];  // Local copy required
-    BackgroundJob.Enqueue<HangfireTasks>(x => x.ProcessItem(item));
+    var localItem = items[i];  // Local copy required
+    _backgroundJobClient.Enqueue<HangfireTasks>(x => x.ProcessItem(localItem));
 }
 ```
 
@@ -476,38 +549,58 @@ builder.Services.AddScoped<WorkspaceService>();     // Depends on Organization
 1. **Add method to appropriate task class** in pecus.Libs/Hangfire/Tasks/
    - General tasks → `HangfireTasks.cs`
    - Email tasks → `EmailTasks.cs`
-2. **Build solution** (ensures BackFire sees new task)
-3. **Enqueue from WebApi**: `BackgroundJob.Enqueue<EmailTasks>(x => x.SendTemplatedEmailAsync(...))`
-4. **No changes needed in BackFire** (auto-discovers via DI)
+2. **Ensure DI registration** in both `pecus.WebApi/AppHost.cs` and `pecus.BackFire/AppHost.cs`
+3. **Build solution** (ensures BackFire sees new task)
+4. **Enqueue from WebApi**: `_backgroundJobClient.Enqueue<EmailTasks>(x => x.SendTemplatedEmailAsync(...))`
+5. **No additional changes needed in BackFire** (auto-discovers via DI)
 
 ### Sending Emails via Hangfire
 ```csharp
-// Simple templated email
-BackgroundJob.Enqueue<EmailTasks>(x =>
-    x.SendTemplatedEmailAsync(
-        "user@example.com",
-        "Welcome!",
-        "welcome",
-        new WelcomeEmailModel {
-            UserName = "John",
-            Email = "user@example.com",
-            OrganizationName = "Acme Corp",
-            LoginUrl = "https://app.example.com"
-        }
-    )
-);
+// In controller with DI-injected IBackgroundJobClient
+public class EmailController : ControllerBase
+{
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
-// Bulk email with attachments
-var message = new EmailMessage {
-    To = new List<string> { "user1@example.com", "user2@example.com" },
-    Subject = "Monthly Report",
-    Attachments = new List<EmailAttachment> {
-        new EmailAttachment("report.pdf", pdfBytes, "application/pdf")
+    public EmailController(IBackgroundJobClient backgroundJobClient)
+    {
+        _backgroundJobClient = backgroundJobClient;
     }
-};
-BackgroundJob.Enqueue<EmailTasks>(x =>
-    x.SendCustomTemplatedEmailAsync(message, "monthly-report", reportModel)
-);
+
+    public IActionResult SendWelcomeEmail()
+    {
+        // Simple templated email
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                "user@example.com",
+                "Welcome!",
+                "welcome",
+                new WelcomeEmailModel {
+                    UserName = "John",
+                    Email = "user@example.com",
+                    OrganizationName = "Acme Corp",
+                    LoginUrl = "https://app.example.com"
+                }
+            )
+        );
+        return Ok();
+    }
+
+    public IActionResult SendMonthlyReport()
+    {
+        // Bulk email with attachments
+        var message = new EmailMessage {
+            To = new List<string> { "user1@example.com", "user2@example.com" },
+            Subject = "Monthly Report",
+            Attachments = new List<EmailAttachment> {
+                new EmailAttachment("report.pdf", pdfBytes, "application/pdf")
+            }
+        };
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendCustomTemplatedEmailAsync(message, "monthly-report", reportModel)
+        );
+        return Ok();
+    }
+}
 ```
 
 ### Adding a Database Entity
@@ -574,6 +667,8 @@ public class WorkspaceItemTagService  // ~100 lines
 - ❌ Direct service-to-service project references (use pecus.Libs for sharing)
 - ❌ Connection strings in service projects (use Aspire resource names: `"pecusdb"`, `"redis"`)
 - ❌ Hangfire tasks in controller files (must be in pecus.Libs for BackFire to execute)
+- ❌ Hangfire tasks without DI registration (must register in both WebApi and BackFire AppHost.cs)
+- ❌ Using Hangfire static methods like `BackgroundJob.Enqueue()` (use DI-injected `IBackgroundJobClient`)
 - ❌ Lambda closures over loop variables without local copy (Hangfire serialization fails)
 - ❌ Manual `Database.Migrate()` in WebApi (use pecus.DbManager for migrations)
 - ❌ Hard-coded service URLs (Aspire handles service discovery)
