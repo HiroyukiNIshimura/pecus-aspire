@@ -43,6 +43,7 @@ builder.Services.AddScoped<WorkspaceItemService>();
 builder.Services.AddScoped<WorkspaceItemAttachmentService>();
 builder.Services.AddScoped<WorkspaceItemPinService>();
 builder.Services.AddScoped<WorkspaceItemTagService>();
+builder.Services.AddScoped<WorkspaceItemRelationService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();
