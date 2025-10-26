@@ -11,7 +11,7 @@ namespace Pecus.Controllers.Backend;
 [ApiController]
 [Route("api/backend/hangfire-test")]
 [Produces("application/json")]
-[AllowAnonymous]
+[Authorize(Roles = "Backend")]
 public class HangfireTestController : ControllerBase
 {
     private readonly ILogger<HangfireTestController> _logger;

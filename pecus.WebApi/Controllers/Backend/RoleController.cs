@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -16,6 +17,7 @@ namespace Pecus.Controllers.Backend;
 [ApiController]
 [Route("api/backend/roles")]
 [Produces("application/json")]
+[Authorize(Roles = "Backend")]
 public class RoleController : ControllerBase
 {
     private readonly RoleService _roleService;

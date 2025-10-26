@@ -18,6 +18,7 @@ namespace Pecus.Controllers.Backend;
 [ApiController]
 [Route("api/backend/organizations")]
 [Produces("application/json")]
+[Authorize(Roles = "Backend")]
 public class OrganizationController : ControllerBase
 {
     private readonly OrganizationService _organizationService;
@@ -33,72 +34,6 @@ public class OrganizationController : ControllerBase
         _organizationService = organizationService;
         _logger = logger;
         _config = config;
-    }
-
-    /// <summary>
-    /// 組織登録（管理者ユーザーも同時作成）
-    /// /// </summary>
-    [AllowAnonymous]
-    [HttpPost]
-    [ProducesResponseType(typeof(OrganizationWithAdminResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<OrganizationWithAdminResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > CreateOrganization([FromBody] CreateOrganizationRequest request)
-    {
-        try
-        {
-            // [AllowAnonymous]なので認証されていない場合はnull
-            int? userId =
-                User.Identity?.IsAuthenticated == true
-                    ? JwtBearerUtil.GetUserIdFromPrincipal(User)
-                    : null;
-
-            var (organization, adminUser) = await _organizationService.CreateOrganizationAsync(
-                request,
-                userId
-            );
-
-            var response = new OrganizationWithAdminResponse
-            {
-                Organization = new OrganizationResponse
-                {
-                    Id = organization.Id,
-                    Name = organization.Name,
-                    Code = organization.Code,
-                    Description = organization.Description,
-                    RepresentativeName = organization.RepresentativeName,
-                    PhoneNumber = organization.PhoneNumber,
-                    Email = organization.Email,
-                    CreatedAt = organization.CreatedAt,
-                },
-                AdminUser = new UserResponse
-                {
-                    Id = adminUser.Id,
-                    LoginId = adminUser.LoginId,
-                    Username = adminUser.Username,
-                    Email = adminUser.Email,
-                    CreatedAt = adminUser.CreatedAt,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "組織登録中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
     }
 
     /// <summary>

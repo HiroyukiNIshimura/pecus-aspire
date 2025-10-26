@@ -320,7 +320,7 @@ public async Task<TEntity> MethodAsync(...)
 ```
 
 **Examples of methods requiring transactions**:
-- `OrganizationService.CreateOrganizationAsync`: Creates Organization + User
+- `OrganizationService.CreateOrganizationWithUserAsync`: Creates Organization + User
 - `WorkspaceService.CreateWorkspaceAsync`: Creates Workspace + WorkspaceUser
 - `WorkspaceItemService.CreateWorkspaceItemAsync`: Creates WorkspaceItem + Tags + WorkspaceItemTags
 - `WorkspaceItemService.SetTagsToItemAsync`: Deletes old + creates new WorkspaceItemTags

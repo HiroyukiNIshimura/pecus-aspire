@@ -191,6 +191,16 @@ public class DatabaseSeeder
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added role: User with read permissions");
         }
+
+        var backendRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Backend");
+        if (backendRole == null)
+        {
+            backendRole = new Role { Name = "Backend", Description = "バックエンドシステム" };
+            _context.Roles.Add(backendRole);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Added role: Backend with all permissions");
+        }
     }
 
     /// <summary>

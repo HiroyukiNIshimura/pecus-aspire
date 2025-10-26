@@ -11,7 +11,7 @@ namespace Pecus.Controllers.Backend;
 [ApiController]
 [Route("api/backend/specs")]
 [Produces("application/json")]
-[AllowAnonymous]
+[Authorize(Roles = "Backend")]
 public class SpecsController : ControllerBase
 {
     private readonly ISwaggerProvider _swaggerProvider;

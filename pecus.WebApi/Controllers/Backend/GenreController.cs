@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -15,6 +16,7 @@ namespace Pecus.Controllers.Backend;
 /// </summary>
 [ApiController]
 [Route("api/backend/genres")]
+[Authorize(Roles = "Backend")]
 public class GenreController : ControllerBase
 {
     private readonly GenreService _genreService;

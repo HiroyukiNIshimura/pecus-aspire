@@ -253,9 +253,9 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザーを無効化
+    /// ユーザーのアクティブ状態を設定
     /// </summary>
-    public async Task<bool> DeactivateUserAsync(int userId, int updatedByUserId)
+    public async Task<bool> SetUserActiveStatusAsync(int userId, bool isActive, int updatedByUserId)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
@@ -263,7 +263,7 @@ public class UserService
             return false;
         }
 
-        user.IsActive = false;
+        user.IsActive = isActive;
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
         await _context.SaveChangesAsync();
@@ -402,5 +402,50 @@ public class UserService
         }
 
         return user.Roles.SelectMany(r => r.Permissions).Distinct().ToList();
+    }
+
+    /// <summary>
+    /// ユーザーのスキルを設定（洗い替え）
+    /// </summary>
+    public async Task<bool> SetUserSkillsAsync(int userId, List<int> skillIds, int updatedByUserId)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var user = await _context
+                .Users.Include(u => u.UserSkills)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // 既存のスキルをすべて削除
+            _context.UserSkills.RemoveRange(user.UserSkills);
+            await _context.SaveChangesAsync();
+
+            // 新しいスキルを追加
+            foreach (var skillId in skillIds)
+            {
+                var userSkill = new UserSkill
+                {
+                    UserId = userId,
+                    SkillId = skillId,
+                    AddedAt = DateTime.UtcNow,
+                    AddedByUserId = updatedByUserId,
+                };
+                _context.UserSkills.Add(userSkill);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

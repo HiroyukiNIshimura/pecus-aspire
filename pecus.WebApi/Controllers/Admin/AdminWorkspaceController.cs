@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -17,17 +18,18 @@ namespace Pecus.Controllers.Admin;
 [ApiController]
 [Route("api/admin/workspaces")]
 [Produces("application/json")]
-public class WorkspaceController : ControllerBase
+[Authorize(Roles = "Admin")]
+public class AdminWorkspaceController : ControllerBase
 {
     private readonly WorkspaceService _workspaceService;
     private readonly WorkspaceAccessHelper _accessHelper;
-    private readonly ILogger<WorkspaceController> _logger;
+    private readonly ILogger<AdminWorkspaceController> _logger;
     private readonly PecusConfig _config;
 
-    public WorkspaceController(
+    public AdminWorkspaceController(
         WorkspaceService workspaceService,
         WorkspaceAccessHelper accessHelper,
-        ILogger<WorkspaceController> logger,
+        ILogger<AdminWorkspaceController> logger,
         PecusConfig config
     )
     {

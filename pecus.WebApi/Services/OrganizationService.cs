@@ -23,9 +23,8 @@ public class OrganizationService
     /// <summary>
     /// 組織を作成（管理者ユーザーも同時作成）
     /// </summary>
-    public async Task<(Organization organization, User adminUser)> CreateOrganizationAsync(
-        CreateOrganizationRequest request,
-        int? createdByUserId = null
+    public async Task<(Organization organization, User adminUser)> CreateOrganizationWithUserAsync(
+        CreateOrganizationRequest request
     )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -50,7 +49,7 @@ public class OrganizationService
                 PhoneNumber = request.PhoneNumber,
                 Email = request.Email,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = createdByUserId,
+                CreatedByUserId = null,
                 IsActive = true,
             };
 
@@ -67,6 +66,10 @@ public class OrganizationService
             };
 
             var adminUser = await _userService.CreateUserAsync(adminUserRequest, null);
+
+            // 組織の作成者を管理者ユーザーに設定
+            organization.CreatedByUserId = adminUser.Id;
+            await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
             return (organization, adminUser);
