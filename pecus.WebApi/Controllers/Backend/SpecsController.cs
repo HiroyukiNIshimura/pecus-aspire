@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Backend;
 
+/// <summary>
+/// OpenAPI仕様書管理コントローラー（バックエンド管理用）
+/// </summary>
 [ApiController]
-[Route("api/specs")]
+[Route("api/backend/specs")]
 [Produces("application/json")]
 [AllowAnonymous]
 public class SpecsController : ControllerBase

@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs.Hangfire.Tasks;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Backend;
 
 /// <summary>
-/// Hangfire動作確認用のテストコントローラー
+/// Hangfire動作確認用のテストコントローラー（バックエンド管理用）
 /// </summary>
 [ApiController]
-[Route("api/hangfire-test")]
+[Route("api/backend/hangfire-test")]
 [Produces("application/json")]
 [AllowAnonymous]
 public class HangfireTestController : ControllerBase

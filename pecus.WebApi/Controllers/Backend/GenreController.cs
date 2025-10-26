@@ -8,13 +8,13 @@ using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Genre;
 using Pecus.Services;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Backend;
 
 /// <summary>
-/// ジャンルコントローラー
+/// ジャンルコントローラー（バックエンド管理用）
 /// </summary>
 [ApiController]
-[Route("api/genres")]
+[Route("api/backend/genres")]
 public class GenreController : ControllerBase
 {
     private readonly GenreService _genreService;

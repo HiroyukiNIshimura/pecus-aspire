@@ -10,10 +10,13 @@ using Pecus.Models.Responses.Organization;
 using Pecus.Models.Responses.User;
 using Pecus.Services;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Backend;
 
+/// <summary>
+/// 組織管理コントローラー（バックエンド管理用）
+/// </summary>
 [ApiController]
-[Route("api/organizations")]
+[Route("api/backend/organizations")]
 [Produces("application/json")]
 public class OrganizationController : ControllerBase
 {

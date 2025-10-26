@@ -84,6 +84,78 @@ public async Task StartAsync(CancellationToken cancellationToken)
 
 **Entry Point**: File is named `AppHost.cs` (not `Program.cs`) for consistency with pecus.AppHost project structure.
 
+## Controller Organization (WebApi Layer)
+
+### Endpoint Placement Strategy
+**Controllers are organized by access level and purpose**:
+
+**Directory Structure**:
+- **`Controllers/`**: Standard authenticated endpoints for logged-in users
+  - Example: `UserController`, `WorkspaceController`, `TagController`
+  - Access: Requires JWT authentication (`[Authorize]` filter applied globally)
+  - Use case: Regular user operations (CRUD on own data, organization-scoped resources)
+
+- **`Controllers/Admin/`**: Organization administrator endpoints
+  - Example: `AdminUserController`, `AdminOrganizationController`
+  - Access: Requires JWT authentication + organization admin role
+  - Use case: Organization management, user administration, billing settings
+
+- **`Controllers/Backend/`**: Internal backend service endpoints
+  - Example: `BackendJobController`, `BackendNotificationController`
+  - Access: Internal service authentication (API keys, service tokens)
+  - Use case: Inter-service communication, Hangfire callbacks, system integrations
+
+- **`Controllers/Entrance/`**: Public/unauthenticated endpoints
+  - Example: `EntranceAuthController`, `EntranceRegistrationController`
+  - Access: No authentication required (`[AllowAnonymous]`)
+  - Use case: Login, registration, password reset, public pages
+
+**Placement Guidelines**:
+1. **Default to `Controllers/`**: If endpoint requires authentication and is for general users, place in root
+2. **Use `Admin/` for privileged operations**: User management, organization settings, role assignments
+3. **Use `Backend/` for service-to-service**: Never expose to public clients, use strong authentication
+4. **Use `Entrance/` for pre-auth flows**: Registration, login, password reset, email verification
+
+**Example**:
+```csharp
+// ✅ CORRECT - Regular user endpoint in Controllers/
+// Controllers/WorkspaceController.cs
+[ApiController]
+[Route("api/workspaces")]
+public class WorkspaceController : ControllerBase
+{
+    // GET /api/workspaces - List user's workspaces
+}
+
+// ✅ CORRECT - Admin endpoint in Controllers/Admin/
+// Controllers/Admin/AdminUserController.cs
+[ApiController]
+[Route("api/admin/users")]
+public class AdminUserController : ControllerBase
+{
+    // GET /api/admin/users - List all users in organization (admin only)
+}
+
+// ✅ CORRECT - Backend endpoint in Controllers/Backend/
+// Controllers/Backend/BackendJobController.cs
+[ApiController]
+[Route("api/backend/jobs")]
+public class BackendJobController : ControllerBase
+{
+    // POST /api/backend/jobs/webhook - Hangfire webhook callback
+}
+
+// ✅ CORRECT - Public endpoint in Controllers/Entrance/
+// Controllers/Entrance/EntranceAuthController.cs
+[ApiController]
+[Route("api/entrance/auth")]
+[AllowAnonymous]
+public class EntranceAuthController : ControllerBase
+{
+    // POST /api/entrance/auth/login - User login
+}
+```
+
 ## Critical Patterns
 
 ### 1. Aspire Service Registration
@@ -679,6 +751,7 @@ public class WorkspaceItemTagService  // ~100 lines
 - ❌ Service classes exceeding 1000 lines without responsibility distribution review
 - ❌ Checking `User.Identity?.IsAuthenticated` in controller actions (global `[Authorize]` filter already ensures authentication)
 - ❌ Workspace operations without `WorkspaceAccessHelper` access checks (allows cross-organization data access)
+- ❌ Placing controllers in wrong directory (use Controllers/ for logged-in users, Admin/ for admins, Backend/ for internal services, Entrance/ for public endpoints)
 
 ## Key Files Reference
 - **pecus.AppHost/AppHost.cs**: Service topology, infrastructure resources, startup order
@@ -705,6 +778,7 @@ public class WorkspaceItemTagService  // ~100 lines
 6. **Migrations in pecus.DbManager**, executed by DbInitializer on startup
 7. **Logging with Serilog**: Structured logging, environment-specific EF Core SQL output
 8. **Email templates in pecus.Libs/Mail/Templates**: HTML + Text versions with Razor syntax
+9. **Controller directory structure** (WebApi): `Controllers/` for authenticated users, `Controllers/Admin/` for admins, `Controllers/Backend/` for internal services, `Controllers/Entrance/` for public endpoints
 
 ## Questions to Clarify
 When implementing features across services:

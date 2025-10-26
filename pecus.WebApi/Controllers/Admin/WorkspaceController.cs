@@ -9,10 +9,13 @@ using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Workspace;
 using Pecus.Services;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Admin;
 
+/// <summary>
+/// ワークスペース管理コントローラー（組織管理者用）
+/// </summary>
 [ApiController]
-[Route("api/workspaces")]
+[Route("api/admin/workspaces")]
 [Produces("application/json")]
 public class WorkspaceController : ControllerBase
 {

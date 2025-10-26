@@ -8,10 +8,13 @@ using Pecus.Models.Responses.Permission;
 using Pecus.Models.Responses.Role;
 using Pecus.Services;
 
-namespace Pecus.Controllers;
+namespace Pecus.Controllers.Backend;
 
+/// <summary>
+/// 権限管理コントローラー（バックエンド管理用）
+/// </summary>
 [ApiController]
-[Route("api/permissions")]
+[Route("api/backend/permissions")]
 [Produces("application/json")]
 public class PermissionController : ControllerBase
 {
