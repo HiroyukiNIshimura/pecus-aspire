@@ -10,16 +10,22 @@ using Pecus.Services;
 namespace Pecus.Controllers;
 
 [ApiController]
-[Route("api/organizations/{organizationId}/tags")]
+[Route("api/tags")]
 [Produces("application/json")]
 public class TagController : ControllerBase
 {
     private readonly TagService _tagService;
+    private readonly UserService _userService;
     private readonly ILogger<TagController> _logger;
 
-    public TagController(TagService tagService, ILogger<TagController> logger)
+    public TagController(
+        TagService tagService,
+        UserService userService,
+        ILogger<TagController> logger
+    )
     {
         _tagService = tagService;
+        _userService = userService;
         _logger = logger;
     }
 
@@ -38,14 +44,26 @@ public class TagController : ControllerBase
             NotFound<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > CreateTag(int organizationId, [FromBody] CreateTagRequest request)
+    > CreateTag([FromBody] CreateTagRequest request)
     {
         try
         {
-            // ログイン中のユーザーIDを取得
-            var createdByUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            // ログイン中のユーザーIDと組織IDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(userId);
 
-            var tag = await _tagService.CreateTagAsync(organizationId, request, createdByUserId);
+            if (user?.OrganizationId == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "組織に所属していません。",
+                    }
+                );
+            }
+
+            var tag = await _tagService.CreateTagAsync(user.OrganizationId.Value, request, userId);
 
             var response = new TagResponse
             {
@@ -98,14 +116,30 @@ public class TagController : ControllerBase
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<TagDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Results<Ok<List<TagDetailResponse>>, StatusCodeHttpResult>> GetTags(
-        int organizationId
-    )
+    public async Task<
+        Results<Ok<List<TagDetailResponse>>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+    > GetTags()
     {
         try
         {
-            var tags = await _tagService.GetTagsByOrganizationAsync(organizationId);
+            // ログイン中のユーザーの組織IDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(userId);
+
+            if (user?.OrganizationId == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "組織に所属していません。",
+                    }
+                );
+            }
+
+            var tags = await _tagService.GetTagsByOrganizationAsync(user.OrganizationId.Value);
 
             var response = tags.Select(tag => new TagDetailResponse
                 {
@@ -124,11 +158,7 @@ public class TagController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "タグ一覧取得中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                organizationId
-            );
+            _logger.LogError(ex, "タグ一覧取得中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -148,11 +178,26 @@ public class TagController : ControllerBase
             NotFound<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > UpdateTag(int organizationId, int tagId, [FromBody] UpdateTagRequest request)
+    > UpdateTag(int tagId, [FromBody] UpdateTagRequest request)
     {
         try
         {
-            var tag = await _tagService.UpdateTagAsync(organizationId, tagId, request);
+            // ログイン中のユーザーの組織IDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(userId);
+
+            if (user?.OrganizationId == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "組織に所属していません。",
+                    }
+                );
+            }
+
+            var tag = await _tagService.UpdateTagAsync(user.OrganizationId.Value, tagId, request);
 
             var response = new TagResponse
             {
@@ -209,11 +254,26 @@ public class TagController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteTag(int organizationId, int tagId)
+    > DeleteTag(int tagId)
     {
         try
         {
-            await _tagService.DeleteTagAsync(organizationId, tagId);
+            // ログイン中のユーザーの組織IDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(userId);
+
+            if (user?.OrganizationId == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "組織に所属していません。",
+                    }
+                );
+            }
+
+            await _tagService.DeleteTagAsync(user.OrganizationId.Value, tagId);
 
             var response = new SuccessResponse
             {
