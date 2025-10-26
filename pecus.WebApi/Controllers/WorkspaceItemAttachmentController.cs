@@ -21,18 +21,21 @@ public class WorkspaceItemAttachmentController : ControllerBase
     private readonly WorkspaceAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemAttachmentController> _logger;
     private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public WorkspaceItemAttachmentController(
         WorkspaceItemAttachmentService attachmentService,
         WorkspaceAccessHelper accessHelper,
         ILogger<WorkspaceItemAttachmentController> logger,
-        PecusConfig config
+        PecusConfig config,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _attachmentService = attachmentService;
         _accessHelper = accessHelper;
         _logger = logger;
         _config = config;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -137,7 +140,7 @@ public class WorkspaceItemAttachmentController : ControllerBase
                 var mediumSize = _config.FileUpload.ThumbnailMediumSize;
                 var smallSize = _config.FileUpload.ThumbnailSmallSize;
 
-                BackgroundJob.Enqueue<ImageTasks>(x =>
+                _backgroundJobClient.Enqueue<ImageTasks>(x =>
                     x.GenerateThumbnailsAsync(attachment.Id, filePath, mediumSize, smallSize)
                 );
             }
