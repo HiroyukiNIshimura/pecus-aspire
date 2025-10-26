@@ -76,6 +76,16 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<WorkspaceItemRelation> WorkspaceItemRelations { get; set; }
 
+    /// <summary>
+    /// スキルテーブル
+    /// </summary>
+    public DbSet<Skill> Skills { get; set; }
+
+    /// <summary>
+    /// ユーザースキルテーブル（中間テーブル）
+    /// </summary>
+    public DbSet<UserSkill> UserSkills { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -435,6 +445,72 @@ public class ApplicationDbContext : DbContext
                     r.RelationType,
                 })
                 .IsUnique();
+        });
+
+        // Skillエンティティの設定
+        modelBuilder.Entity<Skill>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+
+            // Skill と Organization の多対一リレーションシップ
+            entity
+                .HasOne(s => s.Organization)
+                .WithMany(o => o.Skills)
+                .HasForeignKey(s => s.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Skill と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(s => s.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Skill と UpdatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(s => s.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(s => s.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(s => new { s.OrganizationId, s.Name }).IsUnique();
+            entity.HasIndex(s => s.CreatedByUserId);
+            entity.HasIndex(s => s.UpdatedByUserId);
+        });
+
+        // UserSkillエンティティの設定（中間テーブル）
+        modelBuilder.Entity<UserSkill>(entity =>
+        {
+            entity.HasKey(us => new { us.UserId, us.SkillId });
+
+            // UserSkill と User の多対一リレーションシップ
+            entity
+                .HasOne(us => us.User)
+                .WithMany(u => u.UserSkills)
+                .HasForeignKey(us => us.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserSkill と Skill の多対一リレーションシップ
+            entity
+                .HasOne(us => us.Skill)
+                .WithMany(s => s.UserSkills)
+                .HasForeignKey(us => us.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserSkill と AddedByUser の多対一リレーションシップ
+            entity
+                .HasOne(us => us.AddedByUser)
+                .WithMany()
+                .HasForeignKey(us => us.AddedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(us => us.SkillId);
+            entity.HasIndex(us => us.AddedByUserId);
+            entity.HasIndex(us => us.AddedAt);
         });
     }
 }

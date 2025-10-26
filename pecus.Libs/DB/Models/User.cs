@@ -95,4 +95,9 @@ public class User
     /// </summary>
     public ICollection<WorkspaceItemPin> WorkspaceItemPins { get; set; } =
         new List<WorkspaceItemPin>();
+
+    /// <summary>
+    /// このユーザーが持つスキル
+    /// </summary>
+    public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
 }

@@ -79,4 +79,9 @@ public class Organization
     /// この組織で管理されているタグ
     /// </summary>
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+
+    /// <summary>
+    /// この組織で管理されているスキル
+    /// </summary>
+    public ICollection<Skill> Skills { get; set; } = new List<Skill>();
 }
