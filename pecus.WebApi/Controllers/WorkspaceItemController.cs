@@ -1163,4 +1163,64 @@ public class WorkspaceItemController : ControllerBase
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+
+    /// <summary>
+    /// 添付ファイルをダウンロード
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="fileName">ファイル名（一意なファイル名）</param>
+    /// <returns>ファイル</returns>
+    [HttpGet("{itemId}/attachments/download/{fileName}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> DownloadAttachment(int workspaceId, int itemId, string fileName)
+    {
+        try
+        {
+            // ファイルパスを構築
+            var filePath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                _config.FileUpload.StoragePath,
+                "workspaces",
+                workspaceId.ToString(),
+                "items",
+                itemId.ToString(),
+                fileName
+            );
+
+            // ファイルの存在確認
+            if (!System.IO.File.Exists(filePath))
+            {
+                return TypedResults.NotFound();
+            }
+
+            // DBから添付ファイル情報を取得して、権限チェックを行う
+            var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
+            var attachment = attachments.FirstOrDefault(a =>
+                a.FilePath == filePath || Path.GetFileName(a.FilePath) == fileName
+            );
+
+            if (attachment == null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            // ファイルを読み込んで返す
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var contentType = attachment.MimeType ?? "application/octet-stream";
+
+            return Results.File(fileBytes, contentType, attachment.FileName);
+        }
+        catch (NotFoundException)
+        {
+            return TypedResults.NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "添付ファイルのダウンロード中にエラーが発生しました。");
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
 }
