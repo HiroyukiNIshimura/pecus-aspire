@@ -113,4 +113,16 @@ public class WorkspaceItem
     /// </summary>
     public ICollection<WorkspaceItemAttachment> WorkspaceItemAttachments { get; set; } =
         new List<WorkspaceItemAttachment>();
+
+    /// <summary>
+    /// このアイテムから他のアイテムへの関連（このアイテムが関連元）
+    /// </summary>
+    public ICollection<WorkspaceItemRelation> RelationsFrom { get; set; } =
+        new List<WorkspaceItemRelation>();
+
+    /// <summary>
+    /// 他のアイテムからこのアイテムへの関連（このアイテムが関連先）
+    /// </summary>
+    public ICollection<WorkspaceItemRelation> RelationsTo { get; set; } =
+        new List<WorkspaceItemRelation>();
 }

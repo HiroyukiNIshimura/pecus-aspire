@@ -71,6 +71,11 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<WorkspaceItemAttachment> WorkspaceItemAttachments { get; set; }
 
+    /// <summary>
+    /// ワークスペースアイテム関連テーブル
+    /// </summary>
+    public DbSet<WorkspaceItemRelation> WorkspaceItemRelations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -378,6 +383,58 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(a => a.WorkspaceItemId);
             entity.HasIndex(a => a.UploadedByUserId);
             entity.HasIndex(a => a.UploadedAt);
+        });
+
+        // WorkspaceItemRelationエンティティの設定
+        modelBuilder.Entity<WorkspaceItemRelation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RelationType).HasMaxLength(50);
+
+            // テーブル設定とチェック制約
+            entity.ToTable(t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_WorkspaceItemRelation_DifferentItems",
+                    "from_item_id != to_item_id"
+                );
+            });
+
+            // WorkspaceItemRelation と FromItem の多対一リレーションシップ
+            entity
+                .HasOne(r => r.FromItem)
+                .WithMany(wi => wi.RelationsFrom)
+                .HasForeignKey(r => r.FromItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemRelation と ToItem の多対一リレーションシップ
+            entity
+                .HasOne(r => r.ToItem)
+                .WithMany(wi => wi.RelationsTo)
+                .HasForeignKey(r => r.ToItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceItemRelation と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(r => r.FromItemId);
+            entity.HasIndex(r => r.ToItemId);
+            entity.HasIndex(r => r.CreatedByUserId);
+            entity.HasIndex(r => r.RelationType);
+            // 同じ組み合わせの関連を防ぐユニークインデックス
+            entity
+                .HasIndex(r => new
+                {
+                    r.FromItemId,
+                    r.ToItemId,
+                    r.RelationType,
+                })
+                .IsUnique();
         });
     }
 }
