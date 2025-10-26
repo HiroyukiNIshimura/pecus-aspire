@@ -87,7 +87,7 @@ builder
             ValidAudience = pecusConfig.Jwt.ValidAudience,
             RequireExpirationTime = true,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromHours(pecusConfig.Jwt.ExpiresHours),
+            ClockSkew = TimeSpan.FromMinutes(pecusConfig.Jwt.ExpiresMinutes),
         };
     });
 

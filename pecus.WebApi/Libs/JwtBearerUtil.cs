@@ -56,7 +56,7 @@ namespace Pecus.Libs
                 Encoding.UTF8.GetBytes(_config.Jwt.IssuerSigningKey)
             );
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.UtcNow.AddHours(_config.Jwt.ExpiresHours);
+            var expires = DateTime.UtcNow.AddMinutes(_config.Jwt.ExpiresMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: _config.Jwt.ValidIssuer,
@@ -82,14 +82,14 @@ namespace Pecus.Libs
                 );
             }
 
-            return DateTime.UtcNow.AddHours(_config.Jwt.ExpiresHours);
+            return DateTime.UtcNow.AddMinutes(_config.Jwt.ExpiresMinutes);
         }
 
         /// <summary>
-        /// トークンの有効期限（時間）を取得
+        /// トークンの有効期限（分）を取得
         /// </summary>
-        /// <returns>有効期限（時間）</returns>
-        public static int GetExpiresHours()
+        /// <returns>有効期限（分）</returns>
+        public static int GetExpiresMinutes()
         {
             if (_config == null)
             {
@@ -98,7 +98,7 @@ namespace Pecus.Libs
                 );
             }
 
-            return _config.Jwt.ExpiresHours;
+            return _config.Jwt.ExpiresMinutes;
         }
 
         /// <summary>

@@ -104,7 +104,7 @@ public class UserController : ControllerBase
             // JWTトークンを生成
             var token = JwtBearerUtil.GenerateToken(user);
             var expiresAt = JwtBearerUtil.GetTokenExpiration();
-            var expiresIn = JwtBearerUtil.GetExpiresHours() * 3600; // 秒に変換
+            var expiresIn = JwtBearerUtil.GetExpiresMinutes() * 60; // 秒に変換
 
             var response = new LoginResponse
             {
@@ -137,6 +137,41 @@ public class UserController : ControllerBase
                 "ログイン中にエラーが発生しました。LoginIdentifier: {LoginIdentifier}",
                 request.LoginIdentifier
             );
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ログアウト
+    /// </summary>
+    /// <remarks>
+    /// 現在のユーザーをログアウトします。
+    /// JWTトークンベースの認証では、クライアント側でトークンを削除することでログアウトが完了します。
+    /// </remarks>
+    [HttpPost("logout")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Results<Ok<SuccessResponse>, UnauthorizedHttpResult, StatusCodeHttpResult> Logout()
+    {
+        try
+        {
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            _logger.LogInformation("ユーザーがログアウトしました。UserId: {UserId}", userId);
+
+            return TypedResults.Ok(
+                new SuccessResponse
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "ログアウトしました。",
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ログアウト中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

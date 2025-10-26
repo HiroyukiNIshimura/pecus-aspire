@@ -47,9 +47,9 @@ namespace Pecus.Models.Config
         public string ValidAudience { get; set; } = string.Empty;
 
         /// <summary>
-        /// トークンの有効期限（時間）
+        /// トークンの有効期限（分）
         /// </summary>
-        public int ExpiresHours { get; set; } = 1;
+        public int ExpiresMinutes { get; set; } = 60;
     }
 
     /// <summary>
