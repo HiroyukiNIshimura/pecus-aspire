@@ -146,20 +146,35 @@ public class UserController : ControllerBase
     /// </summary>
     /// <remarks>
     /// 現在のユーザーをログアウトします。
-    /// JWTトークンベースの認証では、クライアント側でトークンを削除することでログアウトが完了します。
+    /// JWTトークンをブラックリストに追加して即座に無効化します。
     /// </remarks>
     [HttpPost("logout")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public Results<Ok<SuccessResponse>, UnauthorizedHttpResult, StatusCodeHttpResult> Logout()
+    public async Task<
+        Results<Ok<SuccessResponse>, UnauthorizedHttpResult, StatusCodeHttpResult>
+    > Logout()
     {
         try
         {
-            // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var jti = JwtBearerUtil.GetJtiFromPrincipal(User);
 
-            _logger.LogInformation("ユーザーがログアウトしました。UserId: {UserId}", userId);
+            if (!string.IsNullOrEmpty(jti))
+            {
+                // トークンをブラックリストに追加
+                var tokenExpiration = JwtBearerUtil.GetTokenExpirationFromPrincipal(User);
+                var blacklistService =
+                    HttpContext.RequestServices.GetRequiredService<TokenBlacklistService>();
+                await blacklistService.BlacklistTokenAsync(jti, tokenExpiration);
+            }
+
+            _logger.LogInformation(
+                "ユーザーがログアウトしました。UserId: {UserId}, JTI: {Jti}",
+                userId,
+                jti
+            );
 
             return TypedResults.Ok(
                 new SuccessResponse
@@ -394,6 +409,70 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "ユーザー更新中にエラーが発生しました。UserId: {UserId}", id);
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// パスワード変更
+    /// </summary>
+    [HttpPut("change-password")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<
+            Ok<SuccessResponse>,
+            BadRequest<ErrorResponse>,
+            UnauthorizedHttpResult,
+            StatusCodeHttpResult
+        >
+    > ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        try
+        {
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var currentJti = JwtBearerUtil.GetJtiFromPrincipal(User); // 現在のトークンJTIを取得
+
+            // 現在のパスワードを確認
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (
+                user == null
+                || !UserService.VerifyPasswordPublic(request.CurrentPassword, user.PasswordHash)
+            )
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "現在のパスワードが正しくありません。",
+                    }
+                );
+            }
+
+            // パスワード更新（現在のトークンは無効化しない）
+            var updateRequest = new UpdateUserRequest { Password = request.NewPassword };
+            await _userService.UpdateUserAsync(userId, updateRequest, userId, currentJti);
+
+            _logger.LogInformation(
+                "ユーザーがパスワードを変更しました。UserId: {UserId}, JTI: {Jti}",
+                userId,
+                currentJti
+            );
+
+            return TypedResults.Ok(
+                new SuccessResponse
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message =
+                        "パスワードを変更しました。他のデバイスでのログインは無効化されました。",
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "パスワード変更中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

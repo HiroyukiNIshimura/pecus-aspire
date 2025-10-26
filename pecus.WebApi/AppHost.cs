@@ -9,6 +9,7 @@ using Pecus.Filters;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Middleware;
 using Pecus.Models.Config;
 using Pecus.Services;
 using StackExchange.Redis;
@@ -30,8 +31,13 @@ JwtBearerUtil.Initialize(pecusConfig);
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
 
+// Redisキャッシュの登録
+builder.AddRedisClient("redis");
+builder.Services.AddMemoryCache(); // 分散キャッシュとして
+
 // ヘルパーの登録
 builder.Services.AddScoped<WorkspaceAccessHelper>();
+builder.Services.AddScoped<TokenBlacklistService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();
@@ -172,6 +178,7 @@ app.UseHttpLogging();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

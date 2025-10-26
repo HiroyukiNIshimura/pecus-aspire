@@ -15,8 +15,16 @@ namespace Pecus.Services;
 public class UserService
 {
     private readonly ApplicationDbContext _context;
+    private readonly TokenBlacklistService? _tokenBlacklistService;
 
-    public UserService(ApplicationDbContext context) => _context = context;
+    public UserService(
+        ApplicationDbContext context,
+        TokenBlacklistService? tokenBlacklistService = null
+    )
+    {
+        _context = context;
+        _tokenBlacklistService = tokenBlacklistService;
+    }
 
     /// <summary>
     /// ユーザーを作成
@@ -184,7 +192,8 @@ public class UserService
     public async Task<User> UpdateUserAsync(
         int userId,
         UpdateUserRequest request,
-        int? updatedByUserId = null
+        int? updatedByUserId = null,
+        string? currentJti = null
     )
     {
         var user = await _context.Users.FindAsync(userId);
@@ -206,6 +215,15 @@ public class UserService
         if (request.Password != null)
         {
             user.PasswordHash = HashPassword(request.Password);
+
+            // パスワード変更時は現在のトークン以外の既存トークンを無効化
+            if (_tokenBlacklistService != null)
+            {
+                await _tokenBlacklistService.BlacklistAllUserTokensExceptCurrentAsync(
+                    userId,
+                    currentJti
+                );
+            }
         }
 
         if (request.AvatarType != null)
@@ -305,6 +323,14 @@ public class UserService
     {
         var hash = HashPassword(password);
         return hash == passwordHash;
+    }
+
+    /// <summary>
+    /// パスワードを検証（public）
+    /// </summary>
+    public static bool VerifyPasswordPublic(string password, string passwordHash)
+    {
+        return VerifyPassword(password, passwordHash);
     }
 
     /// <summary>

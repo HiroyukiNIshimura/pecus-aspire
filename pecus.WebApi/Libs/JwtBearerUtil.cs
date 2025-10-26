@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
@@ -35,6 +36,11 @@ namespace Pecus.Libs
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(
+                    JwtRegisteredClaimNames.Iat,
+                    new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                    ClaimValueTypes.Integer64
+                ),
                 new Claim("username", user.Username),
                 new Claim("userId", user.Id.ToString()),
             };
@@ -196,6 +202,94 @@ namespace Pecus.Libs
             }
 
             return userId;
+        }
+
+        /// <summary>
+        /// ClaimsPrincipalからJTI（JWT ID）を取得
+        /// </summary>
+        /// <param name="principal">ClaimsPrincipal（HttpContext.Userなど）</param>
+        /// <returns>JTI（見つからない場合は空文字）</returns>
+        public static string GetJtiFromPrincipal(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                return string.Empty;
+            }
+
+            var jtiClaim = principal.FindFirst(JwtRegisteredClaimNames.Jti);
+            return jtiClaim?.Value ?? string.Empty;
+        }
+
+        /// <summary>
+        /// ClaimsPrincipalからトークンの発行時刻を取得
+        /// </summary>
+        /// <param name="principal">ClaimsPrincipal（HttpContext.Userなど）</param>
+        /// <returns>発行時刻（Unix秒、見つからない場合は0）</returns>
+        public static long GetIssuedAtFromPrincipal(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                return 0;
+            }
+
+            var iatClaim = principal.FindFirst(JwtRegisteredClaimNames.Iat);
+            if (iatClaim != null && long.TryParse(iatClaim.Value, out long iat))
+            {
+                return iat;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// ClaimsPrincipalからトークンの有効期限を取得
+        /// </summary>
+        /// <param name="principal">ClaimsPrincipal（HttpContext.Userなど）</param>
+        /// <returns>有効期限（取得できない場合は現在時刻から設定値分後）</returns>
+        public static DateTime GetTokenExpirationFromPrincipal(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                return DateTime.UtcNow.AddMinutes(_config?.Jwt.ExpiresMinutes ?? 60);
+            }
+
+            var expClaim = principal.FindFirst(JwtRegisteredClaimNames.Exp);
+            if (expClaim != null && long.TryParse(expClaim.Value, out long exp))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(exp).DateTime;
+            }
+
+            // 発行時刻から計算
+            var iatClaim = principal.FindFirst(JwtRegisteredClaimNames.Iat);
+            if (iatClaim != null && long.TryParse(iatClaim.Value, out long iat))
+            {
+                var issuedAt = DateTimeOffset.FromUnixTimeSeconds(iat).DateTime;
+                return issuedAt.AddMinutes(_config?.Jwt.ExpiresMinutes ?? 60);
+            }
+
+            return DateTime.UtcNow.AddMinutes(_config?.Jwt.ExpiresMinutes ?? 60);
+        }
+
+        /// <summary>
+        /// トークン発行時にユーザーのトークンリストに追加（オプション機能）
+        /// </summary>
+        /// <param name="userId">ユーザーID</param>
+        /// <param name="jti">JWT ID</param>
+        /// <param name="cache">メモリキャッシュ</param>
+        public static void RegisterUserToken(int userId, string jti, IMemoryCache cache)
+        {
+            var userKey = $"user_tokens:{userId}";
+            var tokenList = cache.Get<List<string>>(userKey) ?? new List<string>();
+
+            tokenList.Add(jti);
+
+            // 最大10個のトークンまで保持（古いものは自動削除）
+            if (tokenList.Count > 10)
+            {
+                tokenList.RemoveAt(0);
+            }
+
+            cache.Set(userKey, tokenList, TimeSpan.FromDays(1));
         }
     }
 }

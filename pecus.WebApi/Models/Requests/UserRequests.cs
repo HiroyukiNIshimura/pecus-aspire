@@ -87,3 +87,26 @@ public class LoginRequest
     [Required(ErrorMessage = "パスワードは必須です。")]
     public required string Password { get; set; }
 }
+
+/// <summary>
+/// パスワード変更リクエスト
+/// </summary>
+public class ChangePasswordRequest
+{
+    /// <summary>
+    /// 現在のパスワード
+    /// </summary>
+    [Required(ErrorMessage = "現在のパスワードは必須です。")]
+    public required string CurrentPassword { get; set; }
+
+    /// <summary>
+    /// 新しいパスワード
+    /// </summary>
+    [Required(ErrorMessage = "新しいパスワードは必須です。")]
+    [StringLength(
+        100,
+        MinimumLength = 6,
+        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    )]
+    public required string NewPassword { get; set; }
+}
