@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Permission;
@@ -39,7 +40,10 @@ public class PermissionController : ControllerBase
     {
         try
         {
-            var permission = await _permissionService.CreatePermissionAsync(request);
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            var permission = await _permissionService.CreatePermissionAsync(request, userId);
 
             var response = new PermissionResponse
             {

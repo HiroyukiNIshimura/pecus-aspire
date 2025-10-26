@@ -46,8 +46,15 @@ public class OrganizationController : ControllerBase
     {
         try
         {
+            // [AllowAnonymous]なので認証されていない場合はnull
+            int? userId =
+                User.Identity?.IsAuthenticated == true
+                    ? JwtBearerUtil.GetUserIdFromPrincipal(User)
+                    : null;
+
             var (organization, adminUser) = await _organizationService.CreateOrganizationAsync(
-                request
+                request,
+                userId
             );
 
             var response = new OrganizationWithAdminResponse
@@ -255,7 +262,14 @@ public class OrganizationController : ControllerBase
     {
         try
         {
-            var organization = await _organizationService.UpdateOrganizationAsync(id, request);
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            var organization = await _organizationService.UpdateOrganizationAsync(
+                id,
+                request,
+                userId
+            );
 
             var response = new OrganizationResponse
             {

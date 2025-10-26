@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Permission;
@@ -36,7 +37,10 @@ public class RoleController : ControllerBase
     {
         try
         {
-            var role = await _roleService.CreateRoleAsync(request);
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            var role = await _roleService.CreateRoleAsync(request, userId);
             var response = new RoleResponse
             {
                 Id = role.Id,
@@ -158,7 +162,10 @@ public class RoleController : ControllerBase
     {
         try
         {
-            var result = await _roleService.AddPermissionToRoleAsync(roleId, permissionId);
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            var result = await _roleService.AddPermissionToRoleAsync(roleId, permissionId, userId);
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -203,7 +210,14 @@ public class RoleController : ControllerBase
     {
         try
         {
-            var result = await _roleService.RemovePermissionFromRoleAsync(roleId, permissionId);
+            // ログイン中のユーザーIDを取得
+            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            var result = await _roleService.RemovePermissionFromRoleAsync(
+                roleId,
+                permissionId,
+                userId
+            );
             if (!result)
             {
                 return TypedResults.NotFound(
