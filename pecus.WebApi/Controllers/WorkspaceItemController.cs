@@ -22,6 +22,7 @@ public class WorkspaceItemController : ControllerBase
     private readonly WorkspaceItemAttachmentService _attachmentService;
     private readonly WorkspaceItemPinService _pinService;
     private readonly WorkspaceItemTagService _tagService;
+    private readonly WorkspaceAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemController> _logger;
     private readonly PecusConfig _config;
 
@@ -30,6 +31,7 @@ public class WorkspaceItemController : ControllerBase
         WorkspaceItemAttachmentService attachmentService,
         WorkspaceItemPinService pinService,
         WorkspaceItemTagService tagService,
+        WorkspaceAccessHelper accessHelper,
         ILogger<WorkspaceItemController> logger,
         PecusConfig config
     )
@@ -38,6 +40,7 @@ public class WorkspaceItemController : ControllerBase
         _attachmentService = attachmentService;
         _pinService = pinService;
         _tagService = tagService;
+        _accessHelper = accessHelper;
         _logger = logger;
         _config = config;
     }
@@ -141,6 +144,19 @@ public class WorkspaceItemController : ControllerBase
             // ログイン中のユーザーIDを取得
             var ownerId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(ownerId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
             var item = await _workspaceItemService.CreateWorkspaceItemAsync(
                 workspaceId,
                 request,
@@ -196,14 +212,23 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
-            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
+            // ログイン中のユーザーIDを取得
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ログイン中のユーザーIDを取得（任意）
-            int? currentUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
             {
-                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースアイテムが見つかりません。",
+                    }
+                );
             }
+
+            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
             var response = BuildItemDetailResponse(item, currentUserId);
 
@@ -253,29 +278,28 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
-            // ログイン中のユーザーIDを取得（任意）
-            int? currentUserId = null;
-            if (User.Identity?.IsAuthenticated == true)
+            // ログイン中のユーザーIDを取得
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
             {
-                currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+                // 空の結果を返す
+                var emptyResponse = PaginationHelper.CreatePagedResponse(
+                    new List<WorkspaceItemDetailResponse>(),
+                    page,
+                    _config.Pagination.DefaultPageSize,
+                    0
+                );
+                return TypedResults.Ok(emptyResponse);
             }
 
             // pinnedフィルタを使用する場合は認証が必要
             int? pinnedByUserId = null;
             if (pinned.HasValue && pinned.Value)
             {
-                if (!currentUserId.HasValue)
-                {
-                    // 認証されていない場合は空の結果を返す
-                    var emptyResponse = PaginationHelper.CreatePagedResponse(
-                        new List<WorkspaceItemDetailResponse>(),
-                        page,
-                        _config.Pagination.DefaultPageSize,
-                        0
-                    );
-                    return TypedResults.Ok(emptyResponse);
-                }
-                pinnedByUserId = currentUserId.Value;
+                pinnedByUserId = currentUserId;
             }
 
             var pageSize = _config.Pagination.DefaultPageSize;
@@ -339,6 +363,19 @@ public class WorkspaceItemController : ControllerBase
         {
             // ログイン中のユーザーIDを取得
             var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
 
             var item = await _workspaceItemService.UpdateWorkspaceItemAsync(
                 workspaceId,
@@ -413,6 +450,19 @@ public class WorkspaceItemController : ControllerBase
             // ログイン中のユーザーIDを取得
             var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
             var item = await _workspaceItemService.UpdateWorkspaceItemStatusAsync(
                 workspaceId,
                 itemId,
@@ -481,6 +531,19 @@ public class WorkspaceItemController : ControllerBase
         {
             // ログイン中のユーザーIDを取得
             var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
 
             await _workspaceItemService.DeleteWorkspaceItemAsync(
                 workspaceId,
@@ -560,6 +623,19 @@ public class WorkspaceItemController : ControllerBase
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(httpContext.User);
 
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
             // タグを一括設定
             var tags = await _tagService.SetTagsToItemAsync(
                 workspaceId,
@@ -633,6 +709,19 @@ public class WorkspaceItemController : ControllerBase
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
             var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, userId);
 
             // 更新後のアイテムを取得
@@ -698,6 +787,19 @@ public class WorkspaceItemController : ControllerBase
         {
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
 
             await _pinService.RemovePinFromItemAsync(workspaceId, itemId, userId);
 
@@ -817,6 +919,15 @@ public class WorkspaceItemController : ControllerBase
         {
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
+                );
+            }
 
             if (file == null || file.Length == 0)
             {
@@ -940,6 +1051,18 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
+            // ログイン中のユーザーIDを取得
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
+                );
+            }
+
             var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
 
             var response = attachments
@@ -992,6 +1115,15 @@ public class WorkspaceItemController : ControllerBase
         {
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
+                );
+            }
 
             var attachment = await _attachmentService.DeleteAttachmentAsync(
                 workspaceId,
@@ -1051,6 +1183,16 @@ public class WorkspaceItemController : ControllerBase
     {
         try
         {
+            // ログイン中のユーザーIDを取得
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ワークスペースへのアクセス権限をチェック
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            if (!hasAccess)
+            {
+                return TypedResults.NotFound();
+            }
+
             // ファイルパスを構築
             var filePath = Path.Combine(
                 Directory.GetCurrentDirectory(),

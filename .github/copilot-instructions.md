@@ -134,6 +134,75 @@ public async Task<Results<...>> GetItems([FromQuery] int page = 1, [FromQuery] i
 ### 3. Typed Exception Handling (WebApi Layer)
 Use custom exceptions (`Exceptions/NotFoundException.cs`, `Exceptions/DuplicateException.cs`) instead of message inspection. See pecus.WebApi instructions for full pattern.
 
+### 3.5. Authentication and Workspace Access Control (WebApi Layer)
+**CRITICAL: Proper authentication and authorization patterns must be followed**:
+
+**User ID Retrieval Pattern**:
+```csharp
+// ✅ CORRECT - Direct retrieval (global [Authorize] filter ensures authentication)
+var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+// ❌ WRONG - Unnecessary authentication check in controller action
+int? userId = null;
+if (User.Identity?.IsAuthenticated == true)
+{
+    userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+}
+```
+
+**Why `User.Identity?.IsAuthenticated` check is an anti-pattern**:
+- Global `[Authorize]` filter is applied in `AppHost.cs` via `options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter())`
+- All controller actions are **already authenticated** by the framework
+- Checking `IsAuthenticated` in action methods is redundant and adds unnecessary complexity
+- If authentication fails, the request never reaches the controller action (returns 401)
+
+**Workspace Access Control Pattern**:
+Use `WorkspaceAccessHelper` (in `pecus.WebApi/Libs/`) for all workspace-related operations:
+
+```csharp
+// Controller setup
+private readonly WorkspaceAccessHelper _accessHelper;
+
+public MyController(WorkspaceAccessHelper accessHelper, ...)
+{
+    _accessHelper = accessHelper;
+}
+
+// ✅ CORRECT - In controller action
+var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+// Check workspace access
+var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+if (!hasAccess)
+{
+    return TypedResults.NotFound(new ErrorResponse { Message = "ワークスペースが見つかりません。" });
+}
+
+// Proceed with operation...
+```
+
+**WorkspaceAccessHelper Methods**:
+- `GetUserOrganizationIdAsync(int userId)`: Returns user's organization ID (null if not member)
+- `CheckWorkspaceAccessAsync(int userId, int workspaceId)`: Returns (hasAccess, workspace) tuple
+- `CanAccessWorkspaceAsync(int userId, int workspaceId)`: Returns bool only
+
+**Security Principles**:
+1. **Organization-based multi-tenancy**: Users can only access workspaces in their organization
+2. **404 for unauthorized access**: Return 404 instead of 403 to hide resource existence
+3. **Empty lists for GET operations**: Return empty lists instead of errors when no access
+4. **Consistent error messages**: Use "ワークスペースが見つかりません。" for both missing and unauthorized workspaces
+
+**When to use**:
+- All workspace CRUD operations
+- All workspace item operations (items, attachments, tags, pins)
+- Any operation that involves a workspace ID parameter
+
+**DI Registration**:
+```csharp
+// In pecus.WebApi/AppHost.cs
+builder.Services.AddScoped<WorkspaceAccessHelper>();
+```
+
 ### 4. Transaction Pattern for Multiple Table Operations (WebApi Layer)
 **CRITICAL: Always use explicit transactions when modifying multiple tables** to ensure data consistency and atomicity.
 
@@ -513,6 +582,8 @@ public class WorkspaceItemTagService  // ~100 lines
 - ❌ Multiple table operations without explicit transactions (always wrap in `BeginTransactionAsync()`)
 - ❌ Adding table operations to existing methods without adding transaction wrapper (refactoring may introduce data inconsistency risks)
 - ❌ Service classes exceeding 1000 lines without responsibility distribution review
+- ❌ Checking `User.Identity?.IsAuthenticated` in controller actions (global `[Authorize]` filter already ensures authentication)
+- ❌ Workspace operations without `WorkspaceAccessHelper` access checks (allows cross-organization data access)
 
 ## Key Files Reference
 - **pecus.AppHost/AppHost.cs**: Service topology, infrastructure resources, startup order
@@ -524,6 +595,7 @@ public class WorkspaceItemTagService  // ~100 lines
 - **pecus.Libs/Mail/Services/RazorTemplateService.cs**: Razor template rendering
 - **pecus.ServiceDefaults/Extensions.cs**: Serilog configuration, service defaults
 - **pecus.WebApi/AppHost.cs**: WebApi service configuration (JWT, Hangfire client, Swagger)
+- **pecus.WebApi/Libs/WorkspaceAccessHelper.cs**: Workspace access control helper for organization-based multi-tenancy
 - **pecus.BackFire/AppHost.cs**: Hangfire server configuration
 - **pecus.DbManager/AppHost.cs**: Auto-migration on startup + manual endpoints
 - **pecus.DbManager/DbInitializer.cs**: IHostedService for database initialization

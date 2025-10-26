@@ -30,6 +30,9 @@ JwtBearerUtil.Initialize(pecusConfig);
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
 
+// ヘルパーの登録
+builder.Services.AddScoped<WorkspaceAccessHelper>();
+
 // サービスの登録
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
