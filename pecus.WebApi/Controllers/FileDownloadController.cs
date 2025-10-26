@@ -21,7 +21,7 @@ public class FileDownloadController : ControllerBase
     /// <summary>
     /// アイコンファイルを取得（画像を返す）
     /// </summary>
-    /// <param name="fileType">ファイルの種類</param>
+    /// <param name="fileType">ファイルの種類（avatar, genre）</param>
     /// <param name="resourceId">リソースID</param>
     /// <param name="fileName">ファイル名</param>
     [HttpGet("{fileType}/{resourceId}/{fileName}")]

@@ -353,8 +353,12 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// ユーザー更新
+    /// ユーザー更新（プロフィール情報のみ）
     /// </summary>
+    /// <remarks>
+    /// このエンドポイントではアバタータイプのみ更新可能です。
+    /// メールアドレスやパスワードの変更機能は現在提供されていません。
+    /// </remarks>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -406,73 +410,19 @@ public class UserController : ControllerBase
                 }
             );
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "ユーザー更新中にエラーが発生しました。UserId: {UserId}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    /// <summary>
-    /// パスワード変更
-    /// </summary>
-    [HttpPut("change-password")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            UnauthorizedHttpResult,
-            StatusCodeHttpResult
-        >
-    > ChangePassword([FromBody] ChangePasswordRequest request)
-    {
-        try
-        {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var currentJti = JwtBearerUtil.GetJtiFromPrincipal(User); // 現在のトークンJTIを取得
-
-            // 現在のパスワードを確認
-            var user = await _userService.GetUserByIdAsync(userId);
-            if (
-                user == null
-                || !UserService.VerifyPasswordPublic(request.CurrentPassword, user.PasswordHash)
-            )
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "現在のパスワードが正しくありません。",
-                    }
-                );
-            }
-
-            // パスワード更新（現在のトークンは無効化しない）
-            var updateRequest = new UpdateUserRequest { Password = request.NewPassword };
-            await _userService.UpdateUserAsync(userId, updateRequest, userId, currentJti);
-
-            _logger.LogInformation(
-                "ユーザーがパスワードを変更しました。UserId: {UserId}, JTI: {Jti}",
-                userId,
-                currentJti
-            );
-
-            return TypedResults.Ok(
-                new SuccessResponse
+            return TypedResults.BadRequest(
+                new ErrorResponse
                 {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message =
-                        "パスワードを変更しました。他のデバイスでのログインは無効化されました。",
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
                 }
             );
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "パスワード変更中にエラーが発生しました。");
+            _logger.LogError(ex, "ユーザー更新中にエラーが発生しました。UserId: {UserId}", id);
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

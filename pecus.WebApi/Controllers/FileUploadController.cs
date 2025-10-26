@@ -168,13 +168,11 @@ public class FileUploadController : ControllerBase
     /// </summary>
     private async Task UpdateUserAvatarAsync(int userId, string filePath)
     {
-        var user = await _userService.GetUserByIdAsync(userId);
-        if (user != null)
-        {
-            user.AvatarType = "user-avatar";
-            user.AvatarUrl = filePath;
-            await _userService.UpdateUserAsync(userId);
-        }
+        // FileDownloadController.GetIconメソッドのURLパターンに合わせてAvatarUrlを設定
+        var fileName = Path.GetFileName(filePath);
+        var avatarUrl = $"/api/downloads/avatar/{userId}/{fileName}";
+
+        await _userService.UpdateUserAvatarAsync(userId, "user-avatar", avatarUrl, userId);
     }
 
     /// <summary>

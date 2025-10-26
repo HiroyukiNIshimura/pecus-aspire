@@ -41,33 +41,22 @@ public class CreateUserRequest
 }
 
 /// <summary>
-/// ユーザー更新リクエスト
+/// ユーザー更新リクエスト（プロフィール情報のみ）
 /// </summary>
 public class UpdateUserRequest
 {
-    /// <summary>
-    /// メールアドレス
-    /// </summary>
-    [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
-    [StringLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
-    public string? Email { get; set; }
-
-    /// <summary>
-    /// パスワード
-    /// </summary>
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
-    )]
-    public string? Password { get; set; }
-
     /// <summary>
     /// アバタータイプ(gravatar, user-avatar, auto-generated)
     /// </summary>
     [StringLength(20, ErrorMessage = "アバタータイプは20文字以内で入力してください。")]
     [AvatarType]
     public string? AvatarType { get; set; }
+
+    /// <summary>
+    /// アバターURL（AvatarType="user-avatar"の場合は必須）
+    /// </summary>
+    [StringLength(500, ErrorMessage = "アバターURLは500文字以内で入力してください。")]
+    public string? AvatarUrl { get; set; }
 }
 
 /// <summary>
@@ -86,27 +75,4 @@ public class LoginRequest
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
     public required string Password { get; set; }
-}
-
-/// <summary>
-/// パスワード変更リクエスト
-/// </summary>
-public class ChangePasswordRequest
-{
-    /// <summary>
-    /// 現在のパスワード
-    /// </summary>
-    [Required(ErrorMessage = "現在のパスワードは必須です。")]
-    public required string CurrentPassword { get; set; }
-
-    /// <summary>
-    /// 新しいパスワード
-    /// </summary>
-    [Required(ErrorMessage = "新しいパスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
-    )]
-    public required string NewPassword { get; set; }
 }

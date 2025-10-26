@@ -187,13 +187,12 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザーを更新
+    /// ユーザーを更新（プロフィール情報のみ）
     /// </summary>
     public async Task<User> UpdateUserAsync(
         int userId,
         UpdateUserRequest request,
-        int? updatedByUserId = null,
-        string? currentJti = null
+        int? updatedByUserId = null
     )
     {
         var user = await _context.Users.FindAsync(userId);
@@ -202,33 +201,23 @@ public class UserService
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        if (request.Email != null)
-        {
-            // メールアドレスの重複チェック（自分自身以外で既に使用されていないか）
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != userId))
-            {
-                throw new DuplicateException("メールアドレスは既に使用されています。");
-            }
-            user.Email = request.Email;
-        }
-
-        if (request.Password != null)
-        {
-            user.PasswordHash = HashPassword(request.Password);
-
-            // パスワード変更時は現在のトークン以外の既存トークンを無効化
-            if (_tokenBlacklistService != null)
-            {
-                await _tokenBlacklistService.BlacklistAllUserTokensExceptCurrentAsync(
-                    userId,
-                    currentJti
-                );
-            }
-        }
-
         if (request.AvatarType != null)
         {
+            // AvatarType="user-avatar"の場合、AvatarUrlが必須
+            if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
+            {
+                throw new InvalidOperationException(
+                    "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
+                );
+            }
+
             user.AvatarType = request.AvatarType;
+
+            // AvatarUrlが指定されている場合のみ更新
+            if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
+            {
+                user.AvatarUrl = request.AvatarUrl;
+            }
         }
 
         user.UpdatedAt = DateTime.UtcNow;
@@ -239,43 +228,34 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザーを更新
+    /// ユーザーのアバター情報を更新
     /// </summary>
-    public async Task<User> UpdateUserAsync(
+    public async Task<User> UpdateUserAvatarAsync(
         int userId,
-        string? email = null,
-        string? password = null
+        string avatarType,
+        string avatarUrl,
+        int updatedByUserId
     )
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
         {
-            throw new InvalidOperationException("ユーザーが見つかりません。");
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        if (email != null)
-        {
-            user.Email = email;
-        }
-
-        if (password != null)
-        {
-            user.PasswordHash = HashPassword(password);
-        }
+        user.AvatarType = avatarType;
+        user.AvatarUrl = avatarUrl;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedByUserId = updatedByUserId;
 
         await _context.SaveChangesAsync();
         return user;
     }
 
     /// <summary>
-    /// ユーザー情報を更新（SaveChangesを呼び出すのみ）
-    /// </summary>
-    public async Task UpdateUserAsync(int userId) => await _context.SaveChangesAsync();
-
-    /// <summary>
     /// ユーザーを無効化
     /// </summary>
-    public async Task<bool> DeactivateUserAsync(int userId, int? updatedByUserId = null)
+    public async Task<bool> DeactivateUserAsync(int userId, int updatedByUserId)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)
