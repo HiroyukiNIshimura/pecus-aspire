@@ -15,13 +15,6 @@ public class CreateWorkspaceRequest
     public required string Name { get; set; }
 
     /// <summary>
-    /// 組織ID
-    /// </summary>
-    [Required(ErrorMessage = "組織IDは必須です。")]
-    [Range(1, int.MaxValue, ErrorMessage = "有効な組織IDを指定してください。")]
-    public required int OrganizationId { get; set; }
-
-    /// <summary>
     /// ワークスペースの説明
     /// </summary>
     [StringLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]

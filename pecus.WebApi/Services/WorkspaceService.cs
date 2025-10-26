@@ -21,6 +21,7 @@ public class WorkspaceService
     /// </summary>
     public async Task<Workspace> CreateWorkspaceAsync(
         CreateWorkspaceRequest request,
+        int organizationId,
         int? createdByUserId = null
     )
     {
@@ -28,21 +29,21 @@ public class WorkspaceService
         try
         {
             // 組織の存在確認
-            var organization = await _context.Organizations.FindAsync(request.OrganizationId);
+            var organization = await _context.Organizations.FindAsync(organizationId);
             if (organization == null)
             {
                 throw new NotFoundException("組織が見つかりません。");
             }
 
             // 組織内でユニークなワークスペースコードを生成
-            var code = await GenerateUniqueWorkspaceCodeAsync(_context, request.OrganizationId);
+            var code = await GenerateUniqueWorkspaceCodeAsync(_context, organizationId);
 
             var workspace = new Workspace
             {
                 Name = request.Name,
                 Code = code,
                 Description = request.Description,
-                OrganizationId = request.OrganizationId,
+                OrganizationId = organizationId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = createdByUserId,
                 IsActive = true,

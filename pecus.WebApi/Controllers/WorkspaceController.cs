@@ -17,16 +17,19 @@ namespace Pecus.Controllers;
 public class WorkspaceController : ControllerBase
 {
     private readonly WorkspaceService _workspaceService;
+    private readonly UserService _userService;
     private readonly ILogger<WorkspaceController> _logger;
     private readonly PecusConfig _config;
 
     public WorkspaceController(
         WorkspaceService workspaceService,
+        UserService userService,
         ILogger<WorkspaceController> logger,
         PecusConfig config
     )
     {
         _workspaceService = workspaceService;
+        _userService = userService;
         _logger = logger;
         _config = config;
     }
@@ -57,7 +60,46 @@ public class WorkspaceController : ControllerBase
                 userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
             }
 
-            var workspace = await _workspaceService.CreateWorkspaceAsync(request, userId);
+            if (!userId.HasValue)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "認証が必要です。",
+                    }
+                );
+            }
+
+            // ログインユーザーの情報を取得して組織IDを取得
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            if (user == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ユーザーが見つかりません。",
+                    }
+                );
+            }
+
+            if (!user.OrganizationId.HasValue)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ユーザーが組織に所属していません。",
+                    }
+                );
+            }
+
+            var workspace = await _workspaceService.CreateWorkspaceAsync(
+                request,
+                user.OrganizationId.Value,
+                userId
+            );
 
             var response = new WorkspaceResponse
             {
