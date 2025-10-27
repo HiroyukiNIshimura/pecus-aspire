@@ -495,4 +495,51 @@ public class UserService
             throw;
         }
     }
+
+    /// <summary>
+    /// ユーザープロフィールを更新（基本情報 + スキル）
+    /// </summary>
+    public async Task<User?> UpdateProfileAsync(int userId, UpdateProfileRequest request, int updatedByUserId)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // 基本プロフィール情報の更新
+            var updateUserRequest = new UpdateUserRequest
+            {
+                Username = request.Username,
+                AvatarType = request.AvatarType,
+                AvatarUrl = request.AvatarUrl
+            };
+
+            var updatedUser = await UpdateUserAsync(userId, updateUserRequest, updatedByUserId);
+            if (updatedUser == null)
+            {
+                return null;
+            }
+
+            // スキルの更新（指定されている場合のみ）
+            if (request.SkillIds != null)
+            {
+                var skillUpdateSuccess = await SetUserSkillsAsync(
+                    userId,
+                    request.SkillIds,
+                    updatedByUserId
+                );
+
+                if (!skillUpdateSuccess)
+                {
+                    return null;
+                }
+            }
+
+            await transaction.CommitAsync();
+            return updatedUser;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

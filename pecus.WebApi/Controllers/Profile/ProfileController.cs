@@ -85,46 +85,19 @@ public class ProfileController : ControllerBase
             });
         }
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // 基本プロフィール情報の更新
-            var updateUserRequest = new UpdateUserRequest
-            {
-                Username = request.Username,
-                AvatarType = request.AvatarType,
-                AvatarUrl = request.AvatarUrl
-            };
-
-            var updatedUser = await _userService.UpdateUserAsync(me, updateUserRequest, me);
+            var updatedUser = await _userService.UpdateProfileAsync(me, request, me);
             if (updatedUser == null)
             {
                 return NotFound();
             }
-
-            // スキルの更新（指定されている場合のみ）
-            if (request.SkillIds != null)
-            {
-                var skillUpdateSuccess = await _userService.SetUserSkillsAsync(
-                    me,
-                    request.SkillIds,
-                    me
-                );
-
-                if (!skillUpdateSuccess)
-                {
-                    return NotFound();
-                }
-            }
-
-            await transaction.CommitAsync();
 
             _logger.LogInformation("ユーザープロフィールを更新しました。UserId: {UserId}", me);
             return Ok();
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
             _logger.LogError(ex, "プロフィール更新中にエラーが発生しました。UserId: {UserId}", me);
             throw;
         }
