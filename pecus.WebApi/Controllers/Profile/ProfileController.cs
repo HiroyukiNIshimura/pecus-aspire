@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Services;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses;
 using Pecus.Models.Responses.Common;
@@ -27,6 +29,8 @@ public class ProfileController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProfileController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _config;
 
     /// <summary>
     /// コンストラクタ
@@ -35,13 +39,17 @@ public class ProfileController : ControllerBase
         UserService userService,
         ApplicationDbContext context,
         ILogger<ProfileController> logger,
-        IBackgroundJobClient backgroundJobClient
+        IBackgroundJobClient backgroundJobClient,
+        IEmailService emailService,
+        IConfiguration config
     )
     {
         _userService = userService;
         _context = context;
         _logger = logger;
         _backgroundJobClient = backgroundJobClient;
+        _emailService = emailService;
+        _config = config;
     }
 
     /// <summary>
@@ -149,13 +157,25 @@ public class ProfileController : ControllerBase
         // メール変更確認トークンを生成
         var token = JwtBearerUtil.GenerateEmailChangeToken(me, request.NewEmail);
 
-        // Hangfireでメール送信をキューイング
+        var baseUrl = _config["Pecus:Application:BaseUrl"] ?? "https://localhost";
+        var model = new
+        {
+            Token = token,
+            ConfirmUrl = $"{baseUrl}/api/entrance/auth/confirm-email-change?token={token}"
+        };
+
         _backgroundJobClient.Enqueue<EmailTasks>(x =>
-            x.SendEmailChangeNotificationAsync(request.NewEmail, token)
-        );
+               x.SendTemplatedEmailAsync(
+                   user.Email,
+                    "メールアドレス変更確認",
+                    "email-change-notification",
+                    model
+               )
+           );
 
         _logger.LogInformation("メールアドレス変更依頼を受け付けました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
 
         return Ok(new { Message = "メールアドレス変更確認メールを送信しました。メール内のリンクから変更を確定してください。" });
     }
+
 }

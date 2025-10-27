@@ -5,7 +5,6 @@ using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();

@@ -164,29 +164,4 @@ public class EmailTasks
         );
     }
 
-    /// <summary>
-    /// メールアドレス変更確認メールを送信
-    /// </summary>
-    /// <param name="to">宛先メールアドレス（新しいメールアドレス）</param>
-    /// <param name="token">確認トークン</param>
-    public async Task SendEmailChangeNotificationAsync(string to, string token)
-    {
-        _logger.LogInformation("Sending email change notification to {To}", to);
-
-        var baseUrl = _config["Pecus:Application:BaseUrl"] ?? "https://localhost";
-        var model = new
-        {
-            Token = token,
-            ConfirmUrl = $"{baseUrl}/api/entrance/auth/confirm-email-change?token={token}"
-        };
-
-        await _emailService.SendTemplatedEmailAsync(
-            to,
-            "メールアドレス変更確認",
-            "email-change-notification",
-            model
-        );
-
-        _logger.LogInformation("Email change notification sent to {To}", to);
-    }
 }
