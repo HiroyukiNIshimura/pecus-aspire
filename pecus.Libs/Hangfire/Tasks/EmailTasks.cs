@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.Mail.Models;
 using Pecus.Libs.Mail.Services;
@@ -11,11 +12,13 @@ public class EmailTasks
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<EmailTasks> _logger;
+    private readonly IConfiguration _config;
 
-    public EmailTasks(IEmailService emailService, ILogger<EmailTasks> logger)
+    public EmailTasks(IEmailService emailService, ILogger<EmailTasks> logger, IConfiguration config)
     {
         _emailService = emailService;
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -159,5 +162,31 @@ public class EmailTasks
             "Personalized bulk email sent to {Count} recipients",
             emailData.Count
         );
+    }
+
+    /// <summary>
+    /// メールアドレス変更確認メールを送信
+    /// </summary>
+    /// <param name="to">宛先メールアドレス（新しいメールアドレス）</param>
+    /// <param name="token">確認トークン</param>
+    public async Task SendEmailChangeNotificationAsync(string to, string token)
+    {
+        _logger.LogInformation("Sending email change notification to {To}", to);
+
+        var baseUrl = _config["Pecus:Application:BaseUrl"] ?? "https://localhost";
+        var model = new
+        {
+            Token = token,
+            ConfirmUrl = $"{baseUrl}/api/entrance/auth/confirm-email-change?token={token}"
+        };
+
+        await _emailService.SendTemplatedEmailAsync(
+            to,
+            "メールアドレス変更確認",
+            "email-change-notification",
+            model
+        );
+
+        _logger.LogInformation("Email change notification sent to {To}", to);
     }
 }

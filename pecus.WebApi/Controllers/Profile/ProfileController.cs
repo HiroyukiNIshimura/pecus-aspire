@@ -1,9 +1,12 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses;
 using Pecus.Models.Responses.Common;
@@ -23,6 +26,7 @@ public class ProfileController : ControllerBase
     private readonly UserService _userService;
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProfileController> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     /// <summary>
     /// コンストラクタ
@@ -30,12 +34,14 @@ public class ProfileController : ControllerBase
     public ProfileController(
         UserService userService,
         ApplicationDbContext context,
-        ILogger<ProfileController> logger
+        ILogger<ProfileController> logger,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _userService = userService;
         _context = context;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -103,5 +109,53 @@ public class ProfileController : ControllerBase
             _logger.LogError(ex, "プロフィール更新中にエラーが発生しました。UserId: {UserId}", me);
             throw;
         }
+    }
+
+    /// <summary>
+    /// メールアドレス変更依頼
+    /// </summary>
+    /// <param name="request">変更情報</param>
+    /// <returns>結果</returns>
+    [HttpPatch("email")]
+    public async Task<IActionResult> RequestEmailChange(UpdateEmailRequest request)
+    {
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 新しいメールアドレスが現在のものと同じかチェック
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (user.Email.Equals(request.NewEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Message = "新しいメールアドレスは現在のメールアドレスと異なっている必要があります。"
+            });
+        }
+
+        // 新しいメールアドレスが既に使用されていないかチェック
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.NewEmail);
+        if (existingUser != null)
+        {
+            return BadRequest(new ErrorResponse
+            {
+                Message = "このメールアドレスは既に使用されています。"
+            });
+        }
+
+        // メール変更確認トークンを生成
+        var token = JwtBearerUtil.GenerateEmailChangeToken(me, request.NewEmail);
+
+        // Hangfireでメール送信をキューイング
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendEmailChangeNotificationAsync(request.NewEmail, token)
+        );
+
+        _logger.LogInformation("メールアドレス変更依頼を受け付けました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
+
+        return Ok(new { Message = "メールアドレス変更確認メールを送信しました。メール内のリンクから変更を確定してください。" });
     }
 }

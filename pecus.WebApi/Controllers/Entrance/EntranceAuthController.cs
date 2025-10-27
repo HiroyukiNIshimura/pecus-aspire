@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
@@ -102,6 +103,109 @@ public class EntranceAuthController : ControllerBase
                 "ログイン中にエラーが発生しました。LoginIdentifier: {LoginIdentifier}",
                 request.LoginIdentifier
             );
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// メールアドレス変更確定
+    /// </summary>
+    /// <remarks>
+    /// メールアドレス変更確認トークンを使用してメールアドレスを変更します
+    /// </remarks>
+    [HttpPost("confirm-email-change")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<Ok, BadRequest<ErrorResponse>, NotFound, StatusCodeHttpResult>
+    > ConfirmEmailChange([FromQuery] string token)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "トークンが指定されていません。"
+                });
+            }
+
+            // トークンを検証
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(token))
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "無効なトークンです。"
+                });
+            }
+
+            var jwtToken = handler.ReadJwtToken(token);
+
+            // 目的がemail_changeかチェック
+            var purposeClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "purpose");
+            if (purposeClaim?.Value != "email_change")
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "無効なトークンです。"
+                });
+            }
+
+            // ユーザーIDを取得
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "userId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "無効なトークンです。"
+                });
+            }
+
+            // 新しいメールアドレスを取得
+            var newEmailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "newEmail");
+            if (newEmailClaim == null)
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "無効なトークンです。"
+                });
+            }
+
+            var newEmail = newEmailClaim.Value;
+
+            // トークンの有効期限をチェック
+            if (jwtToken.ValidTo < DateTime.UtcNow)
+            {
+                return TypedResults.BadRequest(new ErrorResponse
+                {
+                    Message = "トークンの有効期限が切れています。再度変更リクエストを行ってください。"
+                });
+            }
+
+            // メールアドレスを更新
+            await _userService.UpdateUserEmailAsync(userId, newEmail, userId);
+
+            _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", userId, newEmail);
+
+            return TypedResults.Ok();
+        }
+        catch (NotFoundException)
+        {
+            return TypedResults.NotFound();
+        }
+        catch (DuplicateException ex)
+        {
+            return TypedResults.BadRequest(new ErrorResponse
+            {
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "メールアドレス変更確定中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

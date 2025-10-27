@@ -1,0 +1,37 @@
+@model dynamic
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メールアドレス変更確認</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>メールアドレス変更確認</h1>
+        </div>
+        <div class="content">
+            <p>メールアドレスの変更がリクエストされました。</p>
+            <p>以下のリンクをクリックして、メールアドレスの変更を確定してください。</p>
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="@Model.ConfirmUrl" class="button">メールアドレス変更を確定する</a>
+            </p>
+            <p>このリンクは1時間以内に有効です。有効期限が切れた場合は、再度変更リクエストを行ってください。</p>
+            <p>このリクエストに心当たりがない場合は、このメールを無視してください。</p>
+        </div>
+        <div class="footer">
+            <p>このメールは自動送信されています。返信しないでください。</p>
+        </div>
+    </div>
+</body>
+</html>

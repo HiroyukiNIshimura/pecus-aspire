@@ -194,3 +194,17 @@ public class LoginRequest
     [Required(ErrorMessage = "パスワードは必須です。")]
     public required string Password { get; set; }
 }
+
+/// <summary>
+/// メールアドレス変更リクエスト
+/// </summary>
+public class UpdateEmailRequest
+{
+    /// <summary>
+    /// 新しいメールアドレス
+    /// </summary>
+    [Required(ErrorMessage = "新しいメールアドレスは必須です。")]
+    [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    public required string NewEmail { get; set; }
+}

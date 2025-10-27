@@ -538,4 +538,30 @@ public class UserService
             throw;
         }
     }
+
+    /// <summary>
+    /// ユーザーのメールアドレスを更新
+    /// </summary>
+    public async Task<User> UpdateUserEmailAsync(int userId, string newEmail, int updatedByUserId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        // 新しいメールアドレスが既に使用されていないかチェック
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == newEmail && u.Id != userId);
+        if (existingUser != null)
+        {
+            throw new DuplicateException("このメールアドレスは既に使用されています。");
+        }
+
+        user.Email = newEmail;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedByUserId = updatedByUserId;
+
+        await _context.SaveChangesAsync();
+        return user;
+    }
 }
