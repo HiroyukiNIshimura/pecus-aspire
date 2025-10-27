@@ -15,7 +15,7 @@ public static class WorkspaceItemResponseHelper
     /// <param name="currentUserId">ログイン中のユーザーID（null可）</param>
     /// <returns>WorkspaceItemDetailResponse</returns>
     public static WorkspaceItemDetailResponse BuildItemDetailResponse(
-        Pecus.Libs.DB.Models.WorkspaceItem item,
+        DB.Models.WorkspaceItem item,
         int? currentUserId
     )
     {
@@ -71,10 +71,10 @@ public static class WorkspaceItemResponseHelper
             UpdatedAt = item.UpdatedAt,
             Tags =
                 item.WorkspaceItemTags?.Select(wit => new TagInfoResponse
-                    {
-                        Id = wit.Tag?.Id ?? 0,
-                        Name = wit.Tag?.Name ?? string.Empty,
-                    })
+                {
+                    Id = wit.Tag?.Id ?? 0,
+                    Name = wit.Tag?.Name ?? string.Empty,
+                })
                     .Where(tag => tag.Id > 0 && !string.IsNullOrEmpty(tag.Name))
                     .ToList() ?? new List<TagInfoResponse>(),
             IsPinned =

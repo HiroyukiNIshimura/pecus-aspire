@@ -11,13 +11,13 @@ public class CreateWorkspaceRequest
     /// ワークスペース名
     /// </summary>
     [Required(ErrorMessage = "ワークスペース名は必須です。")]
-    [StringLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
     public required string Name { get; set; }
 
     /// <summary>
     /// ワークスペースの説明
     /// </summary>
-    [StringLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
+    [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
 }
 
@@ -29,13 +29,13 @@ public class UpdateWorkspaceRequest
     /// <summary>
     /// ワークスペース名
     /// </summary>
-    [StringLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
     public string? Name { get; set; }
 
     /// <summary>
     /// ワークスペースの説明
     /// </summary>
-    [StringLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
+    [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
 }
 
@@ -54,6 +54,28 @@ public class AddUserToWorkspaceRequest
     /// <summary>
     /// ワークスペース内での役割（例: Owner, Member, Guest）
     /// </summary>
-    [StringLength(50, ErrorMessage = "役割は50文字以内で入力してください。")]
+    [MaxLength(50, ErrorMessage = "役割は50文字以内で入力してください。")]
     public string? WorkspaceRole { get; set; }
+}
+
+/// <summary>
+/// ワークスペース一覧取得リクエスト
+/// </summary>
+public class GetWorkspacesRequest
+{
+    [Range(1, int.MaxValue, ErrorMessage = "ページ番号は1以上で指定してください。")]
+    public int? Page { get; set; } = 1;
+
+    public bool? ActiveOnly { get; set; } = true;
+}
+
+/// <summary>
+/// ワークスペースメンバー一覧取得リクエスト
+/// </summary>
+public class GetWorkspaceMembersRequest
+{
+    [Range(1, int.MaxValue, ErrorMessage = "ページ番号は1以上で指定してください。")]
+    public int? Page { get; set; } = 1;
+
+    public bool? ActiveOnly { get; set; } = true;
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Config;
+using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.WorkspaceItem;
 using Pecus.Services;
@@ -208,7 +209,7 @@ public class WorkspaceItemPinController : ControllerBase
             UnauthorizedHttpResult,
             StatusCodeHttpResult
         >
-    > GetMyPinnedItems([FromQuery] int page = 1)
+    > GetMyPinnedItems([FromQuery] GetMyPinnedItemsRequest request)
     {
         try
         {
@@ -218,7 +219,7 @@ public class WorkspaceItemPinController : ControllerBase
             var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
                 me,
-                page,
+                request.Page,
                 pageSize
             );
 
@@ -228,7 +229,7 @@ public class WorkspaceItemPinController : ControllerBase
 
             var response = PaginationHelper.CreatePagedResponse(
                 itemResponses,
-                page,
+                request.Page,
                 pageSize,
                 totalCount
             );

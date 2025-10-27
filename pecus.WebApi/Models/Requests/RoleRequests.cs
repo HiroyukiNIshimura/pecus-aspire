@@ -11,13 +11,13 @@ public class CreateRoleRequest
     /// ロール名
     /// </summary>
     [Required(ErrorMessage = "ロール名は必須です。")]
-    [StringLength(50, ErrorMessage = "ロール名は50文字以内で入力してください。")]
+    [MaxLength(50, ErrorMessage = "ロール名は50文字以内で入力してください。")]
     public required string Name { get; set; }
 
     /// <summary>
     /// ロールの説明
     /// </summary>
-    [StringLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
+    [MaxLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
     public string? Description { get; set; }
 }
 
@@ -30,5 +30,6 @@ public class SetPermissionsToRoleRequest
     /// 設定する権限IDのリスト。既存の権限をすべて置き換えます。
     /// 空のリストまたはnullを指定するとすべての権限が削除されます。
     /// </summary>
+    [Validation.IntListRange(0, 200)]
     public List<int>? PermissionIds { get; set; }
 }

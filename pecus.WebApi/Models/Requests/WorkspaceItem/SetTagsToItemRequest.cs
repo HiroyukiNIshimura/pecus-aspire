@@ -10,5 +10,6 @@ public class SetTagsToItemRequest
     /// Tags will be auto-created in the organization if they don't exist.
     /// Empty list or null will remove all tags.
     /// </summary>
+    [Validation.StringListItems(50)]
     public List<string>? TagNames { get; set; }
 }

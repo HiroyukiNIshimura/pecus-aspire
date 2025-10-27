@@ -179,12 +179,7 @@ public class WorkspaceItemController : ControllerBase
         Results<Ok<PagedResponse<WorkspaceItemDetailResponse>>, StatusCodeHttpResult>
     > GetWorkspaceItems(
         int workspaceId,
-        [FromQuery] int page = 1,
-        [FromQuery] bool? isDraft = null,
-        [FromQuery] bool? isArchived = null,
-        [FromQuery] int? assigneeId = null,
-        [FromQuery] int? priority = null,
-        [FromQuery] bool? pinned = null
+        [FromQuery] GetWorkspaceItemsRequest request
     )
     {
         try
@@ -199,7 +194,7 @@ public class WorkspaceItemController : ControllerBase
                 // 空の結果を返す
                 var emptyResponse = PaginationHelper.CreatePagedResponse(
                     new List<WorkspaceItemDetailResponse>(),
-                    page,
+                    request.Page,
                     _config.Pagination.DefaultPageSize,
                     0
                 );
@@ -208,7 +203,7 @@ public class WorkspaceItemController : ControllerBase
 
             // pinnedフィルタを使用する場合は認証が必要
             int? pinnedByUserId = null;
-            if (pinned.HasValue && pinned.Value)
+            if (request.Pinned.HasValue && request.Pinned.Value)
             {
                 pinnedByUserId = me;
             }
@@ -216,12 +211,12 @@ public class WorkspaceItemController : ControllerBase
             var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
                 workspaceId,
-                page,
+                request.Page,
                 pageSize,
-                isDraft,
-                isArchived,
-                assigneeId,
-                priority,
+                request.IsDraft,
+                request.IsArchived,
+                request.AssigneeId,
+                request.Priority,
                 pinnedByUserId
             );
 
@@ -233,7 +228,7 @@ public class WorkspaceItemController : ControllerBase
 
             var response = PaginationHelper.CreatePagedResponse(
                 itemResponses,
-                page,
+                request.Page,
                 pageSize,
                 totalCount
             );

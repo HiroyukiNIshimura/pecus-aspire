@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
@@ -91,8 +92,7 @@ public class BackendOrganizationController : ControllerBase
     /// <summary>
     /// 組織一覧取得（ページネーション対応）
     /// </summary>
-    /// <param name="page">ページ番号（1から始まる）</param>
-    /// <param name="activeOnly">アクティブな組織のみ取得する場合はtrue</param>
+    /// <param name="request">組織一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
         typeof(PagedResponse<OrganizationListItemResponse>),
@@ -101,17 +101,17 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<PagedResponse<OrganizationListItemResponse>>, StatusCodeHttpResult>
-    > GetOrganizations([FromQuery] int? page, [FromQuery] bool? activeOnly = true)
+    > GetOrganizations([FromQuery] GetOrganizationsRequest request)
     {
         try
         {
-            var validatedPage = PaginationHelper.ValidatePageNumber(page);
+            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
             var pageSize = _config.Pagination.DefaultPageSize;
 
-            var (organizations, totalCount) = await _organizationService.GetOrganizationsPagedAsync(
+            (List<Organization> organizations, int totalCount) = await _organizationService.GetOrganizationsPagedAsync(
                 validatedPage,
                 pageSize,
-                activeOnly
+                request.ActiveOnly
             );
 
             var organizationResponses = organizations.Select(o => new OrganizationListItemResponse

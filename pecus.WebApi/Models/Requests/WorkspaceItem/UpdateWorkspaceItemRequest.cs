@@ -16,6 +16,7 @@ public class UpdateWorkspaceItemRequest
     /// <summary>
     /// 本文（WYSIWYGのノードデータをJSON形式で保存）
     /// </summary>
+    [MaxLength(5000000, ErrorMessage = "本文のデータが許容範囲を超えています。")]
     public string? Body { get; set; }
 
     /// <summary>

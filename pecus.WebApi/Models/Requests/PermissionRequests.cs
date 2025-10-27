@@ -11,18 +11,18 @@ public class CreatePermissionRequest
     /// 権限名
     /// </summary>
     [Required(ErrorMessage = "権限名は必須です。")]
-    [StringLength(100, ErrorMessage = "権限名は100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "権限名は100文字以内で入力してください。")]
     public required string Name { get; set; }
 
     /// <summary>
     /// 権限の説明
     /// </summary>
-    [StringLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
+    [MaxLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
     public string? Description { get; set; }
 
     /// <summary>
     /// カテゴリ
     /// </summary>
-    [StringLength(50, ErrorMessage = "カテゴリは50文字以内で入力してください。")]
+    [MaxLength(50, ErrorMessage = "カテゴリは50文字以内で入力してください。")]
     public string? Category { get; set; }
 }

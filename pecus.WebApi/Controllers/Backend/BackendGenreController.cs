@@ -37,8 +37,7 @@ public class BackendGenreController : ControllerBase
     /// <summary>
     /// ジャンル一覧を取得
     /// </summary>
-    /// <param name="page">ページ番号（1から開始）</param>
-    /// <param name="activeOnly">有効なジャンルのみを取得するか</param>
+    /// <param name="request">ジャンル一覧取得リクエスト</param>
     /// <returns>ジャンル一覧</returns>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<GenreListItemResponse>), 200)]
@@ -50,14 +49,14 @@ public class BackendGenreController : ControllerBase
             BadRequest<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > GetGenres([FromQuery] int? page, [FromQuery] bool? activeOnly)
+    > GetGenres([FromQuery] GetGenresRequest request)
     {
         try
         {
-            var currentPage = page ?? 1;
-            var (genres, totalCount) = await _genreService.GetGenresPagedAsync(
+            var currentPage = request.Page ?? 1;
+            (List<GenreListItemResponse> genres, int totalCount) = await _genreService.GetGenresPagedAsync(
                 currentPage,
-                activeOnly
+                request.ActiveOnly
             );
 
             var response = PaginationHelper.CreatePagedResponse(

@@ -17,6 +17,7 @@ public class CreateWorkspaceItemRequest
     /// <summary>
     /// 本文（WYSIWYGのノードデータをJSON形式で保存）
     /// </summary>
+    [MaxLength(5000000, ErrorMessage = "本文のデータが許容範囲を超えています。")]
     public string Body { get; set; } = string.Empty;
 
     /// <summary>
@@ -44,5 +45,6 @@ public class CreateWorkspaceItemRequest
     /// <summary>
     /// タグ名のリスト（存在しないタグは自動作成）
     /// </summary>
+    [Validation.StringListItems(50)]
     public List<string>? TagNames { get; set; }
 }

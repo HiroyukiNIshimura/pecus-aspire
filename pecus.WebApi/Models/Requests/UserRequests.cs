@@ -12,7 +12,7 @@ public class CreateUserRequest
     /// ユーザー名
     /// </summary>
     [Required(ErrorMessage = "ユーザー名は必須です。")]
-    [StringLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
+    [MaxLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
     public required string Username { get; set; }
 
     /// <summary>
@@ -20,7 +20,7 @@ public class CreateUserRequest
     /// </summary>
     [Required(ErrorMessage = "メールアドレスは必須です。")]
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
-    [StringLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string Email { get; set; }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class CreateUserWithoutPasswordRequest
     /// ユーザー名
     /// </summary>
     [Required(ErrorMessage = "ユーザー名は必須です。")]
-    [StringLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
+    [MaxLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
     public required string Username { get; set; }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class CreateUserWithoutPasswordRequest
     /// </summary>
     [Required(ErrorMessage = "メールアドレスは必須です。")]
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
-    [StringLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string Email { get; set; }
 }
 
@@ -94,7 +94,7 @@ public class RequestPasswordResetRequest
     /// </summary>
     [Required(ErrorMessage = "メールアドレスは必須です。")]
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
-    [StringLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string Email { get; set; }
 }
 
@@ -129,16 +129,20 @@ public class UpdateUserRequest
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [MaxLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
     public string? Username { get; set; }
 
     /// <summary>
     /// アバタータイプ
     /// </summary>
+    [AvatarType]
     public string? AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL
     /// </summary>
+    [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
+    [Url(ErrorMessage = "有効なURLを指定してください。")]
     public string? AvatarUrl { get; set; }
 }
 
@@ -150,21 +154,26 @@ public class UpdateProfileRequest
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [MaxLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
     public string? Username { get; set; }
 
     /// <summary>
     /// アバタータイプ
     /// </summary>
+    [AvatarType]
     public string? AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL
     /// </summary>
+    [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
+    [Url(ErrorMessage = "有効なURLを指定してください。")]
     public string? AvatarUrl { get; set; }
 
     /// <summary>
     /// スキルIDリスト
     /// </summary>
+    [IntListRange(1, 50)]
     public List<int>? SkillIds { get; set; }
 }
 

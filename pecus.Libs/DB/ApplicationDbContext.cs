@@ -96,7 +96,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.LoginId).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(254);
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.AvatarType).HasMaxLength(20).HasDefaultValue("auto-generated");
             entity.Property(e => e.AvatarUrl).HasMaxLength(500);
@@ -170,7 +170,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.RepresentativeName).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).IsRequired().HasMaxLength(20);
-            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(254);
             entity.HasIndex(e => e.Code).IsUnique();
         });
 

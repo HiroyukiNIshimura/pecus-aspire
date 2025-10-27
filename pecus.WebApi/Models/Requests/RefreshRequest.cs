@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Requests;
 
 /// <summary>
@@ -8,5 +10,7 @@ public class RefreshRequest
     /// <summary>
     /// クライアントから送られるリフレッシュトークン
     /// </summary>
-    public string? RefreshToken { get; set; }
+    [Required(ErrorMessage = "リフレッシュトークンは必須です。")]
+    [MaxLength(512, ErrorMessage = "リフレッシュトークンは512文字以内で指定してください。")]
+    public required string RefreshToken { get; set; }
 }

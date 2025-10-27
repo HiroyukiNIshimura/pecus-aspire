@@ -1,58 +1,4 @@
-# Pecus Aspire - AI Agent Instructions
-
-## Project Philosophy
-**Conversation-Driven Development**: Built entirely through AI pair programming. Solve problems through iteration, not speculation. The codebase has evolved from a standalone API to a distributed microservices architecture using .NET Aspire.
-
-## Architecture Overview
-
-### .NET Aspire Distributed Application
-This is a **microservices project orchestrated by .NET Aspire 9.0**, not a monolithic application.
-
-**Project Structure**:
-- **pecus.AppHost**: Aspire orchestration host - defines service topology, dependencies, and startup order
-- **pecus.WebApi**: Main REST API with JWT auth, Hangfire client, Swagger UI
-- **pecus.BackFire**: Hangfire background job server (worker process) - executes email tasks and other background jobs
-- **pecus.DbManager**: Database migration manager - auto-migrates on startup via `DbInitializer`
-- **pecus.Libs**: Shared class library for DB models, Hangfire tasks, email services, seed data
-- **pecus.ServiceDefaults**: Aspire service defaults (Serilog, health checks, OpenTelemetry)
-
-**Infrastructure** (defined in `pecus.AppHost/AppHost.cs`):
-- **PostgreSQL**: `pecusdb` database with username/password parameters
-- **Redis**: Shared cache for Hangfire job queue
-- **Service Dependencies**: DbManager waits for Postgres, WebApi waits for Postgres+Redis, BackFire waits for Redis
-
-### Data Layer Architecture (pecus.Libs)
-**Namespace**: `Pecus.Libs.DB` (migrated from `Pecus.DB` in pecus.WebApi)
-
-**Entities** (`pecus.Libs/DB/Models/*.cs`):
-- User, Role, Permission (RBAC with M:N)
-- Organization, Workspace, WorkspaceUser (multi-tenant structure)
-- Genre (master data for workspace types)
-
-**DbContext** (`pecus.Libs/DB/ApplicationDbContext.cs`):
-- EF Core 9.0 with PostgreSQL provider
-- Registered via Aspire: `builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb")`
-- All relationship configurations in `OnModelCreating`
-
-**Seed Data** (`pecus.Libs/DB/Seed/DatabaseSeeder.cs`):
-- `SeedAllAsync(bool isDevelopment)`: Environment-aware seeding
-  - **Production**: Permissions (13), Roles (Admin/User), Genres (6) only
-  - **Development**: Above + Organizations, Users (admin/user123), Workspaces
-- `SeedDevelopmentDataAsync()`: Explicitly seed mock data only
-
-### Background Jobs Architecture (Hangfire with Redis)
-**Shared Tasks** (`pecus.Libs/Hangfire/Tasks/`):
-- `HangfireTasks.cs`: 8 general task methods (LogMessage, LongRunningTask, ThrowError, ProcessBatch, SendEmail, GenerateReport, CleanupOldData, HealthCheck)
-- `EmailTasks.cs`: Email-specific tasks using MailKit + RazorLight templates
-  - `SendSimpleEmailAsync`: Direct HTML/text email
-  - `SendTemplatedEmailAsync<TModel>`: Single recipient with Razor template
-  - `SendCustomTemplatedEmailAsync<TModel>`: Multiple recipients, attachments, custom headers
-  - `SendBulkTemplatedEmailAsync<TModel>`: Same content to multiple recipients
-  - `SendPersonalizedBulkEmailAsync<TModel>`: Different models per recipient
-- Registered in DI as `AddScoped<HangfireTasks>()` and `AddScoped<EmailTasks>()` in both WebApi and BackFire
-
-**Client** (pecus.WebApi):
-# Pecus Aspire - AI エージェント向け指示（日本語訳）
+# Pecus Aspire - AI エージェント向け指示（日本語）
 
 ## プロジェクト方針
 Conversation-Driven Development（会話駆動開発）：AI とペアプログラミングする形で反復的に問題を解決します。投機的な設計を避け、反復を通して進めます。本リポジトリはスタンドアロン API から進化し、.NET Aspire を用いた分散マイクロサービス構成になっています。
@@ -165,7 +111,7 @@ public class EntranceAuthController : ControllerBase { }
 
 ## 重要なパターン
 
-### 1) Aspire によるサービス登録
+### Aspire によるサービス登録
 接続文字列ではなく Aspire に定義されたリソース名を使う点に注意してください（例: `pecusdb`, `redis`）。
 ```csharp
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
@@ -174,22 +120,31 @@ builder.AddRedisClient("redis");
 
 サービス参照や起動順は `.WithReference()` / `.WaitFor()` を使って明示します。
 
-### 2) リクエスト DTO パターン
+### リクエスト DTO パターン
 すべてのサービスメソッドはリクエストオブジェクトを受け取る設計にしてください（パラメータ列ではなく DTO を使う）。
-
-DTOのプロパティには最低限必要なValidation属性を付与してください。
-* 文字列の必須項目には `[Required]` を付与
-* 文字列の最大長には `[MaxLength(n)]` を付与
-* 数値の範囲には `[Range(min, max)]` を付与
-
-このシステムでは、Payloadの宛先はほとんどがDBとなりますので、スキーマを参考に文字数制限を適切に設定してください。
 
 ページングはクライアントから `page` のみ受け取り、`pageSize` はサーバー側で固定値を使います（サーバー性能担保のため）。
 
-### 3) 型付けされた例外ハンドリング
+検証属性（Validation）ルール
+ - リクエスト DTO のプロパティには必ず入力検証属性を付与してください。特に DB に保存されるフィールドはスキーマに沿った長さ制限・必須チェックを行ってください。
+ - 文字列の必須項目には `[Required(ErrorMessage = "○○は必須です。" )]` を付与します（メッセージは具体的に）。
+ - 文字列の最大長には `[MaxLength(n, ErrorMessage = "○○はn文字以内で入力してください。")]` を付与してください。DB のカラム長に合わせた n を指定してください。
+ - 文字列の最小・最大長には `[StringLength(min, max, ErrorMessage = "○○はmin〜max文字以内で入力してください。")]` を付与してください。DB のカラム長に合わせた n を指定してください。
+ - 数値の範囲には `[Range(min, max, ErrorMessage = "○○はmin〜maxの範囲で指定してください。")]` を付与してください。
+ - URL やメールアドレスは `[Url]` / `[EmailAddress]` を併用し、必要に応じて `[StringLength]` で長さ制限を行ってください。
+ - 配列／リスト（例: `List<string> TagNames`, `List<int> SkillIds`）の要素検証は DataAnnotations 単体では表現しづらいので、要件がある場合はカスタムバリデータ（`ValidationAttribute` の派生）か `IValidatableObject` 実装を用いて要素ごとの検証（非空、最大長、範囲など）を行ってください。
+ - ErrorMessage は必ず日本語で具体的に記述してください（例: `"件名は200文字以内で入力してください。"`）。
+ - 変更後はソリューション全体をビルドして（`dotnet build pecus.sln`）エラーや警告が出ないことを確認してください。
+
+小さな設計ルール
+ - クライアントから受け取る `page` は検証で `>=1` を保証すること。`pageSize` はサーバー側で固定するか、検証で上限を設けてください（例: 1〜100）。
+ - DB スキーマが参照可能な場合は、カラムの最大長を優先して DTO の文字数制限に反映してください。
+ - リクエスト DTO の変更は API の互換性に影響するため、必要ならバージョニング（エンドポイントのバージョン番号）を検討してください。
+
+### 型付けされた例外ハンドリング
 `NotFoundException` や `DuplicateException` 等のカスタム例外を使用し、メッセージ解析に依存しない実装にしてください。
 
-### 3.5) 認証とワークスペースアクセス制御（重要）
+### 認証とワークスペースアクセス制御（重要）
 ログイン中ユーザーの取得は直接行ってください（グローバルに `[Authorize]` が設定されているためコントローラ内で `IsAuthenticated` をチェックする必要はありません）。
 
 ユーザーID取得例（推奨）:
@@ -201,7 +156,7 @@ var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
 ワークスペースアクセスは `WorkspaceAccessHelper` を経由してチェックします。存在しない／アクセス不可は 404 を返す設計です。
 
-### 4) 複数テーブルにまたがる操作のトランザクション
+### 複数テーブルにまたがる操作のトランザクション
 複数テーブルの変更が発生する処理（生成・削除・多対多の更新等）はサービス層で明示的にトランザクションを開始して処理してください。
 
 例:
@@ -216,17 +171,17 @@ try {
 }
 ```
 
-トランザクション処理をコントローラー層に持ち込まないでください。
+なお、トランザクション処理をコントローラー層に持ち込まないでください。
 
-### 5) Hangfire タスクの共有パターン
+### Hangfire タスクの共有パターン
 タスクは `pecus.Libs` に実装し、WebApi（クライアント）と BackFire（サーバー）の両方で DI 登録してください。静的メソッドやグローバルな BackgroundJob 呼び出しは避けてください。
 
 ループ内でジョブをキューイングする際はローカルコピーを使ってクロージャの問題を避けてください。
 
-### 6) 環境感知型シーディング
+### 環境感知型シーディング
 `DatabaseSeeder` は `IWebHostEnvironment.IsDevelopment()` を参照して、開発環境ではモックデータまで投入するようにしてください。
 
-### 7) マイグレーションの配置
+### マイグレーションの配置
 EF Core のマイグレーションは `pecus.DbManager` プロジェクトに置き、そこで管理・適用します。
 
 ## ロギング（Serilog）

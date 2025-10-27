@@ -199,8 +199,7 @@ public class AdminWorkspaceController : ControllerBase
     /// <summary>
     /// ワークスペース一覧取得（ページネーション）
     /// </summary>
-    /// <param name="page">ページ番号（1から始まる）</param>
-    /// <param name="activeOnly">アクティブなワークスペースのみ取得（オプション）</param>
+    /// <param name="request">ワークスペース一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
         typeof(PagedResponse<WorkspaceListItemResponse>),
@@ -209,7 +208,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<PagedResponse<WorkspaceListItemResponse>>, StatusCodeHttpResult>
-    > GetWorkspaces([FromQuery] int? page, [FromQuery] bool? activeOnly = true)
+    > GetWorkspaces([FromQuery] GetWorkspacesRequest request)
     {
         try
         {
@@ -227,15 +226,15 @@ public class AdminWorkspaceController : ControllerBase
                 );
             }
 
-            var validatedPage = PaginationHelper.ValidatePageNumber(page);
+            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
             var pageSize = _config.Pagination.DefaultPageSize;
 
-            var (workspaces, totalCount) =
+            (List<Workspace> workspaces, int totalCount) =
                 await _workspaceService.GetWorkspacesByOrganizationPagedAsync(
                     organizationId.Value,
                     validatedPage,
                     pageSize,
-                    activeOnly
+                    request.ActiveOnly
                 );
 
             var items = workspaces
@@ -684,8 +683,7 @@ public class AdminWorkspaceController : ControllerBase
     /// ワークスペースのメンバー一覧取得（ページネーション）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
-    /// <param name="page">ページ番号（1から始まる）</param>
-    /// <param name="activeOnly">アクティブなメンバーのみ取得（オプション）</param>
+    /// <param name="request">ワークスペースメンバー一覧取得リクエスト</param>
     [HttpGet("{id}/users")]
     [ProducesResponseType(
         typeof(PagedResponse<WorkspaceUserDetailResponse>),
@@ -694,7 +692,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<PagedResponse<WorkspaceUserDetailResponse>>, StatusCodeHttpResult>
-    > GetWorkspaceMembers(int id, [FromQuery] int? page, [FromQuery] bool? activeOnly = true)
+    > GetWorkspaceMembers(int id, [FromQuery] GetWorkspaceMembersRequest request)
     {
         try
         {
@@ -712,14 +710,14 @@ public class AdminWorkspaceController : ControllerBase
                 );
             }
 
-            var validatedPage = PaginationHelper.ValidatePageNumber(page);
+            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
             var pageSize = _config.Pagination.DefaultPageSize;
 
-            var (members, totalCount) = await _workspaceService.GetWorkspaceMembersPagedAsync(
+            (List<WorkspaceUser> members, int totalCount) = await _workspaceService.GetWorkspaceMembersPagedAsync(
                 id,
                 validatedPage,
                 pageSize,
-                activeOnly
+                request.ActiveOnly
             );
 
             var items = members

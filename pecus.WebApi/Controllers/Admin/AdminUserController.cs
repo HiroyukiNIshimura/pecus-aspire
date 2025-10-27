@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
@@ -50,16 +51,14 @@ public class AdminUserController : ControllerBase
     /// <remarks>
     /// ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。
     /// </remarks>
-    /// <param name="page">ページ番号（1から開始）</param>
-    /// <param name="activeOnly">有効なユーザーのみ取得するか（デフォルト: false）</param>
+    /// <param name="request">ユーザー一覧取得リクエスト</param>
     /// <response code="200">ユーザー一覧を返します</response>
     /// <response code="404">組織が見つかりません</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<UserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<Results<Ok<PagedResponse<UserResponse>>, NotFound<ErrorResponse>>> GetUsers(
-        [FromQuery] int? page,
-        [FromQuery] bool activeOnly = false
+        [FromQuery] GetUsersRequest request
     )
     {
         try
@@ -75,14 +74,14 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var validatedPage = PaginationHelper.ValidatePageNumber(page);
+            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
             var pageSize = _config.Pagination.DefaultPageSize;
 
-            var (users, totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
+            (List<User> users, int totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
                 user.OrganizationId.Value,
                 validatedPage,
                 pageSize,
-                activeOnly
+                request.ActiveOnly ?? false
             );
 
             var userResponses = users.Select(u => new UserResponse
@@ -421,7 +420,7 @@ public class AdminUserController : ControllerBase
                 return TypedResults.Unauthorized();
             }
 
-            var (success, user) = await _userService.RequestPasswordResetByUserIdAsync(id);
+            (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
             if (success && user != null)
             {
                 // パスワードリセットURLを構築
