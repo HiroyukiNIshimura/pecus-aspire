@@ -34,51 +34,6 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// ユーザー登録
-    /// </summary>
-    [HttpPost]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<UserResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > Register([FromBody] CreateUserRequest request)
-    {
-        try
-        {
-            var user = await _userService.CreateUserAsync(request);
-            var response = new UserResponse
-            {
-                Id = user.Id,
-                LoginId = user.LoginId,
-                Username = user.Username,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt,
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ユーザー登録中にエラーが発生しました。Username: {Username}",
-                request.Username
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    /// <summary>
     /// ログイン
     /// </summary>
     /// <remarks>
