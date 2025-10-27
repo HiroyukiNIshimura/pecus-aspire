@@ -120,12 +120,12 @@ public class ProfileController : ControllerBase
     }
 
     /// <summary>
-    /// メールアドレス変更依頼
+    /// メールアドレスを変更
     /// </summary>
     /// <param name="request">変更情報</param>
     /// <returns>結果</returns>
     [HttpPatch("email")]
-    public async Task<IActionResult> RequestEmailChange(UpdateEmailRequest request)
+    public async Task<IActionResult> UpdateEmail(UpdateEmailRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
@@ -154,28 +154,33 @@ public class ProfileController : ControllerBase
             });
         }
 
-        // メール変更確認トークンを生成
-        var token = JwtBearerUtil.GenerateEmailChangeToken(me, request.NewEmail);
-
-        var baseUrl = _config["Pecus:Application:BaseUrl"] ?? "https://localhost";
-        var model = new
+        // テストメールを同期的に送信
+        try
         {
-            Token = token,
-            ConfirmUrl = $"{baseUrl}/api/entrance/auth/confirm-email-change?token={token}"
-        };
+            await _emailService.SendTemplatedEmailAsync(
+                request.NewEmail,
+                "メールアドレス変更テスト",
+                "test-email",
+                new { Email = request.NewEmail }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "テストメール送信に失敗しました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
+            return BadRequest(new ErrorResponse
+            {
+                Message = "新しいメールアドレスにメールが届かないため、変更できませんでした。メールアドレスを確認してください。"
+            });
+        }
 
-        _backgroundJobClient.Enqueue<EmailTasks>(x =>
-               x.SendTemplatedEmailAsync(
-                   user.Email,
-                    "メールアドレス変更確認",
-                    "email-change-notification",
-                    model
-               )
-           );
+        // DB更新
+        user.Email = request.NewEmail;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedByUserId = me;
+        await _context.SaveChangesAsync();
 
-        _logger.LogInformation("メールアドレス変更依頼を受け付けました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
+        _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
 
-        return Ok(new { Message = "メールアドレス変更確認メールを送信しました。メール内のリンクから変更を確定してください。" });
+        return Ok(new { Message = "メールアドレスを変更しました。" });
     }
-
 }

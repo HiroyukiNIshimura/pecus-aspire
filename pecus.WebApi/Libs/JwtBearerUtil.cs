@@ -293,51 +293,6 @@ namespace Pecus.Libs
         }
 
         /// <summary>
-        /// メール変更確認用のトークンを生成
-        /// </summary>
-        /// <param name="userId">ユーザーID</param>
-        /// <param name="newEmail">新しいメールアドレス</param>
-        /// <returns>JWTトークン</returns>
-        public static string GenerateEmailChangeToken(int userId, string newEmail)
-        {
-            if (_config == null)
-            {
-                throw new InvalidOperationException(
-                    "JwtBearerUtil is not initialized. Call Initialize() first."
-                );
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("userId", userId.ToString()),
-                new Claim("newEmail", newEmail),
-                new Claim("purpose", "email_change"),
-                new Claim(
-                    JwtRegisteredClaimNames.Iat,
-                    new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
-                    ClaimValueTypes.Integer64
-                ),
-            };
-
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config.Jwt.IssuerSigningKey)
-            );
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.UtcNow.AddHours(1); // 1時間有効
-
-            var token = new JwtSecurityToken(
-                issuer: _config.Jwt.ValidIssuer,
-                audience: _config.Jwt.ValidAudience,
-                claims: claims,
-                expires: expires,
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        /// <summary>
         /// トークン文字列からJTIを取得
         /// </summary>
         public static string GetJtiFromToken(string token)
