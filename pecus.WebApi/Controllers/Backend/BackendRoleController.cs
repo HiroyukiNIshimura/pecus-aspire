@@ -176,6 +176,19 @@ public class BackendRoleController : ControllerBase
             // ログイン中のユーザーIDを取得
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+            // まずロールの存在を確認
+            var existingRole = await _roleService.GetRoleByIdAsync(roleId);
+            if (existingRole == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = "ロールが見つかりません。",
+                    }
+                );
+            }
+
             // 権限を一括設定
             var permissions = await _roleService.SetPermissionsToRoleAsync(
                 roleId,
@@ -183,25 +196,20 @@ public class BackendRoleController : ControllerBase
                 me
             );
 
-            // 更新後のロールを取得
-            var role = await _roleService.GetRoleByIdAsync(roleId);
-
-            // レスポンスを構築
+            // レスポンスを構築（既存のロール情報と更新された権限を使用）
             var response = new RoleDetailResponse
             {
-                Id = role.Id,
-                Name = role.Name,
-                Description = role.Description,
-                CreatedAt = role.CreatedAt,
-                Permissions = role
-                    .Permissions.Select(p => new PermissionDetailInfoResponse
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Description = p.Description,
-                        Category = p.Category,
-                    })
-                    .ToList(),
+                Id = existingRole.Id,
+                Name = existingRole.Name,
+                Description = existingRole.Description,
+                CreatedAt = existingRole.CreatedAt,
+                Permissions = permissions.Select(p => new PermissionDetailInfoResponse
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Category = p.Category,
+                }).ToList(),
             };
 
             return TypedResults.Ok(response);

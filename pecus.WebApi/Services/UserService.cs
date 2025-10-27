@@ -355,7 +355,9 @@ public class UserService
     /// <summary>
     /// パスワードリセットをリクエスト（メールアドレスベース）
     /// </summary>
-    public async Task<(bool success, User? user)> RequestPasswordResetAsync(RequestPasswordResetRequest request)
+    public async Task<(bool success, User? user)> RequestPasswordResetAsync(
+        RequestPasswordResetRequest request
+    )
     {
         var user = await _context.Users.FirstOrDefaultAsync(u =>
             u.Email == request.Email && u.IsActive
@@ -384,9 +386,7 @@ public class UserService
     /// </summary>
     public async Task<(bool success, User? user)> RequestPasswordResetByUserIdAsync(int userId)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u =>
-            u.Id == userId && u.IsActive
-        );
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
         if (user == null)
         {

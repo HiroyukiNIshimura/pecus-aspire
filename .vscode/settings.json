@@ -4,7 +4,7 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.formatOnSave": true
   },
-  "omnisharp.enableEditorConfigSupport": false,
+  "omnisharp.enableEditorConfigSupport": true,
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
