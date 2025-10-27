@@ -56,10 +56,10 @@ public class WorkspaceItemTagController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -76,7 +76,7 @@ public class WorkspaceItemTagController : ControllerBase
                 workspaceId,
                 itemId,
                 request.TagNames,
-                userId
+                me
             );
 
             // 更新後のアイテムを取得
@@ -87,7 +87,7 @@ public class WorkspaceItemTagController : ControllerBase
             {
                 Success = true,
                 Message = "タグを設定しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, userId),
+                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
             };
 
             return TypedResults.Ok(response);

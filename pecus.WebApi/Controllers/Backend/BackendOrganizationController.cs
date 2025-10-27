@@ -201,12 +201,12 @@ public class BackendOrganizationController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var organization = await _organizationService.UpdateOrganizationAsync(
                 id,
                 request,
-                userId
+                me
             );
 
             var response = new OrganizationResponse

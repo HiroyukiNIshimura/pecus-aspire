@@ -38,8 +38,8 @@ public class FileDownloadController : ControllerBase
             }
 
             // ログインユーザーの組織IDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user?.OrganizationId == null)
             {

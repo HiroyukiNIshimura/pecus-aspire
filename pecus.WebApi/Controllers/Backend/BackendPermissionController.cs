@@ -46,9 +46,9 @@ public class BackendPermissionController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var permission = await _permissionService.CreatePermissionAsync(request, userId);
+            var permission = await _permissionService.CreatePermissionAsync(request, me);
 
             var response = new PermissionResponse
             {

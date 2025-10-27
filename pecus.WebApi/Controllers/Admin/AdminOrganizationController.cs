@@ -51,10 +51,10 @@ public class AdminOrganizationController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ユーザー情報を取得して組織IDを取得
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(me);
             if (user == null || user.OrganizationId == null)
             {
                 return TypedResults.NotFound(
@@ -131,10 +131,10 @@ public class AdminOrganizationController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ユーザー情報を取得して組織IDを取得
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(me);
             if (user == null || user.OrganizationId == null)
             {
                 return TypedResults.NotFound(
@@ -149,7 +149,7 @@ public class AdminOrganizationController : ControllerBase
             var organization = await _organizationService.UpdateOrganizationAsync(
                 user.OrganizationId.Value,
                 request,
-                userId
+                me
             );
 
             var response = new OrganizationResponse

@@ -43,9 +43,9 @@ public class BackendRoleController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var role = await _roleService.CreateRoleAsync(request, userId);
+            var role = await _roleService.CreateRoleAsync(request, me);
             var response = new RoleResponse
             {
                 Id = role.Id,
@@ -174,13 +174,13 @@ public class BackendRoleController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // 権限を一括設定
             var permissions = await _roleService.SetPermissionsToRoleAsync(
                 roleId,
                 request.PermissionIds,
-                userId
+                me
             );
 
             // 更新後のロールを取得

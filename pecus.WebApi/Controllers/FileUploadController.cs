@@ -49,8 +49,8 @@ public class FileUploadController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user == null)
             {
@@ -118,15 +118,15 @@ public class FileUploadController : ControllerBase
             );
 
             // アバターの場合、ユーザー情報を更新
-            if (fileType.ToLowerInvariant() == "avatar" && resourceId == userId)
+            if (fileType.ToLowerInvariant() == "avatar" && resourceId == me)
             {
-                await UpdateUserAvatarAsync(userId, filePath);
+                await UpdateUserAvatarAsync(me, filePath);
             }
 
             // ジャンルの場合、ジャンル情報を更新
             if (fileType.ToLowerInvariant() == "genre")
             {
-                await UpdateGenreIconAsync(resourceId, filePath, userId);
+                await UpdateGenreIconAsync(resourceId, filePath, me);
             }
 
             var response = new FileUploadResponse

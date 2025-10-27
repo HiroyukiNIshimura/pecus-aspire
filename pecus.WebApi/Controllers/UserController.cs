@@ -158,7 +158,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
             var jti = JwtBearerUtil.GetJtiFromPrincipal(User);
 
             if (!string.IsNullOrEmpty(jti))
@@ -172,7 +172,7 @@ public class UserController : ControllerBase
 
             _logger.LogInformation(
                 "ユーザーがログアウトしました。UserId: {UserId}, JTI: {Jti}",
-                userId,
+                me,
                 jti
             );
 
@@ -376,9 +376,9 @@ public class UserController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var user = await _userService.UpdateUserAsync(id, request, userId);
+            var user = await _userService.UpdateUserAsync(id, request, me);
 
             var response = new UserResponse
             {
@@ -608,8 +608,8 @@ public class UserController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user == null)
             {
@@ -695,8 +695,8 @@ public class UserController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user == null)
             {

@@ -53,10 +53,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var ownerId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(ownerId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -71,14 +71,14 @@ public class WorkspaceItemController : ControllerBase
             var item = await _workspaceItemService.CreateWorkspaceItemAsync(
                 workspaceId,
                 request,
-                ownerId
+                me
             );
 
             var response = new WorkspaceItemResponse
             {
                 Success = true,
                 Message = "ワークスペースアイテムを作成しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, ownerId),
+                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
             };
 
             return TypedResults.Ok(response);
@@ -124,10 +124,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -141,7 +141,7 @@ public class WorkspaceItemController : ControllerBase
 
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
-            var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, currentUserId);
+            var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me);
 
             return TypedResults.Ok(response);
         }
@@ -190,10 +190,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 // 空の結果を返す
@@ -210,7 +210,7 @@ public class WorkspaceItemController : ControllerBase
             int? pinnedByUserId = null;
             if (pinned.HasValue && pinned.Value)
             {
-                pinnedByUserId = currentUserId;
+                pinnedByUserId = me;
             }
 
             var pageSize = _config.Pagination.DefaultPageSize;
@@ -227,7 +227,7 @@ public class WorkspaceItemController : ControllerBase
 
             var itemResponses = items
                 .Select(item =>
-                    WorkspaceItemResponseHelper.BuildItemDetailResponse(item, currentUserId)
+                    WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me)
                 )
                 .ToList();
 
@@ -275,10 +275,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -294,7 +294,7 @@ public class WorkspaceItemController : ControllerBase
                 workspaceId,
                 itemId,
                 request,
-                currentUserId
+                me
             );
 
             var response = new WorkspaceItemResponse
@@ -303,7 +303,7 @@ public class WorkspaceItemController : ControllerBase
                 Message = "ワークスペースアイテムを更新しました。",
                 WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(
                     item,
-                    currentUserId
+                    me
                 ),
             };
 
@@ -364,10 +364,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -383,7 +383,7 @@ public class WorkspaceItemController : ControllerBase
                 workspaceId,
                 itemId,
                 request,
-                currentUserId
+                me
             );
 
             var response = new WorkspaceItemResponse
@@ -392,7 +392,7 @@ public class WorkspaceItemController : ControllerBase
                 Message = "ワークスペースアイテムのステータスを更新しました。",
                 WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(
                     item,
-                    currentUserId
+                    me
                 ),
             };
 
@@ -449,10 +449,10 @@ public class WorkspaceItemController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -467,7 +467,7 @@ public class WorkspaceItemController : ControllerBase
             await _workspaceItemService.DeleteWorkspaceItemAsync(
                 workspaceId,
                 itemId,
-                currentUserId
+                me
             );
 
             var response = new SuccessResponse

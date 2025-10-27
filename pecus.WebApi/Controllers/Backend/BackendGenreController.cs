@@ -122,8 +122,8 @@ public class BackendGenreController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var genre = await _genreService.CreateGenreAsync(request, userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var genre = await _genreService.CreateGenreAsync(request, me);
             return TypedResults.Ok(genre);
         }
         catch (DuplicateException ex)
@@ -161,8 +161,8 @@ public class BackendGenreController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var genre = await _genreService.UpdateGenreAsync(id, request, userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var genre = await _genreService.UpdateGenreAsync(id, request, me);
             return TypedResults.Ok(genre);
         }
         catch (NotFoundException ex)
@@ -251,8 +251,8 @@ public class BackendGenreController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            await _genreService.SetGenreActiveStatusAsync(id, request.IsActive, userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            await _genreService.SetGenreActiveStatusAsync(id, request.IsActive, me);
             var message = request.IsActive
                 ? "ジャンルを有効化しました。"
                 : "ジャンルを無効化しました。";
