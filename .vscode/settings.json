@@ -1,10 +1,10 @@
 {
   "editor.formatOnSave": false,
   "[csharp]": {
-    "editor.defaultFormatter": "csharpier.csharpier-vscode",
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.formatOnSave": true
   },
-  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableEditorConfigSupport": false,
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
