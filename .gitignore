@@ -135,3 +135,5 @@ _NCrunch*
 .vs
 # Aspire uploads directory (shared volume for attachments)
 uploads/
+
+pecus.WebApi/.spec/
