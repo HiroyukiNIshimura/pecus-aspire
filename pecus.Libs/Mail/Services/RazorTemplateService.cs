@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.Mail.Configuration;
 using RazorLight;
+using System.IO;
 
 namespace Pecus.Libs.Mail.Services;
 
@@ -23,8 +24,12 @@ public class RazorTemplateService : ITemplateService
         _logger = logger;
 
         // RazorLightエンジンの初期化
+        var templateRootPath = Path.Combine(AppContext.BaseDirectory, _settings.TemplateRootPath);
+
+        _logger.LogInformation("Initializing RazorLight with template root path: {TemplateRootPath}", templateRootPath);
+
         _razorEngine = new RazorLightEngineBuilder()
-            .UseFileSystemProject(_settings.TemplateRootPath)
+            .UseFileSystemProject(templateRootPath)
             .UseMemoryCachingProvider()
             .Build();
     }

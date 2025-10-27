@@ -7,6 +7,8 @@ using Pecus.Filters;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Configuration;
+using Pecus.Libs.Mail.Services;
 using Pecus.Models.Config;
 using Pecus.Services;
 using System.Reflection;
@@ -28,6 +30,13 @@ JwtBearerUtil.Initialize(pecusConfig);
 
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
+
+// EmailSettings設定
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+
+// メール関連サービスの登録
+builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Redisキャッシュの登録
 builder.AddRedisClient("redis");

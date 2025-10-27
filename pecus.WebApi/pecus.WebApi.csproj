@@ -27,6 +27,12 @@
     <ProjectReference Include="..\pecus.Libs\pecus.Libs.csproj" />
     <ProjectReference Include="..\pecus.ServiceDefaults\pecus.ServiceDefaults.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\pecus.Libs\Mail\Templates\*.cshtml">
+      <Link>Mail\Templates\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

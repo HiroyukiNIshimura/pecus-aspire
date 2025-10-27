@@ -8,5 +8,5 @@ public static class TestEmailConfig
     /// <summary>
     /// テスト用の受信先メールアドレス（デフォルトはローカルの MailHog 等）
     /// </summary>
-    public static string Recipient { get; set; } = "test@localhost.localdomain";
+    public static string Recipient { get; set; } = "nishimura@bright-l.co.jp";
 }
