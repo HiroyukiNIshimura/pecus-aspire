@@ -1,63 +1,14 @@
 @model dynamic
+@layout "_Layout.html.cshtml"
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メールアドレス変更テスト</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .content {
-            background-color: #ffffff;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-        }
-        .footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-            font-size: 12px;
-            color: #6c757d;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Pecus - メールアドレス変更テスト</h1>
-    </div>
+<h2>Pecus - メールアドレス変更テスト</h2>
 
-    <div class="content">
-        <p>こんにちは、</p>
+<p>こんにちは、</p>
 
-        <p>このメールは、メールアドレス変更機能のテスト送信です。</p>
+<p>このメールは、メールアドレス変更機能のテスト送信です。</p>
 
-        <p>新しいメールアドレス: <strong>@Model.Email</strong></p>
+<p>新しいメールアドレス: <strong>@Model.Email</strong></p>
 
-        <p>このメールが正しく届いた場合、メールアドレス変更が正常に行われます。</p>
+<p>このメールが正しく届いた場合、メールアドレス変更が正常に行われます。</p>
 
-        <p>よろしくお願いいたします。</p>
-    </div>
-
-    <div class="footer">
-        <p>このメールは自動送信されています。返信しないでください。</p>
-        <p>&copy; 2024 Pecus. All rights reserved.</p>
-    </div>
-</body>
-</html>
+<p>よろしくお願いいたします。</p>
