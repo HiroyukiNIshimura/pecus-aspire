@@ -9,7 +9,9 @@ pecus.WebApi/Controllers/Admin/AdminUserControllerにユーザーを登録する
 DBへの登録が完了したら登録ユーザーのメールアドレスへパスワード要求メールを送信する。
 
 
-Controllers/Entranceにユーザーのパスワード登録用のエンドポイントを作成する。
+Controllers/Adminに
+これは、ユーザーがパスワードを忘れた場合に利用する。
+
 
 
 

@@ -85,6 +85,43 @@ public class SetUserPasswordRequest
 }
 
 /// <summary>
+/// パスワードリセットリクエスト
+/// </summary>
+public class RequestPasswordResetRequest
+{
+    /// <summary>
+    /// メールアドレス
+    /// </summary>
+    [Required(ErrorMessage = "メールアドレスは必須です。")]
+    [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
+    [StringLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    public required string Email { get; set; }
+}
+
+/// <summary>
+/// パスワードリセット実行リクエスト
+/// </summary>
+public class ResetPasswordRequest
+{
+    /// <summary>
+    /// パスワードリセットトークン（メールで送信されたもの）
+    /// </summary>
+    [Required(ErrorMessage = "トークンは必須です。")]
+    public required string Token { get; set; }
+
+    /// <summary>
+    /// 新しいパスワード
+    /// </summary>
+    [Required(ErrorMessage = "パスワードは必須です。")]
+    [StringLength(
+        100,
+        MinimumLength = 6,
+        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    )]
+    public required string Password { get; set; }
+}
+
+/// <summary>
 /// ユーザー更新リクエスト（プロフィール情報のみ）
 /// </summary>
 public class UpdateUserRequest

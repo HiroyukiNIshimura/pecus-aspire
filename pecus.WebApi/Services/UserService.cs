@@ -353,6 +353,85 @@ public class UserService
     }
 
     /// <summary>
+    /// パスワードリセットをリクエスト（メールアドレスベース）
+    /// </summary>
+    public async Task<(bool success, User? user)> RequestPasswordResetAsync(RequestPasswordResetRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u =>
+            u.Email == request.Email && u.IsActive
+        );
+
+        if (user == null)
+        {
+            // セキュリティのため、ユーザーが存在しない場合も成功を返す
+            return (true, null);
+        }
+
+        // パスワードリセットトークンを生成（24時間有効）
+        var token = GeneratePasswordResetToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
+
+        user.PasswordResetToken = token;
+        user.PasswordResetTokenExpiresAt = tokenExpiresAt;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return (true, user);
+    }
+
+    /// <summary>
+    /// パスワードリセットをリクエスト（管理者用）
+    /// </summary>
+    public async Task<(bool success, User? user)> RequestPasswordResetByUserIdAsync(int userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u =>
+            u.Id == userId && u.IsActive
+        );
+
+        if (user == null)
+        {
+            return (false, null);
+        }
+
+        // パスワードリセットトークンを生成（24時間有効）
+        var token = GeneratePasswordResetToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
+
+        user.PasswordResetToken = token;
+        user.PasswordResetTokenExpiresAt = tokenExpiresAt;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return (true, user);
+    }
+
+    /// <summary>
+    /// パスワードをリセット
+    /// </summary>
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u =>
+            u.PasswordResetToken == request.Token
+            && u.PasswordResetTokenExpiresAt > DateTime.UtcNow
+            && !string.IsNullOrEmpty(u.PasswordHash) // パスワードが設定済みのユーザーのみ
+        );
+
+        if (user == null)
+        {
+            return false; // 無効なトークンまたは期限切れ
+        }
+
+        // パスワードをリセット
+        user.PasswordHash = HashPassword(request.Password);
+        user.PasswordResetToken = null; // トークンをクリア
+        user.PasswordResetTokenExpiresAt = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
     /// パスワードを検証
     /// </summary>
     private static bool VerifyPassword(string password, string passwordHash)

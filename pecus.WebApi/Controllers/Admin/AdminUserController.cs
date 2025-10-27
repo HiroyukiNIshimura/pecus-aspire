@@ -382,6 +382,94 @@ public class AdminUserController : ControllerBase
             throw;
         }
     }
+
+    /// <summary>
+    /// ユーザーのパスワードリセットをリクエスト
+    /// </summary>
+    /// <remarks>
+    /// 指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。
+    /// パスワードリセット用のメールがユーザーに送信されます。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    /// <response code="200">パスワードリセットメールが送信されました</response>
+    /// <response code="403">他組織のユーザーは操作できません</response>
+    /// <response code="404">ユーザーが見つかりません</response>
+    [HttpPost("{id}/request-password-reset")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+    > RequestPasswordReset(int id)
+    {
+        try
+        {
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // 操作対象ユーザーが同じ組織に所属しているか確認
+            var targetUser = await _userService.GetUserByIdAsync(id);
+            if (targetUser == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
+                );
+            }
+
+            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var (success, user) = await _userService.RequestPasswordResetByUserIdAsync(id);
+            if (success && user != null)
+            {
+                // パスワードリセットURLを構築
+                var resetUrl =
+                    $"{_config.Application.BaseUrl}/password-reset?token={user.PasswordResetToken}";
+
+                // パスワードリセットメールを送信
+                var emailModel = new PasswordResetEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    PasswordResetUrl = resetUrl,
+                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                    RequestedAt = DateTime.UtcNow,
+                };
+
+                // バックグラウンドでメール送信
+                _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                    x.SendTemplatedEmailAsync(
+                        user.Email,
+                        "パスワードリセット",
+                        "password-reset",
+                        emailModel
+                    )
+                );
+
+                _logger.LogInformation(
+                    "管理者によるパスワードリセットリクエスト: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
+                    currentUserId,
+                    id,
+                    user.Email
+                );
+            }
+
+            return TypedResults.Ok(
+                new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "管理者によるパスワードリセットリクエスト中にエラーが発生しました: UserId={UserId}",
+                id
+            );
+            throw;
+        }
+    }
 }
 
 /// <summary>
