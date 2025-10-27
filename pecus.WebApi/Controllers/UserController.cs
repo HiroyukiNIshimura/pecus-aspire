@@ -34,69 +34,6 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// ログイン
-    /// </summary>
-    /// <remarks>
-    /// EmailまたはLoginIdとパスワードでログインします
-    /// </remarks>
-    [AllowAnonymous]
-    [HttpPost("login")]
-    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<LoginResponse>, UnauthorizedHttpResult, StatusCodeHttpResult>
-    > Login([FromBody] LoginRequest request)
-    {
-        try
-        {
-            var user = await _userService.AuthenticateAsync(request);
-            if (user == null)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            // JWTトークンを生成
-            var token = JwtBearerUtil.GenerateToken(user);
-            var expiresAt = JwtBearerUtil.GetTokenExpiration();
-            var expiresIn = JwtBearerUtil.GetExpiresMinutes() * 60; // 秒に変換
-
-            var response = new LoginResponse
-            {
-                AccessToken = token,
-                TokenType = "Bearer",
-                ExpiresAt = expiresAt,
-                ExpiresIn = expiresIn,
-                UserId = user.Id,
-                LoginId = user.LoginId,
-                Username = user.Username,
-                Email = user.Email,
-                AvatarType = user.AvatarType,
-                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                    user.AvatarType,
-                    user.Id,
-                    user.Username,
-                    user.Email,
-                    user.AvatarUrl
-                ),
-                Roles = user
-                    .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
-                    .ToList(),
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ログイン中にエラーが発生しました。LoginIdentifier: {LoginIdentifier}",
-                request.LoginIdentifier
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    /// <summary>
     /// ログアウト
     /// </summary>
     /// <remarks>
