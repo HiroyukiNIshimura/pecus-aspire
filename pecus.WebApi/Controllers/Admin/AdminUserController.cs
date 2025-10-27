@@ -64,10 +64,10 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ログインユーザーの組織IDを取得
-            var user = await _userService.GetUserByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(me);
             if (user?.OrganizationId == null)
             {
                 return TypedResults.NotFound(
@@ -133,7 +133,7 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // 操作対象ユーザーが同じ組織に所属しているか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
@@ -144,7 +144,7 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var currentUser = await _userService.GetUserByIdAsync(me);
             if (currentUser?.OrganizationId != targetUser.OrganizationId)
             {
                 return TypedResults.Unauthorized();
@@ -153,7 +153,7 @@ public class AdminUserController : ControllerBase
             var result = await _userService.SetUserActiveStatusAsync(
                 id,
                 request.IsActive,
-                currentUserId
+                me
             );
             if (!result)
             {
@@ -198,7 +198,7 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // 操作対象ユーザーが同じ組織に所属しているか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
@@ -209,7 +209,7 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var currentUser = await _userService.GetUserByIdAsync(me);
             if (currentUser?.OrganizationId != targetUser.OrganizationId)
             {
                 return TypedResults.Unauthorized();
@@ -253,7 +253,7 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // 操作対象ユーザーが同じ組織に所属しているか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
@@ -264,13 +264,13 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var currentUser = await _userService.GetUserByIdAsync(me);
             if (currentUser?.OrganizationId != targetUser.OrganizationId)
             {
                 return TypedResults.Unauthorized();
             }
 
-            var result = await _userService.SetUserSkillsAsync(id, request.SkillIds, currentUserId);
+            var result = await _userService.SetUserSkillsAsync(id, request.SkillIds, me);
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -308,10 +308,10 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ログインユーザーの組織IDを取得
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var currentUser = await _userService.GetUserByIdAsync(me);
             if (currentUser?.OrganizationId == null)
             {
                 return TypedResults.NotFound(
@@ -320,11 +320,11 @@ public class AdminUserController : ControllerBase
             }
 
             // パスワードなしでユーザーを作成
-            var user = await _userService.CreateUserWithoutPasswordAsync(request, currentUserId);
+            var user = await _userService.CreateUserWithoutPasswordAsync(request, me);
 
             // 組織IDを設定（同じ組織に所属させる）
             user.OrganizationId = currentUser.OrganizationId;
-            await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest(), currentUserId);
+            await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest(), me);
 
             // 組織情報を取得
             var organization = await _organizationService.GetOrganizationByIdAsync(
@@ -404,7 +404,7 @@ public class AdminUserController : ControllerBase
     {
         try
         {
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // 操作対象ユーザーが同じ組織に所属しているか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
@@ -415,7 +415,7 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var currentUser = await _userService.GetUserByIdAsync(me);
             if (currentUser?.OrganizationId != targetUser.OrganizationId)
             {
                 return TypedResults.Unauthorized();
@@ -450,7 +450,7 @@ public class AdminUserController : ControllerBase
 
                 _logger.LogInformation(
                     "管理者によるパスワードリセットリクエスト: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
-                    currentUserId,
+                    me,
                     id,
                     user.Email
                 );

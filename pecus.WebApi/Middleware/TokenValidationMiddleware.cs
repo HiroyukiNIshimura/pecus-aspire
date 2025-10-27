@@ -28,7 +28,7 @@ public class TokenValidationMiddleware
             try
             {
                 var jti = JwtBearerUtil.GetJtiFromPrincipal(context.User);
-                var userId = JwtBearerUtil.GetUserIdFromPrincipal(context.User);
+                var me = JwtBearerUtil.GetUserIdFromPrincipal(context.User);
                 var issuedAt = JwtBearerUtil.GetIssuedAtFromPrincipal(context.User);
 
                 // JTIによるブラックリストチェック
@@ -38,9 +38,9 @@ public class TokenValidationMiddleware
                     if (isBlacklisted)
                     {
                         _logger.LogWarning(
-                            "ブラックリストに登録されたトークンでアクセスが試行されました。JTI: {Jti}, UserId: {UserId}",
+                            "ブラックリストに登録されたトークンでアクセスが試行されました。JTI: {Jti}, UserId: {Me}",
                             jti,
-                            userId
+                            me
                         );
                         context.Response.StatusCode = 401;
                         await context.Response.WriteAsync("Token has been revoked");
@@ -52,15 +52,15 @@ public class TokenValidationMiddleware
                 if (issuedAt > 0)
                 {
                     var isUserTokenInvalidated = await blacklistService.IsUserTokenInvalidatedAsync(
-                        userId,
+                        me,
                         issuedAt,
                         jti
                     );
                     if (isUserTokenInvalidated)
                     {
                         _logger.LogWarning(
-                            "無効化されたユーザートークンでアクセスが試行されました。UserId: {UserId}, IssuedAt: {IssuedAt}",
-                            userId,
+                            "無効化されたユーザートークンでアクセスが試行されました。UserId: {Me}, IssuedAt: {IssuedAt}",
+                            me,
                             issuedAt
                         );
                         context.Response.StatusCode = 401;

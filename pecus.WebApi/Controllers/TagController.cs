@@ -49,8 +49,8 @@ public class TagController : ControllerBase
         try
         {
             // ログイン中のユーザーIDと組織IDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user?.OrganizationId == null)
             {
@@ -63,7 +63,7 @@ public class TagController : ControllerBase
                 );
             }
 
-            var tag = await _tagService.CreateTagAsync(user.OrganizationId.Value, request, userId);
+            var tag = await _tagService.CreateTagAsync(user.OrganizationId.Value, request, me);
 
             var response = new TagResponse
             {
@@ -125,8 +125,8 @@ public class TagController : ControllerBase
         try
         {
             // ログイン中のユーザーの組織IDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user?.OrganizationId == null)
             {
@@ -142,16 +142,16 @@ public class TagController : ControllerBase
             var tags = await _tagService.GetTagsByOrganizationAsync(user.OrganizationId.Value);
 
             var response = tags.Select(tag => new TagDetailResponse
-                {
-                    Id = tag.Id,
-                    OrganizationId = tag.OrganizationId,
-                    Name = tag.Name,
-                    CreatedAt = tag.CreatedAt,
-                    CreatedByUserId = tag.CreatedByUserId,
-                    CreatedByUsername = tag.CreatedByUser?.Username,
-                    UpdatedAt = tag.UpdatedAt,
-                    ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
-                })
+            {
+                Id = tag.Id,
+                OrganizationId = tag.OrganizationId,
+                Name = tag.Name,
+                CreatedAt = tag.CreatedAt,
+                CreatedByUserId = tag.CreatedByUserId,
+                CreatedByUsername = tag.CreatedByUser?.Username,
+                UpdatedAt = tag.UpdatedAt,
+                ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+            })
                 .ToList();
 
             return TypedResults.Ok(response);
@@ -183,8 +183,8 @@ public class TagController : ControllerBase
         try
         {
             // ログイン中のユーザーの組織IDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user?.OrganizationId == null)
             {
@@ -259,8 +259,8 @@ public class TagController : ControllerBase
         try
         {
             // ログイン中のユーザーの組織IDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(userId);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var user = await _userService.GetUserByIdAsync(me);
 
             if (user?.OrganizationId == null)
             {

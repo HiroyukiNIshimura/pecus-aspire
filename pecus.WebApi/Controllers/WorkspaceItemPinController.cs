@@ -57,10 +57,10 @@ public class WorkspaceItemPinController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -72,7 +72,7 @@ public class WorkspaceItemPinController : ControllerBase
                 );
             }
 
-            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, userId);
+            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, me);
 
             // 更新後のアイテムを取得
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -81,7 +81,7 @@ public class WorkspaceItemPinController : ControllerBase
             {
                 Success = true,
                 Message = "PINを追加しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, userId),
+                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
             };
 
             return TypedResults.Ok(response);
@@ -136,10 +136,10 @@ public class WorkspaceItemPinController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -151,7 +151,7 @@ public class WorkspaceItemPinController : ControllerBase
                 );
             }
 
-            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, userId);
+            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, me);
 
             // 更新後のアイテムを取得
             var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -160,7 +160,7 @@ public class WorkspaceItemPinController : ControllerBase
             {
                 Success = true,
                 Message = "PINを削除しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, userId),
+                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
             };
 
             return TypedResults.Ok(response);
@@ -213,17 +213,17 @@ public class WorkspaceItemPinController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var pageSize = _config.Pagination.DefaultPageSize;
             var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
-                userId,
+                me,
                 page,
                 pageSize
             );
 
             var itemResponses = items
-                .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, userId))
+                .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(

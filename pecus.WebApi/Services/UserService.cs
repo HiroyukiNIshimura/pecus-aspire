@@ -177,6 +177,12 @@ public class UserService
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
+        // Usernameの更新
+        if (!string.IsNullOrWhiteSpace(request.Username))
+        {
+            user.Username = request.Username.Trim();
+        }
+
         if (request.AvatarType != null)
         {
             // AvatarType="user-avatar"の場合、AvatarUrlが必須

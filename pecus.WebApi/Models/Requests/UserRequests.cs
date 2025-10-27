@@ -122,22 +122,50 @@ public class ResetPasswordRequest
 }
 
 /// <summary>
-/// ユーザー更新リクエスト（プロフィール情報のみ）
+/// ユーザー更新リクエスト
 /// </summary>
 public class UpdateUserRequest
 {
     /// <summary>
-    /// アバタータイプ(gravatar, user-avatar, auto-generated)
+    /// ユーザー名
     /// </summary>
-    [StringLength(20, ErrorMessage = "アバタータイプは20文字以内で入力してください。")]
-    [AvatarType]
+    public string? Username { get; set; }
+
+    /// <summary>
+    /// アバタータイプ
+    /// </summary>
     public string? AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL（AvatarType="user-avatar"の場合は必須）
+    /// アバターURL
     /// </summary>
-    [StringLength(500, ErrorMessage = "アバターURLは500文字以内で入力してください。")]
     public string? AvatarUrl { get; set; }
+}
+
+/// <summary>
+/// プロフィール更新リクエスト
+/// </summary>
+public class UpdateProfileRequest
+{
+    /// <summary>
+    /// ユーザー名
+    /// </summary>
+    public string? Username { get; set; }
+
+    /// <summary>
+    /// アバタータイプ
+    /// </summary>
+    public string? AvatarType { get; set; }
+
+    /// <summary>
+    /// アバターURL
+    /// </summary>
+    public string? AvatarUrl { get; set; }
+
+    /// <summary>
+    /// スキルIDリスト
+    /// </summary>
+    public List<int>? SkillIds { get; set; }
 }
 
 /// <summary>

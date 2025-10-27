@@ -64,10 +64,10 @@ public class WorkspaceItemAttachmentController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -131,7 +131,7 @@ public class WorkspaceItemAttachmentController : ControllerBase
                 downloadUrl,
                 thumbnailMediumPath,
                 thumbnailSmallPath,
-                userId
+                me
             );
 
             // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
@@ -198,10 +198,10 @@ public class WorkspaceItemAttachmentController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -260,10 +260,10 @@ public class WorkspaceItemAttachmentController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(userId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound(
@@ -275,7 +275,7 @@ public class WorkspaceItemAttachmentController : ControllerBase
                 workspaceId,
                 itemId,
                 attachmentId,
-                userId
+                me
             );
 
             // 物理ファイルを削除
@@ -330,10 +330,10 @@ public class WorkspaceItemAttachmentController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
             if (!hasAccess)
             {
                 return TypedResults.NotFound();

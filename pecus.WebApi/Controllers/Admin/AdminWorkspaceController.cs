@@ -59,10 +59,10 @@ public class AdminWorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             // ログインユーザーの情報を取得して組織IDを取得
-            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(userId);
+            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
             if (!organizationId.HasValue)
             {
                 return TypedResults.BadRequest(
@@ -77,7 +77,7 @@ public class AdminWorkspaceController : ControllerBase
             var workspace = await _workspaceService.CreateWorkspaceAsync(
                 request,
                 organizationId.Value,
-                userId
+                me
             );
 
             var response = new WorkspaceResponse
@@ -288,7 +288,7 @@ public class AdminWorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var (hasAccess, existingWorkspace) = await CheckWorkspaceAccessAsync(id);
             if (!hasAccess || existingWorkspace == null)
@@ -302,7 +302,7 @@ public class AdminWorkspaceController : ControllerBase
                 );
             }
 
-            var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, userId);
+            var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, me);
 
             var response = new WorkspaceResponse
             {
@@ -427,7 +427,7 @@ public class AdminWorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
             if (!hasAccess || workspace == null)
@@ -441,7 +441,7 @@ public class AdminWorkspaceController : ControllerBase
                 );
             }
 
-            var result = await _workspaceService.DeactivateWorkspaceAsync(id, userId);
+            var result = await _workspaceService.DeactivateWorkspaceAsync(id, me);
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -482,7 +482,7 @@ public class AdminWorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
             if (!hasAccess || workspace == null)
@@ -496,7 +496,7 @@ public class AdminWorkspaceController : ControllerBase
                 );
             }
 
-            var result = await _workspaceService.ActivateWorkspaceAsync(id, userId);
+            var result = await _workspaceService.ActivateWorkspaceAsync(id, me);
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -543,7 +543,7 @@ public class AdminWorkspaceController : ControllerBase
         try
         {
             // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
             var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
             if (!hasAccess || workspace == null)
@@ -560,7 +560,7 @@ public class AdminWorkspaceController : ControllerBase
             var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
                 id,
                 request,
-                userId
+                me
             );
 
             var response = new WorkspaceUserResponse
@@ -760,8 +760,8 @@ public class AdminWorkspaceController : ControllerBase
     /// </summary>
     private async Task<int?> GetUserOrganizationIdAsync()
     {
-        var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.GetUserOrganizationIdAsync(userId);
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        return await _accessHelper.GetUserOrganizationIdAsync(me);
     }
 
     /// <summary>
@@ -771,7 +771,7 @@ public class AdminWorkspaceController : ControllerBase
         int workspaceId
     )
     {
-        var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.CheckWorkspaceAccessAsync(userId, workspaceId);
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        return await _accessHelper.CheckWorkspaceAccessAsync(me, workspaceId);
     }
 }

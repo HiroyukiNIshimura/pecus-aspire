@@ -226,6 +226,13 @@ if (User.Identity?.IsAuthenticated == true)
 {
     userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 }
+
+注意: プロジェクト内のコーディング規約として、ログイン中のユーザーを表すローカル変数名は一貫して `me` を使用してください。
+例:
+```csharp
+// ✅ 推奨 - ログイン中ユーザーを表す変数名は `me`
+var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+```
 ```
 
 **Why `User.Identity?.IsAuthenticated` check is an anti-pattern**:
