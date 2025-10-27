@@ -23,6 +23,14 @@ public class RefreshController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// リフレッシュトークンによるアクセストークン再発行
+    /// </summary>
+    /// <remarks>
+    /// 有効なリフレッシュトークンを使用して、新しいアクセストークンとリフレッシュトークンを取得します。
+    /// </remarks>
+    /// <param name="request">リフレッシュトークン情報</param>
+    /// <returns>新しいアクセストークンとリフレッシュトークン</returns>
     [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
@@ -76,6 +84,14 @@ public class RefreshController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// ログアウト（トークン無効化）
+    /// </summary>
+    /// <remarks>
+    /// 現在のアクセストークンとリフレッシュトークンを無効化します。
+    /// </remarks>
+    /// <param name="request">リフレッシュトークン情報</param>
+    /// <returns>ログアウト結果</returns>
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] RefreshRequest request)

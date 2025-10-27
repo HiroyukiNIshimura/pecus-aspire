@@ -69,6 +69,8 @@ public class ProfileController : ControllerBase
     /// <summary>
     /// 自分のプロフィール情報を更新
     /// </summary>
+    /// <param name="request">更新情報</param>
+    /// <returns>更新結果</returns>
     [HttpPut]
     public async Task<IActionResult> UpdateProfile(
         UpdateProfileRequest request
