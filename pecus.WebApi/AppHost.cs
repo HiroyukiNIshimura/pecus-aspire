@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Text;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,10 +7,10 @@ using Pecus.Filters;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Middleware;
 using Pecus.Models.Config;
 using Pecus.Services;
-using StackExchange.Redis;
+using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +35,6 @@ builder.Services.AddMemoryCache(); // 分散キャッシュとして
 
 // ヘルパーの登録
 builder.Services.AddScoped<WorkspaceAccessHelper>();
-builder.Services.AddScoped<TokenBlacklistService>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();
@@ -178,7 +175,6 @@ app.UseHttpLogging();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

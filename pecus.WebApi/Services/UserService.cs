@@ -15,15 +15,11 @@ namespace Pecus.Services;
 public class UserService
 {
     private readonly ApplicationDbContext _context;
-    private readonly TokenBlacklistService? _tokenBlacklistService;
-
     public UserService(
-        ApplicationDbContext context,
-        TokenBlacklistService? tokenBlacklistService = null
+        ApplicationDbContext context
     )
     {
         _context = context;
-        _tokenBlacklistService = tokenBlacklistService;
     }
 
     /// <summary>
