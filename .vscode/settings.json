@@ -8,7 +8,8 @@
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
-      "text": "コードの変更内容に基づいて、簡潔で説明的なgitコミットメッセージを日本語で生成します。主要な変更、追加、または削除を分かりやすく要約することに重点を置きます。"
+      "text": "コードの変更内容に基づいて、簡潔で説明的なgitコミットメッセージを日本語で生成します。主要な変更、追加、または削除を分かりやすく要約することに重点を置きます。です、ます調は避けてください。",
+      "language": "ja"
     },
   ],
   "chat.tools.terminal.autoApprove": {
