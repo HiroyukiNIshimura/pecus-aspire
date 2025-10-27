@@ -1,5 +1,7 @@
 @model Pecus.Libs.Mail.Templates.Models.WelcomeEmailModel
-@layout "_Layout.html.cshtml"
+@{
+    Layout = "_Layout.html.cshtml";
+}
 
 <h2>ようこそ、@Model.UserName さん</h2>
 

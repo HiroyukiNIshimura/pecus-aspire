@@ -31,6 +31,7 @@ public class RazorTemplateService : ITemplateService
         _razorEngine = new RazorLightEngineBuilder()
             .UseFileSystemProject(templateRootPath)
             .UseMemoryCachingProvider()
+            .EnableDebugMode(true)
             .Build();
     }
 

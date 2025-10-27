@@ -37,6 +37,8 @@ public class EmailService : IEmailService
 
         using var client = new SmtpClient();
 
+        _logger.LogInformation("Connecting to SMTP server {Host}:{Port}", _settings.SmtpHost, _settings.SmtpPort);
+
         try
         {
             // SMTPサーバーに接続
@@ -111,7 +113,7 @@ public class EmailService : IEmailService
     )
     {
         // HTML本文をレンダリング
-        var htmlTemplatePath = $"{templateName}.html";
+        var htmlTemplatePath = $"{templateName}.html.cshtml";
         try
         {
             message.HtmlBody = await _templateService.RenderTemplateAsync(htmlTemplatePath, model);
@@ -126,7 +128,7 @@ public class EmailService : IEmailService
         }
 
         // テキスト本文をレンダリング
-        var textTemplatePath = $"{templateName}.text";
+        var textTemplatePath = $"{templateName}.text.cshtml";
         try
         {
             message.TextBody = await _templateService.RenderTemplateAsync(textTemplatePath, model);
