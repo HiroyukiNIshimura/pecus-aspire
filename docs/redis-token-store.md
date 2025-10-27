@@ -1,4 +1,3 @@
-````markdown
 # Redis トークンストア — キーと操作
 
 このドキュメントでは、本プロジェクトでリフレッシュトークンとトークンのブラックリスト管理に使用する Redis キー・データ構造を説明します。
@@ -102,5 +101,3 @@ for jti in $(redis-cli SMEMBERS user_jtis:42); do redis-cli SETEX blacklist:$jti
 
 問い合わせ先
 - 実装の詳細は `pecus.WebApi/Services` にある `RefreshTokenService` と `TokenBlacklistService` を参照してください。
-
-````
