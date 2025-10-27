@@ -135,30 +135,6 @@ public class UserService
             .FirstOrDefaultAsync(u => u.LoginId == loginId);
 
     /// <summary>
-    /// ユーザーをページネーション付きで取得
-    /// </summary>
-    public async Task<(List<User> users, int totalCount)> GetUsersPagedAsync(
-        int page,
-        int pageSize,
-        bool? activeOnly = null
-    )
-    {
-        var query = _context.Users.Include(u => u.Roles).AsQueryable();
-
-        if (activeOnly == true)
-        {
-            query = query.Where(u => u.IsActive);
-        }
-
-        query = query.OrderBy(u => u.Id);
-
-        var totalCount = await query.CountAsync();
-        var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-
-        return (users, totalCount);
-    }
-
-    /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
     /// </summary>
     public async Task<(List<User> users, int totalCount)> GetUsersByOrganizationPagedAsync(
@@ -467,97 +443,6 @@ public class UserService
         using var sha256 = SHA256.Create();
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
-    }
-
-    /// <summary>
-    /// ユーザーにロールを割り当て
-    /// </summary>
-    public async Task<bool> AssignRoleToUserAsync(int userId, int roleId)
-    {
-        var user = await _context
-            .Users.Include(u => u.Roles)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            return false;
-        }
-
-        var role = await _context.Roles.FindAsync(roleId);
-        if (role == null)
-        {
-            return false;
-        }
-
-        if (!user.Roles.Contains(role))
-        {
-            user.Roles.Add(role);
-            await _context.SaveChangesAsync();
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// ユーザーからロールを削除
-    /// </summary>
-    public async Task<bool> RemoveRoleFromUserAsync(int userId, int roleId)
-    {
-        var user = await _context
-            .Users.Include(u => u.Roles)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            return false;
-        }
-
-        var role = user.Roles.FirstOrDefault(r => r.Id == roleId);
-        if (role == null)
-        {
-            return false;
-        }
-
-        user.Roles.Remove(role);
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    /// <summary>
-    /// ユーザーが特定の権限を持っているか確認
-    /// </summary>
-    public async Task<bool> UserHasPermissionAsync(int userId, string permissionName)
-    {
-        var user = await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            return false;
-        }
-
-        return user.Roles.SelectMany(r => r.Permissions).Any(p => p.Name == permissionName);
-    }
-
-    /// <summary>
-    /// ユーザーの全権限を取得
-    /// </summary>
-    public async Task<List<Permission>> GetUserPermissionsAsync(int userId)
-    {
-        var user = await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            return new List<Permission>();
-        }
-
-        return user.Roles.SelectMany(r => r.Permissions).Distinct().ToList();
     }
 
     /// <summary>
