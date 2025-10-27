@@ -155,101 +155,70 @@ public class BackendRoleController : ControllerBase
     }
 
     /// <summary>
-    /// ロールに権限を追加
+    /// ロールに権限を設定（既存の権限を置き換える）
     /// </summary>
-    [HttpPut("{roleId}/permissions/{permissionId}")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [HttpPut("{roleId}/permissions")]
+    [ProducesResponseType(typeof(RoleDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > AddPermissionToRole(int roleId, int permissionId)
+        Results<
+            Ok<RoleDetailResponse>,
+            NotFound<ErrorResponse>,
+            BadRequest<ErrorResponse>,
+            StatusCodeHttpResult
+        >
+    > SetPermissionsToRole(int roleId, [FromBody] SetPermissionsToRoleRequest request)
     {
         try
         {
             // ログイン中のユーザーIDを取得
             var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var result = await _roleService.AddPermissionToRoleAsync(roleId, permissionId, userId);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ロールまたは権限が見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "権限を追加しました。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "権限追加中にエラーが発生しました。RoleId: {RoleId}, PermissionId: {PermissionId}",
+            // 権限を一括設定
+            var permissions = await _roleService.SetPermissionsToRoleAsync(
                 roleId,
-                permissionId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    /// <summary>
-    /// ロールから権限を削除
-    /// </summary>
-    [HttpDelete("{roleId}/permissions/{permissionId}")]
-    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > RemovePermissionFromRole(int roleId, int permissionId)
-    {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var userId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var result = await _roleService.RemovePermissionFromRoleAsync(
-                roleId,
-                permissionId,
+                request.PermissionIds,
                 userId
             );
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ロールまたは権限が見つかりません。",
-                    }
-                );
-            }
 
-            return TypedResults.Ok(
-                new SuccessResponse
+            // 更新後のロールを取得
+            var role = await _roleService.GetRoleByIdAsync(roleId);
+
+            // レスポンスを構築
+            var response = new RoleDetailResponse
+            {
+                Id = role.Id,
+                Name = role.Name,
+                Description = role.Description,
+                CreatedAt = role.CreatedAt,
+                Permissions = role
+                    .Permissions.Select(p => new PermissionDetailInfoResponse
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Description = p.Description,
+                        Category = p.Category,
+                    })
+                    .ToList(),
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(
+                new ErrorResponse
                 {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "権限を削除しました。",
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
                 }
             );
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "権限削除中にエラーが発生しました。RoleId: {RoleId}, PermissionId: {PermissionId}",
-                roleId,
-                permissionId
-            );
+            _logger.LogError(ex, "権限一括設定中にエラーが発生しました。RoleId: {RoleId}", roleId);
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

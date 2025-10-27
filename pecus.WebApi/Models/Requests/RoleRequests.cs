@@ -20,3 +20,15 @@ public class CreateRoleRequest
     [StringLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
     public string? Description { get; set; }
 }
+
+/// <summary>
+/// ロールに権限を設定するリクエスト
+/// </summary>
+public class SetPermissionsToRoleRequest
+{
+    /// <summary>
+    /// 設定する権限IDのリスト。既存の権限をすべて置き換えます。
+    /// 空のリストまたはnullを指定するとすべての権限が削除されます。
+    /// </summary>
+    public List<int>? PermissionIds { get; set; }
+}

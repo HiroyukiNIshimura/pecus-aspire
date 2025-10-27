@@ -126,6 +126,71 @@ public class RoleService
         await _context.Roles.Include(r => r.Permissions).ToListAsync();
 
     /// <summary>
+    /// ロールに権限を設定（既存の権限を置き換える）
+    /// </summary>
+    public async Task<List<Permission>> SetPermissionsToRoleAsync(
+        int roleId,
+        List<int>? permissionIds,
+        int? updatedByUserId = null
+    )
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // ロールの存在確認
+            var role = await _context
+                .Roles.Include(r => r.Permissions)
+                .FirstOrDefaultAsync(r => r.Id == roleId);
+
+            if (role == null)
+            {
+                throw new NotFoundException("ロールが見つかりません。");
+            }
+
+            // 既存の権限関連をすべて削除
+            role.Permissions.Clear();
+            role.UpdatedAt = DateTime.UtcNow;
+            role.UpdatedByUserId = updatedByUserId;
+            await _context.SaveChangesAsync();
+
+            // 新しい権限を設定（権限IDがある場合のみ）
+            var resultPermissions = new List<Permission>();
+            if (permissionIds != null && permissionIds.Any())
+            {
+                // 重複を排除
+                var distinctPermissionIds = permissionIds.Distinct().ToList();
+
+                foreach (var permissionId in distinctPermissionIds)
+                {
+                    // 権限の存在確認
+                    var permission = await _context.Permissions.FindAsync(permissionId);
+                    if (permission == null)
+                    {
+                        throw new NotFoundException($"権限ID {permissionId} が見つかりません。");
+                    }
+
+                    // 権限を追加
+                    role.Permissions.Add(permission);
+                    resultPermissions.Add(permission);
+                }
+
+                role.UpdatedAt = DateTime.UtcNow;
+                role.UpdatedByUserId = updatedByUserId;
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+
+            return resultPermissions;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
     /// ロールを削除
     /// </summary>
     public async Task<bool> DeleteRoleAsync(int roleId)
