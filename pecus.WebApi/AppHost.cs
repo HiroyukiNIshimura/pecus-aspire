@@ -51,6 +51,10 @@ builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();
 
+// トークン管理サービス（プロトタイプ、メモリキャッシュベース）
+builder.Services.AddSingleton<RefreshTokenService>();
+builder.Services.AddSingleton<TokenBlacklistService>();
+
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();
 builder.Services.AddScoped<ImageTasks>();
@@ -91,6 +95,41 @@ builder
             RequireExpirationTime = true,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(pecusConfig.Jwt.ExpiresMinutes),
+        };
+
+        // トークン検証時にブラックリストを参照して即時拒否する
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                try
+                {
+                    var principal = context.Principal;
+                    if (principal == null)
+                    {
+                        context.Fail("Invalid principal");
+                        return;
+                    }
+
+                    // JTI と発行時刻を取得して、Redis 側でまとめて無効化チェックを実行
+                    var jti = JwtBearerUtil.GetJtiFromPrincipal(principal);
+                    var userId = JwtBearerUtil.GetUserIdFromPrincipal(principal);
+                    var iat = JwtBearerUtil.GetIssuedAtFromPrincipal(principal);
+                    var blacklist = context.HttpContext.RequestServices.GetRequiredService<TokenBlacklistService>();
+
+                    if (await blacklist.IsTokenRevokedAsync(userId, iat, jti))
+                    {
+                        context.Fail("Token has been revoked or invalidated");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
+                    logger?.LogError(ex, "Error during token validation events");
+                    context.Fail("Token validation error");
+                }
+            }
         };
     });
 

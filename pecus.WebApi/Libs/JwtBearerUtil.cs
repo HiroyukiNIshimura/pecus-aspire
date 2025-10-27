@@ -1,10 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Pecus.Libs
 {
@@ -290,6 +290,20 @@ namespace Pecus.Libs
             }
 
             cache.Set(userKey, tokenList, TimeSpan.FromDays(1));
+        }
+
+        /// <summary>
+        /// トークン文字列からJTIを取得
+        /// </summary>
+        public static string GetJtiFromToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return string.Empty;
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) token = token.Substring(7);
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(token)) return string.Empty;
+            var jwt = handler.ReadJwtToken(token);
+            var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            return jti ?? string.Empty;
         }
     }
 }

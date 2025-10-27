@@ -61,4 +61,14 @@ public class LoginResponse
     /// ユーザーが持つロール一覧
     /// </summary>
     public List<RoleInfoResponse> Roles { get; set; } = new();
+
+    /// <summary>
+    /// リフレッシュトークン
+    /// </summary>
+    public string? RefreshToken { get; set; }
+
+    /// <summary>
+    /// リフレッシュトークンの有効期限（UTC）
+    /// </summary>
+    public DateTime? RefreshExpiresAt { get; set; }
 }
