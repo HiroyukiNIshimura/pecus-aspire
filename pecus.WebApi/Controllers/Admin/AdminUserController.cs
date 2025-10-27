@@ -1,9 +1,13 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
+using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
 using Pecus.Services;
@@ -20,18 +24,24 @@ namespace Pecus.Controllers.Admin;
 public class AdminUserController : ControllerBase
 {
     private readonly UserService _userService;
+    private readonly OrganizationService _organizationService;
     private readonly ILogger<AdminUserController> _logger;
     private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public AdminUserController(
         UserService userService,
+        OrganizationService organizationService,
         ILogger<AdminUserController> logger,
-        PecusConfig config
+        PecusConfig config,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _userService = userService;
+        _organizationService = organizationService;
         _logger = logger;
         _config = config;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -273,6 +283,102 @@ public class AdminUserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "スキル設定中にエラーが発生しました: UserId={UserId}", id);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// パスワードなしでユーザーを作成
+    /// </summary>
+    /// <remarks>
+    /// ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。
+    /// 作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。
+    /// </remarks>
+    /// <param name="request">ユーザー作成リクエスト</param>
+    /// <response code="201">ユーザーが作成されました</response>
+    /// <response code="400">リクエストが無効です</response>
+    /// <response code="404">組織が見つかりません</response>
+    [HttpPost("create-without-password")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Created<UserResponse>, BadRequest<ErrorResponse>, NotFound<ErrorResponse>>
+    > CreateUserWithoutPassword([FromBody] CreateUserWithoutPasswordRequest request)
+    {
+        try
+        {
+            var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // ログインユーザーの組織IDを取得
+            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            if (currentUser?.OrganizationId == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "組織に所属していません。" }
+                );
+            }
+
+            // パスワードなしでユーザーを作成
+            var user = await _userService.CreateUserWithoutPasswordAsync(request, currentUserId);
+
+            // 組織IDを設定（同じ組織に所属させる）
+            user.OrganizationId = currentUser.OrganizationId;
+            await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest(), currentUserId);
+
+            // 組織情報を取得
+            var organization = await _organizationService.GetOrganizationByIdAsync(
+                currentUser.OrganizationId.Value
+            );
+            if (organization == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "組織が見つかりません。" }
+                );
+            }
+
+            // パスワード設定URLを生成
+            var passwordSetupUrl =
+                $"{_config.Application.BaseUrl}/password-setup?token={user.PasswordResetToken}";
+
+            // パスワード設定メールを送信
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "パスワード設定のお知らせ",
+                    "password-setup",
+                    new PasswordSetupEmailModel
+                    {
+                        UserName = user.Username,
+                        Email = user.Email,
+                        OrganizationName = organization.Name,
+                        PasswordSetupUrl = passwordSetupUrl,
+                        TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                        CreatedAt = user.CreatedAt,
+                    }
+                )
+            );
+
+            var response = new UserResponse
+            {
+                Id = user.Id,
+                LoginId = user.LoginId,
+                Username = user.Username,
+                Email = user.Email,
+                AvatarType = user.AvatarType,
+                IdentityIconUrl = user.AvatarUrl,
+                CreatedAt = user.CreatedAt,
+            };
+
+            return TypedResults.Created($"/api/admin/users/{user.Id}", response);
+        }
+        catch (DuplicateException ex)
+        {
+            return TypedResults.BadRequest(new ErrorResponse { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "パスワードなしユーザー作成中にエラーが発生しました");
             throw;
         }
     }

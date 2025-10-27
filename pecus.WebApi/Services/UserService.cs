@@ -1,11 +1,11 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Pecus.Services;
 
@@ -287,13 +287,69 @@ public class UserService
     }
 
     /// <summary>
-    /// パスワードをハッシュ化
+    /// パスワードなしでユーザーを作成（管理者用）
     /// </summary>
-    private static string HashPassword(string password)
+    public async Task<User> CreateUserWithoutPasswordAsync(
+        CreateUserWithoutPasswordRequest request,
+        int? createdByUserId = null
+    )
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        // メールアドレスの重複チェックのみ
+        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+        {
+            throw new DuplicateException("メールアドレスは既に使用されています。");
+        }
+
+        // ユニークなLoginIdを生成
+        var loginId = await GenerateUniqueLoginIdAsync(_context);
+
+        // パスワード設定トークンを生成（24時間有効）
+        var token = GeneratePasswordResetToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
+
+        var user = new User
+        {
+            LoginId = loginId,
+            Username = request.Username,
+            Email = request.Email,
+            PasswordHash = "", // パスワードは未設定
+            PasswordResetToken = token,
+            PasswordResetTokenExpiresAt = tokenExpiresAt,
+            CreatedAt = DateTime.UtcNow,
+            CreatedByUserId = createdByUserId,
+            IsActive = true,
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return user;
+    }
+
+    /// <summary>
+    /// パスワード設定トークンを使ってパスワードを設定
+    /// </summary>
+    public async Task<bool> SetUserPasswordAsync(SetUserPasswordRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u =>
+            u.PasswordResetToken == request.Token
+            && u.PasswordResetTokenExpiresAt > DateTime.UtcNow
+            && string.IsNullOrEmpty(u.PasswordHash) // パスワードが未設定のユーザーのみ
+        );
+
+        if (user == null)
+        {
+            return false; // 無効なトークンまたは期限切れ
+        }
+
+        // パスワードを設定
+        user.PasswordHash = HashPassword(request.Password);
+        user.PasswordResetToken = null; // トークンをクリア
+        user.PasswordResetTokenExpiresAt = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     /// <summary>
@@ -311,6 +367,27 @@ public class UserService
     public static bool VerifyPasswordPublic(string password, string passwordHash)
     {
         return VerifyPassword(password, passwordHash);
+    }
+
+    /// <summary>
+    /// パスワード設定トークンを生成
+    /// </summary>
+    private static string GeneratePasswordResetToken()
+    {
+        using var rng = RandomNumberGenerator.Create();
+        var tokenBytes = new byte[32];
+        rng.GetBytes(tokenBytes);
+        return Convert.ToBase64String(tokenBytes);
+    }
+
+    /// <summary>
+    /// パスワードをハッシュ化
+    /// </summary>
+    private static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
     }
 
     /// <summary>

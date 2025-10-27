@@ -68,6 +68,11 @@ namespace Pecus.Models.Config
         public string Version { get; set; } = "1.0.0";
 
         /// <summary>
+        /// ベースURL（フロントエンドURL）
+        /// </summary>
+        public string BaseUrl { get; set; } = "https://localhost:3000";
+
+        /// <summary>
         /// デバッグモード
         /// </summary>
         public bool DebugMode { get; set; } = false;

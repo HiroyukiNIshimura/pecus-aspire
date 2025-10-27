@@ -76,6 +76,16 @@ public class User
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
+    /// パスワード設定トークン（新規ユーザー登録時のパスワード設定用）
+    /// </summary>
+    public string? PasswordResetToken { get; set; }
+
+    /// <summary>
+    /// パスワード設定トークンの有効期限
+    /// </summary>
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+
+    /// <summary>
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; } = true;
