@@ -1,103 +1,106 @@
-# Redis token store — keys and operations
+````markdown
+# Redis トークンストア — キーと操作
 
-This document explains the Redis keys and data structures used for refresh tokens and token blacklisting in this project.
+このドキュメントでは、本プロジェクトでリフレッシュトークンとトークンのブラックリスト管理に使用する Redis キー・データ構造を説明します。
 
-Goal
-- Provide a clear mapping of keys, types, TTLs and sample Redis commands so operators and integrators can inspect, troubleshoot, and manage token state.
+目的
+- キー名・型・TTL・サンプル Redis コマンドを明確にして、運用者や統合担当者がトークン状態を調査・トラブルシュート・管理できるようにすること。
 
-Principles
-- Refresh tokens and blacklist entries are stored in Redis so multiple API instances can share token state.
-- Keys use a clear prefix to avoid collisions: `refresh:`, `refresh_user:`, `blacklist:`, `user_jtis:`.
-- TTLs are applied to keys so stale tokens are auto-removed.
+基本方針
+- リフレッシュトークンやブラックリスト情報は Redis に保存して、複数の API インスタンス間でトークン状態を共有します。
+- キーは接頭辞を明示して衝突を避けます：`refresh:`, `refresh_user:`, `blacklist:`, `user_jtis:`。
+- TTL を設定して古いトークンが自動的に削除されるようにします。
 
-Keys and types
+キーと型
 
-1) Refresh token entry
-- Key: `refresh:{token}`
-- Type: string (JSON payload)
-- Value: JSON-serialized object: { "Token": "<token>", "UserId": <userId>, "ExpiresAt": "<UTC ISO datetime>" }
-- TTL: token expiration time (e.g. 30 days)
-- Usage: lookup to validate token and obtain owner
+1) リフレッシュトークンのエントリ
+- キー: `refresh:{token}`
+- 型: string（JSON ペイロード）
+- 値: JSON シリアライズされたオブジェクト例：{ "Token": "<token>", "UserId": <userId>, "ExpiresAt": "<UTC ISO datetime>" }
+- TTL: トークンの有効期限（例: 30日）
+- 用途: トークンの検証や所有者取得のためのルックアップ
 
-Example commands:
+サンプルコマンド：
 
 ```text
-# read
+# 読み取り
 GET refresh:012345abcdef
-# delete (revoke)
+# 削除（取り消し）
 DEL refresh:012345abcdef
-# inspect TTL
+# TTL の確認
 TTL refresh:012345abcdef
 ```
 
-2) Per-user refresh token set
-- Key: `refresh_user:{userId}`
-- Type: set
-- Members: token strings
-- TTL: long (e.g. 31 days) — updated on write
-- Usage: list all refresh tokens issued to a user (for bulk revoke)
+2) ユーザー単位のリフレッシュトークン集合
+- キー: `refresh_user:{userId}`
+- 型: set
+- メンバー: トークン文字列
+- TTL: 長め（例: 31日） — 書き込み時に更新
+- 用途: あるユーザーに発行された全リフレッシュトークンの一覧取得（まとめて取り消す用途）
 
-Example commands:
+サンプルコマンド：
 
 ```text
-# list
+# 一覧
 SMEMBERS refresh_user:42
-# remove a token from the set
+# 集合からトークンを除去
 SREM refresh_user:42 012345abcdef
-# revoke all: iterate SMEMBERS and DEL refresh:{token} for each, then DEL refresh_user:42
+# 全取り消し: SMEMBERS をループして各トークンの refresh:{token} を DEL、その後 refresh_user:42 を DEL
 ```
 
-3) Token blacklist entry (JTI)
-- Key: `blacklist:{jti}`
-- Type: string (value is constant marker, e.g. "1")
-- TTL: until the JWT expiration time (or a safe default)
-- Usage: presence means the JTI is revoked and should be rejected on token validation.
+3) トークンブラックリスト（JTI）
+- キー: `blacklist:{jti}`
+- 型: string（値は定数マーカー、例: "1"）
+- TTL: JWT の有効期限まで（または安全側のデフォルト）
+- 用途: キーが存在する場合、その JTI は取り消されたものとしてトークン検証で拒否する
 
-Example commands:
+サンプルコマンド：
 
 ```text
-# add to blacklist (expire after e.g. 1 hour)
+# ブラックリストに追加（例: 1時間後にexpires）
 SETEX blacklist:abcd-jti-0001 3600 1
-# check
+# 存在確認
 EXISTS blacklist:abcd-jti-0001
-# remove (rarely needed)
+# 削除（通常は稀）
 DEL blacklist:abcd-jti-0001
 ```
 
-4) Per-user JTI list (tracking issued JTI values)
-- Key: `user_jtis:{userId}`
-- Type: set
-- Members: jti strings
-- TTL: long (e.g. 31 days)
-- Usage: keep track of active JTIs for a user to implement bulk invalidation (e.g. revoke all except current)
+4) ユーザー単位の JTI リスト（発行された JTI を追跡）
+- キー: `user_jtis:{userId}`
+- 型: set
+- メンバー: jti 文字列
+- TTL: 長め（例: 31日）
+- 用途: ユーザーのアクティブな JTI を管理し、まとめて無効化（例: 現在以外を取り消す）する際に利用
 
-Example commands:
+サンプルコマンド：
 
 ```text
-# add new jti
+# 新しい jti を追加
 SADD user_jtis:42 abcd-jti-0001
-# list
+# 一覧取得
 SMEMBERS user_jtis:42
-# blacklist all
+# 全てをブラックリスト化する例
 for jti in $(redis-cli SMEMBERS user_jtis:42); do redis-cli SETEX blacklist:$jti 2592000 1; done
 ```
 
-Operational notes
+運用上の注意
 
-- Expiration alignment: When issuing an access token and a refresh token together, set the blacklist TTL or refresh payload TTL aligned with the token's expiration time.
-- Atomicity: Some operations (revoke + remove from set) may require multi-key operations. Use Lua scripts for atomic bulk revoke when necessary.
-- Scalability: Sets may grow; consider trimming or using sorted sets with timestamps if you need to expire older items programmatically.
-- Security: Treat Redis as sensitive — use ACLs and network restrictions. Do not expose keys or raw tokens in logs.
+- 有効期限の整合性: アクセストークンとリフレッシュトークンを同時に発行する場合、ブラックリストの TTL や refresh エントリの TTL をトークンの有効期限に合わせて設定してください。
+- 原子性: 取り消しと集合からの除去を同時に行うような操作はマルチキー操作が必要です。まとめて（atomic）に取り消す必要がある場合は Lua スクリプトを検討してください。
+- スケーラビリティ: set が大きくなる可能性があります。古いエントリを自動的に期限切れにしたい場合は、タイムスタンプ付きの sorted set を使うなどの対策を検討してください。
+- セキュリティ: Redis は機密扱いとし、ACL やネットワーク制限を適用してください。キーや生トークンをログに出力しないでください。
 
-Troubleshooting
+トラブルシュート例
 
-- "Users report they cannot use valid tokens" — check `blacklist:{jti}` existence and `user_jtis:{userId}` operations.
-- "Cannot refresh token" — ensure `refresh:{token}` exists and TTL not expired, check `refresh_user:{userId}` membership.
+- "ユーザーが有効なトークンを使えないと報告" — `blacklist:{jti}` の有無や `user_jtis:{userId}` の操作を確認してください。
+- "リフレッシュできない" — `refresh:{token}` が存在しているか、TTL が切れていないか、`refresh_user:{userId}` のメンバーシップを確認してください。
 
-Migration notes
+移行に関する注意
 
-- If you move from local-memory cache to Redis, ensure all running instances are restarted so they use the shared store.
-- Backups: store snapshots of Redis RDB or AOF as part of disaster recovery.
+- ローカルメモリキャッシュから Redis に移行する場合は、すべての実行中インスタンスを再起動して共有ストアを使うようにしてください。
+- バックアップ: 障害復旧計画として Redis の RDB/AOF スナップショットを保存してください。
 
-Contact
-- Developers: refer to the `RefreshTokenService` and `TokenBlacklistService` implementations in `pecus.WebApi/Services` for exact behavior.
+問い合わせ先
+- 実装の詳細は `pecus.WebApi/Services` にある `RefreshTokenService` と `TokenBlacklistService` を参照してください。
+
+````
