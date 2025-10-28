@@ -39,12 +39,14 @@ try
         .WaitFor(redis)
         .WaitFor(dbManager)
         .WaitFor(backfire)
+        .WithExternalHttpEndpoints()
         .WithHttpHealthCheck("/");
 
-    var frontend = builder.AddViteApp("frontend", "../pecus.Frontend")
+    var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
         .WithReference(pecusApi)
         .WaitFor(pecusApi)
-        .WithNpmPackageInstallation();
+        .WithNpmPackageInstallation()
+        .WithExternalHttpEndpoints();
 
     builder.Build().Run();
 }

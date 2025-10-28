@@ -28,10 +28,11 @@ export const nextAuthOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        console.log(`${process.env.services__backend__https__0 || process.env.services__backend__http__0}`);
+        // 環境変数からAPIのベースURLを取得
+        const apiBaseUrl = process.env.WEB_API_BASE_URL;
         // WebAPIと連携して認証を行う
         try {
-          const res = await fetch(`${process.env.services__backend__https__0}/api/entrance/auth/login`, {
+          const res = await fetch(`${apiBaseUrl}/api/entrance/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
