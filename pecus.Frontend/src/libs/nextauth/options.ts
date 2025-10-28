@@ -1,3 +1,4 @@
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -28,26 +29,24 @@ export const nextAuthOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        // 環境変数からAPIのベースURLを取得
-        const apiBaseUrl = process.env.WEB_API_BASE_URL;
+        const client = createPecusApiClients();
         // WebAPIと連携して認証を行う
         try {
-          const res = await fetch(`${apiBaseUrl}/api/entrance/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              loginIdentifier: credentials?.id,
-              password: credentials?.password,
-            }),
+
+          const res = await client.entranceAuth.apiEntranceAuthLoginPost({
+            loginRequest: {
+              loginIdentifier: credentials?.id || "",
+              password: credentials?.password || "",
+            },
           });
-          if (!res.ok) {
+
+          if (!res) {
             return null;
           }
-          const data = await res.json();
           // ここでWebApiのレスポンス仕様に合わせてuser情報を返す
           return {
-            id: data.userId || data.id,
-            accessToken: data.accessToken,
+            id: String(res.userId ?? ""),
+            accessToken: res.accessToken ?? "",
             // 必要に応じて他の情報も
           };
         } catch (e) {
