@@ -17,6 +17,12 @@ public class EmailService : IEmailService
     private readonly ITemplateService _templateService;
     private readonly ILogger<EmailService> _logger;
 
+    /// <summary>
+    ///  コンストラクタ
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <param name="templateService"></param>
+    /// <param name="logger"></param>
     public EmailService(
         IOptions<EmailSettings> settings,
         ITemplateService templateService,

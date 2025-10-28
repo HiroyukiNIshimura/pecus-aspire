@@ -15,6 +15,11 @@ public class RazorTemplateService : ITemplateService
     private readonly EmailSettings _settings;
     private readonly ILogger<RazorTemplateService> _logger;
 
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <param name="logger"></param>
     public RazorTemplateService(
         IOptions<EmailSettings> settings,
         ILogger<RazorTemplateService> logger
