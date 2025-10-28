@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "generate:api": "openapi-generator-cli generate -i ./.spec/open-api-scheme.json -g typescript-fetch -o src/connectors/api/pecus --additional-properties=supportsES6=true,modelPropertyNaming=original"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -47,6 +48,7 @@
     "@biomejs/biome": "2.2.0",
     "@iconify-json/tabler": "^1.2.23",
     "@iconify/tailwind4": "^1.0.6",
+    "@openapitools/openapi-generator-cli": "^2.25.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
