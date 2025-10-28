@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { useState } from "react";
-import FlyonuiScript from "./libs/flyon/FlyonuiScript";
+import FlyonuiScript from "@/libs/flyon/FlyonuiScript";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

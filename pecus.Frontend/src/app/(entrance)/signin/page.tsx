@@ -2,13 +2,17 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 export default function SignInPage() {
-  return <LoginForm />;
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
 }
 
-export const LoginForm = () => {
+const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
