@@ -13,6 +13,7 @@ using Pecus.Models.Config;
 using Pecus.Services;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -151,7 +152,13 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<ValidationFilter>();
     // グローバル認証ポリシーを追加
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter());
-});
+}).AddJsonOptions(opts =>
+    {
+        // レスポンスは camelCase（先頭小文字）でシリアライズ
+        opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        // リクエスト側は大文字小文字を無視してマッピング（PascalCase のプロパティ名も許可）
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
 // Swagger/OpenAPIの設定
 builder.Services.AddEndpointsApiExplorer();

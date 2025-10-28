@@ -36,8 +36,8 @@ export const nextAuthOptions: NextAuthOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              LoginIdentifier: credentials?.id,
-              Password: credentials?.password,
+              loginIdentifier: credentials?.id,
+              password: credentials?.password,
             }),
           });
           if (!res.ok) {

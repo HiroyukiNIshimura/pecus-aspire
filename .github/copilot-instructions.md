@@ -25,15 +25,15 @@ Conversation-Driven Development（会話駆動開発）：AI とペアプログ�
 
 ### フロントエンド（`pecus.Frontend`）のアーキテクチャ
 
-`pecus.Frontend` はSPA（Single Page Application）やWeb UIの拡張用ディレクトリです。主なアーキテクチャ方針は以下の通りです。
+`pecus.Frontend` は Next.js（React）+ TypeScript によるSPA/Web UI拡張用ディレクトリです。主なアーキテクチャ方針は以下の通りです。
 
-- **フレームワーク例**: React（Next.js）、Vue、Svelte などのモダンSPAフレームワークを推奨
-- **型安全**: TypeScriptを推奨
-- **状態管理**: Redux Toolkit, Zustand, Recoil など（規模に応じて選択）
-- **UIライブラリ**: MUI, Chakra UI, Ant Design, Tailwind CSS など
+- **フレームワーク**: React（Next.js）
+- **型安全**: TypeScript
+- **状態管理**: jotai
+- **UIライブラリ**: Tailwind CSS + FlyonUI
 - **API通信**: OpenAPI/Swagger定義に基づく型安全なクライアント生成（例: openapi-generator, axios, react-query）
-- **認証**: pecus.WebApiのJWT認証と連携（アクセストークン管理はHttpOnly Cookie推奨）
-- **ルーティング**: SPAルーター（React Router, Next.jsのApp Router等）
+- **認証**: pecus.WebApiのJWT認証と連携（next-auth）
+- **ルーティング**: SPAルーター（Next.jsのApp Router）
 - **テスト**: Jest, React Testing Library, Playwright など
 - **CI/CD**: GitHub Actions等での自動ビルド・デプロイ
 
