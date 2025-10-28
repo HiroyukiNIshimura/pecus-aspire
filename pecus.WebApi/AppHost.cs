@@ -26,6 +26,9 @@ builder.Services.AddSingleton(pecusConfig);
 // JwtBearerUtilを初期化
 JwtBearerUtil.Initialize(pecusConfig);
 
+// HttpContextAccessorを追加（動的BaseUrl取得用）
+builder.Services.AddHttpContextAccessor();
+
 // Add services to the container.
 
 // DbContextの登録 - Aspireの接続文字列を使用

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
@@ -15,11 +16,13 @@ public class TestEmailController : ControllerBase
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<TestEmailController> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public TestEmailController(IEmailService emailService, ILogger<TestEmailController> logger)
+    public TestEmailController(IEmailService emailService, ILogger<TestEmailController> logger, IHttpContextAccessor httpContextAccessor)
     {
         _emailService = emailService;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -42,6 +45,10 @@ public class TestEmailController : ControllerBase
         template ??= "test-email";
         var to = TestEmailConfig.Recipient;
 
+        // 動的にBaseUrlを取得
+        var request = _httpContextAccessor.HttpContext?.Request;
+        var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "https://localhost";
+
         try
         {
             switch (template)
@@ -53,7 +60,7 @@ public class TestEmailController : ControllerBase
                         Email = to,
                         OrganizationName = "Pecus Demo Org",
                         WorkspaceName = "Demo Workspace",
-                        LoginUrl = "https://example.local/login",
+                        LoginUrl = $"{baseUrl}/login",
                         CreatedAt = DateTime.UtcNow
                     };
                     await _emailService.SendTemplatedEmailAsync(to, "ようこそ - Pecus", "welcome", welcomeModel);
@@ -65,7 +72,7 @@ public class TestEmailController : ControllerBase
                         UserName = "Test User",
                         Email = to,
                         OrganizationName = "Pecus Demo Org",
-                        PasswordSetupUrl = "https://example.local/setup?token=mock-token",
+                        PasswordSetupUrl = $"{baseUrl}/setup?token=mock-token",
                         TokenExpiresAt = DateTime.UtcNow.AddHours(24),
                         CreatedAt = DateTime.UtcNow
                     };
@@ -77,7 +84,7 @@ public class TestEmailController : ControllerBase
                     {
                         UserName = "Test User",
                         Email = to,
-                        PasswordResetUrl = "https://example.local/reset?token=mock-token",
+                        PasswordResetUrl = $"{baseUrl}/reset?token=mock-token",
                         TokenExpiresAt = DateTime.UtcNow.AddHours(1),
                         RequestedAt = DateTime.UtcNow
                     };
@@ -91,7 +98,7 @@ public class TestEmailController : ControllerBase
                     break;
             }
 
-            return Ok(new { Message = "メール送信要求を実行しました。受信トレイを確認してください。", Recipient = to, Template = template });
+            return Ok(new { Message = "メール送信要求を実行しました。受信トレイを確認してください。", Recipient = to, Template = template, BaseUrl = baseUrl });
         }
         catch (Exception ex)
         {

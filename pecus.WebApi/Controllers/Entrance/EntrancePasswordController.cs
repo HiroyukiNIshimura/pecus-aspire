@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -26,13 +27,15 @@ public class EntrancePasswordController : ControllerBase
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<EntrancePasswordController> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public EntrancePasswordController(
         UserService userService,
         EmailTasks emailTasks,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        ILogger<EntrancePasswordController> logger
+        ILogger<EntrancePasswordController> logger,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _userService = userService;
@@ -40,6 +43,7 @@ public class EntrancePasswordController : ControllerBase
         _config = config;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -103,8 +107,12 @@ public class EntrancePasswordController : ControllerBase
             var (success, user) = await _userService.RequestPasswordResetAsync(request);
             if (success && user != null)
             {
+                // 動的にBaseUrlを取得
+                var requestContext = _httpContextAccessor.HttpContext?.Request;
+                var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
                 // パスワードリセットURLを構築
-                var resetUrl = $"{_config.Application.BaseUrl}/password-reset?token={user.PasswordResetToken}";
+                var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
                 // パスワードリセットメールを送信
                 var emailModel = new PasswordResetEmailModel

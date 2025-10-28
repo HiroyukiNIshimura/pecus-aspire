@@ -1,5 +1,6 @@
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -29,13 +30,15 @@ public class AdminUserController : ControllerBase
     private readonly ILogger<AdminUserController> _logger;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AdminUserController(
         UserService userService,
         OrganizationService organizationService,
         ILogger<AdminUserController> logger,
         PecusConfig config,
-        IBackgroundJobClient backgroundJobClient
+        IBackgroundJobClient backgroundJobClient,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _userService = userService;
@@ -43,6 +46,7 @@ public class AdminUserController : ControllerBase
         _logger = logger;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -336,9 +340,13 @@ public class AdminUserController : ControllerBase
                 );
             }
 
+            // 動的にBaseUrlを取得
+            var requestContext = _httpContextAccessor.HttpContext?.Request;
+            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
             // パスワード設定URLを生成
             var passwordSetupUrl =
-                $"{_config.Application.BaseUrl}/password-setup?token={user.PasswordResetToken}";
+                $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
 
             // パスワード設定メールを送信
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
@@ -423,9 +431,13 @@ public class AdminUserController : ControllerBase
             (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
             if (success && user != null)
             {
+                // 動的にBaseUrlを取得
+                var requestContext = _httpContextAccessor.HttpContext?.Request;
+                var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
                 // パスワードリセットURLを構築
                 var resetUrl =
-                    $"{_config.Application.BaseUrl}/password-reset?token={user.PasswordResetToken}";
+                    $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
                 // パスワードリセットメールを送信
                 var emailModel = new PasswordResetEmailModel
