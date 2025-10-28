@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.Security;
 
 namespace Pecus.Libs.DB.Seed;
 
@@ -305,7 +306,7 @@ public class DatabaseSeeder
                 LoginId = "admin",
                 Username = "管理者",
                 Email = "admin@sample.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                PasswordHash = PasswordHasher.HashPassword("admin123"),
                 OrganizationId = organization?.Id,
                 IsActive = true,
             };
@@ -332,7 +333,7 @@ public class DatabaseSeeder
                 LoginId = "user",
                 Username = "一般ユーザー",
                 Email = "user@sample.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("user123"),
+                PasswordHash = PasswordHasher.HashPassword("user123"),
                 OrganizationId = organization?.Id,
                 IsActive = true,
             };

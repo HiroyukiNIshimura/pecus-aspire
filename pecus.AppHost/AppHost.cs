@@ -21,6 +21,11 @@ try
         .WithDataVolume(isReadOnly: false);
     var pecusDb = postgres.AddDatabase("pecusdb");
 
+    var dbManager = builder
+        .AddProject<Projects.pecus_DbManager>("dbmanager")
+        .WithReference(pecusDb)
+        .WaitFor(pecusDb);
+
     var backfire = builder
         .AddProject<Projects.pecus_BackFire>("backfire")
         .WithReference(redis)
@@ -32,14 +37,14 @@ try
         .WithReference(redis)
         .WaitFor(pecusDb)
         .WaitFor(redis)
+        .WaitFor(dbManager)
+        .WaitFor(backfire)
         .WithHttpHealthCheck("/");
 
-    var dbManager = builder
-        .AddProject<Projects.pecus_DbManager>("dbmanager")
-        .WithReference(pecusDb)
-        .WaitFor(pecusDb);
-
-    var frontend = builder.AddViteApp("frontend", "../pecus.Frontend");
+    var frontend = builder.AddViteApp("frontend", "../pecus.Frontend")
+        .WithReference(pecusApi)
+        .WaitFor(pecusApi)
+        .WithNpmPackageInstallation();
 
     builder.Build().Run();
 }

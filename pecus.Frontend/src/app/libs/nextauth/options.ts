@@ -28,17 +28,29 @@ export const nextAuthOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        //TODO WebAPIと連携して認証を行う
-        // credentials に入力が渡ってくる
-        // id, password はここでベタ打ちして検証している
-        const matched =
-          credentials?.id === "id" && credentials?.password === "password";
-        if (matched) {
-          // 今回は null を返さなければなんでもよいので適当
+        console.log(`${process.env.services__backend__https__0 || process.env.services__backend__http__0}`);
+        // WebAPIと連携して認証を行う
+        try {
+          const res = await fetch(`${process.env.services__backend__https__0}/api/entrance/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              LoginIdentifier: credentials?.id,
+              Password: credentials?.password,
+            }),
+          });
+          if (!res.ok) {
+            return null;
+          }
+          const data = await res.json();
+          // ここでWebApiのレスポンス仕様に合わせてuser情報を返す
           return {
-            id: "29472084752894723890248902",
+            id: data.userId || data.id,
+            accessToken: data.accessToken,
+            // 必要に応じて他の情報も
           };
-        } else {
+        } catch (e) {
+          console.error("認証API通信エラー", e);
           return null;
         }
       },

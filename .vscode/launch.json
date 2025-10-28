@@ -1,0 +1,60 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Aspire AppHost デバッグ",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/pecus.AppHost/bin/Debug/net9.0/pecus.AppHost.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/pecus.AppHost",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": ".NET Aspire WebApi デバッグ",
+      "type": "coreclr",
+      "request": "launch",
+      //"preLaunchTask": "build",
+      "program": "${workspaceFolder}/pecus.WebApi/bin/Debug/net9.0/pecus.WebApi.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/pecus.WebApi",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": ".NET Aspire BackFire デバッグ",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/pecus.BackFire/bin/Debug/net9.0/pecus.BackFire.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/pecus.BackFire",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": ".NET Aspire DbManager デバッグ",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/pecus.DbManager/bin/Debug/net9.0/pecus.DbManager.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/pecus.DbManager",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Aspire全サービス同時デバッグ",
+      "configurations": [
+        ".NET Aspire AppHost デバッグ",
+        ".NET Aspire WebApi デバッグ",
+        ".NET Aspire BackFire デバッグ",
+        ".NET Aspire DbManager デバッグ"
+      ]
+    }
+  ]
+}

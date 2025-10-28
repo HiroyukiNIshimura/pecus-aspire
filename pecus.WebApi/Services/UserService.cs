@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Requests;
 using System.Security.Cryptography;
 using System.Text;
@@ -414,8 +415,7 @@ public class UserService
     /// </summary>
     private static bool VerifyPassword(string password, string passwordHash)
     {
-        var hash = HashPassword(password);
-        return hash == passwordHash;
+        return PasswordHasher.VerifyPassword(password, passwordHash);
     }
 
     /// <summary>
@@ -423,7 +423,7 @@ public class UserService
     /// </summary>
     public static bool VerifyPasswordPublic(string password, string passwordHash)
     {
-        return VerifyPassword(password, passwordHash);
+        return PasswordHasher.VerifyPassword(password, passwordHash);
     }
 
     /// <summary>
@@ -442,9 +442,7 @@ public class UserService
     /// </summary>
     private static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        return PasswordHasher.HashPassword(password);
     }
 
     /// <summary>
