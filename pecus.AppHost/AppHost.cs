@@ -39,6 +39,8 @@ try
         .WithReference(pecusDb)
         .WaitFor(pecusDb);
 
+    var frontend = builder.AddViteApp("frontend", "../pecus.Frontend");
+
     builder.Build().Run();
 }
 catch (Exception ex)

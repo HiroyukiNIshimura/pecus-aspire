@@ -8,6 +8,7 @@ Conversation-Driven Development（会話駆動開発）：AI とペアプログ�
 ### .NET Aspire による分散マイクロサービス
 このプロジェクトは単一プロセスのアプリケーションではなく、.NET Aspire 9.0 によってオーケストレーションされるマイクロサービス群です。
 
+
 プロジェクト構成の主な要素:
 - `pecus.AppHost`：Aspire のオーケストレーションホスト。サービス構成、依存関係、起動順序を定義します。
 - `pecus.WebApi`：メインの REST API（JWT 認証、Hangfire クライアント、Swagger UI）
@@ -15,11 +16,30 @@ Conversation-Driven Development（会話駆動開発）：AI とペアプログ�
 - `pecus.DbManager`：DB マイグレーション管理。起動時に `DbInitializer` により自動マイグレーションを実行します。
 - `pecus.Libs`：DB モデル、Hangfire タスク、メールサービス、シードデータなどの共有ライブラリ
 - `pecus.ServiceDefaults`：Serilog、ヘルスチェック、OpenTelemetry などのサービス共通設定
+- `pecus.Frontend`：フロントエンドアプリケーション（SPAやWeb UIなど、将来的な拡張用）
 
 インフラ（`pecus.AppHost/AppHost.cs` に定義）:
 - PostgreSQL：`pecusdb` データベース（ユーザー/パスワードは Aspire が注入）
 - Redis：Hangfire キューの共有キャッシュ
 - サービス依存関係：DbManager は Postgres を待ち、WebApi は Postgres と Redis を待ち、BackFire は Redis を待ちます
+
+### フロントエンド（`pecus.Frontend`）のアーキテクチャ
+
+`pecus.Frontend` はSPA（Single Page Application）やWeb UIの拡張用ディレクトリです。主なアーキテクチャ方針は以下の通りです。
+
+- **フレームワーク例**: React（Next.js）、Vue、Svelte などのモダンSPAフレームワークを推奨
+- **型安全**: TypeScriptを推奨
+- **状態管理**: Redux Toolkit, Zustand, Recoil など（規模に応じて選択）
+- **UIライブラリ**: MUI, Chakra UI, Ant Design, Tailwind CSS など
+- **API通信**: OpenAPI/Swagger定義に基づく型安全なクライアント生成（例: openapi-generator, axios, react-query）
+- **認証**: pecus.WebApiのJWT認証と連携（アクセストークン管理はHttpOnly Cookie推奨）
+- **ルーティング**: SPAルーター（React Router, Next.jsのApp Router等）
+- **テスト**: Jest, React Testing Library, Playwright など
+- **CI/CD**: GitHub Actions等での自動ビルド・デプロイ
+
+API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従ってください。アクセストークンの保存・送信方法やエラーハンドリングもセキュリティ要件に合わせて実装します。
+
+開発時は `npm install` → `npm run dev` でローカル開発サーバーを起動し、バックエンドAPIと連携して動作確認を行ってください。
 
 ### データ層（`pecus.Libs`）
 名前空間: `Pecus.Libs.DB`
