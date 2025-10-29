@@ -1,5 +1,6 @@
 "use client";
 
+import { HSAccordion, HSDropdown, HSStaticMethods } from "flyonui/flyonui";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -26,9 +27,19 @@ export default function FlyonuiScript() {
 				typeof window.HSStaticMethods.autoInit === "function"
 			) {
 				window.HSStaticMethods.autoInit();
+				window.HSDropdown.autoInit();
+				window.HSAccordion.autoInit();
 			}
 		}, 100);
 	}, [path]);
 
 	return null;
+}
+
+declare global {
+	interface Window {
+		HSStaticMethods: typeof HSStaticMethods;
+		HSDropdown: typeof HSDropdown;
+    	HSAccordion: typeof HSAccordion;
+  	}
 }

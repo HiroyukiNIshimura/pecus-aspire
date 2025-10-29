@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { useState } from "react";
 import FlyonuiScript from "@/libs/flyon/FlyonuiScript";
+import TopNavbar from "@/components/client/widgets/nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +24,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="ja" data-theme="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="">{children}</div>
+        <div className="relative h-screen w-full">
+          <div className="pt-16">{children}</div>
+        </div>
         <FlyonuiScript />
+        <script src="../node_modules/flyonui/flyonui.js"></script>
       </body>
     </html>
   );
