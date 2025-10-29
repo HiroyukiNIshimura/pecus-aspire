@@ -1,18 +1,17 @@
-import { getSession, signIn, signOut } from "next-auth/react";
-import axios from "axios";
+import { SessionManager } from "@/libs/session";
 
 // アクセストークン取得
 export async function getAccessToken(): Promise<string> {
-  const session = await getSession();
+  const session = await SessionManager.getSession();
   if (!session?.accessToken) throw new Error("No access token");
-  return session.accessToken as string;
+  return session.accessToken;
 }
 
 // リフレッシュトークン取得
 export async function getRefreshToken(): Promise<string> {
-  const session = await getSession();
+  const session = await SessionManager.getSession();
   if (!session?.refreshToken) throw new Error("No refresh token");
-  return session.refreshToken as string;
+  return session.refreshToken;
 }
 
 // リフレッシュトークンで再取得
@@ -20,22 +19,33 @@ export async function refreshAccessToken(): Promise<string> {
   const refreshToken = await getRefreshToken();
 
   try {
-    // next-auth の refresh-token プロバイダーを使用
-    const result = await signIn("refresh-token", {
-      refreshToken,
-      redirect: false
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken }),
     });
 
-    if (!result?.ok) {
-      await signOut();
-      throw new Error("Failed to refresh token");
+    if (!response.ok) {
+      throw new Error('Failed to refresh token');
     }
 
-    const session = await getSession();
-    if (!session?.accessToken) throw new Error("No access token after refresh");
-    return session.accessToken as string;
+    const data = await response.json();
+    // セッションを更新
+    const session = await SessionManager.getSession();
+    if (session) {
+      await SessionManager.setSession({
+        ...session,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken || session.refreshToken,
+      });
+    }
+
+    return data.accessToken;
   } catch (error) {
-    await signOut();
+    // 失敗したらログアウト
+    await fetch('/api/auth/logout', { method: 'POST' });
     throw new Error("Failed to refresh token");
   }
 }

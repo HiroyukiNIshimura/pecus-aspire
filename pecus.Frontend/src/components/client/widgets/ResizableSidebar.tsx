@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NotionEditor from "./editor";
 import TreeView from "./treeView";
@@ -11,6 +10,7 @@ const MAX_WIDTH = 500;
 const INITIAL_WIDTH = 250;
 
 export default function ResizableSidebar() {
+
   // サイドバーの現在の幅 (px)
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_WIDTH);
   // ドラッグ中かどうかを示すフラグ
@@ -72,14 +72,6 @@ export default function ResizableSidebar() {
         <div className="p-4">
           <h2 className="text-xl font-semibold mb-4">左メニュー</h2>
           <TreeView />
-          <div className="mt-auto pt-4 border-t border-gray-700">
-            <Link
-              href={"/api/auth/signout"}
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              ログアウト
-            </Link>
-          </div>
         </div>
       </div>
 

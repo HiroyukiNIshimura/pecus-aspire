@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 
 export default function SignInPage() {
@@ -14,7 +13,6 @@ export default function SignInPage() {
 
 const LoginForm = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -23,32 +21,28 @@ const LoginForm = () => {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const callbackUrl = searchParams.get("callbackUrl") || "/";
-
     try {
-      const response = await signIn("credentials", {
-        redirect: false,
-        id,
-        password,
-        callbackUrl,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loginIdentifier: id,
+          password,
+        }),
       });
 
-      if (response?.ok) {
-        router.push(callbackUrl);
+      if (response.ok) {
+        router.push('/');
         return;
       }
 
-      if (response?.status === 401) {
-        setError(
-          "ログイン認証に失敗しました。IDまたはパスワードが正しくありません。",
-        );
-        return;
-      }
-
-      setError("ログイン認証に失敗しました。");
-      return;
+      const data = await response.json();
+      setError(data.error || 'ログイン認証に失敗しました。');
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      setError('ログイン認証に失敗しました。');
     }
   };
 
