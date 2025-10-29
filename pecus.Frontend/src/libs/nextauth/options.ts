@@ -40,13 +40,10 @@ export const nextAuthOptions: NextAuthOptions = {
             },
           });
 
-          if (!res) {
-            return null;
-          }
           // ここでWebApiのレスポンス仕様に合わせてuser情報を返す
           return {
-            id: String(res.userId ?? ""),
-            accessToken: res.accessToken ?? "",
+            id: String(res.data.userId ?? ""),
+            accessToken: res.data.accessToken ?? "",
             // 必要に応じて他の情報も
           };
         } catch (e) {
