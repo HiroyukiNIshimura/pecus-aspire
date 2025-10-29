@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Services;
@@ -27,14 +28,16 @@ public class FileDownloadController : ControllerBase
     [HttpGet("{fileType}/{resourceId}/{fileName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetIcon(string fileType, int resourceId, string fileName)
+    public async Task<
+        Results<FileContentHttpResult, NotFound>
+    > GetIcon(string fileType, int resourceId, string fileName)
     {
         try
         {
             // ファイルタイプの検証
             if (!FileUploadHelper.IsValidFileType(fileType))
             {
-                return NotFound();
+                return TypedResults.NotFound();
             }
 
             // ログインユーザーの組織IDを取得
@@ -43,7 +46,7 @@ public class FileDownloadController : ControllerBase
 
             if (user?.OrganizationId == null)
             {
-                return NotFound();
+                return TypedResults.NotFound();
             }
 
             // 組織IDを使用してファイルパスを構築
@@ -58,13 +61,13 @@ public class FileDownloadController : ControllerBase
 
             if (!System.IO.File.Exists(filePath))
             {
-                return NotFound();
+                return TypedResults.NotFound();
             }
 
             var contentType = GetContentType(fileName);
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
 
-            return File(fileBytes, contentType);
+            return TypedResults.File(fileBytes, contentType);
         }
         catch (Exception ex)
         {
@@ -75,7 +78,7 @@ public class FileDownloadController : ControllerBase
                 resourceId,
                 fileName
             );
-            return NotFound();
+            return TypedResults.NotFound();
         }
     }
 

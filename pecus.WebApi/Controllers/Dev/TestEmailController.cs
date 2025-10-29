@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Models.Responses.Common;
 
 namespace Pecus.Controllers.Dev;
 
@@ -29,10 +31,11 @@ public class TestEmailController : ControllerBase
     /// 利用可能なテンプレート一覧を返す
     /// </summary>
     [HttpGet("templates")]
-    public IActionResult ListTemplates()
+    [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+    public Ok<string[]> ListTemplates()
     {
         var templates = new[] { "welcome", "password-setup", "password-reset", "test-email" };
-        return Ok(templates);
+        return TypedResults.Ok(templates);
     }
 
     /// <summary>
@@ -40,7 +43,11 @@ public class TestEmailController : ControllerBase
     /// </summary>
     /// <param name="template">テンプレート名（welcome, password-setup, password-reset, test-email）</param>
     [HttpPost("send")]
-    public async Task<IActionResult> Send([FromQuery] string? template)
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<Ok<MessageResponse>, StatusCodeHttpResult>
+    > Send([FromQuery] string? template)
     {
         template ??= "test-email";
         var to = TestEmailConfig.Recipient;
@@ -98,12 +105,12 @@ public class TestEmailController : ControllerBase
                     break;
             }
 
-            return Ok(new { Message = "メール送信要求を実行しました。受信トレイを確認してください。", Recipient = to, Template = template, BaseUrl = baseUrl });
+            return TypedResults.Ok(new MessageResponse { Message = "メール送信要求を実行しました。受信トレイを確認してください。" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "テストメール送信に失敗しました。template={Template}, to={To}", template, to);
-            return StatusCode(500, new { Message = "メール送信に失敗しました。ログを確認してください。" });
+            return TypedResults.StatusCode(500);
         }
     }
 
@@ -111,11 +118,13 @@ public class TestEmailController : ControllerBase
     /// テスト用受信先を設定する
     /// </summary>
     [HttpPost("set-recipient")]
-    public IActionResult SetRecipient([FromBody] RecipientRequest req)
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+    public Results<Ok<MessageResponse>, BadRequest<MessageResponse>> SetRecipient([FromBody] RecipientRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req?.Email)) return BadRequest(new { Message = "Email is required." });
+        if (string.IsNullOrWhiteSpace(req?.Email)) return TypedResults.BadRequest(new MessageResponse { Message = "Email is required." });
         TestEmailConfig.Recipient = req.Email.Trim();
-        return Ok(new { Message = "Recipient updated.", Recipient = TestEmailConfig.Recipient });
+        return TypedResults.Ok(new MessageResponse { Message = "Recipient updated." });
     }
 
     public class RecipientRequest { public string Email { get; set; } = string.Empty; }

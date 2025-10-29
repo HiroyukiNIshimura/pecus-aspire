@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Models.Requests;
@@ -33,23 +34,28 @@ public class RefreshController : ControllerBase
     /// <returns>新しいアクセストークンとリフレッシュトークン</returns>
     [AllowAnonymous]
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+    [ProducesResponseType(typeof(RefreshResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<Ok<RefreshResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
+    > Refresh([FromBody] RefreshRequest request)
     {
         try
         {
             if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
             {
-                return BadRequest(new ErrorResponse { Message = "RefreshToken is required" });
+                return TypedResults.BadRequest(new ErrorResponse { Message = "RefreshToken is required" });
             }
 
             var info = await _refreshService.ValidateRefreshTokenAsync(request.RefreshToken);
             if (info == null)
             {
-                return BadRequest(new ErrorResponse { Message = "Invalid refresh token" });
+                return TypedResults.BadRequest(new ErrorResponse { Message = "Invalid refresh token" });
             }
 
             var user = await _userService.GetUserByIdAsync(info.UserId);
-            if (user == null) return BadRequest(new ErrorResponse { Message = "Invalid refresh token" });
+            if (user == null) return TypedResults.BadRequest(new ErrorResponse { Message = "Invalid refresh token" });
 
             // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
             await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
@@ -67,7 +73,7 @@ public class RefreshController : ControllerBase
                 await blacklistSvc.RegisterUserJtiAsync(user.Id, jti);
             }
 
-            return Ok(new
+            var response = new RefreshResponse
             {
                 AccessToken = accessToken,
                 TokenType = "Bearer",
@@ -75,12 +81,14 @@ public class RefreshController : ControllerBase
                 ExpiresIn = expiresIn,
                 RefreshToken = newRefresh.Token,
                 RefreshExpiresAt = newRefresh.ExpiresAt
-            });
+            };
+
+            return TypedResults.Ok(response);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Refresh token error");
-            return StatusCode(500);
+            return TypedResults.StatusCode(500);
         }
     }
 
@@ -94,7 +102,11 @@ public class RefreshController : ControllerBase
     /// <returns>ログアウト結果</returns>
     [HttpPost("logout")]
     [Authorize]
-    public async Task<IActionResult> Logout([FromBody] RefreshRequest request)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<
+        Results<NoContent, StatusCodeHttpResult>
+    > Logout([FromBody] RefreshRequest request)
     {
         try
         {
@@ -117,12 +129,12 @@ public class RefreshController : ControllerBase
             // 全セッションを切る場合は以下を利用
             // await _refreshService.RevokeAllUserRefreshTokensAsync(me);
 
-            return NoContent();
+            return TypedResults.NoContent();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Logout error");
-            return StatusCode(500);
+            return TypedResults.StatusCode(500);
         }
     }
 }

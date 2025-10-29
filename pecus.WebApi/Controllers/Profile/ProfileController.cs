@@ -1,6 +1,7 @@
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -56,14 +57,18 @@ public class ProfileController : ControllerBase
     /// 自分のプロフィール情報を取得
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetProfile()
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok<UserResponse>, NotFound>
+    > GetProfile()
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
         var user = await _userService.GetUserByIdAsync(me);
         if (user == null)
         {
-            return NotFound();
+            return TypedResults.NotFound();
         }
 
         var response = new UserResponse
@@ -77,7 +82,7 @@ public class ProfileController : ControllerBase
             CreatedAt = user.CreatedAt
         };
 
-        return Ok(response);
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -86,7 +91,12 @@ public class ProfileController : ControllerBase
     /// <param name="request">更新情報</param>
     /// <returns>更新結果</returns>
     [HttpPut]
-    public async Task<IActionResult> UpdateProfile(
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok, BadRequest<ErrorResponse>, NotFound>
+    > UpdateProfile(
         UpdateProfileRequest request
     )
     {
@@ -95,7 +105,7 @@ public class ProfileController : ControllerBase
         // バリデーション: AvatarType="user-avatar"の場合、AvatarUrlが必須
         if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
         {
-            return BadRequest(new ErrorResponse
+            return TypedResults.BadRequest(new ErrorResponse
             {
                 Message = "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
             });
@@ -106,11 +116,11 @@ public class ProfileController : ControllerBase
             var updatedUser = await _userService.UpdateProfileAsync(me, request, me);
             if (updatedUser == null)
             {
-                return NotFound();
+                return TypedResults.NotFound();
             }
 
             _logger.LogInformation("ユーザープロフィールを更新しました。UserId: {UserId}", me);
-            return Ok();
+            return TypedResults.Ok();
         }
         catch (Exception ex)
         {
@@ -125,7 +135,12 @@ public class ProfileController : ControllerBase
     /// <param name="request">変更情報</param>
     /// <returns>結果</returns>
     [HttpPatch("email")]
-    public async Task<IActionResult> UpdateEmail(UpdateEmailRequest request)
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok<MessageResponse>, BadRequest<ErrorResponse>, NotFound>
+    > UpdateEmail(UpdateEmailRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
@@ -133,12 +148,12 @@ public class ProfileController : ControllerBase
         var user = await _userService.GetUserByIdAsync(me);
         if (user == null)
         {
-            return NotFound();
+            return TypedResults.NotFound();
         }
 
         if (user.Email.Equals(request.NewEmail, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(new ErrorResponse
+            return TypedResults.BadRequest(new ErrorResponse
             {
                 Message = "新しいメールアドレスは現在のメールアドレスと異なっている必要があります。"
             });
@@ -148,7 +163,7 @@ public class ProfileController : ControllerBase
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.NewEmail);
         if (existingUser != null)
         {
-            return BadRequest(new ErrorResponse
+            return TypedResults.BadRequest(new ErrorResponse
             {
                 Message = "このメールアドレスは既に使用されています。"
             });
@@ -167,7 +182,7 @@ public class ProfileController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "テストメール送信に失敗しました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
-            return BadRequest(new ErrorResponse
+            return TypedResults.BadRequest(new ErrorResponse
             {
                 Message = "新しいメールアドレスにメールが届かないため、変更できませんでした。メールアドレスを確認してください。"
             });
@@ -181,6 +196,6 @@ public class ProfileController : ControllerBase
 
         _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
 
-        return Ok(new { Message = "メールアドレスを変更しました。" });
+        return TypedResults.Ok(new MessageResponse { Message = "メールアドレスを変更しました。" });
     }
 }

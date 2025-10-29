@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Writers;
+using Pecus.Models.Responses.Common;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Pecus.Controllers.Backend;
@@ -35,10 +37,10 @@ public class BackendSpecsController : ControllerBase
     /// <param name="documentName">ドキュメント名（デフォルト: v1）</param>
     [HttpGet("openapi")]
     [HttpGet("openapi/{documentName}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetOpenApiSchema(string documentName = "v1")
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public Results<Ok<string>, NotFound<MessageResponse>, StatusCodeHttpResult> GetOpenApiSchema(string documentName = "v1")
     {
         try
         {
@@ -50,7 +52,7 @@ public class BackendSpecsController : ControllerBase
             swagger.SerializeAsV3(jsonWriter);
             var json = stringWriter.ToString();
 
-            return Content(json, "application/json");
+            return TypedResults.Ok(json);
         }
         catch (UnknownSwaggerDocument)
         {
@@ -58,9 +60,7 @@ public class BackendSpecsController : ControllerBase
                 "OpenAPIドキュメントが見つかりませんでした。DocumentName: {DocumentName}",
                 documentName
             );
-            return NotFound(
-                new { message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" }
-            );
+            return TypedResults.NotFound(new MessageResponse { Message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" });
         }
         catch (Exception ex)
         {
@@ -69,10 +69,7 @@ public class BackendSpecsController : ControllerBase
                 "OpenAPIスキーマ取得中にエラーが発生しました。DocumentName: {DocumentName}",
                 documentName
             );
-            return StatusCode(
-                StatusCodes.Status500InternalServerError,
-                new { message = "OpenAPIスキーマの取得に失敗しました。" }
-            );
+            return TypedResults.StatusCode(500);
         }
     }
 
@@ -85,10 +82,10 @@ public class BackendSpecsController : ControllerBase
     /// <param name="documentName">ドキュメント名（デフォルト: v1）</param>
     [HttpGet("openapi.yaml")]
     [HttpGet("openapi/{documentName}.yaml")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult GetOpenApiSchemaYaml(string documentName = "v1")
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+    public Results<Ok<string>, NotFound<MessageResponse>, StatusCodeHttpResult> GetOpenApiSchemaYaml(string documentName = "v1")
     {
         try
         {
@@ -100,7 +97,7 @@ public class BackendSpecsController : ControllerBase
             swagger.SerializeAsV3(yamlWriter);
             var yaml = stringWriter.ToString();
 
-            return Content(yaml, "application/yaml");
+            return TypedResults.Ok(yaml);
         }
         catch (UnknownSwaggerDocument)
         {
@@ -108,9 +105,7 @@ public class BackendSpecsController : ControllerBase
                 "OpenAPIドキュメントが見つかりませんでした。DocumentName: {DocumentName}",
                 documentName
             );
-            return NotFound(
-                new { message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" }
-            );
+            return TypedResults.NotFound(new MessageResponse { Message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" });
         }
         catch (Exception ex)
         {
@@ -119,10 +114,7 @@ public class BackendSpecsController : ControllerBase
                 "OpenAPIスキーマ(YAML)取得中にエラーが発生しました。DocumentName: {DocumentName}",
                 documentName
             );
-            return StatusCode(
-                StatusCodes.Status500InternalServerError,
-                new { message = "OpenAPIスキーマの取得に失敗しました。" }
-            );
+            return TypedResults.StatusCode(500);
         }
     }
 }
