@@ -1,9 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface UserInfo {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  roles?: any[];
+  isAdmin: boolean;
+}
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/user');
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo(data.user);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user info:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -37,6 +65,9 @@ export default function Dashboard() {
                   <li><a className="dropdown-item" href="/reports">レポート</a></li>
                 </ul>
               </li>
+              {userInfo?.isAdmin && (
+                <li><a href="/admin">管理者</a></li>
+              )}
             </ul>
           </div>
           <div className="navbar-end">
@@ -86,6 +117,9 @@ export default function Dashboard() {
             <li><a href="/projects">プロジェクト</a></li>
             <li><a href="/team">チーム</a></li>
             <li><a href="/analytics">分析</a></li>
+            {userInfo?.isAdmin && (
+              <li><a href="/admin">管理者</a></li>
+            )}
           </ul>
         </aside>
 
