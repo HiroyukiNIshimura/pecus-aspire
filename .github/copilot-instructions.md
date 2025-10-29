@@ -145,6 +145,32 @@ builder.AddRedisClient("redis");
 
 ページングはクライアントから `page` のみ受け取り、`pageSize` はサーバー側で固定値を使います（サーバー性能担保のため）。
 
+### Results パターン（コントローラーの戻り値）
+コントローラーのアクションメソッドは `IActionResult` ではなく `Results<T>` を使用してください。これにより型安全性を確保し、OpenAPI/Swagger で正確なレスポンス仕様を生成できます。
+
+戻り値のルール:
+- 成功レスポンス: `TypedResults.Ok<T>(responseModel)` を使用
+- エラーレスポンス: `TypedResults.NotFound<T>(responseModel)`, `TypedResults.BadRequest<T>(responseModel)` などを使用
+- ステータスコード指定: `TypedResults.StatusCode(code)` を使用
+
+各メソッドに `ProducesResponseType` 属性を付与:
+```csharp
+[ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+public Results<Ok<MessageResponse>, BadRequest<MessageResponse>> SomeAction()
+{
+    // 実装
+}
+```
+
+共通レスポンスモデル:
+- `MessageResponse`: 汎用メッセージレスポンス（`{ Message: string }`）
+- `JobResponse`: Hangfire ジョブIDを含むレスポンス（`MessageResponse` を継承）
+- `ContinuationResponse`: 親子ジョブIDを含むレスポンス
+- `RecurringResponse`: 繰り返しジョブIDを含むレスポンス
+- `BatchResponse`: ジョブIDリストを含むレスポンス
+- 必要に応じて専用レスポンスモデルを作成（例: `RefreshResponse`）
+
 検証属性（Validation）ルール
  - リクエスト DTO のプロパティには必ず入力検証属性を付与してください。特に DB に保存されるフィールドはスキーマに沿った長さ制限・必須チェックを行ってください。
  - 文字列の必須項目には `[Required(ErrorMessage = "○○は必須です。" )]` を付与します（メッセージは具体的に）。
