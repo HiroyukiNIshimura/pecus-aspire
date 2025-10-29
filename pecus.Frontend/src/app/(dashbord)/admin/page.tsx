@@ -1,5 +1,6 @@
 import AdminClient from "./AdminClient";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { refreshAccessToken } from "@/connectors/api/auth";
 import { SessionManager } from "@/libs/session";
 
 export const dynamic = 'force-dynamic';
@@ -50,24 +51,27 @@ export default async function AdminPage() {
     organization = (res?.data ?? res) as OrganizationData;
   } catch (err: any) {
     console.error('AdminPage: failed to fetch organization or user', err);
-    if (err?.response?.status === 401) {
-      console.log('AdminPage: 401 error detected, clearing session and redirecting to login');
-      // セッションをクリア
-      try {
-        const { SessionManager } = await import('@/libs/session');
-        // セッションクリアのメソッドがない場合は、直接クッキーを削除
-        const { cookies } = await import('next/headers');
-        const cookieStore = await cookies();
-        cookieStore.delete('accessToken');
-        cookieStore.delete('refreshToken');
-        cookieStore.delete('user');
-      } catch (clearError) {
-        console.error('AdminPage: Failed to clear session', clearError);
-      }
+    const status = err?.response?.status;
+    const detail = err?.message ?? String(err);
 
-      fetchError = '認証が切れました。再度ログインしてください。';
+    // 401エラーの場合、リフレッシュを試行
+    if (status === 401) {
+      console.log('AdminPage: 401 error detected, attempting token refresh');
+      try {
+        await refreshAccessToken();
+        console.log('AdminPage: Token refresh successful, retrying API call');
+
+        // リフレッシュ成功したらAPIを再試行
+        const clients = createPecusApiClients();
+        const res = await clients.adminOrganization.apiAdminOrganizationGet();
+        organization = (res?.data ?? res) as OrganizationData;
+        console.log('AdminPage: Retry successful');
+      } catch (refreshErr: any) {
+        console.error('AdminPage: Token refresh failed:', refreshErr);
+        fetchError = '認証が切れました。再度ログインしてください。';
+      }
     } else {
-      fetchError = '組織情報の取得に失敗しました';
+      fetchError = `組織情報の取得に失敗しました (${detail})`;
     }
   }
 

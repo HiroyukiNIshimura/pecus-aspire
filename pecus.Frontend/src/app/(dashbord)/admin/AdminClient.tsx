@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
+import { useRouter } from "next/navigation";
 
 interface OrganizationData {
   id?: number | string;
@@ -36,42 +37,36 @@ export default function AdminClient({
   initialUser: UserInfo | null;
   fetchError?: string | null;
 }) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser);
   const [organization, setOrganization] = useState<OrganizationData | null>(initialOrganization);
   const [loading, setLoading] = useState(false);
   const [clientError, setClientError] = useState<string | null>(fetchError ?? null);
 
+  // 認証エラーが検出されたらログインページにリダイレクト
+  useEffect(() => {
+    if (clientError?.includes("認証が切れました")) {
+      router.push("/signin");
+    }
+  }, [clientError, router]);
+
   // 必要ならクライアント側で追加データ取得する（ただし pecus.WebApi へ直接は行わない）
   useEffect(() => {
-    // 認証エラーが発生していたらログインページにリダイレクト
-    if (clientError && clientError.includes('認証が切れました')) {
-      console.log('AdminClient: Authentication error detected, redirecting to login');
-      window.location.href = '/signin';
-      return;
-    }
-
-    // ユーザー情報がサーバー側で取得できなかった場合のフォールバック
-    if (!userInfo) {
-      const fetchUserInfo = async () => {
-        try {
-          const response = await fetch("/api/user");
-          if (response.ok) {
-            const data = await response.json();
-            setUserInfo(data.user);
-          } else if (response.status === 401) {
-            // ユーザー情報取得でも401エラーが発生したらログインページにリダイレクト
-            console.log('AdminClient: User info fetch failed with 401, redirecting to login');
-            window.location.href = '/signin';
-          }
-        } catch (error) {
-          console.error("Failed to fetch user info:", error);
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch("/api/user");
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo(data.user);
         }
-      };
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      }
+    };
 
-      fetchUserInfo();
-    }
-  }, [userInfo, clientError]);
+    fetchUserInfo();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
