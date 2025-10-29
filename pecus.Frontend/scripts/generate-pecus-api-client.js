@@ -67,8 +67,8 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
   });
 
   // レスポンスインターセプター: 401エラー時の処理
-  if (enableRefresh && typeof window !== 'undefined') {
-    // クライアントサイドではトークンリフレッシュを試みる
+  if (enableRefresh) {
+    // トークンリフレッシュを試みる（クライアントサイド・サーバーサイド共通）
     instance.interceptors.response.use(
       (response: AxiosResponse) => response,
       async (error) => {
@@ -86,18 +86,6 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
         throw error;
       }
     );
-  } else if (!enableRefresh) {
-    // サーバーサイドでは401エラーが発生したらすぐにエラーを投げる（リフレッシュは行わない）
-    instance.interceptors.response.use(
-      (response: AxiosResponse) => response,
-      async (error) => {
-        if (error.response?.status === 401) {
-          console.log('Server-side 401 error, not attempting refresh');
-          throw error;
-        }
-        throw error;
-      }
-    );
   }
 
   return instance;
@@ -109,8 +97,8 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
 // createPecusApiClients 関数を生成
 function generateCreatePecusApiClients(apiClasses) {
   let code = `export function createPecusApiClients() {
-  // サーバーサイド（API Route）ではトークンリフレッシュを無効にする
-  const enableRefresh = typeof window !== 'undefined';
+  // サーバーサイドでもトークンリフレッシュを有効にする
+  const enableRefresh = true;
   const axiosInstance = createAxiosInstance(enableRefresh);
   const config = new PecusApis.Configuration({
     basePath: process.env.API_BASE_URL || 'https://localhost:7265',
