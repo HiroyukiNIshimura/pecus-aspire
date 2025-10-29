@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import AdminFooter from "@/components/admin/AdminFooter";
 
 interface UserInfo {
   id: number;
@@ -227,9 +228,7 @@ export default function AdminUsers() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-base-200 text-base-content p-4 text-center">
-        <p>&copy; 2025 Pecus. All rights reserved.</p>
-      </footer>
+      <AdminFooter />
     </div>
   );
 }
