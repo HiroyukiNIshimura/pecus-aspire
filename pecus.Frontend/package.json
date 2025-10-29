@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
+    "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
     "generate:api": "openapi-generator-cli generate -i ./.spec/open-api-scheme.json -g typescript-fetch -o src/connectors/api/pecus --additional-properties=supportsES6=true,modelPropertyNaming=original"
   },
   "dependencies": {
