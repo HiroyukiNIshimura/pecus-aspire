@@ -47,6 +47,10 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **Next.js API Routes活用**: サーバーページでアクセスできない場合は、Next.js の API Routes 機能で `pecus.WebApi` へアクセスし、クライアントへデータを戻すこと
 - **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
 
+実装サンプルは
+- `pecus.Frontend/src/app/(dashbord)/admin/page.tsx`: SSRページ
+- `pecus.Frontend/src/app/(dashbord)/admin/AdminClient.tsx`: クライアントコンポーネント
+
 #### HTML生成ルール
 - **button要素**: 必ず `type` 属性を正しく設定すること（例: `type="button"`, `type="submit"`, `type="reset"`）
 - **label要素**: 必ず `for` 属性を正しく設定し、対応するinput要素のidと一致させること
