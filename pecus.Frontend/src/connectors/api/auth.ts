@@ -1,4 +1,5 @@
 import { SessionManager } from "@/libs/session";
+import { createPecusApiClients } from "./PecusApiClient";
 
 // アクセストークン取得（サーバーサイドのみ）
 export async function getAccessToken(): Promise<string> {
@@ -26,56 +27,38 @@ export async function getRefreshToken(): Promise<string> {
   return session.refreshToken;
 }
 
-// リフレッシュトークンで再取得（サーバーサイドのみ）
+// リフレッシュトークンで再取得（API Route経由）
 export async function refreshAccessToken(): Promise<string> {
-  console.log('refreshAccessToken: Starting token refresh');
-  const refreshToken = await getRefreshToken();
-  console.log('refreshAccessToken: Got refresh token, calling WebAPI refresh endpoint');
+  console.log('refreshAccessToken: Calling API Route for token refresh');
 
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/entrance/refresh`, {
+    const response = await fetch('/api/auth/refresh', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refreshToken }),
     });
 
-    console.log('refreshAccessToken: Refresh API response status:', response.status);
-
     if (!response.ok) {
-      console.log('refreshAccessToken: Refresh failed with status:', response.status);
-      const errorText = await response.text();
-      console.log('refreshAccessToken: Error response:', errorText);
-      throw new Error(`Failed to refresh token: ${response.status} ${errorText}`);
+      throw new Error(`Refresh failed with status ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('refreshAccessToken: Got new tokens, updating session');
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error('Refresh API returned error');
+    }
 
-    // サーバーサイドではSessionManagerを更新
+    console.log('refreshAccessToken: Refresh successful via API Route');
+
+    // 新しいアクセストークンを取得して返す
     const session = await SessionManager.getSession();
-    if (session) {
-      await SessionManager.setSession({
-        ...session,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken || session.refreshToken,
-      });
-      console.log('refreshAccessToken: Session updated successfully');
-    } else {
-      console.log('refreshAccessToken: No session found to update');
+    if (!session?.accessToken) {
+      throw new Error('No access token after refresh');
     }
 
-    return data.accessToken;
-  } catch (error) {
-    console.log('refreshAccessToken: Refresh failed with error:', error);
-    // 失敗したらWebAPIのログアウトエンドポイントを呼び出し
-    try {
-      console.log('refreshAccessToken: Calling logout endpoint');
-      await fetch(`${process.env.API_BASE_URL}/api/entrance/logout`, { method: 'POST' });
-    } catch (logoutError) {
-      console.log('refreshAccessToken: Logout also failed');
-    }
-    throw new Error("Failed to refresh token");
+    return session.accessToken;
+  } catch (error: any) {
+    console.error('refreshAccessToken: Refresh failed with error:', error);
+    throw error;
   }
 }
