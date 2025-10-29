@@ -32,9 +32,9 @@ import {
 } from "./pecus";
 
 // axiosインスタンスを作成（インターセプター付き）
-const createAxiosInstance = (): AxiosInstance => {
+const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
   const instance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+    baseURL: process.env.API_BASE_URL || 'https://localhost:7265',
   });
 
   // リクエストインターセプター: アクセストークンをAuthorizationヘッダーにセット
@@ -51,26 +51,39 @@ const createAxiosInstance = (): AxiosInstance => {
     return config;
   });
 
-  // レスポンスインターセプター: 401エラー時にトークンをリフレッシュしてリトライ
-  instance.interceptors.response.use(
-    (response: AxiosResponse) => response, // 成功時はそのまま
-    async (error) => {
-      const originalRequest = error.config;
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true; // 無限ループ防止
-        try {
-          const newToken = await refreshAccessToken();
-          // 新しいトークンでリクエストを再送
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return instance(originalRequest);
-        } catch (refreshError) {
-          // リフレッシュ失敗時はエラーを投げる（ログアウト処理など追加可能）
-          throw refreshError;
+  // レスポンスインターセプター: 401エラー時の処理
+  if (enableRefresh && typeof window !== 'undefined') {
+    // クライアントサイドではトークンリフレッシュを試みる
+    instance.interceptors.response.use(
+      (response: AxiosResponse) => response,
+      async (error) => {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            const newToken = await refreshAccessToken();
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return instance(originalRequest);
+          } catch (refreshError) {
+            throw error; // 元の401エラーを投げる
+          }
         }
+        throw error;
       }
-      throw error;
-    }
-  );
+    );
+  } else if (!enableRefresh) {
+    // サーバーサイドでは401エラーが発生したらすぐにエラーを投げる（リフレッシュは行わない）
+    instance.interceptors.response.use(
+      (response: AxiosResponse) => response,
+      async (error) => {
+        if (error.response?.status === 401) {
+          console.log('Server-side 401 error, not attempting refresh');
+          throw error;
+        }
+        throw error;
+      }
+    );
+  }
 
   return instance;
 };

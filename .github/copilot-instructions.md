@@ -41,6 +41,16 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 開発時は `npm install` → `npm run dev` でローカル開発サーバーを起動し、バックエンドAPIと連携して動作確認を行ってください。
 
+#### APIアクセスルール
+- **必須**: `createPecusApiClients()` メソッドでクライアントインスタンスを生成し、`pecus.WebApi` にアクセスすること
+- **禁止**: クライアントコードから直接 `pecus.WebApi` へのアクセス
+- **Next.js API Routes活用**: サーバーページでアクセスできない場合は、Next.js の API Routes 機能で `pecus.WebApi` へアクセスし、クライアントへデータを戻すこと
+- **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
+
+#### HTML生成ルール
+- **button要素**: 必ず `type` 属性を正しく設定すること（例: `type="button"`, `type="submit"`, `type="reset"`）
+- **label要素**: 必ず `for` 属性を正しく設定し、対応するinput要素のidと一致させること
+
 ### データ層（`pecus.Libs`）
 名前空間: `Pecus.Libs.DB`
 
