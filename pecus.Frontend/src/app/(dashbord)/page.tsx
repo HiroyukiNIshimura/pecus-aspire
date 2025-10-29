@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface UserInfo {
   id: number;
   name?: string | null;
   email?: string | null;
-  roles?: any[];
+  roles?: string[];
   isAdmin: boolean;
 }
 
@@ -18,13 +18,13 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('/api/user');
+        const response = await fetch("/api/user");
         if (response.ok) {
           const data = await response.json();
           setUserInfo(data.user);
         }
       } catch (error) {
-        console.error('Failed to fetch user info:', error);
+        console.error("Failed to fetch user info:", error);
       } finally {
         setLoading(false);
       }
@@ -35,11 +35,23 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <p className="text-lg">読み込み中...</p>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Navigation Header */}
       <header className="sticky top-0 z-10 bg-base-100 shadow-sm border-b border-base-300">
         <nav className="navbar">
           <div className="navbar-start flex flex-col">
-            <a className="text-3xl font-bold">Pecus</a>
+            <a href="/" className="text-3xl font-bold">
+              Pecus
+            </a>
             <div className="md:hidden mt-2">
               <button
                 type="button"
@@ -52,40 +64,70 @@ export default function Dashboard() {
           </div>
           <div className="navbar-center hidden md:flex">
             <ul className="menu menu-horizontal px-1">
-              <li><a href="/">ダッシュボード</a></li>
-              <li><a href="/workspaces">ワークスペース</a></li>
+              <li>
+                <a href="/">ダッシュボード</a>
+              </li>
+              <li>
+                <a href="/workspaces">ワークスペース</a>
+              </li>
               <li className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-start]">
                 <button type="button" className="dropdown-toggle">
                   機能
                   <span className="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
                 </button>
                 <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
-                  <li><a className="dropdown-item" href="/tasks">タスク管理</a></li>
-                  <li><a className="dropdown-item" href="/calendar">カレンダー</a></li>
-                  <li><a className="dropdown-item" href="/reports">レポート</a></li>
+                  <li>
+                    <a className="dropdown-item" href="/tasks">
+                      タスク管理
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="/calendar">
+                      カレンダー
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="/reports">
+                      レポート
+                    </a>
+                  </li>
                 </ul>
               </li>
               {userInfo?.isAdmin && (
-                <li><a href="/admin">管理者</a></li>
+                <li>
+                  <a href="/admin">管理者</a>
+                </li>
               )}
             </ul>
           </div>
           <div className="navbar-end">
             <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
-              <button type="button" className="dropdown-toggle btn btn-ghost btn-circle avatar">
+              <button
+                type="button"
+                className="dropdown-toggle btn btn-ghost btn-circle avatar"
+              >
                 <div className="w-8 rounded-full bg-primary flex items-center justify-center text-primary-content font-bold">
                   U
                 </div>
               </button>
               <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
-                <li><a className="dropdown-item" href="/profile">プロフィール</a></li>
-                <li><a className="dropdown-item" href="/settings">設定</a></li>
+                <li>
+                  <a className="dropdown-item" href="/profile">
+                    プロフィール
+                  </a>
+                </li>
+                <li>
+                  <a className="dropdown-item" href="/settings">
+                    設定
+                  </a>
+                </li>
                 <li>
                   <button
+                    type="button"
                     className="dropdown-item w-full text-left"
                     onClick={async () => {
-                      await fetch('/api/auth/logout', { method: 'POST' });
-                      window.location.href = '/signin';
+                      await fetch("/api/auth/logout", { method: "POST" });
+                      window.location.href = "/signin";
                     }}
                   >
                     ログアウト
@@ -99,7 +141,9 @@ export default function Dashboard() {
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <aside className={`bg-base-200 w-64 min-h-full p-4 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:relative z-20`}>
+        <aside
+          className={`bg-base-200 w-64 min-h-full p-4 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:block fixed md:relative z-20`}
+        >
           <div className="md:hidden flex justify-end mb-4">
             <button
               type="button"
@@ -111,14 +155,28 @@ export default function Dashboard() {
           </div>
           <h2 className="text-lg font-semibold mb-4">機能メニュー</h2>
           <ul className="menu bg-base-100 rounded-box w-full">
-            <li><a href="/dashboard">概要</a></li>
-            <li><a href="/workspaces">ワークスペース</a></li>
-            <li><a href="/tasks">タスク</a></li>
-            <li><a href="/projects">プロジェクト</a></li>
-            <li><a href="/team">チーム</a></li>
-            <li><a href="/analytics">分析</a></li>
+            <li>
+              <a href="/dashboard">概要</a>
+            </li>
+            <li>
+              <a href="/workspaces">ワークスペース</a>
+            </li>
+            <li>
+              <a href="/tasks">タスク</a>
+            </li>
+            <li>
+              <a href="/projects">プロジェクト</a>
+            </li>
+            <li>
+              <a href="/team">チーム</a>
+            </li>
+            <li>
+              <a href="/analytics">分析</a>
+            </li>
             {userInfo?.isAdmin && (
-              <li><a href="/admin">管理者</a></li>
+              <li>
+                <a href="/admin">管理者</a>
+              </li>
             )}
           </ul>
         </aside>

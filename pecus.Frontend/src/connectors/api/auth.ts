@@ -1,17 +1,36 @@
 import { SessionManager } from "@/libs/session";
 
+// クライアントサイドかどうかを判定
+const isClient = typeof window !== 'undefined';
+
 // アクセストークン取得
 export async function getAccessToken(): Promise<string> {
-  const session = await SessionManager.getSession();
-  if (!session?.accessToken) throw new Error("No access token");
-  return session.accessToken;
+  if (isClient) {
+    // クライアントサイドではlocalStorageから取得
+    const token = localStorage.getItem('accessToken');
+    if (!token) throw new Error("No access token");
+    return token;
+  } else {
+    // サーバーサイドではSessionManagerを使用
+    const session = await SessionManager.getSession();
+    if (!session?.accessToken) throw new Error("No access token");
+    return session.accessToken;
+  }
 }
 
 // リフレッシュトークン取得
 export async function getRefreshToken(): Promise<string> {
-  const session = await SessionManager.getSession();
-  if (!session?.refreshToken) throw new Error("No refresh token");
-  return session.refreshToken;
+  if (isClient) {
+    // クライアントサイドではlocalStorageから取得
+    const token = localStorage.getItem('refreshToken');
+    if (!token) throw new Error("No refresh token");
+    return token;
+  } else {
+    // サーバーサイドではSessionManagerを使用
+    const session = await SessionManager.getSession();
+    if (!session?.refreshToken) throw new Error("No refresh token");
+    return session.refreshToken;
+  }
 }
 
 // リフレッシュトークンで再取得
@@ -32,14 +51,23 @@ export async function refreshAccessToken(): Promise<string> {
     }
 
     const data = await response.json();
-    // セッションを更新
-    const session = await SessionManager.getSession();
-    if (session) {
-      await SessionManager.setSession({
-        ...session,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken || session.refreshToken,
-      });
+
+    if (isClient) {
+      // クライアントサイドではlocalStorageを更新
+      localStorage.setItem('accessToken', data.accessToken);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+    } else {
+      // サーバーサイドではSessionManagerを更新
+      const session = await SessionManager.getSession();
+      if (session) {
+        await SessionManager.setSession({
+          ...session,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken || session.refreshToken,
+        });
+      }
     }
 
     return data.accessToken;

@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
+import { useEffect, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
 interface UserInfo {
   id: number;
   name?: string | null;
   email?: string | null;
-  roles?: any[];
+  roles?: string[];
   isAdmin: boolean;
 }
 
@@ -21,13 +21,13 @@ export default function Admin() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('/api/user');
+        const response = await fetch("/api/user");
         if (response.ok) {
           const data = await response.json();
           setUserInfo(data.user);
         }
       } catch (error) {
-        console.error('Failed to fetch user info:', error);
+        console.error("Failed to fetch user info:", error);
       } finally {
         setLoading(false);
       }
@@ -49,11 +49,19 @@ export default function Admin() {
       )}
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={loading} />
+      <AdminHeader
+        userInfo={userInfo}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        loading={loading}
+      />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <AdminSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -75,47 +83,53 @@ export default function Admin() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text font-semibold">組織名</span>
-                    </label>
+                    </div>
                     <div className="text-lg">Pecus Corporation</div>
                   </div>
 
                   <div className="form-control">
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text font-semibold">組織ID</span>
-                    </label>
+                    </div>
                     <div className="text-lg">ORG-001</div>
                   </div>
 
                   <div className="form-control">
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text font-semibold">作成日</span>
-                    </label>
+                    </div>
                     <div className="text-lg">2025年1月1日</div>
                   </div>
 
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-semibold">ステータス</span>
-                    </label>
-                    <div className="badge badge-success badge-lg">アクティブ</div>
+                    <div className="label">
+                      <span className="label-text font-semibold">
+                        ステータス
+                      </span>
+                    </div>
+                    <div className={`badge badge-lg badge-success`}>
+                      アクティブ
+                    </div>
                   </div>
                 </div>
 
                 <div className="divider"></div>
 
                 <div className="form-control">
-                  <label className="label">
+                  <div className="label">
                     <span className="label-text font-semibold">説明</span>
-                  </label>
+                  </div>
                   <div className="text-base">
                     デフォルトの組織設定です。システム全体の基本設定を管理します。
                   </div>
                 </div>
 
                 <div className="card-actions justify-end mt-6">
-                  <button className="btn btn-primary">編集</button>
+                  <button type="button" className="btn btn-primary">
+                    編集
+                  </button>
                 </div>
               </div>
             </div>
