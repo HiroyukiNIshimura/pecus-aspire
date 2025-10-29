@@ -46,6 +46,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **禁止**: クライアントコードから直接 `pecus.WebApi` へのアクセス
 - **Next.js API Routes活用**: サーバーページでアクセスできない場合は、Next.js の API Routes 機能で `pecus.WebApi` へアクセスし、クライアントへデータを戻すこと
 - **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
+- **リフレッシュトークン管理**: Axiosインターセプターが自動的にトークンリフレッシュを処理しているため、他のコードで明示的にリフレッシュ処理を実装しないこと
 
 実装サンプルは
 - `pecus.Frontend/src/app/(dashbord)/admin/page.tsx`: SSRページ

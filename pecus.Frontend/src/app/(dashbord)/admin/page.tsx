@@ -1,6 +1,5 @@
 import AdminClient from "./AdminClient";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { refreshAccessToken } from "@/connectors/api/auth";
 import { SessionManager } from "@/libs/session";
 
 export const dynamic = 'force-dynamic';
@@ -54,25 +53,7 @@ export default async function AdminPage() {
     const status = err?.response?.status;
     const detail = err?.message ?? String(err);
 
-    // 401エラーの場合、リフレッシュを試行
-    if (status === 401) {
-      console.log('AdminPage: 401 error detected, attempting token refresh');
-      try {
-        await refreshAccessToken();
-        console.log('AdminPage: Token refresh successful, retrying API call');
-
-        // リフレッシュ成功したらAPIを再試行
-        const clients = createPecusApiClients();
-        const res = await clients.adminOrganization.apiAdminOrganizationGet();
-        organization = (res?.data ?? res) as OrganizationData;
-        console.log('AdminPage: Retry successful');
-      } catch (refreshErr: any) {
-        console.error('AdminPage: Token refresh failed:', refreshErr);
-        fetchError = '認証が切れました。再度ログインしてください。';
-      }
-    } else {
-      fetchError = `組織情報の取得に失敗しました (${detail})`;
-    }
+    fetchError = `組織情報の取得に失敗しました (${detail})`;
   }
 
   return (
