@@ -1,4 +1,3 @@
-
 import * as PecusApis from "./pecus";
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { getAccessToken, refreshAccessToken } from "./auth";
@@ -6,19 +5,8 @@ import { getAccessToken, refreshAccessToken } from "./auth";
 // 主要なAPIクラスをインポートして型安全にする
 import {
   Configuration,
-  EntranceAuthApi,
-  EntranceOrganizationApi,
-  EntrancePasswordApi,
-  ProfileApi,
-  RefreshApi,
-  WorkspaceItemApi,
-  WorkspaceItemAttachmentApi,
-  WorkspaceItemPinApi,
-  WorkspaceItemRelationApi,
-  WorkspaceItemTagApi,
-  TagApi,
-  AdminUserApi,
   AdminOrganizationApi,
+  AdminUserApi,
   AdminWorkspaceApi,
   BackendGenreApi,
   BackendHangfireTestApi,
@@ -26,9 +14,20 @@ import {
   BackendPermissionApi,
   BackendRoleApi,
   BackendSpecsApi,
+  EntranceAuthApi,
+  EntranceOrganizationApi,
+  EntrancePasswordApi,
   FileDownloadApi,
   FileUploadApi,
+  ProfileApi,
+  RefreshApi,
+  TagApi,
   TestEmailApi,
+  WorkspaceItemApi,
+  WorkspaceItemAttachmentApi,
+  WorkspaceItemPinApi,
+  WorkspaceItemRelationApi,
+  WorkspaceItemTagApi
 } from "./pecus";
 
 // axiosインスタンスを作成（インターセプター付き）
@@ -89,50 +88,37 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
 };
 
 export function createPecusApiClients() {
-  const axiosInstance = createAxiosInstance();
+  // サーバーサイド（API Route）ではトークンリフレッシュを無効にする
+  const enableRefresh = typeof window !== 'undefined';
+  const axiosInstance = createAxiosInstance(enableRefresh);
   const config = new PecusApis.Configuration({
-    basePath: process.env.NEXT_PUBLIC_API_BASE_URL,
-    // accessTokenはインターセプターで自動設定するため不要
+    basePath: process.env.API_BASE_URL || 'https://localhost:7265',
   });
 
   return {
-    // Entrance APIs
-    entranceAuth: new EntranceAuthApi(config, undefined, axiosInstance),
-    entranceOrganization: new EntranceOrganizationApi(config, undefined, axiosInstance),
-    entrancePassword: new EntrancePasswordApi(config, undefined, axiosInstance),
-
-    // Profile and Refresh
-    profile: new ProfileApi(config, undefined, axiosInstance),
-    refresh: new RefreshApi(config, undefined, axiosInstance),
-
-    // Workspace Item APIs
-    workspaceItem: new WorkspaceItemApi(config, undefined, axiosInstance),
-    workspaceItemAttachment: new WorkspaceItemAttachmentApi(config, undefined, axiosInstance),
-    workspaceItemPin: new WorkspaceItemPinApi(config, undefined, axiosInstance),
-    workspaceItemRelation: new WorkspaceItemRelationApi(config, undefined, axiosInstance),
-    workspaceItemTag: new WorkspaceItemTagApi(config, undefined, axiosInstance),
-
-    // Tag
-    tag: new TagApi(config, undefined, axiosInstance),
-
-    // Admin APIs
-    adminUser: new AdminUserApi(config, undefined, axiosInstance),
     adminOrganization: new AdminOrganizationApi(config, undefined, axiosInstance),
+    adminUser: new AdminUserApi(config, undefined, axiosInstance),
     adminWorkspace: new AdminWorkspaceApi(config, undefined, axiosInstance),
-
-    // Backend APIs
     backendGenre: new BackendGenreApi(config, undefined, axiosInstance),
     backendHangfireTest: new BackendHangfireTestApi(config, undefined, axiosInstance),
     backendOrganization: new BackendOrganizationApi(config, undefined, axiosInstance),
     backendPermission: new BackendPermissionApi(config, undefined, axiosInstance),
     backendRole: new BackendRoleApi(config, undefined, axiosInstance),
     backendSpecs: new BackendSpecsApi(config, undefined, axiosInstance),
-
-    // File APIs
+    entranceAuth: new EntranceAuthApi(config, undefined, axiosInstance),
+    entranceOrganization: new EntranceOrganizationApi(config, undefined, axiosInstance),
+    entrancePassword: new EntrancePasswordApi(config, undefined, axiosInstance),
     fileDownload: new FileDownloadApi(config, undefined, axiosInstance),
     fileUpload: new FileUploadApi(config, undefined, axiosInstance),
-
-    // Test
+    profile: new ProfileApi(config, undefined, axiosInstance),
+    refresh: new RefreshApi(config, undefined, axiosInstance),
+    tag: new TagApi(config, undefined, axiosInstance),
     testEmail: new TestEmailApi(config, undefined, axiosInstance),
+    workspaceItem: new WorkspaceItemApi(config, undefined, axiosInstance),
+    workspaceItemAttachment: new WorkspaceItemAttachmentApi(config, undefined, axiosInstance),
+    workspaceItemPin: new WorkspaceItemPinApi(config, undefined, axiosInstance),
+    workspaceItemRelation: new WorkspaceItemRelationApi(config, undefined, axiosInstance),
+    workspaceItemTag: new WorkspaceItemTagApi(config, undefined, axiosInstance),
   };
 }
+

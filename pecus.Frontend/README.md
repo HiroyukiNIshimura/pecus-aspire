@@ -1,5 +1,40 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## API Client Generation
+
+This project uses OpenAPI Generator to automatically generate TypeScript API clients from the Pecus WebApi Swagger specification.
+
+### Generating API Clients
+
+1. **Download the latest API specification:**
+   ```bash
+   npm run download:api
+   ```
+
+2. **Generate TypeScript API classes:**
+   ```bash
+   npm run generate:api
+   ```
+
+3. **Generate the PecusApiClient.ts file:**
+   ```bash
+   npm run generate:client
+   ```
+
+The `generate:client` script automatically scans the `src/connectors/api/pecus/` directory and creates a unified client factory that provides access to all API endpoints with proper authentication handling.
+
+### API Usage
+
+```typescript
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+
+const clients = createPecusApiClients();
+
+// Example usage
+const organizations = await clients.adminOrganization.apiAdminOrganizationGet();
+const users = await clients.adminUser.apiAdminUserGet();
+```
+
 ## Getting Started
 
 First, run the development server:
