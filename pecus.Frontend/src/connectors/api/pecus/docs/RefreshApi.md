@@ -55,12 +55,13 @@ void (empty response body)
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | OK |  -  |
+|**204** | No Content |  -  |
+|**500** | Internal Server Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiEntranceRefreshPost**
-> apiEntranceRefreshPost()
+> RefreshResponse apiEntranceRefreshPost()
 
 有効なリフレッシュトークンを使用して、新しいアクセストークンとリフレッシュトークンを取得します。
 
@@ -92,7 +93,7 @@ const { status, data } = await apiInstance.apiEntranceRefreshPost(
 
 ### Return type
 
-void (empty response body)
+**RefreshResponse**
 
 ### Authorization
 
@@ -101,13 +102,15 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json, text/json, application/*+json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | OK |  -  |
+|**400** | Bad Request |  -  |
+|**500** | Internal Server Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

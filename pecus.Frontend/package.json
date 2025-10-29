@@ -36,6 +36,7 @@
     "@yoopta/table": "^4.9.9",
     "@yoopta/toolbar": "^4.9.9",
     "@yoopta/video": "^4.9.9",
+    "axios": "^1.13.1",
     "classnames": "^2.5.1",
     "flyonui": "^2.4.1",
     "jotai": "^2.15.0",

@@ -64,6 +64,36 @@ export interface AddWorkspaceItemRelationResponse {
     'relation'?: WorkspaceItemRelationResponse;
 }
 /**
+ * バッチジョブレスポンス
+ */
+export interface BatchResponse {
+    /**
+     * メッセージ
+     */
+    'message': string | null;
+    /**
+     * ジョブIDのリスト
+     */
+    'jobIds': Array<string> | null;
+}
+/**
+ * 継続ジョブレスポンス
+ */
+export interface ContinuationResponse {
+    /**
+     * メッセージ
+     */
+    'message': string | null;
+    /**
+     * 親ジョブID
+     */
+    'parentJobId': string | null;
+    /**
+     * 子ジョブID
+     */
+    'childJobId': string | null;
+}
+/**
  * ジャンル登録リクエスト
  */
 export interface CreateGenreRequest {
@@ -422,6 +452,19 @@ export interface GenreResponse {
     'isActive'?: boolean;
 }
 /**
+ * ジョブレスポンス
+ */
+export interface JobResponse {
+    /**
+     * メッセージ
+     */
+    'message': string | null;
+    /**
+     * ジョブID
+     */
+    'jobId': string | null;
+}
+/**
  * ログインリクエスト
  */
 export interface LoginRequest {
@@ -490,6 +533,15 @@ export interface LoginResponse {
      * リフレッシュトークンの有効期限（UTC）
      */
     'refreshExpiresAt'?: string | null;
+}
+/**
+ * メッセージレスポンス
+ */
+export interface MessageResponse {
+    /**
+     * メッセージ
+     */
+    'message': string | null;
 }
 /**
  * 組織詳細レスポンス
@@ -792,6 +844,19 @@ export interface RecipientRequest {
     'email'?: string | null;
 }
 /**
+ * 繰り返しジョブレスポンス
+ */
+export interface RecurringResponse {
+    /**
+     * メッセージ
+     */
+    'message': string | null;
+    /**
+     * 繰り返しジョブID
+     */
+    'recurringJobId': string | null;
+}
+/**
  * リフレッシュトークン交換 / ログアウト用リクエスト
  */
 export interface RefreshRequest {
@@ -799,6 +864,35 @@ export interface RefreshRequest {
      * クライアントから送られるリフレッシュトークン
      */
     'refreshToken': string;
+}
+/**
+ * リフレッシュレスポンス
+ */
+export interface RefreshResponse {
+    /**
+     * JWTアクセストークン
+     */
+    'accessToken': string | null;
+    /**
+     * トークンタイプ（常に \"Bearer\"）
+     */
+    'tokenType'?: string | null;
+    /**
+     * トークンの有効期限（UTC）
+     */
+    'expiresAt'?: string;
+    /**
+     * トークンの有効時間（秒）
+     */
+    'expiresIn'?: number;
+    /**
+     * リフレッシュトークン
+     */
+    'refreshToken': string | null;
+    /**
+     * リフレッシュトークンの有効期限（UTC）
+     */
+    'refreshExpiresAt'?: string;
 }
 /**
  * パスワードリセットリクエスト
@@ -4318,7 +4412,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestBatchPost(count?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestBatchPost(count?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BatchResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestBatchPost(count, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestBatchPost']?.[localVarOperationServerIndex]?.url;
@@ -4332,7 +4426,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestContinuationPost(parentMessage?: string, childMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestContinuationPost(parentMessage?: string, childMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ContinuationResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestContinuationPost(parentMessage, childMessage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestContinuationPost']?.[localVarOperationServerIndex]?.url;
@@ -4346,7 +4440,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestDelayedPost(message?: string, delaySeconds?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestDelayedPost(message?: string, delaySeconds?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestDelayedPost(message, delaySeconds, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestDelayedPost']?.[localVarOperationServerIndex]?.url;
@@ -4359,7 +4453,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestErrorPost(errorMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestErrorPost(errorMessage?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestErrorPost(errorMessage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestErrorPost']?.[localVarOperationServerIndex]?.url;
@@ -4372,7 +4466,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestFailedJobIdDelete(jobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestFailedJobIdDelete(jobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestFailedJobIdDelete(jobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestFailedJobIdDelete']?.[localVarOperationServerIndex]?.url;
@@ -4385,7 +4479,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestFireAndForgetPost(message?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestFireAndForgetPost(message?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestFireAndForgetPost(message, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestFireAndForgetPost']?.[localVarOperationServerIndex]?.url;
@@ -4398,7 +4492,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestLongRunningPost(durationSeconds?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestLongRunningPost(durationSeconds?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestLongRunningPost(durationSeconds, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestLongRunningPost']?.[localVarOperationServerIndex]?.url;
@@ -4412,7 +4506,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestRecurringPost(message?: string, cronExpression?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestRecurringPost(message?: string, cronExpression?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RecurringResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestRecurringPost(message, cronExpression, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestRecurringPost']?.[localVarOperationServerIndex]?.url;
@@ -4425,7 +4519,7 @@ export const BackendHangfireTestApiFp = function(configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendHangfireTestRecurringRecurringJobIdDelete(recurringJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendHangfireTestRecurringRecurringJobIdDelete(recurringJobId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendHangfireTestRecurringRecurringJobIdDelete(recurringJobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendHangfireTestApi.apiBackendHangfireTestRecurringRecurringJobIdDelete']?.[localVarOperationServerIndex]?.url;
@@ -4447,7 +4541,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestBatchPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestBatchPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestBatchPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestBatchPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<BatchResponse> {
             return localVarFp.apiBackendHangfireTestBatchPost(requestParameters.count, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4457,7 +4551,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestContinuationPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestContinuationPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestContinuationPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestContinuationPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<ContinuationResponse> {
             return localVarFp.apiBackendHangfireTestContinuationPost(requestParameters.parentMessage, requestParameters.childMessage, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4467,7 +4561,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestDelayedPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestDelayedPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestDelayedPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestDelayedPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
             return localVarFp.apiBackendHangfireTestDelayedPost(requestParameters.message, requestParameters.delaySeconds, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4477,7 +4571,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestErrorPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestErrorPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestErrorPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestErrorPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
             return localVarFp.apiBackendHangfireTestErrorPost(requestParameters.errorMessage, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4487,7 +4581,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestFailedJobIdDelete(requestParameters: BackendHangfireTestApiApiBackendHangfireTestFailedJobIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestFailedJobIdDelete(requestParameters: BackendHangfireTestApiApiBackendHangfireTestFailedJobIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<MessageResponse> {
             return localVarFp.apiBackendHangfireTestFailedJobIdDelete(requestParameters.jobId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4497,7 +4591,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestFireAndForgetPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestFireAndForgetPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestFireAndForgetPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestFireAndForgetPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
             return localVarFp.apiBackendHangfireTestFireAndForgetPost(requestParameters.message, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4507,7 +4601,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestLongRunningPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestLongRunningPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestLongRunningPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestLongRunningPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
             return localVarFp.apiBackendHangfireTestLongRunningPost(requestParameters.durationSeconds, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4517,7 +4611,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestRecurringPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestRecurringPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestRecurringPost(requestParameters: BackendHangfireTestApiApiBackendHangfireTestRecurringPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<RecurringResponse> {
             return localVarFp.apiBackendHangfireTestRecurringPost(requestParameters.message, requestParameters.cronExpression, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4527,7 +4621,7 @@ export const BackendHangfireTestApiFactory = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendHangfireTestRecurringRecurringJobIdDelete(requestParameters: BackendHangfireTestApiApiBackendHangfireTestRecurringRecurringJobIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendHangfireTestRecurringRecurringJobIdDelete(requestParameters: BackendHangfireTestApiApiBackendHangfireTestRecurringRecurringJobIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<MessageResponse> {
             return localVarFp.apiBackendHangfireTestRecurringRecurringJobIdDelete(requestParameters.recurringJobId, options).then((request) => request(axios, basePath));
         },
     };
@@ -6280,7 +6374,7 @@ export const BackendSpecsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendSpecsOpenapiDocumentNameGet(documentName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendSpecsOpenapiDocumentNameGet(documentName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendSpecsOpenapiDocumentNameGet(documentName, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendSpecsApi.apiBackendSpecsOpenapiDocumentNameGet']?.[localVarOperationServerIndex]?.url;
@@ -6293,7 +6387,7 @@ export const BackendSpecsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendSpecsOpenapiDocumentNameYamlGet(documentName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendSpecsOpenapiDocumentNameYamlGet(documentName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendSpecsOpenapiDocumentNameYamlGet(documentName, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendSpecsApi.apiBackendSpecsOpenapiDocumentNameYamlGet']?.[localVarOperationServerIndex]?.url;
@@ -6305,7 +6399,7 @@ export const BackendSpecsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendSpecsOpenapiGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendSpecsOpenapiGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendSpecsOpenapiGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendSpecsApi.apiBackendSpecsOpenapiGet']?.[localVarOperationServerIndex]?.url;
@@ -6317,7 +6411,7 @@ export const BackendSpecsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiBackendSpecsOpenapiYamlGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiBackendSpecsOpenapiYamlGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiBackendSpecsOpenapiYamlGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BackendSpecsApi.apiBackendSpecsOpenapiYamlGet']?.[localVarOperationServerIndex]?.url;
@@ -6339,7 +6433,7 @@ export const BackendSpecsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendSpecsOpenapiDocumentNameGet(requestParameters: BackendSpecsApiApiBackendSpecsOpenapiDocumentNameGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendSpecsOpenapiDocumentNameGet(requestParameters: BackendSpecsApiApiBackendSpecsOpenapiDocumentNameGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.apiBackendSpecsOpenapiDocumentNameGet(requestParameters.documentName, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6349,7 +6443,7 @@ export const BackendSpecsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendSpecsOpenapiDocumentNameYamlGet(requestParameters: BackendSpecsApiApiBackendSpecsOpenapiDocumentNameYamlGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendSpecsOpenapiDocumentNameYamlGet(requestParameters: BackendSpecsApiApiBackendSpecsOpenapiDocumentNameYamlGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.apiBackendSpecsOpenapiDocumentNameYamlGet(requestParameters.documentName, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6358,7 +6452,7 @@ export const BackendSpecsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendSpecsOpenapiGet(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendSpecsOpenapiGet(options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.apiBackendSpecsOpenapiGet(options).then((request) => request(axios, basePath));
         },
         /**
@@ -6367,7 +6461,7 @@ export const BackendSpecsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiBackendSpecsOpenapiYamlGet(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiBackendSpecsOpenapiYamlGet(options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.apiBackendSpecsOpenapiYamlGet(options).then((request) => request(axios, basePath));
         },
     };
@@ -7351,7 +7445,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProfileEmailPatch(updateEmailRequest?: UpdateEmailRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiProfileEmailPatch(updateEmailRequest?: UpdateEmailRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProfileEmailPatch(updateEmailRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.apiProfileEmailPatch']?.[localVarOperationServerIndex]?.url;
@@ -7363,7 +7457,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProfileGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiProfileGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProfileGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.apiProfileGet']?.[localVarOperationServerIndex]?.url;
@@ -7398,7 +7492,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProfileEmailPatch(requestParameters: ProfileApiApiProfileEmailPatchRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiProfileEmailPatch(requestParameters: ProfileApiApiProfileEmailPatchRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<MessageResponse> {
             return localVarFp.apiProfileEmailPatch(requestParameters.updateEmailRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -7407,7 +7501,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProfileGet(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiProfileGet(options?: RawAxiosRequestConfig): AxiosPromise<UserResponse> {
             return localVarFp.apiProfileGet(options).then((request) => request(axios, basePath));
         },
         /**
@@ -7592,7 +7686,7 @@ export const RefreshApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiEntranceRefreshPost(refreshRequest?: RefreshRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiEntranceRefreshPost(refreshRequest?: RefreshRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RefreshResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiEntranceRefreshPost(refreshRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['RefreshApi.apiEntranceRefreshPost']?.[localVarOperationServerIndex]?.url;
@@ -7624,7 +7718,7 @@ export const RefreshApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiEntranceRefreshPost(requestParameters: RefreshApiApiEntranceRefreshPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiEntranceRefreshPost(requestParameters: RefreshApiApiEntranceRefreshPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<RefreshResponse> {
             return localVarFp.apiEntranceRefreshPost(requestParameters.refreshRequest, options).then((request) => request(axios, basePath));
         },
     };
@@ -8153,7 +8247,7 @@ export const TestEmailApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiDevEmailTestSendPost(template?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiDevEmailTestSendPost(template?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiDevEmailTestSendPost(template, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TestEmailApi.apiDevEmailTestSendPost']?.[localVarOperationServerIndex]?.url;
@@ -8166,7 +8260,7 @@ export const TestEmailApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiDevEmailTestSetRecipientPost(recipientRequest?: RecipientRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiDevEmailTestSetRecipientPost(recipientRequest?: RecipientRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MessageResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiDevEmailTestSetRecipientPost(recipientRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TestEmailApi.apiDevEmailTestSetRecipientPost']?.[localVarOperationServerIndex]?.url;
@@ -8178,7 +8272,7 @@ export const TestEmailApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiDevEmailTestTemplatesGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiDevEmailTestTemplatesGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiDevEmailTestTemplatesGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TestEmailApi.apiDevEmailTestTemplatesGet']?.[localVarOperationServerIndex]?.url;
@@ -8200,7 +8294,7 @@ export const TestEmailApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiDevEmailTestSendPost(requestParameters: TestEmailApiApiDevEmailTestSendPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiDevEmailTestSendPost(requestParameters: TestEmailApiApiDevEmailTestSendPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<MessageResponse> {
             return localVarFp.apiDevEmailTestSendPost(requestParameters.template, options).then((request) => request(axios, basePath));
         },
         /**
@@ -8210,7 +8304,7 @@ export const TestEmailApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiDevEmailTestSetRecipientPost(requestParameters: TestEmailApiApiDevEmailTestSetRecipientPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiDevEmailTestSetRecipientPost(requestParameters: TestEmailApiApiDevEmailTestSetRecipientPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<MessageResponse> {
             return localVarFp.apiDevEmailTestSetRecipientPost(requestParameters.recipientRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -8219,7 +8313,7 @@ export const TestEmailApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiDevEmailTestTemplatesGet(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiDevEmailTestTemplatesGet(options?: RawAxiosRequestConfig): AxiosPromise<Array<string>> {
             return localVarFp.apiDevEmailTestTemplatesGet(options).then((request) => request(axios, basePath));
         },
     };

@@ -16,6 +16,8 @@ docs/BackendOrganizationApi.md
 docs/BackendPermissionApi.md
 docs/BackendRoleApi.md
 docs/BackendSpecsApi.md
+docs/BatchResponse.md
+docs/ContinuationResponse.md
 docs/CreateGenreRequest.md
 docs/CreateOrganizationRequest.md
 docs/CreatePermissionRequest.md
@@ -35,8 +37,10 @@ docs/GenreDetailResponse.md
 docs/GenreListItemResponse.md
 docs/GenreListItemResponsePagedResponse.md
 docs/GenreResponse.md
+docs/JobResponse.md
 docs/LoginRequest.md
 docs/LoginResponse.md
+docs/MessageResponse.md
 docs/OrganizationDetailResponse.md
 docs/OrganizationInfoResponse.md
 docs/OrganizationListItemResponse.md
@@ -50,8 +54,10 @@ docs/PermissionResponse.md
 docs/ProblemDetails.md
 docs/ProfileApi.md
 docs/RecipientRequest.md
+docs/RecurringResponse.md
 docs/RefreshApi.md
 docs/RefreshRequest.md
+docs/RefreshResponse.md
 docs/RequestPasswordResetRequest.md
 docs/ResetPasswordRequest.md
 docs/RoleDetailResponse.md

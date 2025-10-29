@@ -10,7 +10,7 @@ All URIs are relative to *http://localhost*
 |[**apiBackendSpecsOpenapiYamlGet**](#apibackendspecsopenapiyamlget) | **GET** /api/backend/specs/openapi.yaml | OpenAPIスキーマ取得（YAML形式）|
 
 # **apiBackendSpecsOpenapiDocumentNameGet**
-> apiBackendSpecsOpenapiDocumentNameGet()
+> string apiBackendSpecsOpenapiDocumentNameGet()
 
 Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。
 
@@ -41,7 +41,7 @@ const { status, data } = await apiInstance.apiBackendSpecsOpenapiDocumentNameGet
 
 ### Return type
 
-void (empty response body)
+**string**
 
 ### Authorization
 
@@ -63,7 +63,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendSpecsOpenapiDocumentNameYamlGet**
-> apiBackendSpecsOpenapiDocumentNameYamlGet()
+> string apiBackendSpecsOpenapiDocumentNameYamlGet()
 
 Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。
 
@@ -94,7 +94,7 @@ const { status, data } = await apiInstance.apiBackendSpecsOpenapiDocumentNameYam
 
 ### Return type
 
-void (empty response body)
+**string**
 
 ### Authorization
 
@@ -116,7 +116,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendSpecsOpenapiGet**
-> apiBackendSpecsOpenapiGet()
+> string apiBackendSpecsOpenapiGet()
 
 Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。
 
@@ -140,7 +140,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-void (empty response body)
+**string**
 
 ### Authorization
 
@@ -162,7 +162,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendSpecsOpenapiYamlGet**
-> apiBackendSpecsOpenapiYamlGet()
+> string apiBackendSpecsOpenapiYamlGet()
 
 Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。
 
@@ -186,7 +186,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-void (empty response body)
+**string**
 
 ### Authorization
 

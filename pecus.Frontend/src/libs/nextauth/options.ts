@@ -1,6 +1,7 @@
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getSession } from "next-auth/react";
 
 export const nextAuthOptions: NextAuthOptions = {
   secret: "LlKq6ZtYbr+hTC073mAmAh9/h2HwMfsFo4hrfCx5mLg=",
@@ -17,6 +18,7 @@ export const nextAuthOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
+      id: "credentials",
       name: "Cygnet Credentials",
       credentials: {
         id: {
@@ -44,10 +46,47 @@ export const nextAuthOptions: NextAuthOptions = {
           return {
             id: String(res.data.userId ?? ""),
             accessToken: res.data.accessToken ?? "",
+            refreshToken: res.data.refreshToken ?? "",
+            name: res.data.username ?? "",
+            email: res.data.email ?? ""
             // 必要に応じて他の情報も
           };
         } catch (e) {
           console.error("認証API通信エラー", e);
+          return null;
+        }
+      },
+    }),
+    CredentialsProvider({
+      id: "refresh-token",
+      name: "Refresh Token",
+      credentials: {
+        refreshToken: {
+          label: "Refresh Token",
+          type: "text",
+        },
+      },
+      async authorize(credentials) {
+        try {
+          const client = createPecusApiClients();
+          const res = await client.refresh.apiEntranceRefreshPost({
+            refreshRequest: {
+              refreshToken: credentials?.refreshToken || "",
+            },
+          });
+
+          // 現在のセッションを取得してユーザー情報を維持
+          const session = await getSession();
+
+          return {
+            id: session?.user?.id || "",
+            accessToken: res.data.accessToken || undefined,
+            refreshToken: res.data.refreshToken || undefined,
+            name: session?.user?.name || "",
+            email: session?.user?.email || ""
+          };
+        } catch (e) {
+          console.error("リフレッシュAPI通信エラー", e);
           return null;
         }
       },
@@ -105,11 +144,19 @@ export const nextAuthOptions: NextAuthOptions = {
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
+    refreshToken?: string;
     idToken?: string;
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
   }
 
   interface User {
     accessToken?: string;
+    refreshToken?: string;
     idToken?: string;
   }
 }
@@ -117,6 +164,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
+    refreshToken?: string;
     idToken?: string;
   }
 }

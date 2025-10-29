@@ -9,7 +9,7 @@ All URIs are relative to *http://localhost*
 |[**apiDevEmailTestTemplatesGet**](#apidevemailtesttemplatesget) | **GET** /api/dev/email-test/templates | 利用可能なテンプレート一覧を返す|
 
 # **apiDevEmailTestSendPost**
-> apiDevEmailTestSendPost()
+> MessageResponse apiDevEmailTestSendPost()
 
 
 ### Example
@@ -39,7 +39,7 @@ const { status, data } = await apiInstance.apiDevEmailTestSendPost(
 
 ### Return type
 
-void (empty response body)
+**MessageResponse**
 
 ### Authorization
 
@@ -48,18 +48,19 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: text/plain, application/json, text/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | OK |  -  |
+|**500** | Internal Server Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiDevEmailTestSetRecipientPost**
-> apiDevEmailTestSetRecipientPost()
+> MessageResponse apiDevEmailTestSetRecipientPost()
 
 
 ### Example
@@ -90,7 +91,7 @@ const { status, data } = await apiInstance.apiDevEmailTestSetRecipientPost(
 
 ### Return type
 
-void (empty response body)
+**MessageResponse**
 
 ### Authorization
 
@@ -99,18 +100,19 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json, text/json, application/*+json
- - **Accept**: Not defined
+ - **Accept**: text/plain, application/json, text/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | OK |  -  |
+|**400** | Bad Request |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiDevEmailTestTemplatesGet**
-> apiDevEmailTestTemplatesGet()
+> Array<string> apiDevEmailTestTemplatesGet()
 
 
 ### Example
@@ -133,7 +135,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-void (empty response body)
+**Array<string>**
 
 ### Authorization
 
@@ -142,7 +144,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: text/plain, application/json, text/json
 
 
 ### HTTP response details

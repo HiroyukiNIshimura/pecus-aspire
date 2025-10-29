@@ -15,7 +15,7 @@ All URIs are relative to *http://localhost*
 |[**apiBackendHangfireTestRecurringRecurringJobIdDelete**](#apibackendhangfiretestrecurringrecurringjobiddelete) | **DELETE** /api/backend/hangfire-test/recurring/{recurringJobId} | 繰り返しジョブの削除|
 
 # **apiBackendHangfireTestBatchPost**
-> apiBackendHangfireTestBatchPost()
+> BatchResponse apiBackendHangfireTestBatchPost()
 
 
 ### Example
@@ -45,7 +45,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestBatchPost(
 
 ### Return type
 
-void (empty response body)
+**BatchResponse**
 
 ### Authorization
 
@@ -54,7 +54,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -65,7 +65,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestContinuationPost**
-> apiBackendHangfireTestContinuationPost()
+> ContinuationResponse apiBackendHangfireTestContinuationPost()
 
 
 ### Example
@@ -98,7 +98,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestContinuationPos
 
 ### Return type
 
-void (empty response body)
+**ContinuationResponse**
 
 ### Authorization
 
@@ -107,7 +107,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -118,7 +118,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestDelayedPost**
-> apiBackendHangfireTestDelayedPost()
+> JobResponse apiBackendHangfireTestDelayedPost()
 
 
 ### Example
@@ -151,7 +151,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestDelayedPost(
 
 ### Return type
 
-void (empty response body)
+**JobResponse**
 
 ### Authorization
 
@@ -160,7 +160,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -171,7 +171,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestErrorPost**
-> apiBackendHangfireTestErrorPost()
+> JobResponse apiBackendHangfireTestErrorPost()
 
 
 ### Example
@@ -201,7 +201,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestErrorPost(
 
 ### Return type
 
-void (empty response body)
+**JobResponse**
 
 ### Authorization
 
@@ -210,7 +210,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -221,7 +221,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestFailedJobIdDelete**
-> apiBackendHangfireTestFailedJobIdDelete()
+> MessageResponse apiBackendHangfireTestFailedJobIdDelete()
 
 
 ### Example
@@ -251,7 +251,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestFailedJobIdDele
 
 ### Return type
 
-void (empty response body)
+**MessageResponse**
 
 ### Authorization
 
@@ -260,18 +260,19 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | OK |  -  |
+|**404** | Not Found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestFireAndForgetPost**
-> apiBackendHangfireTestFireAndForgetPost()
+> JobResponse apiBackendHangfireTestFireAndForgetPost()
 
 
 ### Example
@@ -301,7 +302,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestFireAndForgetPo
 
 ### Return type
 
-void (empty response body)
+**JobResponse**
 
 ### Authorization
 
@@ -310,7 +311,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -321,7 +322,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestLongRunningPost**
-> apiBackendHangfireTestLongRunningPost()
+> JobResponse apiBackendHangfireTestLongRunningPost()
 
 
 ### Example
@@ -351,7 +352,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestLongRunningPost
 
 ### Return type
 
-void (empty response body)
+**JobResponse**
 
 ### Authorization
 
@@ -360,7 +361,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -371,7 +372,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestRecurringPost**
-> apiBackendHangfireTestRecurringPost()
+> RecurringResponse apiBackendHangfireTestRecurringPost()
 
 
 ### Example
@@ -404,7 +405,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestRecurringPost(
 
 ### Return type
 
-void (empty response body)
+**RecurringResponse**
 
 ### Authorization
 
@@ -413,7 +414,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
@@ -424,7 +425,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **apiBackendHangfireTestRecurringRecurringJobIdDelete**
-> apiBackendHangfireTestRecurringRecurringJobIdDelete()
+> MessageResponse apiBackendHangfireTestRecurringRecurringJobIdDelete()
 
 
 ### Example
@@ -454,7 +455,7 @@ const { status, data } = await apiInstance.apiBackendHangfireTestRecurringRecurr
 
 ### Return type
 
-void (empty response body)
+**MessageResponse**
 
 ### Authorization
 
@@ -463,7 +464,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 
 ### HTTP response details
