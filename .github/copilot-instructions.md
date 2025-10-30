@@ -48,9 +48,47 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
 - **リフレッシュトークン管理**: Axiosインターセプターが自動的にトークンリフレッシュを処理しているため、他のコードで明示的にリフレッシュ処理を実装しないこと
 
+#### API クライアントの自動生成
+- **自動生成ファイル**: `src/connectors/api/PecusApiClient.generated.ts` は自動生成されるため、手動で編集しないこと
+- **生成スクリプト**: `scripts/generate-pecus-api-client.js` が OpenAPI 定義から API クライアントを生成
+- **自動実行**: `npm run dev` / `npm run build` の実行前に自動的に生成スクリプトが実行される（`predev` / `prebuild` フック）
+- **手動実行**: 必要に応じて `npm run generate:client` で手動実行可能
+- **Git管理**: 自動生成ファイルは `.gitignore` に登録済み
+
+#### アクセストークン管理の設計方針
+- **保存場所**: アクセストークンは `localStorage` に、リフレッシュトークンは `httpOnly` Cookie に保存
+- **トークン取得**: `getAccessToken()` 関数を使用（`src/connectors/api/auth.ts`）
+- **自動リフレッシュ**:
+  - クライアントサイド: Axios インターセプターが 401 エラーを検知して自動リフレッシュ
+  - サーバーサイド: Next.js Middleware が事前にトークンを検証・リフレッシュ
+- **リフレッシュ条件**:
+  - ステータスコード 401
+  - `www-authenticate` ヘッダーに `Bearer error="invalid_token"` が含まれる
+  - リトライフラグ（`__pecus_retry`）が設定されていない
+- **競合防止**: インスタンスレベルの `refreshPromise` で同時リフレッシュを防止
+- **失敗時の処理**: リフレッシュ失敗時は自動的に `/signin` へリダイレクト
+
 実装サンプルは
 - `pecus.Frontend/src/app/(dashbord)/admin/page.tsx`: SSRページ
 - `pecus.Frontend/src/app/(dashbord)/admin/AdminClient.tsx`: クライアントコンポーネント
+- `pecus.Frontend/src/connectors/api/PecusApiClient.ts`: API クライアント設定（手動編集可能）
+- `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`: API クライアント生成部分（自動生成）
+
+#### Next.js 固有の注意事項
+- **動的レンダリング**: Server Actions を使用するページには `export const dynamic = 'force-dynamic'` を設定
+- **エラーハンドリング**: try-catch で API エラーを適切にハンドリングし、ユーザーにフィードバックを提供
+- **ローディング状態**: データフェッチ中は適切なローディングインジケーターを表示
+- **環境変数**: pecus.WebApiのベース URL は `process.env.API_BASE_URL`で管理
+- **Server Actions**: SSR でのデータ取得には Server Actions（`src/actions/`）を使用
+- **クライアントコンポーネント**: インタラクティブな機能には `"use client"` ディレクティブを付与
+
+#### ページネーション実装
+- **共通コンポーネント**: `src/components/common/Pagination.tsx` を使用
+- **ライブラリ**: `react-paginate` を使用し、FlyonUI スタイルで統一
+- **ページ番号**: サーバー側は 1-based、`react-paginate` は 0-based のため変換が必要
+- **スタイリング**: `gap-0.5` でボタン間に適度な間隔を設定
+- **条件表示**: `totalPages <= 1` の場合は自動的に非表示
+
 
 #### HTML生成ルール
 - **button要素**: 必ず `type` 属性を正しく設定すること（例: `type="button"`, `type="submit"`, `type="reset"`）
