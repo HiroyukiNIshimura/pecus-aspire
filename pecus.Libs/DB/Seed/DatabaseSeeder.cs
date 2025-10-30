@@ -14,6 +14,11 @@ public class DatabaseSeeder
     private readonly ApplicationDbContext _context;
     private readonly ILogger<DatabaseSeeder> _logger;
 
+    /// <summary>
+    /// コンストラクタ 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="logger"></param>
     public DatabaseSeeder(ApplicationDbContext context, ILogger<DatabaseSeeder> logger)
     {
         _context = context;
@@ -363,19 +368,23 @@ public class DatabaseSeeder
 
             if (organization != null)
             {
-                var workspace = new Workspace
+                for (int i = 0; i < 100; i++)
                 {
-                    Name = "サンプルプロジェクト",
-                    Code = "PROJ001",
-                    Description = "これはサンプルのワークスペースです",
-                    OrganizationId = organization.Id,
-                    GenreId = devGenre?.Id,
-                    IsActive = true,
-                };
+                    var workspace = new Workspace
+                    {
+                        Name = $"サンプルプロジェクト{i + 1}",
+                        Code = $"PROJ{(i + 1):D3}",
+                        Description = "これはサンプルのワークスペースです",
+                        OrganizationId = organization.Id,
+                        GenreId = devGenre?.Id,
+                        IsActive = true,
+                    };
 
-                _context.Workspaces.Add(workspace);
+                    _context.Workspaces.Add(workspace);
+                    _logger.LogInformation("Added workspace: {Name}", workspace.Name);
+                }
+
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Added workspace: {Name}", workspace.Name);
             }
         }
     }
