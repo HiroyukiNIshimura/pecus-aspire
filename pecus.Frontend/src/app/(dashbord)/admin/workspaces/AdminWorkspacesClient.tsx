@@ -148,10 +148,22 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                   <h2 className="card-title">総メンバー数</h2>
                   <div className="stat">
                     <div className="stat-value text-3xl">
-                      {/* メンバー数はAPIレスポンスにないので、仮に0を表示 */}
-                      0
+                      {/* ワークスペース全体のユニークメンバー数を計算 */}
+                      {(() => {
+                        const uniqueUserIds = new Set<number>();
+                        for (const workspace of workspaces) {
+                          if (workspace.members && Array.isArray(workspace.members)) {
+                            for (const member of workspace.members) {
+                              if (member.userId) {
+                                uniqueUserIds.add(member.userId);
+                              }
+                            }
+                          }
+                        }
+                        return uniqueUserIds.size;
+                      })()}
                     </div>
-                    <div className="stat-desc">参加者</div>
+                    <div className="stat-desc">参加者（ユニーク）</div>
                   </div>
                 </div>
               </div>

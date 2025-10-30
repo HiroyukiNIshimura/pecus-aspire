@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
     const activeOnly = searchParams.get('activeOnly') === 'true';
 
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesGet({ page, activeOnly });
+    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, activeOnly);
 
-    return NextResponse.json(response.data);
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

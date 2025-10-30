@@ -12,17 +12,15 @@ export async function login(request: {
   password: string;
 }): Promise<ApiResponse<any>> {
   try {
-    const api = createPecusApiClients(false); // リフレッシュ無効（ログイン前）
-    const response = await api.entranceAuth.apiEntranceAuthLoginPost({
-      loginRequest: {
-        loginIdentifier: request.loginIdentifier,
-        password: request.password,
-      }
+    const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
+    const response = await api.entranceAuth.postApiEntranceAuthLogin({
+      loginIdentifier: request.loginIdentifier,
+      password: request.password,
     });
 
     // APIレスポンスからトークンを取得
-    const accessToken = response.data.accessToken;
-    const refreshToken = response.data.refreshToken || '';
+    const accessToken = response.accessToken;
+    const refreshToken = response.refreshToken || '';
 
     if (!accessToken) {
       return {
@@ -36,21 +34,21 @@ export async function login(request: {
       accessToken,
       refreshToken,
       user: {
-        id: response.data.userId || 0,
-        name: response.data.username || '',
-        email: response.data.email || '',
-        roles: response.data.roles ? response.data.roles.map(role => role.name || '') : [],
+        id: response.userId || 0,
+        name: response.username || '',
+        email: response.email || '',
+        roles: response.roles ? response.roles.map((role: any) => role.name || '') : [],
       },
     };
 
     await SessionManager.setSession(sessionData);
 
-    return { success: true, data: response.data };
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to login:', error);
     return {
       success: false,
-      error: error.response?.data?.message || error.message || 'Failed to login'
+      error: error.body?.message || error.message || 'Failed to login'
     };
   }
 }

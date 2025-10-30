@@ -12,13 +12,13 @@ import { ApiResponse } from './types';
 export async function getCurrentUser(): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profile.apiProfileGet();
-    return { success: true, data: response.data };
+    const response = await api.profile.getApiProfile();
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch current user:', error);
     return {
       success: false,
-      error: error.message || 'Failed to fetch current user'
+      error: error.body?.message || error.message || 'Failed to fetch current user'
     };
   }
 }
@@ -32,15 +32,13 @@ export async function updateProfile(request: {
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profile.apiProfilePut({
-      updateProfileRequest: request
-    });
-    return { success: true, data: response.data };
+    const response = await api.profile.putApiProfile(request);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to update profile:', error);
     return {
       success: false,
-      error: error.message || 'Failed to update profile'
+      error: error.body?.message || error.message || 'Failed to update profile'
     };
   }
 }

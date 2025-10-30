@@ -9,13 +9,13 @@ import { ApiResponse } from '../types';
 export async function getOrganization(): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminOrganization.apiAdminOrganizationGet();
-    return { success: true, data: response.data };
+    const response = await api.adminOrganization.getApiAdminOrganization();
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch organization:', error);
     return {
       success: false,
-      error: error.message || 'Failed to fetch organization'
+      error: error.body?.message || error.message || 'Failed to fetch organization'
     };
   }
 }
@@ -29,15 +29,13 @@ export async function updateOrganization(request: {
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminOrganization.apiAdminOrganizationPut({
-      updateOrganizationRequest: request
-    });
-    return { success: true, data: response.data };
+    const response = await api.adminOrganization.putApiAdminOrganization(request);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to update organization:', error);
     return {
       success: false,
-      error: error.message || 'Failed to update organization'
+      error: error.body?.message || error.message || 'Failed to update organization'
     };
   }
 }

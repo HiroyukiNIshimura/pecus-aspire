@@ -11,7 +11,8 @@
     "lint": "biome check",
     "format": "biome format --write",
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
-    "generate:api": "openapi-generator-cli generate -i ./.spec/open-api-scheme.json -g typescript-axios -o src/connectors/api/pecus --additional-properties=supportsES6=true,useSingleRequestParameter=true,modelPropertyNaming=original",
+    "clean:api": "rimraf src/connectors/api/pecus",
+    "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus",
     "generate:client": "node scripts/generate-pecus-api-client.js"
   },
   "dependencies": {
@@ -54,11 +55,13 @@
     "@biomejs/biome": "2.2.0",
     "@iconify-json/tabler": "^1.2.23",
     "@iconify/tailwind4": "^1.0.6",
-    "@openapitools/openapi-generator-cli": "^2.25.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "form-data": "^4.0.4",
+    "openapi-typescript-codegen": "^0.29.0",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4.0.17",
     "typescript": "^5"
   }

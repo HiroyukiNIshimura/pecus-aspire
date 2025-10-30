@@ -13,13 +13,13 @@ export async function getUsers(
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.apiAdminUsersGet({ page, pageSize, activeOnly });
-    return { success: true, data: response.data };
+    const response = await api.adminUser.getApiAdminUsers(page, pageSize, activeOnly);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch users:', error);
     return {
       success: false,
-      error: error.message || 'Failed to fetch users'
+      error: error.body?.message || error.message || 'Failed to fetch users'
     };
   }
 }
@@ -34,15 +34,13 @@ export async function createUserWithoutPassword(request: {
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.apiAdminUsersCreateWithoutPasswordPost({
-      createUserWithoutPasswordRequest: request
-    });
-    return { success: true, data: response.data };
+    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to create user:', error);
     return {
       success: false,
-      error: error.message || 'Failed to create user'
+      error: error.body?.message || error.message || 'Failed to create user'
     };
   }
 }
@@ -53,13 +51,13 @@ export async function createUserWithoutPassword(request: {
 export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.apiAdminUsersIdDelete({ id: userId });
-    return { success: true, data: response.data };
+    const response = await api.adminUser.deleteApiAdminUsers(userId);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to delete user:', error);
     return {
       success: false,
-      error: error.message || 'Failed to delete user'
+      error: error.body?.message || error.message || 'Failed to delete user'
     };
   }
 }
@@ -73,16 +71,13 @@ export async function setUserActiveStatus(
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.apiAdminUsersIdActiveStatusPut({
-      id: userId,
-      setUserActiveStatusRequest: { isActive }
-    });
-    return { success: true, data: response.data };
+    const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, { isActive });
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to set user active status:', error);
     return {
       success: false,
-      error: error.message || 'Failed to set user active status'
+      error: error.body?.message || error.message || 'Failed to set user active status'
     };
   }
 }
@@ -93,13 +88,13 @@ export async function setUserActiveStatus(
 export async function requestPasswordReset(userId: number): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.apiAdminUsersIdRequestPasswordResetPost({ id: userId });
-    return { success: true, data: response.data };
+    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to request password reset:', error);
     return {
       success: false,
-      error: error.message || 'Failed to request password reset'
+      error: error.body?.message || error.message || 'Failed to request password reset'
     };
   }
 }

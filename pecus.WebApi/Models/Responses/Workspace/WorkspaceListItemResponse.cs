@@ -49,4 +49,9 @@ public class WorkspaceListItemResponse
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 参加しているユーザー一覧
+    /// </summary>
+    public List<WorkspaceUserDetailResponse>? Members { get; set; }
 }

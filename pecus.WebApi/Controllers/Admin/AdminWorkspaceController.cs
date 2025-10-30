@@ -249,6 +249,20 @@ public class AdminWorkspaceController : ControllerBase
                     CreatedAt = w.CreatedAt,
                     UpdatedAt = w.UpdatedAt,
                     IsActive = w.IsActive,
+                    Members = w.WorkspaceUsers?
+                        .Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive))
+                        .Select(wu => new WorkspaceUserDetailResponse
+                        {
+                            WorkspaceId = wu.WorkspaceId,
+                            UserId = wu.UserId,
+                            Username = wu.User?.Username,
+                            Email = wu.User?.Email,
+                            WorkspaceRole = wu.WorkspaceRole,
+                            JoinedAt = wu.JoinedAt,
+                            LastAccessedAt = wu.LastAccessedAt,
+                            IsActive = wu.IsActive,
+                        })
+                        .ToList(),
                 })
                 .ToList();
 

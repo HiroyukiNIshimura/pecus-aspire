@@ -7609,6 +7609,14 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
+            },
+            "description": "参加しているユーザー一覧",
+            "nullable": true
           }
         },
         "additionalProperties": false,

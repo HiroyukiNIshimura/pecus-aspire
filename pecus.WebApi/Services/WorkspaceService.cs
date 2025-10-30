@@ -148,6 +148,7 @@ public class WorkspaceService
     {
         var query = _context
             .Workspaces.Include(w => w.Organization)
+            .Include(w => w.WorkspaceUsers).ThenInclude(wu => wu.User)
             .Where(w => w.OrganizationId == organizationId)
             .AsQueryable();
 

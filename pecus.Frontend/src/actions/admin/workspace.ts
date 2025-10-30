@@ -12,13 +12,13 @@ export async function getWorkspaces(
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesGet({ page, activeOnly });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, activeOnly);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch workspaces:', error);
     return {
       success: false,
-      error: error.message || 'Failed to fetch workspaces'
+      error: error.body?.message || error.message || 'Failed to fetch workspaces'
     };
   }
 }
@@ -34,15 +34,13 @@ export async function createWorkspace(request: {
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesPost({
-      createWorkspaceRequest: request
-    });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to create workspace:', error);
     return {
       success: false,
-      error: error.message || 'Failed to create workspace'
+      error: error.body?.message || error.message || 'Failed to create workspace'
     };
   }
 }
@@ -60,16 +58,13 @@ export async function updateWorkspace(
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesIdPut({
-      id: workspaceId,
-      updateWorkspaceRequest: request,
-    });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.putApiAdminWorkspaces(workspaceId, request);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to update workspace:', error);
     return {
       success: false,
-      error: error.message || 'Failed to update workspace'
+      error: error.body?.message || error.message || 'Failed to update workspace'
     };
   }
 }
@@ -80,13 +75,13 @@ export async function updateWorkspace(
 export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesIdDelete({ id: workspaceId });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.deleteApiAdminWorkspaces(workspaceId);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to delete workspace:', error);
     return {
       success: false,
-      error: error.message || 'Failed to delete workspace'
+      error: error.body?.message || error.message || 'Failed to delete workspace'
     };
   }
 }
@@ -97,13 +92,13 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
 export async function activateWorkspace(workspaceId: number): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesIdActivatePatch({ id: workspaceId });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to activate workspace:', error);
     return {
       success: false,
-      error: error.message || 'Failed to activate workspace'
+      error: error.body?.message || error.message || 'Failed to activate workspace'
     };
   }
 }
@@ -114,13 +109,13 @@ export async function activateWorkspace(workspaceId: number): Promise<ApiRespons
 export async function deactivateWorkspace(workspaceId: number): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.apiAdminWorkspacesIdDeactivatePatch({ id: workspaceId });
-    return { success: true, data: response.data };
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId);
+    return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to deactivate workspace:', error);
     return {
       success: false,
-      error: error.message || 'Failed to deactivate workspace'
+      error: error.body?.message || error.message || 'Failed to deactivate workspace'
     };
   }
 }
