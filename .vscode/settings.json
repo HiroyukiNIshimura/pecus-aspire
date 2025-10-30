@@ -17,5 +17,9 @@
     "dotnet ef": true,
     "dotnet add package": true,
     //"npm run build":true
-  }
+  },
+  "shellcheck.ignorePatterns": {
+    "**/.env*": true
+  },
+
 }
