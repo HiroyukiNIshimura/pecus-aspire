@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ReactPaginate from 'react-paginate';
 import { WorkspaceListItemResponse, WorkspaceListItemResponsePagedResponse } from '@/connectors/api/pecus';
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
+import Pagination from "@/components/common/Pagination";
 
 interface UserInfo {
   id: number;
@@ -206,29 +206,11 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                 </div>
 
                 {/* Pagination */}
-                {(totalPages || 1) > 1 && (
-                  <div className="flex justify-center mt-6">
-                    <ReactPaginate
-                      previousLabel={'前へ'}
-                      nextLabel={'次へ'}
-                      breakLabel={'...'}
-                      pageCount={totalPages || 1}
-                      marginPagesDisplayed={2}
-                      pageRangeDisplayed={5}
-                      onPageChange={handlePageChange}
-                      forcePage={(currentPage || 1) - 1} // 0-based
-                      containerClassName={'join'}
-                      pageClassName={'join-item btn'}
-                      pageLinkClassName={'btn'}
-                      previousClassName={'join-item btn'}
-                      previousLinkClassName={'btn'}
-                      nextClassName={'join-item btn'}
-                      nextLinkClassName={'btn'}
-                      breakClassName={'join-item btn btn-disabled'}
-                      activeClassName={'btn-active'}
-                    />
-                  </div>
-                )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </div>
             </div>
           </div>

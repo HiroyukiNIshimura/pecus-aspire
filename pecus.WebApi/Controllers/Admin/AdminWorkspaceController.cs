@@ -218,10 +218,10 @@ public class AdminWorkspaceController : ControllerBase
                 // 認証済みユーザーが組織に所属していない場合、空のリストを返す
                 return TypedResults.Ok(
                     PaginationHelper.CreatePagedResponse(
-                        new List<WorkspaceListItemResponse>(),
-                        1,
-                        _config.Pagination.DefaultPageSize,
-                        0
+                        data: new List<WorkspaceListItemResponse>(),
+                        totalCount: 0,
+                        page: 1,
+                        pageSize: _config.Pagination.DefaultPageSize
                     )
                 );
             }
@@ -253,10 +253,10 @@ public class AdminWorkspaceController : ControllerBase
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(
-                items,
-                validatedPage,
-                pageSize,
-                totalCount
+                data: items,
+                totalCount: totalCount,
+                page: validatedPage,
+                pageSize: pageSize
             );
             return TypedResults.Ok(response);
         }
@@ -702,10 +702,10 @@ public class AdminWorkspaceController : ControllerBase
                 // 空のリストを返す（ワークスペースが存在しない or アクセス権がない）
                 return TypedResults.Ok(
                     PaginationHelper.CreatePagedResponse(
-                        new List<WorkspaceUserDetailResponse>(),
-                        1,
-                        _config.Pagination.DefaultPageSize,
-                        0
+                        data: new List<WorkspaceUserDetailResponse>(),
+                        totalCount: 0,
+                        page: 1,
+                        pageSize: _config.Pagination.DefaultPageSize
                     )
                 );
             }
@@ -736,9 +736,9 @@ public class AdminWorkspaceController : ControllerBase
 
             var response = PaginationHelper.CreatePagedResponse(
                 items,
-                validatedPage,
-                pageSize,
-                totalCount
+                totalCount: totalCount,
+                page: validatedPage,
+                pageSize: pageSize
             );
             return TypedResults.Ok(response);
         }
