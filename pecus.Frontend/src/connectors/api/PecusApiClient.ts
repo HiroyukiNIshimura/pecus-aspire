@@ -1,34 +1,6 @@
-import * as PecusApis from "./pecus";
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { getAccessToken, refreshAccessToken } from "./auth";
-
-// 主要なAPIクラスをインポートして型安全にする
-import {
-  Configuration,
-  AdminOrganizationApi,
-  AdminUserApi,
-  AdminWorkspaceApi,
-  BackendGenreApi,
-  BackendHangfireTestApi,
-  BackendOrganizationApi,
-  BackendPermissionApi,
-  BackendRoleApi,
-  BackendSpecsApi,
-  EntranceAuthApi,
-  EntranceOrganizationApi,
-  EntrancePasswordApi,
-  FileDownloadApi,
-  FileUploadApi,
-  ProfileApi,
-  RefreshApi,
-  TagApi,
-  TestEmailApi,
-  WorkspaceItemApi,
-  WorkspaceItemAttachmentApi,
-  WorkspaceItemPinApi,
-  WorkspaceItemRelationApi,
-  WorkspaceItemTagApi
-} from "./pecus";
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { getAccessToken } from "./auth";
+import { createApiClientInstances } from "./PecusApiClient.generated";
 
 /**
  * axios インスタンスを作成（インターセプター付き）
@@ -125,34 +97,6 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
 
 export function createPecusApiClients(enableRefresh: boolean = true) {
   const axiosInstance = createAxiosInstance(enableRefresh);
-  const config = new PecusApis.Configuration({
-    basePath: process.env.API_BASE_URL || 'https://localhost:7265',
-  });
-
-  return {
-    adminOrganization: new PecusApis.AdminOrganizationApi(config, undefined, axiosInstance),
-    adminUser: new PecusApis.AdminUserApi(config, undefined, axiosInstance),
-    adminWorkspace: new PecusApis.AdminWorkspaceApi(config, undefined, axiosInstance),
-    backendGenre: new PecusApis.BackendGenreApi(config, undefined, axiosInstance),
-    backendHangfireTest: new PecusApis.BackendHangfireTestApi(config, undefined, axiosInstance),
-    backendOrganization: new PecusApis.BackendOrganizationApi(config, undefined, axiosInstance),
-    backendPermission: new PecusApis.BackendPermissionApi(config, undefined, axiosInstance),
-    backendRole: new PecusApis.BackendRoleApi(config, undefined, axiosInstance),
-    backendSpecs: new PecusApis.BackendSpecsApi(config, undefined, axiosInstance),
-    entranceAuth: new PecusApis.EntranceAuthApi(config, undefined, axiosInstance),
-    entranceOrganization: new PecusApis.EntranceOrganizationApi(config, undefined, axiosInstance),
-    entrancePassword: new PecusApis.EntrancePasswordApi(config, undefined, axiosInstance),
-    fileDownload: new PecusApis.FileDownloadApi(config, undefined, axiosInstance),
-    fileUpload: new PecusApis.FileUploadApi(config, undefined, axiosInstance),
-    profile: new PecusApis.ProfileApi(config, undefined, axiosInstance),
-    refresh: new PecusApis.RefreshApi(config, undefined, axiosInstance),
-    tag: new PecusApis.TagApi(config, undefined, axiosInstance),
-    testEmail: new PecusApis.TestEmailApi(config, undefined, axiosInstance),
-    workspaceItem: new PecusApis.WorkspaceItemApi(config, undefined, axiosInstance),
-    workspaceItemAttachment: new PecusApis.WorkspaceItemAttachmentApi(config, undefined, axiosInstance),
-    workspaceItemPin: new PecusApis.WorkspaceItemPinApi(config, undefined, axiosInstance),
-    workspaceItemRelation: new PecusApis.WorkspaceItemRelationApi(config, undefined, axiosInstance),
-    workspaceItemTag: new PecusApis.WorkspaceItemTagApi(config, undefined, axiosInstance),
-  };
+  return createApiClientInstances(axiosInstance);
 }
 
