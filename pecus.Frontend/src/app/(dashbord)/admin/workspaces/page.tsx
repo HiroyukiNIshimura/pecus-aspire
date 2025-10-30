@@ -1,6 +1,6 @@
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { SessionManager } from "@/libs/session";
+import { getWorkspaces } from "@/actions/admin/workspace";
+import { getCurrentUser } from "@/actions/profile";
 import { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 
 export const dynamic = 'force-dynamic';
@@ -17,39 +17,50 @@ type UserInfo = {
 export default async function AdminWorkspaces() {
   let workspaces: WorkspaceListItemResponse[] = [];
   let totalCount: number = 0;
+  let totalPages: number = 1;
   let user: UserInfo | null = null;
   let fetchError: string | null = null;
 
   try {
-    const session = await SessionManager.getSession();
-    if (session && session.user) {
-      const roles = session.user.roles ?? [];
+    // Server Actions を使用してデータ取得
+    // Middlewareが事前に認証チェックを行うため、ここでは401エラーは発生しない
+    const [workspacesResult, userResult] = await Promise.all([
+      getWorkspaces(1, true),
+      getCurrentUser(),
+    ]);
+
+    // ワークスペース情報の処理
+    if (workspacesResult.success) {
+      const responseData = workspacesResult.data;
+      workspaces = responseData?.data ?? [];
+      totalCount = responseData?.totalCount ?? 0;
+      totalPages = responseData?.totalPages ?? 1;
+    } else {
+      fetchError = `ワークスペース情報の取得に失敗しました (${workspacesResult.error})`;
+    }
+
+    // ユーザー情報の処理
+    if (userResult.success) {
+      const userData = userResult.data;
+      const roles = userData.roles ?? [];
       user = {
-        id: session.user.id,
-        name: session.user.name ?? null,
-        email: session.user.email ?? null,
+        id: userData.id,
+        name: userData.username ?? null,
+        email: userData.email ?? null,
         roles,
         isAdmin: roles.some((r: any) => (typeof r === 'string' ? r === 'Admin' : r?.name === 'Admin')),
       } as UserInfo;
     }
-
-    const clients = createPecusApiClients();
-    const res = await clients.adminWorkspace.apiAdminWorkspacesGet({ page: 1, activeOnly: true });
-    const responseData = res?.data ?? res;
-    workspaces = responseData?.data ?? [];
-    totalCount = responseData?.totalCount ?? 0;
   } catch (err: any) {
     console.error('AdminWorkspaces: failed to fetch workspaces or user', err);
-    const status = err?.response?.status;
-    const detail = err?.message ?? String(err);
-
-    fetchError = `ワークスペース情報の取得に失敗しました (${detail})`;
+    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 
   return (
     <AdminWorkspacesClient
       initialWorkspaces={workspaces}
       initialTotalCount={totalCount}
+      initialTotalPages={totalPages}
       initialUser={user}
       fetchError={fetchError}
     />

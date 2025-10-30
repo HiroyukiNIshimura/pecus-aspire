@@ -30,44 +30,92 @@ import {
   WorkspaceItemTagApi
 } from "./pecus";
 
-// axiosインスタンスを作成（インターセプター付き）
+/**
+ * axios インスタンスを作成（インターセプター付き）
+ *
+ * Middleware対応版:
+ * - SSR: Middlewareが事前にトークンを検証・リフレッシュするため、インターセプターは不要
+ * - CSR: クライアントサイドの動的API呼び出し時のみインターセプターが動作
+ *
+ * Server Actions から呼ばれる場合:
+ * - enableRefresh=false を推奨（Middlewareに任せる）
+ * - リクエストごとに新しいインスタンスが作成される
+ */
 const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
   const instance = axios.create({
     baseURL: process.env.API_BASE_URL || 'https://localhost:7265',
   });
 
-  // リクエストインターセプター: アクセストークンをAuthorizationヘッダーにセット
-  instance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-    try {
+  // インスタンスごとのリフレッシュPromise（同一インスタンス内での競合を防ぐ）
+  let refreshPromise: Promise<{ accessToken: string; persisted: boolean }> | null = null;
+  const RETRY_FLAG = '__pecus_retry';
+
+  // リクエストインターセプター
+  instance.interceptors.request.use(
+    async (config) => {
       const token = await getAccessToken();
-      if (token) {
-        config.headers = config.headers || {};
+      if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-    } catch (error) {
-      // トークンがない場合はヘッダーをセットしない（ログインエンドポイントなど）
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
-    return config;
-  });
+  );
 
-  // レスポンスインターセプター: 401エラー時の処理
-  if (enableRefresh) {
-    // トークンリフレッシュを試みる（クライアントサイド・サーバーサイド共通）
+  // レスポンスインターセプター（クライアントサイドのみ）
+  if (enableRefresh && typeof window !== 'undefined') {
     instance.interceptors.response.use(
       (response: AxiosResponse) => response,
       async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          try {
-            const newToken = await refreshAccessToken();
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return instance(originalRequest);
-          } catch (refreshError) {
-            throw error; // 元の401エラーを投げる
+        const originalRequest = error.config as any;
+        const status = error.response?.status;
+        const wwwAuth = error.response?.headers?.['www-authenticate'] || '';
+
+        // アクセストークン期限切れ判定:
+        // - ステータスコード: 401
+        // - www-authenticateヘッダーに'Bearer error="invalid_token"'が存在
+        // - まだリトライしていない
+        const isTokenExpired =
+          status === 401 &&
+          wwwAuth.toLowerCase().includes('bearer') &&
+          wwwAuth.toLowerCase().includes('invalid_token');
+
+        if (isTokenExpired && !originalRequest[RETRY_FLAG]) {
+          // インスタンスレベルのリフレッシュPromiseを使用
+          if (!refreshPromise) {
+            // 動的インポートでServer Actionを呼び出し（クライアントサイド専用）
+            const { refreshAccessToken: refreshFn } = await import('./auth');
+            refreshPromise = refreshFn()
+              .finally(() => {
+                refreshPromise = null;
+              });
           }
+
+          // リフレッシュ処理を待って再試行
+          return refreshPromise
+            .then((result: { accessToken: string; persisted: boolean }) => {
+              // 新しいトークンで再試行
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${result.accessToken}`;
+              originalRequest[RETRY_FLAG] = true;
+
+              // 再試行リクエストを返す
+              return instance(originalRequest);
+            })
+            .catch((refreshError: unknown) => {
+              console.error('[PecusApiClient] Token refresh failed:', refreshError);
+              // クライアントサイドでリフレッシュ失敗時はログインページへリダイレクト
+              if (typeof window !== 'undefined') {
+                window.location.href = '/signin';
+              }
+              return Promise.reject(error);
+            });
         }
-        throw error;
+
+        // トークン期限切れでない401エラーはそのまま返す
+        return Promise.reject(error);
       }
     );
   }
@@ -75,38 +123,36 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
   return instance;
 };
 
-export function createPecusApiClients() {
-  // サーバーサイドでもトークンリフレッシュを有効にする
-  const enableRefresh = true;
+export function createPecusApiClients(enableRefresh: boolean = true) {
   const axiosInstance = createAxiosInstance(enableRefresh);
   const config = new PecusApis.Configuration({
     basePath: process.env.API_BASE_URL || 'https://localhost:7265',
   });
 
   return {
-    adminOrganization: new AdminOrganizationApi(config, undefined, axiosInstance),
-    adminUser: new AdminUserApi(config, undefined, axiosInstance),
-    adminWorkspace: new AdminWorkspaceApi(config, undefined, axiosInstance),
-    backendGenre: new BackendGenreApi(config, undefined, axiosInstance),
-    backendHangfireTest: new BackendHangfireTestApi(config, undefined, axiosInstance),
-    backendOrganization: new BackendOrganizationApi(config, undefined, axiosInstance),
-    backendPermission: new BackendPermissionApi(config, undefined, axiosInstance),
-    backendRole: new BackendRoleApi(config, undefined, axiosInstance),
-    backendSpecs: new BackendSpecsApi(config, undefined, axiosInstance),
-    entranceAuth: new EntranceAuthApi(config, undefined, axiosInstance),
-    entranceOrganization: new EntranceOrganizationApi(config, undefined, axiosInstance),
-    entrancePassword: new EntrancePasswordApi(config, undefined, axiosInstance),
-    fileDownload: new FileDownloadApi(config, undefined, axiosInstance),
-    fileUpload: new FileUploadApi(config, undefined, axiosInstance),
-    profile: new ProfileApi(config, undefined, axiosInstance),
-    refresh: new RefreshApi(config, undefined, axiosInstance),
-    tag: new TagApi(config, undefined, axiosInstance),
-    testEmail: new TestEmailApi(config, undefined, axiosInstance),
-    workspaceItem: new WorkspaceItemApi(config, undefined, axiosInstance),
-    workspaceItemAttachment: new WorkspaceItemAttachmentApi(config, undefined, axiosInstance),
-    workspaceItemPin: new WorkspaceItemPinApi(config, undefined, axiosInstance),
-    workspaceItemRelation: new WorkspaceItemRelationApi(config, undefined, axiosInstance),
-    workspaceItemTag: new WorkspaceItemTagApi(config, undefined, axiosInstance),
+    adminOrganization: new PecusApis.AdminOrganizationApi(config, undefined, axiosInstance),
+    adminUser: new PecusApis.AdminUserApi(config, undefined, axiosInstance),
+    adminWorkspace: new PecusApis.AdminWorkspaceApi(config, undefined, axiosInstance),
+    backendGenre: new PecusApis.BackendGenreApi(config, undefined, axiosInstance),
+    backendHangfireTest: new PecusApis.BackendHangfireTestApi(config, undefined, axiosInstance),
+    backendOrganization: new PecusApis.BackendOrganizationApi(config, undefined, axiosInstance),
+    backendPermission: new PecusApis.BackendPermissionApi(config, undefined, axiosInstance),
+    backendRole: new PecusApis.BackendRoleApi(config, undefined, axiosInstance),
+    backendSpecs: new PecusApis.BackendSpecsApi(config, undefined, axiosInstance),
+    entranceAuth: new PecusApis.EntranceAuthApi(config, undefined, axiosInstance),
+    entranceOrganization: new PecusApis.EntranceOrganizationApi(config, undefined, axiosInstance),
+    entrancePassword: new PecusApis.EntrancePasswordApi(config, undefined, axiosInstance),
+    fileDownload: new PecusApis.FileDownloadApi(config, undefined, axiosInstance),
+    fileUpload: new PecusApis.FileUploadApi(config, undefined, axiosInstance),
+    profile: new PecusApis.ProfileApi(config, undefined, axiosInstance),
+    refresh: new PecusApis.RefreshApi(config, undefined, axiosInstance),
+    tag: new PecusApis.TagApi(config, undefined, axiosInstance),
+    testEmail: new PecusApis.TestEmailApi(config, undefined, axiosInstance),
+    workspaceItem: new PecusApis.WorkspaceItemApi(config, undefined, axiosInstance),
+    workspaceItemAttachment: new PecusApis.WorkspaceItemAttachmentApi(config, undefined, axiosInstance),
+    workspaceItemPin: new PecusApis.WorkspaceItemPinApi(config, undefined, axiosInstance),
+    workspaceItemRelation: new PecusApis.WorkspaceItemRelationApi(config, undefined, axiosInstance),
+    workspaceItemTag: new PecusApis.WorkspaceItemTagApi(config, undefined, axiosInstance),
   };
 }
 

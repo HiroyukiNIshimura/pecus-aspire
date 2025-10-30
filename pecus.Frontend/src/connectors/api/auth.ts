@@ -1,64 +1,141 @@
-import { SessionManager } from "@/libs/session";
-import { createPecusApiClients } from "./PecusApiClient";
+'use server';
 
-// アクセストークン取得（サーバーサイドのみ）
-export async function getAccessToken(): Promise<string> {
-  console.log('getAccessToken: Getting session from SessionManager');
-  const session = await SessionManager.getSession();
-  console.log('getAccessToken: Session result:', !!session);
-  if (!session?.accessToken) {
-    console.log('getAccessToken: No access token in session');
-    throw new Error("No access token");
+import { SessionManager } from '@/libs/session';
+
+/**
+ * アクセストークン取得（SSR専用）
+ */
+export async function getAccessToken(): Promise<string | null> {
+  try {
+    const session = await SessionManager.getSession();
+    return session?.accessToken ?? null;
+  } catch (error) {
+    console.error('Failed to get access token:', error);
+    return null;
   }
-  console.log('getAccessToken: Returning access token, length:', session.accessToken.length);
-  return session.accessToken;
 }
 
-// リフレッシュトークン取得（サーバーサイドのみ）
-export async function getRefreshToken(): Promise<string> {
-  console.log('getRefreshToken: Getting session from SessionManager');
-  const session = await SessionManager.getSession();
-  console.log('getRefreshToken: Session result:', !!session);
-  if (!session?.refreshToken) {
-    console.log('getRefreshToken: No refresh token in session');
-    throw new Error("No refresh token");
+/**
+ * リフレッシュトークン取得（SSR専用）
+ */
+export async function getRefreshToken(): Promise<string | null> {
+  try {
+    const session = await SessionManager.getSession();
+    return session?.refreshToken ?? null;
+  } catch (error) {
+    console.error('Failed to get refresh token:', error);
+    return null;
   }
-  console.log('getRefreshToken: Returning refresh token, length:', session.refreshToken.length);
-  return session.refreshToken;
 }
 
-// リフレッシュトークンで再取得（API Route経由）
-export async function refreshAccessToken(): Promise<string> {
-  console.log('refreshAccessToken: Calling API Route for token refresh');
+/**
+ * トークンリフレッシュ処理（Server Action）
+ *
+ * Server Action として定義することで、SessionManager.setSession() が正常に動作します。
+ *
+ * fetchを使う理由:
+ * - axiosインターセプターの循環呼び出しを防ぐため
+ * - リフレッシュ処理はシンプルなPOSTで十分なため
+ *
+ * @returns 新しいアクセストークンと永続化フラグ
+ */
+export async function refreshAccessToken(): Promise<{ accessToken: string; persisted: boolean }> {
+  console.log('Refreshing access token');
 
   try {
-    const response = await fetch('/api/auth/refresh', {
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    // WebAPIのリフレッシュエンドポイントを直接呼び出す
+    const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+    const response = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ refreshToken }),
     });
 
     if (!response.ok) {
-      throw new Error(`Refresh failed with status ${response.status}`);
+      const errorText = await response.text();
+      console.error('Refresh API error:', errorText);
+
+      // 400エラー時はセッションをクリア（リフレッシュトークンが無効）
+      if (response.status === 400) {
+        try {
+          await SessionManager.clearSession();
+        } catch (clearError) {
+          console.error('Failed to clear session:', clearError);
+        }
+      }
+
+      const error: any = new Error(`Failed to refresh access token: ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
 
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error('Refresh API returned error');
+    const data = await response.json();
+    console.log('Refresh API success, updating session');
+
+    // 現在のユーザー情報を取得
+    const currentSession = await SessionManager.getSession();
+    if (!currentSession) {
+      throw new Error('No current session');
     }
 
-    console.log('refreshAccessToken: Refresh successful via API Route');
+    // セッションを更新（Server Action コンテキストでのみ可能）
+    try {
+      await SessionManager.setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: currentSession.user, // 既存のユーザー情報を保持
+      });
+      console.log('Session updated successfully');
+      return { accessToken: data.accessToken, persisted: true };
+    } catch (sessionError: any) {
+      // Server Action コンテキスト外から呼ばれた場合（Axiosインターセプター経由など）
+      // Cookie更新はスキップし、メモリ上のトークンのみを返す
+      if (sessionError.message?.includes('Cookies can only be modified')) {
+        console.warn('Cannot update session cookies outside Server Action context, returning token only');
+        return { accessToken: data.accessToken, persisted: false };
+      }
+      throw sessionError;
+    }
+  } catch (error) {
+    console.error('Failed to refresh access token:', error);
+    throw error;
+  }
+}
 
-    // 新しいアクセストークンを取得して返す
-    const session = await SessionManager.getSession();
-    if (!session?.accessToken) {
-      throw new Error('No access token after refresh');
+/**
+ * ログアウト処理
+ */
+export async function logout(): Promise<void> {
+  try {
+    const accessToken = await getAccessToken();
+
+    // WebAPIのログアウトエンドポイントを呼ぶ（fetchを使用）
+    if (accessToken) {
+      const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+      try {
+        await fetch(`${apiBaseUrl}/api/entrance/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (error) {
+        console.error('Failed to call logout API:', error);
+        // エラーは無視してセッションクリアを続行
+      }
     }
 
-    return session.accessToken;
-  } catch (error: any) {
-    console.error('refreshAccessToken: Refresh failed with error:', error);
+    await SessionManager.clearSession();
+  } catch (error) {
+    console.error('Failed to logout:', error);
     throw error;
   }
 }

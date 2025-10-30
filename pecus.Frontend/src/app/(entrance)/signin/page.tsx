@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
+import { login } from "@/actions/auth";
 
 export default function SignInPage() {
   return (
@@ -17,32 +18,30 @@ const LoginForm = () => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          loginIdentifier: id,
-          password,
-        }),
+      const result = await login({
+        loginIdentifier: id,
+        password,
       });
 
-      if (response.ok) {
+      if (result.success) {
         router.push('/');
         return;
       }
 
-      const data = await response.json();
-      setError(data.error || 'ログイン認証に失敗しました。');
+      setError(result.error || 'ログイン認証に失敗しました。');
     } catch (err) {
       console.error(err);
       setError('ログイン認証に失敗しました。');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,8 +92,12 @@ const LoginForm = () => {
                   パスワードを入力してください
                 </span>
               </div>
-              <button className="btn btn-accent w-full" type="submit">
-                ログイン
+              <button
+                className="btn btn-accent w-full"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'ログイン中...' : 'ログイン'}
               </button>
             </form>
             <div className="text-center mt-4">

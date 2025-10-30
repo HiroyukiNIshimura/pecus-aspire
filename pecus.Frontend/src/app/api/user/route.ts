@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { SessionManager } from '@/libs/session';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await SessionManager.getSession();

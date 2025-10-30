@@ -18,17 +18,18 @@ interface UserInfo {
 interface AdminWorkspacesClientProps {
   initialWorkspaces?: WorkspaceListItemResponse[];
   initialTotalCount?: number;
+  initialTotalPages?: number;
   initialUser?: UserInfo | null;
   fetchError?: string | null;
 }
 
-export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialUser, fetchError }: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, fetchError }: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
   const [loading, setLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces || []);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
 
   useEffect(() => {

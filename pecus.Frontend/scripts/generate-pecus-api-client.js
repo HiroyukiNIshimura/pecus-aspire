@@ -75,8 +75,9 @@ const createAxiosInstance = (enableRefresh: boolean = true): AxiosInstance => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          try {
-            const newToken = await refreshAccessToken();
+            try {
+            const result = await refreshAccessToken();
+            const newToken = result.accessToken;
             originalRequest.headers.Authorization = \`Bearer \${newToken}\`;
             return instance(originalRequest);
           } catch (refreshError) {

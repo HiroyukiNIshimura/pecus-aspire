@@ -1,6 +1,6 @@
 import AdminClient from "./AdminClient";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { SessionManager } from "@/libs/session";
+import { getOrganization } from "@/actions/admin/organization";
+import { getCurrentUser } from "@/actions/profile";
 
 export const dynamic = 'force-dynamic';
 
@@ -33,27 +33,35 @@ export default async function AdminPage() {
   let fetchError: string | null = null;
 
   try {
-    const session = await SessionManager.getSession();
-    if (session && session.user) {
-      const roles = session.user.roles ?? [];
+    // Server Actions を使用してデータ取得
+    // Middlewareが事前に認証チェックを行うため、ここでは401エラーは発生しない
+    const [orgResult, userResult] = await Promise.all([
+      getOrganization(),
+      getCurrentUser(),
+    ]);
+
+    // 組織情報の処理
+    if (orgResult.success) {
+      organization = orgResult.data as OrganizationData;
+    } else {
+      fetchError = `組織情報の取得に失敗しました (${orgResult.error})`;
+    }
+
+    // ユーザー情報の処理
+    if (userResult.success) {
+      const userData = userResult.data;
+      const roles = userData.roles ?? [];
       user = {
-        id: session.user.id,
-        name: session.user.name ?? null,
-        email: session.user.email ?? null,
+        id: userData.id,
+        name: userData.username ?? null,
+        email: userData.email ?? null,
         roles,
         isAdmin: roles.some((r: any) => (typeof r === 'string' ? r === 'Admin' : r?.name === 'Admin')),
       } as UserInfo;
     }
-
-    const clients = createPecusApiClients();
-    const res = await clients.adminOrganization.apiAdminOrganizationGet();
-    organization = (res?.data ?? res) as OrganizationData;
   } catch (err: any) {
     console.error('AdminPage: failed to fetch organization or user', err);
-    const status = err?.response?.status;
-    const detail = err?.message ?? String(err);
-
-    fetchError = `組織情報の取得に失敗しました (${detail})`;
+    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 
   return (
