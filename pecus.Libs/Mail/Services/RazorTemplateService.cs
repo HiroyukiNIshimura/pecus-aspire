@@ -1,8 +1,7 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pecus.Libs.Mail.Configuration;
 using RazorLight;
-using System.IO;
 
 namespace Pecus.Libs.Mail.Services;
 

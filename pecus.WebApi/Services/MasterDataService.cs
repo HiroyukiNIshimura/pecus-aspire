@@ -27,7 +27,7 @@ public class MasterDataService
     /// <summary>
     /// 指定組織のアクティブなスキル一覧を取得（ページング不使用）
     /// </summary>
-public async Task<List<Skill>> GetActiveSkillsByOrganizationAsync(int organizationId)
+    public async Task<List<Skill>> GetActiveSkillsByOrganizationAsync(int organizationId)
     {
         return await _context.Skills
       .Where(s => s.OrganizationId == organizationId && s.IsActive == true)

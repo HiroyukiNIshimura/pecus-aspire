@@ -7,7 +7,7 @@ import type { SetUserActiveStatusRequest } from '../models/SetUserActiveStatusRe
 import type { SetUserSkillsRequest } from '../models/SetUserSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UserResponse } from '../models/UserResponse';
-import type { UserResponsePagedResponse } from '../models/UserResponsePagedResponse';
+import type { UserResponseUserStatisticsPagedResponse } from '../models/UserResponseUserStatisticsPagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -17,22 +17,22 @@ export class AdminUserService {
      * ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。
      * @param page
      * @param pageSize
-     * @param activeOnly
-     * @returns UserResponsePagedResponse ユーザー一覧を返します
+     * @param isActive アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
+     * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
     public static getApiAdminUsers(
         page?: number,
         pageSize?: number,
-        activeOnly?: boolean,
-    ): CancelablePromise<UserResponsePagedResponse> {
+        isActive?: boolean,
+    ): CancelablePromise<UserResponseUserStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/users',
             query: {
                 'Page': page,
                 'PageSize': pageSize,
-                'ActiveOnly': activeOnly,
+                'IsActive': isActive,
             },
             errors: {
                 404: `組織が見つかりません`,

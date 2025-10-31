@@ -1,5 +1,5 @@
+﻿using Pecus.Libs;
 using System.ComponentModel.DataAnnotations;
-using Pecus.Libs;
 
 namespace Pecus.Models.Validation;
 

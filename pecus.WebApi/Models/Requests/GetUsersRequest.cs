@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests;
 
@@ -10,5 +10,8 @@ public class GetUsersRequest
     [Range(1, 100, ErrorMessage = "ページサイズは1〜100の範囲で指定してください。")]
     public int PageSize { get; set; } = 10;
 
-    public bool? ActiveOnly { get; set; }
+    /// <summary>
+    /// アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
+    /// </summary>
+    public bool? IsActive { get; set; }
 }

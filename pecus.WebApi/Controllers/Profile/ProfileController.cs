@@ -1,17 +1,12 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Pecus.Libs;
 using Pecus.Libs.DB;
-using Pecus.Libs.DB.Models;
-using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Services;
 using Pecus.Models.Requests;
-using Pecus.Models.Responses;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
 using Pecus.Services;
@@ -87,7 +82,8 @@ public class ProfileController : ControllerBase
                     Name = r.Name,
                 })
                 .ToList() ?? new List<UserRoleResponse>(),
-            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false
+            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsActive = user.IsActive,
         };
 
         return TypedResults.Ok(response);

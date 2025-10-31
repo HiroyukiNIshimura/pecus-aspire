@@ -6,7 +6,7 @@
 public class UserRoleResponse
 {
     /// <summary>
-  /// ロールID
+    /// ロールID
     /// </summary>
     public int Id { get; set; }
 

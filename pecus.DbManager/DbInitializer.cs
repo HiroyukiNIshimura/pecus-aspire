@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
+using System.Diagnostics;
 
 namespace Pecus.DbManager;
 

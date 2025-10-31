@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Requests;
+using Pecus.Models.Responses.User;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Pecus.Services;
 
@@ -138,7 +138,7 @@ public class UserService
         int organizationId,
         int page,
         int pageSize,
-        bool? activeOnly = null
+        bool? isActive = null
     )
     {
         var query = _context
@@ -146,9 +146,9 @@ public class UserService
             .Where(u => u.OrganizationId == organizationId)
             .AsQueryable();
 
-        if (activeOnly == true)
+        if (isActive.HasValue)
         {
-            query = query.Where(u => u.IsActive);
+            query = query.Where(u => u.IsActive == isActive.Value);
         }
 
         query = query.OrderBy(u => u.Id);
@@ -535,5 +535,58 @@ public class UserService
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    /// <summary>
+    /// 組織のユーザー統計情報を取得
+    /// </summary>
+    public async Task<UserStatistics> GetUserStatisticsByOrganizationAsync(int organizationId)
+    {
+        var statistics = new UserStatistics();
+
+        // ユーザーを取得（スキルとロール情報を含む）
+        var users = await _context.Users
+        .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+        .Include(u => u.Roles)
+        .Include(u => u.WorkspaceUsers)
+        .Where(u => u.OrganizationId == organizationId)
+        .ToListAsync();
+
+        // アクティブ/非アクティブのユーザー数
+        statistics.ActiveUserCount = users.Count(u => u.IsActive);
+        statistics.InactiveUserCount = users.Count(u => !u.IsActive);
+
+        // スキルごとのユーザー数
+        statistics.SkillCounts = users
+         .SelectMany(u => u.UserSkills)
+         .GroupBy(us => new { us.Skill.Id, us.Skill.Name })
+            .Select(g => new SkillUserCountResponse
+            {
+                Id = g.Key.Id,
+                Name = g.Key.Name,
+                Count = g.Select(us => us.UserId).Distinct().Count()
+            })
+          .OrderBy(s => s.Name)
+            .ToList();
+
+        // ロールごとのユーザー数
+        statistics.RoleCounts = users
+           .SelectMany(u => u.Roles)
+           .GroupBy(r => new { r.Id, r.Name })
+            .Select(g => new RoleUserCountResponse
+            {
+                Id = g.Key.Id,
+                Name = g.Key.Name,
+                Count = g.Select(r => r.Users).SelectMany(u => u).Select(u => u.Id).Distinct().Count()
+            })
+            .OrderBy(r => r.Name)
+        .ToList();
+
+        // ワークスペース参加状況
+        var usersWithWorkspaces = users.Count(u => u.WorkspaceUsers.Any());
+        statistics.WorkspaceParticipationCount = usersWithWorkspaces;
+        statistics.NoWorkspaceParticipationCount = users.Count - usersWithWorkspaces;
+
+        return statistics;
     }
 }

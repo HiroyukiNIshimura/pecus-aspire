@@ -3,10 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { UserResponse } from './UserResponse';
+import type { UserStatistics } from './UserStatistics';
 /**
- * ページネーション付きレスポンス
+ * ページネーション付きレスポンス（統計情報付き）
  */
-export type UserResponsePagedResponse = {
+export type UserResponseUserStatisticsPagedResponse = {
     /**
      * データのリスト
      */
@@ -35,5 +36,6 @@ export type UserResponsePagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
+    summary?: UserStatistics;
 };
 

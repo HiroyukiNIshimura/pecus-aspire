@@ -1,29 +1,29 @@
-using System.Security.Cryptography;
+ï»¿using System.Security.Cryptography;
 using System.Text;
 
 namespace Pecus.Libs.Security;
 
 /// <summary>
-/// ƒpƒXƒ[ƒhƒnƒbƒVƒ…‰»ƒ†[ƒeƒBƒŠƒeƒBiSHA256+Base64j
+/// ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãƒãƒƒã‚·ãƒ¥åŒ–ãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£ï¼ˆSHA256+Base64ï¼‰
 /// </summary>
 public static class PasswordHasher
 {
- /// <summary>
- /// ƒpƒXƒ[ƒh‚ğƒnƒbƒVƒ…‰»
- /// </summary>
- public static string HashPassword(string password)
- {
- using var sha256 = SHA256.Create();
- var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
- return Convert.ToBase64String(hashedBytes);
- }
+    /// <summary>
+    /// ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’ãƒãƒƒã‚·ãƒ¥åŒ–
+    /// </summary>
+    public static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
+    }
 
- /// <summary>
- /// ƒpƒXƒ[ƒh‚ğŒŸØ
- /// </summary>
- public static bool VerifyPassword(string password, string passwordHash)
- {
- var hash = HashPassword(password);
- return hash == passwordHash;
- }
+    /// <summary>
+    /// ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’æ¤œè¨¼
+    /// </summary>
+    public static bool VerifyPassword(string password, string passwordHash)
+    {
+        var hash = HashPassword(password);
+        return hash == passwordHash;
+    }
 }

@@ -40,6 +40,10 @@ export type UserResponse = {
      */
     isAdmin?: boolean;
     /**
+     * アクティブなユーザーかどうか
+     */
+    isActive?: boolean;
+    /**
      * 作成日時
      */
     createdAt?: string;

@@ -46,6 +46,11 @@ public class UserResponse
     public bool IsAdmin { get; set; }
 
     /// <summary>
+    /// アクティブなユーザーかどうか
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }

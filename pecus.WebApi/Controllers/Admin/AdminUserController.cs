@@ -1,6 +1,5 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -18,7 +17,6 @@ namespace Pecus.Controllers.Admin;
 
 /// <summary>
 /// ユーザー管理コントローラー（組織管理者用）
-/// </summary>
 [ApiController]
 [Route("api/admin/users")]
 [Produces("application/json")]
@@ -59,9 +57,9 @@ public class AdminUserController : ControllerBase
     /// <response code="200">ユーザー一覧を返します</response>
     /// <response code="404">組織が見つかりません</response>
     [HttpGet]
-    [ProducesResponseType(typeof(PagedResponse<UserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResponse<UserResponse, UserStatistics>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Results<Ok<PagedResponse<UserResponse>>, NotFound<ErrorResponse>>> GetUsers(
+    public async Task<Results<Ok<PagedResponse<UserResponse, UserStatistics>>, NotFound<ErrorResponse>>> GetUsers(
         [FromQuery] GetUsersRequest request
     )
     {
@@ -85,7 +83,7 @@ public class AdminUserController : ControllerBase
                 user.OrganizationId.Value,
                 validatedPage,
                 pageSize,
-                request.ActiveOnly ?? false
+                request.IsActive
             );
 
             var userResponses = users.Select(u => new UserResponse
@@ -97,13 +95,26 @@ public class AdminUserController : ControllerBase
                 AvatarType = u.AvatarType,
                 IdentityIconUrl = u.AvatarUrl,
                 CreatedAt = u.CreatedAt,
+                Roles = u.Roles?
+                    .Select(r => new UserRoleResponse
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                    })
+                    .ToList() ?? new List<UserRoleResponse>(),
+                IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
+                IsActive = u.IsActive
             });
+
+            // 統計情報を取得
+            var statistics = await _userService.GetUserStatisticsByOrganizationAsync(user.OrganizationId.Value);
 
             var response = PaginationHelper.CreatePagedResponse(
                 userResponses,
                 totalCount,
                 validatedPage,
-                pageSize
+                pageSize,
+                statistics
             );
 
             return TypedResults.Ok(response);
@@ -375,6 +386,7 @@ public class AdminUserController : ControllerBase
                 AvatarType = user.AvatarType,
                 IdentityIconUrl = user.AvatarUrl,
                 CreatedAt = user.CreatedAt,
+                IsActive = user.IsActive
             };
 
             return TypedResults.Created($"/api/admin/users/{user.Id}", response);

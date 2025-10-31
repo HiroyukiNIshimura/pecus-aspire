@@ -31,16 +31,24 @@ export default async function AdminUsers() {
   try {
     // Server Actions を使用してデータ取得
     const [usersResult, userResult] = await Promise.all([
-      getUsers(1),
+      getUsers(1, undefined, false), // 全ユーザー取得（アクティブ・非アクティブ両方）
       getCurrentUser(),
     ]);
 
     // ユーザー一覧の処理
     if (usersResult.success) {
       const responseData = usersResult.data;
-      users = responseData?.data ?? [];
-      totalCount = responseData?.totalCount ?? 0;
-      totalPages = responseData?.totalPages ?? 1;
+      if (responseData && responseData.data) {
+        users = responseData.data.map((user: any) => ({
+          id: user.id ?? 0,
+          username: user.username ?? '',
+          email: user.email ?? '',
+          isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+          createdAt: user.createdAt ?? new Date().toISOString(),
+        }));
+        totalCount = responseData.totalCount ?? 0;
+        totalPages = responseData.totalPages ?? 1;
+      }
     } else {
       // エラーコード方式で返す
       const error: ApiErrorResponse = {

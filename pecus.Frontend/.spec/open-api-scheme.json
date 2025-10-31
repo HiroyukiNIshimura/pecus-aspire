@@ -130,8 +130,9 @@
             }
           },
           {
-            "name": "ActiveOnly",
+            "name": "IsActive",
             "in": "query",
+            "description": "アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）",
             "schema": {
               "type": "boolean"
             }
@@ -143,7 +144,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponsePagedResponse"
+                  "$ref": "#/components/schemas/UserResponseUserStatisticsPagedResponse"
                 }
               }
             }
@@ -6725,6 +6726,31 @@
         "additionalProperties": false,
         "description": "ロール情報レスポンス"
       },
+      "RoleUserCountResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ロールID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ロール名",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "description": "ユーザー数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ロールごとのユーザー数"
+      },
       "SetActiveStatusRequest": {
         "required": [
           "isActive"
@@ -6824,6 +6850,31 @@
         },
         "additionalProperties": false,
         "description": "スキル設定リクエスト"
+      },
+      "SkillUserCountResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "スキル名",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "description": "ユーザー数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "スキルごとのユーザー数"
       },
       "SuccessResponse": {
         "required": [
@@ -7260,6 +7311,10 @@
             "type": "boolean",
             "description": "管理者権限を持つかどうか"
           },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブなユーザーかどうか"
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",
@@ -7269,7 +7324,7 @@
         "additionalProperties": false,
         "description": "ユーザー情報レスポンス"
       },
-      "UserResponsePagedResponse": {
+      "UserResponseUserStatisticsPagedResponse": {
         "required": [
           "data"
         ],
@@ -7310,10 +7365,13 @@
           "hasNextPage": {
             "type": "boolean",
             "description": "次のページが存在するか"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/UserStatistics"
           }
         },
         "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
+        "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "UserRoleResponse": {
         "required": [
@@ -7334,6 +7392,49 @@
         },
         "additionalProperties": false,
         "description": "ユーザーロール情報レスポンス"
+      },
+      "UserStatistics": {
+        "type": "object",
+        "properties": {
+          "skillCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillUserCountResponse"
+            },
+            "description": "スキルごとのユーザー数サマリ",
+            "nullable": true
+          },
+          "roleCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleUserCountResponse"
+            },
+            "description": "ロールごとのユーザー数サマリ",
+            "nullable": true
+          },
+          "activeUserCount": {
+            "type": "integer",
+            "description": "アクティブなユーザー数",
+            "format": "int32"
+          },
+          "inactiveUserCount": {
+            "type": "integer",
+            "description": "非アクティブなユーザー数",
+            "format": "int32"
+          },
+          "workspaceParticipationCount": {
+            "type": "integer",
+            "description": "ワークスペースに参加しているユーザー数",
+            "format": "int32"
+          },
+          "noWorkspaceParticipationCount": {
+            "type": "integer",
+            "description": "ワークスペースに参加していないユーザー数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザー統計情報レスポンス"
       },
       "WorkspaceDetailResponse": {
         "required": [

@@ -31,13 +31,6 @@ interface AdminUsersClientProps {
   fetchError?: string | null;
 }
 
-interface UserListResponse {
-  data?: User[];
-  totalCount?: number;
-  totalPages?: number;
-  currentPage?: number;
-}
-
 export default function AdminUsersClient({
   initialUsers,
   initialTotalCount,
@@ -59,13 +52,23 @@ export default function AdminUsersClient({
     const fetchInitialData = async () => {
       if (!initialUsers || initialUsers.length === 0) {
         try {
-          const response = await fetch('/api/admin/users?page=1');
+          const response = await fetch('/api/admin/users?page=1&activeOnly=false');
           if (response.ok) {
-            const data: UserListResponse = await response.json();
-            setUsers(data.data || []);
-            setCurrentPage(data.currentPage || 1);
-            setTotalPages(data.totalPages || 1);
-            setTotalCount(data.totalCount || 0);
+            const data = await response.json();
+            if (data && data.data) {
+              const mappedUsers = data.data.map((user: any) => ({
+                id: user.id ?? 0,
+                username: user.username ?? '',
+                email: user.email ?? '',
+                isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+                createdAt: user.createdAt ?? new Date().toISOString(),
+              }));
+              console.log('Initial Users Response:', mappedUsers);
+              setUsers(mappedUsers);
+              setCurrentPage(data.currentPage || 1);
+              setTotalPages(data.totalPages || 1);
+              setTotalCount(data.totalCount || 0);
+            }
           }
         } catch (error) {
           console.error('Failed to fetch initial users:', error);
@@ -81,13 +84,23 @@ export default function AdminUsersClient({
     async ({ selected }: { selected: number }) => {
       try {
         const page = selected + 1;
-        const response = await fetch(`/api/admin/users?page=${page}`);
+        const response = await fetch(`/api/admin/users?page=${page}&activeOnly=false`);
         if (response.ok) {
-          const data: UserListResponse = await response.json();
-          setUsers(data.data || []);
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
+          const data = await response.json();
+          if (data && data.data) {
+            const mappedUsers = data.data.map((user: any) => ({
+              id: user.id ?? 0,
+              username: user.username ?? '',
+              email: user.email ?? '',
+              isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+              createdAt: user.createdAt ?? new Date().toISOString(),
+            }));
+            console.log('API Response:', mappedUsers);
+            setUsers(mappedUsers);
+            setCurrentPage(data.currentPage || 1);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch users:', error);

@@ -21,7 +21,7 @@ public class MasterGenreResponse
     public string? Description { get; set; }
 
     /// <summary>
- /// ジャンルアイコン
+    /// ジャンルアイコン
     /// </summary>
     public string? Icon { get; set; }
 
