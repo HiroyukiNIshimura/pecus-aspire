@@ -18,6 +18,7 @@ export class AdminUserService {
      * @param page
      * @param pageSize
      * @param isActive アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
+     * @param username ユーザー名による前方一致検索（オプション）
      * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
@@ -25,6 +26,7 @@ export class AdminUserService {
         page?: number,
         pageSize?: number,
         isActive?: boolean,
+        username?: string,
     ): CancelablePromise<UserResponseUserStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -33,6 +35,7 @@ export class AdminUserService {
                 'Page': page,
                 'PageSize': pageSize,
                 'IsActive': isActive,
+                'Username': username,
             },
             errors: {
                 404: `組織が見つかりません`,

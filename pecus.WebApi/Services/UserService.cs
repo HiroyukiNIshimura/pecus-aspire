@@ -109,9 +109,10 @@ public class UserService
     /// </summary>
     public async Task<User?> GetUserByIdAsync(int userId) =>
         await _context
-            .Users.Include(u => u.Roles)
+       .Users.Include(u => u.Roles)
             .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+       .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+       .FirstOrDefaultAsync(u => u.Id == userId);
 
     /// <summary>
     /// ユーザー名で取得(ロールと権限を含む)
@@ -134,21 +135,42 @@ public class UserService
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
     /// </summary>
+    /// <remarks>
+    /// このメソッドは名前付き引数の使用を強く推奨します。
+    /// 
+    /// 使用例:
+    /// <code>
+    /// await GetUsersByOrganizationPagedAsync(
+    ///     organizationId: 1, 
+    ///  page: 1, 
+    ///     pageSize: 10, 
+    ///     isActive: true, 
+    ///     username: "admin"
+    /// )
+    /// </code>
+    /// </remarks>
     public async Task<(List<User> users, int totalCount)> GetUsersByOrganizationPagedAsync(
         int organizationId,
         int page,
         int pageSize,
-        bool? isActive = null
+        bool? isActive = null,
+        string? username = null
     )
     {
         var query = _context
             .Users.Include(u => u.Roles)
+            .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
             .Where(u => u.OrganizationId == organizationId)
             .AsQueryable();
 
         if (isActive.HasValue)
         {
             query = query.Where(u => u.IsActive == isActive.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            query = query.Where(u => u.Username.StartsWith(username));
         }
 
         query = query.OrderBy(u => u.Id);

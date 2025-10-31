@@ -21,6 +21,7 @@ interface User {
   email: string;
   isActive: boolean;
   createdAt: string;
+  skills?: Array<{ id: number; name: string }>;
 }
 
 interface AdminUsersClientProps {
@@ -62,6 +63,7 @@ export default function AdminUsersClient({
                 email: user.email ?? '',
                 isActive: true, // APIレスポンスに isActive がないため、デフォルト true
                 createdAt: user.createdAt ?? new Date().toISOString(),
+                skills: user.skills ?? [], // ユーザーのスキル一覧
               }));
               console.log('Initial Users Response:', mappedUsers);
               setUsers(mappedUsers);
@@ -94,6 +96,7 @@ export default function AdminUsersClient({
               email: user.email ?? '',
               isActive: true, // APIレスポンスに isActive がないため、デフォルト true
               createdAt: user.createdAt ?? new Date().toISOString(),
+              skills: user.skills ?? [], // ユーザーのスキル一覧
             }));
             console.log('API Response:', mappedUsers);
             setUsers(mappedUsers);
@@ -164,6 +167,7 @@ export default function AdminUsersClient({
                       <tr>
                         <th>ユーザー名</th>
                         <th>メールアドレス</th>
+                        <th>スキル</th>
                         <th>ステータス</th>
                         <th>作成日</th>
                         <th>操作</th>
@@ -175,6 +179,22 @@ export default function AdminUsersClient({
                           <tr key={user.id}>
                             <td className="font-bold">{user.username}</td>
                             <td>{user.email}</td>
+                            <td>
+                              {user.skills && user.skills.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.skills.slice(0, 4).map((skill) => (
+                                    <span key={skill.id} className="badge badge-sm badge-outline">
+                                      {skill.name}
+                                    </span>
+                                  ))}
+                                  {user.skills.length > 4 && (
+                                    <span className="badge badge-sm badge-outline">...</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-base-content opacity-50">なし</span>
+                              )}
+                            </td>
                             <td>
                               <div className={`badge ${user.isActive ? 'badge-success' : 'badge-neutral'}`}>
                                 {user.isActive ? 'アクティブ' : '非アクティブ'}
@@ -191,7 +211,7 @@ export default function AdminUsersClient({
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={5} className="text-center text-base-content opacity-70 py-8">
+                          <td colSpan={6} className="text-center text-base-content opacity-70 py-8">
                             ユーザーデータがありません
                           </td>
                         </tr>

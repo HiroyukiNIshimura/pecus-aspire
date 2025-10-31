@@ -14,4 +14,10 @@ public class GetUsersRequest
     /// アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// ユーザー名による前方一致検索（オプション）
+    /// </summary>
+    [StringLength(100, ErrorMessage = "ユーザー名は100文字以内で指定してください。")]
+    public string? Username { get; set; }
 }

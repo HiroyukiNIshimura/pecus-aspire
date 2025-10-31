@@ -78,6 +78,7 @@ export type { UserListItemResponse } from './models/UserListItemResponse';
 export type { UserResponse } from './models/UserResponse';
 export type { UserResponseUserStatisticsPagedResponse } from './models/UserResponseUserStatisticsPagedResponse';
 export type { UserRoleResponse } from './models/UserRoleResponse';
+export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
 export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAttachmentResponse';

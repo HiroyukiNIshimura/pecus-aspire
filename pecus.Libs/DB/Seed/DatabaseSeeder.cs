@@ -59,7 +59,9 @@ public class DatabaseSeeder
         _logger.LogInformation("Seeding development mock data...");
 
         await SeedOrganizationsAsync();
+        await SeedSkillsAsync();
         await SeedUsersAsync();
+        await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
 
         _logger.LogInformation("Development mock data seeding completed");
@@ -271,6 +273,67 @@ public class DatabaseSeeder
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// スキルのシードデータを投入
+    /// </summary>
+    public async Task SeedSkillsAsync()
+    {
+        var organizations = await _context.Organizations.ToListAsync();
+
+        if (!organizations.Any())
+        {
+            _logger.LogWarning("No organizations found for seeding skills");
+            return;
+        }
+
+        var skillNames = new[]
+        {
+            "C#", ".NET", "JavaScript", "TypeScript", "React", "Vue.js", "Angular",
+            "Python", "Java", "Go", "Rust", "PHP", "Ruby", "Node.js",
+            "SQL", "PostgreSQL", "MongoDB", "Redis", "Elasticsearch",
+            "AWS", "Azure", "Google Cloud", "Docker", "Kubernetes",
+            "Git", "GitHub", "GitLab", "Jenkins", "CI/CD",
+            "HTML", "CSS", "Webpack", "REST API", "GraphQL",
+            "TDD", "OOP", "Design Patterns", "Microservices", "Web API",
+            "プロジェクト管理", "スクラム", "アジャイル", "コミュニケーション",
+            "デザイン", "UI/UX", "Figma", "Adobe XD", "ライティング",
+        };
+
+        int skillsAdded = 0;
+
+        // 各組織にスキルを割り当て
+        foreach (var organization in organizations)
+        {
+            foreach (var skillName in skillNames)
+            {
+                // スキルが既に存在するかチェック
+                var existingSkill = await _context.Skills.FirstOrDefaultAsync(s =>
+                    s.Name == skillName && s.OrganizationId == organization.Id
+                );
+
+                if (existingSkill == null)
+                {
+                    var skill = new Skill
+                    {
+                        Name = skillName,
+                        Description = $"{skillName}スキル",
+                        OrganizationId = organization.Id,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.Skills.Add(skill);
+                    skillsAdded++;
+                }
+            }
+
+            // 組織ごとに保存
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Added {Count} skills for {OrgCount} organizations", skillsAdded, organizations.Count);
     }
 
     /// <summary>
@@ -511,5 +574,83 @@ public class DatabaseSeeder
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
+    }
+
+    /// <summary>
+    /// ユーザーのスキルを割り当て
+    /// </summary>
+    private async Task SeedUserSkillsAsync()
+    {
+        // キャッシュをクリアして再度読み込み
+        _context.ChangeTracker.Clear();
+
+        // admin ユーザーを取得
+        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.LoginId == "admin");
+        if (adminUser == null)
+        {
+            _logger.LogWarning("Admin user not found for seeding user skills");
+            return;
+        }
+
+        var users = await _context.Users.Where(u => u.LoginId != "admin").ToListAsync();
+
+        if (!users.Any())
+        {
+            _logger.LogWarning("No users found for seeding skills");
+            return;
+        }
+
+        int totalUserSkillsAdded = 0;
+
+        foreach (var user in users)
+        {
+            // このユーザーの組織に属するスキルを取得
+            var organizationSkills = await _context.Skills
+                .Where(s => s.OrganizationId == user.OrganizationId && s.IsActive)
+                .ToListAsync();
+
+            if (!organizationSkills.Any())
+            {
+                continue;
+            }
+
+            // すでにスキルが割り当てられているかチェック
+            var existingSkillCount = await _context.UserSkills
+                .Where(us => us.UserId == user.Id)
+                .CountAsync();
+
+            if (existingSkillCount > 0)
+            {
+                continue;
+            }
+
+            // ランダムに1〜5個のスキルを割り当て
+            var skillCount = _random.Next(1, 6);
+            var selectedSkills = organizationSkills.OrderBy(x => _random.Next()).Take(skillCount).ToList();
+
+            foreach (var skill in selectedSkills)
+            {
+                var userSkill = new UserSkill
+                {
+                    UserId = user.Id,
+                    SkillId = skill.Id,
+                    AddedAt = DateTime.UtcNow,
+                    AddedByUserId = adminUser.Id, // admin ユーザーの実際の ID を使用
+                };
+
+                _context.UserSkills.Add(userSkill);
+                totalUserSkillsAdded++;
+            }
+
+            // ユーザーごとに保存
+            if (totalUserSkillsAdded % 50 == 0)
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Added {Count} user skills", totalUserSkillsAdded);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} user skills in total", totalUserSkillsAdded);
     }
 }

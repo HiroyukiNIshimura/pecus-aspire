@@ -267,6 +267,41 @@ builder.AddRedisClient("redis");
 
 ページングはクライアントから `page` のみ受け取り、`pageSize` はサーバー側で固定値を使います（サーバー性能担保のため）。
 
+### メソッド引数の設計ルール
+メソッドシグネチャの可読性と保守性を確保するため、以下のルールを適用してください。
+
+**引数が3個以上の場合の対応**:
+1. **レコード型の使用（推奨）**: 関連する引数をレコード型にまとめてください。これにより呼び出し側でも型安全でドキュメント性が高まります。
+   ```csharp
+   // ❌ 避けるべき
+   public async Task CreateUserAsync(string email, string username, int roleId, bool isActive, string department)
+
+   // ✅ 推奨
+   public record CreateUserRequest(string Email, string Username, int RoleId, bool IsActive, string Department);
+   public async Task CreateUserAsync(CreateUserRequest request)
+   ```
+
+2. **名前付き引数の強制（アルゴリズムの複数引数の場合）**: 複数の同じ型の引数があり、レコード化が不自然な場合は `[CallerArgumentExpression]` 属性を使用して呼び出し元で名前付き引数を強制してください。（`C#10`以上）
+   ```csharp
+   // ページング関数の例
+   public IEnumerable<T> Paginate<T>(
+       IEnumerable<T> source,
+       [CallerArgumentExpression(nameof(page))] int page = 1,
+       [CallerArgumentExpression(nameof(pageSize))] int pageSize = 20)
+   {
+       // 実装
+   }
+
+   // 呼び出し時は名前付き引数が必須：
+   // Paginate(data, page: 2, pageSize: 50);  // ✅
+   // Paginate(data, 2, 50);                   // ❌ コンパイルエラー
+   ```
+
+**規則の適用優先度**:
+- 引数が1〜2個：そのまま（変更不要）
+- 引数が3個以上で関連性がある：レコード型でまとめる
+- 引数が複数の同型パラメータ：`[CallerArgumentExpression]` で名前付き強制
+
 ### Results パターン（コントローラーの戻り値）
 コントローラーのアクションメソッドは `IActionResult` ではなく `Results<T>` を使用してください。これにより型安全性を確保し、OpenAPI/Swagger で正確なレスポンス仕様を生成できます。
 

@@ -18,6 +18,7 @@ interface User {
   email: string;
   isActive: boolean;
   createdAt: string;
+  skills?: Array<{ id: number; name: string }>;
 }
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
@@ -45,6 +46,7 @@ export default async function AdminUsers() {
           email: user.email ?? '',
           isActive: true, // APIレスポンスに isActive がないため、デフォルト true
           createdAt: user.createdAt ?? new Date().toISOString(),
+          skills: user.skills ?? [], // ユーザーのスキル一覧
         }));
         totalCount = responseData.totalCount ?? 0;
         totalPages = responseData.totalPages ?? 1;

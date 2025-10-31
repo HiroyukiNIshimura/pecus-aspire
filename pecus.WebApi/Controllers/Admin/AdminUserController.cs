@@ -17,6 +17,7 @@ namespace Pecus.Controllers.Admin;
 
 /// <summary>
 /// ユーザー管理コントローラー（組織管理者用）
+/// </summary>
 [ApiController]
 [Route("api/admin/users")]
 [Produces("application/json")]
@@ -83,7 +84,8 @@ public class AdminUserController : ControllerBase
                 user.OrganizationId.Value,
                 validatedPage,
                 pageSize,
-                request.IsActive
+                request.IsActive,
+                request.Username
             );
 
             var userResponses = users.Select(u => new UserResponse
@@ -102,6 +104,13 @@ public class AdminUserController : ControllerBase
                         Name = r.Name,
                     })
                     .ToList() ?? new List<UserRoleResponse>(),
+                Skills = u.UserSkills?
+                    .Select(us => new UserSkillResponse
+                    {
+                        Id = us.Skill.Id,
+                        Name = us.Skill.Name,
+                    })
+                    .ToList() ?? new List<UserSkillResponse>(),
                 IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
                 IsActive = u.IsActive
             });
@@ -386,7 +395,8 @@ public class AdminUserController : ControllerBase
                 AvatarType = user.AvatarType,
                 IdentityIconUrl = user.AvatarUrl,
                 CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                Skills = new List<UserSkillResponse>()
             };
 
             return TypedResults.Created($"/api/admin/users/{user.Id}", response);

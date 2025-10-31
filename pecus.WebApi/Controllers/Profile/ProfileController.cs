@@ -82,6 +82,13 @@ public class ProfileController : ControllerBase
                     Name = r.Name,
                 })
                 .ToList() ?? new List<UserRoleResponse>(),
+            Skills = user.UserSkills?
+                .Select(us => new UserSkillResponse
+                {
+                    Id = us.Skill.Id,
+                    Name = us.Skill.Name,
+                })
+                .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
             IsActive = user.IsActive,
         };

@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { UserRoleResponse } from './UserRoleResponse';
+import type { UserSkillResponse } from './UserSkillResponse';
 /**
  * ユーザー情報レスポンス
  */
@@ -35,6 +36,10 @@ export type UserResponse = {
      * ユーザーのロール一覧
      */
     roles?: Array<UserRoleResponse> | null;
+    /**
+     * ユーザーのスキル一覧
+     */
+    skills?: Array<UserSkillResponse> | null;
     /**
      * 管理者権限を持つかどうか
      */
