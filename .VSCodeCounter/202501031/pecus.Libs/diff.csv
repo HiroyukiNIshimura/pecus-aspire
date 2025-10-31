@@ -1,0 +1,76 @@
+"filename", "language", "XML", "C#", "ASP.NET Razor", "JSON", "comment", "blank", "total"
+"d:\github\pecus-aspire\pecus.DbManager\AppHost.cs", "C#", 0, -40, 0, 0, -8, -12, -60
+"d:\github\pecus-aspire\pecus.DbManager\DbInitializer.cs", "C#", 0, -64, 0, 0, -3, -13, -80
+"d:\github\pecus-aspire\pecus.DbManager\DbInitializerHealthCheck.cs", "C#", 0, -25, 0, 0, -3, -4, -32
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20250127000000_AddPasswordResetTokenAndIsActiveToUser.cs", "C#", 0, -39, 0, 0, -3, -7, -49
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025065952_InitialCreate.Designer.cs", "C#", 0, -368, 0, 0, -2, -136, -506
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025065952_InitialCreate.cs", "C#", 0, -319, 0, 0, -3, -36, -358
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025082729_RemoveInvitedByUserIdFromWorkspaceUser.Designer.cs", "C#", 0, -366, 0, 0, -2, -135, -503
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025082729_RemoveInvitedByUserIdFromWorkspaceUser.cs", "C#", 0, -22, 0, 0, -3, -4, -29
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025090329_AddWorkspaceItem.Designer.cs", "C#", 0, -447, 0, 0, -2, -169, -618
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025090329_AddWorkspaceItem.cs", "C#", 0, -98, 0, 0, -3, -12, -113
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025110454_AddTagAndWorkspaceItemTag.Designer.cs", "C#", 0, -531, 0, 0, -2, -201, -734
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025110454_AddTagAndWorkspaceItemTag.cs", "C#", 0, -95, 0, 0, -3, -10, -108
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025122949_AddWorkspaceItemPin.Designer.cs", "C#", 0, -561, 0, 0, -2, -214, -777
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025122949_AddWorkspaceItemPin.cs", "C#", 0, -48, 0, 0, -3, -6, -57
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025131548_AddWorkspaceItemAttachment.Designer.cs", "C#", 0, -619, 0, 0, -2, -236, -857
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251025131548_AddWorkspaceItemAttachment.cs", "C#", 0, -62, 0, 0, -3, -7, -72
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251026020112_AddWorkspaceItemRelation.Designer.cs", "C#", 0, -677, 0, 0, -2, -258, -937
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251026020112_AddWorkspaceItemRelation.cs", "C#", 0, -73, 0, 0, -3, -9, -85
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251026074049_AddSkillAndUserSkill.Designer.cs", "C#", 0, -768, 0, 0, -2, -296, -1066
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251026074049_AddSkillAndUserSkill.cs", "C#", 0, -111, 0, 0, -3, -12, -126
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251028034212_PendingModelChanges.Designer.cs", "C#", 0, -772, 0, 0, -2, -298, -1072
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251028034212_PendingModelChanges.cs", "C#", 0, -68, 0, 0, -3, -10, -81
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251031024919_AddIsActiveToWorkspaceItem.Designer.cs", "C#", 0, -776, 0, 0, -2, -300, -1078
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251031024919_AddIsActiveToWorkspaceItem.cs", "C#", 0, -31, 0, 0, -3, -6, -40
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251031044638_AddIsActiveToSkill.Designer.cs", "C#", 0, -778, 0, 0, -2, -301, -1081
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\20251031044638_AddIsActiveToSkill.cs", "C#", 0, -23, 0, 0, -3, -4, -30
+"d:\github\pecus-aspire\pecus.DbManager\Migrations\ApplicationDbContextModelSnapshot.cs", "C#", 0, -776, 0, 0, -1, -301, -1078
+"d:\github\pecus-aspire\pecus.DbManager\Properties\launchSettings.json", "JSON", 0, 0, 0, -23, 0, -1, -24
+"d:\github\pecus-aspire\pecus.DbManager\appsettings.Development.json", "JSON", 0, 0, 0, -20, 0, -1, -21
+"d:\github\pecus-aspire\pecus.DbManager\appsettings.json", "JSON", 0, 0, 0, -10, 0, -1, -11
+"d:\github\pecus-aspire\pecus.DbManager\pecus.DbManager.csproj", "XML", -22, 0, 0, 0, 0, -5, -27
+"d:\github\pecus-aspire\pecus.Libs\DB\ApplicationDbContext.cs", "C#", 0, 341, 0, 0, 103, 73, 517
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Genre.cs", "C#", 0, 15, 0, 0, 36, 12, 63
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Organization.cs", "C#", 0, 20, 0, 0, 51, 17, 88
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Permission.cs", "C#", 0, 13, 0, 0, 30, 10, 53
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Role.cs", "C#", 0, 13, 0, 0, 30, 10, 53
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Skill.cs", "C#", 0, 17, 0, 0, 42, 14, 73
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Tag.cs", "C#", 0, 14, 0, 0, 31, 10, 55
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\User.cs", "C#", 0, 26, 0, 0, 66, 22, 114
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\UserSkill.cs", "C#", 0, 11, 0, 0, 25, 8, 44
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\Workspace.cs", "C#", 0, 19, 0, 0, 48, 16, 83
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceItem.cs", "C#", 0, 34, 0, 0, 79, 26, 139
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceItemAttachment.cs", "C#", 0, 17, 0, 0, 43, 14, 74
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceItemPin.cs", "C#", 0, 16, 0, 0, 19, 7, 42
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceItemRelation.cs", "C#", 0, 31, 0, 0, 41, 12, 84
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceItemTag.cs", "C#", 0, 11, 0, 0, 25, 8, 44
+"d:\github\pecus-aspire\pecus.Libs\DB\Models\WorkspaceUser.cs", "C#", 0, 12, 0, 0, 27, 9, 48
+"d:\github\pecus-aspire\pecus.Libs\DB\Seed\DatabaseSeeder.cs", "C#", 0, 504, 0, 0, 67, 86, 657
+"d:\github\pecus-aspire\pecus.Libs\Hangfire\Tasks\EmailTasks.cs", "C#", 0, 105, 0, 0, 40, 23, 168
+"d:\github\pecus-aspire\pecus.Libs\Hangfire\Tasks\HangfireTasks.cs", "C#", 0, 110, 0, 0, 44, 25, 179
+"d:\github\pecus-aspire\pecus.Libs\Hangfire\Tasks\ImageTasks.cs", "C#", 0, 127, 0, 0, 28, 17, 172
+"d:\github\pecus-aspire\pecus.Libs\Image\ThumbnailHelper.cs", "C#", 0, 29, 0, 0, 14, 6, 49
+"d:\github\pecus-aspire\pecus.Libs\Mail\Configuration\EmailSettings.cs", "C#", 0, 12, 0, 0, 27, 9, 48
+"d:\github\pecus-aspire\pecus.Libs\Mail\Models\EmailAttachment.cs", "C#", 0, 18, 0, 0, 21, 6, 45
+"d:\github\pecus-aspire\pecus.Libs\Mail\Models\EmailMessage.cs", "C#", 0, 16, 0, 0, 39, 13, 68
+"d:\github\pecus-aspire\pecus.Libs\Mail\Services\EmailService.cs", "C#", 0, 174, 0, 0, 37, 32, 243
+"d:\github\pecus-aspire\pecus.Libs\Mail\Services\IEmailService.cs", "C#", 0, 19, 0, 0, 25, 5, 49
+"d:\github\pecus-aspire\pecus.Libs\Mail\Services\ITemplateService.cs", "C#", 0, 5, 0, 0, 10, 2, 17
+"d:\github\pecus-aspire\pecus.Libs\Mail\Services\RazorTemplateService.cs", "C#", 0, 41, 0, 0, 12, 11, 64
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\Models\PasswordResetEmailModel.cs", "C#", 0, 9, 0, 0, 18, 5, 32
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\Models\PasswordSetupEmailModel.cs", "C#", 0, 10, 0, 0, 21, 6, 37
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\Models\WelcomeEmailModel.cs", "C#", 0, 10, 0, 0, 21, 7, 38
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\_Layout.html.cshtml", "ASP.NET Razor", 0, 0, 40, 0, 4, 1, 45
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\password-reset.html.cshtml", "ASP.NET Razor", 0, 0, 12, 0, 0, 7, 19
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\password-reset.text.cshtml", "ASP.NET Razor", 0, 0, 9, 0, 0, 7, 16
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\password-setup.html.cshtml", "ASP.NET Razor", 0, 0, 21, 0, 0, 8, 29
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\password-setup.text.cshtml", "ASP.NET Razor", 0, 0, 12, 0, 0, 7, 19
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\test-email.html.cshtml", "ASP.NET Razor", 0, 0, 10, 0, 0, 7, 17
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\test-email.text.cshtml", "ASP.NET Razor", 0, 0, 10, 0, 0, 7, 17
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\welcome.html.cshtml", "ASP.NET Razor", 0, 0, 23, 0, 0, 10, 33
+"d:\github\pecus-aspire\pecus.Libs\Mail\Templates\welcome.text.cshtml", "ASP.NET Razor", 0, 0, 16, 0, 0, 8, 24
+"d:\github\pecus-aspire\pecus.Libs\Security\PasswordHasher.cs", "C#", 0, 17, 0, 0, 9, 4, 30
+"d:\github\pecus-aspire\pecus.Libs\SerilogHelper.cs", "C#", 0, 27, 0, 0, 7, 3, 37
+"d:\github\pecus-aspire\pecus.Libs\pecus.Libs.csproj", "XML", 23, 0, 0, 0, 0, 3, 26
+"Total", "-", 1, -6714, 153, -53, 1067, -2412, -7958

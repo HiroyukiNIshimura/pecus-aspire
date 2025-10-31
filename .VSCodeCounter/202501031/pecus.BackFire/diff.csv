@@ -1,0 +1,13 @@
+"filename", "language", "XML", "JSON", "C#", "comment", "blank", "total"
+"d:\github\pecus-aspire\pecus.AppHost\AppHost.cs", "C#", 0, 0, -47, -2, -12, -61
+"d:\github\pecus-aspire\pecus.AppHost\Properties\launchSettings.json", "JSON", 0, -29, 0, 0, -1, -30
+"d:\github\pecus-aspire\pecus.AppHost\appsettings.Development.json", "JSON", 0, -8, 0, 0, -1, -9
+"d:\github\pecus-aspire\pecus.AppHost\appsettings.json", "JSON", 0, -13, 0, 0, -1, -14
+"d:\github\pecus-aspire\pecus.AppHost\pecus.AppHost.csproj", "XML", -23, 0, 0, 0, -1, -24
+"d:\github\pecus-aspire\pecus.BackFire\AllowAllDashboardAuthorizationFilter.cs", "C#", 0, 0, 9, 4, 3, 16
+"d:\github\pecus-aspire\pecus.BackFire\AppHost.cs", "C#", 0, 0, 37, 6, 11, 54
+"d:\github\pecus-aspire\pecus.BackFire\Properties\launchSettings.json", "JSON", 0, 29, 0, 0, 1, 30
+"d:\github\pecus-aspire\pecus.BackFire\appsettings.Development.json", "JSON", 0, 18, 0, 0, 1, 19
+"d:\github\pecus-aspire\pecus.BackFire\appsettings.json", "JSON", 0, 20, 0, 0, 1, 21
+"d:\github\pecus-aspire\pecus.BackFire\pecus.BackFire.csproj", "XML", 21, 0, 0, 0, 1, 22
+"Total", "-", -2, 17, -1, 8, 2, 24
