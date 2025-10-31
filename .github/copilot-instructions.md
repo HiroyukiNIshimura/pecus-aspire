@@ -281,7 +281,7 @@ builder.AddRedisClient("redis");
    public async Task CreateUserAsync(CreateUserRequest request)
    ```
 
-2. **名前付き引数の強制（アルゴリズムの複数引数の場合）**: 複数の同じ型の引数があり、レコード化が不自然な場合は `[CallerArgumentExpression]` 属性を使用して呼び出し元で名前付き引数を強制してください。（`C#10`以上）
+2. **名前付き引数の強制（アルゴリズムの複数引数の場合）**: 複数の同じ型の引数があり、レコード化が不自然な場合は `[CallerArgumentExpression]` 属性を使用して呼び出し元で名前付き引数を強制してください。（`C# 10`以上）
    ```csharp
    // ページング関数の例
    public IEnumerable<T> Paginate<T>(
