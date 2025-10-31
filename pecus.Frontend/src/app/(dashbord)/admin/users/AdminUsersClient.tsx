@@ -24,11 +24,21 @@ interface User {
   skills?: Array<{ id: number; name: string }>;
 }
 
+interface UserStatistics {
+  skillCounts?: Array<{ id: number; name: string; count: number }>;
+  roleCounts?: Array<{ id: number; name: string; count: number }>;
+  activeUserCount?: number;
+  inactiveUserCount?: number;
+  workspaceParticipationCount?: number;
+  noWorkspaceParticipationCount?: number;
+}
+
 interface AdminUsersClientProps {
   initialUsers?: User[];
   initialTotalCount?: number;
   initialTotalPages?: number;
   initialUser?: UserInfo | null;
+  initialStatistics?: UserStatistics | null;
   fetchError?: string | null;
 }
 
@@ -37,6 +47,7 @@ export default function AdminUsersClient({
   initialTotalCount,
   initialTotalPages,
   initialUser,
+  initialStatistics,
   fetchError
 }: AdminUsersClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,6 +56,7 @@ export default function AdminUsersClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
+  const [statistics, setStatistics] = useState<UserStatistics | null>(initialStatistics || null);
   const [isLoading, setIsLoading] = useState(true);
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
@@ -53,7 +65,7 @@ export default function AdminUsersClient({
     const fetchInitialData = async () => {
       if (!initialUsers || initialUsers.length === 0) {
         try {
-          const response = await fetch('/api/admin/users?page=1&activeOnly=false');
+          const response = await fetch('/api/admin/users?page=1&IsActive=true');
           if (response.ok) {
             const data = await response.json();
             if (data && data.data) {
@@ -70,6 +82,7 @@ export default function AdminUsersClient({
               setCurrentPage(data.currentPage || 1);
               setTotalPages(data.totalPages || 1);
               setTotalCount(data.totalCount || 0);
+              setStatistics(data.summary || null);
             }
           }
         } catch (error) {
@@ -86,7 +99,7 @@ export default function AdminUsersClient({
     async ({ selected }: { selected: number }) => {
       try {
         const page = selected + 1;
-        const response = await fetch(`/api/admin/users?page=${page}&activeOnly=false`);
+        const response = await fetch(`/api/admin/users?page=${page}&IsActive=true`);
         if (response.ok) {
           const data = await response.json();
           if (data && data.data) {
@@ -103,6 +116,7 @@ export default function AdminUsersClient({
             setCurrentPage(data.currentPage || 1);
             setTotalPages(data.totalPages || 1);
             setTotalCount(data.totalCount || 0);
+            setStatistics(data.summary || null);
           }
         }
       } catch (error) {
@@ -228,6 +242,95 @@ export default function AdminUsersClient({
                       totalPages={totalPages}
                       onPageChange={handlePageChange}
                     />
+                  </div>
+                )}
+
+                {/* Statistics Section */}
+                {statistics && (
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Skill Summary */}
+                    {statistics.skillCounts && statistics.skillCounts.length > 0 && (
+                      <div className="card bg-base-100 border border-base-300">
+                        <div className="card-body">
+                          <h3 className="card-title text-lg">スキル別</h3>
+                          <div className="space-y-2">
+                            {statistics.skillCounts.slice(0, 5).map((skill) => (
+                              <div key={skill.id} className="flex justify-between items-center">
+                                <span className="text-sm">{skill.name}</span>
+                                <span className="badge badge-primary">{skill.count}</span>
+                              </div>
+                            ))}
+                            {statistics.skillCounts.length > 5 && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm">その他</span>
+                                <span className="badge badge-primary">
+                                  {statistics.skillCounts.slice(5).reduce((sum, skill) => sum + skill.count, 0)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Role Summary */}
+                    {statistics.roleCounts && statistics.roleCounts.length > 0 && (
+                      <div className="card bg-base-100 border border-base-300">
+                        <div className="card-body">
+                          <h3 className="card-title text-lg">ロール別</h3>
+                          <div className="space-y-2">
+                            {statistics.roleCounts.map((role) => (
+                              <div key={role.id} className="flex justify-between items-center">
+                                <span className="text-sm">{role.name}</span>
+                                <span className="badge badge-primary">{role.count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Active Status */}
+                    <div className="card bg-base-100 border border-base-300">
+                      <div className="card-body">
+                        <h3 className="card-title text-lg">ステータス</h3>
+                        <div className="space-y-2">
+                          {statistics.activeUserCount !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">アクティブ</span>
+                              <span className="badge badge-success">{statistics.activeUserCount}</span>
+                            </div>
+                          )}
+                          {statistics.inactiveUserCount !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">非アクティブ</span>
+                              <span className="badge badge-neutral">{statistics.inactiveUserCount}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Workspace Participation */}
+                    <div className="card bg-base-100 border border-base-300">
+                      <div className="card-body">
+                        <h3 className="card-title text-lg">ワークスペース</h3>
+                        <div className="space-y-2">
+                          {statistics.workspaceParticipationCount !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">参加者</span>
+                              <span className="badge badge-info">{statistics.workspaceParticipationCount}</span>
+                            </div>
+                          )}
+                          {statistics.noWorkspaceParticipationCount !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm">非参加者</span>
+                              <span className="badge badge-warning">{statistics.noWorkspaceParticipationCount}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

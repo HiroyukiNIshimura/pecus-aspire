@@ -85,7 +85,8 @@ public class AdminUserController : ControllerBase
                 validatedPage,
                 pageSize,
                 request.IsActive,
-                request.Username
+                request.Username,
+                request.SkillIds
             );
 
             var userResponses = users.Select(u => new UserResponse

@@ -20,4 +20,10 @@ public class GetUsersRequest
     /// </summary>
     [StringLength(100, ErrorMessage = "ユーザー名は100文字以内で指定してください。")]
     public string? Username { get; set; }
+
+    /// <summary>
+    /// スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
+    /// </summary>
+    [MaxLength(10, ErrorMessage = "スキルIDは最大10個までです。")]
+    public List<int>? SkillIds { get; set; }
 }

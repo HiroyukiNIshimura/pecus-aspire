@@ -21,18 +21,28 @@ interface User {
   skills?: Array<{ id: number; name: string }>;
 }
 
+interface UserStatistics {
+  skillCounts?: Array<{ id: number; name: string; count: number }>;
+  roleCounts?: Array<{ id: number; name: string; count: number }>;
+  activeUserCount?: number;
+  inactiveUserCount?: number;
+  workspaceParticipationCount?: number;
+  noWorkspaceParticipationCount?: number;
+}
+
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminUsers() {
   let users: User[] = [];
   let totalCount: number = 0;
   let totalPages: number = 1;
+  let statistics: UserStatistics | null = null;
   let userInfo: UserInfo | null = null;
   let fetchError: string | null = null;
 
   try {
     // Server Actions を使用してデータ取得
     const [usersResult, userResult] = await Promise.all([
-      getUsers(1, undefined, false), // 全ユーザー取得（アクティブ・非アクティブ両方）
+      getUsers(1, undefined, true), // 全ユーザー取得（アクティブ・非アクティブ両方）
       getCurrentUser(),
     ]);
 
@@ -50,6 +60,7 @@ export default async function AdminUsers() {
         }));
         totalCount = responseData.totalCount ?? 0;
         totalPages = responseData.totalPages ?? 1;
+        statistics = responseData.summary ?? null;
       }
     } else {
       // エラーコード方式で返す
@@ -88,6 +99,7 @@ export default async function AdminUsers() {
       initialTotalCount={totalCount}
       initialTotalPages={totalPages}
       initialUser={userInfo}
+      initialStatistics={statistics}
       fetchError={fetchError}
     />
   );

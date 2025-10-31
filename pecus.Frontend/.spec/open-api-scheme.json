@@ -146,6 +146,19 @@
               "minLength": 0,
               "type": "string"
             }
+          },
+          {
+            "name": "SkillIds",
+            "in": "query",
+            "description": "スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）",
+            "schema": {
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
           }
         ],
         "responses": {

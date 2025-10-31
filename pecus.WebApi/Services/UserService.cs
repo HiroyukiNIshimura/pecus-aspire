@@ -142,10 +142,11 @@ public class UserService
     /// <code>
     /// await GetUsersByOrganizationPagedAsync(
     ///     organizationId: 1, 
-    ///  page: 1, 
+    ///     page: 1, 
     ///     pageSize: 10, 
     ///     isActive: true, 
-    ///     username: "admin"
+    ///     username: "admin",
+    ///     skillIds: new List&lt;int&gt; { 1, 2, 3 }
     /// )
     /// </code>
     /// </remarks>
@@ -153,24 +154,31 @@ public class UserService
         int organizationId,
         int page,
         int pageSize,
-        bool? isActive = null,
-        string? username = null
+      bool? isActive = null,
+        string? username = null,
+        List<int>? skillIds = null
     )
     {
-        var query = _context
-            .Users.Include(u => u.Roles)
+  var query = _context
+    .Users.Include(u => u.Roles)
             .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
             .Where(u => u.OrganizationId == organizationId)
             .AsQueryable();
 
         if (isActive.HasValue)
-        {
-            query = query.Where(u => u.IsActive == isActive.Value);
+     {
+       query = query.Where(u => u.IsActive == isActive.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(username))
+   {
+   query = query.Where(u => u.Username.StartsWith(username));
+ }
+
+        if (skillIds != null && skillIds.Any())
         {
-            query = query.Where(u => u.Username.StartsWith(username));
+       // 指定されたスキルをすべて持つユーザーを検索
+            query = query.Where(u => skillIds.All(skillId => u.UserSkills.Any(us => us.SkillId == skillId)));
         }
 
         query = query.OrderBy(u => u.Id);
@@ -178,7 +186,7 @@ public class UserService
         var totalCount = await query.CountAsync();
         var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-        return (users, totalCount);
+ return (users, totalCount);
     }
 
     /// <summary>

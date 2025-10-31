@@ -19,6 +19,7 @@ export class AdminUserService {
      * @param pageSize
      * @param isActive アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
      * @param username ユーザー名による前方一致検索（オプション）
+     * @param skillIds スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
      * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
@@ -27,6 +28,7 @@ export class AdminUserService {
         pageSize?: number,
         isActive?: boolean,
         username?: string,
+        skillIds?: Array<number>,
     ): CancelablePromise<UserResponseUserStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -36,6 +38,7 @@ export class AdminUserService {
                 'PageSize': pageSize,
                 'IsActive': isActive,
                 'Username': username,
+                'SkillIds': skillIds,
             },
             errors: {
                 404: `組織が見つかりません`,
