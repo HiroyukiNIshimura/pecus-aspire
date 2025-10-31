@@ -39,6 +39,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [genres, setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -289,90 +290,114 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
             })()}
 
             {/* Filter Section */}
-            <div className="card bg-base-100 shadow-xl">
+            <div className="card bg-base-100 shadow-xl mb-6">
               <div className="card-body">
-                <h2 className="card-title mb-4">フィルター</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {/* Genre Filter */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">ジャンル</span>
-                    </label>
-                    <select
-                      className="select select-bordered w-full"
-                      value={filterGenreId ?? ''}
-                      onChange={(e) => {
-                        setFilterGenreId(e.target.value ? parseInt(e.target.value) : null);
-                      }}
-                    >
-                      <option value="">すべて</option>
-                      {genres.map((genre) => (
-                        <option key={genre.id} value={genre.id}>
-                          {genre.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div
+                  className="flex items-center justify-between cursor-pointer py-2"
+                  onClick={() => setFilterOpen(!filterOpen)}
+                >
+                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterGenreId !== null || filterIsActive !== true) ? 'text-success' : ''}`}>フィルター</span>
+                  <svg
+                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {filterOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    ) : (
+                      <>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </>
+                    )}
+                  </svg>
+                </div>
 
-                  {/* Active Status Filter */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">ステータス</span>
-                    </label>
-                    <div className="flex gap-4 items-center h-12">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          className="radio radio-sm"
-                          checked={filterIsActive === true}
-                          onChange={() => {
-                            setFilterIsActive(true);
+                {filterOpen && (
+                  <div className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {/* Genre Filter */}
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">ジャンル</span>
+                        </label>
+                        <select
+                          className="select select-bordered w-full"
+                          value={filterGenreId ?? ''}
+                          onChange={(e) => {
+                            setFilterGenreId(e.target.value ? parseInt(e.target.value) : null);
                           }}
-                        />
-                        <span className="text-sm">アクティブのみ</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          className="radio radio-sm"
-                          checked={filterIsActive === false}
-                          onChange={() => {
-                            setFilterIsActive(false);
-                          }}
-                        />
-                        <span className="text-sm">非アクティブのみ</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          className="radio radio-sm"
-                          checked={filterIsActive === null}
-                          onChange={() => {
-                            setFilterIsActive(null);
-                          }}
-                        />
-                        <span className="text-sm">すべて</span>
-                      </label>
+                        >
+                          <option value="">すべて</option>
+                          {genres.map((genre) => (
+                            <option key={genre.id} value={genre.id}>
+                              {genre.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Active Status Filter */}
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">ステータス</span>
+                        </label>
+                        <div className="flex gap-4 items-center h-12">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === true}
+                              onChange={() => {
+                                setFilterIsActive(true);
+                              }}
+                            />
+                            <span className="text-sm">アクティブのみ</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === false}
+                              onChange={() => {
+                                setFilterIsActive(false);
+                              }}
+                            />
+                            <span className="text-sm">非アクティブのみ</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === null}
+                              onChange={() => {
+                                setFilterIsActive(null);
+                              }}
+                            />
+                            <span className="text-sm">すべて</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="flex gap-2 pt-2 border-t border-base-300">
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setFilterGenreId(null);
+                          setFilterIsActive(true);
+                        }}
+                      >
+                        リセット
+                      </button>
                     </div>
                   </div>
-                </div>
-
-                {/* Reset Button */}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={() => {
-                      setFilterGenreId(null);
-                      setFilterIsActive(true);
-                    }}
-                  >
-                    リセット
-                  </button>
-                </div>
+                )}
               </div>
             </div>
 
