@@ -3,17 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * タグ詳細レスポンス
+ * タグリストアイテムレスポンス
  */
-export type TagDetailResponse = {
+export type TagListItemResponse = {
     /**
      * タグID
      */
     id?: number;
-    /**
-     * 組織ID
-     */
-    organizationId?: number;
     /**
      * タグ名
      */
@@ -23,17 +19,9 @@ export type TagDetailResponse = {
      */
     createdAt?: string;
     /**
-     * 作成者ユーザーID
-     */
-    createdByUserId?: number;
-    /**
      * 更新日時
      */
     updatedAt?: string | null;
-    /**
-     * 更新者ユーザーID
-     */
-    updatedByUserId?: number | null;
     /**
      * アクティブ状態
      */

@@ -70,6 +70,8 @@ export type { SkillUserCountResponse } from './models/SkillUserCountResponse';
 export type { SuccessResponse } from './models/SuccessResponse';
 export type { TagDetailResponse } from './models/TagDetailResponse';
 export type { TagInfoResponse } from './models/TagInfoResponse';
+export type { TagListItemResponse } from './models/TagListItemResponse';
+export type { TagListItemResponseObjectPagedResponse } from './models/TagListItemResponseObjectPagedResponse';
 export type { TagResponse } from './models/TagResponse';
 export type { UpdateEmailRequest } from './models/UpdateEmailRequest';
 export type { UpdateGenreRequest } from './models/UpdateGenreRequest';
@@ -103,6 +105,7 @@ export type { WorkspaceUserResponse } from './models/WorkspaceUserResponse';
 
 export { AdminOrganizationService } from './services/AdminOrganizationService';
 export { AdminSkillService } from './services/AdminSkillService';
+export { AdminTagService } from './services/AdminTagService';
 export { AdminUserService } from './services/AdminUserService';
 export { AdminWorkspaceService } from './services/AdminWorkspaceService';
 export { BackendGenreService } from './services/BackendGenreService';
