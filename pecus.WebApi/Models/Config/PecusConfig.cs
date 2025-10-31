@@ -21,6 +21,11 @@ namespace Pecus.Models.Config
         public PaginationSettings Pagination { get; set; } = new();
 
         /// <summary>
+        /// 制限設定
+        /// </summary>
+        public LimitsSettings Limits { get; set; } = new();
+
+        /// <summary>
         /// ファイルアップロード設定
         /// </summary>
         public FileUploadSettings FileUpload { get; set; } = new();
@@ -78,6 +83,22 @@ namespace Pecus.Models.Config
         /// ページサイズ
         /// </summary>
         public int DefaultPageSize { get; set; } = 20;
+    }
+
+    /// <summary>
+    /// 制限設定
+    /// </summary>
+    public class LimitsSettings
+    {
+        /// <summary>
+        /// 組織あたりの最大タグ数
+        /// </summary>
+        public int MaxTagsPerOrganization { get; set; } = 100;
+
+        /// <summary>
+        /// 組織あたりの最大スキル数
+        /// </summary>
+        public int MaxSkillsPerOrganization { get; set; } = 100;
     }
 
     /// <summary>

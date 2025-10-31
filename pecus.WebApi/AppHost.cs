@@ -63,6 +63,7 @@ builder.Services.AddScoped<WorkspaceItemRelationService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();
+builder.Services.AddScoped<SkillService>();
 builder.Services.AddScoped<MasterDataService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）

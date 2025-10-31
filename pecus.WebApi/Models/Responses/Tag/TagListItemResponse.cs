@@ -1,19 +1,14 @@
 namespace Pecus.Models.Responses.Tag;
 
 /// <summary>
-/// タグ詳細レスポンス
+/// タグリストアイテムレスポンス
 /// </summary>
-public class TagDetailResponse
+public class TagListItemResponse
 {
     /// <summary>
     /// タグID
     /// </summary>
     public int Id { get; set; }
-
-    /// <summary>
-    /// 組織ID
-    /// </summary>
-    public int OrganizationId { get; set; }
 
     /// <summary>
     /// タグ名
@@ -26,19 +21,9 @@ public class TagDetailResponse
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// 作成者ユーザーID
-    /// </summary>
-    public int CreatedByUserId { get; set; }
-
-    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// 更新者ユーザーID
-    /// </summary>
-    public int? UpdatedByUserId { get; set; }
 
     /// <summary>
     /// アクティブ状態

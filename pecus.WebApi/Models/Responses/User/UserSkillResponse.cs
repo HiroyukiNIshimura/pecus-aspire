@@ -6,7 +6,7 @@
 public class UserSkillResponse
 {
     /// <summary>
- /// スキルID
+    /// スキルID
     /// </summary>
     public int Id { get; set; }
 

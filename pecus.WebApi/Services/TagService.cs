@@ -24,8 +24,8 @@ public class TagService
     /// タグ作成
     /// </summary>
     public async Task<Tag> CreateTagAsync(
-        int organizationId,
         CreateTagRequest request,
+        int organizationId,
         int createdByUserId
     )
     {
@@ -52,14 +52,11 @@ public class TagService
             CreatedByUserId = createdByUserId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            IsActive = true,
         };
 
         _context.Tags.Add(tag);
         await _context.SaveChangesAsync();
-
-        // 作成後、ナビゲーションプロパティを読み込む
-        await _context.Entry(tag).Reference(t => t.Organization).LoadAsync();
-        await _context.Entry(tag).Reference(t => t.CreatedByUser).LoadAsync();
 
         _logger.LogInformation(
             "タグを作成しました。TagId: {TagId}, Name: {Name}, OrganizationId: {OrganizationId}",
@@ -69,6 +66,17 @@ public class TagService
         );
 
         return tag;
+    }
+
+    /// <summary>
+    /// タグID取得
+    /// </summary>
+    public async Task<Tag?> GetTagByIdAsync(int tagId)
+    {
+        return await _context.Tags
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.WorkspaceItemTags)
+            .FirstOrDefaultAsync(t => t.Id == tagId);
     }
 
     /// <summary>
@@ -87,13 +95,46 @@ public class TagService
     }
 
     /// <summary>
+    /// 組織のタグ一覧取得（ページネーション）
+    /// </summary>
+    public async Task<(List<Tag> tags, int totalCount)> GetTagsByOrganizationPagedAsync(
+        int organizationId,
+        int page,
+        int pageSize,
+        bool? isActive = null
+    )
+    {
+        var query = _context
+            .Tags.Where(t => t.OrganizationId == organizationId);
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(t => t.IsActive == isActive.Value);
+        }
+
+        query = query.Include(t => t.CreatedByUser).Include(t => t.WorkspaceItemTags);
+
+        var totalCount = await query.CountAsync();
+
+        var tags = await query
+            .OrderBy(t => t.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (tags, totalCount);
+    }
+
+    /// <summary>
     /// タグ更新
     /// </summary>
-    public async Task<Tag> UpdateTagAsync(int organizationId, int tagId, UpdateTagRequest request)
+    public async Task<Tag> UpdateTagAsync(
+        int tagId,
+        UpdateTagRequest request,
+        int? updatedByUserId = null
+    )
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t =>
-            t.Id == tagId && t.OrganizationId == organizationId
-        );
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
 
         if (tag == null)
         {
@@ -102,7 +143,7 @@ public class TagService
 
         // 同じ組織内で同じタグ名が存在しないか確認（自分自身は除外）
         var existingTag = await _context.Tags.FirstOrDefaultAsync(t =>
-            t.OrganizationId == organizationId && t.Name == request.Name && t.Id != tagId
+            t.OrganizationId == tag.OrganizationId && t.Name == request.Name && t.Id != tagId
         );
         if (existingTag != null)
         {
@@ -111,13 +152,10 @@ public class TagService
 
         tag.Name = request.Name;
         tag.UpdatedAt = DateTime.UtcNow;
+        tag.UpdatedByUserId = updatedByUserId;
 
+        _context.Tags.Update(tag);
         await _context.SaveChangesAsync();
-
-        // 更新後、ナビゲーションプロパティを読み込む
-        await _context.Entry(tag).Reference(t => t.Organization).LoadAsync();
-        await _context.Entry(tag).Reference(t => t.CreatedByUser).LoadAsync();
-        await _context.Entry(tag).Collection(t => t.WorkspaceItemTags).LoadAsync();
 
         _logger.LogInformation(
             "タグを更新しました。TagId: {TagId}, Name: {Name}",
@@ -131,15 +169,13 @@ public class TagService
     /// <summary>
     /// タグ削除
     /// </summary>
-    public async Task DeleteTagAsync(int organizationId, int tagId)
+    public async Task<bool> DeleteTagAsync(int tagId)
     {
-        var tag = await _context.Tags.FirstOrDefaultAsync(t =>
-            t.Id == tagId && t.OrganizationId == organizationId
-        );
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
 
         if (tag == null)
         {
-            throw new NotFoundException("タグが見つかりません。");
+            return false;
         }
 
         _context.Tags.Remove(tag);
@@ -150,5 +186,80 @@ public class TagService
             tag.Id,
             tag.Name
         );
+
+        return true;
+    }
+
+    /// <summary>
+    /// タグ無効化
+    /// </summary>
+    public async Task<bool> DeactivateTagAsync(int tagId, int? updatedByUserId = null)
+    {
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        if (tag == null)
+        {
+            return false;
+        }
+
+        tag.IsActive = false;
+        tag.UpdatedAt = DateTime.UtcNow;
+        tag.UpdatedByUserId = updatedByUserId;
+
+        _context.Tags.Update(tag);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "タグを無効化しました。TagId: {TagId}, Name: {Name}",
+            tag.Id,
+            tag.Name
+        );
+
+        return true;
+    }
+
+    /// <summary>
+    /// タグ有効化
+    /// </summary>
+    public async Task<bool> ActivateTagAsync(int tagId, int? updatedByUserId = null)
+    {
+        var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+        if (tag == null)
+        {
+            return false;
+        }
+
+        tag.IsActive = true;
+        tag.UpdatedAt = DateTime.UtcNow;
+        tag.UpdatedByUserId = updatedByUserId;
+
+        _context.Tags.Update(tag);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "タグを有効化しました。TagId: {TagId}, Name: {Name}",
+            tag.Id,
+            tag.Name
+        );
+
+        return true;
+    }
+
+    /// <summary>
+    /// 組織のアクティブなタグ一覧取得
+    /// </summary>
+    public async Task<List<Tag>> GetActiveTagsByOrganizationAsync(int organizationId)
+    {
+        return await _context
+            .Tags.Where(t => t.OrganizationId == organizationId && t.IsActive)
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 組織内のタグ総数取得
+    /// </summary>
+    public async Task<int> GetTagCountByOrganizationAsync(int organizationId)
+    {
+        return await _context.Tags.CountAsync(t => t.OrganizationId == organizationId);
     }
 }

@@ -35,6 +35,16 @@ public class Tag
     /// </summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// 更新者ユーザーID
+    /// </summary>
+    public int? UpdatedByUserId { get; set; }
+
+    /// <summary>
+    /// アクティブ状態
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+
     // Navigation Properties
     /// <summary>
     /// 組織（ナビゲーションプロパティ）
@@ -45,6 +55,11 @@ public class Tag
     /// 作成者ユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User? CreatedByUser { get; set; }
+
+    /// <summary>
+    /// 更新者ユーザー（ナビゲーションプロパティ）
+    /// </summary>
+    public User? UpdatedByUser { get; set; }
 
     /// <summary>
     /// このタグが付与されているアイテムとの関連（多対多）
