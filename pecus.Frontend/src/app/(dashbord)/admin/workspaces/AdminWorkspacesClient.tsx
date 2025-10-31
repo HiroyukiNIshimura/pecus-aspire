@@ -135,18 +135,18 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
               };
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   {/* Total Workspaces */}
                   <div className="card bg-base-100 shadow-xl border border-base-300">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">総ワークスペース数</h3>
-                        <span className="badge badge-primary">全体</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">総ワークスペース数</h3>
+                        <span className="badge badge-primary badge-sm">全体</span>
                       </div>
-                      <div className="text-4xl font-bold text-primary mb-2">
+                      <div className="text-3xl font-bold text-primary mb-1">
                         {stats.totalWorkspaceCount}
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         登録済みワークスペース
                       </div>
                     </div>
@@ -154,20 +154,20 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
                   {/* Active Workspaces */}
                   <div className="card bg-base-100 shadow-xl border border-success border-opacity-30">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">アクティブ</h3>
-                        <span className="badge badge-success">稼働中</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">アクティブ</h3>
+                        <span className="badge badge-success badge-sm">稼働中</span>
                       </div>
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <div className="text-4xl font-bold text-success">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <div className="text-3xl font-bold text-success">
                           {stats.activeWorkspaceCount}
                         </div>
-                        <span className="text-sm text-base-content opacity-70">
+                        <span className="text-xs text-base-content opacity-70">
                           / {stats.totalWorkspaceCount}
                         </span>
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.activeWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が稼働中`
                           : '稼働中のワークスペースなし'}
@@ -177,20 +177,20 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
                   {/* Inactive Workspaces */}
                   <div className="card bg-base-100 shadow-xl border border-warning border-opacity-30">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">非アクティブ</h3>
-                        <span className="badge badge-warning">停止中</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">非アクティブ</h3>
+                        <span className="badge badge-warning badge-sm">停止中</span>
                       </div>
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <div className="text-4xl font-bold text-warning">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <div className="text-3xl font-bold text-warning">
                           {stats.inactiveWorkspaceCount}
                         </div>
-                        <span className="text-sm text-base-content opacity-70">
+                        <span className="text-xs text-base-content opacity-70">
                           / {stats.totalWorkspaceCount}
                         </span>
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.inactiveWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が停止中`
                           : '非アクティブなワークスペースなし'}
@@ -200,15 +200,15 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
                   {/* Unique Members */}
                   <div className="card bg-base-100 shadow-xl border border-info border-opacity-30">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">総メンバー数</h3>
-                        <span className="badge badge-info">ユニーク</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">総メンバー数</h3>
+                        <span className="badge badge-info badge-sm">ユニーク</span>
                       </div>
-                      <div className="text-4xl font-bold text-info mb-2">
+                      <div className="text-3xl font-bold text-info mb-1">
                         {stats.uniqueMemberCount}
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         参加者（重複なし）
                       </div>
                     </div>
@@ -216,15 +216,15 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
                   {/* Average Members */}
                   <div className="card bg-base-100 shadow-xl border border-secondary border-opacity-30">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">平均メンバー数</h3>
-                        <span className="badge badge-secondary">統計</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">平均メンバー数</h3>
+                        <span className="badge badge-secondary badge-sm">統計</span>
                       </div>
-                      <div className="text-4xl font-bold text-secondary mb-2">
+                      <div className="text-3xl font-bold text-secondary mb-1">
                         {(stats.averageMembersPerWorkspace || 0).toFixed(1)}
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         ワークスペースあたり
                       </div>
                     </div>
@@ -232,15 +232,15 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
                   {/* Recent Workspaces */}
                   <div className="card bg-base-100 shadow-xl border border-accent border-opacity-30">
-                    <div className="card-body p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="card-title text-lg">最近作成</h3>
-                        <span className="badge badge-accent">30日以内</span>
+                    <div className="card-body p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="card-title text-base">最近作成</h3>
+                        <span className="badge badge-accent badge-sm">30日以内</span>
                       </div>
-                      <div className="text-4xl font-bold text-accent mb-2">
+                      <div className="text-3xl font-bold text-accent mb-1">
                         {stats.recentWorkspaceCount}
                       </div>
-                      <div className="text-sm text-base-content opacity-70">
+                      <div className="text-xs text-base-content opacity-70">
                         過去30日間に作成
                       </div>
                     </div>
