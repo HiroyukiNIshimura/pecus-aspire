@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
 import Pagination from "@/components/common/Pagination";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 interface UserInfo {
   id: number;
@@ -50,6 +51,9 @@ export default function AdminUsersClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { showLoading, withDelayedLoading } = useDelayedLoading();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -67,31 +71,44 @@ export default function AdminUsersClient({
           console.error('Failed to fetch initial users:', error);
         }
       }
+      setIsLoading(false);
     };
 
     fetchInitialData();
   }, [initialUsers]);
 
-  const handlePageChange = async ({ selected }: { selected: number }) => {
-    try {
-      const page = selected + 1;
-      const response = await fetch(`/api/admin/users?page=${page}`);
-      if (response.ok) {
-        const data: UserListResponse = await response.json();
-        setUsers(data.data || []);
-        setCurrentPage(data.currentPage || 1);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
+  const handlePageChange = withDelayedLoading(
+    async ({ selected }: { selected: number }) => {
+      try {
+        const page = selected + 1;
+        const response = await fetch(`/api/admin/users?page=${page}`);
+        if (response.ok) {
+          const data: UserListResponse = await response.json();
+          setUsers(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
       }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
     }
-  };
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Loading Overlay */}
+      {(isLoading || showLoading) && (
+        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <p className="text-lg">{isLoading ? '初期化中...' : '検索中...'}</p>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading || showLoading} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}

@@ -1,6 +1,7 @@
 import AdminUsersClient from "./AdminUsersClient";
 import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
+import type { ApiErrorResponse } from "@/types/errors";
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +43,13 @@ export default async function AdminUsers() {
       totalCount = responseData?.totalCount ?? 0;
       totalPages = responseData?.totalPages ?? 1;
     } else {
-      fetchError = `ユーザー情報の取得に失敗しました (${usersResult.error})`;
+      // エラーコード方式で返す
+      const error: ApiErrorResponse = {
+        code: "FETCH_ERROR",
+        message: `ユーザー情報の取得に失敗しました: ${usersResult.error}`,
+        statusCode: 500,
+      };
+      fetchError = JSON.stringify(error);
     }
 
     // 現在のユーザー情報の処理
@@ -59,7 +66,13 @@ export default async function AdminUsers() {
     }
   } catch (err: any) {
     console.error('AdminUsers: failed to fetch users or user info', err);
-    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
+    // エラーコード方式で返す
+    const error: ApiErrorResponse = {
+      code: "UNKNOWN_ERROR",
+      message: `データの取得に失敗しました: ${err.message ?? String(err)}`,
+      statusCode: 500,
+    };
+    fetchError = JSON.stringify(error);
   }
 
   return (

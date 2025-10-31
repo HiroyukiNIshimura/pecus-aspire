@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { login } from "@/actions/auth";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 export default function SignInPage() {
   return (
@@ -18,32 +19,35 @@ const LoginForm = () => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const { showLoading, withDelayedLoading } = useDelayedLoading();
 
-    try {
-      const result = await login({
-        loginIdentifier: id,
-        password,
-      });
+  const onSubmit = useCallback(
+    withDelayedLoading(
+      async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setError(null);
 
-      if (result.success) {
-        router.push('/');
-        return;
+        try {
+          const result = await login({
+            loginIdentifier: id,
+            password,
+          });
+
+          if (result.success) {
+            router.push('/');
+            return;
+          }
+
+          setError(result.error || 'ログイン認証に失敗しました。');
+        } catch (err) {
+          console.error(err);
+          setError('ログイン認証に失敗しました。');
+        }
       }
-
-      setError(result.error || 'ログイン認証に失敗しました。');
-    } catch (err) {
-      console.error(err);
-      setError('ログイン認証に失敗しました。');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    ),
+    [id, password, withDelayedLoading]
+  );
 
   return (
     <div className="font-sans flex items-center justify-center min-h-screen p-8 pb-20 sm:p-20">
@@ -95,9 +99,9 @@ const LoginForm = () => {
               <button
                 className="btn btn-accent w-full"
                 type="submit"
-                disabled={isLoading}
+                disabled={showLoading}
               >
-                {isLoading ? 'ログイン中...' : 'ログイン'}
+                {showLoading ? 'ログイン中...' : 'ログイン'}
               </button>
             </form>
             <div className="text-center mt-4">

@@ -1,6 +1,7 @@
 import AdminClient from "./AdminClient";
 import { getOrganization } from "@/actions/admin/organization";
 import { getCurrentUser } from "@/actions/profile";
+import type { ApiErrorResponse } from "@/types/errors";
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,13 @@ export default async function AdminPage() {
     if (orgResult.success) {
       organization = orgResult.data as OrganizationData;
     } else {
-      fetchError = `組織情報の取得に失敗しました (${orgResult.error})`;
+      // エラーコード方式で返す
+      const error: ApiErrorResponse = {
+        code: "FETCH_ERROR",
+        message: `組織情報の取得に失敗しました: ${orgResult.error}`,
+        statusCode: 500,
+      };
+      fetchError = JSON.stringify(error);
     }
 
     // ユーザー情報の処理
@@ -61,7 +68,13 @@ export default async function AdminPage() {
     }
   } catch (err: any) {
     console.error('AdminPage: failed to fetch organization or user', err);
-    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
+    // エラーコード方式で返す
+    const error: ApiErrorResponse = {
+      code: "UNKNOWN_ERROR",
+      message: `データの取得に失敗しました: ${err.message ?? String(err)}`,
+      statusCode: 500,
+    };
+    fetchError = JSON.stringify(error);
   }
 
   return (

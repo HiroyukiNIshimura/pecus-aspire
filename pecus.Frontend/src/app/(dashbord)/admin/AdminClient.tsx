@@ -5,6 +5,8 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import { useRouter } from "next/navigation";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { isAuthenticationError, type ApiErrorResponse } from "@/types/errors";
 
 interface OrganizationData {
   id?: number | string;
@@ -41,12 +43,15 @@ export default function AdminClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser);
   const [organization, setOrganization] = useState<OrganizationData | null>(initialOrganization);
-  const [loading, setLoading] = useState(false);
-  const [clientError, setClientError] = useState<string | null>(fetchError ?? null);
+  const [clientError, setClientError] = useState<ApiErrorResponse | null>(
+    fetchError ? JSON.parse(fetchError) : null
+  );
+
+  const { showLoading } = useDelayedLoading();
 
   // 認証エラーが検出されたらログインページにリダイレクト
   useEffect(() => {
-    if (clientError?.includes("認証が切れました")) {
+    if (clientError && isAuthenticationError(clientError)) {
       router.push("/signin");
     }
   }, [clientError, router]);
@@ -54,7 +59,7 @@ export default function AdminClient({
   return (
     <div className="flex flex-col min-h-screen">
       {/* 全体ローディングオーバーレイ（クライアント側でページブロックする場合） */}
-      {loading && (
+      {showLoading && (
         <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -67,7 +72,7 @@ export default function AdminClient({
         userInfo={userInfo}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        loading={loading}
+        loading={showLoading}
       />
 
       <div className="flex flex-1">
@@ -89,7 +94,7 @@ export default function AdminClient({
               <div className="alert alert-error mb-4">
                 <div>
                   <span>組織情報の取得に失敗しました: </span>
-                  <span className="font-mono">{clientError}</span>
+                  <span className="font-mono">{clientError.message || `エラーコード: ${clientError.code}`}</span>
                 </div>
               </div>
             ) : (

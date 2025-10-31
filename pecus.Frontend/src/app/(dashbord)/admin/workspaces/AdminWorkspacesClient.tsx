@@ -7,6 +7,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
 import Pagination from "@/components/common/Pagination";
 import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 interface UserInfo {
   id: number;
@@ -30,7 +31,6 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces || []);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
@@ -40,6 +40,8 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [genres, setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const { showLoading, withDelayedLoading } = useDelayedLoading();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -72,66 +74,64 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
     [filterGenreId, filterIsActive]
   );
 
-  const handlePageChange = async ({ selected }: { selected: number }) => {
-    try {
-      setIsFilterLoading(true);
-      const page = selected + 1; // react-paginateは0-based
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      if (filterIsActive !== null) {
-        params.append('IsActive', filterIsActive.toString());
+  const handlePageChange = withDelayedLoading(
+    async ({ selected }: { selected: number }) => {
+      try {
+        const page = selected + 1; // react-paginateは0-based
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        if (filterIsActive !== null) {
+          params.append('IsActive', filterIsActive.toString());
+        }
+        if (filterGenreId !== null) {
+          params.append('GenreId', filterGenreId.toString());
+        }
+        const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+        if (response.ok) {
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          setWorkspaces(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch workspaces:', error);
       }
-      if (filterGenreId !== null) {
-        params.append('GenreId', filterGenreId.toString());
-      }
-      const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
-      if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
-        setWorkspaces(data.data || []);
-        setCurrentPage(data.currentPage || 1);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
-        setStatistics(data.summary || null);
-      }
-    } catch (error) {
-      console.error('Failed to fetch workspaces:', error);
-    } finally {
-      setIsFilterLoading(false);
     }
-  };
+  );
 
   const handleFilterChange = useCallback(async () => {
     setCurrentPage(1);
-    try {
-      setIsFilterLoading(true);
-      const params = new URLSearchParams();
-      params.append('page', '1');
-      if (filterIsActive !== null) {
-        params.append('IsActive', filterIsActive.toString());
+    await withDelayedLoading(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        if (filterIsActive !== null) {
+          params.append('IsActive', filterIsActive.toString());
+        }
+        if (filterGenreId !== null) {
+          params.append('GenreId', filterGenreId.toString());
+        }
+        const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+        if (response.ok) {
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          setWorkspaces(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch workspaces:', error);
       }
-      if (filterGenreId !== null) {
-        params.append('GenreId', filterGenreId.toString());
-      }
-      const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
-      if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
-        setWorkspaces(data.data || []);
-        setCurrentPage(data.currentPage || 1);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
-        setStatistics(data.summary || null);
-      }
-    } catch (error) {
-      console.error('Failed to fetch workspaces:', error);
-    } finally {
-      setIsFilterLoading(false);
-    }
-  }, [filterIsActive, filterGenreId]);
+    })();
+  }, [filterIsActive, filterGenreId, withDelayedLoading]);
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Loading Overlay */}
-      {(isLoading || isFilterLoading) && (
+      {(isLoading || showLoading) && (
         <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -141,7 +141,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
       )}
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading || isFilterLoading} />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading || showLoading} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
