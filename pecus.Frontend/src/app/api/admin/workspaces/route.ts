@@ -7,10 +7,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const activeOnly = searchParams.get('activeOnly') === 'true';
+    const isActive = searchParams.get('IsActive') === 'true' ? true : searchParams.get('IsActive') === 'false' ? false : undefined;
+    const genreId = searchParams.get('GenreId') ? parseInt(searchParams.get('GenreId')!) : undefined;
 
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, activeOnly);
+    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
 
     return NextResponse.json(response);
   } catch (error) {

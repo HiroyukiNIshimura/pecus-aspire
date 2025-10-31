@@ -1,7 +1,8 @@
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
 import { getWorkspaces } from "@/actions/admin/workspace";
 import { getCurrentUser } from "@/actions/profile";
-import { WorkspaceListItemResponse, WorkspaceStatistics } from '@/connectors/api/pecus';
+import { getGenres } from "@/actions/master";
+import { WorkspaceListItemResponse, WorkspaceStatistics, MasterGenreResponse } from '@/connectors/api/pecus';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,14 +21,16 @@ export default async function AdminWorkspaces() {
   let totalPages: number = 1;
   let statistics: WorkspaceStatistics | null = null;
   let user: UserInfo | null = null;
+  let genres: MasterGenreResponse[] = [];
   let fetchError: string | null = null;
 
   try {
     // Server Actions を使用してデータ取得
     // Middlewareが事前に認証チェックを行うため、ここでは401エラーは発生しない
-    const [workspacesResult, userResult] = await Promise.all([
+    const [workspacesResult, userResult, genresResult] = await Promise.all([
       getWorkspaces(1, true),
       getCurrentUser(),
+      getGenres(),
     ]);
 
     // ワークスペース情報の処理
@@ -53,8 +56,13 @@ export default async function AdminWorkspaces() {
         isAdmin: roles.some((r: any) => (typeof r === 'string' ? r === 'Admin' : r?.name === 'Admin')),
       } as UserInfo;
     }
+
+    // ジャンル情報の処理
+    if (genresResult.success) {
+      genres = genresResult.data ?? [];
+    }
   } catch (err: any) {
-    console.error('AdminWorkspaces: failed to fetch workspaces or user', err);
+    console.error('AdminWorkspaces: failed to fetch data', err);
     fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 
@@ -65,6 +73,7 @@ export default async function AdminWorkspaces() {
       initialTotalPages={totalPages}
       initialUser={user}
       initialStatistics={statistics}
+      initialGenres={genres}
       fetchError={fetchError}
     />
   );

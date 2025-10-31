@@ -51,23 +51,6 @@ export default function AdminClient({
     }
   }, [clientError, router]);
 
-  // 必要ならクライアント側で追加データ取得する（ただし pecus.WebApi へ直接は行わない）
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch("/api/user");
-        if (response.ok) {
-          const data = await response.json();
-          setUserInfo(data.user);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user info:", error);
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* 全体ローディングオーバーレイ（クライアント側でページブロックする場合） */}

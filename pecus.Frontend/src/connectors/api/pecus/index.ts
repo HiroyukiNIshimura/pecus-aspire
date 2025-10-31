@@ -30,6 +30,8 @@ export type { GenreResponse } from './models/GenreResponse';
 export type { JobResponse } from './models/JobResponse';
 export type { LoginRequest } from './models/LoginRequest';
 export type { LoginResponse } from './models/LoginResponse';
+export type { MasterGenreResponse } from './models/MasterGenreResponse';
+export type { MasterSkillResponse } from './models/MasterSkillResponse';
 export type { MessageResponse } from './models/MessageResponse';
 export type { OrganizationDetailResponse } from './models/OrganizationDetailResponse';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
@@ -102,6 +104,7 @@ export { EntranceOrganizationService } from './services/EntranceOrganizationServ
 export { EntrancePasswordService } from './services/EntrancePasswordService';
 export { FileDownloadService } from './services/FileDownloadService';
 export { FileUploadService } from './services/FileUploadService';
+export { MasterDataService } from './services/MasterDataService';
 export { ProfileService } from './services/ProfileService';
 export { RefreshService } from './services/RefreshService';
 export { TagService } from './services/TagService';

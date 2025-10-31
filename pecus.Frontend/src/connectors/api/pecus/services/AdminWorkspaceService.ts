@@ -39,20 +39,23 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース一覧取得（ページネーション）
      * @param page
-     * @param activeOnly
+     * @param isActive アクティブなワークスペースのみ取得するか
+     * @param genreId ジャンルIDでフィルター（オプション）
      * @returns WorkspaceListItemResponseWorkspaceStatisticsPagedResponse OK
      * @throws ApiError
      */
     public static getApiAdminWorkspaces(
         page?: number,
-        activeOnly?: boolean,
+        isActive?: boolean,
+        genreId?: number,
     ): CancelablePromise<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/workspaces',
             query: {
                 'Page': page,
-                'ActiveOnly': activeOnly,
+                'IsActive': isActive,
+                'GenreId': genreId,
             },
             errors: {
                 500: `Internal Server Error`,

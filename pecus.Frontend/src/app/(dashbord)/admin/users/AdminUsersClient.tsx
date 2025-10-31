@@ -45,28 +45,13 @@ export default function AdminUsersClient({
   fetchError
 }: AdminUsersClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
-  const [loading, setLoading] = useState(true);
+  const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [users, setUsers] = useState<User[]>(initialUsers || []);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-          const data = await response.json();
-          setUserInfo(data.user);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user info:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const fetchInitialData = async () => {
       if (!initialUsers || initialUsers.length === 0) {
         try {
@@ -84,7 +69,6 @@ export default function AdminUsersClient({
       }
     };
 
-    fetchUserInfo();
     fetchInitialData();
   }, [initialUsers]);
 
@@ -106,18 +90,8 @@ export default function AdminUsersClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">読み込み中...</p>
-          </div>
-        </div>
-      )}
-
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={loading} />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}

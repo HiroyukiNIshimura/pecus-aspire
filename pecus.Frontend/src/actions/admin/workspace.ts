@@ -8,11 +8,12 @@ import { ApiResponse } from '../types';
  */
 export async function getWorkspaces(
   page: number = 1,
-  activeOnly: boolean = true
+  isActive?: boolean,
+  genreId?: number
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, activeOnly);
+    const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch workspaces:', error);

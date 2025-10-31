@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { WorkspaceListItemResponse, WorkspaceListItemResponseWorkspaceStatisticsPagedResponse, WorkspaceStatistics } from '@/connectors/api/pecus';
+import { useState, useEffect, useCallback } from "react";
+import { WorkspaceListItemResponse, WorkspaceListItemResponseWorkspaceStatisticsPagedResponse, WorkspaceStatistics, MasterGenreResponse } from '@/connectors/api/pecus';
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
 import Pagination from "@/components/common/Pagination";
+import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 
 interface UserInfo {
   id: number;
@@ -21,38 +22,29 @@ interface AdminWorkspacesClientProps {
   initialTotalPages?: number;
   initialUser?: UserInfo | null;
   initialStatistics?: WorkspaceStatistics | null;
+  initialGenres?: MasterGenreResponse[];
   fetchError?: string | null;
 }
 
-export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, initialStatistics, fetchError }: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, initialStatistics, initialGenres, fetchError }: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces || []);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
+  const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
+  const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
+  const [genres, setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-          const data = await response.json();
-          setUserInfo(data.user);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user info:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const fetchInitialData = async () => {
       if (!initialWorkspaces || initialWorkspaces.length === 0) {
         try {
-          const response = await fetch('/api/admin/workspaces?page=1&activeOnly=true');
+          const response = await fetch('/api/admin/workspaces?page=1&IsActive=true');
           if (response.ok) {
             const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
             setWorkspaces(data.data || []);
@@ -65,16 +57,33 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
           console.error('Failed to fetch initial workspaces:', error);
         }
       }
+      setIsLoading(false);
     };
 
-    fetchUserInfo();
     fetchInitialData();
   }, [initialWorkspaces]);
 
+  // フィルター変更時に自動的に検索を実行（初回マウント時は除外）
+  useEffectAfterMount(
+    () => {
+      handleFilterChange();
+    },
+    [filterGenreId, filterIsActive]
+  );
+
   const handlePageChange = async ({ selected }: { selected: number }) => {
     try {
+      setIsFilterLoading(true);
       const page = selected + 1; // react-paginateは0-based
-      const response = await fetch(`/api/admin/workspaces?page=${page}&activeOnly=true`);
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      if (filterIsActive !== null) {
+        params.append('IsActive', filterIsActive.toString());
+      }
+      if (filterGenreId !== null) {
+        params.append('GenreId', filterGenreId.toString());
+      }
+      const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
       if (response.ok) {
         const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
         setWorkspaces(data.data || []);
@@ -85,23 +94,53 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
       }
     } catch (error) {
       console.error('Failed to fetch workspaces:', error);
+    } finally {
+      setIsFilterLoading(false);
     }
   };
+
+  const handleFilterChange = useCallback(async () => {
+    setCurrentPage(1);
+    try {
+      setIsFilterLoading(true);
+      const params = new URLSearchParams();
+      params.append('page', '1');
+      if (filterIsActive !== null) {
+        params.append('IsActive', filterIsActive.toString());
+      }
+      if (filterGenreId !== null) {
+        params.append('GenreId', filterGenreId.toString());
+      }
+      const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+      if (response.ok) {
+        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+        setWorkspaces(data.data || []);
+        setCurrentPage(data.currentPage || 1);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+        setStatistics(data.summary || null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch workspaces:', error);
+    } finally {
+      setIsFilterLoading(false);
+    }
+  }, [filterIsActive, filterGenreId]);
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Loading Overlay */}
-      {loading && (
+      {(isLoading || isFilterLoading) && (
         <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">読み込み中...</p>
+            <p className="text-lg">{isLoading ? '初期化中...' : '検索中...'}</p>
           </div>
         </div>
       )}
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={loading} />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading || isFilterLoading} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
@@ -248,6 +287,94 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                 </div>
               );
             })()}
+
+            {/* Filter Section */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title mb-4">フィルター</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* Genre Filter */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">ジャンル</span>
+                    </label>
+                    <select
+                      className="select select-bordered w-full"
+                      value={filterGenreId ?? ''}
+                      onChange={(e) => {
+                        setFilterGenreId(e.target.value ? parseInt(e.target.value) : null);
+                      }}
+                    >
+                      <option value="">すべて</option>
+                      {genres.map((genre) => (
+                        <option key={genre.id} value={genre.id}>
+                          {genre.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Active Status Filter */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">ステータス</span>
+                    </label>
+                    <div className="flex gap-4 items-center h-12">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="status"
+                          className="radio radio-sm"
+                          checked={filterIsActive === true}
+                          onChange={() => {
+                            setFilterIsActive(true);
+                          }}
+                        />
+                        <span className="text-sm">アクティブのみ</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="status"
+                          className="radio radio-sm"
+                          checked={filterIsActive === false}
+                          onChange={() => {
+                            setFilterIsActive(false);
+                          }}
+                        />
+                        <span className="text-sm">非アクティブのみ</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="status"
+                          className="radio radio-sm"
+                          checked={filterIsActive === null}
+                          onChange={() => {
+                            setFilterIsActive(null);
+                          }}
+                        />
+                        <span className="text-sm">すべて</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reset Button */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => {
+                      setFilterGenreId(null);
+                      setFilterIsActive(true);
+                    }}
+                  >
+                    リセット
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Workspace List */}
             <div className="card bg-base-100 shadow-xl">

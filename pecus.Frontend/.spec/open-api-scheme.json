@@ -552,10 +552,20 @@
             }
           },
           {
-            "name": "ActiveOnly",
+            "name": "IsActive",
             "in": "query",
+            "description": "アクティブなワークスペースのみ取得するか",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "GenreId",
+            "in": "query",
+            "description": "ジャンルIDでフィルター（オプション）",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -3246,6 +3256,68 @@
         }
       }
     },
+    "/api/master/genres": {
+      "get": {
+        "tags": [
+          "MasterData"
+        ],
+        "summary": "アクティブなジャンル一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterGenreResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/master/skills": {
+      "get": {
+        "tags": [
+          "MasterData"
+        ],
+        "summary": "ログインユーザーの属する組織のアクティブなスキル一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterSkillResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/profile": {
       "get": {
         "tags": [
@@ -5892,6 +5964,66 @@
         },
         "additionalProperties": false,
         "description": "ログインレスポンス"
+      },
+      "MasterGenreResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "ジャンルの説明",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "description": "表示順",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "マスターデータ用ジャンルレスポンス"
+      },
+      "MasterSkillResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "スキル名",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "説明",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "マスターデータ用スキルレスポンス"
       },
       "MessageResponse": {
         "required": [

@@ -3,7 +3,17 @@
 ## プロジェクト方針
 Conversation-Driven Development（会話駆動開発）：AI とペアプログラミングする形で反復的に問題を解決します。投機的な設計を避け、反復を通して進めます。本リポジトリはスタンドアロン API から進化し、.NET Aspire を用いた分散マイクロサービス構成になっています。
 
-重要: 1つのプロジェクトに対する修正で他のプロジェクトまで一度に変更を加えないこと。もし他プロジェクトの修正が不可避である場合は、対象となる各プロジェクトについて「目的」「影響範囲」「推奨する差分（簡潔に）」をまとめて通知し、該当プロジェクト側での承認または別作業として扱うようにしてください。
+### プロジェクト横断変更の禁止ルール
+
+**重要**: 1つのプロジェクトに対する修正を依頼された場合、他のプロジェクトまで一度に変更を加えてはいけません。
+
+- 修正対象は指定されたプロジェクトのみに限定してください
+- 他のプロジェクトの修正が必然的に必要な場合のみ、対象となる各プロジェクトについて以下をまとめて通知してください：
+  - **目的**: なぜその修正が必要か
+  - **影響範囲**: どのファイル・機能が影響を受けるか
+  - **推奨する差分**: 変更内容を簡潔に説明
+- 通知後は、該当プロジェクト側での承認を待つか、別作業として扱うようにしてください
+- ユーザーから明示的な承認なしに複数プロジェクトへの変更を実行しないこと
 
 ## アーキテクチャ概要
 
@@ -83,6 +93,63 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **環境変数**: pecus.WebApiのベース URL は `process.env.API_BASE_URL`で管理
 - **Server Actions**: SSR でのデータ取得には Server Actions（`src/actions/`）を使用
 - **クライアントコンポーネント**: インタラクティブな機能には `"use client"` ディレクティブを付与
+
+#### SSR（サーバーサイドレンダリング）アーキテクチャ
+
+ページ構成は以下の統一パターンに従ってください：
+
+**パターン: `page.tsx` (SSR) + `XxxClient.tsx` (Client Component)**
+
+```
+src/app/(dashboard)/admin/xxxxx/
+  ├── page.tsx              # Server Component (SSR)
+  └── XxxClient.tsx         # Client Component ("use client")
+```
+
+- **`page.tsx` (SSR/Server Component の責務)**
+  - `export const dynamic = 'force-dynamic'` を必ず設定
+  - Server Actions で `getCurrentUser()` や API データを fetch
+  - Props 経由でクライアントコンポーネントにデータを传达
+  - サーバーサイドのエラーハンドリング（try-catch）
+  - 認証チェック・認可チェック
+
+- **`XxxClient.tsx` (Client Component の責務)**
+  - `"use client"` ディレクティブ必須
+  - UI レンダリングのみ
+  - ローカル状態管理（UI の開閉、フォーム入力、ページング、フィルタなど）
+  - インタラクティブなイベントハンドラー
+  - **重要**: SSR からの Props 経由でデータ受け取り、クライアント側での API 呼び出しはしない
+
+**禁止事項（アンチパターン）**
+- ❌ クライアント側で `useEffect` で `/api/user` などの API 呼び出しをしないこと
+- ❌ ページ全体を `"use client"` でマークし、クライアント内で全 API 呼び出しをすること
+- ❌ マスタデータ（ジャンル、スキル、タグなど）をクライアント側で fetch すること
+- ❌ 同じデータを複数箇所から fetch すること（SSR で一度に fetch して Props で配分）
+
+**実装例**
+```typescript
+// page.tsx (SSR)
+export const dynamic = 'force-dynamic';
+export default async function AdminTagsPage() {
+  let user = null;
+  let fetchError = null;
+  try {
+    const result = await getCurrentUser();
+    if (result.success) user = result.data;
+  } catch (err) {
+    fetchError = err.message;
+  }
+  return <AdminTagsClient initialUser={user} fetchError={fetchError} />;
+}
+
+// AdminTagsClient.tsx (Client)
+"use client";
+export default function AdminTagsClient({ initialUser, fetchError }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // UI state のみ管理、API 呼び出しなし
+  return <div>...</div>;
+}
+```
 
 #### ページネーション実装
 - **共通コンポーネント**: `src/components/common/Pagination.tsx` を使用
