@@ -7248,6 +7248,18 @@
             "description": "アイデンティティアイコンURL",
             "nullable": true
           },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRoleResponse"
+            },
+            "description": "ユーザーのロール一覧",
+            "nullable": true
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "管理者権限を持つかどうか"
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",
@@ -7302,6 +7314,26 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
+      },
+      "UserRoleResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ロールID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ロール名",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザーロール情報レスポンス"
       },
       "WorkspaceDetailResponse": {
         "required": [

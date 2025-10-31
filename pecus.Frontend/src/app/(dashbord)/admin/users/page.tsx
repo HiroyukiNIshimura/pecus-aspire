@@ -9,7 +9,6 @@ type UserInfo = {
   id: number;
   name?: string | null;
   email?: string | null;
-  roles?: any[];
   isAdmin: boolean;
 };
 
@@ -55,13 +54,11 @@ export default async function AdminUsers() {
     // 現在のユーザー情報の処理
     if (userResult.success) {
       const userData = userResult.data;
-      const roles = userData.roles ?? [];
       userInfo = {
         id: userData.id,
         name: userData.username ?? null,
         email: userData.email ?? null,
-        roles,
-        isAdmin: roles.some((r: any) => (typeof r === 'string' ? r === 'Admin' : r?.name === 'Admin')),
+        isAdmin: userData.isAdmin ?? false,
       } as UserInfo;
     }
   } catch (err: any) {

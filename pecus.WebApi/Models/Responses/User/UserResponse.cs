@@ -1,4 +1,4 @@
-namespace Pecus.Models.Responses.User;
+﻿namespace Pecus.Models.Responses.User;
 
 /// <summary>
 /// ユーザー情報レスポンス
@@ -34,6 +34,16 @@ public class UserResponse
     /// アイデンティティアイコンURL
     /// </summary>
     public string? IdentityIconUrl { get; set; }
+
+    /// <summary>
+    /// ユーザーのロール一覧
+    /// </summary>
+    public List<UserRoleResponse> Roles { get; set; } = new();
+
+    /// <summary>
+    /// 管理者権限を持つかどうか
+    /// </summary>
+    public bool IsAdmin { get; set; }
 
     /// <summary>
     /// 作成日時

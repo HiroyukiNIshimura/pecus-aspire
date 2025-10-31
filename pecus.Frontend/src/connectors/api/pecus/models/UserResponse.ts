@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { UserRoleResponse } from './UserRoleResponse';
 /**
  * ユーザー情報レスポンス
  */
@@ -30,6 +31,14 @@ export type UserResponse = {
      * アイデンティティアイコンURL
      */
     identityIconUrl?: string | null;
+    /**
+     * ユーザーのロール一覧
+     */
+    roles?: Array<UserRoleResponse> | null;
+    /**
+     * 管理者権限を持つかどうか
+     */
+    isAdmin?: boolean;
     /**
      * 作成日時
      */

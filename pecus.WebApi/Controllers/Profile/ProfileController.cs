@@ -1,4 +1,4 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -79,7 +79,15 @@ public class ProfileController : ControllerBase
             Email = user.Email,
             AvatarType = user.AvatarType,
             IdentityIconUrl = user.AvatarUrl,
-            CreatedAt = user.CreatedAt
+            CreatedAt = user.CreatedAt,
+            Roles = user.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? new List<UserRoleResponse>(),
+            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false
         };
 
         return TypedResults.Ok(response);

@@ -108,7 +108,7 @@ export default function AdminUsersClient({
       )}
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading || showLoading} />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}

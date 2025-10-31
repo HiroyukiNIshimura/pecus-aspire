@@ -75,6 +75,7 @@ export type { UpdateWorkspaceRequest } from './models/UpdateWorkspaceRequest';
 export type { UserListItemResponse } from './models/UserListItemResponse';
 export type { UserResponse } from './models/UserResponse';
 export type { UserResponsePagedResponse } from './models/UserResponsePagedResponse';
+export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
 export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAttachmentResponse';
 export type { WorkspaceItemDetailResponse } from './models/WorkspaceItemDetailResponse';
