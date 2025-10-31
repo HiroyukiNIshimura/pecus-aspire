@@ -249,7 +249,8 @@ public class AdminWorkspaceController : ControllerBase
                     organizationId.Value,
                     validatedPage,
                     pageSize,
-                    request.ActiveOnly
+                    request.IsActive,
+                    request.GenreId
                 );
 
             var items = workspaces

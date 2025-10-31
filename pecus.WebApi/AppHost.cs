@@ -1,4 +1,4 @@
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -63,6 +63,7 @@ builder.Services.AddScoped<WorkspaceItemRelationService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();
+builder.Services.AddScoped<MasterDataService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddSingleton<RefreshTokenService>();

@@ -1,4 +1,4 @@
-namespace Pecus.Libs.DB.Models;
+﻿namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// スキル
@@ -45,7 +45,6 @@ public class Skill
     /// </summary>
     public int? UpdatedByUserId { get; set; }
 
-    // ナビゲーションプロパティ
     /// <summary>
     /// 所属組織
     /// </summary>
@@ -65,4 +64,9 @@ public class Skill
     /// 更新者
     /// </summary>
     public User? UpdatedByUser { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool IsActive { get; set; } = true;
 }

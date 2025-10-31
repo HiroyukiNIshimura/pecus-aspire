@@ -144,7 +144,8 @@ public class WorkspaceService
         int organizationId,
         int page,
         int pageSize,
-        bool? activeOnly = null
+        bool? isActive = null,
+        int? genreId = null
     )
     {
         var query = _context
@@ -155,9 +156,14 @@ public class WorkspaceService
             .Where(w => w.OrganizationId == organizationId)
             .AsQueryable();
 
-        if (activeOnly == true)
+        if (isActive.HasValue)
         {
-            query = query.Where(w => w.IsActive);
+            query = query.Where(w => w.IsActive == isActive.Value);
+        }
+
+        if (genreId.HasValue)
+        {
+            query = query.Where(w => w.GenreId == genreId.Value);
         }
 
         query = query.OrderBy(w => w.Id);

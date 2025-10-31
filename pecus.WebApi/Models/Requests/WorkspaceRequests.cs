@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests;
 
@@ -66,7 +66,15 @@ public class GetWorkspacesRequest
     [Range(1, int.MaxValue, ErrorMessage = "ページ番号は1以上で指定してください。")]
     public int? Page { get; set; } = 1;
 
-    public bool? ActiveOnly { get; set; } = true;
+    /// <summary>
+    /// アクティブなワークスペースのみ取得するか
+    /// </summary>
+    public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// ジャンルIDでフィルター（オプション）
+    /// </summary>
+    public int? GenreId { get; set; }
 }
 
 /// <summary>
