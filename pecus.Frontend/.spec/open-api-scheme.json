@@ -565,7 +565,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceListItemResponsePagedResponse"
+                  "$ref": "#/components/schemas/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse"
                 }
               }
             }
@@ -933,7 +933,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceUserDetailResponsePagedResponse"
+                  "$ref": "#/components/schemas/WorkspaceUserDetailResponseObjectPagedResponse"
                 }
               }
             }
@@ -5539,6 +5539,29 @@
         "additionalProperties": false,
         "description": "ファイルアップロードレスポンス"
       },
+      "GenreCount": {
+        "type": "object",
+        "properties": {
+          "genreId": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "description": "ワークスペース数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ジャンルごとのワークスペース数"
+      },
       "GenreDetailResponse": {
         "required": [
           "name"
@@ -7182,6 +7205,14 @@
           "organization": {
             "$ref": "#/components/schemas/OrganizationInfoResponse"
           },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
+            },
+            "description": "参加しているユーザー一覧",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",
@@ -7622,7 +7653,7 @@
         "additionalProperties": false,
         "description": "ワークスペースリストアイテムレスポンス"
       },
-      "WorkspaceListItemResponsePagedResponse": {
+      "WorkspaceListItemResponseWorkspaceStatisticsPagedResponse": {
         "required": [
           "data"
         ],
@@ -7663,10 +7694,13 @@
           "hasNextPage": {
             "type": "boolean",
             "description": "次のページが存在するか"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/WorkspaceStatistics"
           }
         },
         "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
+        "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "WorkspaceResponse": {
         "type": "object",
@@ -7686,6 +7720,53 @@
         },
         "additionalProperties": false,
         "description": "ワークスペース操作レスポンス"
+      },
+      "WorkspaceStatistics": {
+        "type": "object",
+        "properties": {
+          "activeWorkspaceCount": {
+            "type": "integer",
+            "description": "アクティブなワークスペースの総数",
+            "format": "int32"
+          },
+          "inactiveWorkspaceCount": {
+            "type": "integer",
+            "description": "非アクティブなワークスペースの総数",
+            "format": "int32"
+          },
+          "totalWorkspaceCount": {
+            "type": "integer",
+            "description": "総ワークスペース数（アクティブ + 非アクティブ）",
+            "format": "int32",
+            "readOnly": true
+          },
+          "uniqueMemberCount": {
+            "type": "integer",
+            "description": "ワークスペースメンバーの総数（ユニークなユーザー数）",
+            "format": "int32"
+          },
+          "averageMembersPerWorkspace": {
+            "type": "number",
+            "description": "平均メンバー数 per ワークスペース",
+            "format": "double",
+            "readOnly": true
+          },
+          "recentWorkspaceCount": {
+            "type": "integer",
+            "description": "最近作成されたワークスペース数（過去30日）",
+            "format": "int32"
+          },
+          "workspaceCountByGenre": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GenreCount"
+            },
+            "description": "ワークスペースのジャンルごとのワークスペース数",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペース統計情報レスポンス"
       },
       "WorkspaceUserDetailResponse": {
         "type": "object",
@@ -7734,7 +7815,7 @@
         "additionalProperties": false,
         "description": "ワークスペースユーザー詳細レスポンス"
       },
-      "WorkspaceUserDetailResponsePagedResponse": {
+      "WorkspaceUserDetailResponseObjectPagedResponse": {
         "required": [
           "data"
         ],
@@ -7775,10 +7856,14 @@
           "hasNextPage": {
             "type": "boolean",
             "description": "次のページが存在するか"
+          },
+          "summary": {
+            "description": "リストデータの統計情報",
+            "nullable": true
           }
         },
         "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
+        "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "WorkspaceUserResponse": {
         "type": "object",

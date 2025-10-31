@@ -1,7 +1,7 @@
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
 import { getWorkspaces } from "@/actions/admin/workspace";
 import { getCurrentUser } from "@/actions/profile";
-import { WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import { WorkspaceListItemResponse, WorkspaceStatistics } from '@/connectors/api/pecus';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +18,7 @@ export default async function AdminWorkspaces() {
   let workspaces: WorkspaceListItemResponse[] = [];
   let totalCount: number = 0;
   let totalPages: number = 1;
+  let statistics: WorkspaceStatistics | null = null;
   let user: UserInfo | null = null;
   let fetchError: string | null = null;
 
@@ -35,6 +36,7 @@ export default async function AdminWorkspaces() {
       workspaces = responseData?.data ?? [];
       totalCount = responseData?.totalCount ?? 0;
       totalPages = responseData?.totalPages ?? 1;
+      statistics = responseData?.summary ?? null;
     } else {
       fetchError = `ワークスペース情報の取得に失敗しました (${workspacesResult.error})`;
     }
@@ -62,6 +64,7 @@ export default async function AdminWorkspaces() {
       initialTotalCount={totalCount}
       initialTotalPages={totalPages}
       initialUser={user}
+      initialStatistics={statistics}
       fetchError={fetchError}
     />
   );

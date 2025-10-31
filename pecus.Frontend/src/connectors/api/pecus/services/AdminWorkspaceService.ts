@@ -7,9 +7,9 @@ import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { WorkspaceDetailResponse } from '../models/WorkspaceDetailResponse';
-import type { WorkspaceListItemResponsePagedResponse } from '../models/WorkspaceListItemResponsePagedResponse';
+import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 import type { WorkspaceResponse } from '../models/WorkspaceResponse';
-import type { WorkspaceUserDetailResponsePagedResponse } from '../models/WorkspaceUserDetailResponsePagedResponse';
+import type { WorkspaceUserDetailResponseObjectPagedResponse } from '../models/WorkspaceUserDetailResponseObjectPagedResponse';
 import type { WorkspaceUserResponse } from '../models/WorkspaceUserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -40,13 +40,13 @@ export class AdminWorkspaceService {
      * ワークスペース一覧取得（ページネーション）
      * @param page
      * @param activeOnly
-     * @returns WorkspaceListItemResponsePagedResponse OK
+     * @returns WorkspaceListItemResponseWorkspaceStatisticsPagedResponse OK
      * @throws ApiError
      */
     public static getApiAdminWorkspaces(
         page?: number,
         activeOnly?: boolean,
-    ): CancelablePromise<WorkspaceListItemResponsePagedResponse> {
+    ): CancelablePromise<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/workspaces',
@@ -200,14 +200,14 @@ export class AdminWorkspaceService {
      * @param id ワークスペースID
      * @param page
      * @param activeOnly
-     * @returns WorkspaceUserDetailResponsePagedResponse OK
+     * @returns WorkspaceUserDetailResponseObjectPagedResponse OK
      * @throws ApiError
      */
     public static getApiAdminWorkspacesUsers(
         id: number,
         page?: number,
         activeOnly?: boolean,
-    ): CancelablePromise<WorkspaceUserDetailResponsePagedResponse> {
+    ): CancelablePromise<WorkspaceUserDetailResponseObjectPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/workspaces/{id}/users',

@@ -22,6 +22,7 @@ export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemReq
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileUploadResponse } from './models/FileUploadResponse';
+export type { GenreCount } from './models/GenreCount';
 export type { GenreDetailResponse } from './models/GenreDetailResponse';
 export type { GenreListItemResponse } from './models/GenreListItemResponse';
 export type { GenreListItemResponsePagedResponse } from './models/GenreListItemResponsePagedResponse';
@@ -80,10 +81,11 @@ export type { WorkspaceItemRelationResponse } from './models/WorkspaceItemRelati
 export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelationsResponse';
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
-export type { WorkspaceListItemResponsePagedResponse } from './models/WorkspaceListItemResponsePagedResponse';
+export type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from './models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 export type { WorkspaceResponse } from './models/WorkspaceResponse';
+export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
-export type { WorkspaceUserDetailResponsePagedResponse } from './models/WorkspaceUserDetailResponsePagedResponse';
+export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';
 export type { WorkspaceUserResponse } from './models/WorkspaceUserResponse';
 
 export { AdminOrganizationService } from './services/AdminOrganizationService';

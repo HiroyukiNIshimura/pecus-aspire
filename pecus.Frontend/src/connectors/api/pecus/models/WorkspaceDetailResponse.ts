@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
+import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
  * ワークスペース詳細情報レスポンス
  */
@@ -28,6 +29,10 @@ export type WorkspaceDetailResponse = {
      */
     organizationId?: number;
     organization?: OrganizationInfoResponse;
+    /**
+     * 参加しているユーザー一覧
+     */
+    members?: Array<WorkspaceUserDetailResponse> | null;
     /**
      * 作成日時
      */

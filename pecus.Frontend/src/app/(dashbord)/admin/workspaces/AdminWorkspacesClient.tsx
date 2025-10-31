@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WorkspaceListItemResponse, WorkspaceListItemResponsePagedResponse } from '@/connectors/api/pecus';
+import { WorkspaceListItemResponse, WorkspaceListItemResponseWorkspaceStatisticsPagedResponse, WorkspaceStatistics } from '@/connectors/api/pecus';
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
@@ -20,10 +20,11 @@ interface AdminWorkspacesClientProps {
   initialTotalCount?: number;
   initialTotalPages?: number;
   initialUser?: UserInfo | null;
+  initialStatistics?: WorkspaceStatistics | null;
   fetchError?: string | null;
 }
 
-export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, fetchError }: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, initialStatistics, fetchError }: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -52,11 +54,12 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
         try {
           const response = await fetch('/api/admin/workspaces?page=1&activeOnly=true');
           if (response.ok) {
-            const data: WorkspaceListItemResponsePagedResponse = await response.json();
+            const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
             setWorkspaces(data.data || []);
             setCurrentPage(data.currentPage || 1);
             setTotalPages(data.totalPages || 1);
             setTotalCount(data.totalCount || 0);
+            setStatistics(data.summary || null);
           }
         } catch (error) {
           console.error('Failed to fetch initial workspaces:', error);
@@ -73,11 +76,12 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
       const page = selected + 1; // react-paginateは0-based
       const response = await fetch(`/api/admin/workspaces?page=${page}&activeOnly=true`);
       if (response.ok) {
-        const data: WorkspaceListItemResponsePagedResponse = await response.json();
+        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
         setWorkspaces(data.data || []);
         setCurrentPage(data.currentPage || 1);
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.totalCount || 0);
+        setStatistics(data.summary || null);
       }
     } catch (error) {
       console.error('Failed to fetch workspaces:', error);
@@ -120,54 +124,130 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
             </div>
 
             {/* Workspace Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">総ワークスペース数</h2>
-                  <div className="stat">
-                    <div className="stat-value text-3xl">{totalCount}</div>
-                    <div className="stat-desc">登録済み</div>
-                  </div>
-                </div>
-              </div>
+            {(() => {
+              const stats = statistics || {
+                activeWorkspaceCount: 0,
+                inactiveWorkspaceCount: 0,
+                totalWorkspaceCount: 0,
+                uniqueMemberCount: 0,
+                averageMembersPerWorkspace: 0,
+                recentWorkspaceCount: 0
+              };
 
-              <div className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">アクティブ</h2>
-                  <div className="stat">
-                    <div className="stat-value text-3xl text-success">
-                      {workspaces.filter(w => w.isActive).length}
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                  {/* Total Workspaces */}
+                  <div className="card bg-base-100 shadow-xl border border-base-300">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">総ワークスペース数</h3>
+                        <span className="badge badge-primary">全体</span>
+                      </div>
+                      <div className="text-4xl font-bold text-primary mb-2">
+                        {stats.totalWorkspaceCount}
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        登録済みワークスペース
+                      </div>
                     </div>
-                    <div className="stat-desc">稼働中</div>
                   </div>
-                </div>
-              </div>
 
-              <div className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">総メンバー数</h2>
-                  <div className="stat">
-                    <div className="stat-value text-3xl">
-                      {/* ワークスペース全体のユニークメンバー数を計算 */}
-                      {(() => {
-                        const uniqueUserIds = new Set<number>();
-                        for (const workspace of workspaces) {
-                          if (workspace.members && Array.isArray(workspace.members)) {
-                            for (const member of workspace.members) {
-                              if (member.userId) {
-                                uniqueUserIds.add(member.userId);
-                              }
-                            }
-                          }
-                        }
-                        return uniqueUserIds.size;
-                      })()}
+                  {/* Active Workspaces */}
+                  <div className="card bg-base-100 shadow-xl border border-success border-opacity-30">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">アクティブ</h3>
+                        <span className="badge badge-success">稼働中</span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <div className="text-4xl font-bold text-success">
+                          {stats.activeWorkspaceCount}
+                        </div>
+                        <span className="text-sm text-base-content opacity-70">
+                          / {stats.totalWorkspaceCount}
+                        </span>
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        {(stats.totalWorkspaceCount ?? 0) > 0
+                          ? `${Math.round(((stats.activeWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が稼働中`
+                          : '稼働中のワークスペースなし'}
+                      </div>
                     </div>
-                    <div className="stat-desc">参加者（ユニーク）</div>
+                  </div>
+
+                  {/* Inactive Workspaces */}
+                  <div className="card bg-base-100 shadow-xl border border-warning border-opacity-30">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">非アクティブ</h3>
+                        <span className="badge badge-warning">停止中</span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <div className="text-4xl font-bold text-warning">
+                          {stats.inactiveWorkspaceCount}
+                        </div>
+                        <span className="text-sm text-base-content opacity-70">
+                          / {stats.totalWorkspaceCount}
+                        </span>
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        {(stats.totalWorkspaceCount ?? 0) > 0
+                          ? `${Math.round(((stats.inactiveWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が停止中`
+                          : '非アクティブなワークスペースなし'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Unique Members */}
+                  <div className="card bg-base-100 shadow-xl border border-info border-opacity-30">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">総メンバー数</h3>
+                        <span className="badge badge-info">ユニーク</span>
+                      </div>
+                      <div className="text-4xl font-bold text-info mb-2">
+                        {stats.uniqueMemberCount}
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        参加者（重複なし）
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Average Members */}
+                  <div className="card bg-base-100 shadow-xl border border-secondary border-opacity-30">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">平均メンバー数</h3>
+                        <span className="badge badge-secondary">統計</span>
+                      </div>
+                      <div className="text-4xl font-bold text-secondary mb-2">
+                        {(stats.averageMembersPerWorkspace || 0).toFixed(1)}
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        ワークスペースあたり
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Workspaces */}
+                  <div className="card bg-base-100 shadow-xl border border-accent border-opacity-30">
+                    <div className="card-body p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="card-title text-lg">最近作成</h3>
+                        <span className="badge badge-accent">30日以内</span>
+                      </div>
+                      <div className="text-4xl font-bold text-accent mb-2">
+                        {stats.recentWorkspaceCount}
+                      </div>
+                      <div className="text-sm text-base-content opacity-70">
+                        過去30日間に作成
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Workspace List */}
             <div className="card bg-base-100 shadow-xl">

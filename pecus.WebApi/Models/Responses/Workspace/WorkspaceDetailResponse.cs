@@ -1,4 +1,4 @@
-using Pecus.Models.Responses.Organization;
+﻿using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Models.Responses.Workspace;
 
@@ -36,6 +36,11 @@ public class WorkspaceDetailResponse
     /// 所属する組織情報
     /// </summary>
     public OrganizationInfoResponse? Organization { get; set; }
+
+    /// <summary>
+    /// 参加しているユーザー一覧
+    /// </summary>
+    public List<WorkspaceUserDetailResponse>? Members { get; set; }
 
     /// <summary>
     /// 作成日時

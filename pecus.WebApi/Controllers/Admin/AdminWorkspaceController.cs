@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -180,6 +180,20 @@ public class AdminWorkspaceController : ControllerBase
                             Code = workspace.Organization.Code,
                         }
                         : null,
+                Members = workspace.WorkspaceUsers?
+                    .Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive))
+                    .Select(wu => new WorkspaceUserDetailResponse
+                    {
+                        WorkspaceId = wu.WorkspaceId,
+                        UserId = wu.UserId,
+                        Username = wu.User?.Username,
+                        Email = wu.User?.Email,
+                        WorkspaceRole = wu.WorkspaceRole,
+                        JoinedAt = wu.JoinedAt,
+                        LastAccessedAt = wu.LastAccessedAt,
+                        IsActive = wu.IsActive,
+                    })
+                    .ToList(),
                 CreatedAt = workspace.CreatedAt,
                 CreatedByUserId = workspace.CreatedByUserId,
                 UpdatedAt = workspace.UpdatedAt,
@@ -202,12 +216,12 @@ public class AdminWorkspaceController : ControllerBase
     /// <param name="request">ワークスペース一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
-        typeof(PagedResponse<WorkspaceListItemResponse>),
+        typeof(PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<PagedResponse<WorkspaceListItemResponse>>, StatusCodeHttpResult>
+        Results<Ok<PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>>, StatusCodeHttpResult>
     > GetWorkspaces([FromQuery] GetWorkspacesRequest request)
     {
         try
@@ -217,11 +231,12 @@ public class AdminWorkspaceController : ControllerBase
             {
                 // 認証済みユーザーが組織に所属していない場合、空のリストを返す
                 return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse(
+                    PaginationHelper.CreatePagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>(
                         data: new List<WorkspaceListItemResponse>(),
                         totalCount: 0,
                         page: 1,
-                        pageSize: _config.Pagination.DefaultPageSize
+                        pageSize: _config.Pagination.DefaultPageSize,
+                        summary: new WorkspaceStatistics()
                     )
                 );
             }
@@ -266,11 +281,15 @@ public class AdminWorkspaceController : ControllerBase
                 })
                 .ToList();
 
-            var response = PaginationHelper.CreatePagedResponse(
+            // 統計情報を取得
+            var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(organizationId.Value);
+
+            var response = PaginationHelper.CreatePagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>(
                 data: items,
                 totalCount: totalCount,
                 page: validatedPage,
-                pageSize: pageSize
+                pageSize: pageSize,
+                summary: statistics
             );
             return TypedResults.Ok(response);
         }
@@ -700,12 +719,12 @@ public class AdminWorkspaceController : ControllerBase
     /// <param name="request">ワークスペースメンバー一覧取得リクエスト</param>
     [HttpGet("{id}/users")]
     [ProducesResponseType(
-        typeof(PagedResponse<WorkspaceUserDetailResponse>),
+        typeof(PagedResponse<WorkspaceUserDetailResponse, object>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<PagedResponse<WorkspaceUserDetailResponse>>, StatusCodeHttpResult>
+        Results<Ok<PagedResponse<WorkspaceUserDetailResponse, object>>, StatusCodeHttpResult>
     > GetWorkspaceMembers(int id, [FromQuery] GetWorkspaceMembersRequest request)
     {
         try
@@ -715,11 +734,12 @@ public class AdminWorkspaceController : ControllerBase
             {
                 // 空のリストを返す（ワークスペースが存在しない or アクセス権がない）
                 return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse(
+                    PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
                         data: new List<WorkspaceUserDetailResponse>(),
                         totalCount: 0,
                         page: 1,
-                        pageSize: _config.Pagination.DefaultPageSize
+                        pageSize: _config.Pagination.DefaultPageSize,
+                        summary: null
                     )
                 );
             }
@@ -748,11 +768,12 @@ public class AdminWorkspaceController : ControllerBase
                 })
                 .ToList();
 
-            var response = PaginationHelper.CreatePagedResponse(
+            var response = PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
                 items,
                 totalCount: totalCount,
                 page: validatedPage,
-                pageSize: pageSize
+                pageSize: pageSize,
+                summary: null
             );
             return TypedResults.Ok(response);
         }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Models.Responses.Common;
 
 namespace Pecus.Libs;
@@ -42,6 +42,32 @@ public static class PaginationHelper
             TotalPages = totalPages,
             HasPreviousPage = page > 1,
             HasNextPage = page < totalPages,
+        };
+    }
+
+    /// <summary>
+    /// ページネーション付きレスポンスを作成（統計情報付き）
+    /// </summary>
+    public static PagedResponse<T, TSummary> CreatePagedResponse<T, TSummary>(
+        IEnumerable<T> data,
+        int totalCount,
+        int page,
+        int pageSize,
+        TSummary? summary = default
+    )
+    {
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        return new PagedResponse<T, TSummary>
+        {
+            Data = data,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            HasPreviousPage = page > 1,
+            HasNextPage = page < totalPages,
+            Summary = summary,
         };
     }
 

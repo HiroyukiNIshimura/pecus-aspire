@@ -2,15 +2,15 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceListItemResponse } from './WorkspaceListItemResponse';
+import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
- * ページネーション付きレスポンス
+ * ページネーション付きレスポンス（統計情報付き）
  */
-export type WorkspaceListItemResponsePagedResponse = {
+export type WorkspaceUserDetailResponseObjectPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<WorkspaceListItemResponse> | null;
+    data: Array<WorkspaceUserDetailResponse> | null;
     /**
      * 現在のページ番号（1から始まる）
      */
@@ -35,5 +35,9 @@ export type WorkspaceListItemResponsePagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
+    /**
+     * リストデータの統計情報
+     */
+    summary?: any;
 };
 

@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests;
+using Pecus.Models.Responses.Workspace;
 
 namespace Pecus.Services;
 
@@ -365,5 +366,49 @@ public class WorkspaceService
         var members = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
         return (members, totalCount);
+    }
+
+    /// <summary>
+    /// 組織のワークスペース統計情報を取得
+    /// </summary>
+    public async Task<WorkspaceStatistics> GetWorkspaceStatisticsAsync(int organizationId)
+    {
+        var statistics = new WorkspaceStatistics();
+
+        // アクティブ/非アクティブのワークスペース数を取得
+        var workspaceCounts = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId)
+            .GroupBy(w => w.IsActive)
+            .Select(g => new { IsActive = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        statistics.ActiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
+        statistics.InactiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+
+        // ユニークなメンバーの総数を取得（同じユーザーが複数のワークスペースに属する場合も1人とカウント）
+        statistics.UniqueMemberCount = await _context.WorkspaceUsers
+            .Where(wu => wu.Workspace.OrganizationId == organizationId && wu.IsActive && (wu.User == null || wu.User.IsActive))
+            .Select(wu => wu.UserId)
+            .Distinct()
+            .CountAsync();
+
+        // ジャンルごとのワークスペース数を取得
+        statistics.WorkspaceCountByGenre = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId)
+            .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
+            .Select(g => new GenreCount
+            {
+                GenreId = g.Key.GenreId,
+                GenreName = g.Key.GenreName,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
+        // 最近作成されたワークスペース数（過去30日）
+        statistics.RecentWorkspaceCount = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.CreatedAt >= DateTime.UtcNow.AddDays(-30))
+            .CountAsync();
+
+        return statistics;
     }
 }
