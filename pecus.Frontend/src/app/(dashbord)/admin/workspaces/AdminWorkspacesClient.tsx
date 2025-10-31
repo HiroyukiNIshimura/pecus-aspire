@@ -253,6 +253,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
             <div className="card bg-base-100 shadow-xl">
               <div className="card-body">
                 <h2 className="card-title mb-4">ワークスペース一覧</h2>
+                <p className="text-sm text-base-content opacity-70 mb-4">
+                  合計: {totalCount} 件 (ページ {currentPage}/{totalPages})
+                </p>
 
                 <div className="overflow-x-auto">
                   <table className="table table-zebra w-full">
