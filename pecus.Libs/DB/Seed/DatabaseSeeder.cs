@@ -60,6 +60,7 @@ public class DatabaseSeeder
 
         await SeedOrganizationsAsync();
         await SeedSkillsAsync();
+        await SeedTagsAsync();
         await SeedUsersAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
@@ -334,6 +335,80 @@ public class DatabaseSeeder
         }
 
         _logger.LogInformation("Added {Count} skills for {OrgCount} organizations", skillsAdded, organizations.Count);
+    }
+
+    /// <summary>
+    /// タグのシードデータを投入
+    /// </summary>
+    public async Task SeedTagsAsync()
+    {
+        var organizations = await _context.Organizations.ToListAsync();
+
+        if (!organizations.Any())
+        {
+            _logger.LogWarning("No organizations found for seeding tags");
+            return;
+        }
+
+        var tagNames = new[]
+        {
+            "緊急",
+            "重要",
+            "開発",
+            "デザイン",
+            "レビュー待ち",
+            "完了",
+            "バグ修正",
+            "テスト",
+            "ドキュメント",
+            "定期メンテナンス",
+        };
+
+        int tagsAdded = 0;
+
+        // 各組織にタグを割り当て
+        foreach (var organization in organizations)
+        {
+            // 各組織の最初の Admin ユーザーを取得（または最初のユーザー）
+            var adminUser = await _context.Users.FirstOrDefaultAsync(u =>
+                u.OrganizationId == organization.Id
+            );
+
+            if (adminUser == null)
+            {
+                _logger.LogWarning("No users found for organization {OrgId}, skipping tag seeding", organization.Id);
+                continue;
+            }
+
+            foreach (var tagName in tagNames)
+            {
+                // タグが既に存在するかチェック
+                var existingTag = await _context.Tags.FirstOrDefaultAsync(t =>
+                    t.Name == tagName && t.OrganizationId == organization.Id
+                );
+
+                if (existingTag == null)
+                {
+                    var tag = new Tag
+                    {
+                        Name = tagName,
+                        OrganizationId = organization.Id,
+                        CreatedByUserId = adminUser.Id,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.Tags.Add(tag);
+                    tagsAdded++;
+                }
+            }
+
+            // 組織ごとに保存
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Added {Count} tags for {OrgCount} organizations", tagsAdded, organizations.Count);
     }
 
     /// <summary>

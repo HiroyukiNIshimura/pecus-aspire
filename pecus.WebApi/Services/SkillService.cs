@@ -7,7 +7,7 @@ using Pecus.Models.Requests;
 namespace Pecus.Services;
 
 /// <summary>
-/// �X�L���Ǘ��T�[�r�X
+/// スキル管理サービス
 /// </summary>
 public class SkillService
 {
@@ -19,7 +19,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �X�L�����쐬
+    /// スキルを作成
     /// </summary>
     public async Task<Skill> CreateSkillAsync(
         CreateSkillRequest request,
@@ -27,14 +27,14 @@ public class SkillService
     int? createdByUserId = null
  )
     {
-        // �����g�D���œ������O�̃X�L�������݂��邩�`�F�b�N
+        // 同じ組織の同じ名前のスキルが既に存在するかチェック
         var existingSkill = await _context
   .Skills.Where(s => s.OrganizationId == organizationId && s.Name == request.Name)
             .FirstOrDefaultAsync();
 
         if (existingSkill != null)
         {
-            throw new DuplicateException("���̃X�L�����͊��ɑ��݂��܂��B");
+            throw new DuplicateException("同じスキル名は既に存在します。");
         }
 
         var skill = new Skill
@@ -54,7 +54,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �X�L��ID�Ŏ擾
+    /// スキルIDで取得
     /// </summary>
     public async Task<Skill?> GetSkillByIdAsync(int skillId)
     {
@@ -64,7 +64,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �g�D���̃X�L�����y�[�W�l�[�V�����t���Ŏ擾
+    /// アクティブなスキルを取得
     /// </summary>
     public async Task<(List<Skill> skills, int totalCount)> GetSkillsByOrganizationPagedAsync(
         int organizationId,
@@ -94,7 +94,7 @@ public class SkillService
         return (skills, totalCount);
     }
     /// <summary>
-    /// �X�L�����X�V
+    /// スキルを更新
     /// </summary>
     public async Task<Skill> UpdateSkillAsync(
       int skillId,
@@ -105,10 +105,10 @@ public class SkillService
         var skill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
         if (skill == null)
         {
-            throw new NotFoundException("�X�L����������܂���B");
+            throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ���O��ύX����ꍇ�A�����g�D���œ������O�����݂��Ȃ����`�F�b�N
+        // 更新前に同じ組織の同じ名前のスキルが存在しないかチェック
         if (!string.IsNullOrEmpty(request.Name) && request.Name != skill.Name)
         {
             var existingSkill = await _context
@@ -122,7 +122,7 @@ public class SkillService
 
             if (existingSkill != null)
             {
-                throw new DuplicateException("���̃X�L�����͊��ɑ��݂��܂��B");
+                throw new DuplicateException("同じスキル名は既に存在します。");
             }
 
             skill.Name = request.Name;
@@ -143,7 +143,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �X�L�����폜
+    /// スキルを削除
     /// </summary>
     public async Task<bool> DeleteSkillAsync(int skillId)
     {
@@ -160,7 +160,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �X�L���𖳌���
+    /// スキルを非アクティブ化
     /// </summary>
     public async Task<bool> DeactivateSkillAsync(int skillId, int? updatedByUserId = null)
     {
@@ -181,7 +181,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �X�L����L����
+    /// スキルをアクティブ化
     /// </summary>
     public async Task<bool> ActivateSkillAsync(int skillId, int? updatedByUserId = null)
     {
@@ -202,7 +202,7 @@ public class SkillService
     }
 
     /// <summary>
-    /// �g�D���̃X�L����S�Ď擾�i�A�N�e�B�u�Ȃ��̂̂݁j
+    /// アクティブなスキルを取得
     /// </summary>
     public async Task<List<Skill>> GetActiveSkillsByOrganizationAsync(int organizationId)
     {
