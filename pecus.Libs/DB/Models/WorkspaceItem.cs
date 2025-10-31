@@ -1,4 +1,4 @@
-namespace Pecus.Libs.DB.Models;
+﻿namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// ワークスペース内のアイテムエンティティ
@@ -64,6 +64,16 @@ public class WorkspaceItem
     /// コミッターユーザーID（外部キー、NULL可）
     /// </summary>
     public int? CommitterId { get; set; }
+
+    /// <summary>
+    /// アイテム内容
+    /// </summary>
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool IsActive { get; set; }
 
     /// <summary>
     /// 作成日時

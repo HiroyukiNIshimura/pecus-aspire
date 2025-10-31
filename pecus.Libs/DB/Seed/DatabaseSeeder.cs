@@ -444,7 +444,73 @@ public class DatabaseSeeder
 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Added 100 workspaces completed");
+
+                // ワークスペースメンバーを割り当て
+                await SeedWorkspaceMembersAsync();
             }
         }
+    }
+
+    /// <summary>
+    /// ワークスペースメンバーのシードデータを投入
+    /// </summary>
+    private async Task SeedWorkspaceMembersAsync()
+    {
+        // キャッシュをクリアして再度読み込み
+        _context.ChangeTracker.Clear();
+
+        var workspaces = await _context.Workspaces.ToListAsync();
+
+        if (!workspaces.Any())
+        {
+            _logger.LogWarning("No workspaces found for seeding members");
+            return;
+        }
+
+        int totalMembersAdded = 0;
+
+        foreach (var workspace in workspaces)
+        {
+            // このワークスペースの組織に属するユーザーを取得
+            var organizationUsers = await _context.Users
+                .Where(u => u.OrganizationId == workspace.OrganizationId)
+                .ToListAsync();
+
+            if (!organizationUsers.Any())
+            {
+                continue;
+            }
+
+            // すでに存在するメンバーをチェック
+            var existingCount = await _context.WorkspaceUsers
+                .Where(wu => wu.WorkspaceId == workspace.Id)
+                .CountAsync();
+
+            if (existingCount > 0)
+            {
+                continue;
+            }
+
+            // 全ユーザーをメンバーに追加
+            foreach (var user in organizationUsers)
+            {
+                var workspaceUser = new WorkspaceUser
+                {
+                    WorkspaceId = workspace.Id,
+                    UserId = user.Id,
+                    JoinedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    WorkspaceRole = "Member",
+                };
+
+                _context.WorkspaceUsers.Add(workspaceUser);
+                totalMembersAdded++;
+            }
+
+            // ワークスペースごとに保存
+            await _context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
     }
 }

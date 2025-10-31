@@ -7626,6 +7626,27 @@
             "description": "組織名",
             "nullable": true
           },
+          "genreId": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルのアイコン（例: FontAwesome のクラス名）",
+            "nullable": true
+          },
+          "activeItemCount": {
+            "type": "integer",
+            "description": "アクティブなアイテム数",
+            "format": "int32"
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",

@@ -258,9 +258,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                   <table className="table table-zebra w-full">
                     <thead>
                       <tr>
-                        <th>ID</th>
+                        <th>コード</th>
                         <th>ワークスペース名</th>
-                        <th>組織</th>
+                        <th>ジャンル</th>
                         <th>ステータス</th>
                         <th>作成日</th>
                         <th>操作</th>
@@ -269,16 +269,13 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <tbody>
                       {workspaces.map((workspace) => (
                         <tr key={workspace.id}>
-                          <td>{workspace.id}</td>
+                          <td>{workspace.code || '-'}</td>
+                          <td className="font-semibold">{workspace.name}</td>
                           <td>
-                            <div>
-                              <div className="font-bold">{workspace.name}</div>
-                              {workspace.description && (
-                                <div className="text-sm opacity-70">{workspace.description}</div>
-                              )}
-                            </div>
+                            <span className="badge badge-outline">
+                              {workspace.genreName ||'-'}
+                            </span>
                           </td>
-                          <td>{workspace.organizationName || '不明'}</td>
                           <td>
                             <div className={`badge ${workspace.isActive ? 'badge-success' : 'badge-neutral'}`}>
                               {workspace.isActive ? 'アクティブ' : '非アクティブ'}

@@ -1,4 +1,4 @@
-namespace Pecus.Models.Responses.Workspace;
+﻿namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
 /// ワークスペースリストアイテムレスポンス
@@ -34,6 +34,26 @@ public class WorkspaceListItemResponse
     /// 組織名
     /// </summary>
     public string? OrganizationName { get; set; }
+
+    /// <summary>
+    /// ジャンルID
+    /// </summary>
+    public int? GenreId { get; set; }
+
+    /// <summary>
+    /// ジャンル名
+    /// </summary>
+    public string? GenreName { get; set; }
+
+    /// <summary>
+    /// ジャンルのアイコン（例: FontAwesome のクラス名）
+    /// </summary>
+    public string? GenreIcon { get; set; }
+
+    /// <summary>
+    /// アクティブなアイテム数
+    /// </summary>
+    public int ActiveItemCount { get; set; }
 
     /// <summary>
     /// 作成日時

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
@@ -39,12 +39,27 @@ internal class DbInitializer(
     {
         var sw = Stopwatch.StartNew();
 
-        var strategy = dbContext.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(dbContext.Database.MigrateAsync, cancellationToken);
+        try
+        {
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(dbContext.Database.MigrateAsync, cancellationToken);
+            logger.LogInformation("Database migrations completed");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database migration failed. Please check if all migrations are created and applied correctly.");
+            throw; // 再スローしてサービスを停止させる
+        }
 
-        logger.LogInformation("Database migrations completed");
-
-        await SeedAsync(seeder, cancellationToken);
+        try
+        {
+            await SeedAsync(seeder, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database seeding failed. Please check the seeding logic and data.");
+            throw; // 再スローしてサービスを停止させる
+        }
 
         logger.LogInformation(
             "Database initialization completed after {ElapsedMilliseconds}ms",

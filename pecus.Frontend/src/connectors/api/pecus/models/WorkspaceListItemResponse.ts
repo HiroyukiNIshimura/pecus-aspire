@@ -32,6 +32,22 @@ export type WorkspaceListItemResponse = {
      */
     organizationName?: string | null;
     /**
+     * ジャンルID
+     */
+    genreId?: number | null;
+    /**
+     * ジャンル名
+     */
+    genreName?: string | null;
+    /**
+     * ジャンルのアイコン（例: FontAwesome のクラス名）
+     */
+    genreIcon?: string | null;
+    /**
+     * アクティブなアイテム数
+     */
+    activeItemCount?: number;
+    /**
      * 作成日時
      */
     createdAt?: string;

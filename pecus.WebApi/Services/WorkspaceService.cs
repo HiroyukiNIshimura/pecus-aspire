@@ -149,7 +149,9 @@ public class WorkspaceService
     {
         var query = _context
             .Workspaces.Include(w => w.Organization)
+            .Include(w => w.Genre)
             .Include(w => w.WorkspaceUsers).ThenInclude(wu => wu.User)
+            .Include(w => w.WorkspaceItems)
             .Where(w => w.OrganizationId == organizationId)
             .AsQueryable();
 
