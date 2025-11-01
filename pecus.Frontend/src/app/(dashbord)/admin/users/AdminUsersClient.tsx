@@ -72,6 +72,7 @@ export default function AdminUsersClient({
   const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterSkillIds, setFilterSkillIds] = useState<number[]>([]);
+  const [filterSkillMode, setFilterSkillMode] = useState<'and' | 'or'>('and');
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const usernameValidation = useValidation(usernameFilterSchema);
@@ -123,6 +124,7 @@ export default function AdminUsersClient({
         }
         if (filterSkillIds.length > 0) {
           filterSkillIds.forEach(skillId => params.append('SkillIds', skillId.toString()));
+          params.append('SkillFilterMode', filterSkillMode);
         }
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
@@ -163,6 +165,7 @@ export default function AdminUsersClient({
         }
         if (filterSkillIds.length > 0) {
           filterSkillIds.forEach(skillId => params.append('SkillIds', skillId.toString()));
+          params.append('SkillFilterMode', filterSkillMode);
         }
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
@@ -187,7 +190,7 @@ export default function AdminUsersClient({
         console.error('Failed to fetch users:', error);
       }
     })();
-  }, [filterIsActive, filterUsername, filterSkillIds, withDelayedLoading]);
+  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading]);
 
   const handleUsernameChange = async (value: string) => {
     setFilterUsername(value);
@@ -213,6 +216,7 @@ export default function AdminUsersClient({
     setFilterUsername("");
     setFilterIsActive(true);
     setFilterSkillIds([]);
+    setFilterSkillMode('and');
     usernameValidation.clearErrors();
     setCurrentPage(1);
     // リセット後、初期フィルター条件で検索実行
@@ -388,23 +392,50 @@ export default function AdminUsersClient({
                           </ul>
                         </details>
                         {filterSkillIds.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {filterSkillIds.map((skillId) => {
-                              const skill = skills.find(s => s.id === skillId);
-                              return (
-                                <div key={skillId} className="badge badge-primary gap-2">
-                                  {skill?.name}
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleSkillFilter(skillId)}
-                                    className="btn btn-ghost btn-xs no-animation"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {filterSkillIds.map((skillId) => {
+                                const skill = skills.find(s => s.id === skillId);
+                                return (
+                                  <div key={skillId} className="badge badge-primary gap-2">
+                                    {skill?.name}
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSkillFilter(skillId)}
+                                      className="btn btn-ghost btn-xs no-animation"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {/* Skill Filter Mode */}
+                            <div className="flex gap-4 mt-3">
+                              <label className="flex items-center cursor-pointer gap-2">
+                                <input
+                                  type="radio"
+                                  name="skillFilterMode"
+                                  value="and"
+                                  checked={filterSkillMode === 'and'}
+                                  onChange={(e) => setFilterSkillMode(e.target.value as 'and' | 'or')}
+                                  className="radio radio-primary radio-sm"
+                                />
+                                <span className="text-sm">すべてのスキルを保有</span>
+                              </label>
+                              <label className="flex items-center cursor-pointer gap-2">
+                                <input
+                                  type="radio"
+                                  name="skillFilterMode"
+                                  value="or"
+                                  checked={filterSkillMode === 'or'}
+                                  onChange={(e) => setFilterSkillMode(e.target.value as 'and' | 'or')}
+                                  className="radio radio-primary radio-sm"
+                                />
+                                <span className="text-sm">いずれかのスキルを保有</span>
+                              </label>
+                            </div>
+                          </>
                         )}
                       </div>
                     )}

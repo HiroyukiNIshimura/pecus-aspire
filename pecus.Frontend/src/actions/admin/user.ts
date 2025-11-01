@@ -11,11 +11,12 @@ export async function getUsers(
   pageSize?: number,
   isActive?: boolean,
   username?: string,
-  skillIds?: number[]
+  skillIds?: number[],
+  skillFilterMode: string = 'and'
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers(page, pageSize, isActive, username, skillIds);
+    const response = await api.adminUser.getApiAdminUsers(page, pageSize, isActive, username, skillIds, skillFilterMode);
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch users:', error);

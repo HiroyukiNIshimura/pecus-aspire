@@ -1,7 +1,7 @@
 import AdminUsersClient from "./AdminUsersClient";
 import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
-import { getSkills } from "@/actions/admin/skills";
+import { getAllSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
 
 export const dynamic = 'force-dynamic';
@@ -51,7 +51,7 @@ export default async function AdminUsers() {
     const [usersResult, userResult, skillsResult] = await Promise.all([
       getUsers(1, undefined, true), // 全ユーザー取得（アクティブ・非アクティブ両方）
       getCurrentUser(),
-      getSkills(1, true), // アクティブなスキル一覧取得
+      getAllSkills(true), // 全スキルを取得（フィルター用）
     ]);
 
     // ユーザー一覧の処理
@@ -93,13 +93,11 @@ export default async function AdminUsers() {
 
     // スキル一覧の処理
     if (skillsResult.success && skillsResult.data) {
-      const skillData = skillsResult.data;
-      if (skillData.data && Array.isArray(skillData.data)) {
-        skills = skillData.data.map((skill: any) => ({
-          id: skill.id,
-          name: skill.name,
-        }));
-      }
+      // getAllSkills は配列を直接返す
+      skills = skillsResult.data.map((skill: any) => ({
+        id: skill.id,
+        name: skill.name,
+      }));
     }
   } catch (err: any) {
     console.error('AdminUsers: failed to fetch users, user info, or skills', err);

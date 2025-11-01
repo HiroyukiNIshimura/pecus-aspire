@@ -20,6 +20,8 @@ export class AdminUserService {
      * @param isActive アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
      * @param username ユーザー名による前方一致検索（オプション）
      * @param skillIds スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
+     * @param skillFilterMode スキルフィルターのモード（"and": すべてのスキルを保有、"or": いずれかのスキルを保有）
+     * デフォルトは "and"
      * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
@@ -29,6 +31,7 @@ export class AdminUserService {
         isActive?: boolean,
         username?: string,
         skillIds?: Array<number>,
+        skillFilterMode?: string,
     ): CancelablePromise<UserResponseUserStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -39,6 +42,7 @@ export class AdminUserService {
                 'IsActive': isActive,
                 'Username': username,
                 'SkillIds': skillIds,
+                'SkillFilterMode': skillFilterMode,
             },
             errors: {
                 404: `組織が見つかりません`,

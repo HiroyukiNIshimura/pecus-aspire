@@ -22,12 +22,16 @@ export async function GET(request: NextRequest) {
     const skillIdStrings = searchParams.getAll('SkillIds');
     const skillIds = skillIdStrings.length > 0 ? skillIdStrings.map(id => parseInt(id, 10)) : undefined;
 
+    // SkillFilterMode の取得（デフォルトは 'and'）
+    const skillFilterMode = searchParams.get('SkillFilterMode') || 'and';
+
     const result = await getUsers(
       page,
       pageSize,
       isActive,
       username,
-      skillIds
+      skillIds,
+      skillFilterMode
     );
 
     if (result.success) {

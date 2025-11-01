@@ -146,7 +146,8 @@ public class UserService
     ///     pageSize: 10,
     ///     isActive: true,
     ///     username: "admin",
-    ///     skillIds: new List&lt;int&gt; { 1, 2, 3 }
+    ///     skillIds: new List&lt;int&gt; { 1, 2, 3 },
+    ///     skillFilterMode: "and"
     /// )
     /// </code>
     /// </remarks>
@@ -154,18 +155,19 @@ public class UserService
         int organizationId,
         int page,
         int pageSize,
-      bool? isActive = null,
+        bool? isActive = null,
         string? username = null,
-        List<int>? skillIds = null
+        List<int>? skillIds = null,
+        string skillFilterMode = "and"
     )
     {
+        // 1. ベースクエリ（Include なし）
         var query = _context
-            .Users.Include(u => u.Roles)
-            .Include(u => u.UserSkills)
-            .ThenInclude(us => us.Skill)
+            .Users
             .Where(u => u.OrganizationId == organizationId)
             .AsQueryable();
 
+        // 2. フィルタ条件を適用
         if (isActive.HasValue)
         {
             query = query.Where(u => u.IsActive == isActive.Value);
@@ -178,20 +180,38 @@ public class UserService
 
         if (skillIds != null && skillIds.Any())
         {
-            // 指定されたスキルをすべて持つユーザーを検索
-            // サブクエリを使ってSQL側で評価させる
-            foreach (var skillId in skillIds)
+            // スキルフィルターモードに応じて AND/OR を切り替え
+            if (skillFilterMode?.ToLower() == "or")
             {
-                var currentSkillId = skillId; // クロージャ対策
-                query = query.Where(u => u.UserSkills.Any(us => us.SkillId == currentSkillId));
+                // OR条件: いずれかのスキルを持つユーザー
+                query = query.Where(u => u.UserSkills.Any(us => skillIds.Contains(us.SkillId)));
+            }
+            else
+            {
+                // AND条件（デフォルト）: すべてのスキルを持つユーザー
+                // サブクエリを使ってSQL側で評価させる
+                foreach (var skillId in skillIds)
+                {
+                    var currentSkillId = skillId; // クロージャ対策
+                    query = query.Where(u => u.UserSkills.Any(us => us.SkillId == currentSkillId));
+                }
             }
         }
 
         query = query.OrderBy(u => u.Id);
 
-        // AsSplitQueryを使用してデカルト爆発防止
+        // 3. 総件数を取得（Include なし）
         var totalCount = await query.CountAsync();
-        var users = await query.AsSplitQuery().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        // 4. ページング + Include + AsSplitQuery でデカルト爆発防止
+        var users = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(u => u.Roles)
+            .Include(u => u.UserSkills)
+                .ThenInclude(us => us.Skill)
+            .AsSplitQuery()
+            .ToListAsync();
 
         return (users, totalCount);
     }
@@ -581,16 +601,19 @@ public class UserService
     {
         var statistics = new UserStatistics();
 
-        // 並列実行で高速化
-        var activeCountTask = _context.Users
+        // DbContextは並列実行に対応していないため、逐次実行に変更
+        // アクティブなユーザー数
+        statistics.ActiveUserCount = await _context.Users
             .Where(u => u.OrganizationId == organizationId && u.IsActive)
             .CountAsync();
 
-        var inactiveCountTask = _context.Users
+        // 非アクティブなユーザー数
+        statistics.InactiveUserCount = await _context.Users
             .Where(u => u.OrganizationId == organizationId && !u.IsActive)
             .CountAsync();
 
-        var skillCountsTask = _context.UserSkills
+        // スキルごとのユーザー数
+        statistics.SkillCounts = await _context.UserSkills
             .Where(us => us.User.OrganizationId == organizationId)
             .GroupBy(us => new { us.Skill.Id, us.Skill.Name })
             .Select(g => new SkillUserCountResponse
@@ -603,7 +626,7 @@ public class UserService
             .ToListAsync();
 
         // ロールごとのユーザー数（多対多リレーションを経由）
-        var roleCountsTask = _context.Users
+        var roleCounts = await _context.Users
             .Where(u => u.OrganizationId == organizationId)
             .SelectMany(u => u.Roles)
             .GroupBy(r => new { r.Id, r.Name })
@@ -616,33 +639,8 @@ public class UserService
             .OrderBy(r => r.Name)
             .ToListAsync();
 
-        var workspaceParticipationCountTask = _context.Users
-            .Where(u => u.OrganizationId == organizationId && u.WorkspaceUsers.Any())
-            .CountAsync();
-
-        var totalUserCountTask = _context.Users
-            .Where(u => u.OrganizationId == organizationId)
-            .CountAsync();
-
-        // すべてのクエリを並列実行
-        await Task.WhenAll(
-            activeCountTask,
-            inactiveCountTask,
-            skillCountsTask,
-            roleCountsTask,
-            workspaceParticipationCountTask,
-            totalUserCountTask
-        );
-
-        // アクティブ/非アクティブのユーザー数
-        statistics.ActiveUserCount = activeCountTask.Result;
-        statistics.InactiveUserCount = inactiveCountTask.Result;
-
-        // スキルごとのユーザー数
-        statistics.SkillCounts = skillCountsTask.Result;
-
         // ロールごとのユーザー数（匿名型からRoleUserCountResponseに変換）
-        statistics.RoleCounts = roleCountsTask.Result
+        statistics.RoleCounts = roleCounts
             .Select(r => new RoleUserCountResponse
             {
                 Id = r.Id,
@@ -652,8 +650,15 @@ public class UserService
             .ToList();
 
         // ワークスペース参加状況
-        statistics.WorkspaceParticipationCount = workspaceParticipationCountTask.Result;
-        statistics.NoWorkspaceParticipationCount = totalUserCountTask.Result - workspaceParticipationCountTask.Result;
+        statistics.WorkspaceParticipationCount = await _context.Users
+            .Where(u => u.OrganizationId == organizationId && u.WorkspaceUsers.Any())
+            .CountAsync();
+
+        var totalUserCount = await _context.Users
+            .Where(u => u.OrganizationId == organizationId)
+            .CountAsync();
+
+        statistics.NoWorkspaceParticipationCount = totalUserCount - statistics.WorkspaceParticipationCount;
 
         return statistics;
     }

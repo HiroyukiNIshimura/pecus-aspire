@@ -24,6 +24,48 @@ export async function getSkills(
 }
 
 /**
+ * Server Action: 全スキルを取得（フィルター用）
+ * 複数ページを自動取得して結合
+ */
+export async function getAllSkills(
+  isActive: boolean = true
+): Promise<ApiResponse<any[]>> {
+  try {
+    const api = createPecusApiClients();
+    const allSkills: any[] = [];
+    let currentPage = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await api.adminSkill.getApiAdminSkills(currentPage, isActive);
+
+      if (response.data && response.data.length > 0) {
+        allSkills.push(...response.data);
+
+        // totalPagesから次ページの有無を判定
+        if (response.totalPages && response.totalPages > 0) {
+          hasMore = currentPage < response.totalPages;
+          currentPage++;
+        } else {
+          // totalPagesがない場合は1ページのみと判断
+          hasMore = false;
+        }
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return { success: true, data: allSkills };
+  } catch (error: any) {
+    console.error('Failed to fetch all skills:', error);
+    return {
+      success: false,
+      error: error.body?.message || error.message || '全スキルの取得に失敗しました'
+    };
+  }
+}
+
+/**
  * Server Action: スキル情報を取得
  */
 export async function getSkillDetail(

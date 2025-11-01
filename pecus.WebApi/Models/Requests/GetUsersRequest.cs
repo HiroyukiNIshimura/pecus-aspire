@@ -26,4 +26,11 @@ public class GetUsersRequest
     /// </summary>
     [MaxLength(10, ErrorMessage = "スキルIDは最大10個までです。")]
     public List<int>? SkillIds { get; set; }
+
+    /// <summary>
+    /// スキルフィルターのモード（"and": すべてのスキルを保有、"or": いずれかのスキルを保有）
+    /// デフォルトは "and"
+    /// </summary>
+    [RegularExpression("^(and|or)$", ErrorMessage = "SkillFilterMode は 'and' または 'or' を指定してください。")]
+    public string SkillFilterMode { get; set; } = "and";
 }

@@ -893,6 +893,15 @@
                 "format": "int32"
               }
             }
+          },
+          {
+            "name": "SkillFilterMode",
+            "in": "query",
+            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\r\nデフォルトは \"and\"",
+            "schema": {
+              "pattern": "^(and|or)$",
+              "type": "string"
+            }
           }
         ],
         "responses": {

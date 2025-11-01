@@ -81,12 +81,13 @@ public class AdminUserController : ControllerBase
             var pageSize = _config.Pagination.DefaultPageSize;
 
             (List<User> users, int totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
-                user.OrganizationId.Value,
-                validatedPage,
-                pageSize,
-                request.IsActive,
-                request.Username,
-                request.SkillIds
+                organizationId: user.OrganizationId.Value,
+                page: validatedPage,
+                pageSize: pageSize,
+                isActive: request.IsActive,
+                username: request.Username,
+                skillIds: request.SkillIds,
+                skillFilterMode: request.SkillFilterMode
             );
 
             var userResponses = users.Select(u => new UserResponse
