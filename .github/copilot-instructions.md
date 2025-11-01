@@ -507,40 +507,85 @@ builder.AddRedisClient("redis");
 
 ページングはクライアントから `page` のみ受け取り、`pageSize` はサーバー側で固定値を使います（サーバー性能担保のため）。
 
-### メソッド引数の設計ルール
-メソッドシグネチャの可読性と保守性を確保するため、以下のルールを適用してください。
+### 内部メソッド引数の設計ルール
+**目的**: 同じ型の引数が複数ある場合、呼び出し側での引数の置き間違え（typo）を防止する。
 
-**引数が3個以上の場合の対応**:
-1. **レコード型の使用（推奨）**: 関連する引数をレコード型にまとめてください。これにより呼び出し側でも型安全でドキュメント性が高まります。
-   ```csharp
-   // ❌ 避けるべき
-   public async Task CreateUserAsync(string email, string username, int roleId, bool isActive, string department)
+**基本ルール**:
+同じ型の引数が2個以上ある場合、**名前付き引数での呼び出しを必須**とする。
 
-   // ✅ 推奨
-   public record CreateUserRequest(string Email, string Username, int RoleId, bool IsActive, string Department);
-   public async Task CreateUserAsync(CreateUserRequest request)
-   ```
+**適用対象**:
+- `int A, int B, int C` のような複数の int 引数
+- `string A, string B, string C` のような複数の string 引数
+- `bool A, bool B, bool C` のような複数の bool 引数
 
-2. **名前付き引数の強制（アルゴリズムの複数引数の場合）**: 複数の同じ型の引数があり、レコード化が不自然な場合は `[CallerArgumentExpression]` 属性を使用して呼び出し元で名前付き引数を強制してください。（`C# 10`以上）
-   ```csharp
-   // ページング関数の例
-   public IEnumerable<T> Paginate<T>(
-       IEnumerable<T> source,
-       [CallerArgumentExpression(nameof(page))] int page = 1,
-       [CallerArgumentExpression(nameof(pageSize))] int pageSize = 20)
-   {
-       // 実装
-   }
+**実装パターン**:
 
-   // 呼び出し時は名前付き引数が必須：
-   // Paginate(data, page: 2, pageSize: 50);  // ✅
-   // Paginate(data, 2, 50);                   // ❌ コンパイルエラー
-   ```
+```csharp
+// ❌ 避けるべき：位置引数だと間違えやすい
+public void Process(int userId, int workspaceId, int organizationId)
+{
+    // ...
+}
+// 呼び出し側で順序を間違える可能性が高い
+Process(123, 456, 789);
 
-**規則の適用優先度**:
-- 引数が1〜2個：そのまま（変更不要）
-- 引数が3個以上で関連性がある：レコード型でまとめる
-- 引数が複数の同型パラメータ：`[CallerArgumentExpression]` で名前付き強制
+// ✅ 推奨：名前付き引数を使用
+Process(
+    userId: 123,
+    workspaceId: 456,
+    organizationId: 789
+);
+```
+
+**具体例**:
+
+```csharp
+// 複数の string 引数
+public void SendEmail(string to, string subject, string body)
+{
+    // ...
+}
+// 呼び出し
+SendEmail(
+    to: "user@example.com",
+    subject: "Welcome",
+    body: "Thank you for signing up."
+);
+
+// 複数の bool 引数
+public void Configure(bool enableLogging, bool enableCache, bool enableDebug)
+{
+    // ...
+}
+// 呼び出し
+Configure(
+    enableLogging: true,
+    enableCache: false,
+    enableDebug: true
+);
+
+// 複数の int 引数
+public void UpdateCounts(int totalCount, int activeCount, int inactiveCount)
+{
+    // ...
+}
+// 呼び出し
+UpdateCounts(
+    totalCount: 100,
+    activeCount: 80,
+    activeCount: 20
+);
+```
+
+**コードレビュー時のチェックポイント**:
+1. 同じ型の引数が2個以上あるメソッドを見つける
+2. 呼び出し側で名前付き引数を使用しているか確認
+3. 使用していない場合は修正を依頼
+
+**例外**:
+- 引数が1個のみの場合は名前付き引数不要
+- 型が異なる引数の組み合わせ（例: `int userId, string userName`）は位置引数でも可
+- LINQ メソッドなど、一般的な慣用句は例外として認める（例: `Take(10)`, `Skip(5)`）
 
 ### Results パターン（コントローラーの戻り値）
 コントローラーのアクションメソッドは `IActionResult` ではなく `Results<T>` を使用してください。これにより型安全性を確保し、OpenAPI/Swagger で正確なレスポンス仕様を生成できます。
