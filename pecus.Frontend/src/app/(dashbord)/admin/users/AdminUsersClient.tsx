@@ -365,19 +365,47 @@ export default function AdminUsersClient({
                         <label className="label">
                           <span className="label-text">スキル</span>
                         </label>
-                        <div className="flex flex-wrap gap-2">
-                          {skills.map((skill) => (
-                            <label key={skill.id} className="label cursor-pointer gap-2">
-                              <input
-                                type="checkbox"
-                                checked={filterSkillIds.includes(skill.id)}
-                                onChange={() => toggleSkillFilter(skill.id)}
-                                className="checkbox checkbox-sm checkbox-primary"
-                              />
-                              <span className="label-text text-sm">{skill.name}</span>
-                            </label>
-                          ))}
-                        </div>
+                        <details className="dropdown w-full">
+                          <summary className="btn btn-outline w-full justify-start">
+                            {filterSkillIds.length > 0
+                              ? `${filterSkillIds.length} 個選択中`
+                              : 'スキルを選択'}
+                          </summary>
+                          <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
+                            {skills.map((skill) => (
+                              <li key={skill.id}>
+                                <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={filterSkillIds.includes(skill.id)}
+                                    onChange={() => toggleSkillFilter(skill.id)}
+                                    className="checkbox checkbox-primary checkbox-sm"
+                                  />
+                                  <span className="label-text">{skill.name}</span>
+                                </label>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                        {filterSkillIds.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {filterSkillIds.map((skillId) => {
+                              const skill = skills.find(s => s.id === skillId);
+                              return (
+                                <div key={skillId} className="badge badge-primary gap-2">
+                                  {skill?.name}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleSkillFilter(skillId)}
+                                    className="btn btn-ghost btn-xs no-animation"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
 
