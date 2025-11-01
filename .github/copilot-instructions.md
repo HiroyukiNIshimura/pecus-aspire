@@ -54,14 +54,48 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 開発時は `npm install` → `npm run dev` でローカル開発サーバーを起動し、バックエンドAPIと連携して動作確認を行ってください。
 
 #### APIアクセスルール
-- **必須**: `createPecusApiClients()` メソッドでクライアントインスタンスを生成し、`pecus.WebApi` にアクセスすること
-- **禁止**: クライアントコードから直接 `pecus.WebApi` へのアクセス
-- **Next.js API Routes活用**: サーバーページでアクセスできない場合は、Next.js の API Routes 機能で `pecus.WebApi` へアクセスし、クライアントへデータを戻すこと
-- **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
-  - Server Actions（`src/actions/`）を使用してサーバーサイドでデータ取得
-  - `getCurrentUser()` などの認証情報取得は必ずServer Actionsで実行
-  - ページレンダリングで利用するマスタデータ（ジャンル、スキル、タグなど）もSSR時に取得してPropsで渡す
-- **リフレッシュトークン管理**: Axiosインターセプターが自動的にトークンリフレッシュを処理しているため、他のコードで明示的にリフレッシュ処理を実装しないこと
+
+**基本方針**: 読み取り操作（Query）と変更操作（Mutation）を分離し、クライアントから `pecus.WebApi` への直接アクセスは禁止
+
+##### 📖 読み取り操作（データ取得）
+
+- **SSR時の初期データ取得（推奨）**: `page.tsx` の Server Component で実行
+  - `createPecusApiClients()` でクライアントインスタンスを生成
+  - `pecus.WebApi` から直接データ取得
+  - Props 経由でクライアントコンポーネントへ参照を渡す
+  - マスタデータ（ジャンル、スキル、タグ）、認証情報、ページ初期データ
+
+- **動的なデータ再取得（フィルター変更、ページネーション）**: Next.js API Routes で実行
+  - クライアント → `Next.js API Routes` → `pecus.WebApi` の流れ
+  - `src/app/api/admin/workspaces/route.ts` など
+  - API Routes内で `createPecusApiClients()` を使用して `pecus.WebApi` にアクセス
+  - トークンはサーバーサイド（`iron-session`）から自動取得
+
+##### ✏️ 変更操作（データ変更）
+
+- **Server Actions を利用**: `src/actions/` に実装
+  - `"use server"` ディレクティブで宣言
+  - `createPecusApiClients()` でクライアントインスタンスを生成
+  - POST/PUT/DELETE などの変更処理を実行
+  - クライアントから `await serverActionName(data)` で呼び出し
+  - 例：`await createWorkspace(request)` → Server Action 内で API呼び出し
+
+**Server Actions の設計意図と内部動作**:
+- Server Actions はミューテーション（データの作成、更新、削除など）を簡素化することを目的に設計されています
+- 内部的には HTTP POST リクエストを使用してサーバーサイドで実行されます
+- クライアント側は型安全な関数呼び出しのように使用できますが、実際にはバックグラウンドで POST リクエストが送信されます
+
+##### ❌ 禁止事項
+
+- クライアントコンポーネント内で直接 `pecus.WebApi` にアクセス（トークン露出のリスク）
+- Server Actions から `fetch()` で直接 `pecus.WebApi` にアクセス（例：`fetch('http://webapi:5000/...')`）
+- クライアント側での `fetch('/api/admin/workspaces')` の多用（初期データはSSR側で取得）
+
+##### 🔄 トークン管理
+
+- Axiosインターセプターが自動的にトークンリフレッシュを処理
+- Server Actions と API Routes では `SessionManager.getSession()` からトークンを自動取得
+- 明示的なリフレッシュ処理は実装不要
 
 #### API クライアントの自動生成
 - **自動生成ファイル**: `src/connectors/api/PecusApiClient.generated.ts` は自動生成されるため、手動で編集しないこと
@@ -798,7 +832,7 @@ _logger.LogInformation("User {UserId} logged in from {IpAddress}", me, ipAddress
 - レイアウトは必ず共通のベーステンプレート（例: `_Layout.html.cshtml`）を継承してください。
 - フォントはWebセーフなもの（例: 'Segoe UI', 'Hiragino Sans', Arial, sans-serif）を指定し、全テンプレートで統一してください。
 - 余白・パディング・フォントサイズはインラインCSSで明示し、各要素の見た目が崩れないようにしてください。
- - ボタンやリンクはブランドカラー（例: `#0078D4` など）を使い、角丸・影なども統一してください。
+ - ボタンやリンクはブランドカラー（例: `# 0078D4` など）を使い、角丸・影なども統一してください。
 - ヘッダー・フッター・署名部分は必ず共通化し、テンプレートごとに差異が出ないようにしてください。
 - 画像やロゴは絶対パスではなく、必ずパブリックなURLまたはCID埋め込みで指定してください。
 - レスポンシブ対応は最低限（横幅600px固定＋スマホでの折り返し）を意識してください。
