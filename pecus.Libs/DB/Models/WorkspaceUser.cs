@@ -39,9 +39,4 @@ public class WorkspaceUser
     /// 最終アクセス日時
     /// </summary>
     public DateTime? LastAccessedAt { get; set; }
-
-    /// <summary>
-    /// アクティブフラグ
-    /// </summary>
-    public bool IsActive { get; set; } = true;
 }

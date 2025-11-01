@@ -150,7 +150,7 @@ export default function AdminClient({
 
                     <div className="form-control">
                       <label htmlFor="org-users" className="label">
-                        <span className="label-text font-semibold">所属ユーザー数</span>
+                        <span className="label-text font-semibold">所属ユーザー数 (非アクティブを含む)</span>
                       </label>
                       <div id="org-users" className="text-lg">
                         {organization?.userCount ?? 0} 人

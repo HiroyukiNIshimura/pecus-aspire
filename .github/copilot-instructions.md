@@ -631,9 +631,26 @@ _logger.LogInformation("User {UserId} logged in from {IpAddress}", me, ipAddress
 ## 開発ワークフロー
 ビルド確認は必須です。変更後はソリューション全体をビルドしてエラーを早期に検出してください。
 
+コードフォーマット例（.editorconfigに基づく自動整形）:
+```bash
+dotnet format pecus.sln
+```
+
 ビルド例:
 ```bash
 dotnet build pecus.sln
+```
+
+推奨フロー:
+```bash
+# 1. コードフォーマット実行
+dotnet format pecus.sln
+
+# 2. ビルド確認
+dotnet build pecus.sln
+
+# 3. アプリ起動
+dotnet run --project pecus.AppHost
 ```
 
 アプリ起動例（Aspire 経由）:

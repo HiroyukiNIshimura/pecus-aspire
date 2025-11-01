@@ -16,16 +16,19 @@ public class WorkspaceItemService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemService> _logger;
     private readonly PecusConfig _config;
+    private readonly WorkspaceAccessHelper _accessHelper;
 
     public WorkspaceItemService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemService> logger,
-        PecusConfig config
+        PecusConfig config,
+        WorkspaceAccessHelper accessHelper
     )
     {
         _context = context;
         _logger = logger;
         _config = config;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
@@ -48,23 +51,18 @@ public class WorkspaceItemService
             }
 
             // オーナーがワークスペースのメンバーか確認
-            var isOwnerMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-                wu.WorkspaceId == workspaceId && wu.UserId == ownerId && wu.IsActive
+            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+                ownerId,
+                workspaceId,
+                "ワークスペースのメンバーのみがアイテムを作成できます。"
             );
-            if (!isOwnerMember)
-            {
-                throw new InvalidOperationException(
-                    "ワークスペースのメンバーのみがアイテムを作成できます。"
-                );
-            }
 
             // Assigneeが指定されている場合、存在確認とメンバーチェック
             if (request.AssigneeId.HasValue)
             {
-                var isAssigneeMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-                    wu.WorkspaceId == workspaceId
-                    && wu.UserId == request.AssigneeId.Value
-                    && wu.IsActive
+                var isAssigneeMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
+                    request.AssigneeId.Value,
+                    workspaceId
                 );
                 if (!isAssigneeMember)
                 {
@@ -350,17 +348,11 @@ public class WorkspaceItemService
         if (request.AssigneeId.HasValue)
         {
             // Assigneeが指定されている場合、メンバーチェック
-            var isAssigneeMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-                wu.WorkspaceId == workspaceId
-                && wu.UserId == request.AssigneeId.Value
-                && wu.IsActive
+            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+                request.AssigneeId.Value,
+                workspaceId,
+                "作業者はワークスペースのメンバーである必要があります。"
             );
-            if (!isAssigneeMember)
-            {
-                throw new InvalidOperationException(
-                    "作業者はワークスペースのメンバーである必要があります。"
-                );
-            }
             item.AssigneeId = request.AssigneeId.Value;
         }
 

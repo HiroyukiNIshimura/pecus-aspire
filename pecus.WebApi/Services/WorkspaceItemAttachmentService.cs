@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
@@ -14,16 +15,19 @@ public class WorkspaceItemAttachmentService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemAttachmentService> _logger;
     private readonly PecusConfig _config;
+    private readonly WorkspaceAccessHelper _accessHelper;
 
     public WorkspaceItemAttachmentService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemAttachmentService> logger,
-        PecusConfig config
+        PecusConfig config,
+        WorkspaceAccessHelper accessHelper
     )
     {
         _context = context;
         _logger = logger;
         _config = config;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
@@ -100,15 +104,11 @@ public class WorkspaceItemAttachmentService
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-            wu.WorkspaceId == workspaceId && wu.UserId == userId && wu.IsActive
+        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+            userId,
+            workspaceId,
+            "ワークスペースのメンバーのみが添付ファイルをアップロードできます。"
         );
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみが添付ファイルをアップロードできます。"
-            );
-        }
 
         var attachment = new WorkspaceItemAttachment
         {
@@ -209,15 +209,11 @@ public class WorkspaceItemAttachmentService
         var attachment = await GetAttachmentAsync(workspaceId, itemId, attachmentId);
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-            wu.WorkspaceId == workspaceId && wu.UserId == userId && wu.IsActive
+        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+            userId,
+            workspaceId,
+            "ワークスペースのメンバーのみが添付ファイルを削除できます。"
         );
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみが添付ファイルを削除できます。"
-            );
-        }
 
         // アイテムのオーナーまたはアップロードしたユーザーのみ削除可能
         var item = await _context.WorkspaceItems.FindAsync(itemId);

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 
@@ -12,14 +13,17 @@ public class WorkspaceItemPinService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemPinService> _logger;
+    private readonly WorkspaceAccessHelper _accessHelper;
 
     public WorkspaceItemPinService(
         ApplicationDbContext context,
-        ILogger<WorkspaceItemPinService> logger
+        ILogger<WorkspaceItemPinService> logger,
+        WorkspaceAccessHelper accessHelper
     )
     {
         _context = context;
         _logger = logger;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
@@ -42,15 +46,11 @@ public class WorkspaceItemPinService
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _context.WorkspaceUsers.AnyAsync(wu =>
-            wu.WorkspaceId == workspaceId && wu.UserId == userId && wu.IsActive
+        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+            userId,
+            workspaceId,
+            "ワークスペースのメンバーのみがアイテムをPINできます。"
         );
-        if (!isMember)
-        {
-            throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムをPINできます。"
-            );
-        }
 
         // 既にPINされているか確認
         var existingPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(p =>

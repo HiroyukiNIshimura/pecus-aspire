@@ -71,4 +71,42 @@ public class WorkspaceAccessHelper
         var (hasAccess, _) = await CheckWorkspaceAccessAsync(userId, workspaceId);
         return hasAccess;
     }
+
+    /// <summary>
+    /// ユーザーがワークスペースのアクティブなメンバーかチェック
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>アクティブなメンバーの場合はtrue、それ以外はfalse</returns>
+    public async Task<bool> IsActiveWorkspaceMemberAsync(int userId, int workspaceId)
+    {
+        return await _context.WorkspaceUsers.AnyAsync(wu =>
+            wu.WorkspaceId == workspaceId
+            && wu.UserId == userId
+            && wu.User != null
+            && wu.User.IsActive
+        );
+    }
+
+    /// <summary>
+    /// ユーザーがワークスペースのアクティブなメンバーでない場合に例外をスロー
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="errorMessage">エラーメッセージ（省略時はデフォルトメッセージ）</param>
+    /// <exception cref="InvalidOperationException">メンバーでない場合</exception>
+    public async Task EnsureActiveWorkspaceMemberAsync(
+        int userId,
+        int workspaceId,
+        string? errorMessage = null
+    )
+    {
+        var isMember = await IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                errorMessage ?? "ワークスペースのメンバーのみがこの操作を実行できます。"
+            );
+        }
+    }
 }

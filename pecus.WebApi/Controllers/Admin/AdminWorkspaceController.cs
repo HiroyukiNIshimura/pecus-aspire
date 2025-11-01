@@ -181,17 +181,17 @@ public class AdminWorkspaceController : ControllerBase
                         }
                         : null,
                 Members = workspace.WorkspaceUsers?
-                    .Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive))
+                    .Where(wu => wu.User != null && wu.User.IsActive)
                     .Select(wu => new WorkspaceUserDetailResponse
                     {
                         WorkspaceId = wu.WorkspaceId,
                         UserId = wu.UserId,
-                        Username = wu.User?.Username,
-                        Email = wu.User?.Email,
+                        Username = wu.User!.Username,
+                        Email = wu.User.Email,
                         WorkspaceRole = wu.WorkspaceRole,
                         JoinedAt = wu.JoinedAt,
                         LastAccessedAt = wu.LastAccessedAt,
-                        IsActive = wu.IsActive,
+                        IsActive = wu.User.IsActive,
                     })
                     .ToList(),
                 CreatedAt = workspace.CreatedAt,
@@ -270,19 +270,19 @@ public class AdminWorkspaceController : ControllerBase
                     CreatedAt = w.CreatedAt,
                     UpdatedAt = w.UpdatedAt,
                     IsActive = w.IsActive,
-                    MemberCount = w.WorkspaceUsers?.Count(wu => wu.IsActive) ?? 0,
+                    MemberCount = w.WorkspaceUsers?.Count ?? 0, // フィルタ済みコレクションの件数
                     Members = w.WorkspaceUsers?
-                        .Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive))
+                        .Where(wu => wu.User != null && wu.User.IsActive)
                         .Select(wu => new WorkspaceUserDetailResponse
                         {
                             WorkspaceId = wu.WorkspaceId,
                             UserId = wu.UserId,
-                            Username = wu.User?.Username,
-                            Email = wu.User?.Email,
+                            Username = wu.User!.Username,
+                            Email = wu.User.Email,
                             WorkspaceRole = wu.WorkspaceRole,
                             JoinedAt = wu.JoinedAt,
                             LastAccessedAt = wu.LastAccessedAt,
-                            IsActive = wu.IsActive,
+                            IsActive = wu.User.IsActive,
                         })
                         .ToList(),
                 })
@@ -615,7 +615,7 @@ public class AdminWorkspaceController : ControllerBase
                     WorkspaceRole = workspaceUser.WorkspaceRole,
                     JoinedAt = workspaceUser.JoinedAt,
                     LastAccessedAt = workspaceUser.LastAccessedAt,
-                    IsActive = workspaceUser.IsActive,
+                    IsActive = workspaceUser.User?.IsActive ?? false,
                 },
             };
             return TypedResults.Ok(response);
@@ -771,7 +771,7 @@ public class AdminWorkspaceController : ControllerBase
                     WorkspaceRole = m.WorkspaceRole,
                     JoinedAt = m.JoinedAt,
                     LastAccessedAt = m.LastAccessedAt,
-                    IsActive = m.IsActive,
+                    IsActive = m.User?.IsActive ?? false,
                 })
                 .ToList();
 

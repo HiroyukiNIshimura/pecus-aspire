@@ -13,6 +13,11 @@ public class ImageTasks
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ImageTasks> _logger;
 
+    /// <summary>
+    /// ImageTasks のコンストラクタ
+    /// </summary>
+    /// <param name="context">データベースコンテキスト</param>
+    /// <param name="logger">ロガー</param>
     public ImageTasks(ApplicationDbContext context, ILogger<ImageTasks> logger)
     {
         _context = context;

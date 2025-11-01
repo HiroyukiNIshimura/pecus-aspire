@@ -9,6 +9,10 @@ public class HangfireTasks
 {
     private readonly ILogger<HangfireTasks> _logger;
 
+    /// <summary>
+    /// HangfireTasks のコンストラクタ
+    /// </summary>
+    /// <param name="logger">ロガー</param>
     public HangfireTasks(ILogger<HangfireTasks> logger)
     {
         _logger = logger;

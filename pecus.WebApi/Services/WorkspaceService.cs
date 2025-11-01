@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
@@ -62,7 +62,6 @@ public class WorkspaceService
                     UserId = createdByUserId.Value,
                     WorkspaceRole = "Owner",
                     JoinedAt = DateTime.UtcNow,
-                    IsActive = true,
                 };
                 _context.WorkspaceUsers.Add(workspaceUser);
                 await _context.SaveChangesAsync();
@@ -152,10 +151,11 @@ public class WorkspaceService
         var query = _context
             .Workspaces.Include(w => w.Organization)
             .Include(w => w.Genre)
-            .Include(w => w.WorkspaceUsers.Where(wu => wu.IsActive))
+            .Include(w => w.WorkspaceUsers.Where(wu => wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
             .Where(w => w.OrganizationId == organizationId)
+            .AsSplitQuery() // Split query to avoid cartesian explosion デカルト爆発防止
             .AsQueryable();
 
         if (isActive.HasValue)
@@ -323,7 +323,6 @@ public class WorkspaceService
             UserId = request.UserId,
             WorkspaceRole = request.WorkspaceRole ?? "Member",
             JoinedAt = DateTime.UtcNow,
-            IsActive = true,
         };
 
         _context.WorkspaceUsers.Add(workspaceUser);
@@ -372,7 +371,7 @@ public class WorkspaceService
 
         if (activeOnly == true)
         {
-            query = query.Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive));
+            query = query.Where(wu => wu.User != null && wu.User.IsActive);
         }
 
         query = query.OrderBy(wu => wu.JoinedAt);
@@ -402,7 +401,7 @@ public class WorkspaceService
 
         // ユニークなメンバーの総数を取得（同じユーザーが複数のワークスペースに属する場合も1人とカウント）
         statistics.UniqueMemberCount = await _context.WorkspaceUsers
-            .Where(wu => wu.Workspace.OrganizationId == organizationId && wu.IsActive && (wu.User == null || wu.User.IsActive))
+            .Where(wu => wu.Workspace.OrganizationId == organizationId && wu.User != null && wu.User.IsActive)
             .Select(wu => wu.UserId)
             .Distinct()
             .CountAsync();

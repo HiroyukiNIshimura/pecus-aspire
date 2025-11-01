@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 
@@ -12,14 +13,17 @@ public class WorkspaceItemTagService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemTagService> _logger;
+    private readonly WorkspaceAccessHelper _accessHelper;
 
     public WorkspaceItemTagService(
         ApplicationDbContext context,
-        ILogger<WorkspaceItemTagService> logger
+        ILogger<WorkspaceItemTagService> logger,
+        WorkspaceAccessHelper accessHelper
     )
     {
         _context = context;
         _logger = logger;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
@@ -51,21 +55,17 @@ public class WorkspaceItemTagService
             }
 
             // ユーザーがワークスペースのメンバーか確認
-            var workspace = await _context
-                .Workspaces.Include(w => w.WorkspaceUsers)
-                .FirstOrDefaultAsync(w => w.Id == workspaceId);
+            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+                userId,
+                workspaceId,
+                "ワークスペースのメンバーのみがタグを設定できます。"
+            );
 
+            // ワークスペース情報を取得（OrganizationId取得用）
+            var workspace = await _context.Workspaces.FindAsync(workspaceId);
             if (workspace == null)
             {
                 throw new NotFoundException("ワークスペースが見つかりません。");
-            }
-
-            var isMember = workspace.WorkspaceUsers.Any(wu => wu.UserId == userId && wu.IsActive);
-            if (!isMember)
-            {
-                throw new InvalidOperationException(
-                    "ワークスペースのメンバーのみがタグを設定できます。"
-                );
             }
 
             // 既存のタグ関連をすべて削除

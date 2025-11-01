@@ -8,6 +8,10 @@ namespace Pecus.Libs.DB;
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
+    /// <summary>
+    /// ApplicationDbContext のコンストラクタ
+    /// </summary>
+    /// <param name="options">DbContext のオプション</param>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
 
@@ -86,6 +90,10 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<UserSkill> UserSkills { get; set; }
 
+    /// <summary>
+    /// モデル作成時の設定（リレーションシップ、インデックス等）
+    /// </summary>
+    /// <param name="modelBuilder">モデルビルダー</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

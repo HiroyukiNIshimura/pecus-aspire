@@ -14,6 +14,12 @@ public class EmailTasks
     private readonly ILogger<EmailTasks> _logger;
     private readonly IConfiguration _config;
 
+    /// <summary>
+    /// EmailTasks のコンストラクタ
+    /// </summary>
+    /// <param name="emailService">メール送信サービス</param>
+    /// <param name="logger">ロガー</param>
+    /// <param name="config">設定</param>
     public EmailTasks(IEmailService emailService, ILogger<EmailTasks> logger, IConfiguration config)
     {
         _emailService = emailService;

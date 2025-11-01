@@ -636,7 +636,6 @@ public class DatabaseSeeder
                     WorkspaceId = workspace.Id,
                     UserId = user.Id,
                     JoinedAt = DateTime.UtcNow,
-                    IsActive = true,
                     WorkspaceRole = "Member",
                 };
 
