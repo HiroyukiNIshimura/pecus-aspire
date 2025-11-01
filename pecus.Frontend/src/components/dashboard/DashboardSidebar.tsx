@@ -4,9 +4,8 @@ import { usePathname } from "next/navigation";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GridIcon from "@mui/icons-material/GridView";
 import TaskIcon from "@mui/icons-material/Task";
-import FolderIcon from "@mui/icons-material/Folder";
-import PeopleIcon from "@mui/icons-material/People";
-import BarChartIcon from "@mui/icons-material/BarChart";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import HistoryIcon from "@mui/icons-material/History";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 interface DashboardSidebarProps {
@@ -18,10 +17,9 @@ interface DashboardSidebarProps {
 const menuItems = [
   { href: "/dashboard", label: "概要", icon: DashboardIcon },
   { href: "/workspaces", label: "ワークスペース", icon: GridIcon },
+  { href: "/my-items", label: "マイアイテム", icon: AssignmentIcon },
   { href: "/tasks", label: "タスク", icon: TaskIcon },
-  { href: "/projects", label: "プロジェクト", icon: FolderIcon },
-  { href: "/team", label: "チーム", icon: PeopleIcon },
-  { href: "/analytics", label: "分析", icon: BarChartIcon },
+  { href: "/activity", label: "アクティビティ", icon: HistoryIcon },
 ];
 
 const adminItem = { href: "/admin", label: "管理者", icon: AdminPanelSettingsIcon };
