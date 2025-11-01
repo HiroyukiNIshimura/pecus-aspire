@@ -128,10 +128,10 @@ public class BackendOrganizationController : ControllerBase
             });
 
             var response = PaginationHelper.CreatePagedResponse(
-                organizationResponses,
-                totalCount,
-                validatedPage,
-                pageSize
+                data: organizationResponses,
+                totalCount: totalCount,
+                page: validatedPage,
+                pageSize: pageSize
             );
 
             return TypedResults.Ok(response);

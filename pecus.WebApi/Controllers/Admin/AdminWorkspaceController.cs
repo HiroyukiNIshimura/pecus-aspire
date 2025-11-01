@@ -776,7 +776,7 @@ public class AdminWorkspaceController : ControllerBase
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
-                items,
+                data: items,
                 totalCount: totalCount,
                 page: validatedPage,
                 pageSize: pageSize,

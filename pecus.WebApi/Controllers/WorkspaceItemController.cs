@@ -193,10 +193,10 @@ public class WorkspaceItemController : ControllerBase
             {
                 // 空の結果を返す
                 var emptyResponse = PaginationHelper.CreatePagedResponse(
-                    new List<WorkspaceItemDetailResponse>(),
-                    request.Page,
-                    _config.Pagination.DefaultPageSize,
-                    0
+                    data: new List<WorkspaceItemDetailResponse>(),
+                    totalCount: 0,
+                    page: request.Page,
+                    pageSize: _config.Pagination.DefaultPageSize
                 );
                 return TypedResults.Ok(emptyResponse);
             }
@@ -227,10 +227,10 @@ public class WorkspaceItemController : ControllerBase
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(
-                itemResponses,
-                request.Page,
-                pageSize,
-                totalCount
+                data: itemResponses,
+                totalCount: totalCount,
+                page: request.Page,
+                pageSize: pageSize
             );
 
             return TypedResults.Ok(response);

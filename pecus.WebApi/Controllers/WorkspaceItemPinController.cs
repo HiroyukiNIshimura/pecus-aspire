@@ -228,10 +228,10 @@ public class WorkspaceItemPinController : ControllerBase
                 .ToList();
 
             var response = PaginationHelper.CreatePagedResponse(
-                itemResponses,
-                request.Page,
-                pageSize,
-                totalCount
+                data: itemResponses,
+                totalCount: totalCount,
+                page: request.Page,
+                pageSize: pageSize
             );
 
             return TypedResults.Ok(response);

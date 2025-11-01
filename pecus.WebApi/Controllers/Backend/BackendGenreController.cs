@@ -60,10 +60,10 @@ public class BackendGenreController : ControllerBase
             );
 
             var response = PaginationHelper.CreatePagedResponse(
-                genres,
-                currentPage,
-                _config.Pagination.DefaultPageSize,
-                totalCount
+                data: genres,
+                totalCount: totalCount,
+                page: currentPage,
+                pageSize: _config.Pagination.DefaultPageSize
             );
 
             return TypedResults.Ok(response);

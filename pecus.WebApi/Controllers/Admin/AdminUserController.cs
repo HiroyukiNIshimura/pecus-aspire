@@ -120,11 +120,11 @@ public class AdminUserController : ControllerBase
             var statistics = await _userService.GetUserStatisticsByOrganizationAsync(user.OrganizationId.Value);
 
             var response = PaginationHelper.CreatePagedResponse(
-                userResponses,
-                totalCount,
-                validatedPage,
-                pageSize,
-                statistics
+                data: userResponses,
+                totalCount: totalCount,
+                page: validatedPage,
+                pageSize: pageSize,
+                summary: statistics
             );
 
             return TypedResults.Ok(response);
