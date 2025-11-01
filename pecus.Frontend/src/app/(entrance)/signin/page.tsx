@@ -39,7 +39,8 @@ const LoginForm = () => {
             return;
           }
 
-          setError(result.error || 'ログイン認証に失敗しました。');
+          console.error(result.error);
+          setError('ログイン認証に失敗しました。');
         } catch (err) {
           console.error(err);
           setError('ログイン認証に失敗しました。');
