@@ -205,15 +205,20 @@ public class AdminSkillController : ControllerBase
     /// <summary>
     /// スキル一覧取得（ページネーション）
     /// </summary>
+    /// <remarks>
+    /// スキルの一覧をページネーションで取得します。
+    /// 統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、
+    /// 利用されているトップ５スキル、利用されていないスキルのリストを含みます。
+    /// </remarks>
     /// <param name="request">スキル一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
-  typeof(PagedResponse<SkillListItemResponse, object>),
+  typeof(PagedResponse<SkillListItemResponse, SkillStatistics>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-      Results<Ok<PagedResponse<SkillListItemResponse, object>>, StatusCodeHttpResult>
+      Results<Ok<PagedResponse<SkillListItemResponse, SkillStatistics>>, StatusCodeHttpResult>
     > GetSkills([FromQuery] GetSkillsRequest request)
     {
         try
@@ -223,7 +228,7 @@ public class AdminSkillController : ControllerBase
             {
                 // 認証済みユーザーが組織に所属していない場合、空のリストを返す
                 return TypedResults.Ok(
-             PaginationHelper.CreatePagedResponse<SkillListItemResponse, object>(
+             PaginationHelper.CreatePagedResponse<SkillListItemResponse, SkillStatistics>(
               data: new List<SkillListItemResponse>(),
                     totalCount: 0,
                   page: 1,
@@ -241,7 +246,9 @@ public class AdminSkillController : ControllerBase
         organizationId.Value,
           validatedPage,
            pageSize,
-             request.IsActive
+             request.IsActive,
+             request.UnusedOnly,
+             request.Name
                    );
 
             var items = skills
@@ -257,12 +264,15 @@ public class AdminSkillController : ControllerBase
                 })
                 .ToList();
 
-            var response = PaginationHelper.CreatePagedResponse<SkillListItemResponse, object>(
+            // 統計情報を取得
+            var statistics = await _skillService.GetSkillStatisticsByOrganizationAsync(organizationId.Value);
+
+            var response = PaginationHelper.CreatePagedResponse<SkillListItemResponse, SkillStatistics>(
           data: items,
        totalCount: totalCount,
       page: validatedPage,
        pageSize: pageSize,
-        summary: null
+        summary: statistics
          );
             return TypedResults.Ok(response);
         }

@@ -70,7 +70,9 @@ public class SkillService
         int organizationId,
         int page,
         int pageSize,
-        bool? isActive = null
+        bool? isActive = null,
+        bool? unusedOnly = null,
+        string? name = null
     )
     {
         var query = _context
@@ -79,6 +81,17 @@ public class SkillService
         if (isActive.HasValue)
         {
             query = query.Where(s => s.IsActive == isActive.Value);
+        }
+
+        if (unusedOnly.HasValue && unusedOnly.Value)
+        {
+            // 未使用スキル（ユーザースキルが0件）のみを取得
+            query = query.Where(s => s.UserSkills == null || s.UserSkills.Count == 0);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(s => s.Name.StartsWith(name));
         }
 
         query = query.Include(s => s.UserSkills);
@@ -218,5 +231,55 @@ public class SkillService
     public async Task<int> GetSkillCountByOrganizationAsync(int organizationId)
     {
         return await _context.Skills.CountAsync(s => s.OrganizationId == organizationId);
+    }
+
+    /// <summary>
+    /// 組織のスキル統計情報を取得
+    /// </summary>
+    public async Task<Models.Responses.Skill.SkillStatistics> GetSkillStatisticsByOrganizationAsync(
+        int organizationId
+    )
+    {
+        var skills = await _context
+            .Skills
+            .Where(s => s.OrganizationId == organizationId)
+            .Include(s => s.UserSkills)
+            .ToListAsync();
+
+        var totalSkills = skills.Count;
+        var activeSkills = skills.Count(s => s.IsActive);
+        var inactiveSkills = totalSkills - activeSkills;
+
+        // 利用されているスキルのトップ５（降順）
+        var topUsedSkills = skills
+            .Where(s => s.UserSkills?.Count > 0)
+            .OrderByDescending(s => s.UserSkills!.Count)
+            .Take(5)
+            .Select(s => new Models.Responses.Skill.SkillUsageItem
+            {
+                Id = s.Id,
+                Name = s.Name,
+            })
+            .ToList();
+
+        // 利用されていないスキルのリスト
+        var unusedSkills = skills
+            .Where(s => s.UserSkills?.Count == 0)
+            .OrderBy(s => s.Name)
+            .Select(s => new Models.Responses.Skill.SkillUsageItem
+            {
+                Id = s.Id,
+                Name = s.Name,
+            })
+            .ToList();
+
+        return new Models.Responses.Skill.SkillStatistics
+        {
+            TotalSkills = totalSkills,
+            ActiveSkills = activeSkills,
+            InactiveSkills = inactiveSkills,
+            TopUsedSkills = topUsedSkills,
+            UnusedSkills = unusedSkills,
+        };
     }
 }

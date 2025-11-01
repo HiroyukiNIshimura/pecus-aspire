@@ -145,7 +145,8 @@ public class WorkspaceService
         int page,
         int pageSize,
         bool? isActive = null,
-        int? genreId = null
+        int? genreId = null,
+        string? name = null
     )
     {
         var query = _context
@@ -164,6 +165,11 @@ public class WorkspaceService
         if (genreId.HasValue)
         {
             query = query.Where(w => w.GenreId == genreId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(w => w.Name.StartsWith(name));
         }
 
         query = query.OrderBy(w => w.Id);

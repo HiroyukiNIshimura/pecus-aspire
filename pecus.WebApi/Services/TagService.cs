@@ -101,7 +101,9 @@ public class TagService
         int organizationId,
         int page,
         int pageSize,
-        bool? isActive = null
+        bool? isActive = null,
+        bool? unusedOnly = null,
+        string? name = null
     )
     {
         var query = _context
@@ -110,6 +112,17 @@ public class TagService
         if (isActive.HasValue)
         {
             query = query.Where(t => t.IsActive == isActive.Value);
+        }
+
+        if (unusedOnly.HasValue && unusedOnly.Value)
+        {
+            // 未使用タグ（アイテムが0件）のみを取得
+            query = query.Where(t => t.WorkspaceItemTags == null || t.WorkspaceItemTags.Count == 0);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(t => t.Name.StartsWith(name));
         }
 
         query = query.Include(t => t.CreatedByUser).Include(t => t.WorkspaceItemTags);
@@ -261,5 +274,55 @@ public class TagService
     public async Task<int> GetTagCountByOrganizationAsync(int organizationId)
     {
         return await _context.Tags.CountAsync(t => t.OrganizationId == organizationId);
+    }
+
+    /// <summary>
+    /// 組織のタグ統計情報を取得
+    /// </summary>
+    public async Task<Models.Responses.Tag.TagStatistics> GetTagStatisticsByOrganizationAsync(
+        int organizationId
+    )
+    {
+        var tags = await _context
+            .Tags
+            .Where(t => t.OrganizationId == organizationId)
+            .Include(t => t.WorkspaceItemTags)
+            .ToListAsync();
+
+        var totalTags = tags.Count;
+        var activeTags = tags.Count(t => t.IsActive);
+        var inactiveTags = totalTags - activeTags;
+
+        // 利用されているタグのトップ５（降順）
+        var topUsedTags = tags
+            .Where(t => t.WorkspaceItemTags?.Count > 0)
+            .OrderByDescending(t => t.WorkspaceItemTags!.Count)
+            .Take(5)
+            .Select(t => new Models.Responses.Tag.TagUsageItem
+            {
+                Id = t.Id,
+                Name = t.Name,
+            })
+            .ToList();
+
+        // 利用されていないタグのリスト
+        var unusedTags = tags
+            .Where(t => t.WorkspaceItemTags?.Count == 0)
+            .OrderBy(t => t.Name)
+            .Select(t => new Models.Responses.Tag.TagUsageItem
+            {
+                Id = t.Id,
+                Name = t.Name,
+            })
+            .ToList();
+
+        return new Models.Responses.Tag.TagStatistics
+        {
+            TotalTags = totalTags,
+            ActiveTags = activeTags,
+            InactiveTags = inactiveTags,
+            TopUsedTags = topUsedTags,
+            UnusedTags = unusedTags,
+        };
     }
 }

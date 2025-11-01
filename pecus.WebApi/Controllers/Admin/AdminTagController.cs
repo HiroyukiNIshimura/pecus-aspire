@@ -209,14 +209,19 @@ public class AdminTagController : ControllerBase
     /// <summary>
     /// タグ一覧取得（ページネーション）
     /// </summary>
+    /// <remarks>
+    /// タグの一覧をページネーションで取得します。
+    /// 統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、
+    /// 利用されているトップ５タグ、利用されていないタグのリストを含みます。
+    /// </remarks>
     [HttpGet]
     [ProducesResponseType(
-        typeof(PagedResponse<TagListItemResponse, object>),
+        typeof(PagedResponse<TagListItemResponse, TagStatistics>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<PagedResponse<TagListItemResponse, object>>, StatusCodeHttpResult>
+        Results<Ok<PagedResponse<TagListItemResponse, TagStatistics>>, StatusCodeHttpResult>
     > GetTags([FromQuery] GetTagsRequest request)
     {
         try
@@ -225,7 +230,7 @@ public class AdminTagController : ControllerBase
             if (!organizationId.HasValue)
             {
                 return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse<TagListItemResponse, object>(
+                    PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
                         data: new List<TagListItemResponse>(),
                         totalCount: 0,
                         page: 1,
@@ -243,7 +248,9 @@ public class AdminTagController : ControllerBase
                     organizationId.Value,
                     validatedPage,
                     pageSize,
-                    request.IsActive
+                    request.IsActive,
+                    request.UnusedOnly,
+                    request.Name
                 );
 
             var items = tags
@@ -258,12 +265,15 @@ public class AdminTagController : ControllerBase
                 })
                 .ToList();
 
-            var response = PaginationHelper.CreatePagedResponse<TagListItemResponse, object>(
+            // 統計情報を取得
+            var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(organizationId.Value);
+
+            var response = PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
                 data: items,
                 totalCount: totalCount,
                 page: validatedPage,
                 pageSize: pageSize,
-                summary: null
+                summary: statistics
             );
             return TypedResults.Ok(response);
         }

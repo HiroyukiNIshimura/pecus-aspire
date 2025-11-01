@@ -75,6 +75,12 @@ public class GetWorkspacesRequest
     /// ジャンルIDでフィルター（オプション）
     /// </summary>
     public int? GenreId { get; set; }
+
+    /// <summary>
+    /// ワークスペース名で前方一致検索（オプション）
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "検索名は100文字以内で入力してください。")]
+    public string? Name { get; set; }
 }
 
 /// <summary>

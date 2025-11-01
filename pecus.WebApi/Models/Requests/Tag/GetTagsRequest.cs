@@ -17,4 +17,15 @@ public class GetTagsRequest
     /// アクティブ状態フィルター
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// 未使用のタグのみ取得するか（true: 未使用のみ、false または null: すべて）
+    /// </summary>
+    public bool? UnusedOnly { get; set; }
+
+    /// <summary>
+    /// タグ名で前方一致検索（オプション）
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "検索名は100文字以内で入力してください。")]
+    public string? Name { get; set; }
 }
