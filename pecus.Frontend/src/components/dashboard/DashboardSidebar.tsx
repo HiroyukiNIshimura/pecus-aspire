@@ -38,11 +38,11 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, isAdmin 
             <li key={item.href} className="w-full">
               <a
                 href={item.href}
-                className={`${pathname === item.href ? "menu-active" : ""} lg:flex-row flex-col lg:!justify-start lg:!items-start !justify-center !items-center w-full`}
+                className={`${pathname === item.href ? "menu-active" : ""} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? "!justify-start !items-center" : "!justify-center !items-center"} w-full`}
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span className="lg:inline hidden">{item.label}</span>
+                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>
           );
