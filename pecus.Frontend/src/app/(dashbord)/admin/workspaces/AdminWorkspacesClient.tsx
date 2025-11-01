@@ -360,7 +360,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                           setFilterName("");
                           // 【ポイント5】エラーのクリア: nameValidation.clearErrors()
                           nameValidation.clearErrors();
-                          
+
                           // リセット後に再検索を実行（デフォルト条件で検索）
                           setCurrentPage(1);
                           await withDelayedLoading(async () => {
@@ -368,7 +368,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                               const params = new URLSearchParams();
                               params.append('page', '1');
                               params.append('IsActive', 'true'); // デフォルト: アクティブのみ
-                              
+
                               const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
                               if (response.ok) {
                                 const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
