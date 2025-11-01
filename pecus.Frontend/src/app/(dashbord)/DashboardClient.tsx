@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 interface UserInfo {
@@ -22,99 +23,12 @@ export default function DashboardClient({ initialUser, fetchError }: DashboardCl
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Sticky Navigation Header */}
-      <header className="sticky top-0 z-10 bg-base-100 shadow-sm border-b border-base-300">
-        <nav className="navbar">
-          <div className="navbar-start flex flex-col">
-            <a href="/" className="text-3xl font-bold">
-              Pecus
-            </a>
-            <div className="md:hidden mt-2">
-              <button
-                type="button"
-                className="p-2"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <span className="icon-[tabler--menu-2] size-5"></span>
-              </button>
-            </div>
-          </div>
-          <div className="navbar-center hidden md:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li>
-                <a href="/">ダッシュボード</a>
-              </li>
-              <li>
-                <a href="/workspaces">ワークスペース</a>
-              </li>
-              <li className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-start]">
-                <button type="button" className="dropdown-toggle">
-                  機能
-                  <span className="icon-[tabler--chevron-down] dropdown-open:rotate-180 size-4"></span>
-                </button>
-                <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
-                  <li>
-                    <a className="dropdown-item" href="/tasks">
-                      タスク管理
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="/calendar">
-                      カレンダー
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="/reports">
-                      レポート
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              {userInfo?.isAdmin && (
-                <li>
-                  <a href="/admin">管理者</a>
-                </li>
-              )}
-            </ul>
-          </div>
-          <div className="navbar-end">
-            <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
-              <button
-                type="button"
-                className="dropdown-toggle btn btn-ghost btn-circle avatar"
-              >
-                <div className="w-8 rounded-full bg-primary flex items-center justify-center text-primary-content font-bold">
-                  U
-                </div>
-              </button>
-              <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
-                <li>
-                  <a className="dropdown-item" href="/profile">
-                    プロフィール
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="/settings">
-                    設定
-                  </a>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    className="dropdown-item w-full text-left"
-                    onClick={async () => {
-                      await fetch("/api/auth/logout", { method: "POST" });
-                      window.location.href = "/signin";
-                    }}
-                  >
-                    ログアウト
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </header>
+      <AppHeader
+        userInfo={userInfo}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        showAdminLink={false}
+      />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
