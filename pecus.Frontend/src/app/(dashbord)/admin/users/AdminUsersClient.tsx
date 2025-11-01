@@ -254,17 +254,25 @@ export default function AdminUsersClient({
                         <div className="card-body">
                           <h3 className="card-title text-lg">スキル別</h3>
                           <div className="space-y-2">
-                            {statistics.skillCounts.slice(0, 5).map((skill) => (
-                              <div key={skill.id} className="flex justify-between items-center">
-                                <span className="text-sm">{skill.name}</span>
-                                <span className="badge badge-primary">{skill.count}</span>
-                              </div>
-                            ))}
+                            {/* 件数の多い順にソートして上位5件を表示 */}
+                            {[...statistics.skillCounts]
+                              .sort((a, b) => b.count - a.count)
+                              .slice(0, 5)
+                              .map((skill) => (
+                                <div key={skill.id} className="flex justify-between items-center">
+                                  <span className="text-sm">{skill.name}</span>
+                                  <span className="badge badge-primary">{skill.count}</span>
+                                </div>
+                              ))}
+                            {/* その他：上位5件以外の合計 */}
                             {statistics.skillCounts.length > 5 && (
                               <div className="flex justify-between items-center">
-                                <span className="text-sm">その他</span>
+                                <span className="text-sm">(その他)</span>
                                 <span className="badge badge-primary">
-                                  {statistics.skillCounts.slice(5).reduce((sum, skill) => sum + skill.count, 0)}
+                                  {[...statistics.skillCounts]
+                                    .sort((a, b) => b.count - a.count)
+                                    .slice(5)
+                                    .reduce((sum, skill) => sum + skill.count, 0)}
                                 </span>
                               </div>
                             )}

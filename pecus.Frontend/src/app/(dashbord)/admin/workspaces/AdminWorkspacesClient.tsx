@@ -407,6 +407,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                         <th>コード</th>
                         <th>ワークスペース名</th>
                         <th>ジャンル</th>
+                        <th>参加者数</th>
                         <th>ステータス</th>
                         <th>作成日</th>
                         <th>操作</th>
@@ -420,6 +421,11 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                           <td>
                             <span className="badge badge-outline">
                               {workspace.genreName ||'-'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge badge-info">
+                              {workspace.memberCount ?? 0} 人
                             </span>
                           </td>
                           <td>

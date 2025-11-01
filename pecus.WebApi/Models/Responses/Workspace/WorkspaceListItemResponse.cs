@@ -71,6 +71,11 @@ public class WorkspaceListItemResponse
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// 参加者数（アクティブなワークスペースユーザーの数）
+    /// </summary>
+    public int MemberCount { get; set; }
+
+    /// <summary>
     /// 参加しているユーザー一覧
     /// </summary>
     public List<WorkspaceUserDetailResponse>? Members { get; set; }

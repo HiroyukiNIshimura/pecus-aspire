@@ -9028,6 +9028,11 @@
             "type": "boolean",
             "description": "アクティブフラグ"
           },
+          "memberCount": {
+            "type": "integer",
+            "description": "参加者数（アクティブなワークスペースユーザーの数）",
+            "format": "int32"
+          },
           "members": {
             "type": "array",
             "items": {

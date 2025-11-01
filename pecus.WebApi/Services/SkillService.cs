@@ -76,7 +76,9 @@ public class SkillService
     )
     {
         var query = _context
-            .Skills.Where(s => s.OrganizationId == organizationId);
+            .Skills
+            .Include(s => s.UserSkills)
+            .Where(s => s.OrganizationId == organizationId);
 
         if (isActive.HasValue)
         {
@@ -86,15 +88,13 @@ public class SkillService
         if (unusedOnly.HasValue && unusedOnly.Value)
         {
             // 未使用スキル（ユーザースキルが0件）のみを取得
-            query = query.Where(s => s.UserSkills == null || s.UserSkills.Count == 0);
+            query = query.Where(s => !s.UserSkills.Any());
         }
 
         if (!string.IsNullOrEmpty(name))
         {
             query = query.Where(s => s.Name.StartsWith(name));
         }
-
-        query = query.Include(s => s.UserSkills);
 
         var totalCount = await query.CountAsync();
 

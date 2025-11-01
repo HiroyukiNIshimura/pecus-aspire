@@ -60,6 +60,10 @@ export type WorkspaceListItemResponse = {
      */
     isActive?: boolean;
     /**
+     * 参加者数（アクティブなワークスペースユーザーの数）
+     */
+    memberCount?: number;
+    /**
      * 参加しているユーザー一覧
      */
     members?: Array<WorkspaceUserDetailResponse> | null;

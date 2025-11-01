@@ -270,6 +270,7 @@ public class AdminWorkspaceController : ControllerBase
                     CreatedAt = w.CreatedAt,
                     UpdatedAt = w.UpdatedAt,
                     IsActive = w.IsActive,
+                    MemberCount = w.WorkspaceUsers?.Count(wu => wu.IsActive) ?? 0,
                     Members = w.WorkspaceUsers?
                         .Where(wu => wu.IsActive && (wu.User == null || wu.User.IsActive))
                         .Select(wu => new WorkspaceUserDetailResponse

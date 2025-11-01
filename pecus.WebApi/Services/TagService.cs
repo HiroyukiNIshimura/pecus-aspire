@@ -107,7 +107,10 @@ public class TagService
     )
     {
         var query = _context
-            .Tags.Where(t => t.OrganizationId == organizationId);
+            .Tags
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.WorkspaceItemTags)
+            .Where(t => t.OrganizationId == organizationId);
 
         if (isActive.HasValue)
         {
@@ -117,15 +120,13 @@ public class TagService
         if (unusedOnly.HasValue && unusedOnly.Value)
         {
             // 未使用タグ（アイテムが0件）のみを取得
-            query = query.Where(t => t.WorkspaceItemTags == null || t.WorkspaceItemTags.Count == 0);
+            query = query.Where(t => !t.WorkspaceItemTags.Any());
         }
 
         if (!string.IsNullOrEmpty(name))
         {
             query = query.Where(t => t.Name.StartsWith(name));
         }
-
-        query = query.Include(t => t.CreatedByUser).Include(t => t.WorkspaceItemTags);
 
         var totalCount = await query.CountAsync();
 
