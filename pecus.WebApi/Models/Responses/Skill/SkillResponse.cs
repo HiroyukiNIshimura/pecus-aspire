@@ -1,114 +1,114 @@
 namespace Pecus.Models.Responses.Skill;
 
 /// <summary>
-/// ƒXƒLƒ‹Ú×î•ñƒŒƒXƒ|ƒ“ƒX
+/// ï¿½Xï¿½Lï¿½ï¿½ï¿½Ú×ï¿½ñƒŒƒXï¿½|ï¿½ï¿½ï¿½X
 /// </summary>
 public class SkillDetailResponse
 {
     /// <summary>
-    /// ƒXƒLƒ‹ID
+    /// ï¿½Xï¿½Lï¿½ï¿½ID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹–¼
+    /// ï¿½Xï¿½Lï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹‚Ìà–¾
+    /// ï¿½Xï¿½Lï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// ‘gDID
+    /// ï¿½gï¿½DID
     /// </summary>
     public int OrganizationId { get; set; }
 
     /// <summary>
-    /// ì¬“ú
+    /// ï¿½ì¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// ì¬Òƒ†[ƒU[ID
+    /// ï¿½ì¬ï¿½Òƒï¿½ï¿½[ï¿½Uï¿½[ID
     /// </summary>
     public int? CreatedByUserId { get; set; }
 
     /// <summary>
-    /// XV“ú
+    /// ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// XVÒƒ†[ƒU[ID
+    /// ï¿½Xï¿½Vï¿½Òƒï¿½ï¿½[ï¿½Uï¿½[ID
     /// </summary>
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
-    /// ƒAƒNƒeƒBƒuƒtƒ‰ƒO
+    /// ï¿½Aï¿½Nï¿½eï¿½Bï¿½uï¿½tï¿½ï¿½ï¿½O
     /// </summary>
     public bool IsActive { get; set; }
 }
 
 /// <summary>
-/// ƒXƒLƒ‹ƒŠƒXƒgƒAƒCƒeƒ€ƒŒƒXƒ|ƒ“ƒX
+/// ï¿½Xï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½gï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½|ï¿½ï¿½ï¿½X
 /// </summary>
 public class SkillListItemResponse
 {
     /// <summary>
-    /// ƒXƒLƒ‹ID
+    /// ï¿½Xï¿½Lï¿½ï¿½ID
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹–¼
+    /// ï¿½Xï¿½Lï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹‚Ìà–¾
+    /// ï¿½Xï¿½Lï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// ì¬“ú
+    /// ï¿½ì¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// XV“ú
+    /// ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
-    /// ƒAƒNƒeƒBƒuƒtƒ‰ƒO
+    /// ï¿½Aï¿½Nï¿½eï¿½Bï¿½uï¿½tï¿½ï¿½ï¿½O
     /// </summary>
     public bool IsActive { get; set; }
 
     /// <summary>
-    /// ‚±‚ÌƒXƒLƒ‹‚ğ•Û—L‚µ‚Ä‚¢‚éƒ†[ƒU[”
+    /// ï¿½ï¿½ï¿½ÌƒXï¿½Lï¿½ï¿½ï¿½ï¿½Û—Lï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éƒ†ï¿½[ï¿½Uï¿½[ï¿½ï¿½
     /// </summary>
     public int UserCount { get; set; }
 }
 
 /// <summary>
-/// ƒXƒLƒ‹ì¬EXVƒŒƒXƒ|ƒ“ƒX
+/// ï¿½Xï¿½Lï¿½ï¿½ï¿½ì¬ï¿½Eï¿½Xï¿½Vï¿½ï¿½ï¿½Xï¿½|ï¿½ï¿½ï¿½X
 /// </summary>
 public class SkillResponse
 {
     /// <summary>
-    /// ¬Œ÷ƒtƒ‰ƒO
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½O
     /// </summary>
     public bool Success { get; set; }
 
     /// <summary>
-    /// ƒƒbƒZ[ƒW
+    /// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½W
     /// </summary>
     public required string Message { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹î•ñiƒIƒvƒVƒ‡ƒ“j
+    /// ï¿½Xï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½iï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½j
     /// </summary>
     public SkillDetailResponse? Skill { get; set; }
 }

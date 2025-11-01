@@ -1,4 +1,4 @@
-﻿using Pecus.Libs;
+using Pecus.Libs;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Validation;

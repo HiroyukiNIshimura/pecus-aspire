@@ -1,4 +1,4 @@
-﻿namespace Pecus.Models.Responses.Workspace;
+namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
 /// ワークスペースリストアイテムレスポンス

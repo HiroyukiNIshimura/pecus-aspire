@@ -1,4 +1,4 @@
-﻿# pecus-aspire
+# pecus-aspire
 
 AIを社畜扱いして作成中のAspireアプリケーション。
 コーディングは一切行わずGithub Copilot エージェントのプロンプト入力だけでAspireアプリケーションを実装する実験。

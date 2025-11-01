@@ -1,4 +1,4 @@
-﻿using Pecus.Models.Responses.Organization;
+using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Models.Responses.Workspace;
 

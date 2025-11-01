@@ -1,4 +1,4 @@
-﻿namespace Pecus.Models.Responses.Common;
+namespace Pecus.Models.Responses.Common;
 
 /// <summary>
 /// ページネーション付きレスポンス

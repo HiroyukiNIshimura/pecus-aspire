@@ -1,4 +1,4 @@
-﻿namespace Pecus.Models.Responses.Master;
+namespace Pecus.Models.Responses.Master;
 
 /// <summary>
 /// マスターデータ用ジャンルレスポンス

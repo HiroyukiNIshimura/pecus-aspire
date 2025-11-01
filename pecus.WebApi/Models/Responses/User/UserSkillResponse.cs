@@ -1,4 +1,4 @@
-﻿namespace Pecus.Models.Responses.User;
+namespace Pecus.Models.Responses.User;
 
 /// <summary>
 /// ユーザースキル情報レスポンス

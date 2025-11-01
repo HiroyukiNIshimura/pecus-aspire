@@ -1,4 +1,4 @@
-﻿using Faker;
+using Faker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;

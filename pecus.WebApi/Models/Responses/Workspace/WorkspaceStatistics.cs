@@ -1,4 +1,4 @@
-﻿namespace Pecus.Models.Responses.Workspace;
+namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
 /// ワークスペース統計情報レスポンス

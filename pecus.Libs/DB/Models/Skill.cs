@@ -1,4 +1,4 @@
-﻿namespace Pecus.Libs.DB.Models;
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// スキル
