@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceItem;
@@ -13,8 +14,7 @@ public class GetWorkspaceItemsRequest
     [Range(1, int.MaxValue, ErrorMessage = "有効なユーザーIDを指定してください。")]
     public int? AssigneeId { get; set; }
 
-    [Range(1, 3, ErrorMessage = "重要度は1〜3の範囲で指定してください。")]
-    public int? Priority { get; set; }
+    public TaskPriority? Priority { get; set; }
 
     public bool? Pinned { get; set; }
 }

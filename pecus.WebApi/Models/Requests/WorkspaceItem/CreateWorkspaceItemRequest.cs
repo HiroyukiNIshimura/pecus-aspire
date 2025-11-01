@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceItem;
@@ -26,10 +27,9 @@ public class CreateWorkspaceItemRequest
     public int? AssigneeId { get; set; }
 
     /// <summary>
-    /// 重要度（1: 低、2: 普通、3: 高）
+    /// 重要度（指定しない場合は NULL として保存される）
     /// </summary>
-    [Range(1, 3, ErrorMessage = "重要度は1〜3の範囲で指定してください。")]
-    public int Priority { get; set; } = 2;
+    public TaskPriority? Priority { get; set; }
 
     /// <summary>
     /// 期限日

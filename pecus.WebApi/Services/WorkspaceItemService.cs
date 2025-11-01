@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
 
@@ -212,7 +213,7 @@ public class WorkspaceItemService
         bool? isDraft = null,
         bool? isArchived = null,
         int? assigneeId = null,
-        int? priority = null,
+        TaskPriority? priority = null,
         int? pinnedByUserId = null
     )
     {

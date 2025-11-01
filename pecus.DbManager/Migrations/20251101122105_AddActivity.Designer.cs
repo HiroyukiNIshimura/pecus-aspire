@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pecus.Libs.DB;
@@ -11,9 +12,11 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101122105_AddActivity")]
+    partial class AddActivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -359,91 +362,6 @@ namespace pecus.DbManager.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskComment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AfterValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BeforeValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Normal");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WorkspaceTaskId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentType");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("IsDeleted");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("WorkspaceTaskId");
-
-                    b.ToTable("TaskComments");
-                });
-
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskTag", b =>
-                {
-                    b.Property<int>("WorkspaceTaskId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("WorkspaceTaskId", "TagId");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("TaskTags");
-                });
-
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -652,8 +570,10 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("OwnerId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Priority")
-                        .HasColumnType("integer");
+                    b.Property<int>("Priority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2);
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -839,124 +759,6 @@ namespace pecus.DbManager.Migrations
                     b.ToTable("WorkspaceItemTags");
                 });
 
-            modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceTask", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("ActualHours")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<int>("AssignedUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DiscardReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime?>("DiscardedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("EstimatedHours")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDiscarded")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Priority")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProgressPercentage")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TaskType")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("WorkspaceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WorkspaceItemId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignedUserId");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("DisplayOrder");
-
-                    b.HasIndex("DueDate");
-
-                    b.HasIndex("IsCompleted");
-
-                    b.HasIndex("IsDiscarded");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.HasIndex("Priority");
-
-                    b.HasIndex("TaskType");
-
-                    b.HasIndex("WorkspaceId");
-
-                    b.HasIndex("WorkspaceItemId");
-
-                    b.HasIndex("AssignedUserId", "IsCompleted");
-
-                    b.HasIndex("OrganizationId", "IsCompleted");
-
-                    b.HasIndex("WorkspaceId", "IsCompleted");
-
-                    b.HasIndex("WorkspaceItemId", "IsCompleted");
-
-                    b.ToTable("WorkspaceTasks");
-                });
-
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceUser", b =>
                 {
                     b.Property<int>("WorkspaceId")
@@ -1088,52 +890,6 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("Organization");
 
                     b.Navigation("UpdatedByUser");
-                });
-
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskComment", b =>
-                {
-                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.WorkspaceTask", "WorkspaceTask")
-                        .WithMany("TaskComments")
-                        .HasForeignKey("WorkspaceTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("WorkspaceTask");
-                });
-
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskTag", b =>
-                {
-                    b.HasOne("Pecus.Libs.DB.Models.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.Tag", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.WorkspaceTask", "WorkspaceTask")
-                        .WithMany("TaskTags")
-                        .HasForeignKey("WorkspaceTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Tag");
-
-                    b.Navigation("WorkspaceTask");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
@@ -1315,49 +1071,6 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("WorkspaceItem");
                 });
 
-            modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceTask", b =>
-                {
-                    b.HasOne("Pecus.Libs.DB.Models.User", "AssignedUser")
-                        .WithMany()
-                        .HasForeignKey("AssignedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.Workspace", "Workspace")
-                        .WithMany()
-                        .HasForeignKey("WorkspaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.WorkspaceItem", "WorkspaceItem")
-                        .WithMany()
-                        .HasForeignKey("WorkspaceItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AssignedUser");
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Organization");
-
-                    b.Navigation("Workspace");
-
-                    b.Navigation("WorkspaceItem");
-                });
-
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceUser", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.User", "User")
@@ -1460,13 +1173,6 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("WorkspaceItemPins");
 
                     b.Navigation("WorkspaceItemTags");
-                });
-
-            modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceTask", b =>
-                {
-                    b.Navigation("TaskComments");
-
-                    b.Navigation("TaskTags");
                 });
 #pragma warning restore 612, 618
         }

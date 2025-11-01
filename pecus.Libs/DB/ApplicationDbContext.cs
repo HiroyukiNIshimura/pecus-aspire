@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB;
 
@@ -89,6 +90,26 @@ public class ApplicationDbContext : DbContext
     /// ユーザースキルテーブル（中間テーブル）
     /// </summary>
     public DbSet<UserSkill> UserSkills { get; set; }
+
+    /// <summary>
+    /// アクティビティ（操作履歴）テーブル
+    /// </summary>
+    public DbSet<Activity> Activities { get; set; }
+
+    /// <summary>
+    /// ワークスペースタスクテーブル
+    /// </summary>
+    public DbSet<WorkspaceTask> WorkspaceTasks { get; set; }
+
+    /// <summary>
+    /// タスクタグテーブル（中間テーブル）
+    /// </summary>
+    public DbSet<TaskTag> TaskTags { get; set; }
+
+    /// <summary>
+    /// タスクコメントテーブル
+    /// </summary>
+    public DbSet<TaskComment> TaskComments { get; set; }
 
     /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
@@ -249,7 +270,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Code).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Body).IsRequired();
-            entity.Property(e => e.Priority).HasDefaultValue(2);
             entity.Property(e => e.IsArchived).HasDefaultValue(false);
             entity.Property(e => e.IsDraft).HasDefaultValue(true);
 
@@ -519,6 +539,184 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(us => us.SkillId);
             entity.HasIndex(us => us.AddedByUserId);
             entity.HasIndex(us => us.AddedAt);
+        });
+
+        // Activityエンティティの設定
+        modelBuilder.Entity<Activity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.WorkspaceId).IsRequired();
+            entity.Property(e => e.ItemId).IsRequired();
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ActionCategory).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
+
+            // jsonb カラムの設定
+            entity.Property(e => e.BeforeData).HasColumnType("jsonb");
+            entity.Property(e => e.AfterData).HasColumnType("jsonb");
+            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+
+            // Activity と Workspace の多対一リレーションシップ
+            entity
+                .HasOne(a => a.Workspace)
+                .WithMany()
+                .HasForeignKey(a => a.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Activity と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(a => a.Item)
+                .WithMany()
+                .HasForeignKey(a => a.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Activity と User の多対一リレーションシップ
+            entity
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // インデックス（統計クエリ最適化用）
+            entity.HasIndex(a => a.WorkspaceId);
+            entity.HasIndex(a => a.ItemId);
+            entity.HasIndex(a => a.UserId);
+            entity.HasIndex(a => a.ActionCategory);
+            entity.HasIndex(a => a.CreatedAt);
+            // 複合インデックス（頻繁な統計クエリ用）
+            entity.HasIndex(a => new { a.WorkspaceId, a.CreatedAt });
+            entity.HasIndex(a => new { a.ItemId, a.CreatedAt });
+            entity.HasIndex(a => new { a.UserId, a.CreatedAt });
+        });
+
+        // WorkspaceTaskエンティティの設定
+        modelBuilder.Entity<WorkspaceTask>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.TaskType).IsRequired();
+            entity.Property(e => e.ProgressPercentage).HasDefaultValue(0);
+            entity.Property(e => e.IsCompleted).HasDefaultValue(false);
+            entity.Property(e => e.IsDiscarded).HasDefaultValue(false);
+            entity.Property(e => e.DiscardReason).HasMaxLength(500);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.EstimatedHours).HasPrecision(10, 2);
+            entity.Property(e => e.ActualHours).HasPrecision(10, 2);
+
+            // WorkspaceTask と WorkspaceItem の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.WorkspaceItem)
+                .WithMany()
+                .HasForeignKey(wt => wt.WorkspaceItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceTask と Workspace の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.Workspace)
+                .WithMany()
+                .HasForeignKey(wt => wt.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceTask と Organization の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.Organization)
+                .WithMany()
+                .HasForeignKey(wt => wt.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceTask と AssignedUser の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.AssignedUser)
+                .WithMany()
+                .HasForeignKey(wt => wt.AssignedUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // WorkspaceTask と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(wt => wt.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス（検索効率化用）
+            entity.HasIndex(wt => wt.WorkspaceItemId);
+            entity.HasIndex(wt => wt.WorkspaceId);
+            entity.HasIndex(wt => wt.OrganizationId);
+            entity.HasIndex(wt => wt.AssignedUserId);
+            entity.HasIndex(wt => wt.CreatedByUserId);
+            entity.HasIndex(wt => wt.IsCompleted);
+            entity.HasIndex(wt => wt.IsDiscarded);
+            entity.HasIndex(wt => wt.DueDate);
+            entity.HasIndex(wt => wt.Priority);
+            entity.HasIndex(wt => wt.TaskType);
+            entity.HasIndex(wt => wt.DisplayOrder);
+            // 複合インデックス（頻繁な検索パターン用）
+            entity.HasIndex(wt => new { wt.AssignedUserId, wt.IsCompleted });
+            entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });
+            entity.HasIndex(wt => new { wt.OrganizationId, wt.IsCompleted });
+            entity.HasIndex(wt => new { wt.WorkspaceItemId, wt.IsCompleted });
+        });
+
+        // TaskTagエンティティの設定（中間テーブル）
+        modelBuilder.Entity<TaskTag>(entity =>
+        {
+            entity.HasKey(tt => new { tt.WorkspaceTaskId, tt.TagId });
+
+            // TaskTag と WorkspaceTask の多対一リレーションシップ
+            entity
+                .HasOne(tt => tt.WorkspaceTask)
+                .WithMany(wt => wt.TaskTags)
+                .HasForeignKey(tt => tt.WorkspaceTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TaskTag と Tag の多対一リレーションシップ
+            entity
+                .HasOne(tt => tt.Tag)
+                .WithMany()
+                .HasForeignKey(tt => tt.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TaskTag と CreatedByUser の多対一リレーションシップ
+            entity
+                .HasOne(tt => tt.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(tt => tt.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(tt => tt.TagId);
+            entity.HasIndex(tt => tt.CreatedByUserId);
+            entity.HasIndex(tt => tt.CreatedAt);
+        });
+
+        // TaskCommentエンティティの設定
+        modelBuilder.Entity<TaskComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CommentType).IsRequired().HasMaxLength(50).HasDefaultValue("Normal");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+            // TaskComment と WorkspaceTask の多対一リレーションシップ
+            entity
+                .HasOne(tc => tc.WorkspaceTask)
+                .WithMany(wt => wt.TaskComments)
+                .HasForeignKey(tc => tc.WorkspaceTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TaskComment と User の多対一リレーションシップ
+            entity
+                .HasOne(tc => tc.User)
+                .WithMany()
+                .HasForeignKey(tc => tc.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(tc => tc.WorkspaceTaskId);
+            entity.HasIndex(tc => tc.UserId);
+            entity.HasIndex(tc => tc.CommentType);
+            entity.HasIndex(tc => tc.IsDeleted);
+            entity.HasIndex(tc => tc.CreatedAt);
         });
     }
 }

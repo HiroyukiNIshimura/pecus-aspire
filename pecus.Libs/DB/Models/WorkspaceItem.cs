@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -41,9 +43,9 @@ public class WorkspaceItem
     public int? AssigneeId { get; set; }
 
     /// <summary>
-    /// 重要度（1: 低、2: 普通、3: 高）
+    /// 重要度（NULL の場合は Medium として扱う）
     /// </summary>
-    public int Priority { get; set; } = 2;
+    public TaskPriority? Priority { get; set; }
 
     /// <summary>
     /// 期限日

@@ -805,6 +805,205 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 4. **フィルタ付きInclude を活用してデータ取得量を最小化**
 5. **コメントで意図を明記**（例: `// デカルト爆発防止`）
 
+### Enum の使用方針
+
+Entity Framework Core で Enum を使用する際は、以下の方針に従ってください。
+
+#### Enum の定義場所
+
+- **配置**: `pecus.Libs/DB/Models/Enums/` に配置
+- **名前空間**: `Pecus.Libs.DB.Models.Enums`
+- **命名規則**: Pascal Case（例: `TaskPriority`, `TaskType`）
+
+#### Enum の基本設計
+
+```csharp
+namespace Pecus.Libs.DB.Models.Enums;
+
+/// <summary>
+/// タスクの優先度を表す列挙型
+/// </summary>
+public enum TaskPriority
+{
+    /// <summary>
+    /// 低優先度
+    /// </summary>
+    Low = 1,
+
+    /// <summary>
+    /// 中優先度
+    /// </summary>
+    Medium = 2,
+
+    /// <summary>
+    /// 高優先度
+    /// </summary>
+    High = 3,
+
+    /// <summary>
+    /// 緊急
+    /// </summary>
+    Critical = 4,
+}
+```
+
+**設計ルール**:
+- 値は必ず明示的に指定（`0` から始めない、`1` 始まりを推奨）
+- XML ドキュメントコメントを必ず付与
+- 意味のある名前を使用（`Value1`, `Value2` などは避ける）
+
+#### エンティティでの Enum 使用
+
+**❌ 避けるべきパターン（非 nullable）**:
+```csharp
+public class WorkspaceItem
+{
+    public TaskPriority Priority { get; set; } = TaskPriority.Medium;
+}
+```
+
+**問題点**:
+- EF Core マイグレーション生成時に警告が発生
+- デフォルト値 `0` の扱いが曖昧（enum の最小値と区別できない）
+- `HasDefaultValue()` 設定時に sentinel value の問題が発生
+
+**✅ 推奨パターン（nullable）**:
+```csharp
+public class WorkspaceItem
+{
+    /// <summary>
+    /// 重要度（NULL の場合は Medium として扱う）
+    /// </summary>
+    public TaskPriority? Priority { get; set; }
+}
+```
+
+**利点**:
+- `NULL` = 「未設定」という意味が明確
+- EF Core の警告が発生しない
+- アプリケーション層で柔軟にデフォルト値を制御可能
+
+#### ApplicationDbContext での設定
+
+**nullable Enum の場合**:
+```csharp
+modelBuilder.Entity<WorkspaceItem>(entity =>
+{
+    // HasDefaultValue は不要（nullable なので）
+    entity.Property(e => e.Priority);
+});
+```
+
+**非 nullable Enum の場合（非推奨）**:
+```csharp
+modelBuilder.Entity<WorkspaceItem>(entity =>
+{
+    // 警告を避けるには HasSentinel を使用（複雑なため推奨しない）
+    entity.Property(e => e.Priority)
+        .HasDefaultValue(TaskPriority.Medium);
+});
+```
+
+#### アプリケーション層での扱い
+
+**デフォルト値の適用**:
+```csharp
+// 取得時
+var priority = item.Priority ?? TaskPriority.Medium;
+
+// 条件分岐
+if (item.Priority.HasValue)
+{
+    // Priority が設定されている場合の処理
+}
+
+// ソート時
+var sorted = items.OrderBy(x => x.Priority ?? TaskPriority.Medium);
+```
+
+**リクエスト DTO での扱い**:
+```csharp
+// 作成リクエスト（任意入力）
+public class CreateWorkspaceItemRequest
+{
+    public TaskPriority? Priority { get; set; }
+}
+
+// レスポンス（nullable で返す）
+public class WorkspaceItemDetailResponse
+{
+    public TaskPriority? Priority { get; set; }
+}
+```
+
+#### データベース保存形式
+
+EF Core は Enum を整数値として保存します（PostgreSQL の場合）:
+- `TaskPriority.Low` → `1`
+- `TaskPriority.Medium` → `2`
+- `TaskPriority.High` → `3`
+- `TaskPriority.Critical` → `4`
+- `NULL` → `NULL`
+
+文字列として保存したい場合（非推奨）:
+```csharp
+entity.Property(e => e.Priority)
+    .HasConversion<string>();
+// → "Low", "Medium", "High", "Critical"
+```
+
+#### マイグレーション時の注意点
+
+**既存の int カラムを Enum に変換する場合**:
+```csharp
+// 1. エンティティの型を変更: int → TaskPriority?
+public TaskPriority? Priority { get; set; }
+
+// 2. マイグレーション生成（警告なし）
+dotnet ef migrations add ChangeToEnumType
+
+// 3. データベース側は int のまま（値の対応関係は維持される）
+// 既存データ: 1 → TaskPriority.Low, 2 → TaskPriority.Medium など
+```
+
+**新しい Enum 値を追加する場合**:
+```csharp
+// Enum に値を追加
+public enum TaskPriority
+{
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4,
+    Urgent = 5,  // 新規追加
+}
+
+// マイグレーションは不要（データベース側は int なので互換性あり）
+// 既存データは影響を受けない
+```
+
+#### ベストプラクティス
+
+1. **nullable を基本とする**: `TaskPriority?` を使用し、警告を回避
+2. **明示的な値を設定**: `0` から始めず、`1` 始まりを推奨
+3. **ドキュメント化**: XML コメントで各値の意味を明記
+4. **デフォルト値はアプリ層で**: `HasDefaultValue()` ではなく、コード内で `??` 演算子を使用
+5. **文字列変換は避ける**: 整数値のまま保存（パフォーマンスとストレージ効率）
+6. **API レスポンス**: Enum 値は整数で返される（フロントエンドで表示名マッピング）
+
+#### トラブルシューティング
+
+**警告が出る場合**:
+```
+The 'TaskPriority' property 'Priority' on entity type 'WorkspaceItem'
+is configured with a database-generated default, but has no configured sentinel value.
+```
+
+**解決方法**:
+1. プロパティを nullable に変更: `TaskPriority?`
+2. `HasDefaultValue()` を削除
+3. マイグレーションを再生成
+
 ### Hangfire タスクの共有パターン
 タスクは `pecus.Libs` に実装し、WebApi（クライアント）と BackFire（サーバー）の両方で DI 登録してください。静的メソッドやグローバルな BackgroundJob 呼び出しは避けてください。
 

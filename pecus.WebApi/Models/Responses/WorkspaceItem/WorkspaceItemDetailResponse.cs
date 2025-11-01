@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Models.Responses.WorkspaceItem;
 
 /// <summary>
@@ -66,9 +68,9 @@ public class WorkspaceItemDetailResponse
     public string? AssigneeAvatarUrl { get; set; }
 
     /// <summary>
-    /// 重要度（1: 低、2: 普通、3: 高）
+    /// 重要度（NULL の場合は未設定）
     /// </summary>
-    public int Priority { get; set; }
+    public TaskPriority? Priority { get; set; }
 
     /// <summary>
     /// 期限日
