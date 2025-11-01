@@ -26,10 +26,28 @@ export default function RootLayout({
 
 
   return (
-    <html lang="ja" data-theme="dark">
+    <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const storedTheme = localStorage.getItem('theme');
+                  if (storedTheme === 'light' || storedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', storedTheme);
+                  } else {
+                    // デフォルトは auto
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                  }
+                } catch (e) {}
+              })()
+            `,
+          }}
+        />
         <div className="relative h-screen w-full">
           <div className="">{children}</div>
         </div>

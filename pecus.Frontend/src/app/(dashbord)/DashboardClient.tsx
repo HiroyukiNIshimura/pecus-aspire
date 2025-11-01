@@ -27,7 +27,6 @@ export default function DashboardClient({ initialUser, fetchError }: DashboardCl
         userInfo={userInfo}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        showAdminLink={false}
       />
 
       <div className="flex flex-1">
