@@ -1,57 +1,57 @@
-using System.ComponentModel.DataAnnotations;
+ï»¿using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests;
 
 /// <summary>
-/// ƒXƒLƒ‹ì¬ƒŠƒNƒGƒXƒg
+/// ã‚¹ã‚­ãƒ«ä½œæˆãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 /// </summary>
 public class CreateSkillRequest
 {
     /// <summary>
-    /// ƒXƒLƒ‹–¼
+    /// ã‚¹ã‚­ãƒ«å
     /// </summary>
-    [Required(ErrorMessage = "ƒXƒLƒ‹–¼‚Í•K{‚Å‚·B")]
-    [MaxLength(100, ErrorMessage = "ƒXƒLƒ‹–¼‚Í100•¶šˆÈ“à‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")]
+    [Required(ErrorMessage = "ã‚¹ã‚­ãƒ«åã¯å¿…é ˆã§ã™ã€‚")]
+    [MaxLength(100, ErrorMessage = "ã‚¹ã‚­ãƒ«åã¯100æ–‡å­—ä»¥å†…ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚")]
     public required string Name { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹‚Ìà–¾
+    /// ã‚¹ã‚­ãƒ«ã®èª¬æ˜
     /// </summary>
-    [MaxLength(500, ErrorMessage = "à–¾‚Í500•¶šˆÈ“à‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")]
+    [MaxLength(500, ErrorMessage = "èª¬æ˜ã¯500æ–‡å­—ä»¥å†…ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚")]
     public string? Description { get; set; }
 }
 
 /// <summary>
-/// ƒXƒLƒ‹XVƒŠƒNƒGƒXƒg
+/// ã‚¹ã‚­ãƒ«æ›´æ–°ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 /// </summary>
 public class UpdateSkillRequest
 {
     /// <summary>
-    /// ƒXƒLƒ‹–¼
+    /// ã‚¹ã‚­ãƒ«å
     /// </summary>
-    [MaxLength(100, ErrorMessage = "ƒXƒLƒ‹–¼‚Í100•¶šˆÈ“à‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")]
+    [MaxLength(100, ErrorMessage = "ã‚¹ã‚­ãƒ«åã¯100æ–‡å­—ä»¥å†…ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚")]
     public string? Name { get; set; }
 
     /// <summary>
-    /// ƒXƒLƒ‹‚Ìà–¾
+    /// ã‚¹ã‚­ãƒ«ã®èª¬æ˜
     /// </summary>
-    [MaxLength(500, ErrorMessage = "à–¾‚Í500•¶šˆÈ“à‚Å“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")]
+    [MaxLength(500, ErrorMessage = "èª¬æ˜ã¯500æ–‡å­—ä»¥å†…ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚")]
     public string? Description { get; set; }
 }
 
 /// <summary>
-/// ƒXƒLƒ‹ˆê——æ“¾ƒŠƒNƒGƒXƒg
+/// ã‚¹ã‚­ãƒ«ä¸€è¦§å–å¾—ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 /// </summary>
 public class GetSkillsRequest
 {
     /// <summary>
-    /// ƒy[ƒW”Ô†i1‚©‚çn‚Ü‚éj
+    /// ãƒšãƒ¼ã‚¸ç•ªå·ï¼ˆ1ã‹ã‚‰å§‹ã¾ã‚‹ï¼‰
     /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "ƒy[ƒW”Ô†‚Í1ˆÈã‚Åw’è‚µ‚Ä‚­‚¾‚³‚¢B")]
+    [Range(1, int.MaxValue, ErrorMessage = "ãƒšãƒ¼ã‚¸ç•ªå·ã¯1ä»¥ä¸Šã§æŒ‡å®šã—ã¦ãã ã•ã„ã€‚")]
     public int? Page { get; set; }
 
     /// <summary>
-    /// ƒAƒNƒeƒBƒu‚ÈƒXƒLƒ‹‚Ì‚İæ“¾‚·‚é‚©
+    /// ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªã‚¹ã‚­ãƒ«ã®ã¿å–å¾—ã™ã‚‹ã‹
     /// </summary>
     public bool? IsActive { get; set; }
 }
