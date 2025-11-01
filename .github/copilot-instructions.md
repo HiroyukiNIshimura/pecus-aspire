@@ -163,6 +163,223 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
 - **button要素**: 必ず `type` 属性を正しく設定すること（例: `type="button"`, `type="submit"`, `type="reset"`）
 - **label要素**: 必ず `for` 属性を正しく設定し、対応するinput要素のidと一致させること
 
+#### クライアントサイドバリデーション（Zod）
+
+フロントエンドでの入力検証には **Zod** を使用してください。型安全で宣言的なバリデーションを実現します。
+
+##### バリデーション実装の3層構造
+
+1. **スキーマ定義層** (`src/schemas/`)
+   - 再利用可能なZodスキーマを一元管理
+   - 共通バリデーションルール（文字数制限、形式チェック等）を定義
+
+   ```typescript
+   // src/schemas/filterSchemas.ts
+   import { z } from 'zod';
+
+   export const nameFilterSchema = z
+     .string()
+     .max(100, "検索名は100文字以内で入力してください。")
+     .optional();
+
+   export const workspaceNameFilterSchema = nameFilterSchema;
+   export const skillNameFilterSchema = nameFilterSchema;
+   export const tagNameFilterSchema = nameFilterSchema;
+   ```
+
+2. **ユーティリティ層** (`src/utils/validation.ts`)
+   - Zodスキーマを使った汎用バリデーション関数
+   - 非同期バリデーション対応（refine/transform）
+   - エラーメッセージの統一的な抽出
+
+   ```typescript
+   // src/utils/validation.ts
+   import { z } from "zod";
+
+   export async function validateWithSchema<T>(
+     schema: z.ZodSchema<T>,
+     data: unknown
+   ): Promise<
+     | { success: true; data: T; errors?: undefined }
+     | { success: false; errors: string[]; data?: undefined }
+   > {
+     const result = await schema.safeParseAsync(data);
+
+     if (result.success) {
+       return { success: true, data: result.data };
+     } else {
+       return {
+         success: false,
+         errors: result.error.issues.map(issue => issue.message),
+       };
+     }
+   }
+   ```
+
+3. **フック層** (`src/hooks/useValidation.ts`)
+   - Reactフック形式でバリデーション状態を管理
+   - エラー状態、検証結果、クリア処理を提供
+
+   ```typescript
+   // src/hooks/useValidation.ts
+   import { useState, useCallback } from 'react';
+   import { z } from 'zod';
+   import { validateWithSchema } from '@/utils/validation';
+
+   export function useValidation<T>(schema: z.ZodSchema<T>) {
+     const [errors, setErrors] = useState<string[]>([]);
+     const [isValid, setIsValid] = useState<boolean>(true);
+
+     const validate = useCallback(async (data: unknown) => {
+       const result = await validateWithSchema(schema, data);
+
+       if (result.success) {
+         setErrors([]);
+         setIsValid(true);
+         return { success: true as const, data: result.data };
+       } else {
+         setErrors(result.errors);
+         setIsValid(false);
+         return { success: false as const, errors: result.errors };
+       }
+     }, [schema]);
+
+     const clearErrors = useCallback(() => {
+       setErrors([]);
+       setIsValid(true);
+     }, []);
+
+     return {
+       validate,      // バリデーション実行関数
+       errors,        // エラーメッセージ配列
+       isValid,       // バリデーション成功フラグ
+       clearErrors,   // エラークリア関数
+       error: errors[0],           // 最初のエラー（単一表示用）
+       hasErrors: errors.length > 0, // エラー有無フラグ
+     };
+   }
+   ```
+
+##### コンポーネントでの実装パターン
+
+**参考実装**: `pecus.Frontend/src/app/(dashbord)/admin/workspaces/AdminWorkspacesClient.tsx`
+
+```typescript
+"use client";
+
+import { useValidation } from "@/hooks/useValidation";
+import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
+
+export default function AdminWorkspacesClient() {
+  const [filterName, setFilterName] = useState<string>("");
+
+  // 【1】フックの初期化
+  const nameValidation = useValidation(workspaceNameFilterSchema);
+
+  // 【2】リアルタイムバリデーション（入力時）
+  const handleNameChange = async (value: string) => {
+    setFilterName(value);
+    await nameValidation.validate(value);
+  };
+
+  // 【3】送信前バリデーション
+  const handleSearch = async () => {
+    const result = await nameValidation.validate(filterName);
+    if (result.success) {
+      // バリデーション成功時のみ処理を実行
+      handleFilterChange();
+    }
+  };
+
+  return (
+    <div>
+      {/* 【4】エラー時のスタイル切り替え */}
+      <input
+        type="text"
+        className={`input input-bordered ${nameValidation.hasErrors ? 'input-error' : ''}`}
+        value={filterName}
+        onChange={(e) => handleNameChange(e.target.value)}
+        onKeyDown={(e) => {
+          // 【5】Enterキーでの検証チェック
+          if (e.key === 'Enter' && nameValidation.isValid) {
+            handleSearch();
+          }
+        }}
+      />
+
+      {/* 【6】エラーメッセージ表示 */}
+      {nameValidation.error && (
+        <span className="text-error text-sm">{nameValidation.error}</span>
+      )}
+
+      {/* 【7】ボタンの有効/無効制御 */}
+      <button
+        onClick={handleSearch}
+        disabled={!nameValidation.isValid}
+      >
+        検索
+      </button>
+
+      {/* 【8】リセット時のエラークリア */}
+      <button
+        onClick={() => {
+          setFilterName("");
+          nameValidation.clearErrors();
+        }}
+      >
+        リセット
+      </button>
+    </div>
+  );
+}
+```
+
+##### 実装の重要ポイント
+
+1. **スキーマの集約**: 共通スキーマは `src/schemas/` で一元管理
+2. **非同期対応**: `safeParseAsync` を使用し、refine/transform に対応
+3. **型安全性**: TypeScript の型推論を最大限活用
+4. **パフォーマンス**: `safeParse` で例外をスローせず効率的に検証
+5. **宣言的**: フックでバリデーション状態を管理し、コンポーネントはUIのみに集中
+6. **再利用性**: 同じパターンをスキル、タグ、その他のフィルターでも適用可能
+7. **エラー表示**: 単一エラー（`error`）と全エラー（`errors`）の両方に対応
+
+##### バリデーションルールの追加例
+
+```typescript
+// 複雑なバリデーションルールの例
+export const emailSchema = z
+  .string()
+  .email("有効なメールアドレスを入力してください。")
+  .max(255, "メールアドレスは255文字以内で入力してください。");
+
+export const passwordSchema = z
+  .string()
+  .min(8, "パスワードは8文字以上で入力してください。")
+  .max(100, "パスワードは100文字以内で入力してください。")
+  .regex(/[A-Z]/, "パスワードには大文字を含めてください。")
+  .regex(/[a-z]/, "パスワードには小文字を含めてください。")
+  .regex(/[0-9]/, "パスワードには数字を含めてください。");
+
+// 非同期バリデーション（重複チェック等）
+export const usernameSchema = z
+  .string()
+  .min(3, "ユーザー名は3文字以上で入力してください。")
+  .max(50, "ユーザー名は50文字以内で入力してください。")
+  .refine(async (val) => {
+    const response = await fetch(`/api/check-username?username=${val}`);
+    const data = await response.json();
+    return !data.exists;
+  }, "このユーザー名は既に使用されています。");
+```
+
+##### テスト推奨事項
+
+- スキーマ単体のテスト（Vitest/Jest）
+- バリデーションフックのテスト（React Testing Library）
+- 統合テスト（Playwright/Cypress）
+
+
 ### データ層（`pecus.Libs`）
 名前空間: `Pecus.Libs.DB`
 

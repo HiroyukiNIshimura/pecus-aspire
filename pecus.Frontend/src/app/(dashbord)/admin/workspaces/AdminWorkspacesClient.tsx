@@ -91,13 +91,13 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
     fetchInitialData();
   }, [initialWorkspaces]);
 
-  // フィルター変更時に自動的に検索を実行（初回マウント時は除外）
-  useEffectAfterMount(
-    () => {
-      handleFilterChange();
-    },
-    [filterGenreId, filterIsActive]
-  );
+  // フィルター変更時の自動検索を削除（検索ボタン押下時のみ実行）
+  // useEffectAfterMount(
+  //   () => {
+  //     handleFilterChange();
+  //   },
+  //   [filterGenreId, filterIsActive]
+  // );
 
   const handlePageChange = withDelayedLoading(
     async ({ selected }: { selected: number }) => {
@@ -172,6 +172,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   // 検索実行前にバリデーションチェックを行う
   // - result.success で成功/失敗を判定
   // - 成功時のみ検索処理を実行
+  // - すべてのフィルター条件（名前、ジャンル、ステータス）を一括で適用
   const handleSearch = async () => {
     const result = await nameValidation.validate(filterName);
     if (result.success) {
@@ -352,12 +353,35 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
-                        onClick={() => {
+                        onClick={async () => {
+                          // フィルター条件をデフォルト状態にリセット
                           setFilterGenreId(null);
                           setFilterIsActive(true);
                           setFilterName("");
                           // 【ポイント5】エラーのクリア: nameValidation.clearErrors()
                           nameValidation.clearErrors();
+                          
+                          // リセット後に再検索を実行（デフォルト条件で検索）
+                          setCurrentPage(1);
+                          await withDelayedLoading(async () => {
+                            try {
+                              const params = new URLSearchParams();
+                              params.append('page', '1');
+                              params.append('IsActive', 'true'); // デフォルト: アクティブのみ
+                              
+                              const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+                              if (response.ok) {
+                                const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+                                setWorkspaces(data.data || []);
+                                setCurrentPage(data.currentPage || 1);
+                                setTotalPages(data.totalPages || 1);
+                                setTotalCount(data.totalCount || 0);
+                                setStatistics(data.summary || null);
+                              }
+                            } catch (error) {
+                              console.error('Failed to fetch workspaces after reset:', error);
+                            }
+                          })();
                         }}
                       >
                         リセット
