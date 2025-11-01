@@ -137,14 +137,14 @@ public class UserService
     /// </summary>
     /// <remarks>
     /// このメソッドは名前付き引数の使用を強く推奨します。
-    /// 
+    ///
     /// 使用例:
     /// <code>
     /// await GetUsersByOrganizationPagedAsync(
-    ///     organizationId: 1, 
-    ///     page: 1, 
-    ///     pageSize: 10, 
-    ///     isActive: true, 
+    ///     organizationId: 1,
+    ///     page: 1,
+    ///     pageSize: 10,
+    ///     isActive: true,
     ///     username: "admin",
     ///     skillIds: new List&lt;int&gt; { 1, 2, 3 }
     /// )
@@ -160,10 +160,11 @@ public class UserService
     )
     {
         var query = _context
-          .Users.Include(u => u.Roles)
-                  .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-                  .Where(u => u.OrganizationId == organizationId)
-                  .AsQueryable();
+            .Users.Include(u => u.Roles)
+            .Include(u => u.UserSkills)
+            .ThenInclude(us => us.Skill)
+            .Where(u => u.OrganizationId == organizationId)
+            .AsQueryable();
 
         if (isActive.HasValue)
         {
@@ -178,13 +179,19 @@ public class UserService
         if (skillIds != null && skillIds.Any())
         {
             // 指定されたスキルをすべて持つユーザーを検索
-            query = query.Where(u => skillIds.All(skillId => u.UserSkills.Any(us => us.SkillId == skillId)));
+            // サブクエリを使ってSQL側で評価させる
+            foreach (var skillId in skillIds)
+            {
+                var currentSkillId = skillId; // クロージャ対策
+                query = query.Where(u => u.UserSkills.Any(us => us.SkillId == currentSkillId));
+            }
         }
 
         query = query.OrderBy(u => u.Id);
 
+        // AsSplitQueryを使用してデカルト爆発防止
         var totalCount = await query.CountAsync();
-        var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var users = await query.AsSplitQuery().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
         return (users, totalCount);
     }

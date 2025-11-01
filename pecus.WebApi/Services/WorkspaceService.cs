@@ -155,7 +155,7 @@ public class WorkspaceService
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
             .Where(w => w.OrganizationId == organizationId)
-            .AsSplitQuery() // Split query to avoid cartesian explosion デカルト爆発防止
+            .AsSplitQuery() // デカルト爆発防止
             .AsQueryable();
 
         if (isActive.HasValue)
@@ -367,6 +367,7 @@ public class WorkspaceService
             .WorkspaceUsers.Include(wu => wu.User)
             .Include(wu => wu.Workspace)
             .Where(wu => wu.WorkspaceId == workspaceId)
+            .AsSplitQuery() // デカルト爆発防止
             .AsQueryable();
 
         if (activeOnly == true)
