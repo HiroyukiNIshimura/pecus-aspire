@@ -7,10 +7,28 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = searchParams.get('pageSize') ? parseInt(searchParams.get('pageSize')!, 10) : undefined;
-    const activeOnly = searchParams.get('activeOnly') === 'true' ? true : false;
+    const pageSize = searchParams.get('PageSize') ? parseInt(searchParams.get('PageSize')!, 10) : undefined;
 
-    const result = await getUsers(page, pageSize, activeOnly);
+    // フィルタパラメータの処理
+    const isActiveParam = searchParams.get('IsActive');
+    let isActive: boolean | undefined = undefined;
+    if (isActiveParam !== null) {
+      isActive = isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : undefined;
+    }
+
+    const username = searchParams.get('Username') || undefined;
+
+    // SkillIds は複数の値を取得する可能性がある
+    const skillIdStrings = searchParams.getAll('SkillIds');
+    const skillIds = skillIdStrings.length > 0 ? skillIdStrings.map(id => parseInt(id, 10)) : undefined;
+
+    const result = await getUsers(
+      page,
+      pageSize,
+      isActive,
+      username,
+      skillIds
+    );
 
     if (result.success) {
       return NextResponse.json(result.data, { status: 200 });

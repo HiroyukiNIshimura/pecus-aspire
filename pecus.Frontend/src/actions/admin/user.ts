@@ -9,11 +9,13 @@ import { ApiResponse } from '../types';
 export async function getUsers(
   page: number = 1,
   pageSize?: number,
-  isActive: boolean = true
+  isActive?: boolean,
+  username?: string,
+  skillIds?: number[]
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers(page, pageSize, isActive);
+    const response = await api.adminUser.getApiAdminUsers(page, pageSize, isActive, username, skillIds);
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch users:', error);

@@ -6,6 +6,8 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
 import Pagination from "@/components/common/Pagination";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useValidation } from "@/hooks/useValidation";
+import { usernameFilterSchema } from "@/schemas/filterSchemas";
 
 interface UserInfo {
   id: number;
@@ -15,13 +17,18 @@ interface UserInfo {
   isAdmin: boolean;
 }
 
+interface Skill {
+  id: number;
+  name: string;
+}
+
 interface User {
   id: number;
   username: string;
   email: string;
   isActive: boolean;
   createdAt: string;
-  skills?: Array<{ id: number; name: string }>;
+  skills?: Skill[];
 }
 
 interface UserStatistics {
@@ -39,6 +46,7 @@ interface AdminUsersClientProps {
   initialTotalPages?: number;
   initialUser?: UserInfo | null;
   initialStatistics?: UserStatistics | null;
+  initialSkills?: Skill[];
   fetchError?: string | null;
 }
 
@@ -48,6 +56,7 @@ export default function AdminUsersClient({
   initialTotalPages,
   initialUser,
   initialStatistics,
+  initialSkills,
   fetchError
 }: AdminUsersClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -58,8 +67,14 @@ export default function AdminUsersClient({
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
   const [statistics, setStatistics] = useState<UserStatistics | null>(initialStatistics || null);
   const [isLoading, setIsLoading] = useState(true);
+  const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterUsername, setFilterUsername] = useState<string>("");
+  const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
+  const [filterSkillIds, setFilterSkillIds] = useState<number[]>([]);
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
+  const usernameValidation = useValidation(usernameFilterSchema);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -73,11 +88,10 @@ export default function AdminUsersClient({
                 id: user.id ?? 0,
                 username: user.username ?? '',
                 email: user.email ?? '',
-                isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+                isActive: user.isActive ?? true,
                 createdAt: user.createdAt ?? new Date().toISOString(),
-                skills: user.skills ?? [], // ユーザーのスキル一覧
+                skills: user.skills ?? [],
               }));
-              console.log('Initial Users Response:', mappedUsers);
               setUsers(mappedUsers);
               setCurrentPage(data.currentPage || 1);
               setTotalPages(data.totalPages || 1);
@@ -99,7 +113,18 @@ export default function AdminUsersClient({
     async ({ selected }: { selected: number }) => {
       try {
         const page = selected + 1;
-        const response = await fetch(`/api/admin/users?page=${page}&IsActive=true`);
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        if (filterIsActive !== null) {
+          params.append('IsActive', filterIsActive.toString());
+        }
+        if (filterUsername) {
+          params.append('Username', filterUsername);
+        }
+        if (filterSkillIds.length > 0) {
+          filterSkillIds.forEach(skillId => params.append('SkillIds', skillId.toString()));
+        }
+        const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           if (data && data.data) {
@@ -107,11 +132,10 @@ export default function AdminUsersClient({
               id: user.id ?? 0,
               username: user.username ?? '',
               email: user.email ?? '',
-              isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+              isActive: user.isActive ?? true,
               createdAt: user.createdAt ?? new Date().toISOString(),
-              skills: user.skills ?? [], // ユーザーのスキル一覧
+              skills: user.skills ?? [],
             }));
-            console.log('API Response:', mappedUsers);
             setUsers(mappedUsers);
             setCurrentPage(data.currentPage || 1);
             setTotalPages(data.totalPages || 1);
@@ -124,6 +148,76 @@ export default function AdminUsersClient({
       }
     }
   );
+
+  const handleFilterChange = useCallback(async () => {
+    setCurrentPage(1);
+    await withDelayedLoading(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        if (filterIsActive !== null) {
+          params.append('IsActive', filterIsActive.toString());
+        }
+        if (filterUsername) {
+          params.append('Username', filterUsername);
+        }
+        if (filterSkillIds.length > 0) {
+          filterSkillIds.forEach(skillId => params.append('SkillIds', skillId.toString()));
+        }
+        const response = await fetch(`/api/admin/users?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.data) {
+            const mappedUsers = data.data.map((user: any) => ({
+              id: user.id ?? 0,
+              username: user.username ?? '',
+              email: user.email ?? '',
+              isActive: user.isActive ?? true,
+              createdAt: user.createdAt ?? new Date().toISOString(),
+              skills: user.skills ?? [],
+            }));
+            setUsers(mappedUsers);
+            setCurrentPage(data.currentPage || 1);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
+            setStatistics(data.summary || null);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    })();
+  }, [filterIsActive, filterUsername, filterSkillIds, withDelayedLoading]);
+
+  const handleUsernameChange = async (value: string) => {
+    setFilterUsername(value);
+    await usernameValidation.validate(value);
+  };
+
+  const handleSearch = async () => {
+    const result = await usernameValidation.validate(filterUsername);
+    if (result.success) {
+      handleFilterChange();
+    }
+  };
+
+  const toggleSkillFilter = (skillId: number) => {
+    setFilterSkillIds(prev =>
+      prev.includes(skillId)
+        ? prev.filter(id => id !== skillId)
+        : [...prev, skillId]
+    );
+  };
+
+  const handleReset = () => {
+    setFilterUsername("");
+    setFilterIsActive(true);
+    setFilterSkillIds([]);
+    usernameValidation.clearErrors();
+    setCurrentPage(1);
+    // リセット後、初期フィルター条件で検索実行
+    handleFilterChange();
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -157,7 +251,7 @@ export default function AdminUsersClient({
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">ユーザー管理</h1>
-              <button className="btn btn-primary">新規ユーザー作成</button>
+              <button type="button" className="btn btn-primary">新規ユーザー作成</button>
             </div>
 
             {/* Error Message */}
@@ -166,6 +260,149 @@ export default function AdminUsersClient({
                 <span>{fetchError}</span>
               </div>
             )}
+
+            {/* Filter Section */}
+            <div className="card bg-base-100 shadow-xl mb-6">
+              <div className="card-body">
+                <div
+                  className="flex items-center justify-between cursor-pointer py-2"
+                  onClick={() => setFilterOpen(!filterOpen)}
+                >
+                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterSkillIds.length > 0 || filterIsActive !== true || filterUsername) ? 'text-success' : ''}`}>
+                    フィルター
+                  </span>
+                  <svg
+                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {filterOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    )}
+                  </svg>
+                </div>
+
+                {filterOpen && (
+                  <div className="pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {/* Username Filter */}
+                      <div className="form-control">
+                        <label htmlFor="filter-username" className="label">
+                          <span className="label-text">ユーザー名</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="filter-username"
+                          className={`input input-bordered w-full ${usernameValidation.hasErrors ? 'input-error' : ''}`}
+                          placeholder="前方一致検索..."
+                          value={filterUsername}
+                          onChange={(e) => handleUsernameChange(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && usernameValidation.isValid) {
+                              handleSearch();
+                            }
+                          }}
+                        />
+                        {usernameValidation.error && (
+                          <label className="label">
+                            <span className="label-text-alt text-error">{usernameValidation.error}</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Status Filter */}
+                      <div className="form-control md:col-span-2">
+                        <label className="label">
+                          <span className="label-text">ステータス</span>
+                        </label>
+                        <div className="flex gap-4 items-center h-12">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === true}
+                              onChange={() => {
+                                setFilterIsActive(true);
+                              }}
+                            />
+                            <span className="text-sm">アクティブのみ</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === false}
+                              onChange={() => {
+                                setFilterIsActive(false);
+                              }}
+                            />
+                            <span className="text-sm">非アクティブのみ</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="status"
+                              className="radio radio-sm"
+                              checked={filterIsActive === null}
+                              onChange={() => {
+                                setFilterIsActive(null);
+                              }}
+                            />
+                            <span className="text-sm">すべて</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Skill Filter */}
+                    {skills.length > 0 && (
+                      <div className="mb-4">
+                        <label className="label">
+                          <span className="label-text">スキル</span>
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((skill) => (
+                            <label key={skill.id} className="label cursor-pointer gap-2">
+                              <input
+                                type="checkbox"
+                                checked={filterSkillIds.includes(skill.id)}
+                                onChange={() => toggleSkillFilter(skill.id)}
+                                className="checkbox checkbox-sm checkbox-primary"
+                              />
+                              <span className="label-text text-sm">{skill.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Buttons */}
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        type="button"
+                        onClick={handleSearch}
+                        disabled={!usernameValidation.isValid}
+                        className="btn btn-primary btn-sm"
+                      >
+                        検索
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="btn btn-outline btn-sm"
+                      >
+                        リセット
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* User List */}
             <div className="card bg-base-100 shadow-xl">
@@ -217,8 +454,8 @@ export default function AdminUsersClient({
                             <td>{new Date(user.createdAt).toLocaleDateString('ja-JP')}</td>
                             <td>
                               <div className="flex gap-2">
-                                <button className="btn btn-sm btn-outline">編集</button>
-                                <button className="btn btn-sm btn-outline btn-error">削除</button>
+                                <button type="button" className="btn btn-sm btn-outline">編集</button>
+                                <button type="button" className="btn btn-sm btn-outline btn-error">削除</button>
                               </div>
                             </td>
                           </tr>

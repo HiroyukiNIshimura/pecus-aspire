@@ -1,6 +1,7 @@
 import AdminUsersClient from "./AdminUsersClient";
 import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
+import { getSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
 
 export const dynamic = 'force-dynamic';
@@ -12,13 +13,18 @@ type UserInfo = {
   isAdmin: boolean;
 };
 
+interface Skill {
+  id: number;
+  name: string;
+}
+
 interface User {
   id: number;
   username: string;
   email: string;
   isActive: boolean;
   createdAt: string;
-  skills?: Array<{ id: number; name: string }>;
+  skills?: Skill[];
 }
 
 interface UserStatistics {
@@ -37,13 +43,15 @@ export default async function AdminUsers() {
   let totalPages: number = 1;
   let statistics: UserStatistics | null = null;
   let userInfo: UserInfo | null = null;
+  let skills: Skill[] = [];
   let fetchError: string | null = null;
 
   try {
     // Server Actions を使用してデータ取得
-    const [usersResult, userResult] = await Promise.all([
+    const [usersResult, userResult, skillsResult] = await Promise.all([
       getUsers(1, undefined, true), // 全ユーザー取得（アクティブ・非アクティブ両方）
       getCurrentUser(),
+      getSkills(1, true), // アクティブなスキル一覧取得
     ]);
 
     // ユーザー一覧の処理
@@ -54,9 +62,9 @@ export default async function AdminUsers() {
           id: user.id ?? 0,
           username: user.username ?? '',
           email: user.email ?? '',
-          isActive: true, // APIレスポンスに isActive がないため、デフォルト true
+          isActive: user.isActive ?? true,
           createdAt: user.createdAt ?? new Date().toISOString(),
-          skills: user.skills ?? [], // ユーザーのスキル一覧
+          skills: user.skills ?? [],
         }));
         totalCount = responseData.totalCount ?? 0;
         totalPages = responseData.totalPages ?? 1;
@@ -82,8 +90,19 @@ export default async function AdminUsers() {
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;
     }
+
+    // スキル一覧の処理
+    if (skillsResult.success && skillsResult.data) {
+      const skillData = skillsResult.data;
+      if (skillData.data && Array.isArray(skillData.data)) {
+        skills = skillData.data.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+        }));
+      }
+    }
   } catch (err: any) {
-    console.error('AdminUsers: failed to fetch users or user info', err);
+    console.error('AdminUsers: failed to fetch users, user info, or skills', err);
     // エラーコード方式で返す
     const error: ApiErrorResponse = {
       code: "UNKNOWN_ERROR",
@@ -100,6 +119,7 @@ export default async function AdminUsers() {
       initialTotalPages={totalPages}
       initialUser={userInfo}
       initialStatistics={statistics}
+      initialSkills={skills}
       fetchError={fetchError}
     />
   );

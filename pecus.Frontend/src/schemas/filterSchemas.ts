@@ -26,3 +26,8 @@ export const skillNameFilterSchema = nameFilterSchema;
  * タグ名検索用スキーマ
  */
 export const tagNameFilterSchema = nameFilterSchema;
+
+/**
+ * ユーザー名検索用スキーマ
+ */
+export const usernameFilterSchema = nameFilterSchema;
