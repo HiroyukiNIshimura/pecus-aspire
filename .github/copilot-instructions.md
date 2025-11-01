@@ -593,6 +593,116 @@ try {
 
 なお、トランザクション処理をコントローラー層に持ち込まないでください。
 
+### Entity Framework Core のパフォーマンス最適化
+
+#### デカルト爆発（Cartesian Explosion）の回避
+
+複数の `Include()` を使用する際、デカルト爆発によるパフォーマンス劣化に注意してください。
+
+**問題が発生するパターン:**
+```csharp
+// ❌ 避けるべき：デカルト爆発が発生
+var query = _context.Users
+    .Include(u => u.Roles)           // 1:N
+    .Include(u => u.UserSkills)      // 1:N
+    .Include(u => u.WorkspaceUsers)  // 1:N
+    .ToListAsync();
+// → Users × Roles × UserSkills × WorkspaceUsers の組み合わせ数のレコードが返る
+```
+
+**推奨する解決策:**
+
+1. **AsSplitQuery() を使用（推奨）**
+   ```csharp
+   // ✅ 推奨：分割クエリで複数のSQLに分ける
+   var query = _context.Users
+       .Include(u => u.Roles)
+       .Include(u => u.UserSkills)
+       .Include(u => u.WorkspaceUsers)
+       .AsSplitQuery() // デカルト爆発防止
+       .ToListAsync();
+   ```
+
+2. **ThenInclude() でネストを最小化**
+   ```csharp
+   // ✅ 階層構造の場合はThenInclude()を使用
+   var query = _context.Workspaces
+       .Include(w => w.WorkspaceUsers)
+           .ThenInclude(wu => wu.User)
+       .AsSplitQuery()
+       .ToListAsync();
+   ```
+
+3. **フィルタ付きInclude（EF Core 5.0+）**
+   ```csharp
+   // ✅ Include内でフィルタリング（SQL側で評価）
+   var query = _context.Workspaces
+       .Include(w => w.WorkspaceUsers.Where(wu => wu.User.IsActive))
+           .ThenInclude(wu => wu.User)
+       .AsSplitQuery()
+       .ToListAsync();
+   ```
+
+#### ページネーション実装の注意点
+
+**CountAsync() と ToListAsync() の一貫性を保つ:**
+
+```csharp
+// ✅ 正しいパターン
+var query = _context.Users
+    .Include(u => u.Roles)
+    .Include(u => u.UserSkills)
+        .ThenInclude(us => us.Skill)
+    .Where(u => u.OrganizationId == organizationId);
+
+// フィルタ条件を追加
+if (isActive.HasValue) {
+    query = query.Where(u => u.IsActive == isActive.Value);
+}
+
+query = query.OrderBy(u => u.Id);
+
+// AsSplitQueryを使用してデカルト爆発防止
+var totalCount = await query.CountAsync();
+var users = await query.AsSplitQuery().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+```
+
+**避けるべきパターン:**
+
+```csharp
+// ❌ 避けるべき：複雑なネストLINQはクライアント評価される可能性
+query = query.Where(u =>
+    skillIds.All(skillId => u.UserSkills.Any(us => us.SkillId == skillId))
+);
+// → CountAsync()とToListAsync()で異なる結果になる可能性
+
+// ✅ 推奨：foreachで分解してSQL側で評価
+foreach (var skillId in skillIds) {
+    var currentSkillId = skillId; // クロージャ対策
+    query = query.Where(u => u.UserSkills.Any(us => us.SkillId == currentSkillId));
+}
+```
+
+#### グローバル設定（推奨しない）
+
+プロジェクト全体で `AsSplitQuery()` をデフォルトにすることも可能ですが、個別に制御する方が推奨されます。
+
+```csharp
+// ⚠️ グローバル設定（非推奨）
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    optionsBuilder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+}
+```
+
+#### ベストプラクティスまとめ
+
+1. **複数の Include() がある場合は必ず `AsSplitQuery()` を使用**
+2. **ページネーションでは CountAsync() の前に全フィルタ条件を適用**
+3. **複雑なネストLINQ（`All()`, `Any()` の組み合わせ）は分解してSQL側で評価**
+4. **フィルタ付きInclude を活用してデータ取得量を最小化**
+5. **コメントで意図を明記**（例: `// デカルト爆発防止`）
+
 ### Hangfire タスクの共有パターン
 タスクは `pecus.Libs` に実装し、WebApi（クライアント）と BackFire（サーバー）の両方で DI 登録してください。静的メソッドやグローバルな BackgroundJob 呼び出しは避けてください。
 
