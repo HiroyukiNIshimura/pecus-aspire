@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { CreateSkillRequest } from '../models/CreateSkillRequest';
 import type { SkillDetailResponse } from '../models/SkillDetailResponse';
-import type { SkillListItemResponseObjectPagedResponse } from '../models/SkillListItemResponseObjectPagedResponse';
+import type { SkillListItemResponseSkillStatisticsPagedResponse } from '../models/SkillListItemResponseSkillStatisticsPagedResponse';
 import type { SkillResponse } from '../models/SkillResponse';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateSkillRequest } from '../models/UpdateSkillRequest';
@@ -35,21 +35,30 @@ export class AdminSkillService {
     }
     /**
      * スキル一覧取得（ページネーション）
+     * スキルの一覧をページネーションで取得します。
+     * 統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、
+     * 利用されているトップ５スキル、利用されていないスキルのリストを含みます。
      * @param page ページ番号（1から始まる）
      * @param isActive アクティブなスキルのみ取得するか
-     * @returns SkillListItemResponseObjectPagedResponse OK
+     * @param unusedOnly 未使用のスキルのみ取得するか（true: 未使用のみ、false または null: すべて）
+     * @param name スキル名で前方一致検索（オプション）
+     * @returns SkillListItemResponseSkillStatisticsPagedResponse OK
      * @throws ApiError
      */
     public static getApiAdminSkills(
         page?: number,
         isActive?: boolean,
-    ): CancelablePromise<SkillListItemResponseObjectPagedResponse> {
+        unusedOnly?: boolean,
+        name?: string,
+    ): CancelablePromise<SkillListItemResponseSkillStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/skills',
             query: {
                 'Page': page,
                 'IsActive': isActive,
+                'UnusedOnly': unusedOnly,
+                'Name': name,
             },
             errors: {
                 500: `Internal Server Error`,

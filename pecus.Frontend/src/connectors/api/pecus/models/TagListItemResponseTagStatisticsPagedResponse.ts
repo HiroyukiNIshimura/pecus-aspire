@@ -3,10 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TagListItemResponse } from './TagListItemResponse';
+import type { TagStatistics } from './TagStatistics';
 /**
  * ページネーション付きレスポンス（統計情報付き）
  */
-export type TagListItemResponseObjectPagedResponse = {
+export type TagListItemResponseTagStatisticsPagedResponse = {
     /**
      * データのリスト
      */
@@ -35,9 +36,6 @@ export type TagListItemResponseObjectPagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
-    /**
-     * リストデータの統計情報
-     */
-    summary?: any;
+    summary?: TagStatistics;
 };
 

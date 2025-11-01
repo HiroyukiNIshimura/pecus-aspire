@@ -3,43 +3,43 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * スキル詳細情報レスポンス
+ * �X�L���ڍ׏�񃌃X�|���X
  */
 export type SkillDetailResponse = {
     /**
-     * スキルID
+     * �X�L��ID
      */
     id?: number;
     /**
-     * スキル名
+     * �X�L����
      */
     name: string | null;
     /**
-     * スキルの説明
+     * �X�L���̐���
      */
     description?: string | null;
     /**
-     * 組織ID
+     * �g�DID
      */
     organizationId?: number;
     /**
-     * 作成日時
+     * �쐬����
      */
     createdAt?: string;
     /**
-     * 作成者ユーザーID
+     * �쐬�҃��[�U�[ID
      */
     createdByUserId?: number | null;
     /**
-     * 更新日時
+     * �X�V����
      */
     updatedAt?: string | null;
     /**
-     * 更新者ユーザーID
+     * �X�V�҃��[�U�[ID
      */
     updatedByUserId?: number | null;
     /**
-     * アクティブフラグ
+     * �A�N�e�B�u�t���O
      */
     isActive?: boolean;
 };

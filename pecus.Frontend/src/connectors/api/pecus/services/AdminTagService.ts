@@ -5,7 +5,7 @@
 import type { CreateTagRequest } from '../models/CreateTagRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { TagDetailResponse } from '../models/TagDetailResponse';
-import type { TagListItemResponseObjectPagedResponse } from '../models/TagListItemResponseObjectPagedResponse';
+import type { TagListItemResponseTagStatisticsPagedResponse } from '../models/TagListItemResponseTagStatisticsPagedResponse';
 import type { TagResponse } from '../models/TagResponse';
 import type { UpdateTagRequest } from '../models/UpdateTagRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -35,21 +35,30 @@ export class AdminTagService {
     }
     /**
      * タグ一覧取得（ページネーション）
+     * タグの一覧をページネーションで取得します。
+     * 統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、
+     * 利用されているトップ５タグ、利用されていないタグのリストを含みます。
      * @param page ページ番号
      * @param isActive アクティブ状態フィルター
-     * @returns TagListItemResponseObjectPagedResponse OK
+     * @param unusedOnly 未使用のタグのみ取得するか（true: 未使用のみ、false または null: すべて）
+     * @param name タグ名で前方一致検索（オプション）
+     * @returns TagListItemResponseTagStatisticsPagedResponse OK
      * @throws ApiError
      */
     public static getApiAdminTags(
         page?: number,
         isActive?: boolean,
-    ): CancelablePromise<TagListItemResponseObjectPagedResponse> {
+        unusedOnly?: boolean,
+        name?: string,
+    ): CancelablePromise<TagListItemResponseTagStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/tags',
             query: {
                 'Page': page,
                 'IsActive': isActive,
+                'UnusedOnly': unusedOnly,
+                'Name': name,
             },
             errors: {
                 500: `Internal Server Error`,

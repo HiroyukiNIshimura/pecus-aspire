@@ -3,35 +3,35 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * スキルリストアイテムレスポンス
+ * �X�L�����X�g�A�C�e�����X�|���X
  */
 export type SkillListItemResponse = {
     /**
-     * スキルID
+     * �X�L��ID
      */
     id?: number;
     /**
-     * スキル名
+     * �X�L����
      */
     name: string | null;
     /**
-     * スキルの説明
+     * �X�L���̐���
      */
     description?: string | null;
     /**
-     * 作成日時
+     * �쐬����
      */
     createdAt?: string;
     /**
-     * 更新日時
+     * �X�V����
      */
     updatedAt?: string | null;
     /**
-     * アクティブフラグ
+     * �A�N�e�B�u�t���O
      */
     isActive?: boolean;
     /**
-     * このスキルを保有しているユーザー数
+     * ���̃X�L����ۗL���Ă��郆�[�U�[��
      */
     userCount?: number;
 };

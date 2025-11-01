@@ -3,10 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { SkillListItemResponse } from './SkillListItemResponse';
+import type { SkillStatistics } from './SkillStatistics';
 /**
  * ページネーション付きレスポンス（統計情報付き）
  */
-export type SkillListItemResponseObjectPagedResponse = {
+export type SkillListItemResponseSkillStatisticsPagedResponse = {
     /**
      * データのリスト
      */
@@ -35,9 +36,6 @@ export type SkillListItemResponseObjectPagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
-    /**
-     * リストデータの統計情報
-     */
-    summary?: any;
+    summary?: SkillStatistics;
 };
 

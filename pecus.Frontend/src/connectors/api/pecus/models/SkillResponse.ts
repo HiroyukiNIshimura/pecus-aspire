@@ -4,15 +4,15 @@
 /* eslint-disable */
 import type { SkillDetailResponse } from './SkillDetailResponse';
 /**
- * スキル作成・更新レスポンス
+ * �X�L���쐬�E�X�V���X�|���X
  */
 export type SkillResponse = {
     /**
-     * 成功フラグ
+     * �����t���O
      */
     success?: boolean;
     /**
-     * メッセージ
+     * ���b�Z�[�W
      */
     message: string | null;
     skill?: SkillDetailResponse;
