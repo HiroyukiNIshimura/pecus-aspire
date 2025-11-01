@@ -43,8 +43,8 @@ Conversation-Driven Development（会話駆動開発）：AI とペアプログ�
 - **型安全**: TypeScript
 - **状態管理**: jotai
 - **UIライブラリ**: Tailwind CSS + FlyonUI
-- **API通信**: OpenAPI/Swagger定義に基づく型安全なクライアント生成（例: openapi-generator, axios, react-query）
-- **認証**: pecus.WebApiのJWT認証と連携（next-auth）
+- **API通信**: OpenAPI/Swagger定義から自動生成されたAxiosベースの型安全なクライアント（`openapi-typescript-codegen`）
+- **認証**: pecus.WebApiのJWT認証と連携（トークンは localStorage + httpOnly Cookie）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）
 - **テスト**: Jest, React Testing Library, Playwright など
 - **CI/CD**: GitHub Actions等での自動ビルド・デプロイ
@@ -58,6 +58,9 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **禁止**: クライアントコードから直接 `pecus.WebApi` へのアクセス
 - **Next.js API Routes活用**: サーバーページでアクセスできない場合は、Next.js の API Routes 機能で `pecus.WebApi` へアクセスし、クライアントへデータを戻すこと
 - **SSR優先**: SSR側でフェッチ可能なデータは、SSR側でフェッチすること
+  - Server Actions（`src/actions/`）を使用してサーバーサイドでデータ取得
+  - `getCurrentUser()` などの認証情報取得は必ずServer Actionsで実行
+  - ページレンダリングで利用するマスタデータ（ジャンル、スキル、タグなど）もSSR時に取得してPropsで渡す
 - **リフレッシュトークン管理**: Axiosインターセプターが自動的にトークンリフレッシュを処理しているため、他のコードで明示的にリフレッシュ処理を実装しないこと
 
 #### API クライアントの自動生成
@@ -68,21 +71,29 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **Git管理**: 自動生成ファイルは `.gitignore` に登録済み
 
 #### アクセストークン管理の設計方針
-- **保存場所**: アクセストークンは `localStorage` に、リフレッシュトークンは `httpOnly` Cookie に保存
-- **トークン取得**: `getAccessToken()` 関数を使用（`src/connectors/api/auth.ts`）
+- **保存場所**:
+  - アクセストークンとリフレッシュトークンは両方とも暗号化されたCookieセッション（`iron-session`）に保存
+  - セキュリティ: `httpOnly`, `secure`, `sameSite: 'lax'` で保護
+- **トークン取得**:
+  - `getAccessToken()` Server Action を使用（`src/connectors/api/auth.ts`）
+  - SSR専用で、`SessionManager.getSession()` からトークンを取得
 - **自動リフレッシュ**:
-  - クライアントサイド: Axios インターセプターが 401 エラーを検知して自動リフレッシュ
-  - サーバーサイド: Next.js Middleware が事前にトークンを検証・リフレッシュ
+  - Server Action: `refreshAccessToken()` がリフレッシュ処理を実行
+  - Middleware: Next.js Middleware（`src/middleware.ts`）が保護されたルートへのアクセス前にトークン検証
+  - fetch使用: Axiosインターセプターの循環呼び出しを防ぐため、リフレッシュAPI呼び出しには直接fetchを使用
 - **リフレッシュ条件**:
-  - ステータスコード 401
-  - `www-authenticate` ヘッダーに `Bearer error="invalid_token"` が含まれる
-  - リトライフラグ（`__pecus_retry`）が設定されていない
-- **競合防止**: インスタンスレベルの `refreshPromise` で同時リフレッシュを防止
-- **失敗時の処理**: リフレッシュ失敗時は自動的に `/signin` へリダイレクト
+  - アクセストークンの有効期限が切れている場合
+  - Middleware でトークン検証失敗時
+  - リフレッシュトークンが有効な場合のみ実行
+- **失敗時の処理**:
+  - リフレッシュ失敗時（400エラー）はセッションをクリアして `/signin` へリダイレクト
+  - その他のエラーはエラーページへ遷移
+- **セッション管理**: `SessionManager`クラス（`src/libs/session.ts`）で一元管理
 
 実装サンプルは
-- `pecus.Frontend/src/app/(dashbord)/admin/page.tsx`: SSRページ
-- `pecus.Frontend/src/app/(dashbord)/admin/AdminClient.tsx`: クライアントコンポーネント
+- `pecus.Frontend/src/connectors/api/auth.ts`: トークン取得・リフレッシュのServer Actions
+- `pecus.Frontend/src/libs/session.ts`: SessionManager（iron-sessionベース）
+- `pecus.Frontend/src/middleware.ts`: トークン検証とリフレッシュのMiddleware
 - `pecus.Frontend/src/connectors/api/PecusApiClient.ts`: API クライアント設定（手動編集可能）
 - `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`: API クライアント生成部分（自動生成）
 
@@ -162,6 +173,18 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
 #### HTML生成ルール
 - **button要素**: 必ず `type` 属性を正しく設定すること（例: `type="button"`, `type="submit"`, `type="reset"`）
 - **label要素**: 必ず `for` 属性を正しく設定し、対応するinput要素のidと一致させること
+- **form要素**: `onSubmit` ハンドラーで `event.preventDefault()` を呼び出すか、buttonに `type="button"` を設定してデフォルトの送信動作を防止
+- **img要素**: 必ず `alt` 属性を設定してアクセシビリティを確保（装飾画像の場合は `alt=""` で空文字を設定）
+- **input要素**:
+  - テキスト入力には適切な `type` 属性を設定（`text`, `email`, `password`, `number` など）
+  - 必須項目には `required` 属性を設定
+  - プレースホルダーは `placeholder` 属性で設定し、ラベルの代替にしない
+- **select要素**: デフォルト選択項目には `defaultValue` または `value` を適切に設定
+- **アクセシビリティ**:
+  - インタラクティブな要素（クリック可能なdivなど）には適切なARIA属性（`role`, `aria-label`）を設定
+  - キーボード操作に対応（`tabIndex`, `onKeyDown`）
+- **Next.js Image**: 外部画像を使用する場合は `next/image` の `Image` コンポーネントを使用し、`next.config.ts` で `remotePatterns` を設定
+- **className**: Tailwind CSS + FlyonUI のクラスを使用し、カスタムCSSは最小限に抑える
 
 #### クライアントサイドバリデーション（Zod）
 
@@ -445,8 +468,8 @@ public async Task StartAsync(CancellationToken cancellationToken)
 設置ガイドライン:
 1. 一般ユーザー向けで認証が必要なら `Controllers/` に置く
 2. 管理者操作は `Controllers/Admin/` に置く
-3. サービス間通信は `Controllers/Backend/` に置く（外部公開しない）
-4. ログイン・登録などは `Controllers/Entrance/` に置く
+3. バックエンド専用処理やサービス間通信は `Controllers/Backend/` に置く（外部公開しない）
+4. ログイン・新規登録などは `Controllers/Entrance/` に置く
 
 例（抜粋）:
 ```csharp
