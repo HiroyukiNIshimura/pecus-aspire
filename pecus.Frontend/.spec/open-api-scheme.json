@@ -167,6 +167,7 @@
           "AdminSkill"
         ],
         "summary": "スキル一覧取得（ページネーション）",
+        "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -186,6 +187,23 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "UnusedOnly",
+            "in": "query",
+            "description": "未使用のスキルのみ取得するか（true: 未使用のみ、false または null: すべて）",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "スキル名で前方一致検索（オプション）",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -194,7 +212,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SkillListItemResponseObjectPagedResponse"
+                  "$ref": "#/components/schemas/SkillListItemResponseSkillStatisticsPagedResponse"
                 }
               }
             }
@@ -516,6 +534,7 @@
           "AdminTag"
         ],
         "summary": "タグ一覧取得（ページネーション）",
+        "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -535,6 +554,23 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "UnusedOnly",
+            "in": "query",
+            "description": "未使用のタグのみ取得するか（true: 未使用のみ、false または null: すべて）",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "タグ名で前方一致検索（オプション）",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -543,7 +579,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagListItemResponseObjectPagedResponse"
+                  "$ref": "#/components/schemas/TagListItemResponseTagStatisticsPagedResponse"
                 }
               }
             }
@@ -1288,6 +1324,15 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "ワークスペース名で前方一致検索（オプション）",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
             }
           }
         ],
@@ -7487,54 +7532,54 @@
         "properties": {
           "id": {
             "type": "integer",
-            "description": "スキルID",
+            "description": "�X�L��ID",
             "format": "int32"
           },
           "name": {
             "type": "string",
-            "description": "スキル名",
+            "description": "�X�L����",
             "nullable": true
           },
           "description": {
             "type": "string",
-            "description": "スキルの説明",
+            "description": "�X�L���̐���",
             "nullable": true
           },
           "organizationId": {
             "type": "integer",
-            "description": "組織ID",
+            "description": "�g�DID",
             "format": "int32"
           },
           "createdAt": {
             "type": "string",
-            "description": "作成日時",
+            "description": "�쐬����",
             "format": "date-time"
           },
           "createdByUserId": {
             "type": "integer",
-            "description": "作成者ユーザーID",
+            "description": "�쐬�҃��[�U�[ID",
             "format": "int32",
             "nullable": true
           },
           "updatedAt": {
             "type": "string",
-            "description": "更新日時",
+            "description": "�X�V����",
             "format": "date-time",
             "nullable": true
           },
           "updatedByUserId": {
             "type": "integer",
-            "description": "更新者ユーザーID",
+            "description": "�X�V�҃��[�U�[ID",
             "format": "int32",
             "nullable": true
           },
           "isActive": {
             "type": "boolean",
-            "description": "アクティブフラグ"
+            "description": "�A�N�e�B�u�t���O"
           }
         },
         "additionalProperties": false,
-        "description": "スキル詳細情報レスポンス"
+        "description": "�X�L���ڍ׏�񃌃X�|���X"
       },
       "SkillListItemResponse": {
         "required": [
@@ -7544,44 +7589,44 @@
         "properties": {
           "id": {
             "type": "integer",
-            "description": "スキルID",
+            "description": "�X�L��ID",
             "format": "int32"
           },
           "name": {
             "type": "string",
-            "description": "スキル名",
+            "description": "�X�L����",
             "nullable": true
           },
           "description": {
             "type": "string",
-            "description": "スキルの説明",
+            "description": "�X�L���̐���",
             "nullable": true
           },
           "createdAt": {
             "type": "string",
-            "description": "作成日時",
+            "description": "�쐬����",
             "format": "date-time"
           },
           "updatedAt": {
             "type": "string",
-            "description": "更新日時",
+            "description": "�X�V����",
             "format": "date-time",
             "nullable": true
           },
           "isActive": {
             "type": "boolean",
-            "description": "アクティブフラグ"
+            "description": "�A�N�e�B�u�t���O"
           },
           "userCount": {
             "type": "integer",
-            "description": "このスキルを保有しているユーザー数",
+            "description": "���̃X�L����ۗL���Ă��郆�[�U�[��",
             "format": "int32"
           }
         },
         "additionalProperties": false,
-        "description": "スキルリストアイテムレスポンス"
+        "description": "�X�L�����X�g�A�C�e�����X�|���X"
       },
-      "SkillListItemResponseObjectPagedResponse": {
+      "SkillListItemResponseSkillStatisticsPagedResponse": {
         "required": [
           "data"
         ],
@@ -7624,8 +7669,7 @@
             "description": "次のページが存在するか"
           },
           "summary": {
-            "description": "リストデータの統計情報",
-            "nullable": true
+            "$ref": "#/components/schemas/SkillStatistics"
           }
         },
         "additionalProperties": false,
@@ -7639,11 +7683,11 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "description": "成功フラグ"
+            "description": "�����t���O"
           },
           "message": {
             "type": "string",
-            "description": "メッセージ",
+            "description": "���b�Z�[�W",
             "nullable": true
           },
           "skill": {
@@ -7651,7 +7695,65 @@
           }
         },
         "additionalProperties": false,
-        "description": "スキル作成・更新レスポンス"
+        "description": "�X�L���쐬�E�X�V���X�|���X"
+      },
+      "SkillStatistics": {
+        "type": "object",
+        "properties": {
+          "totalSkills": {
+            "type": "integer",
+            "description": "スキルのトータル件数",
+            "format": "int32"
+          },
+          "activeSkills": {
+            "type": "integer",
+            "description": "アクティブなスキルの件数",
+            "format": "int32"
+          },
+          "inactiveSkills": {
+            "type": "integer",
+            "description": "非アクティブなスキルの件数",
+            "format": "int32"
+          },
+          "topUsedSkills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillUsageItem"
+            },
+            "description": "利用されているスキルのトップ５",
+            "nullable": true
+          },
+          "unusedSkills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkillUsageItem"
+            },
+            "description": "利用されていないスキルのリスト",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "スキル利用統計のレスポンス"
+      },
+      "SkillUsageItem": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "スキル名",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "スキル利用アイテム（ID と名前）"
       },
       "SkillUserCountResponse": {
         "required": [
@@ -7805,7 +7907,7 @@
         "additionalProperties": false,
         "description": "タグリストアイテムレスポンス"
       },
-      "TagListItemResponseObjectPagedResponse": {
+      "TagListItemResponseTagStatisticsPagedResponse": {
         "required": [
           "data"
         ],
@@ -7848,8 +7950,7 @@
             "description": "次のページが存在するか"
           },
           "summary": {
-            "description": "リストデータの統計情報",
-            "nullable": true
+            "$ref": "#/components/schemas/TagStatistics"
           }
         },
         "additionalProperties": false,
@@ -7873,6 +7974,64 @@
         },
         "additionalProperties": false,
         "description": "タグレスポンス"
+      },
+      "TagStatistics": {
+        "type": "object",
+        "properties": {
+          "totalTags": {
+            "type": "integer",
+            "description": "タグのトータル件数",
+            "format": "int32"
+          },
+          "activeTags": {
+            "type": "integer",
+            "description": "アクティブなタグの件数",
+            "format": "int32"
+          },
+          "inactiveTags": {
+            "type": "integer",
+            "description": "非アクティブなタグの件数",
+            "format": "int32"
+          },
+          "topUsedTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagUsageItem"
+            },
+            "description": "利用されているタグのトップ５",
+            "nullable": true
+          },
+          "unusedTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagUsageItem"
+            },
+            "description": "利用されていないタグのリスト",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "タグ利用統計のレスポンス"
+      },
+      "TagUsageItem": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タグID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "タグ名",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "タグ利用アイテム（ID と名前）"
       },
       "UpdateEmailRequest": {
         "required": [

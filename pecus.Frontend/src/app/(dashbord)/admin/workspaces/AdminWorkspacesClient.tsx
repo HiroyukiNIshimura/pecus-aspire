@@ -8,6 +8,24 @@ import AdminFooter from "@/components/admin/AdminFooter";
 import Pagination from "@/components/common/Pagination";
 import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useValidation } from "@/hooks/useValidation";
+import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
+
+/**
+ * ワークスペース管理画面のクライアントコンポーネント
+ *
+ * 【バリデーション実装サンプル】
+ * このコンポーネントは useValidation フックを使用したバリデーションの実装例です。
+ *
+ * 実装ポイント:
+ * 1. useValidation フックでスキーマを渡してバリデーション状態を管理
+ * 2. handleNameChange で入力時にリアルタイムバリデーション（非同期）
+ * 3. handleSearch で検索実行前にバリデーションチェック
+ * 4. nameValidation.hasErrors でエラー時のスタイル切り替え
+ * 5. nameValidation.error で最初のエラーメッセージを表示
+ * 6. nameValidation.isValid でボタンの有効/無効を制御
+ * 7. nameValidation.clearErrors でエラーのクリア
+ */
 
 interface UserInfo {
   id: number;
@@ -38,8 +56,15 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
+  const [filterName, setFilterName] = useState<string>("");
   const [genres, setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // 【バリデーションフック利用例】
+  // useValidation フックを使用してワークスペース名のバリデーションを管理
+  // - スキーマ: workspaceNameFilterSchema (最大100文字)
+  // - 戻り値: validate, errors, isValid, clearErrors, error, hasErrors
+  const nameValidation = useValidation(workspaceNameFilterSchema);
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
 
@@ -86,6 +111,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
         if (filterGenreId !== null) {
           params.append('GenreId', filterGenreId.toString());
         }
+        if (filterName) {
+          params.append('Name', filterName);
+        }
         const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
         if (response.ok) {
           const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
@@ -113,6 +141,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
         if (filterGenreId !== null) {
           params.append('GenreId', filterGenreId.toString());
         }
+        if (filterName) {
+          params.append('Name', filterName);
+        }
         const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
         if (response.ok) {
           const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
@@ -126,7 +157,27 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
         console.error('Failed to fetch workspaces:', error);
       }
     })();
-  }, [filterIsActive, filterGenreId, withDelayedLoading]);
+  }, [filterIsActive, filterGenreId, filterName, withDelayedLoading]);
+
+  // 【バリデーション実装例 1: リアルタイムバリデーション】
+  // 入力時に即座にバリデーションを実行してエラーを表示
+  // - 非同期関数として実装（refine/transform対応）
+  // - validate() の戻り値は使用せず、フックの状態を参照
+  const handleNameChange = async (value: string) => {
+    setFilterName(value);
+    await nameValidation.validate(value);
+  };
+
+  // 【バリデーション実装例 2: 送信前バリデーション】
+  // 検索実行前にバリデーションチェックを行う
+  // - result.success で成功/失敗を判定
+  // - 成功時のみ検索処理を実行
+  const handleSearch = async () => {
+    const result = await nameValidation.validate(filterName);
+    if (result.success) {
+      handleFilterChange();
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -170,7 +221,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                   className="flex items-center justify-between cursor-pointer py-2"
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
-                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterGenreId !== null || filterIsActive !== true) ? 'text-success' : ''}`}>フィルター</span>
+                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterGenreId !== null || filterIsActive !== true || filterName) ? 'text-success' : ''}`}>フィルター</span>
                   <svg
                     className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -190,12 +241,42 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                 {filterOpen && (
                   <div className="pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      {/* Workspace Name Filter */}
+                      {/* 【バリデーション UI 実装例】 */}
+                      <div className="form-control">
+                        <label htmlFor="filter-name" className="label">
+                          <span className="label-text">ワークスペース名</span>
+                        </label>
+                        {/* 【ポイント1】エラー時のスタイル切り替え: nameValidation.hasErrors */}
+                        <input
+                          type="text"
+                          id="filter-name"
+                          className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
+                          placeholder="前方一致検索..."
+                          value={filterName}
+                          onChange={(e) => handleNameChange(e.target.value)}
+                          onKeyDown={(e) => {
+                            // 【ポイント2】Enterキーで検索: nameValidation.isValid でバリデーションチェック
+                            if (e.key === 'Enter' && nameValidation.isValid) {
+                              handleSearch();
+                            }
+                          }}
+                        />
+                        {/* 【ポイント3】エラーメッセージ表示: nameValidation.error */}
+                        {nameValidation.error && (
+                          <label className="label">
+                            <span className="label-text-alt text-error">{nameValidation.error}</span>
+                          </label>
+                        )}
+                      </div>
+
                       {/* Genre Filter */}
                       <div className="form-control">
-                        <label className="label">
+                        <label htmlFor="filter-genre" className="label">
                           <span className="label-text">ジャンル</span>
                         </label>
                         <select
+                          id="filter-genre"
                           className="select select-bordered w-full"
                           value={filterGenreId ?? ''}
                           onChange={(e) => {
@@ -212,7 +293,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                       </div>
 
                       {/* Active Status Filter */}
-                      <div className="form-control">
+                      <div className="form-control md:col-span-2">
                         <label className="label">
                           <span className="label-text">ステータス</span>
                         </label>
@@ -257,14 +338,26 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                       </div>
                     </div>
 
-                    {/* Reset Button */}
+                    {/* Action Buttons */}
                     <div className="flex gap-2 pt-2 border-t border-base-300">
+                      {/* 【ポイント4】ボタンの無効化: !nameValidation.isValid */}
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleSearch}
+                        disabled={!nameValidation.isValid}
+                      >
+                        検索
+                      </button>
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
                         onClick={() => {
                           setFilterGenreId(null);
                           setFilterIsActive(true);
+                          setFilterName("");
+                          // 【ポイント5】エラーのクリア: nameValidation.clearErrors()
+                          nameValidation.clearErrors();
                         }}
                       >
                         リセット
