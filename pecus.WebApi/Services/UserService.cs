@@ -581,48 +581,79 @@ public class UserService
     {
         var statistics = new UserStatistics();
 
-        // ユーザーを取得（スキルとロール情報を含む）
-        var users = await _context.Users
-        .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-        .Include(u => u.Roles)
-        .Include(u => u.WorkspaceUsers)
-        .Where(u => u.OrganizationId == organizationId)
-        .ToListAsync();
+        // 並列実行で高速化
+        var activeCountTask = _context.Users
+            .Where(u => u.OrganizationId == organizationId && u.IsActive)
+            .CountAsync();
 
-        // アクティブ/非アクティブのユーザー数
-        statistics.ActiveUserCount = users.Count(u => u.IsActive);
-        statistics.InactiveUserCount = users.Count(u => !u.IsActive);
+        var inactiveCountTask = _context.Users
+            .Where(u => u.OrganizationId == organizationId && !u.IsActive)
+            .CountAsync();
 
-        // スキルごとのユーザー数
-        statistics.SkillCounts = users
-         .SelectMany(u => u.UserSkills)
-         .GroupBy(us => new { us.Skill.Id, us.Skill.Name })
+        var skillCountsTask = _context.UserSkills
+            .Where(us => us.User.OrganizationId == organizationId)
+            .GroupBy(us => new { us.Skill.Id, us.Skill.Name })
             .Select(g => new SkillUserCountResponse
             {
                 Id = g.Key.Id,
                 Name = g.Key.Name,
                 Count = g.Select(us => us.UserId).Distinct().Count()
             })
-          .OrderBy(s => s.Name)
-            .ToList();
+            .OrderBy(s => s.Name)
+            .ToListAsync();
 
-        // ロールごとのユーザー数
-        statistics.RoleCounts = users
-           .SelectMany(u => u.Roles)
-           .GroupBy(r => new { r.Id, r.Name })
-            .Select(g => new RoleUserCountResponse
+        // ロールごとのユーザー数（多対多リレーションを経由）
+        var roleCountsTask = _context.Users
+            .Where(u => u.OrganizationId == organizationId)
+            .SelectMany(u => u.Roles)
+            .GroupBy(r => new { r.Id, r.Name })
+            .Select(g => new
             {
-                Id = g.Key.Id,
-                Name = g.Key.Name,
-                Count = g.Select(r => r.Users).SelectMany(u => u).Select(u => u.Id).Distinct().Count()
+                g.Key.Id,
+                g.Key.Name,
+                Count = g.Count()
             })
             .OrderBy(r => r.Name)
-        .ToList();
+            .ToListAsync();
+
+        var workspaceParticipationCountTask = _context.Users
+            .Where(u => u.OrganizationId == organizationId && u.WorkspaceUsers.Any())
+            .CountAsync();
+
+        var totalUserCountTask = _context.Users
+            .Where(u => u.OrganizationId == organizationId)
+            .CountAsync();
+
+        // すべてのクエリを並列実行
+        await Task.WhenAll(
+            activeCountTask,
+            inactiveCountTask,
+            skillCountsTask,
+            roleCountsTask,
+            workspaceParticipationCountTask,
+            totalUserCountTask
+        );
+
+        // アクティブ/非アクティブのユーザー数
+        statistics.ActiveUserCount = activeCountTask.Result;
+        statistics.InactiveUserCount = inactiveCountTask.Result;
+
+        // スキルごとのユーザー数
+        statistics.SkillCounts = skillCountsTask.Result;
+
+        // ロールごとのユーザー数（匿名型からRoleUserCountResponseに変換）
+        statistics.RoleCounts = roleCountsTask.Result
+            .Select(r => new RoleUserCountResponse
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Count = r.Count
+            })
+            .ToList();
 
         // ワークスペース参加状況
-        var usersWithWorkspaces = users.Count(u => u.WorkspaceUsers.Any());
-        statistics.WorkspaceParticipationCount = usersWithWorkspaces;
-        statistics.NoWorkspaceParticipationCount = users.Count - usersWithWorkspaces;
+        statistics.WorkspaceParticipationCount = workspaceParticipationCountTask.Result;
+        statistics.NoWorkspaceParticipationCount = totalUserCountTask.Result - workspaceParticipationCountTask.Result;
 
         return statistics;
     }
