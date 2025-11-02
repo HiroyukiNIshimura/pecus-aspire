@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useRouter } from "next/navigation";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { isAuthenticationError, type ApiErrorResponse } from "@/types/errors";
@@ -58,15 +59,7 @@ export default function AdminClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* 全体ローディングオーバーレイ（クライアント側でページブロックする場合） */}
-      {showLoading && (
-        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">読み込み中...</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
       <AdminHeader
         userInfo={userInfo}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspace } from "@/actions/admin/workspace";
@@ -80,15 +81,7 @@ export default function EditWorkspaceClient({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* ローディングオーバーレイ */}
-      {isSubmitting && (
-        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">更新中...</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 

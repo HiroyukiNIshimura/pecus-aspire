@@ -5,6 +5,7 @@ import { WorkspaceListItemResponse, WorkspaceListItemResponseWorkspaceStatistics
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
 import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
@@ -182,15 +183,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Loading Overlay */}
-      {(isLoading || showLoading) && (
-        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">{isLoading ? '初期化中...' : '検索中...'}</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />

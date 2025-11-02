@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
@@ -157,15 +158,7 @@ export default function AdminSkillsClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Loading Overlay */}
-      {showLoading && (
-        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <span className="loading loading-spinner loading-lg text-primary"></span>
-            <p className="text-lg">検索中...</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />

@@ -18,7 +18,7 @@ export default function LoadingOverlay({
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-base-100/40 z-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <span className="loading loading-spinner loading-lg text-primary"></span>
         <p className="text-lg">{message}</p>
