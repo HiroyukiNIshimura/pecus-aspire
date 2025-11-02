@@ -3,35 +3,43 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * �X�L�����X�g�A�C�e�����X�|���X
+ * スキル一覧アイテムレスポンス
  */
 export type SkillListItemResponse = {
     /**
-     * �X�L��ID
+     * スキルID
      */
     id?: number;
     /**
-     * �X�L����
+     * スキル名
      */
     name: string | null;
     /**
-     * �X�L���̐���
+     * スキルの説明
      */
     description?: string | null;
     /**
-     * �쐬����
+     * 作成日時
      */
     createdAt?: string;
     /**
-     * �X�V����
+     * 更新日時
      */
     updatedAt?: string | null;
     /**
-     * �A�N�e�B�u�t���O
+     * 更新者ユーザーID
+     */
+    updatedByUserId?: number | null;
+    /**
+     * スキルのアクティブ/非アクティブ状態
      */
     isActive?: boolean;
     /**
-     * ���̃X�L����ۗL���Ă��郆�[�U�[��
+     * スキルの利用状況
+     */
+    userIds?: Array<string> | null;
+    /**
+     * ユーザー数
      */
     userCount?: number;
 };

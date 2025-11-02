@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TagInfoResponse } from './TagInfoResponse';
+import type { TaskPriority } from './TaskPriority';
 /**
  * ワークスペースアイテム詳細レスポンス
  */
@@ -55,10 +56,7 @@ export type WorkspaceItemDetailResponse = {
      * 作業中のユーザーアバターURL
      */
     assigneeAvatarUrl?: string | null;
-    /**
-     * 重要度（1: 低、2: 普通、3: 高）
-     */
-    priority?: number;
+    priority?: TaskPriority;
     /**
      * 期限日
      */

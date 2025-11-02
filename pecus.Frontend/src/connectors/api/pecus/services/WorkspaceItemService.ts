@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { CreateWorkspaceItemRequest } from '../models/CreateWorkspaceItemRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
+import type { TaskPriority } from '../models/TaskPriority';
 import type { UpdateWorkspaceItemRequest } from '../models/UpdateWorkspaceItemRequest';
 import type { UpdateWorkspaceItemStatusRequest } from '../models/UpdateWorkspaceItemStatusRequest';
 import type { WorkspaceItemDetailResponse } from '../models/WorkspaceItemDetailResponse';
@@ -57,7 +58,7 @@ export class WorkspaceItemService {
         isDraft?: boolean,
         isArchived?: boolean,
         assigneeId?: number,
-        priority?: number,
+        priority?: TaskPriority,
         pinned?: boolean,
     ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
         return __request(OpenAPI, {

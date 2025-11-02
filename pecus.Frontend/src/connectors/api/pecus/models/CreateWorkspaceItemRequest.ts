@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { TaskPriority } from './TaskPriority';
 /**
  * ワークスペースアイテム作成リクエスト
  */
@@ -18,10 +19,7 @@ export type CreateWorkspaceItemRequest = {
      * 作業中のユーザーID（NULL可）
      */
     assigneeId?: number | null;
-    /**
-     * 重要度（1: 低、2: 普通、3: 高）
-     */
-    priority?: number;
+    priority?: TaskPriority;
     /**
      * 期限日
      */

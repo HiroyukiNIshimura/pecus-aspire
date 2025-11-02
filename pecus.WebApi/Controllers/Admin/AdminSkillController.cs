@@ -102,6 +102,7 @@ public class AdminSkillController : ControllerBase
                     CreatedAt = skill.CreatedAt,
                     CreatedByUserId = skill.CreatedByUserId,
                     IsActive = skill.IsActive,
+                    UserCount = 0,
                 },
             };
             return TypedResults.Ok(response);
@@ -191,6 +192,7 @@ public class AdminSkillController : ControllerBase
                 UpdatedAt = skill.UpdatedAt,
                 UpdatedByUserId = skill.UpdatedByUserId,
                 IsActive = skill.IsActive,
+                UserCount = skill.UserSkills?.Count ?? 0,
             };
 
             return TypedResults.Ok(response);
@@ -346,6 +348,7 @@ public class AdminSkillController : ControllerBase
                     UpdatedAt = updatedSkill.UpdatedAt,
                     UpdatedByUserId = updatedSkill.UpdatedByUserId,
                     IsActive = updatedSkill.IsActive,
+                    UserCount = updatedSkill.UserSkills?.Count ?? 0,
                 },
             };
             return TypedResults.Ok(response);

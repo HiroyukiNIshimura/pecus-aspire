@@ -77,6 +77,7 @@ export type { TagListItemResponseTagStatisticsPagedResponse } from './models/Tag
 export type { TagResponse } from './models/TagResponse';
 export type { TagStatistics } from './models/TagStatistics';
 export type { TagUsageItem } from './models/TagUsageItem';
+export { TaskPriority } from './models/TaskPriority';
 export type { UpdateEmailRequest } from './models/UpdateEmailRequest';
 export type { UpdateGenreRequest } from './models/UpdateGenreRequest';
 export type { UpdateOrganizationRequest } from './models/UpdateOrganizationRequest';

@@ -3,44 +3,48 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * �X�L���ڍ׏�񃌃X�|���X
+ * スキル詳細レスポンス
  */
 export type SkillDetailResponse = {
     /**
-     * �X�L��ID
+     * スキルID
      */
     id?: number;
     /**
-     * �X�L����
+     * スキル名
      */
     name: string | null;
     /**
-     * �X�L���̐���
+     * スキルの説明
      */
     description?: string | null;
     /**
-     * �g�DID
+     * 組織ID
      */
     organizationId?: number;
     /**
-     * �쐬����
+     * 作成日時
      */
     createdAt?: string;
     /**
-     * �쐬�҃��[�U�[ID
+     * 作成者ユーザーID
      */
     createdByUserId?: number | null;
     /**
-     * �X�V����
+     * 更新日時
      */
     updatedAt?: string | null;
     /**
-     * �X�V�҃��[�U�[ID
+     * 更新者ユーザーID
      */
     updatedByUserId?: number | null;
     /**
-     * �A�N�e�B�u�t���O
+     * スキルのアクティブ/非アクティブ状態
      */
     isActive?: boolean;
+    /**
+     * ユーザー数
+     */
+    userCount?: number;
 };
 
