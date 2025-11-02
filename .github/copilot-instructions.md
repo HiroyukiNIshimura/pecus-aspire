@@ -1042,17 +1042,27 @@ _logger.LogInformation("User {UserId} logged in from {IpAddress}", me, ipAddress
 ## 開発ワークフロー
 ビルド確認は必須です。変更後はソリューション全体をビルドしてエラーを早期に検出してください。
 
-コードフォーマット例（.editorconfigに基づく自動整形）:
+コードフォーマット例（バックエンド：.editorconfigに基づく自動整形）:
 ```bash
 dotnet format pecus.sln
 ```
 
-ビルド例:
+コードフォーマット例（フロントエンド：biomeに基づく自動整形）:
+```bash
+npm run format
+```
+
+ビルド例（バックエンド）:
 ```bash
 dotnet build pecus.sln
 ```
 
-推奨フロー:
+ビルド例（フロントエンド）:
+```bash
+npm run build
+```
+
+推奨フロー（バックエンド）:
 ```bash
 # 1. コードフォーマット実行
 dotnet format pecus.sln
@@ -1063,6 +1073,21 @@ dotnet build pecus.sln
 # 3. アプリ起動
 dotnet run --project pecus.AppHost
 ```
+推奨フロー（フロントエンド）:
+```bash
+# 1. コードフォーマット実行
+npm run format
+
+# 2. 型確認
+npx tsc --noEmit
+
+# 3. ビルド確認
+npm run build
+
+# 4. アプリ起動（開発サーバー）
+npm run dev
+```
+
 
 アプリ起動例（Aspire 経由）:
 ```bash
