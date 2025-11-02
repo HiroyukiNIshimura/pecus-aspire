@@ -54,7 +54,7 @@ export default function EditTagClient({
           } else {
             console.error("タグの更新に失敗しました:", result.error);
             notify.error(
-              result.error || "タグの更新中にエラーが発生しました。",
+              result.error ? `タグの更新中にエラーが発生しました。(${result.error})` : "タグの更新中にエラーが発生しました。",
             );
           }
         } catch (err: unknown) {

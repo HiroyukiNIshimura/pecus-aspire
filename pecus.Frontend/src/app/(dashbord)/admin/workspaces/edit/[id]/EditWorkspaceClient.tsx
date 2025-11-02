@@ -67,7 +67,7 @@ export default function EditWorkspaceClient({
           } else {
             console.error("ワークスペースの更新に失敗しました:", result.error);
             notify.error(
-              result.error || "ワークスペースの更新中にエラーが発生しました。",
+              result.error ? `ワークスペースの更新中にエラーが発生しました。(${result.error})` : "ワークスペースの更新中にエラーが発生しました。",
             );
           }
         } catch (err: unknown) {

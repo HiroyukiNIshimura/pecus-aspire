@@ -122,10 +122,6 @@ export default function EditUserClient({
         // 成功メッセージを表示
         if (updateMessages.length > 0) {
           notify.success(`更新完了: ${updateMessages.join("、")}`);
-          // 少し待ってから一覧に戻る
-          setTimeout(() => {
-            router.push("/admin/users");
-          }, 1500);
         } else {
           notify.info("変更はありませんでした。");
         }

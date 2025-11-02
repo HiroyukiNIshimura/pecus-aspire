@@ -56,7 +56,7 @@ export default function EditSkillClient({
           } else {
             console.error("スキルの更新に失敗しました:", result.error);
             notify.error(
-              result.error || "スキルの更新中にエラーが発生しました。",
+              result.error ? `スキルの更新中にエラーが発生しました。(${result.error})` : "スキルの更新中にエラーが発生しました。",
             );
           }
         } catch (err: unknown) {
