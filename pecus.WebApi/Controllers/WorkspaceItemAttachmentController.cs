@@ -18,14 +18,14 @@ namespace Pecus.Controllers;
 public class WorkspaceItemAttachmentController : ControllerBase
 {
     private readonly WorkspaceItemAttachmentService _attachmentService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemAttachmentController> _logger;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
 
     public WorkspaceItemAttachmentController(
         WorkspaceItemAttachmentService attachmentService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemAttachmentController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient

@@ -662,4 +662,46 @@ public class UserService
 
         return statistics;
     }
+
+    /// <summary>
+    /// ユーザーのロールを設定（洗い替え）
+    /// </summary>
+    public async Task<bool> SetUserRolesAsync(int userId, List<int> roleIds, int? updatedByUserId = null)
+    {
+        // ユーザーを取得
+        var user = await _context.Users
+            .Include(u => u.Roles)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // 指定されたロールIDが実際に存在するか確認
+        var roles = await _context.Roles
+            .Where(r => roleIds.Contains(r.Id))
+            .ToListAsync();
+
+        if (roles.Count != roleIds.Count)
+        {
+            throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+        }
+
+        // 現在のロールをクリア
+        user.Roles.Clear();
+
+        // 新しいロールを設定
+        foreach (var role in roles)
+        {
+            user.Roles.Add(role);
+        }
+
+        // 更新時刻を設定
+        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedByUserId = updatedByUserId;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

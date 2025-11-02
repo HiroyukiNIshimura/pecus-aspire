@@ -18,12 +18,12 @@ namespace Pecus.Controllers;
 public class MasterDataController : ControllerBase
 {
     private readonly MasterDataService _masterDataService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<MasterDataController> _logger;
 
     public MasterDataController(
         MasterDataService masterDataService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<MasterDataController> logger
     )
     {

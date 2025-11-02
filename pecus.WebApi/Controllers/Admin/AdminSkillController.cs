@@ -22,13 +22,13 @@ namespace Pecus.Controllers.Admin;
 public class AdminSkillController : ControllerBase
 {
     private readonly SkillService _skillService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminSkillController> _logger;
     private readonly PecusConfig _config;
 
     public AdminSkillController(
         SkillService skillService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<AdminSkillController> logger,
         PecusConfig config
     )

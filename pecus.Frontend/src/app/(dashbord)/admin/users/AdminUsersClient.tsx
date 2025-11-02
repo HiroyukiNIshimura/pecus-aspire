@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
@@ -60,6 +61,7 @@ export default function AdminUsersClient({
   initialSkills,
   fetchError
 }: AdminUsersClientProps) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [users, setUsers] = useState<User[]>(initialUsers || []);
@@ -506,7 +508,13 @@ export default function AdminUsersClient({
                             <td>{new Date(user.createdAt).toLocaleDateString('ja-JP')}</td>
                             <td>
                               <div className="flex gap-2">
-                                <button type="button" className="btn btn-sm btn-outline">編集</button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline"
+                                  onClick={() => router.push(`/admin/users/edit/${user.id}`)}
+                                >
+                                  編集
+                                </button>
                                 <button type="button" className="btn btn-sm btn-outline btn-error">削除</button>
                               </div>
                             </td>

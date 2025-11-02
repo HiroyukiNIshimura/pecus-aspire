@@ -16,7 +16,7 @@ export async function getUsers(
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers(page, pageSize, isActive, username, skillIds, skillFilterMode);
+    const response = await api.adminUser.getApiAdminUsers1(page, pageSize, isActive, username, skillIds, skillFilterMode);
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to fetch users:', error);
@@ -98,6 +98,74 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
     return {
       success: false,
       error: error.body?.message || error.message || 'Failed to request password reset'
+    };
+  }
+}
+
+/**
+ * Server Action: ユーザー情報を取得
+ */
+export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.getApiAdminUsers(userId);
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error('Failed to fetch user detail:', error);
+    return {
+      success: false,
+      error: error.body?.message || error.message || 'ユーザー情報の取得に失敗しました'
+    };
+  }
+}
+
+/**
+ * Server Action: ユーザー情報を更新（基本情報）
+ * 注意: バックエンドで PUT /api/admin/users/{id} エンドポイントが実装されている必要があります
+ */
+export async function updateUser(
+  userId: number,
+  request: {
+    username: string;
+    email: string;
+  }
+): Promise<ApiResponse<any>> {
+  try {
+    const api = createPecusApiClients();
+    // 現在のバックエンドにはユーザー基本情報の更新エンドポイントがないため、
+    // 以下は将来の実装を想定しています
+    // const response = await api.adminUser.putApiAdminUsers(userId, request);
+    // 代わりにアクティブ状態の更新のみ対応
+    console.warn('updateUser: ユーザー基本情報の更新エンドポイントは未実装です');
+    return {
+      success: false,
+      error: 'ユーザー基本情報の更新機能は現在利用できません'
+    };
+  } catch (error: any) {
+    console.error('Failed to update user:', error);
+    return {
+      success: false,
+      error: error.body?.message || error.message || 'ユーザーの更新に失敗しました'
+    };
+  }
+}
+
+/**
+ * Server Action: ユーザーのスキルを更新
+ */
+export async function setUserSkills(
+  userId: number,
+  skillIds: number[]
+): Promise<ApiResponse<any>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.putApiAdminUsersSkills(userId, { skillIds });
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error('Failed to set user skills:', error);
+    return {
+      success: false,
+      error: error.body?.message || error.message || 'ユーザースキルの更新に失敗しました'
     };
   }
 }

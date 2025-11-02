@@ -16,13 +16,13 @@ namespace Pecus.Controllers;
 public class WorkspaceItemController : ControllerBase
 {
     private readonly WorkspaceItemService _workspaceItemService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemController> _logger;
     private readonly PecusConfig _config;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemController> logger,
         PecusConfig config
     )

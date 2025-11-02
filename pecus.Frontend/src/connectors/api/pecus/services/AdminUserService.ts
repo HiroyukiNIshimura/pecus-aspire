@@ -13,6 +13,50 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class AdminUserService {
     /**
+     * 個別ユーザー情報を取得
+     * 指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。
+     * @param id ユーザーID
+     * @returns UserResponse ユーザー情報を返します
+     * @throws ApiError
+     */
+    public static getApiAdminUsers(
+        id: number,
+    ): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/admin/users/{id}',
+            path: {
+                'id': id,
+            },
+            errors: {
+                403: `他組織のユーザーは取得できません`,
+                404: `ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
+     * ユーザーを削除
+     * 指定したユーザーを削除します。組織内のユーザーのみ操作可能です。
+     * @param id ユーザーID
+     * @returns SuccessResponse ユーザーを削除しました
+     * @throws ApiError
+     */
+    public static deleteApiAdminUsers(
+        id: number,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/admin/users/{id}',
+            path: {
+                'id': id,
+            },
+            errors: {
+                403: `他組織のユーザーは操作できません`,
+                404: `ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
      * 組織内のユーザー一覧を取得（ページング）
      * ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。
      * @param page
@@ -25,7 +69,7 @@ export class AdminUserService {
      * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
-    public static getApiAdminUsers(
+    public static getApiAdminUsers1(
         page?: number,
         pageSize?: number,
         isActive?: boolean,
@@ -69,28 +113,6 @@ export class AdminUserService {
             },
             body: requestBody,
             mediaType: 'application/json',
-            errors: {
-                403: `他組織のユーザーは操作できません`,
-                404: `ユーザーが見つかりません`,
-            },
-        });
-    }
-    /**
-     * ユーザーを削除
-     * 指定したユーザーを削除します。組織内のユーザーのみ操作可能です。
-     * @param id ユーザーID
-     * @returns SuccessResponse ユーザーを削除しました
-     * @throws ApiError
-     */
-    public static deleteApiAdminUsers(
-        id: number,
-    ): CancelablePromise<SuccessResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/admin/users/{id}',
-            path: {
-                'id': id,
-            },
             errors: {
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,

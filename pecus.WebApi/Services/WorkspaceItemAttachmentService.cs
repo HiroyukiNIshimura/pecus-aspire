@@ -15,13 +15,13 @@ public class WorkspaceItemAttachmentService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemAttachmentService> _logger;
     private readonly PecusConfig _config;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceItemAttachmentService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemAttachmentService> logger,
         PecusConfig config,
-        WorkspaceAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper
     )
     {
         _context = context;

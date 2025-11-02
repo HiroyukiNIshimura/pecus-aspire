@@ -22,7 +22,7 @@ namespace Pecus.Controllers.Admin;
 public class AdminTagController : ControllerBase
 {
     private readonly TagService _tagService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminTagController> _logger;
     private readonly PecusConfig _config;
 
@@ -35,7 +35,7 @@ public class AdminTagController : ControllerBase
     /// <param name="config"></param>
     public AdminTagController(
         TagService tagService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<AdminTagController> logger,
         PecusConfig config
     )

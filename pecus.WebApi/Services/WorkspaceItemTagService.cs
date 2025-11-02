@@ -13,12 +13,12 @@ public class WorkspaceItemTagService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemTagService> _logger;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceItemTagService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemTagService> logger,
-        WorkspaceAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper
     )
     {
         _context = context;

@@ -835,6 +835,110 @@
         }
       }
     },
+    "/api/admin/users/{id}": {
+      "get": {
+        "tags": [
+          "AdminUser"
+        ],
+        "summary": "個別ユーザー情報を取得",
+        "description": "指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ユーザー情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "他組織のユーザーは取得できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "AdminUser"
+        ],
+        "summary": "ユーザーを削除",
+        "description": "指定したユーザーを削除します。組織内のユーザーのみ操作可能です。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ユーザーを削除しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "他組織のユーザーは操作できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/users": {
       "get": {
         "tags": [
@@ -970,59 +1074,6 @@
         "responses": {
           "200": {
             "description": "ユーザーのアクティブ状態を設定しました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "他組織のユーザーは操作できません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/users/{id}": {
-      "delete": {
-        "tags": [
-          "AdminUser"
-        ],
-        "summary": "ユーザーを削除",
-        "description": "指定したユーザーを削除します。組織内のユーザーのみ操作可能です。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ユーザーID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "ユーザーを削除しました",
             "content": {
               "application/json": {
                 "schema": {

@@ -15,12 +15,12 @@ namespace Pecus.Controllers;
 public class WorkspaceItemRelationController : ControllerBase
 {
     private readonly WorkspaceItemRelationService _relationService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemRelationController> _logger;
 
     public WorkspaceItemRelationController(
         WorkspaceItemRelationService relationService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemRelationController> logger
     )
     {

@@ -17,13 +17,13 @@ public class WorkspaceItemService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemService> _logger;
     private readonly PecusConfig _config;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceItemService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemService> logger,
         PecusConfig config,
-        WorkspaceAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper
     )
     {
         _context = context;

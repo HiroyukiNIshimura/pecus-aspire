@@ -47,7 +47,7 @@ builder.AddRedisClient("redis");
 builder.Services.AddMemoryCache(); // 分散キャッシュとして
 
 // ヘルパーの登録
-builder.Services.AddScoped<WorkspaceAccessHelper>();
+builder.Services.AddScoped<OrganizationAccessHelper>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();

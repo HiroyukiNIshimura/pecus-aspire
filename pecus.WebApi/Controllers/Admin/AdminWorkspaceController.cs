@@ -22,13 +22,13 @@ namespace Pecus.Controllers.Admin;
 public class AdminWorkspaceController : ControllerBase
 {
     private readonly WorkspaceService _workspaceService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminWorkspaceController> _logger;
     private readonly PecusConfig _config;
 
     public AdminWorkspaceController(
         WorkspaceService workspaceService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<AdminWorkspaceController> logger,
         PecusConfig config
     )

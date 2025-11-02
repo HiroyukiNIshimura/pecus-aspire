@@ -13,12 +13,12 @@ public class WorkspaceItemPinService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemPinService> _logger;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
 
     public WorkspaceItemPinService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemPinService> logger,
-        WorkspaceAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper
     )
     {
         _context = context;

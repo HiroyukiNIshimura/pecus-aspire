@@ -16,13 +16,13 @@ public class WorkspaceItemTagController : ControllerBase
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly WorkspaceItemTagService _tagService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemTagController> _logger;
 
     public WorkspaceItemTagController(
         WorkspaceItemService workspaceItemService,
         WorkspaceItemTagService tagService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemTagController> logger
     )
     {

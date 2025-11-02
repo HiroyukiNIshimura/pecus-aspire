@@ -30,6 +30,7 @@ public class AdminUserController : ControllerBase
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly OrganizationAccessHelper _accessHelper;
 
     public AdminUserController(
         UserService userService,
@@ -37,7 +38,8 @@ public class AdminUserController : ControllerBase
         ILogger<AdminUserController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        IHttpContextAccessor httpContextAccessor
+        IHttpContextAccessor httpContextAccessor,
+        OrganizationAccessHelper accessHelper
     )
     {
         _userService = userService;
@@ -46,6 +48,7 @@ public class AdminUserController : ControllerBase
         _config = config;
         _backgroundJobClient = backgroundJobClient;
         _httpContextAccessor = httpContextAccessor;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
@@ -79,9 +82,9 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            // ログインユーザーの組織情報を取得
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
             {
                 return TypedResults.Unauthorized();
             }
@@ -234,7 +237,7 @@ public class AdminUserController : ControllerBase
         {
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // 操作対象ユーザーが同じ組織に所属しているか確認
+            // 操作対象ユーザーが存在するか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
             if (targetUser == null)
             {
@@ -243,8 +246,9 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
             {
                 return TypedResults.Unauthorized();
             }
@@ -299,7 +303,7 @@ public class AdminUserController : ControllerBase
         {
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // 操作対象ユーザーが同じ組織に所属しているか確認
+            // 操作対象ユーザーが存在するか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
             if (targetUser == null)
             {
@@ -308,8 +312,9 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
             {
                 return TypedResults.Unauthorized();
             }
@@ -354,7 +359,7 @@ public class AdminUserController : ControllerBase
         {
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // 操作対象ユーザーが同じ組織に所属しているか確認
+            // 操作対象ユーザーが存在するか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
             if (targetUser == null)
             {
@@ -363,8 +368,9 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
             {
                 return TypedResults.Unauthorized();
             }
@@ -511,7 +517,7 @@ public class AdminUserController : ControllerBase
         {
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // 操作対象ユーザーが同じ組織に所属しているか確認
+            // 操作対象ユーザーが存在するか確認
             var targetUser = await _userService.GetUserByIdAsync(id);
             if (targetUser == null)
             {
@@ -520,8 +526,9 @@ public class AdminUserController : ControllerBase
                 );
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
             {
                 return TypedResults.Unauthorized();
             }
@@ -576,6 +583,62 @@ public class AdminUserController : ControllerBase
                 "管理者によるパスワードリセットリクエスト中にエラーが発生しました: UserId={UserId}",
                 id
             );
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// ユーザーのロールを設定
+    /// </summary>
+    /// <remarks>
+    /// 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    /// <param name="request">ロールIDのリスト</param>
+    /// <response code="200">ロールを設定しました</response>
+    /// <response code="403">他組織のユーザーは操作できません</response>
+    /// <response code="404">ユーザーが見つかりません</response>
+    [HttpPut("{id}/roles")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+    > SetUserRoles(int id, [FromBody] SetUserRolesRequest request)
+    {
+        try
+        {
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // 操作対象ユーザーが存在するか確認
+            var targetUser = await _userService.GetUserByIdAsync(id);
+            if (targetUser == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
+                );
+            }
+
+            // ログインユーザーと同じ組織に所属しているか確認
+            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+            if (!canAccess)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var result = await _userService.SetUserRolesAsync(id, request.RoleIds, me);
+            if (!result)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
+                );
+            }
+
+            return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ロール設定中にエラーが発生しました: UserId={UserId}", id);
             throw;
         }
     }

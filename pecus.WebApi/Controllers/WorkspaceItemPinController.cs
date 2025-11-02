@@ -16,14 +16,14 @@ public class WorkspaceItemPinController : ControllerBase
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly WorkspaceItemPinService _pinService;
-    private readonly WorkspaceAccessHelper _accessHelper;
+    private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceItemPinController> _logger;
     private readonly PecusConfig _config;
 
     public WorkspaceItemPinController(
         WorkspaceItemService workspaceItemService,
         WorkspaceItemPinService pinService,
-        WorkspaceAccessHelper accessHelper,
+        OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemPinController> logger,
         PecusConfig config
     )
