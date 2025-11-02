@@ -7,8 +7,10 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useValidation } from "@/hooks/useValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspace } from "@/actions/admin/workspace";
+import { editWorkspaceSchema } from "@/schemas/editSchemas";
 import type {
   WorkspaceDetailResponse,
   MasterGenreResponse,
@@ -46,11 +48,19 @@ export default function EditWorkspaceClient({
   );
   const [isActive, setIsActive] = useState(workspaceDetail.isActive ?? true);
 
+  // UI検証（Pristine.js）
   const { formRef, isSubmitting, validateField, handleSubmit } =
     useFormValidation({
       onSubmit: async () => {
-        if (!name.trim()) {
-          notify.error("ワークスペース名は必須です。");
+        // Pristineが成功した後、Zodバリデーションを実行
+        const validationResult = await dataValidation.validate({
+          name: name.trim(),
+          description: description.trim(),
+          genreId: genreId ? String(genreId) : "",
+          isActive,
+        });
+
+        if (!validationResult.success) {
           return;
         }
 
@@ -64,6 +74,7 @@ export default function EditWorkspaceClient({
 
           if (result.success) {
             notify.success("ワークスペースを更新しました。");
+            router.push("/admin/workspaces");
           } else {
             console.error("ワークスペースの更新に失敗しました:", result.error);
             notify.error(
@@ -76,6 +87,9 @@ export default function EditWorkspaceClient({
         }
       },
     });
+
+  // データ検証（Zod）
+  const dataValidation = useValidation(editWorkspaceSchema);
 
   const handleCancel = () => {
     router.push("/admin/workspaces");
@@ -259,6 +273,17 @@ export default function EditWorkspaceClient({
                       />
                     </label>
                   </div>
+
+                  {/* Zod検証エラー表示 */}
+                  {dataValidation.hasErrors && (
+                    <div className="alert alert-error mt-4">
+                      <div className="flex flex-col gap-1">
+                        {dataValidation.errors.map((err, idx) => (
+                          <div key={idx} className="text-sm">{err}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">

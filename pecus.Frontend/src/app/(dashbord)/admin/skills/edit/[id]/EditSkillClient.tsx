@@ -7,8 +7,10 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useValidation } from "@/hooks/useValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateSkill } from "@/actions/admin/skills";
+import { editSkillSchema } from "@/schemas/editSchemas";
 import type { SkillDetailResponse } from "@/connectors/api/pecus";
 
 type UserInfo = {
@@ -36,11 +38,18 @@ export default function EditSkillClient({
   const [description, setDescription] = useState(skillDetail.description || "");
   const [isActive, setIsActive] = useState(skillDetail.isActive ?? true);
 
+  // UI検証（Pristine.js）
   const { formRef, isSubmitting, validateField, handleSubmit } =
     useFormValidation({
       onSubmit: async () => {
-        if (!name.trim()) {
-          notify.error("スキル名は必須です。");
+        // Pristineが成功した後、Zodバリデーションを実行
+        const validationResult = await dataValidation.validate({
+          name: name.trim(),
+          description: description.trim(),
+          isActive,
+        });
+
+        if (!validationResult.success) {
           return;
         }
 
@@ -53,6 +62,7 @@ export default function EditSkillClient({
 
           if (result.success) {
             notify.success("スキルを更新しました。");
+            router.push("/admin/skills");
           } else {
             console.error("スキルの更新に失敗しました:", result.error);
             notify.error(
@@ -65,6 +75,9 @@ export default function EditSkillClient({
         }
       },
     });
+
+  // データ検証（Zod）
+  const dataValidation = useValidation(editSkillSchema);
 
   const handleCancel = () => {
     router.push("/admin/skills");
@@ -188,6 +201,17 @@ export default function EditSkillClient({
                       </label>
                     </div>
                   </div>
+
+                  {/* Zod検証エラー表示 */}
+                  {dataValidation.hasErrors && (
+                    <div className="alert alert-error mt-4">
+                      <div className="flex flex-col gap-1">
+                        {dataValidation.errors.map((err, idx) => (
+                          <div key={idx} className="text-sm">{err}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* 操作ボタン */}
                   <div className="flex gap-3 justify-end mt-6">

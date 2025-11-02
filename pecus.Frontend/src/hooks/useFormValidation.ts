@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Pristine from "pristinejs";
-import { z } from "zod";
 
 interface UseFormValidationOptions {
-  schema?: z.ZodObject<any>;
   onSubmit?: (data: any) => void | Promise<void>;
 }
 
@@ -37,32 +35,9 @@ export function useFormValidation(options: UseFormValidationOptions = {}) {
     }
   };
 
-  const validateForm = async (): Promise<boolean> => {
+  const validateForm = (): boolean => {
     if (!pristineRef.current) return false;
-
-    const isValid = pristineRef.current.validate();
-
-    if (isValid && options.schema && formRef.current) {
-      const formData = new FormData(formRef.current);
-      const data = Object.fromEntries(formData.entries());
-
-      const result = await options.schema.safeParseAsync(data);
-      if (!result.success) {
-        // Zodのエラーをフォームに表示
-        result.error.issues.forEach((issue) => {
-          const fieldName = String(issue.path[0]);
-          const field = formRef.current?.querySelector(
-            `[name="${fieldName}"]`,
-          ) as HTMLInputElement;
-          if (field && pristineRef.current) {
-            pristineRef.current.addError(field, issue.message);
-          }
-        });
-        return false;
-      }
-    }
-
-    return isValid;
+    return pristineRef.current.validate();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +45,7 @@ export function useFormValidation(options: UseFormValidationOptions = {}) {
     setIsSubmitting(true);
 
     try {
-      const isValid = await validateForm();
+      const isValid = validateForm();
       if (isValid && options.onSubmit) {
         await options.onSubmit(
           formRef.current

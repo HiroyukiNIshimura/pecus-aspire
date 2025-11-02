@@ -7,8 +7,10 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
+import { useValidation } from "@/hooks/useValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateTag } from "@/actions/admin/tags";
+import { editTagSchema } from "@/schemas/editSchemas";
 import type { TagDetailResponse } from "@/connectors/api/pecus";
 
 type UserInfo = {
@@ -35,11 +37,17 @@ export default function EditTagClient({
   const [name, setName] = useState(tagDetail.name || "");
   const [isActive, setIsActive] = useState(tagDetail.isActive ?? true);
 
-  const { formRef, isSubmitting, validateField, handleSubmit } =
+  // UI検証（Pristine.js）
+  const { formRef, isSubmitting, handleSubmit, validateField } =
     useFormValidation({
       onSubmit: async () => {
-        if (!name.trim()) {
-          notify.error("タグ名は必須です。");
+        // Pristineが成功した後、Zodバリデーションを実行
+        const validationResult = await dataValidation.validate({
+          name: name.trim(),
+          isActive,
+        });
+
+        if (!validationResult.success) {
           return;
         }
 
@@ -51,6 +59,7 @@ export default function EditTagClient({
 
           if (result.success) {
             notify.success("タグを更新しました。");
+            router.push("/admin/tags");
           } else {
             console.error("タグの更新に失敗しました:", result.error);
             notify.error(
@@ -63,6 +72,9 @@ export default function EditTagClient({
         }
       },
     });
+
+  // データ検証（Zod）
+  const dataValidation = useValidation(editTagSchema);
 
   const handleCancel = () => {
     router.push("/admin/tags");
@@ -184,6 +196,17 @@ export default function EditTagClient({
                       />
                     </label>
                   </div>
+
+                  {/* Zod検証エラー表示 */}
+                  {dataValidation.hasErrors && (
+                    <div className="alert alert-error mt-4">
+                      <div className="flex flex-col gap-1">
+                        {dataValidation.errors.map((err, idx) => (
+                          <div key={idx} className="text-sm">{err}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">

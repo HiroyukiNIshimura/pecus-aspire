@@ -52,7 +52,9 @@ export default function EditUserClient({
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 編集可能な3つの項目の状態管理
+  // === 状態管理: ユーザー編集対象の3つの項目 ===
+  // 選択肢のみで構成されているため、HTMLバリデーションやZodバリデーションは不要
+  // 変更検知フラグで「更新ボタンの有効/無効」を制御している
   const [isActive, setIsActive] = useState(userDetail.isActive ?? true);
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>(
     userDetail.skills?.map(s => s.id).filter((id): id is number => id !== undefined) || []
@@ -61,7 +63,11 @@ export default function EditUserClient({
     userDetail.roles?.map(r => r.id).filter((id): id is number => id !== undefined) || []
   );
 
-  // 各項目の変更検知
+  // === 変更検知: 元の値と現在の値を比較 ===
+  // この3つのフラグは:
+  // 1. 更新ボタンの有効/無効判定（hasChanges）に使用
+  // 2. 更新前に「何が変更されるか」をユーザーに表示
+  // 3. 実際の更新（Promise.all）で「どの操作を実行するか」を判定
   const isActiveChanged = isActive !== (userDetail.isActive ?? true);
   const skillsChanged = (() => {
     const currentSkillIds = userDetail.skills?.map(s => s.id).filter((id): id is number => id !== undefined) || [];
@@ -74,6 +80,7 @@ export default function EditUserClient({
            !selectedRoleIds.every(id => currentRoleIds.includes(id));
   })();
 
+  // いずれかの項目が変更されている場合のみ更新ボタンを有効化
   const hasChanges = isActiveChanged || skillsChanged || rolesChanged;
 
   const { formRef, isSubmitting, handleSubmit } = useFormValidation({
@@ -82,7 +89,13 @@ export default function EditUserClient({
         const updatePromises: Array<Promise<any>> = [];
         const updateMessages: string[] = [];
 
-        // 並列で更新処理を実行（依存関係がないため）
+        // === 並列で更新処理を実行 ===
+        // 3つの操作は相互に依存しないため、Promise.all()で並列実行可能
+        // - setUserActiveStatus: ユーザーのアクティブ状態を更新
+        // - setUserSkills: スキル割り当てを更新（多対多の関連付け）
+        // - setUserRoles: ロール割り当てを更新（多対多の関連付け）
+        // 各操作は独立しており、1つが失敗しても他に影響しない設計
+
         if (isActiveChanged) {
           updatePromises.push(
             setUserActiveStatus(userDetail.id!, isActive).then(result => {
@@ -116,10 +129,10 @@ export default function EditUserClient({
           );
         }
 
-        // 全ての更新を並列実行
+        // 全ての更新を並列実行し、すべて完了を待つ
         await Promise.all(updatePromises);
 
-        // 成功メッセージを表示
+        // 成功時のフィードバック: 何が変更されたかを具体的に表示
         if (updateMessages.length > 0) {
           notify.success(`更新完了: ${updateMessages.join("、")}`);
         } else {
@@ -139,6 +152,10 @@ export default function EditUserClient({
     router.push("/admin/users");
   };
 
+  // === トグル関数: IDの追加/削除を管理 ===
+  // 配列に ID が含まれていれば削除、なければ追加する
+  // リアクティブに selected* 配列を更新し、変更検知が自動的に isXxxChanged フラグを更新する
+
   const toggleSkill = (skillId: number) => {
     setSelectedSkillIds((prev) =>
       prev.includes(skillId)
@@ -157,6 +174,9 @@ export default function EditUserClient({
 
   const handleRequestPasswordReset = async () => {
     try {
+      // === パスワードリセットメール送信 ===
+      // UI更新は伴わないため、変更検知対象ではない（isSubmitting, handleSubmit を使わない独立操作）
+      // 成功時はメール送信完了をユーザーに通知
       const result = await requestPasswordReset(userDetail.id!);
       if (result.success) {
         notify.success("パスワードリセットメールを送信しました。");
