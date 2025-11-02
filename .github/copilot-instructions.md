@@ -491,6 +491,80 @@ public async Task StartAsync(CancellationToken cancellationToken)
 
 エントリポイントは `AppHost.cs`（`Program.cs` ではない）という命名規約を利用しています。
 
+### DB新規作成・変更時のフロー
+
+DB スキーマを新規作成または変更する場合、以下のフローに従ってください：
+
+#### 1. DB モデル定義（`pecus.Libs/DB/Models/`）
+- `pecus.Libs/DB/Models/` に新規エンティティクラスを作成、または既存モデルを変更
+- XML ドキュメントコメントで各プロパティの意図を記述
+- 必須プロパティには `required` キーワード、nullable プロパティは `?` で明示
+
+#### 2. DbContext 設定（`pecus.Libs/DB/ApplicationDbContext.cs`）
+- `OnModelCreating` にて新規エンティティのリレーション、インデックス、デフォルト値を定義
+- 既存モデルとの関連性を明確に設定
+
+#### 3. マイグレーション生成（`pecus.DbManager`）
+```bash
+# pecus.DbManager プロジェクトディレクトリで実行
+dotnet ef migrations add <MigrationName> --project pecus.DbManager --startup-project pecus.DbManager
+```
+- マイグレーションファイルは `pecus.DbManager/Migrations/` に配置
+- マイグレーション名は `YYYYMMDDHHMMSS_DescriptiveAction` の形式で命名
+
+#### 4. **DTO の確認・更新（`pecus.WebApi/Models/Requests/`） ← 重要**
+**DB スキーマ変更時は、対応するリクエスト DTO をすべて確認・更新する必要があります：**
+
+- **作成リクエスト** (`CreateXxxRequest`):
+  - DB の必須項目がすべて含まれているか確認
+  - クライアントが指定できるべき項目が漏れていないか確認
+  - デフォルト値を持つ項目（例: `IsActive = true`）はリクエスト DTO に不要な場合が多い
+  - サーバー側で生成する項目（ID、タイムスタンプ、ユーザーID など）は DTO に含めない
+
+- **更新リクエスト** (`UpdateXxxRequest`):
+  - 更新対象の項目がすべてカバーされているか確認
+  - 新しく追加された項目に対応するプロパティを追加
+  - nullable で定義し、送信されない項目は `null` として扱う
+
+- **フィルタ・検索リクエスト** (`GetXxxRequest`):
+  - 新しいフィルタ条件が必要な場合は対応する項目を追加
+  - 既存のフィルタ条件に変更がないか確認
+
+- **検証属性の設定**:
+  - `[Required]`, `[MaxLength]`, `[Range]` など入力検証属性を必ず付与
+  - DB のカラム長制限に合わせた `MaxLength` を指定
+  - エラーメッセージは日本語で具体的に記述
+
+**DTO チェックリスト**:
+- [ ] DB モデルの全必須項目が作成リクエストに含まれているか
+- [ ] 更新リクエストに新しい項目が追加されたか
+- [ ] すべてのプロパティに検証属性が付与されているか
+- [ ] 最大長制限が DB スキーマと一致しているか
+- [ ] `required` キーワードの使用が適切か
+- [ ] エラーメッセージが日本語で具体的か
+
+#### 5. ビルド確認
+```bash
+dotnet build pecus.sln
+```
+- コンパイルエラーがないことを確認
+- 警告がないことを確認（DTO の検証属性関連など）
+
+#### 6. アプリ起動と動作確認
+```bash
+dotnet run --project pecus.AppHost
+```
+- マイグレーションが正常に実行されるか確認
+- 新規エンドポイントが Swagger UI で表示されるか確認（DTO が正しく反映されているか）
+- API 経由でデータの作成・更新が正常に動作するか確認
+
+#### 参考：最近の DTO 修正例
+DTO 確認時の参考として、以下のような修正が行われた例があります：
+- `WorkspaceRequests.cs`: `Code`, `GenreId` の追加
+- `WorkspaceItem/CreateWorkspaceItemRequest.cs`: `CommitterId`, `Content` の追加
+- `Tag/UpdateTagRequest.cs`, `SkillRequests.cs`, `GenreRequests.cs` など: `IsActive` フラグの追加
+- `Role`, `Permission` の `UpdateRequest` クラスの新規作成
+
 ## コントローラ構成（WebApi 層）
 
 エンドポイントの配置方針:
