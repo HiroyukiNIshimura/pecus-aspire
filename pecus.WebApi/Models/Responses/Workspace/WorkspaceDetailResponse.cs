@@ -38,6 +38,21 @@ public class WorkspaceDetailResponse
     public OrganizationInfoResponse? Organization { get; set; }
 
     /// <summary>
+    /// ジャンルID
+    /// </summary>
+    public int? GenreId { get; set; }
+
+    /// <summary>
+    /// ジャンル名
+    /// </summary>
+    public string? GenreName { get; set; }
+
+    /// <summary>
+    /// ジャンルアイコン
+    /// </summary>
+    public string? GenreIcon { get; set; }
+
+    /// <summary>
     /// 参加しているユーザー一覧
     /// </summary>
     public List<WorkspaceUserDetailResponse>? Members { get; set; }

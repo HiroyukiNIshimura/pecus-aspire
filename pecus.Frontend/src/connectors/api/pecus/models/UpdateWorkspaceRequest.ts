@@ -14,5 +14,13 @@ export type UpdateWorkspaceRequest = {
      * ワークスペースの説明
      */
     description?: string | null;
+    /**
+     * ジャンルID
+     */
+    genreId?: number | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean | null;
 };
 

@@ -1,0 +1,75 @@
+import { notFound } from "next/navigation";
+import { getCurrentUser } from "@/actions/profile";
+import { getWorkspaceDetail } from "@/actions/admin/workspace";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import EditWorkspaceClient from "./EditWorkspaceClient";
+import type { MasterGenreResponse } from "@/connectors/api/pecus";
+
+export const dynamic = "force-dynamic";
+
+type UserInfo = {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  isAdmin: boolean;
+};
+
+export default async function EditWorkspacePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const workspaceId = parseInt(id, 10);
+
+  if (isNaN(workspaceId) || workspaceId <= 0) {
+    notFound();
+  }
+
+  let user: UserInfo | null = null;
+  let workspaceDetail = null;
+  let genres: MasterGenreResponse[] = [];
+  let fetchError = null;
+
+  try {
+    // ユーザー情報を取得
+    const userResult = await getCurrentUser();
+    if (userResult.success && userResult.data) {
+      user = userResult.data;
+    }
+
+    // ワークスペース詳細を取得
+    const workspaceResult = await getWorkspaceDetail(workspaceId);
+    if (workspaceResult.success) {
+      workspaceDetail = workspaceResult.data;
+    } else {
+      fetchError = workspaceResult.error;
+    }
+
+    // ジャンル一覧を取得
+    if (!fetchError) {
+      const api = createPecusApiClients();
+      const genresResponse = await api.masterData.getApiMasterGenres();
+      genres = genresResponse || [];
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      fetchError = err.message;
+    } else {
+      fetchError = "データの取得中にエラーが発生しました。";
+    }
+  }
+
+  if (!workspaceDetail) {
+    notFound();
+  }
+
+  return (
+    <EditWorkspaceClient
+      initialUser={user}
+      workspaceDetail={workspaceDetail}
+      genres={genres}
+      fetchError={fetchError}
+    />
+  );
+}

@@ -180,6 +180,9 @@ public class AdminWorkspaceController : ControllerBase
                             Code = workspace.Organization.Code,
                         }
                         : null,
+                GenreId = workspace.GenreId,
+                GenreName = workspace.Genre?.Name,
+                GenreIcon = workspace.Genre?.Icon,
                 Members = workspace.WorkspaceUsers?
                     .Where(wu => wu.User != null && wu.User.IsActive)
                     .Select(wu => new WorkspaceUserDetailResponse
@@ -231,7 +234,7 @@ public class AdminWorkspaceController : ControllerBase
             {
                 // 認証済みユーザーが組織に所属していない場合、空のリストを返す
                 return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>(
+                    PaginationHelper.CreatePagedResponse(
                         data: new List<WorkspaceListItemResponse>(),
                         totalCount: 0,
                         page: 1,
@@ -291,7 +294,7 @@ public class AdminWorkspaceController : ControllerBase
             // 統計情報を取得
             var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(organizationId.Value);
 
-            var response = PaginationHelper.CreatePagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>(
+            var response = PaginationHelper.CreatePagedResponse(
                 data: items,
                 totalCount: totalCount,
                 page: validatedPage,
@@ -354,6 +357,9 @@ public class AdminWorkspaceController : ControllerBase
                     Code = workspace.Code,
                     Description = workspace.Description,
                     OrganizationId = workspace.OrganizationId,
+                    GenreId = workspace.GenreId,
+                    GenreName = workspace.Genre?.Name,
+                    GenreIcon = workspace.Genre?.Icon,
                     CreatedAt = workspace.CreatedAt,
                     CreatedByUserId = workspace.CreatedByUserId,
                     UpdatedAt = workspace.UpdatedAt,

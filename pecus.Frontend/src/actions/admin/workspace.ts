@@ -25,6 +25,25 @@ export async function getWorkspaces(
 }
 
 /**
+ * Server Action: ワークスペース詳細を取得
+ */
+export async function getWorkspaceDetail(
+  workspaceId: number
+): Promise<ApiResponse<any>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminWorkspace.getApiAdminWorkspaces1(workspaceId);
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error('Failed to fetch workspace detail:', error);
+    return {
+      success: false,
+      error: error.body?.message || error.message || 'Failed to fetch workspace detail'
+    };
+  }
+}
+
+/**
  * Server Action: ワークスペースを作成
  */
 export async function createWorkspace(request: {
@@ -55,6 +74,7 @@ export async function updateWorkspace(
     name?: string;
     description?: string;
     genreId?: number;
+    isActive?: boolean;
   }
 ): Promise<ApiResponse<any>> {
   try {

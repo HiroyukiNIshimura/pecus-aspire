@@ -31,3 +31,23 @@ export const tagNameFilterSchema = nameFilterSchema;
  * ユーザー名検索用スキーマ
  */
 export const usernameFilterSchema = nameFilterSchema;
+
+/**
+ * ワークスペース編集用スキーマ
+ */
+export const workspaceEditSchema = z.object({
+  name: z
+    .string()
+    .min(1, "ワークスペース名は必須です。")
+    .max(100, "ワークスペース名は100文字以内で入力してください。"),
+  description: z
+    .string()
+    .max(500, "説明は500文字以内で入力してください。")
+    .optional(),
+});
+
+/**
+ * ワークスペース編集フォーム用スキーマ（型推論用）
+ */
+export type WorkspaceEditFormData = z.infer<typeof workspaceEditSchema>;
+

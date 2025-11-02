@@ -37,6 +37,17 @@ public class UpdateWorkspaceRequest
     /// </summary>
     [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
+
+    /// <summary>
+    /// ジャンルID
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "有効なジャンルIDを指定してください。")]
+    public int? GenreId { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }
 
 /// <summary>

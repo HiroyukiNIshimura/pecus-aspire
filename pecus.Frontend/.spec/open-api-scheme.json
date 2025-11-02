@@ -8293,6 +8293,19 @@
             "type": "string",
             "description": "ワークスペースの説明",
             "nullable": true
+          },
+          "genreId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8596,6 +8609,22 @@
           },
           "organization": {
             "$ref": "#/components/schemas/OrganizationInfoResponse"
+          },
+          "genreId": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "members": {
             "type": "array",

@@ -206,6 +206,22 @@ public class WorkspaceService
             workspace.Description = request.Description;
         }
 
+        if (request.GenreId.HasValue)
+        {
+            // ジャンルが存在するかチェック
+            var genre = await _context.Genres.FindAsync(request.GenreId.Value);
+            if (genre == null)
+            {
+                throw new NotFoundException("指定されたジャンルが見つかりません。");
+            }
+            workspace.GenreId = request.GenreId.Value;
+        }
+
+        if (request.IsActive.HasValue)
+        {
+            workspace.IsActive = request.IsActive.Value;
+        }
+
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
 

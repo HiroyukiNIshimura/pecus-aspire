@@ -268,7 +268,7 @@ public class AdminTagController : ControllerBase
             // 統計情報を取得
             var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(organizationId.Value);
 
-            var response = PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
+            var response = PaginationHelper.CreatePagedResponse(
                 data: items,
                 totalCount: totalCount,
                 page: validatedPage,

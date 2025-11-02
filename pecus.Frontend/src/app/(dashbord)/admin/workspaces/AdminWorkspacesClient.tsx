@@ -436,7 +436,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                           <td>{workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '不明'}</td>
                           <td>
                             <div className="flex gap-2">
-                              <button className="btn btn-sm btn-outline">編集</button>
+                              <a href={`/admin/workspaces/edit/${workspace.id}`} className="btn btn-sm btn-outline">編集</a>
                               <button className="btn btn-sm btn-outline btn-error">削除</button>
                             </div>
                           </td>

@@ -30,6 +30,18 @@ export type WorkspaceDetailResponse = {
     organizationId?: number;
     organization?: OrganizationInfoResponse;
     /**
+     * ジャンルID
+     */
+    genreId?: number | null;
+    /**
+     * ジャンル名
+     */
+    genreName?: string | null;
+    /**
+     * ジャンルアイコン
+     */
+    genreIcon?: string | null;
+    /**
      * 参加しているユーザー一覧
      */
     members?: Array<WorkspaceUserDetailResponse> | null;
