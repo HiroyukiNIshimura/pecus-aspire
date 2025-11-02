@@ -254,6 +254,20 @@ export default function EditSkillClient({
                       disabled
                     />
                   </div>
+
+                  <div>
+                    <label className="label">
+                      <span className="label-text font-semibold">
+                        保有者数
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      className="input input-bordered w-full"
+                      value={`${skillDetail.userCount || 0} 人`}
+                      disabled
+                    />
+                  </div>
                 </div>
               </div>
             </div>
