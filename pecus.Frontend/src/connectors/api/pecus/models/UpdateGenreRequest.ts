@@ -22,5 +22,9 @@ export type UpdateGenreRequest = {
      * 表示順
      */
     displayOrder?: number | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean | null;
 };
 

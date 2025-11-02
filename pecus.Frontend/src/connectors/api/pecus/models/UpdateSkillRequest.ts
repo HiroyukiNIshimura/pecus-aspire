@@ -14,5 +14,9 @@ export type UpdateSkillRequest = {
      * スキルの説明
      */
     description?: string | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean | null;
 };
 

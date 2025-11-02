@@ -6192,6 +6192,18 @@
             "type": "boolean",
             "description": "下書き中フラグ"
           },
+          "committerId": {
+            "type": "integer",
+            "description": "コミッターユーザーID（NULL可）",
+            "format": "int32",
+            "nullable": true
+          },
+          "content": {
+            "maxLength": 10000,
+            "type": "string",
+            "description": "アイテム内容",
+            "nullable": true
+          },
           "tagNames": {
             "type": "array",
             "items": {
@@ -6216,10 +6228,24 @@
             "type": "string",
             "description": "ワークスペース名"
           },
+          "code": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
           "description": {
             "maxLength": 500,
             "type": "string",
             "description": "ワークスペースの説明",
+            "nullable": true
+          },
+          "genreId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8109,6 +8135,11 @@
             "description": "表示順",
             "format": "int32",
             "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8149,7 +8180,7 @@
             "nullable": true
           },
           "email": {
-            "maxLength": 254,
+            "maxLength": 100,
             "type": "string",
             "description": "メールアドレス",
             "format": "email",
@@ -8207,6 +8238,11 @@
             "type": "string",
             "description": "スキルの説明",
             "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8223,6 +8259,11 @@
             "minLength": 1,
             "type": "string",
             "description": "タグ名"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8257,6 +8298,33 @@
             "description": "期限日",
             "format": "date-time",
             "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "下書き中フラグ",
+            "nullable": true
+          },
+          "isArchived": {
+            "type": "boolean",
+            "description": "編集不可フラグ（アーカイブ）",
+            "nullable": true
+          },
+          "committerId": {
+            "type": "integer",
+            "description": "コミッターユーザーID（NULL可）",
+            "format": "int32",
+            "nullable": true
+          },
+          "content": {
+            "maxLength": 10000,
+            "type": "string",
+            "description": "アイテム内容",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8286,6 +8354,12 @@
             "maxLength": 100,
             "type": "string",
             "description": "ワークスペース名",
+            "nullable": true
+          },
+          "code": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "ワークスペースコード",
             "nullable": true
           },
           "description": {

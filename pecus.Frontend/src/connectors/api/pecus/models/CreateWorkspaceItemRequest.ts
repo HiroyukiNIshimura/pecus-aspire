@@ -29,6 +29,14 @@ export type CreateWorkspaceItemRequest = {
      */
     isDraft?: boolean;
     /**
+     * コミッターユーザーID（NULL可）
+     */
+    committerId?: number | null;
+    /**
+     * アイテム内容
+     */
+    content?: string | null;
+    /**
      * タグ名のリスト（存在しないタグは自動作成）
      */
     tagNames?: Array<string> | null;

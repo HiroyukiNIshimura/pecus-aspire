@@ -11,6 +11,10 @@ export type UpdateWorkspaceRequest = {
      */
     name?: string | null;
     /**
+     * ワークスペースコード
+     */
+    code?: string | null;
+    /**
      * ワークスペースの説明
      */
     description?: string | null;

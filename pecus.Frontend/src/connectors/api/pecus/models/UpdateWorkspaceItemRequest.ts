@@ -24,5 +24,25 @@ export type UpdateWorkspaceItemRequest = {
      * 期限日
      */
     dueDate?: string | null;
+    /**
+     * 下書き中フラグ
+     */
+    isDraft?: boolean | null;
+    /**
+     * 編集不可フラグ（アーカイブ）
+     */
+    isArchived?: boolean | null;
+    /**
+     * コミッターユーザーID（NULL可）
+     */
+    committerId?: number | null;
+    /**
+     * アイテム内容
+     */
+    content?: string | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean | null;
 };
 
