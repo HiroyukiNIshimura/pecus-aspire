@@ -69,12 +69,24 @@ export async function updateTag(
   id: number,
   request: {
     name: string;
-    description?: string;
+    isActive?: boolean;
   }
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.putApiAdminTags(id, request);
+    const response = await api.adminTag.putApiAdminTags(id, {
+      name: request.name,
+    });
+
+    // isActive が指定されている場合、activate/deactivate を呼び出す
+    if (request.isActive !== undefined) {
+      if (request.isActive) {
+        await api.adminTag.patchApiAdminTagsActivate(id);
+      } else {
+        await api.adminTag.patchApiAdminTagsDeactivate(id);
+      }
+    }
+
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to update tag:', error);

@@ -374,7 +374,7 @@ export default function AdminTagsClient({
                     <thead>
                       <tr>
                         <th>タグ名</th>
-                        <th>アイテム数</th>
+                        <th>参照アイテム</th>
                         <th>ステータス</th>
                         <th>作成日</th>
                         <th>操作</th>
