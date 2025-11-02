@@ -6,12 +6,13 @@
  * ワークスペースアイテムステータス更新リクエスト
  */
 export type UpdateWorkspaceItemStatusRequest = {
-  /**
-   * 下書き中フラグ
-   */
-  isDraft?: boolean | null;
-  /**
-   * アーカイブフラグ
-   */
-  isArchived?: boolean | null;
+    /**
+     * 下書き中フラグ
+     */
+    isDraft?: boolean | null;
+    /**
+     * アーカイブフラグ
+     */
+    isArchived?: boolean | null;
 };
+

@@ -6,12 +6,13 @@
  * タグ更新リクエスト
  */
 export type UpdateTagRequest = {
-  /**
-   * タグ名
-   */
-  name: string;
-  /**
-   * アクティブフラグ
-   */
-  isActive?: boolean | null;
+    /**
+     * タグ名
+     */
+    name: string;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean | null;
 };
+

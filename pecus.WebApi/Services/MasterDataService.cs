@@ -34,4 +34,14 @@ public class MasterDataService
             .OrderBy(s => s.Name)
      .ToListAsync();
     }
+
+    /// <summary>
+    /// ロール一覧を取得（ページング不使用）
+    /// </summary>
+    public async Task<List<Role>> GetAllRolesAsync()
+    {
+        return await _context.Roles
+            .OrderBy(r => r.Id)
+            .ToListAsync();
+    }
 }

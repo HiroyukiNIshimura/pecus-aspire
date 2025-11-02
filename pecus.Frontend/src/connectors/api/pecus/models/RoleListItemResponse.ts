@@ -6,24 +6,25 @@
  * ロールリスト項目レスポンス
  */
 export type RoleListItemResponse = {
-  /**
-   * ロールID
-   */
-  id?: number;
-  /**
-   * ロール名
-   */
-  name: string | null;
-  /**
-   * ロールの説明
-   */
-  description?: string | null;
-  /**
-   * 作成日時
-   */
-  createdAt?: string;
-  /**
-   * ロールが持つ権限数
-   */
-  permissionCount?: number;
+    /**
+     * ロールID
+     */
+    id?: number;
+    /**
+     * ロール名
+     */
+    name: string | null;
+    /**
+     * ロールの説明
+     */
+    description?: string | null;
+    /**
+     * 作成日時
+     */
+    createdAt?: string;
+    /**
+     * ロールが持つ権限数
+     */
+    permissionCount?: number;
 };
+

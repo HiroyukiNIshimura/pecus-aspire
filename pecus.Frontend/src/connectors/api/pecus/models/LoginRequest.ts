@@ -6,12 +6,13 @@
  * ログインリクエスト
  */
 export type LoginRequest = {
-  /**
-   * ログイン識別子（EmailまたはLoginId）
-   */
-  loginIdentifier: string;
-  /**
-   * パスワード
-   */
-  password: string;
+    /**
+     * ログイン識別子（EmailまたはLoginId）
+     */
+    loginIdentifier: string;
+    /**
+     * パスワード
+     */
+    password: string;
 };
+

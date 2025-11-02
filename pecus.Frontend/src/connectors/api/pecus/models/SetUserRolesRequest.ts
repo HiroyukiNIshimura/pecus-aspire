@@ -6,8 +6,9 @@
  * ユーザーロール設定リクエスト
  */
 export type SetUserRolesRequest = {
-  /**
-   * ロールIDのリスト
-   */
-  roleIds: Array<number>;
+    /**
+     * ロールIDのリスト
+     */
+    roleIds: Array<number>;
 };
+

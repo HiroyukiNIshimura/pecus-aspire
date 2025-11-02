@@ -6,12 +6,13 @@
  * ロール作成リクエスト
  */
 export type CreateRoleRequest = {
-  /**
-   * ロール名
-   */
-  name: string;
-  /**
-   * ロールの説明
-   */
-  description?: string | null;
+    /**
+     * ロール名
+     */
+    name: string;
+    /**
+     * ロールの説明
+     */
+    description?: string | null;
 };
+

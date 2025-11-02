@@ -6,16 +6,17 @@
  * マスターデータ用スキルレスポンス
  */
 export type MasterSkillResponse = {
-  /**
-   * スキルID
-   */
-  id?: number;
-  /**
-   * スキル名
-   */
-  name: string | null;
-  /**
-   * 説明
-   */
-  description?: string | null;
+    /**
+     * スキルID
+     */
+    id?: number;
+    /**
+     * スキル名
+     */
+    name: string | null;
+    /**
+     * 説明
+     */
+    description?: string | null;
 };
+

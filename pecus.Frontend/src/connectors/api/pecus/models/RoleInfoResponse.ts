@@ -6,12 +6,13 @@
  * ロール情報レスポンス（簡易版）
  */
 export type RoleInfoResponse = {
-  /**
-   * ロールID
-   */
-  id?: number;
-  /**
-   * ロール名
-   */
-  name: string | null;
+    /**
+     * ロールID
+     */
+    id?: number;
+    /**
+     * ロール名
+     */
+    name: string | null;
 };
+

@@ -6,16 +6,17 @@
  * ロールごとのユーザー数
  */
 export type RoleUserCountResponse = {
-  /**
-   * ロールID
-   */
-  id?: number;
-  /**
-   * ロール名
-   */
-  name: string | null;
-  /**
-   * ユーザー数
-   */
-  count?: number;
+    /**
+     * ロールID
+     */
+    id?: number;
+    /**
+     * ロール名
+     */
+    name: string | null;
+    /**
+     * ユーザー数
+     */
+    count?: number;
 };
+

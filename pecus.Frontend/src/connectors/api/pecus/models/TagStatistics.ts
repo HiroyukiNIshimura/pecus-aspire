@@ -2,29 +2,30 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TagUsageItem } from "./TagUsageItem";
+import type { TagUsageItem } from './TagUsageItem';
 /**
  * タグ利用統計のレスポンス
  */
 export type TagStatistics = {
-  /**
-   * タグのトータル件数
-   */
-  totalTags?: number;
-  /**
-   * アクティブなタグの件数
-   */
-  activeTags?: number;
-  /**
-   * 非アクティブなタグの件数
-   */
-  inactiveTags?: number;
-  /**
-   * 利用されているタグのトップ５
-   */
-  topUsedTags?: Array<TagUsageItem> | null;
-  /**
-   * 利用されていないタグのリスト
-   */
-  unusedTags?: Array<TagUsageItem> | null;
+    /**
+     * タグのトータル件数
+     */
+    totalTags?: number;
+    /**
+     * アクティブなタグの件数
+     */
+    activeTags?: number;
+    /**
+     * 非アクティブなタグの件数
+     */
+    inactiveTags?: number;
+    /**
+     * 利用されているタグのトップ５
+     */
+    topUsedTags?: Array<TagUsageItem> | null;
+    /**
+     * 利用されていないタグのリスト
+     */
+    unusedTags?: Array<TagUsageItem> | null;
 };
+

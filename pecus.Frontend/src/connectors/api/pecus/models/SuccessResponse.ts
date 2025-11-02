@@ -6,12 +6,13 @@
  * 成功メッセージレスポンス
  */
 export type SuccessResponse = {
-  /**
-   * HTTPステータスコード
-   */
-  statusCode?: number;
-  /**
-   * 成功メッセージ
-   */
-  message: string | null;
+    /**
+     * HTTPステータスコード
+     */
+    statusCode?: number;
+    /**
+     * 成功メッセージ
+     */
+    message: string | null;
 };
+

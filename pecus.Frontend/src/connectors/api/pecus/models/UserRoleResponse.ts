@@ -6,12 +6,13 @@
  * ユーザーロール情報レスポンス
  */
 export type UserRoleResponse = {
-  /**
-   * ロールID
-   */
-  id?: number;
-  /**
-   * ロール名
-   */
-  name: string | null;
+    /**
+     * ロールID
+     */
+    id?: number;
+    /**
+     * ロール名
+     */
+    name: string | null;
 };
+

@@ -6,16 +6,17 @@
  * スキルごとのユーザー数
  */
 export type SkillUserCountResponse = {
-  /**
-   * スキルID
-   */
-  id?: number;
-  /**
-   * スキル名
-   */
-  name: string | null;
-  /**
-   * ユーザー数
-   */
-  count?: number;
+    /**
+     * スキルID
+     */
+    id?: number;
+    /**
+     * スキル名
+     */
+    name: string | null;
+    /**
+     * ユーザー数
+     */
+    count?: number;
 };
+

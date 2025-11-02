@@ -6,12 +6,13 @@
  * バッチジョブレスポンス
  */
 export type BatchResponse = {
-  /**
-   * メッセージ
-   */
-  message: string | null;
-  /**
-   * ジョブIDのリスト
-   */
-  jobIds: Array<string> | null;
+    /**
+     * メッセージ
+     */
+    message: string | null;
+    /**
+     * ジョブIDのリスト
+     */
+    jobIds: Array<string> | null;
 };
+

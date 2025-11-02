@@ -2,18 +2,19 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { SkillDetailResponse } from "./SkillDetailResponse";
+import type { SkillDetailResponse } from './SkillDetailResponse';
 /**
  * スキルレスポンス
  */
 export type SkillResponse = {
-  /**
-   * 成功フラグ
-   */
-  success?: boolean;
-  /**
-   * メッセージ
-   */
-  message: string | null;
-  skill?: SkillDetailResponse;
+    /**
+     * 成功フラグ
+     */
+    success?: boolean;
+    /**
+     * メッセージ
+     */
+    message: string | null;
+    skill?: SkillDetailResponse;
 };
+

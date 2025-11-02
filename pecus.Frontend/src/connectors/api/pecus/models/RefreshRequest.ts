@@ -6,8 +6,9 @@
  * リフレッシュトークン交換 / ログアウト用リクエスト
  */
 export type RefreshRequest = {
-  /**
-   * クライアントから送られるリフレッシュトークン
-   */
-  refreshToken: string;
+    /**
+     * クライアントから送られるリフレッシュトークン
+     */
+    refreshToken: string;
 };
+

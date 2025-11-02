@@ -6,12 +6,13 @@
  * ワークスペースにユーザーを参加させるリクエスト
  */
 export type AddUserToWorkspaceRequest = {
-  /**
-   * 参加させるユーザーID
-   */
-  userId: number;
-  /**
-   * ワークスペース内での役割（例: Owner, Member, Guest）
-   */
-  workspaceRole?: string | null;
+    /**
+     * 参加させるユーザーID
+     */
+    userId: number;
+    /**
+     * ワークスペース内での役割（例: Owner, Member, Guest）
+     */
+    workspaceRole?: string | null;
 };
+

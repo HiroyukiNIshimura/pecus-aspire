@@ -6,12 +6,13 @@
  * パスワードなしユーザー登録リクエスト（管理者用）
  */
 export type CreateUserWithoutPasswordRequest = {
-  /**
-   * ユーザー名
-   */
-  username: string;
-  /**
-   * メールアドレス
-   */
-  email: string;
+    /**
+     * ユーザー名
+     */
+    username: string;
+    /**
+     * メールアドレス
+     */
+    email: string;
 };
+

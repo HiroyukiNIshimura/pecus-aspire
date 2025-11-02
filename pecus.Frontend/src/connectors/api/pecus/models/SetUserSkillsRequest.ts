@@ -6,8 +6,9 @@
  * スキル設定リクエスト
  */
 export type SetUserSkillsRequest = {
-  /**
-   * スキルIDのリスト
-   */
-  skillIds: Array<number> | null;
+    /**
+     * スキルIDのリスト
+     */
+    skillIds: Array<number> | null;
 };
+

@@ -2,67 +2,68 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { OrganizationInfoResponse } from "./OrganizationInfoResponse";
-import type { WorkspaceUserDetailResponse } from "./WorkspaceUserDetailResponse";
+import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
+import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
  * ワークスペース詳細情報レスポンス
  */
 export type WorkspaceDetailResponse = {
-  /**
-   * ワークスペースID
-   */
-  id?: number;
-  /**
-   * ワークスペース名
-   */
-  name: string | null;
-  /**
-   * ワークスペースコード
-   */
-  code?: string | null;
-  /**
-   * ワークスペースの説明
-   */
-  description?: string | null;
-  /**
-   * 組織ID
-   */
-  organizationId?: number;
-  organization?: OrganizationInfoResponse;
-  /**
-   * ジャンルID
-   */
-  genreId?: number | null;
-  /**
-   * ジャンル名
-   */
-  genreName?: string | null;
-  /**
-   * ジャンルアイコン
-   */
-  genreIcon?: string | null;
-  /**
-   * 参加しているユーザー一覧
-   */
-  members?: Array<WorkspaceUserDetailResponse> | null;
-  /**
-   * 作成日時
-   */
-  createdAt?: string;
-  /**
-   * 作成者ユーザーID
-   */
-  createdByUserId?: number | null;
-  /**
-   * 更新日時
-   */
-  updatedAt?: string | null;
-  /**
-   * 更新者ユーザーID
-   */
-  updatedByUserId?: number | null;
-  /**
-   * アクティブフラグ
-   */
-  isActive?: boolean;
+    /**
+     * ワークスペースID
+     */
+    id?: number;
+    /**
+     * ワークスペース名
+     */
+    name: string | null;
+    /**
+     * ワークスペースコード
+     */
+    code?: string | null;
+    /**
+     * ワークスペースの説明
+     */
+    description?: string | null;
+    /**
+     * 組織ID
+     */
+    organizationId?: number;
+    organization?: OrganizationInfoResponse;
+    /**
+     * ジャンルID
+     */
+    genreId?: number | null;
+    /**
+     * ジャンル名
+     */
+    genreName?: string | null;
+    /**
+     * ジャンルアイコン
+     */
+    genreIcon?: string | null;
+    /**
+     * 参加しているユーザー一覧
+     */
+    members?: Array<WorkspaceUserDetailResponse> | null;
+    /**
+     * 作成日時
+     */
+    createdAt?: string;
+    /**
+     * 作成者ユーザーID
+     */
+    createdByUserId?: number | null;
+    /**
+     * 更新日時
+     */
+    updatedAt?: string | null;
+    /**
+     * 更新者ユーザーID
+     */
+    updatedByUserId?: number | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean;
 };
+

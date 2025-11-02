@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Master;
+using Pecus.Models.Responses.Role;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -107,6 +108,37 @@ public class MasterDataController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "スキル一覧取得中にエラーが発生しました。");
+            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// ロール一覧を取得
+    /// </summary>
+    [HttpGet("roles")]
+    [ProducesResponseType(typeof(List<RoleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Results<Ok<List<RoleResponse>>, StatusCodeHttpResult>> GetRoles()
+    {
+        try
+        {
+            var roles = await _masterDataService.GetAllRolesAsync();
+
+            var response = roles
+                .Select(r => new RoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Description = r.Description,
+                    CreatedAt = r.CreatedAt,
+                })
+                .ToList();
+
+            return TypedResults.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ロール一覧取得中にエラーが発生しました。");
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

@@ -6,8 +6,9 @@
  * タグ作成リクエスト
  */
 export type CreateTagRequest = {
-  /**
-   * タグ名
-   */
-  name: string;
+    /**
+     * タグ名
+     */
+    name: string;
 };
+

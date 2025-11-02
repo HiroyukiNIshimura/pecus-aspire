@@ -6,20 +6,21 @@
  * ロール情報レスポンス
  */
 export type RoleResponse = {
-  /**
-   * ロールID
-   */
-  id?: number;
-  /**
-   * ロール名
-   */
-  name: string | null;
-  /**
-   * ロールの説明
-   */
-  description?: string | null;
-  /**
-   * 作成日時
-   */
-  createdAt?: string;
+    /**
+     * ロールID
+     */
+    id?: number;
+    /**
+     * ロール名
+     */
+    name: string | null;
+    /**
+     * ロールの説明
+     */
+    description?: string | null;
+    /**
+     * 作成日時
+     */
+    createdAt?: string;
 };
+
