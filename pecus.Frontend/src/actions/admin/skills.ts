@@ -112,11 +112,25 @@ export async function updateSkill(
   request: {
     name: string;
     description?: string;
+    isActive?: boolean;
   }
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.putApiAdminSkills(id, request);
+    const response = await api.adminSkill.putApiAdminSkills(id, {
+      name: request.name,
+      description: request.description,
+    });
+
+    // isActive が指定されている場合、activate/deactivate を呼び出す
+    if (request.isActive !== undefined) {
+      if (request.isActive) {
+        await api.adminSkill.patchApiAdminSkillsActivate(id);
+      } else {
+        await api.adminSkill.patchApiAdminSkillsDeactivate(id);
+      }
+    }
+
     return { success: true, data: response };
   } catch (error: any) {
     console.error('Failed to update skill:', error);

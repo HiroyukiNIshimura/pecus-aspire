@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
@@ -35,6 +36,7 @@ export default function AdminSkillsClient({
   initialStatistics,
   fetchError
 }: AdminSkillsClientProps) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [skills, setSkills] = useState<SkillListItemResponse[]>(initialSkills || []);
@@ -413,8 +415,14 @@ export default function AdminSkillsClient({
                           <td>{formatDate(skill.createdAt)}</td>
                           <td>
                             <div className="flex gap-2">
-                              <button className="btn btn-sm btn-outline">編集</button>
-                              <button className="btn btn-sm btn-outline btn-error">削除</button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline"
+                                onClick={() => router.push(`/admin/skills/edit/${skill.id}`)}
+                              >
+                                編集
+                              </button>
+                              <button type="button" className="btn btn-sm btn-outline btn-error">削除</button>
                             </div>
                           </td>
                         </tr>
