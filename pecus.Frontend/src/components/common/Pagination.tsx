@@ -1,7 +1,7 @@
 "use client";
 
-import ReactPaginate from 'react-paginate';
-import 'react-paginate/theme/basic/react-paginate.css';
+import ReactPaginate from "react-paginate";
+import "react-paginate/theme/basic/react-paginate.css";
 
 interface PaginationProps {
   currentPage: number;
@@ -33,8 +33,19 @@ export default function Pagination({
       <ReactPaginate
         previousLabel={
           <span className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
             </svg>
             前へ
           </span>
@@ -42,29 +53,40 @@ export default function Pagination({
         nextLabel={
           <span className="flex items-center gap-1">
             次へ
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
             </svg>
           </span>
         }
-        breakLabel={'...'}
+        breakLabel={"..."}
         pageCount={totalPages}
         marginPagesDisplayed={marginPagesDisplayed}
         pageRangeDisplayed={pageRangeDisplayed}
         onPageChange={onPageChange}
         forcePage={currentPage - 1} // react-paginateは0-based、currentPageは1-based
-        containerClassName={'flex gap-0.5'}
-        pageClassName={''}
-        pageLinkClassName={'btn btn-sm hover:btn-primary transition-colors'}
-        previousClassName={''}
-        previousLinkClassName={'btn btn-sm hover:btn-primary transition-colors'}
-        nextClassName={''}
-        nextLinkClassName={'btn btn-sm hover:btn-primary transition-colors'}
-        breakClassName={''}
-        breakLinkClassName={'btn btn-sm btn-disabled'}
-        activeClassName={'btn-primary'}
-        disabledClassName={'btn-disabled opacity-50'}
-        disabledLinkClassName={'cursor-not-allowed'}
+        containerClassName={"flex gap-0.5"}
+        pageClassName={""}
+        pageLinkClassName={"btn btn-sm hover:btn-primary transition-colors"}
+        previousClassName={""}
+        previousLinkClassName={"btn btn-sm hover:btn-primary transition-colors"}
+        nextClassName={""}
+        nextLinkClassName={"btn btn-sm hover:btn-primary transition-colors"}
+        breakClassName={""}
+        breakLinkClassName={"btn btn-sm btn-disabled"}
+        activeClassName={"btn-primary"}
+        disabledClassName={"btn-disabled opacity-50"}
+        disabledLinkClassName={"cursor-not-allowed"}
       />
     </div>
   );

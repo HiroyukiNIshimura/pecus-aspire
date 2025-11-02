@@ -1,5 +1,8 @@
 import { getAccessToken } from "./auth";
-import { configureOpenAPI, createApiClientInstances } from "./PecusApiClient.generated";
+import {
+  configureOpenAPI,
+  createApiClientInstances,
+} from "./PecusApiClient.generated";
 
 /**
  * Pecus API クライアントを初期化して返す
@@ -16,14 +19,15 @@ import { configureOpenAPI, createApiClientInstances } from "./PecusApiClient.gen
 export function createPecusApiClients() {
   // OpenAPI 設定を初期化
   configureOpenAPI(
-    process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7265',
+    process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://localhost:7265",
     async () => {
       const token = await getAccessToken();
       return token ?? undefined;
-    }
+    },
   );
 
   // API サービスインスタンスを返す
   return createApiClientInstances();
 }
-

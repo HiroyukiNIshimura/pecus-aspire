@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import { ApiResponse } from '../types';
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { ApiResponse } from "../types";
 
 /**
  * Server Action: ユーザー一覧を取得
@@ -12,17 +12,24 @@ export async function getUsers(
   isActive?: boolean,
   username?: string,
   skillIds?: number[],
-  skillFilterMode: string = 'and'
+  skillFilterMode: string = "and",
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers1(page, pageSize, isActive, username, skillIds, skillFilterMode);
+    const response = await api.adminUser.getApiAdminUsers1(
+      page,
+      pageSize,
+      isActive,
+      username,
+      skillIds,
+      skillFilterMode,
+    );
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to fetch users:', error);
+    console.error("Failed to fetch users:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to fetch users'
+      error: error.body?.message || error.message || "Failed to fetch users",
     };
   }
 }
@@ -37,13 +44,14 @@ export async function createUserWithoutPassword(request: {
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
+    const response =
+      await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to create user:', error);
+    console.error("Failed to create user:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to create user'
+      error: error.body?.message || error.message || "Failed to create user",
     };
   }
 }
@@ -57,10 +65,10 @@ export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
     const response = await api.adminUser.deleteApiAdminUsers(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to delete user:', error);
+    console.error("Failed to delete user:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to delete user'
+      error: error.body?.message || error.message || "Failed to delete user",
     };
   }
 }
@@ -70,17 +78,22 @@ export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
  */
 export async function setUserActiveStatus(
   userId: number,
-  isActive: boolean
+  isActive: boolean,
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, { isActive });
+    const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, {
+      isActive,
+    });
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to set user active status:', error);
+    console.error("Failed to set user active status:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to set user active status'
+      error:
+        error.body?.message ||
+        error.message ||
+        "Failed to set user active status",
     };
   }
 }
@@ -88,16 +101,22 @@ export async function setUserActiveStatus(
 /**
  * Server Action: パスワードリセットをリクエスト
  */
-export async function requestPasswordReset(userId: number): Promise<ApiResponse<any>> {
+export async function requestPasswordReset(
+  userId: number,
+): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
+    const response =
+      await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to request password reset:', error);
+    console.error("Failed to request password reset:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to request password reset'
+      error:
+        error.body?.message ||
+        error.message ||
+        "Failed to request password reset",
     };
   }
 }
@@ -111,10 +130,13 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
     const response = await api.adminUser.getApiAdminUsers(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to fetch user detail:', error);
+    console.error("Failed to fetch user detail:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'ユーザー情報の取得に失敗しました'
+      error:
+        error.body?.message ||
+        error.message ||
+        "ユーザー情報の取得に失敗しました",
     };
   }
 }
@@ -128,7 +150,7 @@ export async function updateUser(
   request: {
     username: string;
     email: string;
-  }
+  },
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
@@ -136,16 +158,19 @@ export async function updateUser(
     // 以下は将来の実装を想定しています
     // const response = await api.adminUser.putApiAdminUsers(userId, request);
     // 代わりにアクティブ状態の更新のみ対応
-    console.warn('updateUser: ユーザー基本情報の更新エンドポイントは未実装です');
+    console.warn(
+      "updateUser: ユーザー基本情報の更新エンドポイントは未実装です",
+    );
     return {
       success: false,
-      error: 'ユーザー基本情報の更新機能は現在利用できません'
+      error: "ユーザー基本情報の更新機能は現在利用できません",
     };
   } catch (error: any) {
-    console.error('Failed to update user:', error);
+    console.error("Failed to update user:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'ユーザーの更新に失敗しました'
+      error:
+        error.body?.message || error.message || "ユーザーの更新に失敗しました",
     };
   }
 }
@@ -155,18 +180,47 @@ export async function updateUser(
  */
 export async function setUserSkills(
   userId: number,
-  skillIds: number[]
+  skillIds: number[],
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.putApiAdminUsersSkills(userId, { skillIds });
+    const response = await api.adminUser.putApiAdminUsersSkills(userId, {
+      skillIds,
+    });
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to set user skills:', error);
+    console.error("Failed to set user skills:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'ユーザースキルの更新に失敗しました'
+      error:
+        error.body?.message ||
+        error.message ||
+        "ユーザースキルの更新に失敗しました",
     };
   }
 }
 
+/**
+ * Server Action: ユーザーのロールを更新
+ */
+export async function setUserRoles(
+  userId: number,
+  roleIds: number[],
+): Promise<ApiResponse<any>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.putApiAdminUsersRoles(userId, {
+      roleIds,
+    });
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error("Failed to set user roles:", error);
+    return {
+      success: false,
+      error:
+        error.body?.message ||
+        error.message ||
+        "ユーザーロールの更新に失敗しました",
+    };
+  }
+}

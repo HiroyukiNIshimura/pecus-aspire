@@ -2,19 +2,18 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceDetailResponse } from './WorkspaceDetailResponse';
+import type { WorkspaceDetailResponse } from "./WorkspaceDetailResponse";
 /**
  * ワークスペース操作レスポンス
  */
 export type WorkspaceResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string | null;
-    workspace?: WorkspaceDetailResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string | null;
+  workspace?: WorkspaceDetailResponse;
 };
-

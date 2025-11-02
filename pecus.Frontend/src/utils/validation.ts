@@ -9,8 +9,11 @@ import { z } from "zod";
  */
 export async function validateWithSchema<T>(
   schema: z.ZodSchema<T>,
-  data: unknown
-): Promise<{ success: true; data: T; errors?: undefined } | { success: false; errors: string[]; data?: undefined }> {
+  data: unknown,
+): Promise<
+  | { success: true; data: T; errors?: undefined }
+  | { success: false; errors: string[]; data?: undefined }
+> {
   const result = await schema.safeParseAsync(data);
 
   if (result.success) {
@@ -21,8 +24,7 @@ export async function validateWithSchema<T>(
   } else {
     return {
       success: false,
-      errors: result.error.issues.map(issue => issue.message),
+      errors: result.error.issues.map((issue) => issue.message),
     };
   }
 }
-

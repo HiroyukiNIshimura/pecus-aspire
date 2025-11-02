@@ -6,13 +6,12 @@
  * パスワードリセット実行リクエスト
  */
 export type ResetPasswordRequest = {
-    /**
-     * パスワードリセットトークン（メールで送信されたもの）
-     */
-    token: string;
-    /**
-     * 新しいパスワード
-     */
-    password: string;
+  /**
+   * パスワードリセットトークン（メールで送信されたもの）
+   */
+  token: string;
+  /**
+   * 新しいパスワード
+   */
+  password: string;
 };
-

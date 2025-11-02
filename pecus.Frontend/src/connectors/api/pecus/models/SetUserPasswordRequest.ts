@@ -6,13 +6,12 @@
  * ユーザーパスワード設定リクエスト
  */
 export type SetUserPasswordRequest = {
-    /**
-     * パスワード設定トークン（メールで送信されたもの）
-     */
-    token: string;
-    /**
-     * 新しいパスワード
-     */
-    password: string;
+  /**
+   * パスワード設定トークン（メールで送信されたもの）
+   */
+  token: string;
+  /**
+   * 新しいパスワード
+   */
+  password: string;
 };
-

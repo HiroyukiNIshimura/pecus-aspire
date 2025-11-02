@@ -52,7 +52,7 @@ export function useFormValidation(options: UseFormValidationOptions = {}) {
         result.error.issues.forEach((issue) => {
           const fieldName = String(issue.path[0]);
           const field = formRef.current?.querySelector(
-            `[name="${fieldName}"]`
+            `[name="${fieldName}"]`,
           ) as HTMLInputElement;
           if (field && pristineRef.current) {
             pristineRef.current.addError(field, issue.message);
@@ -73,7 +73,9 @@ export function useFormValidation(options: UseFormValidationOptions = {}) {
       const isValid = await validateForm();
       if (isValid && options.onSubmit) {
         await options.onSubmit(
-          formRef.current ? Object.fromEntries(new FormData(formRef.current)) : {}
+          formRef.current
+            ? Object.fromEntries(new FormData(formRef.current))
+            : {},
         );
       }
     } finally {

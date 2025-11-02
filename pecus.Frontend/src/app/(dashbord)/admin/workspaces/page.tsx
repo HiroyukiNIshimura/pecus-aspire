@@ -2,9 +2,13 @@ import AdminWorkspacesClient from "./AdminWorkspacesClient";
 import { getWorkspaces } from "@/actions/admin/workspace";
 import { getCurrentUser } from "@/actions/profile";
 import { getGenres } from "@/actions/master";
-import { WorkspaceListItemResponse, WorkspaceStatistics, MasterGenreResponse } from '@/connectors/api/pecus';
+import {
+  WorkspaceListItemResponse,
+  WorkspaceStatistics,
+  MasterGenreResponse,
+} from "@/connectors/api/pecus";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type UserInfo = {
   id: number;
@@ -59,7 +63,7 @@ export default async function AdminWorkspaces() {
       genres = genresResult.data ?? [];
     }
   } catch (err: any) {
-    console.error('AdminWorkspaces: failed to fetch data', err);
+    console.error("AdminWorkspaces: failed to fetch data", err);
     fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 

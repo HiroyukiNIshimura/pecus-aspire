@@ -6,13 +6,12 @@
  * ジョブレスポンス
  */
 export type JobResponse = {
-    /**
-     * メッセージ
-     */
-    message: string | null;
-    /**
-     * ジョブID
-     */
-    jobId: string | null;
+  /**
+   * メッセージ
+   */
+  message: string | null;
+  /**
+   * ジョブID
+   */
+  jobId: string | null;
 };
-

@@ -22,15 +22,27 @@ const menuItems = [
   { href: "/activity", label: "アクティビティ", icon: HistoryIcon },
 ];
 
-const adminItem = { href: "/admin", label: "管理者", icon: AdminPanelSettingsIcon };
+const adminItem = {
+  href: "/admin",
+  label: "管理者",
+  icon: AdminPanelSettingsIcon,
+};
 
-export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, isAdmin }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  sidebarOpen,
+  setSidebarOpen,
+  isAdmin,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const allMenuItems = isAdmin ? [...menuItems, adminItem] : menuItems;
 
   return (
-    <aside className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}>
-      <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">機能メニュー</h2>
+    <aside
+      className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}
+    >
+      <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">
+        機能メニュー
+      </h2>
       <ul className="menu bg-base-100 rounded-box w-full">
         {allMenuItems.map((item) => {
           const IconComponent = item.icon;
@@ -42,7 +54,11 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, isAdmin 
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
+                <span
+                  className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}
+                >
+                  {item.label}
+                </span>
               </a>
             </li>
           );

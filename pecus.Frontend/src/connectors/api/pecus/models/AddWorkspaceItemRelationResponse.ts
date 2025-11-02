@@ -2,19 +2,18 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceItemRelationResponse } from './WorkspaceItemRelationResponse';
+import type { WorkspaceItemRelationResponse } from "./WorkspaceItemRelationResponse";
 /**
  * ワークスペースアイテム関連追加レスポンス
  */
 export type AddWorkspaceItemRelationResponse = {
-    /**
-     * 成功フラグ
-     */
-    success?: boolean;
-    /**
-     * メッセージ
-     */
-    message?: string | null;
-    relation?: WorkspaceItemRelationResponse;
+  /**
+   * 成功フラグ
+   */
+  success?: boolean;
+  /**
+   * メッセージ
+   */
+  message?: string | null;
+  relation?: WorkspaceItemRelationResponse;
 };
-

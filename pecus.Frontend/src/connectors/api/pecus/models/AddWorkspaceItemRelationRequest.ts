@@ -6,14 +6,13 @@
  * ワークスペースアイテム関連追加リクエスト
  */
 export type AddWorkspaceItemRelationRequest = {
-    /**
-     * 関連先アイテムID
-     */
-    toItemId: number;
-    /**
-     * 関連タイプ（オプション）
-     * 指定可能な値: "related", "blocks", "blocked_by", "depends_on", "duplicates", "subtask_of", "parent_of", "relates_to"
-     */
-    relationType?: string | null;
+  /**
+   * 関連先アイテムID
+   */
+  toItemId: number;
+  /**
+   * 関連タイプ（オプション）
+   * 指定可能な値: "related", "blocks", "blocked_by", "depends_on", "duplicates", "subtask_of", "parent_of", "relates_to"
+   */
+  relationType?: string | null;
 };
-

@@ -1,4 +1,4 @@
-import { useEffect, useRef, DependencyList } from 'react';
+import { useEffect, useRef, DependencyList } from "react";
 
 /**
  * useEffect の初回マウント時実行スキップ版
@@ -14,7 +14,10 @@ import { useEffect, useRef, DependencyList } from 'react';
  *   handleFilterChange();
  * }, [filterGenreId, filterIsActive]);
  */
-export const useEffectAfterMount = (effect: () => void | (() => void), deps?: DependencyList) => {
+export const useEffectAfterMount = (
+  effect: () => void | (() => void),
+  deps?: DependencyList,
+) => {
   const isFirstRender = useRef(true);
 
   useEffect(() => {

@@ -6,17 +6,16 @@
  * 組織情報レスポンス（簡易版）
  */
 export type OrganizationInfoResponse = {
-    /**
-     * 組織ID
-     */
-    id?: number;
-    /**
-     * 組織名
-     */
-    name: string | null;
-    /**
-     * 組織コード
-     */
-    code?: string | null;
+  /**
+   * 組織ID
+   */
+  id?: number;
+  /**
+   * 組織名
+   */
+  name: string | null;
+  /**
+   * 組織コード
+   */
+  code?: string | null;
 };
-

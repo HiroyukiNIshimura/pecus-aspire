@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { WorkspaceListItemResponse, WorkspaceListItemResponseWorkspaceStatisticsPagedResponse, WorkspaceStatistics, MasterGenreResponse } from '@/connectors/api/pecus';
+import {
+  WorkspaceListItemResponse,
+  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
+  WorkspaceStatistics,
+  MasterGenreResponse,
+} from "@/connectors/api/pecus";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
@@ -46,19 +51,35 @@ interface AdminWorkspacesClientProps {
   fetchError?: string | null;
 }
 
-export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalCount, initialTotalPages, initialUser, initialStatistics, initialGenres, fetchError }: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({
+  initialWorkspaces,
+  initialTotalCount,
+  initialTotalPages,
+  initialUser,
+  initialStatistics,
+  initialGenres,
+  fetchError,
+}: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser || null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(
+    initialUser || null,
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces || []);
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(
+    initialWorkspaces || [],
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(
+    initialStatistics || null,
+  );
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>("");
-  const [genres, setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
+  const [genres, setGenres] = useState<MasterGenreResponse[]>(
+    initialGenres || [],
+  );
   const [filterOpen, setFilterOpen] = useState(false);
 
   // 【バリデーションフック利用例】
@@ -73,9 +94,12 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
     const fetchInitialData = async () => {
       if (!initialWorkspaces || initialWorkspaces.length === 0) {
         try {
-          const response = await fetch('/api/admin/workspaces?page=1&IsActive=true');
+          const response = await fetch(
+            "/api/admin/workspaces?page=1&IsActive=true",
+          );
           if (response.ok) {
-            const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+            const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+              await response.json();
             setWorkspaces(data.data || []);
             setCurrentPage(data.currentPage || 1);
             setTotalPages(data.totalPages || 1);
@@ -83,7 +107,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
             setStatistics(data.summary || null);
           }
         } catch (error) {
-          console.error('Failed to fetch initial workspaces:', error);
+          console.error("Failed to fetch initial workspaces:", error);
         }
       }
       setIsLoading(false);
@@ -105,19 +129,22 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
       try {
         const page = selected + 1; // react-paginateは0-based
         const params = new URLSearchParams();
-        params.append('page', page.toString());
+        params.append("page", page.toString());
         if (filterIsActive !== null) {
-          params.append('IsActive', filterIsActive.toString());
+          params.append("IsActive", filterIsActive.toString());
         }
         if (filterGenreId !== null) {
-          params.append('GenreId', filterGenreId.toString());
+          params.append("GenreId", filterGenreId.toString());
         }
         if (filterName) {
-          params.append('Name', filterName);
+          params.append("Name", filterName);
         }
-        const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+        const response = await fetch(
+          `/api/admin/workspaces?${params.toString()}`,
+        );
         if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+            await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -125,9 +152,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error('Failed to fetch workspaces:', error);
+        console.error("Failed to fetch workspaces:", error);
       }
-    }
+    },
   );
 
   const handleFilterChange = useCallback(async () => {
@@ -135,19 +162,22 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
     await withDelayedLoading(async () => {
       try {
         const params = new URLSearchParams();
-        params.append('page', '1');
+        params.append("page", "1");
         if (filterIsActive !== null) {
-          params.append('IsActive', filterIsActive.toString());
+          params.append("IsActive", filterIsActive.toString());
         }
         if (filterGenreId !== null) {
-          params.append('GenreId', filterGenreId.toString());
+          params.append("GenreId", filterGenreId.toString());
         }
         if (filterName) {
-          params.append('Name', filterName);
+          params.append("Name", filterName);
         }
-        const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+        const response = await fetch(
+          `/api/admin/workspaces?${params.toString()}`,
+        );
         if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+            await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -155,7 +185,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error('Failed to fetch workspaces:', error);
+        console.error("Failed to fetch workspaces:", error);
       }
     })();
   }, [filterIsActive, filterGenreId, filterName, withDelayedLoading]);
@@ -183,14 +213,25 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
 
   return (
     <div className="flex flex-col min-h-screen">
-      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
+      <LoadingOverlay
+        isLoading={isLoading || showLoading}
+        message={isLoading ? "初期化中..." : "検索中..."}
+      />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />
+      <AdminHeader
+        userInfo={userInfo}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        loading={isLoading}
+      />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <AdminSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -215,18 +256,32 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                   className="flex items-center justify-between cursor-pointer py-2"
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
-                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterGenreId !== null || filterIsActive !== true || filterName) ? 'text-success' : ''}`}>フィルター</span>
+                  <span
+                    className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? "text-success" : ""}`}
+                  >
+                    フィルター
+                  </span>
                   <svg
-                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     {filterOpen ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 12H4"
+                      />
                     ) : (
                       <>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </>
                     )}
                   </svg>
@@ -245,13 +300,13 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                         <input
                           type="text"
                           id="filter-name"
-                          className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
+                          className={`input input-bordered w-full ${nameValidation.hasErrors ? "input-error" : ""}`}
                           placeholder="前方一致検索..."
                           value={filterName}
                           onChange={(e) => handleNameChange(e.target.value)}
                           onKeyDown={(e) => {
                             // 【ポイント2】Enterキーで検索: nameValidation.isValid でバリデーションチェック
-                            if (e.key === 'Enter' && nameValidation.isValid) {
+                            if (e.key === "Enter" && nameValidation.isValid) {
                               handleSearch();
                             }
                           }}
@@ -259,7 +314,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                         {/* 【ポイント3】エラーメッセージ表示: nameValidation.error */}
                         {nameValidation.error && (
                           <label className="label">
-                            <span className="label-text-alt text-error">{nameValidation.error}</span>
+                            <span className="label-text-alt text-error">
+                              {nameValidation.error}
+                            </span>
                           </label>
                         )}
                       </div>
@@ -272,9 +329,11 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                         <select
                           id="filter-genre"
                           className="select select-bordered w-full"
-                          value={filterGenreId ?? ''}
+                          value={filterGenreId ?? ""}
                           onChange={(e) => {
-                            setFilterGenreId(e.target.value ? parseInt(e.target.value) : null);
+                            setFilterGenreId(
+                              e.target.value ? parseInt(e.target.value) : null,
+                            );
                           }}
                         >
                           <option value="">すべて</option>
@@ -359,12 +418,15 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                           await withDelayedLoading(async () => {
                             try {
                               const params = new URLSearchParams();
-                              params.append('page', '1');
-                              params.append('IsActive', 'true'); // デフォルト: アクティブのみ
+                              params.append("page", "1");
+                              params.append("IsActive", "true"); // デフォルト: アクティブのみ
 
-                              const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+                              const response = await fetch(
+                                `/api/admin/workspaces?${params.toString()}`,
+                              );
                               if (response.ok) {
-                                const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+                                const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+                                  await response.json();
                                 setWorkspaces(data.data || []);
                                 setCurrentPage(data.currentPage || 1);
                                 setTotalPages(data.totalPages || 1);
@@ -372,7 +434,10 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                                 setStatistics(data.summary || null);
                               }
                             } catch (error) {
-                              console.error('Failed to fetch workspaces after reset:', error);
+                              console.error(
+                                "Failed to fetch workspaces after reset:",
+                                error,
+                              );
                             }
                           })();
                         }}
@@ -409,11 +474,11 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <tbody>
                       {workspaces.map((workspace) => (
                         <tr key={workspace.id}>
-                          <td>{workspace.code || '-'}</td>
+                          <td>{workspace.code || "-"}</td>
                           <td className="font-semibold">{workspace.name}</td>
                           <td>
                             <span className="badge badge-outline">
-                              {workspace.genreName ||'-'}
+                              {workspace.genreName || "-"}
                             </span>
                           </td>
                           <td>
@@ -422,15 +487,32 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                             </span>
                           </td>
                           <td>
-                            <div className={`badge ${workspace.isActive ? 'badge-success' : 'badge-neutral'}`}>
-                              {workspace.isActive ? 'アクティブ' : '非アクティブ'}
+                            <div
+                              className={`badge ${workspace.isActive ? "badge-success" : "badge-neutral"}`}
+                            >
+                              {workspace.isActive
+                                ? "アクティブ"
+                                : "非アクティブ"}
                             </div>
                           </td>
-                          <td>{workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '不明'}</td>
+                          <td>
+                            {workspace.createdAt
+                              ? new Date(
+                                  workspace.createdAt,
+                                ).toLocaleDateString("ja-JP")
+                              : "不明"}
+                          </td>
                           <td>
                             <div className="flex gap-2">
-                              <a href={`/admin/workspaces/edit/${workspace.id}`} className="btn btn-sm btn-outline">編集</a>
-                              <button className="btn btn-sm btn-outline btn-error">削除</button>
+                              <a
+                                href={`/admin/workspaces/edit/${workspace.id}`}
+                                className="btn btn-sm btn-outline"
+                              >
+                                編集
+                              </a>
+                              <button className="btn btn-sm btn-outline btn-error">
+                                削除
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -456,7 +538,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                 totalWorkspaceCount: 0,
                 uniqueMemberCount: 0,
                 averageMembersPerWorkspace: 0,
-                recentWorkspaceCount: 0
+                recentWorkspaceCount: 0,
               };
 
               return (
@@ -465,8 +547,12 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                   <div className="card bg-base-100 shadow-xl border border-base-300">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="card-title text-base">総ワークスペース数</h3>
-                        <span className="badge badge-primary badge-sm">全体</span>
+                        <h3 className="card-title text-base">
+                          総ワークスペース数
+                        </h3>
+                        <span className="badge badge-primary badge-sm">
+                          全体
+                        </span>
                       </div>
                       <div className="text-3xl font-bold text-primary mb-1">
                         {stats.totalWorkspaceCount}
@@ -482,7 +568,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">アクティブ</h3>
-                        <span className="badge badge-success badge-sm">稼働中</span>
+                        <span className="badge badge-success badge-sm">
+                          稼働中
+                        </span>
                       </div>
                       <div className="flex items-baseline gap-2 mb-1">
                         <div className="text-3xl font-bold text-success">
@@ -495,7 +583,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                       <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.activeWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が稼働中`
-                          : '稼働中のワークスペースなし'}
+                          : "稼働中のワークスペースなし"}
                       </div>
                     </div>
                   </div>
@@ -505,7 +593,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">非アクティブ</h3>
-                        <span className="badge badge-warning badge-sm">停止中</span>
+                        <span className="badge badge-warning badge-sm">
+                          停止中
+                        </span>
                       </div>
                       <div className="flex items-baseline gap-2 mb-1">
                         <div className="text-3xl font-bold text-warning">
@@ -518,7 +608,7 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                       <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.inactiveWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が停止中`
-                          : '非アクティブなワークスペースなし'}
+                          : "非アクティブなワークスペースなし"}
                       </div>
                     </div>
                   </div>
@@ -528,7 +618,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">総メンバー数</h3>
-                        <span className="badge badge-info badge-sm">ユニーク</span>
+                        <span className="badge badge-info badge-sm">
+                          ユニーク
+                        </span>
                       </div>
                       <div className="text-3xl font-bold text-info mb-1">
                         {stats.uniqueMemberCount}
@@ -544,7 +636,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">平均メンバー数</h3>
-                        <span className="badge badge-secondary badge-sm">統計</span>
+                        <span className="badge badge-secondary badge-sm">
+                          統計
+                        </span>
                       </div>
                       <div className="text-3xl font-bold text-secondary mb-1">
                         {(stats.averageMembersPerWorkspace || 0).toFixed(1)}
@@ -560,7 +654,9 @@ export default function AdminWorkspacesClient({ initialWorkspaces, initialTotalC
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">最近作成</h3>
-                        <span className="badge badge-accent badge-sm">30日以内</span>
+                        <span className="badge badge-accent badge-sm">
+                          30日以内
+                        </span>
                       </div>
                       <div className="text-3xl font-bold text-accent mb-1">
                         {stats.recentWorkspaceCount}

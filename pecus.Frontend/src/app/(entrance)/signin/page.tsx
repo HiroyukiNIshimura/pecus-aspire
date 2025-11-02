@@ -23,31 +23,29 @@ const LoginForm = () => {
   const { showLoading, withDelayedLoading } = useDelayedLoading();
 
   const onSubmit = useCallback(
-    withDelayedLoading(
-      async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setError(null);
+    withDelayedLoading(async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setError(null);
 
-        try {
-          const result = await login({
-            loginIdentifier: id,
-            password,
-          });
+      try {
+        const result = await login({
+          loginIdentifier: id,
+          password,
+        });
 
-          if (result.success) {
-            router.push('/');
-            return;
-          }
-
-          console.error(result.error);
-          setError('ログイン認証に失敗しました。');
-        } catch (err) {
-          console.error(err);
-          setError('ログイン認証に失敗しました。');
+        if (result.success) {
+          router.push("/");
+          return;
         }
+
+        console.error(result.error);
+        setError("ログイン認証に失敗しました。");
+      } catch (err) {
+        console.error(err);
+        setError("ログイン認証に失敗しました。");
       }
-    ),
-    [id, password, withDelayedLoading]
+    }),
+    [id, password, withDelayedLoading],
   );
 
   return (
@@ -102,7 +100,7 @@ const LoginForm = () => {
                 type="submit"
                 disabled={showLoading}
               >
-                {showLoading ? 'ログイン中...' : 'ログイン'}
+                {showLoading ? "ログイン中..." : "ログイン"}
               </button>
             </form>
             <div className="text-center mt-4">

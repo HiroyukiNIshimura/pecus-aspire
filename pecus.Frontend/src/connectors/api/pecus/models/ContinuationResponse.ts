@@ -6,17 +6,16 @@
  * 継続ジョブレスポンス
  */
 export type ContinuationResponse = {
-    /**
-     * メッセージ
-     */
-    message: string | null;
-    /**
-     * 親ジョブID
-     */
-    parentJobId: string | null;
-    /**
-     * 子ジョブID
-     */
-    childJobId: string | null;
+  /**
+   * メッセージ
+   */
+  message: string | null;
+  /**
+   * 親ジョブID
+   */
+  parentJobId: string | null;
+  /**
+   * 子ジョブID
+   */
+  childJobId: string | null;
 };
-

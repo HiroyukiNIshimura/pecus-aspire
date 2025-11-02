@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/actions/profile";
 import { getUserDetail } from "@/actions/admin/user";
 import { getAllSkills } from "@/actions/admin/skills";
+import { getAllRoles } from "@/actions/admin/role";
 import EditUserClient from "./EditUserClient";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function EditUserPage({
   let user: UserInfo | null = null;
   let userDetail = null;
   let skills = [];
+  let roles = [];
   let fetchError = null;
 
   try {
@@ -47,6 +49,11 @@ export default async function EditUserPage({
     if (skillsResult.success) {
       skills = skillsResult.data || [];
     }
+
+    const rolesResult = await getAllRoles();
+    if (rolesResult.success) {
+      roles = rolesResult.data || [];
+    }
   } catch (err: unknown) {
     if (err instanceof Error) {
       fetchError = err.message;
@@ -64,6 +71,7 @@ export default async function EditUserPage({
       initialUser={user}
       userDetail={userDetail}
       availableSkills={skills}
+      availableRoles={roles}
       fetchError={fetchError}
     />
   );

@@ -1,7 +1,7 @@
 import DashboardClient from "./DashboardClient";
 import { getCurrentUser } from "@/actions/profile";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type UserInfo = {
   id: number;
@@ -27,20 +27,17 @@ export default async function Dashboard() {
         name: userData.username ?? null,
         email: userData.email ?? null,
         roles,
-        isAdmin: roles.some((r: any) => (typeof r === 'string' ? r === 'Admin' : r?.name === 'Admin')),
+        isAdmin: roles.some((r: any) =>
+          typeof r === "string" ? r === "Admin" : r?.name === "Admin",
+        ),
       } as UserInfo;
     } else {
       fetchError = `ユーザー情報の取得に失敗しました (${userResult.error})`;
     }
   } catch (err: any) {
-    console.error('Dashboard: failed to fetch user', err);
+    console.error("Dashboard: failed to fetch user", err);
     fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 
-  return (
-    <DashboardClient
-      initialUser={user}
-      fetchError={fetchError}
-    />
-  );
+  return <DashboardClient initialUser={user} fetchError={fetchError} />;
 }

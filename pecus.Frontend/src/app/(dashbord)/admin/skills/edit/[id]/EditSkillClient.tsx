@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
@@ -54,7 +55,9 @@ export default function EditSkillClient({
             notify.success("スキルを更新しました。");
           } else {
             console.error("スキルの更新に失敗しました:", result.error);
-            notify.error(result.error || "スキルの更新中にエラーが発生しました。");
+            notify.error(
+              result.error || "スキルの更新中にエラーが発生しました。",
+            );
           }
         } catch (err: unknown) {
           console.error("スキルの更新中にエラーが発生しました:", err);
@@ -68,20 +71,34 @@ export default function EditSkillClient({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
-      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      {/* Sticky Navigation Header */}
+      <AdminHeader
+        userInfo={initialUser}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        loading={false}
+      />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <AdminHeader
-          userInfo={initialUser}
+      <div className="flex flex-1">
+        {/* Sidebar Menu */}
+        <AdminSidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          loading={false}
         />
 
-        <main className="flex-1 overflow-y-auto bg-base-100 p-6">
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 bg-base-100">
           <div className="max-w-3xl mx-auto">
             {/* ページヘッダー */}
             <div className="mb-6 flex justify-between items-center">
@@ -108,7 +125,12 @@ export default function EditSkillClient({
             )}
 
             {/* 編集フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              noValidate
+              className="mb-6"
+            >
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -230,7 +252,7 @@ export default function EditSkillClient({
                       value={
                         skillDetail.createdAt
                           ? new Date(skillDetail.createdAt).toLocaleString(
-                              "ja-JP"
+                              "ja-JP",
                             )
                           : ""
                       }
@@ -240,9 +262,7 @@ export default function EditSkillClient({
 
                   <div>
                     <label className="label">
-                      <span className="label-text font-semibold">
-                        更新日時
-                      </span>
+                      <span className="label-text font-semibold">更新日時</span>
                     </label>
                     <input
                       type="text"
@@ -250,7 +270,7 @@ export default function EditSkillClient({
                       value={
                         skillDetail.updatedAt
                           ? new Date(skillDetail.updatedAt).toLocaleString(
-                              "ja-JP"
+                              "ja-JP",
                             )
                           : ""
                       }
@@ -260,9 +280,7 @@ export default function EditSkillClient({
 
                   <div>
                     <label className="label">
-                      <span className="label-text font-semibold">
-                        保有者数
-                      </span>
+                      <span className="label-text font-semibold">保有者数</span>
                     </label>
                     <input
                       type="text"
@@ -277,6 +295,9 @@ export default function EditSkillClient({
           </div>
         </main>
       </div>
+
+      {/* Footer */}
+      <AdminFooter />
     </div>
   );
 }

@@ -17,7 +17,10 @@ interface DashboardClientProps {
   fetchError?: string | null;
 }
 
-export default function DashboardClient({ initialUser, fetchError }: DashboardClientProps) {
+export default function DashboardClient({
+  initialUser,
+  fetchError,
+}: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
 
@@ -31,7 +34,11 @@ export default function DashboardClient({ initialUser, fetchError }: DashboardCl
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <DashboardSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />
+        <DashboardSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          isAdmin={userInfo?.isAdmin ?? false}
+        />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (

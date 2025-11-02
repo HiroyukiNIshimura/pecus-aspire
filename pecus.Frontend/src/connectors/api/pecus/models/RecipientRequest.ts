@@ -3,6 +3,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type RecipientRequest = {
-    email?: string | null;
+  email?: string | null;
 };
-

@@ -6,9 +6,8 @@
  * メールアドレス変更リクエスト
  */
 export type UpdateEmailRequest = {
-    /**
-     * 新しいメールアドレス
-     */
-    newEmail: string;
+  /**
+   * 新しいメールアドレス
+   */
+  newEmail: string;
 };
-

@@ -26,7 +26,7 @@ export function useTheme() {
     if (selectedTheme === "auto") {
       // システム設定を監視
       const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
+        "(prefers-color-scheme: dark)",
       ).matches;
       html.setAttribute("data-theme", prefersDark ? "dark" : "light");
     } else {

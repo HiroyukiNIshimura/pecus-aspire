@@ -14,7 +14,7 @@
   height: 24px;
   justify-content: center;
   width: 24px;
-  transition: transform linear .1s;
+  transition: transform linear 0.1s;
   transform: rotate(0deg);
 }
 

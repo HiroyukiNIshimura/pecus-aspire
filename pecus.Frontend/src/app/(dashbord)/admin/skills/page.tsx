@@ -2,7 +2,7 @@ import AdminSkillsClient from "./AdminSkillsClient";
 import { getCurrentUser } from "@/actions/profile";
 import { getSkills } from "@/actions/admin/skills";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type UserInfo = {
   id: number;
@@ -50,7 +50,7 @@ export default async function AdminSkills() {
       } as UserInfo;
     }
   } catch (err: any) {
-    console.error('AdminSkills: failed to fetch data', err);
+    console.error("AdminSkills: failed to fetch data", err);
     fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 

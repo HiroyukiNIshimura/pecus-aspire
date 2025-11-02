@@ -38,12 +38,12 @@ export default function AppHeader({
     // ドロップダウンを閉じる
     setTimeout(() => {
       const themeDropdown = document.querySelector(
-        ".navbar-end > .dropdown:first-of-type"
+        ".navbar-end > .dropdown:first-of-type",
       ) as HTMLElement;
       if (themeDropdown && (window as any).HSDropdown) {
         const { element } = (window as any).HSDropdown.getInstance(
           themeDropdown,
-          true
+          true,
         );
         if (element) {
           element.close();

@@ -1,8 +1,8 @@
-'use server';
+"use server";
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import { ApiResponse } from './types';
-import { SessionData, SessionManager } from '@/libs/session';
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { ApiResponse } from "./types";
+import { SessionData, SessionManager } from "@/libs/session";
 
 /**
  * Server Action: ログイン
@@ -20,12 +20,12 @@ export async function login(request: {
 
     // APIレスポンスからトークンを取得
     const accessToken = response.accessToken;
-    const refreshToken = response.refreshToken || '';
+    const refreshToken = response.refreshToken || "";
 
     if (!accessToken) {
       return {
         success: false,
-        error: 'Invalid response from server'
+        error: "Invalid response from server",
       };
     }
 
@@ -35,9 +35,11 @@ export async function login(request: {
       refreshToken,
       user: {
         id: response.userId || 0,
-        name: response.username || '',
-        email: response.email || '',
-        roles: response.roles ? response.roles.map((role: any) => role.name || '') : [],
+        name: response.username || "",
+        email: response.email || "",
+        roles: response.roles
+          ? response.roles.map((role: any) => role.name || "")
+          : [],
       },
     };
 
@@ -45,10 +47,10 @@ export async function login(request: {
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Failed to login:', error);
+    console.error("Failed to login:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || 'Failed to login'
+      error: error.body?.message || error.message || "Failed to login",
     };
   }
 }
@@ -63,10 +65,10 @@ export async function logout(): Promise<ApiResponse<any>> {
 
     return { success: true, data: null };
   } catch (error: any) {
-    console.error('Failed to logout:', error);
+    console.error("Failed to logout:", error);
     return {
       success: false,
-      error: error.message || 'Failed to logout'
+      error: error.message || "Failed to logout",
     };
   }
 }

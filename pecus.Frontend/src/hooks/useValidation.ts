@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { z } from 'zod';
-import { validateWithSchema } from '@/utils/validation';
+import { useState, useCallback } from "react";
+import { z } from "zod";
+import { validateWithSchema } from "@/utils/validation";
 
 /**
  * Zodスキーマを使用したバリデーションフック（非同期対応）
@@ -11,19 +11,22 @@ export function useValidation<T>(schema: z.ZodSchema<T>) {
   const [errors, setErrors] = useState<string[]>([]);
   const [isValid, setIsValid] = useState<boolean>(true);
 
-  const validate = useCallback(async (data: unknown) => {
-    const result = await validateWithSchema(schema, data);
+  const validate = useCallback(
+    async (data: unknown) => {
+      const result = await validateWithSchema(schema, data);
 
-    if (result.success) {
-      setErrors([]);
-      setIsValid(true);
-      return { success: true as const, data: result.data };
-    } else {
-      setErrors(result.errors);
-      setIsValid(false);
-      return { success: false as const, errors: result.errors };
-    }
-  }, [schema]);
+      if (result.success) {
+        setErrors([]);
+        setIsValid(true);
+        return { success: true as const, data: result.data };
+      } else {
+        setErrors(result.errors);
+        setIsValid(false);
+        return { success: false as const, errors: result.errors };
+      }
+    },
+    [schema],
+  );
 
   const clearErrors = useCallback(() => {
     setErrors([]);

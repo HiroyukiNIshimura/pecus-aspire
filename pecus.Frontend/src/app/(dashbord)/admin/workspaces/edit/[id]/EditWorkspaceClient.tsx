@@ -9,7 +9,10 @@ import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspace } from "@/actions/admin/workspace";
-import type { WorkspaceDetailResponse, MasterGenreResponse } from "@/connectors/api/pecus";
+import type {
+  WorkspaceDetailResponse,
+  MasterGenreResponse,
+} from "@/connectors/api/pecus";
 
 type UserInfo = {
   id: number;
@@ -35,9 +38,11 @@ export default function EditWorkspaceClient({
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [name, setName] = useState(workspaceDetail.name || "");
-  const [description, setDescription] = useState(workspaceDetail.description || "");
+  const [description, setDescription] = useState(
+    workspaceDetail.description || "",
+  );
   const [genreId, setGenreId] = useState<number | null>(
-    (workspaceDetail as any).genreId || null
+    (workspaceDetail as any).genreId || null,
   );
   const [isActive, setIsActive] = useState(workspaceDetail.isActive ?? true);
 
@@ -50,22 +55,19 @@ export default function EditWorkspaceClient({
         }
 
         try {
-          const result = await updateWorkspace(
-            workspaceDetail.id!,
-            {
-              name: name.trim(),
-              description: description.trim() || undefined,
-              genreId: genreId || undefined,
-              isActive,
-            }
-          );
+          const result = await updateWorkspace(workspaceDetail.id!, {
+            name: name.trim(),
+            description: description.trim() || undefined,
+            genreId: genreId || undefined,
+            isActive,
+          });
 
           if (result.success) {
             notify.success("ワークスペースを更新しました。");
           } else {
             console.error("ワークスペースの更新に失敗しました:", result.error);
             notify.error(
-              result.error || "ワークスペースの更新中にエラーが発生しました。"
+              result.error || "ワークスペースの更新中にエラーが発生しました。",
             );
           }
         } catch (err: unknown) {
@@ -80,20 +82,34 @@ export default function EditWorkspaceClient({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
-      <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      {/* Sticky Navigation Header */}
+      <AdminHeader
+        userInfo={initialUser}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        loading={false}
+      />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <AdminHeader
-          userInfo={initialUser}
+      <div className="flex flex-1">
+        {/* Sidebar Menu */}
+        <AdminSidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          loading={false}
         />
 
-        <main className="flex-1 overflow-y-auto bg-base-100 p-6">
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 bg-base-100">
           <div className="max-w-3xl mx-auto">
             {/* ページヘッダー */}
             <div className="mb-6 flex justify-between items-center">
@@ -120,7 +136,12 @@ export default function EditWorkspaceClient({
             )}
 
             {/* 編集フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              noValidate
+              className="mb-6"
+            >
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -176,7 +197,9 @@ export default function EditWorkspaceClient({
                   {genres.length > 0 && (
                     <div className="form-control mt-4">
                       <label htmlFor="genre" className="label">
-                        <span className="label-text font-semibold">ジャンル</span>
+                        <span className="label-text font-semibold">
+                          ジャンル
+                        </span>
                       </label>
                       <select
                         id="genre"
@@ -184,7 +207,11 @@ export default function EditWorkspaceClient({
                         className="select select-bordered w-full"
                         value={genreId ?? ""}
                         onChange={(e) =>
-                          setGenreId(e.target.value ? parseInt(e.target.value, 10) : null)
+                          setGenreId(
+                            e.target.value
+                              ? parseInt(e.target.value, 10)
+                              : null,
+                          )
                         }
                         disabled={isSubmitting}
                       >
@@ -277,9 +304,7 @@ export default function EditWorkspaceClient({
 
                   <div>
                     <label className="label">
-                      <span className="label-text font-semibold">
-                        所属組織
-                      </span>
+                      <span className="label-text font-semibold">所属組織</span>
                     </label>
                     <input
                       type="text"
@@ -313,7 +338,7 @@ export default function EditWorkspaceClient({
                       value={
                         workspaceDetail.createdAt
                           ? new Date(workspaceDetail.createdAt).toLocaleString(
-                              "ja-JP"
+                              "ja-JP",
                             )
                           : ""
                       }
@@ -323,9 +348,7 @@ export default function EditWorkspaceClient({
 
                   <div>
                     <label className="label">
-                      <span className="label-text font-semibold">
-                        更新日時
-                      </span>
+                      <span className="label-text font-semibold">更新日時</span>
                     </label>
                     <input
                       type="text"
@@ -333,7 +356,7 @@ export default function EditWorkspaceClient({
                       value={
                         workspaceDetail.updatedAt
                           ? new Date(workspaceDetail.updatedAt).toLocaleString(
-                              "ja-JP"
+                              "ja-JP",
                             )
                           : ""
                       }
@@ -374,15 +397,15 @@ export default function EditWorkspaceClient({
                             <td>
                               {member.joinedAt
                                 ? new Date(member.joinedAt).toLocaleDateString(
-                                    "ja-JP"
+                                    "ja-JP",
                                   )
                                 : ""}
                             </td>
                             <td>
                               {member.lastAccessedAt
-                                ? new Date(member.lastAccessedAt).toLocaleString(
-                                    "ja-JP"
-                                  )
+                                ? new Date(
+                                    member.lastAccessedAt,
+                                  ).toLocaleString("ja-JP")
                                 : "未"}
                             </td>
                           </tr>
@@ -395,10 +418,10 @@ export default function EditWorkspaceClient({
             )}
           </div>
         </main>
-
-        {/* Footer */}
-        <AdminFooter />
       </div>
+
+      {/* Footer */}
+      <AdminFooter />
     </div>
   );
 }

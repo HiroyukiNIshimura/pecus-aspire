@@ -35,7 +35,7 @@ export default function AdminTagsClient({
   initialTotalCount,
   initialTotalPages,
   initialStatistics,
-  fetchError
+  fetchError,
 }: AdminTagsClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,7 +44,9 @@ export default function AdminTagsClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<TagStatistics | null>(initialStatistics || null);
+  const [statistics, setStatistics] = useState<TagStatistics | null>(
+    initialStatistics || null,
+  );
 
   // フィルター状態
   const [filterName, setFilterName] = useState<string>("");
@@ -62,15 +64,15 @@ export default function AdminTagsClient({
       try {
         const page = selected + 1; // react-paginateは0-based
         const params = new URLSearchParams();
-        params.append('page', page.toString());
+        params.append("page", page.toString());
         if (filterIsActive !== null) {
-          params.append('IsActive', filterIsActive.toString());
+          params.append("IsActive", filterIsActive.toString());
         }
         if (filterUnusedOnly) {
-          params.append('UnusedOnly', 'true');
+          params.append("UnusedOnly", "true");
         }
         if (filterName) {
-          params.append('Name', filterName);
+          params.append("Name", filterName);
         }
         const response = await fetch(`/api/admin/tags?${params.toString()}`);
         if (response.ok) {
@@ -82,9 +84,9 @@ export default function AdminTagsClient({
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error('Failed to fetch tags:', error);
+        console.error("Failed to fetch tags:", error);
       }
-    }
+    },
   );
 
   // フィルター変更処理
@@ -93,15 +95,15 @@ export default function AdminTagsClient({
     await withDelayedLoading(async () => {
       try {
         const params = new URLSearchParams();
-        params.append('page', '1');
+        params.append("page", "1");
         if (filterIsActive !== null) {
-          params.append('IsActive', filterIsActive.toString());
+          params.append("IsActive", filterIsActive.toString());
         }
         if (filterUnusedOnly) {
-          params.append('UnusedOnly', 'true');
+          params.append("UnusedOnly", "true");
         }
         if (filterName) {
-          params.append('Name', filterName);
+          params.append("Name", filterName);
         }
         const response = await fetch(`/api/admin/tags?${params.toString()}`);
         if (response.ok) {
@@ -113,7 +115,7 @@ export default function AdminTagsClient({
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error('Failed to fetch tags:', error);
+        console.error("Failed to fetch tags:", error);
       }
     })();
   }, [filterIsActive, filterUnusedOnly, filterName, withDelayedLoading]);
@@ -134,12 +136,12 @@ export default function AdminTagsClient({
 
   // 日付をYYYY/MM/DD形式にフォーマット
   const formatDate = (dateString?: string): string => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     try {
       const date = new Date(dateString);
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
       return `${year}/${month}/${day}`;
     } catch {
       return dateString;
@@ -151,11 +153,19 @@ export default function AdminTagsClient({
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
+      <AdminHeader
+        userInfo={userInfo}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        loading={false}
+      />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <AdminSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -171,8 +181,18 @@ export default function AdminTagsClient({
             {/* Error Alert */}
             {fetchError && (
               <div className="alert alert-error mb-6" role="alert">
-                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m6-6l2 2m0 0l2 2m-2-2l-2 2m2-2l2-2" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m6-6l2 2m0 0l2 2m-2-2l-2 2m2-2l2-2"
+                  />
                 </svg>
                 <span>{fetchError}</span>
               </div>
@@ -190,20 +210,32 @@ export default function AdminTagsClient({
                   className="flex items-center justify-between cursor-pointer py-2"
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
-                  <span className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${(filterName || filterIsActive !== true || filterUnusedOnly) ? 'text-success' : ''}`}>
+                  <span
+                    className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterName || filterIsActive !== true || filterUnusedOnly ? "text-success" : ""}`}
+                  >
                     フィルター
                   </span>
                   <svg
-                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     {filterOpen ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20 12H4"
+                      />
                     ) : (
                       <>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
                       </>
                     )}
                   </svg>
@@ -220,19 +252,21 @@ export default function AdminTagsClient({
                         <input
                           type="text"
                           id="filter-name"
-                          className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
+                          className={`input input-bordered w-full ${nameValidation.hasErrors ? "input-error" : ""}`}
                           placeholder="前方一致検索..."
                           value={filterName}
                           onChange={(e) => handleNameChange(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && nameValidation.isValid) {
+                            if (e.key === "Enter" && nameValidation.isValid) {
                               handleSearch();
                             }
                           }}
                         />
                         {nameValidation.error && (
                           <label className="label">
-                            <span className="label-text-alt text-error">{nameValidation.error}</span>
+                            <span className="label-text-alt text-error">
+                              {nameValidation.error}
+                            </span>
                           </label>
                         )}
                       </div>
@@ -288,7 +322,9 @@ export default function AdminTagsClient({
                               type="checkbox"
                               className="checkbox"
                               checked={filterUnusedOnly}
-                              onChange={(e) => setFilterUnusedOnly(e.target.checked)}
+                              onChange={(e) =>
+                                setFilterUnusedOnly(e.target.checked)
+                              }
                             />
                             <span className="text-sm">未使用のみ</span>
                           </label>
@@ -321,10 +357,12 @@ export default function AdminTagsClient({
                           await withDelayedLoading(async () => {
                             try {
                               const params = new URLSearchParams();
-                              params.append('page', '1');
-                              params.append('IsActive', 'true'); // デフォルト: アクティブのみ
+                              params.append("page", "1");
+                              params.append("IsActive", "true"); // デフォルト: アクティブのみ
 
-                              const response = await fetch(`/api/admin/tags?${params.toString()}`);
+                              const response = await fetch(
+                                `/api/admin/tags?${params.toString()}`,
+                              );
                               if (response.ok) {
                                 const data = await response.json();
                                 setTags(data.data || []);
@@ -333,15 +371,20 @@ export default function AdminTagsClient({
                                 setTotalCount(data.totalCount || 0);
                                 setStatistics(data.summary || null);
                               } else {
-                                const errorData = await response.json().catch(() => ({}));
-                                console.error('Reset API error:', {
+                                const errorData = await response
+                                  .json()
+                                  .catch(() => ({}));
+                                console.error("Reset API error:", {
                                   status: response.status,
                                   error: errorData?.error,
-                                  details: errorData?.details
+                                  details: errorData?.details,
                                 });
                               }
                             } catch (error) {
-                              console.error('Failed to fetch tags after reset:', error);
+                              console.error(
+                                "Failed to fetch tags after reset:",
+                                error,
+                              );
                             }
                           })();
                         }}
@@ -383,8 +426,10 @@ export default function AdminTagsClient({
                             </span>
                           </td>
                           <td>
-                            <div className={`badge ${tag.isActive ? 'badge-success' : 'badge-neutral'}`}>
-                              {tag.isActive ? 'アクティブ' : '非アクティブ'}
+                            <div
+                              className={`badge ${tag.isActive ? "badge-success" : "badge-neutral"}`}
+                            >
+                              {tag.isActive ? "アクティブ" : "非アクティブ"}
                             </div>
                           </td>
                           <td>{formatDate(tag.createdAt)}</td>
@@ -393,11 +438,18 @@ export default function AdminTagsClient({
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline"
-                                onClick={() => router.push(`/admin/tags/edit/${tag.id}`)}
+                                onClick={() =>
+                                  router.push(`/admin/tags/edit/${tag.id}`)
+                                }
                               >
                                 編集
                               </button>
-                              <button type="button" className="btn btn-sm btn-outline btn-error">削除</button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline btn-error"
+                              >
+                                削除
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -452,7 +504,7 @@ export default function AdminTagsClient({
                     <div className="text-xs text-base-content opacity-70">
                       {(statistics.totalTags ?? 0) > 0
                         ? `${Math.round(((statistics.activeTags ?? 0) / (statistics.totalTags ?? 1)) * 100)}% が有効`
-                        : '有効なタグなし'}
+                        : "有効なタグなし"}
                     </div>
                   </div>
                 </div>
@@ -475,7 +527,7 @@ export default function AdminTagsClient({
                     <div className="text-xs text-base-content opacity-70">
                       {(statistics.totalTags ?? 0) > 0
                         ? `${Math.round(((statistics.inactiveTags ?? 0) / (statistics.totalTags ?? 1)) * 100)}% が無効`
-                        : '無効なタグなし'}
+                        : "無効なタグなし"}
                     </div>
                   </div>
                 </div>
@@ -503,19 +555,31 @@ export default function AdminTagsClient({
                       <h3 className="card-title text-base">人気タグ TOP5</h3>
                       <span className="badge badge-info badge-sm">利用数</span>
                     </div>
-                    {statistics.topUsedTags && statistics.topUsedTags.length > 0 ? (
+                    {statistics.topUsedTags &&
+                    statistics.topUsedTags.length > 0 ? (
                       <div className="space-y-2">
-                        {statistics.topUsedTags.slice(0, 5).map((tag, index) => (
-                          <div key={tag.id ?? index} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="badge badge-neutral badge-sm">{index + 1}</span>
-                              <span className="text-sm font-medium">{tag.name}</span>
+                        {statistics.topUsedTags
+                          .slice(0, 5)
+                          .map((tag, index) => (
+                            <div
+                              key={tag.id ?? index}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="badge badge-neutral badge-sm">
+                                  {index + 1}
+                                </span>
+                                <span className="text-sm font-medium">
+                                  {tag.name}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-base-content opacity-70">データがありません</p>
+                      <p className="text-sm text-base-content opacity-70">
+                        データがありません
+                      </p>
                     )}
                   </div>
                 </div>

@@ -6,13 +6,12 @@
  * 繰り返しジョブレスポンス
  */
 export type RecurringResponse = {
-    /**
-     * メッセージ
-     */
-    message: string | null;
-    /**
-     * 繰り返しジョブID
-     */
-    recurringJobId: string | null;
+  /**
+   * メッセージ
+   */
+  message: string | null;
+  /**
+   * 繰り返しジョブID
+   */
+  recurringJobId: string | null;
 };
-

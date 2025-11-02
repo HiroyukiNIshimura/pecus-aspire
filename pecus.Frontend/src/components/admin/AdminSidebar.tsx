@@ -20,12 +20,19 @@ const menuItems = [
   { href: "/admin/tags", label: "タグ", icon: LocalOfferIcon },
 ];
 
-export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps) {
+export default function AdminSidebar({
+  sidebarOpen,
+  setSidebarOpen,
+}: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}>
-      <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">管理者メニュー</h2>
+    <aside
+      className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}
+    >
+      <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">
+        管理者メニュー
+      </h2>
       <ul className="menu bg-base-100 rounded-box w-full">
         {menuItems.map((item) => {
           const IconComponent = item.icon;
@@ -37,7 +44,11 @@ export default function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSideb
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
+                <span
+                  className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}
+                >
+                  {item.label}
+                </span>
               </a>
             </li>
           );

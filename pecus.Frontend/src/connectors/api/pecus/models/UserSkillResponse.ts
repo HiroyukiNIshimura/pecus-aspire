@@ -6,13 +6,12 @@
  * ユーザースキル情報レスポンス
  */
 export type UserSkillResponse = {
-    /**
-     * スキルID
-     */
-    id?: number;
-    /**
-     * スキル名
-     */
-    name: string | null;
+  /**
+   * スキルID
+   */
+  id?: number;
+  /**
+   * スキル名
+   */
+  name: string | null;
 };
-

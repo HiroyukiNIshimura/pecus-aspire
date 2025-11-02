@@ -3,7 +3,7 @@ import { getOrganization } from "@/actions/admin/organization";
 import { getCurrentUser } from "@/actions/profile";
 import type { ApiErrorResponse } from "@/types/errors";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type OrganizationData = {
   id?: number | string;
@@ -64,7 +64,7 @@ export default async function AdminPage() {
       } as UserInfo;
     }
   } catch (err: any) {
-    console.error('AdminPage: failed to fetch organization or user', err);
+    console.error("AdminPage: failed to fetch organization or user", err);
     // エラーコード方式で返す
     const error: ApiErrorResponse = {
       code: "UNKNOWN_ERROR",

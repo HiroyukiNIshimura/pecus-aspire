@@ -65,9 +65,9 @@ export function getErrorCodeFromStatus(statusCode: number): ErrorCode {
  */
 export function isApiError(error: unknown): error is ApiErrorResponse {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    ('code' in error || 'message' in error || 'statusCode' in error)
+    ("code" in error || "message" in error || "statusCode" in error)
   );
 }
 

@@ -6,17 +6,16 @@
  * ジャンルごとのワークスペース数
  */
 export type GenreCount = {
-    /**
-     * ジャンルID
-     */
-    genreId?: number | null;
-    /**
-     * ジャンル名
-     */
-    genreName?: string | null;
-    /**
-     * ワークスペース数
-     */
-    count?: number;
+  /**
+   * ジャンルID
+   */
+  genreId?: number | null;
+  /**
+   * ジャンル名
+   */
+  genreName?: string | null;
+  /**
+   * ワークスペース数
+   */
+  count?: number;
 };
-

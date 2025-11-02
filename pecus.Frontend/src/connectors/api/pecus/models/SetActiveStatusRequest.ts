@@ -6,9 +6,8 @@
  * アクティブ状態設定リクエスト
  */
 export type SetActiveStatusRequest = {
-    /**
-     * アクティブ状態（true: 有効, false: 無効）
-     */
-    isActive: boolean;
+  /**
+   * アクティブ状態（true: 有効, false: 無効）
+   */
+  isActive: boolean;
 };
-

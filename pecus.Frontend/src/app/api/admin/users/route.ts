@@ -1,29 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUsers } from '@/actions/admin/user';
+import { NextRequest, NextResponse } from "next/server";
+import { getUsers } from "@/actions/admin/user";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = searchParams.get('PageSize') ? parseInt(searchParams.get('PageSize')!, 10) : undefined;
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = searchParams.get("PageSize")
+      ? parseInt(searchParams.get("PageSize")!, 10)
+      : undefined;
 
     // フィルタパラメータの処理
-    const isActiveParam = searchParams.get('IsActive');
+    const isActiveParam = searchParams.get("IsActive");
     let isActive: boolean | undefined = undefined;
     if (isActiveParam !== null) {
-      isActive = isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : undefined;
+      isActive =
+        isActiveParam === "true"
+          ? true
+          : isActiveParam === "false"
+            ? false
+            : undefined;
     }
 
-    const username = searchParams.get('Username') || undefined;
+    const username = searchParams.get("Username") || undefined;
 
     // SkillIds は複数の値を取得する可能性がある
-    const skillIdStrings = searchParams.getAll('SkillIds');
-    const skillIds = skillIdStrings.length > 0 ? skillIdStrings.map(id => parseInt(id, 10)) : undefined;
+    const skillIdStrings = searchParams.getAll("SkillIds");
+    const skillIds =
+      skillIdStrings.length > 0
+        ? skillIdStrings.map((id) => parseInt(id, 10))
+        : undefined;
 
     // SkillFilterMode の取得（デフォルトは 'and'）
-    const skillFilterMode = searchParams.get('SkillFilterMode') || 'and';
+    const skillFilterMode = searchParams.get("SkillFilterMode") || "and";
 
     const result = await getUsers(
       page,
@@ -31,22 +41,19 @@ export async function GET(request: NextRequest) {
       isActive,
       username,
       skillIds,
-      skillFilterMode
+      skillFilterMode,
     );
 
     if (result.success) {
       return NextResponse.json(result.data, { status: 200 });
     } else {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
   } catch (error: any) {
-    console.error('API Route Error:', error);
+    console.error("API Route Error:", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
 }

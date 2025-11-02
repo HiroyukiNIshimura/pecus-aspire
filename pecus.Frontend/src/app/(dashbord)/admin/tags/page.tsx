@@ -2,7 +2,7 @@ import AdminTagsClient from "./AdminTagsClient";
 import { getCurrentUser } from "@/actions/profile";
 import { getTags } from "@/actions/admin/tags";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type UserInfo = {
   id: number;
@@ -50,7 +50,7 @@ export default async function AdminTags() {
       } as UserInfo;
     }
   } catch (err: any) {
-    console.error('AdminTags: failed to fetch data', err);
+    console.error("AdminTags: failed to fetch data", err);
     fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
   }
 

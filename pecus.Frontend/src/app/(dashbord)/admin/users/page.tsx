@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/actions/profile";
 import { getAllSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type UserInfo = {
   id: number;
@@ -60,8 +60,8 @@ export default async function AdminUsers() {
       if (responseData && responseData.data) {
         users = responseData.data.map((user: any) => ({
           id: user.id ?? 0,
-          username: user.username ?? '',
-          email: user.email ?? '',
+          username: user.username ?? "",
+          email: user.email ?? "",
           isActive: user.isActive ?? true,
           createdAt: user.createdAt ?? new Date().toISOString(),
           skills: user.skills ?? [],
@@ -100,7 +100,10 @@ export default async function AdminUsers() {
       }));
     }
   } catch (err: any) {
-    console.error('AdminUsers: failed to fetch users, user info, or skills', err);
+    console.error(
+      "AdminUsers: failed to fetch users, user info, or skills",
+      err,
+    );
     // エラーコード方式で返す
     const error: ApiErrorResponse = {
       code: "UNKNOWN_ERROR",

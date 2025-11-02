@@ -10,7 +10,6 @@ const MAX_WIDTH = 500;
 const INITIAL_WIDTH = 250;
 
 export default function ResizableSidebar() {
-
   // サイドバーの現在の幅 (px)
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_WIDTH);
   // ドラッグ中かどうかを示すフラグ

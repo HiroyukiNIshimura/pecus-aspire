@@ -10,6 +10,7 @@ using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
+using Pecus.Models.Responses.Role;
 using Pecus.Models.Responses.User;
 using Pecus.Services;
 
@@ -25,6 +26,7 @@ namespace Pecus.Controllers.Admin;
 public class AdminUserController : ControllerBase
 {
     private readonly UserService _userService;
+    private readonly RoleService _roleService;
     private readonly OrganizationService _organizationService;
     private readonly ILogger<AdminUserController> _logger;
     private readonly PecusConfig _config;
@@ -34,6 +36,7 @@ public class AdminUserController : ControllerBase
 
     public AdminUserController(
         UserService userService,
+        RoleService roleService,
         OrganizationService organizationService,
         ILogger<AdminUserController> logger,
         PecusConfig config,
@@ -43,6 +46,7 @@ public class AdminUserController : ControllerBase
     )
     {
         _userService = userService;
+        _roleService = roleService;
         _organizationService = organizationService;
         _logger = logger;
         _config = config;
@@ -639,6 +643,38 @@ public class AdminUserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "ロール設定中にエラーが発生しました: UserId={UserId}", id);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 全ロール一覧を取得
+    /// </summary>
+    /// <remarks>
+    /// システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。
+    /// </remarks>
+    /// <response code="200">ロール一覧を返します</response>
+    [HttpGet("roles")]
+    [ProducesResponseType(
+        typeof(List<RoleListItemResponse>),
+        StatusCodes.Status200OK
+    )]
+    public async Task<Ok<List<RoleListItemResponse>>> GetRoles()
+    {
+        try
+        {
+            var roles = await _roleService.GetAllRolesAsync();
+            var response = roles.Select(r => new RoleListItemResponse
+            {
+                Id = r.Id,
+                Name = r.Name,
+            }).ToList();
+
+            return TypedResults.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "全ロール取得中にエラーが発生しました。");
             throw;
         }
     }
