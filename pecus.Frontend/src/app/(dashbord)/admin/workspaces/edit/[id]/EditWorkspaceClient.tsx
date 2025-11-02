@@ -61,10 +61,6 @@ export default function EditWorkspaceClient({
 
           if (result.success) {
             notify.success("ワークスペースを更新しました。");
-            // 成功後、一覧ページへ遷移
-            setTimeout(() => {
-              router.push("/admin/workspaces");
-            }, 1500);
           } else {
             console.error("ワークスペースの更新に失敗しました:", result.error);
             notify.error(
@@ -84,6 +80,16 @@ export default function EditWorkspaceClient({
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* ローディングオーバーレイ */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-base-100 bg-opacity-80 z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <p className="text-lg">更新中...</p>
+          </div>
+        </div>
+      )}
+
       <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
