@@ -36,15 +36,6 @@ export default function EditTagClient({
 
   const nameValidation = useValidation(tagNameFilterSchema);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/signin");
-    } catch (error) {
-      console.error("ログアウトエラー:", error);
-    }
-  };
-
   const handleNameChange = async (value: string) => {
     setName(value);
     await nameValidation.validate(value);
@@ -75,14 +66,12 @@ export default function EditTagClient({
         // 成功メッセージを表示して編集ページにとどまる
         // リダイレクトしない
       } else {
-        notify.error(result.error || "タグの更新中にエラーが発生しました。");
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        notify.error(err.message);
-      } else {
+        console.error("タグの更新に失敗しました:", result.error);
         notify.error("タグの更新中にエラーが発生しました。");
       }
+    } catch (err: unknown) {
+      console.error("タグの更新中にエラーが発生しました:", err);
+      notify.error("タグの更新中にエラーが発生しました。");
     } finally {
       setIsSubmitting(false);
     }
