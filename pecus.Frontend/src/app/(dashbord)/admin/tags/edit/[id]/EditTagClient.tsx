@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { useValidation } from "@/hooks/useValidation";
+import { useNotify } from "@/hooks/useNotify";
 import { tagNameFilterSchema } from "@/schemas/filterSchemas";
 import { updateTag } from "@/actions/admin/tags";
 import type { TagDetailResponse } from "@/connectors/api/pecus";
@@ -28,11 +29,10 @@ export default function EditTagClient({
   fetchError,
 }: EditTagClientProps) {
   const router = useRouter();
+  const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [name, setName] = useState(tagDetail.name || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
   const nameValidation = useValidation(tagNameFilterSchema);
 
@@ -48,8 +48,6 @@ export default function EditTagClient({
   const handleNameChange = async (value: string) => {
     setName(value);
     await nameValidation.validate(value);
-    setSubmitError(null);
-    setSubmitSuccess(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,13 +59,11 @@ export default function EditTagClient({
     }
 
     if (!name.trim()) {
-      setSubmitError("タグ名は必須です。");
+      notify.error("タグ名は必須です。");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitError(null);
-    setSubmitSuccess(null);
 
     try {
       const result = await updateTag(tagDetail.id!, {
@@ -75,17 +71,17 @@ export default function EditTagClient({
       });
 
       if (result.success) {
-        setSubmitSuccess("タグを更新しました。");
+        notify.success("タグを更新しました。");
         // 成功メッセージを表示して編集ページにとどまる
         // リダイレクトしない
       } else {
-        setSubmitError(result.error || "タグの更新中にエラーが発生しました。");
+        notify.error(result.error || "タグの更新中にエラーが発生しました。");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setSubmitError(err.message);
+        notify.error(err.message);
       } else {
-        setSubmitError("タグの更新中にエラーが発生しました。");
+        notify.error("タグの更新中にエラーが発生しました。");
       }
     } finally {
       setIsSubmitting(false);
@@ -122,20 +118,6 @@ export default function EditTagClient({
             {fetchError && (
               <div className="alert alert-error mb-6">
                 <span>{fetchError}</span>
-              </div>
-            )}
-
-            {/* 成功メッセージ */}
-            {submitSuccess && (
-              <div className="alert alert-success mb-6">
-                <span>{submitSuccess}</span>
-              </div>
-            )}
-
-            {/* 送信エラー */}
-            {submitError && (
-              <div className="alert alert-error mb-6">
-                <span>{submitError}</span>
               </div>
             )}
 
