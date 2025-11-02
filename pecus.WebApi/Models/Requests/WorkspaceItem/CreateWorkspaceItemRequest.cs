@@ -43,6 +43,17 @@ public class CreateWorkspaceItemRequest
     public bool IsDraft { get; set; } = true;
 
     /// <summary>
+    /// コミッターユーザーID（NULL可）
+    /// </summary>
+    public int? CommitterId { get; set; }
+
+    /// <summary>
+    /// アイテム内容
+    /// </summary>
+    [MaxLength(10000, ErrorMessage = "アイテム内容は10000文字以内で入力してください。")]
+    public string? Content { get; set; }
+
+    /// <summary>
     /// タグ名のリスト（存在しないタグは自動作成）
     /// </summary>
     [Validation.StringListItems(50)]

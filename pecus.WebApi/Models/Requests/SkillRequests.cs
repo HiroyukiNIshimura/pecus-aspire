@@ -37,6 +37,11 @@ public class UpdateSkillRequest
     /// </summary>
     [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }
 
 /// <summary>

@@ -26,3 +26,27 @@ public class CreatePermissionRequest
     [MaxLength(50, ErrorMessage = "カテゴリは50文字以内で入力してください。")]
     public string? Category { get; set; }
 }
+
+/// <summary>
+/// 権限更新リクエスト
+/// </summary>
+public class UpdatePermissionRequest
+{
+    /// <summary>
+    /// 権限名
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "権限名は100文字以内で入力してください。")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// 権限の説明
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// カテゴリ
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "カテゴリは50文字以内で入力してください。")]
+    public string? Category { get; set; }
+}

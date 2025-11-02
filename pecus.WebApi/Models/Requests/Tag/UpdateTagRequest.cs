@@ -13,4 +13,9 @@ public class UpdateTagRequest
     [Required(ErrorMessage = "タグ名は必須です。")]
     [MaxLength(50, ErrorMessage = "タグ名は50文字以内で入力してください。")]
     public required string Name { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }

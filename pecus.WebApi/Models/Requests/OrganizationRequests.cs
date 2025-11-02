@@ -114,6 +114,6 @@ public class UpdateOrganizationRequest
     /// メールアドレス
     /// </summary>
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
-    [MaxLength(254, ErrorMessage = "メールアドレスは254文字以内で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public string? Email { get; set; }
 }

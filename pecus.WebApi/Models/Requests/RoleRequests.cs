@@ -22,6 +22,24 @@ public class CreateRoleRequest
 }
 
 /// <summary>
+/// ロール更新リクエスト
+/// </summary>
+public class UpdateRoleRequest
+{
+    /// <summary>
+    /// ロール名
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "ロール名は50文字以内で入力してください。")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// ロールの説明
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
+    public string? Description { get; set; }
+}
+
+/// <summary>
 /// ロールに権限を設定するリクエスト
 /// </summary>
 public class SetPermissionsToRoleRequest

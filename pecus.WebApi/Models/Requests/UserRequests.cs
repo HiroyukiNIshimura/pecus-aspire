@@ -144,6 +144,11 @@ public class UpdateUserRequest
     [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
     [Url(ErrorMessage = "有効なURLを指定してください。")]
     public string? AvatarUrl { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }
 
 /// <summary>

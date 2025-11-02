@@ -61,6 +61,11 @@ public class UpdateGenreRequest
     /// </summary>
     [Range(0, int.MaxValue, ErrorMessage = "表示順は0以上の値を指定してください。")]
     public int? DisplayOrder { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }
 
 /// <summary>
