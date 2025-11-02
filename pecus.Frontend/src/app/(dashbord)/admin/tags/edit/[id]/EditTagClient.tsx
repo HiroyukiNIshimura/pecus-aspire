@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
-import { tagNameFilterSchema } from "@/schemas/filterSchemas";
 import { updateTag } from "@/actions/admin/tags";
 import type { TagDetailResponse } from "@/connectors/api/pecus";
 
@@ -32,50 +31,32 @@ export default function EditTagClient({
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [name, setName] = useState(tagDetail.name || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const nameValidation = useValidation(tagNameFilterSchema);
+  const { formRef, isSubmitting, validateField, handleSubmit } =
+    useFormValidation({
+      onSubmit: async () => {
+        if (!name.trim()) {
+          notify.error("タグ名は必須です。");
+          return;
+        }
 
-  const handleNameChange = async (value: string) => {
-    setName(value);
-    await nameValidation.validate(value);
-  };
+        try {
+          const result = await updateTag(tagDetail.id!, {
+            name: name.trim(),
+          });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const validationResult = await nameValidation.validate(name);
-    if (!validationResult.success) {
-      return;
-    }
-
-    if (!name.trim()) {
-      notify.error("タグ名は必須です。");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const result = await updateTag(tagDetail.id!, {
-        name: name.trim(),
-      });
-
-      if (result.success) {
-        notify.success("タグを更新しました。");
-        // 成功メッセージを表示して編集ページにとどまる
-        // リダイレクトしない
-      } else {
-        console.error("タグの更新に失敗しました:", result.error);
-        notify.error("タグの更新中にエラーが発生しました。");
-      }
-    } catch (err: unknown) {
-      console.error("タグの更新中にエラーが発生しました:", err);
-      notify.error("タグの更新中にエラーが発生しました。");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+          if (result.success) {
+            notify.success("タグを更新しました。");
+          } else {
+            console.error("タグの更新に失敗しました:", result.error);
+            notify.error(result.error || "タグの更新中にエラーが発生しました。");
+          }
+        } catch (err: unknown) {
+          console.error("タグの更新中にエラーが発生しました:", err);
+          notify.error("タグの更新中にエラーが発生しました。");
+        }
+      },
+    });
 
   const handleCancel = () => {
     router.push("/admin/tags");
@@ -200,7 +181,7 @@ export default function EditTagClient({
             </div>
 
             {/* 編集フォーム */}
-            <form onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit} noValidate>
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -213,23 +194,19 @@ export default function EditTagClient({
                     </label>
                     <input
                       id="name"
+                      name="name"
                       type="text"
-                      className={`input input-bordered w-full ${
-                        nameValidation.hasErrors ? "input-error" : ""
-                      }`}
+                      className="input input-bordered w-full"
                       value={name}
-                      onChange={(e) => handleNameChange(e.target.value)}
+                      onChange={(e) => setName(e.target.value)}
+                      onBlur={(e) => validateField(e.target)}
                       placeholder="タグ名を入力"
                       disabled={isSubmitting}
                       required
+                      data-pristine-required-message="タグ名は必須です。"
+                      maxLength={100}
+                      data-pristine-maxlength-message="タグ名は100文字以内で入力してください。"
                     />
-                    {nameValidation.error && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {nameValidation.error}
-                        </span>
-                      </label>
-                    )}
                   </div>
 
                   {/* アクションボタン */}
@@ -245,7 +222,7 @@ export default function EditTagClient({
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={isSubmitting || !nameValidation.isValid}
+                      disabled={isSubmitting}
                     >
                       {isSubmitting ? (
                         <>
