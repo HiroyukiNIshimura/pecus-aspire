@@ -1292,6 +1292,79 @@
         }
       }
     },
+    "/api/admin/users/{id}/roles": {
+      "put": {
+        "tags": [
+          "AdminUser"
+        ],
+        "summary": "ユーザーのロールを設定",
+        "description": "指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ユーザーID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "ロールIDのリスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRolesRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRolesRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRolesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ロールを設定しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "他組織のユーザーは操作できません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/workspaces": {
       "post": {
         "tags": [
@@ -7583,6 +7656,24 @@
         },
         "additionalProperties": false,
         "description": "ユーザーパスワード設定リクエスト"
+      },
+      "SetUserRolesRequest": {
+        "required": [
+          "roleIds"
+        ],
+        "type": "object",
+        "properties": {
+          "roleIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "ロールIDのリスト"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザーロール設定リクエスト"
       },
       "SetUserSkillsRequest": {
         "required": [

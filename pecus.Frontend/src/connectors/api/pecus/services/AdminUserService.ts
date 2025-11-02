@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { CreateUserWithoutPasswordRequest } from '../models/CreateUserWithoutPasswordRequest';
 import type { SetUserActiveStatusRequest } from '../models/SetUserActiveStatusRequest';
+import type { SetUserRolesRequest } from '../models/SetUserRolesRequest';
 import type { SetUserSkillsRequest } from '../models/SetUserSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UserResponse } from '../models/UserResponse';
@@ -184,6 +185,32 @@ export class AdminUserService {
             path: {
                 'id': id,
             },
+            errors: {
+                403: `他組織のユーザーは操作できません`,
+                404: `ユーザーが見つかりません`,
+            },
+        });
+    }
+    /**
+     * ユーザーのロールを設定
+     * 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
+     * @param id ユーザーID
+     * @param requestBody ロールIDのリスト
+     * @returns SuccessResponse ロールを設定しました
+     * @throws ApiError
+     */
+    public static putApiAdminUsersRoles(
+        id: number,
+        requestBody?: SetUserRolesRequest,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/admin/users/{id}/roles',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,

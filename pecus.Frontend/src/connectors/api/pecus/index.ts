@@ -61,6 +61,7 @@ export type { SetPermissionsToRoleRequest } from './models/SetPermissionsToRoleR
 export type { SetTagsToItemRequest } from './models/SetTagsToItemRequest';
 export type { SetUserActiveStatusRequest } from './models/SetUserActiveStatusRequest';
 export type { SetUserPasswordRequest } from './models/SetUserPasswordRequest';
+export type { SetUserRolesRequest } from './models/SetUserRolesRequest';
 export type { SetUserSkillsRequest } from './models/SetUserSkillsRequest';
 export type { SkillDetailResponse } from './models/SkillDetailResponse';
 export type { SkillListItemResponse } from './models/SkillListItemResponse';
