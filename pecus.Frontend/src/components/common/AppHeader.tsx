@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/hooks/useTheme";
 import { usePathname } from "next/navigation";
+import { logout } from "@/actions/auth";
 
 interface UserInfo {
   id: number;
@@ -56,7 +57,8 @@ export default function AppHeader({
     if (onLogout) {
       onLogout();
     } else {
-      await fetch("/api/auth/logout", { method: "POST" });
+      // Server Action を使用してログアウト
+      await logout();
       window.location.href = "/signin";
     }
   };

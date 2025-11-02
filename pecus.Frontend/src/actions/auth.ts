@@ -56,6 +56,31 @@ export async function login(request: {
 }
 
 /**
+ * Server Action: 現在のユーザー情報を取得
+ *
+ * 用途: SSR ページでの認証チェック
+ * - ログイン済みならユーザー情報を返す
+ * - 未認証なら null を返す
+ */
+export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] | null>> {
+  try {
+    const session = await SessionManager.getSession();
+
+    if (!session || !session.user) {
+      return { success: true, data: null };
+    }
+
+    return { success: true, data: session.user };
+  } catch (error: any) {
+    console.error("Failed to get current user:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to get current user",
+    };
+  }
+}
+
+/**
  * Server Action: ログアウト
  */
 export async function logout(): Promise<ApiResponse<any>> {
