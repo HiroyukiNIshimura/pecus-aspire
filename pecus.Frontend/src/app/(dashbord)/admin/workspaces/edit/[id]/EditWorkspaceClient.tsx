@@ -103,7 +103,7 @@ export default function EditWorkspaceClient({
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
           ></div>
         )}

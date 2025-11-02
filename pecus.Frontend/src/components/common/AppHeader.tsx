@@ -62,7 +62,7 @@ export default function AppHeader({
   };
 
   return (
-    <header className="sticky top-0 z-10 bg-base-100 shadow-sm border-b border-base-300">
+    <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
       <nav className="navbar">
         <div className="navbar-start flex flex-col">
           <a href="/" className="text-3xl font-bold">
