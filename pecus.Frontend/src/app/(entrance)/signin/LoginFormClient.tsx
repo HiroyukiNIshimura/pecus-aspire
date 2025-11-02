@@ -13,11 +13,11 @@ import LoadingOverlay from "@/components/common/LoadingOverlay";
  *
  * 責務:
  * - フォーム入力・送信処理
- * - データバリデーション (Zod)
+ * - データバリデーション (Pristine.js + Zod)
  * - エラー表示・成功時の処理
  *
  * 注: EditWorkspaceClient と同じパターンで実装
- * - useFormValidation で UI バリデーション管理
+ * - useFormValidation で UI バリデーション管理（Pristine.js）
  * - useValidation で Zod バリデーション
  * - Server Action (login) で API 呼び出し
  * - LoadingOverlay で送信中表示
@@ -32,18 +32,14 @@ export default function LoginFormClient() {
   // === データバリデーション: Zod スキーマを使用 ===
   const validation = useValidation(loginSchema);
 
-  // === 個別フィールドエラー管理 ===
-  const [fieldErrors, setFieldErrors] = useState<{
-    loginIdentifier?: string;
-    password?: string;
-    general?: string;
-  }>({});
+  // === API エラー管理（ログイン失敗など） ===
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // === UI バリデーション管理（useFormValidation） ===
-  const { formRef, isSubmitting, handleSubmit } = useFormValidation({
+  // === UI バリデーション管理（useFormValidation + Pristine.js） ===
+  const { formRef, isSubmitting, validateField, handleSubmit } = useFormValidation({
     onSubmit: async () => {
       // エラーをクリア
-      setFieldErrors({});
+      setApiError(null);
       validation.clearErrors();
 
       // === データバリデーション (Zod): ビジネスロジック検証 ===
@@ -53,16 +49,7 @@ export default function LoginFormClient() {
       });
 
       if (!validationResult.success) {
-        // Zod バリデーションエラーを個別フィールドに割り当て
-        const errors: typeof fieldErrors = {};
-        validationResult.errors.forEach((err) => {
-          if (err.includes("ログインID")) {
-            errors.loginIdentifier = err;
-          } else if (err.includes("パスワード")) {
-            errors.password = err;
-          }
-        });
-        setFieldErrors(errors);
+        // Zod バリデーションエラーがある場合は処理を中断
         return;
       }
 
@@ -79,14 +66,10 @@ export default function LoginFormClient() {
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setFieldErrors({
-          general: result.error || "ログイン認証に失敗しました。",
-        });
+        setApiError(result.error || "ログイン認証に失敗しました。");
       } catch (err: unknown) {
         console.error("ログイン処理中にエラーが発生:", err);
-        setFieldErrors({
-          general: "ログイン処理中にエラーが発生しました。",
-        });
+        setApiError("ログイン処理中にエラーが発生しました。");
       }
     },
   });
@@ -95,87 +78,96 @@ export default function LoginFormClient() {
     <>
       <LoadingOverlay isLoading={isSubmitting} message="ログイン中..." />
 
-      <div className="card w-full max-w-lg shadow-lg bg-base-100">
+      <div className="card w-full max-w-md shadow-lg bg-base-100">
         <div className="card-body">
           <h1 className="card-title text-center">ログイン</h1>
 
-        {/* === 全体エラー表示エリア（ログイン失敗など） === */}
-        {fieldErrors.general && (
+        {/* === API エラー表示エリア（ログイン失敗など） === */}
+        {apiError && (
           <div className="alert alert-error" role="alert">
-            {fieldErrors.general}
+            {apiError}
+          </div>
+        )}
+
+        {/* Zod検証エラー表示 */}
+        {validation.hasErrors && (
+          <div className="alert alert-error">
+            <div className="flex flex-col gap-1">
+              {validation.errors.map((err, idx) => (
+                <div key={idx} className="text-sm">{err}</div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* === ログインフォーム === */}
-          <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div className="form-control">
-              <label className="label-text" htmlFor="loginIdentifier">
-                ログインID
+          <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
+            <div className="form-control w-full mb-4">
+              <label htmlFor="loginIdentifier" className="label">
+                <span className="label-text font-semibold">
+                  ログインID <span className="text-error">*</span>
+                </span>
               </label>
-              <input
-                type="text"
-                name="loginIdentifier"
-                id="loginIdentifier"
-                placeholder="ログインIDまたはメールアドレス"
-                className={`input input-bordered w-full ${fieldErrors.loginIdentifier ? "input-error" : ""}`}
-                value={loginIdentifier}
-                onChange={(event) => setLoginIdentifier(event.target.value)}
-                disabled={isSubmitting}
-              />
-              <div className="min-h-[1.5rem]">
-                {fieldErrors.loginIdentifier ? (
-                  <span className="text-error text-sm block mt-1">
-                    {fieldErrors.loginIdentifier}
-                  </span>
-                ) : (
-                  <span className="helper-text text-end block">
-                    ログインIDまたはメールアドレスを入力してください
-                  </span>
-                )}
+              <div className="w-full">
+                <input
+                  type="text"
+                  name="loginIdentifier"
+                  id="loginIdentifier"
+                  placeholder="ログインIDまたはメールアドレス"
+                  className="input input-bordered w-full"
+                  value={loginIdentifier}
+                  onChange={(event) => setLoginIdentifier(event.target.value)}
+                  onBlur={(e) => validateField(e.target)}
+                  disabled={isSubmitting}
+                  required
+                  data-pristine-required-message="ログインIDまたはメールアドレスは必須です。"
+                  maxLength={255}
+                  data-pristine-maxlength-message="ログインIDまたはメールアドレスは255文字以内で入力してください。"
+                />
               </div>
             </div>
 
-            <div className="form-control">
-              <label className="label-text" htmlFor="password">
-                パスワード
+            <div className="form-control w-full mb-4">
+              <label htmlFor="password" className="label">
+                <span className="label-text font-semibold">
+                  パスワード <span className="text-error">*</span>
+                </span>
               </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="パスワード"
-                className={`input input-bordered w-full ${fieldErrors.password ? "input-error" : ""}`}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                disabled={isSubmitting}
-              />
-              <div className="min-h-[1.5rem]">
-                {fieldErrors.password ? (
-                  <span className="text-error text-sm block mt-1">
-                    {fieldErrors.password}
-                  </span>
-                ) : (
-                  <span className="helper-text text-end block">
-                    パスワードを入力してください
-                  </span>
-                )}
+              <div className="w-full">
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="パスワード"
+                  className="input input-bordered w-full"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  onBlur={(e) => validateField(e.target)}
+                  disabled={isSubmitting}
+                  required
+                  data-pristine-required-message="パスワードは必須です。"
+                  maxLength={255}
+                  data-pristine-maxlength-message="パスワードは255文字以内で入力してください。"
+                />
               </div>
             </div>
 
-            <button
-              className="btn btn-accent w-full"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="loading loading-spinner"></span>
-                  ログイン中...
-                </>
-              ) : (
-                "ログイン"
-              )}
-            </button>
+            <div className="w-full mt-6">
+              <button
+                className="btn btn-accent w-full"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="loading loading-spinner"></span>
+                    ログイン中...
+                  </>
+                ) : (
+                  "ログイン"
+                )}
+              </button>
+            </div>
           </form>
 
           <div className="text-center mt-4">
