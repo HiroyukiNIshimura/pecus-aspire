@@ -49,6 +49,80 @@ public class AdminUserController : ControllerBase
     }
 
     /// <summary>
+    /// 個別ユーザー情報を取得
+    /// </summary>
+    /// <remarks>
+    /// 指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。
+    /// </remarks>
+    /// <param name="id">ユーザーID</param>
+    /// <response code="200">ユーザー情報を返します</response>
+    /// <response code="403">他組織のユーザーは取得できません</response>
+    /// <response code="404">ユーザーが見つかりません</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<
+        Results<Ok<UserResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+    > GetUserById(int id)
+    {
+        try
+        {
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+            // 取得対象ユーザーが存在するか確認
+            var targetUser = await _userService.GetUserByIdAsync(id);
+            if (targetUser == null)
+            {
+                return TypedResults.NotFound(
+                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
+                );
+            }
+
+            // ログインユーザーの組織情報を取得
+            var currentUser = await _userService.GetUserByIdAsync(me);
+            if (currentUser?.OrganizationId != targetUser.OrganizationId)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var response = new UserResponse
+            {
+                Id = targetUser.Id,
+                LoginId = targetUser.LoginId,
+                Username = targetUser.Username,
+                Email = targetUser.Email,
+                AvatarType = targetUser.AvatarType,
+                IdentityIconUrl = targetUser.AvatarUrl,
+                CreatedAt = targetUser.CreatedAt,
+                Roles = targetUser.Roles?
+                    .Select(r => new UserRoleResponse
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                    })
+                    .ToList() ?? new List<UserRoleResponse>(),
+                Skills = targetUser.UserSkills?
+                    .Select(us => new UserSkillResponse
+                    {
+                        Id = us.Skill.Id,
+                        Name = us.Skill.Name,
+                    })
+                    .ToList() ?? new List<UserSkillResponse>(),
+                IsAdmin = targetUser.Roles?.Any(r => r.Name == "Admin") ?? false,
+                IsActive = targetUser.IsActive
+            };
+
+            return TypedResults.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ユーザー情報取得中にエラーが発生しました: UserId={UserId}", id);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// 組織内のユーザー一覧を取得（ページング）
     /// </summary>
     /// <remarks>
