@@ -122,6 +122,20 @@ export default function EditTagClient({
               </div>
             )}
 
+            {/* 基本情報カード（読み取り専用） */}
+            <div className="card bg-base-200 shadow-lg mb-6">
+              <div className="card-body">
+                <h2 className="card-title text-lg mb-4">基本情報</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-base-content/60">タグ名</p>
+                    <p className="text-lg font-semibold">{tagDetail.name || "-"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 編集フォーム */}
             <form
               ref={formRef}
@@ -200,75 +214,39 @@ export default function EditTagClient({
               </div>
             </form>
 
-            {/* タグ情報カード */}
+            {/* タグ詳細情報カード */}
             <div className="card bg-base-200 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
+                <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">タグID</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={tagDetail.id || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">タグID</p>
+                    <p className="text-lg font-semibold">{tagDetail.id || "-"}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">
-                        参照アイテム
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={`${tagDetail.itemCount || 0} 件`}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">参照アイテム</p>
+                    <p className="text-lg font-semibold">{tagDetail.itemCount || 0} 件</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">作成日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={
-                        tagDetail.createdAt
-                          ? new Date(tagDetail.createdAt).toLocaleString(
-                              "ja-JP",
-                            )
-                          : ""
-                      }
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">作成日時</p>
+                    <p className="text-lg font-semibold">
+                      {tagDetail.createdAt
+                        ? new Date(tagDetail.createdAt).toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
                   </div>
 
                   {tagDetail.updatedAt && (
                     <div>
-                      <label className="label">
-                        <span className="label-text font-semibold">
-                          更新日時
-                        </span>
-                      </label>
-                      <input
-                        type="text"
-                        className="input input-bordered w-full"
-                        value={
-                          tagDetail.updatedAt
-                            ? new Date(tagDetail.updatedAt).toLocaleString(
-                                "ja-JP",
-                              )
-                            : ""
-                        }
-                        disabled
-                      />
+                      <p className="text-sm text-base-content/60">更新日時</p>
+                      <p className="text-lg font-semibold">
+                        {tagDetail.updatedAt
+                          ? new Date(tagDetail.updatedAt).toLocaleString("ja-JP")
+                          : "-"}
+                      </p>
                     </div>
                   )}
                 </div>

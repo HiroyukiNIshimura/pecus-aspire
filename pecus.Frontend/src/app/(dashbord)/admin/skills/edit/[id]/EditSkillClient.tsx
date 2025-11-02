@@ -124,6 +124,20 @@ export default function EditSkillClient({
               </div>
             )}
 
+            {/* 基本情報カード（読み取り専用） */}
+            <div className="card bg-base-200 shadow-lg mb-6">
+              <div className="card-body">
+                <h2 className="card-title text-lg mb-4">基本情報</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-base-content/60">スキル名</p>
+                    <p className="text-lg font-semibold">{skillDetail.name || "-"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 編集フォーム */}
             <form
               ref={formRef}
@@ -131,77 +145,56 @@ export default function EditSkillClient({
               noValidate
               className="mb-6"
             >
-              <div className="card bg-base-200 shadow-lg">
+              {/* スキル基本情報カード */}
+              <div className="card bg-base-100 border border-base-300 mb-6">
                 <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">編集項目</h2>
+                  <h2 className="card-title text-lg mb-4">編集</h2>
 
-                  <div className="form-control">
-                    <label htmlFor="name" className="label">
-                      <span className="label-text font-semibold">
-                        スキル名 <span className="text-error">*</span>
-                      </span>
-                    </label>
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onBlur={(e) => validateField(e.target)}
-                      placeholder="スキル名を入力"
-                      disabled={isSubmitting}
-                      required
-                      data-pristine-required-message="スキル名は必須です。"
-                      maxLength={100}
-                      data-pristine-maxlength-message="スキル名は100文字以内で入力してください。"
-                    />
-                  </div>
-
-                  <div className="form-control mt-4">
-                    <label htmlFor="description" className="label">
-                      <span className="label-text font-semibold">説明</span>
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      className="textarea textarea-bordered w-full"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="スキルの説明を入力（任意）"
-                      disabled={isSubmitting}
-                      maxLength={500}
-                      rows={4}
-                    />
-                    <label className="label">
-                      <span className="label-text-alt text-xs">
-                        {description.length}/500 文字
-                      </span>
-                    </label>
-                  </div>
-
-                  <div className="form-control mt-4">
-                    <label className="label cursor-pointer">
-                      <span className="label-text font-semibold">
-                        アクティブ状態
-                      </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">スキル名 *</span>
+                      </label>
                       <input
-                        type="checkbox"
-                        className="checkbox checkbox-primary"
-                        checked={isActive}
-                        onChange={(e) => setIsActive(e.target.checked)}
-                        disabled={isSubmitting}
+                        type="text"
+                        className="input input-bordered"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
                       />
-                    </label>
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">説明</span>
+                      </label>
+                      <textarea
+                        className="textarea textarea-bordered"
+                        placeholder="スキルの説明を入力してください"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                      ></textarea>
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label cursor-pointer">
+                        <span className="label-text font-semibold">有効</span>
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          checked={isActive}
+                          onChange={(e) => setIsActive(e.target.checked)}
+                        />
+                      </label>
+                    </div>
                   </div>
 
-                  {/* アクションボタン */}
-                  <div className="card-actions justify-end mt-6">
+                  {/* 操作ボタン */}
+                  <div className="flex gap-3 justify-end mt-6">
                     <button
                       type="button"
-                      className="btn btn-ghost"
+                      className="btn btn-outline"
                       onClick={handleCancel}
-                      disabled={isSubmitting}
                     >
                       キャンセル
                     </button>
@@ -212,7 +205,7 @@ export default function EditSkillClient({
                     >
                       {isSubmitting ? (
                         <>
-                          <span className="loading loading-spinner"></span>
+                          <span className="loading loading-spinner loading-sm"></span>
                           更新中...
                         </>
                       ) : (
@@ -224,70 +217,38 @@ export default function EditSkillClient({
               </div>
             </form>
 
-            {/* スキル情報カード */}
+            {/* スキル詳細情報カード */}
             <div className="card bg-base-200 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
+                <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">スキルID</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={skillDetail.id || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">スキルID</p>
+                    <p className="text-lg font-semibold">{skillDetail.id || "-"}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">作成日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={
-                        skillDetail.createdAt
-                          ? new Date(skillDetail.createdAt).toLocaleString(
-                              "ja-JP",
-                            )
-                          : ""
-                      }
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">保有者数</p>
+                    <p className="text-lg font-semibold">{skillDetail.userCount || 0} 人</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">更新日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={
-                        skillDetail.updatedAt
-                          ? new Date(skillDetail.updatedAt).toLocaleString(
-                              "ja-JP",
-                            )
-                          : ""
-                      }
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">作成日時</p>
+                    <p className="text-lg font-semibold">
+                      {skillDetail.createdAt
+                        ? new Date(skillDetail.createdAt).toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">保有者数</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={`${skillDetail.userCount || 0} 人`}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">更新日時</p>
+                    <p className="text-lg font-semibold">
+                      {skillDetail.updatedAt
+                        ? new Date(skillDetail.updatedAt).toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
                   </div>
                 </div>
               </div>

@@ -236,40 +236,35 @@ export default function EditUserClient({
               </div>
             )}
 
+            {/* 基本情報カード（読み取り専用） */}
+            <div className="card bg-base-200 shadow-lg mb-6">
+              <div className="card-body">
+                <h2 className="card-title text-lg mb-4">基本情報</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-base-content/60">ユーザー名</p>
+                    <p className="text-lg font-semibold">{userDetail.username || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-base-content/60">メールアドレス</p>
+                    <p className="text-lg font-semibold">{userDetail.email || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-base-content/60">ログインID</p>
+                    <p className="text-lg font-semibold">{userDetail.loginId || "-"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 編集フォーム */}
             <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
-
-                  {/* 基本情報（読み取り専用） */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="form-control">
-                      <label htmlFor="username" className="label">
-                        <span className="label-text font-semibold">ユーザー名</span>
-                      </label>
-                      <input
-                        id="username"
-                        type="text"
-                        className="input input-bordered w-full"
-                        value={userDetail.username || ""}
-                        disabled
-                      />
-                    </div>
-
-                    <div className="form-control">
-                      <label htmlFor="email" className="label">
-                        <span className="label-text font-semibold">メールアドレス</span>
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        className="input input-bordered w-full"
-                        value={userDetail.email || ""}
-                        disabled
-                      />
-                    </div>
-                  </div>
 
                   {/* アクティブ状態 */}
                   <div className="divider my-2"></div>
@@ -464,55 +459,22 @@ export default function EditUserClient({
             {/* ユーザー情報カード */}
             <div className="card bg-base-200 shadow-lg mb-6">
               <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
+                <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">ユーザーID</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={userDetail.id || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">ユーザーID</p>
+                    <p className="text-lg font-semibold">{userDetail.id || "-"}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">ログインID</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={userDetail.loginId || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">作成日時</p>
+                    <p className="text-lg font-semibold">{formatDate(userDetail.createdAt)}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">作成日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={formatDate(userDetail.createdAt)}
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">管理者権限</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={userDetail.isAdmin ? "有効" : "なし"}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">管理者権限</p>
+                    <p className="text-lg font-semibold">{userDetail.isAdmin ? "有効" : "なし"}</p>
                   </div>
                 </div>
               </div>

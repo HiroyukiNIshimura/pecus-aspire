@@ -135,6 +135,25 @@ export default function EditWorkspaceClient({
               </div>
             )}
 
+            {/* 基本情報カード（読み取り専用） */}
+            <div className="card bg-base-200 shadow-lg mb-6">
+              <div className="card-body">
+                <h2 className="card-title text-lg mb-4">基本情報</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-base-content/60">ワークスペース名</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.name || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-base-content/60">コード</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.code || "-"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 編集フォーム */}
             <form
               ref={formRef}
@@ -270,98 +289,43 @@ export default function EditWorkspaceClient({
               </div>
             </form>
 
-            {/* ワークスペース情報カード */}
+            {/* ワークスペース詳細情報カード */}
             <div className="card bg-base-200 shadow-lg">
               <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
+                <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">
-                        ワークスペースID
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={workspaceDetail.id || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">ワークスペースID</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.id || "-"}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">コード</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={workspaceDetail.code || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">所属組織</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.organization?.name || "-"}</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">所属組織</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={workspaceDetail.organization?.name || ""}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">メンバー数</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.members?.length || 0} 人</p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">
-                        メンバー数
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={`${workspaceDetail.members?.length || 0} 人`}
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">作成日時</p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.createdAt
+                        ? new Date(workspaceDetail.createdAt).toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
                   </div>
 
                   <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">作成日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={
-                        workspaceDetail.createdAt
-                          ? new Date(workspaceDetail.createdAt).toLocaleString(
-                              "ja-JP",
-                            )
-                          : ""
-                      }
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="label">
-                      <span className="label-text font-semibold">更新日時</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="input input-bordered w-full"
-                      value={
-                        workspaceDetail.updatedAt
-                          ? new Date(workspaceDetail.updatedAt).toLocaleString(
-                              "ja-JP",
-                            )
-                          : ""
-                      }
-                      disabled
-                    />
+                    <p className="text-sm text-base-content/60">更新日時</p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.updatedAt
+                        ? new Date(workspaceDetail.updatedAt).toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
                   </div>
                 </div>
               </div>
