@@ -25,6 +25,9 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
   onCancel
 }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>("");
+  const [mismatch, setMismatch] = useState<boolean>(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const hsOverlayRef = useRef<any>(null);
@@ -36,6 +39,11 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
       if (hsOverlayRef.current) {
         hsOverlayRef.current.open();
       }
+      // 8桁ランダムコードを生成して表示、入力欄をリセット
+      const code = generateRandomCode();
+      setGeneratedCode(code);
+      setInputValue("");
+      setMismatch(false);
     },
     close: () => {
       setIsOpen(false);
@@ -58,7 +66,18 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
     }
   }, []);
 
+  // 8桁コード生成器
+  function generateRandomCode(): string {
+    // 8桁の数字のみ
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
+  }
+
   const handleConfirm = () => {
+    // 入力値と生成コードを比較
+    if (inputValue !== generatedCode) {
+      setMismatch(true);
+      return;
+    }
     onConfirm();
     if (hsOverlayRef.current) {
       hsOverlayRef.current.close();
@@ -100,10 +119,35 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
                 </button>
               </div>
 
-              {/* ボディ */}
-              <div className="modal-body">
-                <p className="text-sm text-base-content/70">{message}</p>
-              </div>
+                      {/* ボディ */}
+                      <div className="modal-body">
+                        <p className="text-sm text-base-content/70">{message}</p>
+                        {/* 新規追加: ランダムコードの表示 */}
+                        {generatedCode && (
+                          <div className="mt-2 text-sm text-base-content/70">
+                            削除コード: <span className="font-mono ml-1">{generatedCode}</span>
+                          </div>
+                        )}
+                        {/* 入力欄 */}
+                        <div className="mt-2">
+                          <label className="label">削除コードを入力してください</label>
+                          <input
+                            type="text"
+                            className="input input-bordered w-full"
+                            value={inputValue}
+                            onChange={(e) => {
+                              setInputValue(e.target.value);
+                              if (mismatch) setMismatch(false);
+                            }}
+                            maxLength={8}
+                            placeholder="8桁のコードを入力"
+                            inputMode="numeric"
+                          />
+                        </div>
+                        {mismatch && (
+                          <div className="text-xs text-error mt-1">コードが一致しません。正しいコードを入力してください。</div>
+                        )}
+                      </div>
 
               {/* フッター */}
               <div className="modal-footer">
