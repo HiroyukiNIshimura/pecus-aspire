@@ -7,6 +7,7 @@ interface ConfirmDeleteModalProps {
   message?: string;
   confirmText?: string;
   cancelText?: string;
+  requireCodeConfirmation?: boolean;
   onConfirm: () => void;
   onCancel?: () => void;
 }
@@ -21,6 +22,7 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
   message = "このアイテムを削除してもよろしいですか？",
   confirmText = "削除",
   cancelText = "キャンセル",
+  requireCodeConfirmation = true,
   onConfirm,
   onCancel
 }, ref) => {
@@ -39,9 +41,13 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
       if (hsOverlayRef.current) {
         hsOverlayRef.current.open();
       }
-      // 8桁ランダムコードを生成して表示、入力欄をリセット
-      const code = generateRandomCode();
-      setGeneratedCode(code);
+      // requireCodeConfirmation が true の場合のみ8桁ランダムコードを生成して表示、入力欄をリセット
+      if (requireCodeConfirmation) {
+        const code = generateRandomCode();
+        setGeneratedCode(code);
+      } else {
+        setGeneratedCode("");
+      }
       setInputValue("");
       setMismatch(false);
     },
@@ -73,10 +79,12 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
   }
 
   const handleConfirm = () => {
-    // 入力値と生成コードを比較
-    if (inputValue !== generatedCode) {
-      setMismatch(true);
-      return;
+    // requireCodeConfirmation が true の場合のみ入力値と生成コードを比較
+    if (requireCodeConfirmation) {
+      if (inputValue !== generatedCode) {
+        setMismatch(true);
+        return;
+      }
     }
     onConfirm();
     if (hsOverlayRef.current) {
@@ -122,30 +130,33 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
                       {/* ボディ */}
                       <div className="modal-body">
                         <p className="text-sm text-base-content/70">{message}</p>
-                        {/* 新規追加: ランダムコードの表示 */}
-                        {generatedCode && (
-                          <div className="mt-2 text-sm text-base-content/70">
-                            削除コード: <span className="font-mono ml-1">{generatedCode}</span>
-                          </div>
-                        )}
-                        {/* 入力欄 */}
-                        <div className="mt-2">
-                          <label className="label">削除コードを入力してください</label>
-                          <input
-                            type="text"
-                            className="input input-bordered w-full"
-                            value={inputValue}
-                            onChange={(e) => {
-                              setInputValue(e.target.value);
-                              if (mismatch) setMismatch(false);
-                            }}
-                            maxLength={8}
-                            placeholder="8桁のコードを入力"
-                            inputMode="numeric"
-                          />
-                        </div>
-                        {mismatch && (
-                          <div className="text-xs text-error mt-1">コードが一致しません。正しいコードを入力してください。</div>
+                        {/* requireCodeConfirmation が true の場合のみランダムコードの表示と入力欄を表示 */}
+                        {requireCodeConfirmation && generatedCode && (
+                          <>
+                            {/* ランダムコードの表示 */}
+                            <div className="mt-2 text-sm text-base-content/70">
+                              削除コード: <span className="font-mono ml-1">{generatedCode}</span>
+                            </div>
+                            {/* 入力欄 */}
+                            <div className="mt-2">
+                              <label className="label">削除コードを入力してください</label>
+                              <input
+                                type="text"
+                                className="input input-bordered w-full"
+                                value={inputValue}
+                                onChange={(e) => {
+                                  setInputValue(e.target.value);
+                                  if (mismatch) setMismatch(false);
+                                }}
+                                maxLength={8}
+                                placeholder="8桁のコードを入力"
+                                inputMode="numeric"
+                              />
+                            </div>
+                            {mismatch && (
+                              <div className="text-xs text-error mt-1">コードが一致しません。正しいコードを入力してください。</div>
+                            )}
+                          </>
                         )}
                       </div>
 

@@ -67,7 +67,7 @@ builder.Services.AddScoped<SkillService>();
 builder.Services.AddScoped<MasterDataService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
-builder.Services.AddSingleton<RefreshTokenService>();
+builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddSingleton<TokenBlacklistService>();
 
 // Hangfireタスクの登録
