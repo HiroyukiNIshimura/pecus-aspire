@@ -16,11 +16,15 @@ namespace Pecus.Services;
 public class UserService
 {
     private readonly ApplicationDbContext _context;
+    private readonly RefreshTokenService _refreshTokenService;
+
     public UserService(
-        ApplicationDbContext context
+        ApplicationDbContext context,
+        RefreshTokenService refreshTokenService
     )
     {
         _context = context;
+        _refreshTokenService = refreshTokenService;
     }
 
     /// <summary>
@@ -385,6 +389,13 @@ public class UserService
         user.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        // すべてのデバイスのログイン状態をリセットする場合
+        if (request.ResetAllDeviceSessions == true)
+        {
+            await _refreshTokenService.RevokeAllUserRefreshTokensAsync(user.Id);
+        }
+
         return true;
     }
 

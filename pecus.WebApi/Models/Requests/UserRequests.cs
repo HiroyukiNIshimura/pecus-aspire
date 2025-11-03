@@ -82,6 +82,11 @@ public class SetUserPasswordRequest
         ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
     )]
     public required string Password { get; set; }
+
+    /// <summary>
+    /// すべてのデバイスのログイン状態をリセットするかどうか
+    /// </summary>
+    public bool? ResetAllDeviceSessions { get; set; }
 }
 
 /// <summary>

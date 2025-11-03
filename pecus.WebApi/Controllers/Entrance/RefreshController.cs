@@ -116,7 +116,7 @@ public class RefreshController : ControllerBase
 
             // ブラックリスト登録
             var expiresAt = JwtBearerUtil.GetTokenExpirationFromPrincipal(User);
-            // TokenBlacklistService は DI で取得
+            // TokenBlacklistService は循環依存を避けるため、コンストラクタ注入ではなくメソッド内で動的に解決
             var blacklist = HttpContext.RequestServices.GetRequiredService<TokenBlacklistService>();
             await blacklist.BlacklistTokenAsync(jti, expiresAt);
 
