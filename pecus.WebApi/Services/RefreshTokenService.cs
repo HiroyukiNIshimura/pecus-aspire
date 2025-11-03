@@ -114,7 +114,7 @@ public class RefreshTokenService
     /// リフレッシュトークンを無効化します。
     /// </summary>
     /// <param name="token"></param>
-    /// <returns></returns> <summary>
+    /// <returns></returns>
     public async Task RevokeRefreshTokenAsync(string token)
     {
         if (string.IsNullOrWhiteSpace(token)) return;
