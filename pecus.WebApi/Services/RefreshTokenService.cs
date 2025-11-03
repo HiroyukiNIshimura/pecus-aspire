@@ -115,10 +115,6 @@ public class RefreshTokenService
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns> <summary>
-    ///
-    /// </summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
     public async Task RevokeRefreshTokenAsync(string token)
     {
         if (string.IsNullOrWhiteSpace(token)) return;
