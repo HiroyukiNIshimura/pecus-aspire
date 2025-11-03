@@ -29,7 +29,9 @@ try
     var backfire = builder
         .AddProject<Projects.pecus_BackFire>("backfire")
         .WithReference(redis)
-        .WaitFor(redis);
+        .WithReference(pecusDb)
+        .WaitFor(redis)
+        .WaitFor(pecusDb);
 
     var pecusApi = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")

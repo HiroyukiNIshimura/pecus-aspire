@@ -17,6 +17,8 @@ public class RefreshTokenService
 
     // TTL for refresh tokens (days)
     private readonly TimeSpan _refreshTokenTtl = TimeSpan.FromDays(30);
+    // 最大同時発行トークン数（ユーザーあたり）
+    private const int _maxTokensPerUser = 5;
 
     public RefreshTokenService(IConnectionMultiplexer redis, ApplicationDbContext context)
     {
@@ -60,6 +62,40 @@ public class RefreshTokenService
         };
         _context.RefreshTokens.Add(dbToken);
         await _context.SaveChangesAsync();
+
+        // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
+        try
+        {
+            var activeTokens = await _context.RefreshTokens
+                .Where(t => t.UserId == userId && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
+                .OrderBy(t => t.CreatedAt)
+                .ToListAsync();
+
+            if (activeTokens.Count > _maxTokensPerUser)
+            {
+                var excess = activeTokens.Count - _maxTokensPerUser;
+                var toRevoke = activeTokens.Take(excess).ToList();
+
+                foreach (var old in toRevoke)
+                {
+                    old.IsRevoked = true;
+
+                    // Redis 側のクリーンアップも行う
+                    try
+                    {
+                        await _db.KeyDeleteAsync(GetKey(old.Token));
+                        await _db.SetRemoveAsync(GetUserKey(userId), old.Token);
+                    }
+                    catch { /* Redis 削除に失敗しても DB 側は更新済み */ }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+        }
+        catch
+        {
+            // トークン発行は成功させたいので、ここで失敗しても例外を突き上げない
+        }
 
         return info;
     }

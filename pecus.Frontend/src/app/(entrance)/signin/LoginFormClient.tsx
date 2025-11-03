@@ -61,12 +61,12 @@ export default function LoginFormClient() {
         });
 
         if (result.success) {
-          router.push("/admin");
+          router.push("/");
           return;
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setApiError(result.error || "ログイン認証に失敗しました。");
+        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : "ログイン認証に失敗しました。",)
       } catch (err: unknown) {
         console.error("ログイン処理中にエラーが発生:", err);
         setApiError("ログイン処理中にエラーが発生しました。");
@@ -158,14 +158,7 @@ export default function LoginFormClient() {
                 type="submit"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? (
-                  <>
-                    <span className="loading loading-spinner"></span>
-                    ログイン中...
-                  </>
-                ) : (
-                  "ログイン"
-                )}
+                ログイン
               </button>
             </div>
           </form>
