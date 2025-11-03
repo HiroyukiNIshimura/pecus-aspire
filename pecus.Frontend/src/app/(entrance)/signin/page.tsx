@@ -29,7 +29,7 @@ export default async function SignInPage() {
 
   // ログイン済みユーザーはダッシュボードへリダイレクト
   if (currentUser) {
-    redirect("/admin");
+    redirect("/");
   }
 
   return (

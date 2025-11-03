@@ -97,12 +97,25 @@ builder
     {
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
+
+        // 環境変数から取得、なければ appsettings.json から
+        var signingKey = Environment.GetEnvironmentVariable("JWT_SECRET")
+                         ?? pecusConfig.Jwt.IssuerSigningKey;
+
+        // キーの長さ検証（最低32バイト）
+        var keyBytes = Encoding.UTF8.GetBytes(signingKey);
+        if (keyBytes.Length < 32)
+        {
+            throw new InvalidOperationException(
+                $"JWT署名キーが短すぎます（現在: {keyBytes.Length}バイト、最低: 32バイト）。" +
+                "appsettings.json の Pecus:Jwt:IssuerSigningKey を64文字以上の文字列に変更してください。"
+            );
+        }
+
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(pecusConfig.Jwt.IssuerSigningKey)
-            ),
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
             ValidateIssuer = true,
             ValidIssuer = pecusConfig.Jwt.ValidIssuer,
             ValidateAudience = true,
@@ -112,9 +125,50 @@ builder
             ClockSkew = TimeSpan.FromMinutes(pecusConfig.Jwt.ExpiresMinutes),
         };
 
-        // トークン検証時にブラックリストを参照して即時拒否する
+        // トークン検証時にブラックリストを参照して即時拒否する（ログを追加）
         options.Events = new JwtBearerEvents
         {
+            // リクエスト受信時にトークンヘッダーの有無やリクエストパスをログ出力
+            OnMessageReceived = context =>
+            {
+                try
+                {
+                    var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
+                    var hasAuthHeader = context.Request.Headers.ContainsKey("Authorization");
+                    logger?.LogDebug("JwtBearer: MessageReceived Path={Path} HasAuthorizationHeader={HasAuth}", context.HttpContext.Request.Path, hasAuthHeader);
+                }
+                catch { /* ログ失敗してもトークン処理は継続 */ }
+
+                return Task.CompletedTask;
+            },
+
+            // 認証失敗時に例外情報を詳細ログとして残す
+            OnAuthenticationFailed = context =>
+            {
+                try
+                {
+                    var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
+                    logger?.LogError(context.Exception, "JwtBearer: Authentication failed for request {Path}", context.HttpContext.Request.Path);
+                }
+                catch { /* ログ失敗時は無視 */ }
+
+                return Task.CompletedTask;
+            },
+
+            // 認可チャレンジが発生した際のログ
+            OnChallenge = context =>
+            {
+                try
+                {
+                    var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
+                    logger?.LogWarning("JwtBearer: Challenge triggered. Error={Error}, Description={Desc}, Path={Path}", context.Error, context.ErrorDescription, context.HttpContext.Request.Path);
+                }
+                catch { }
+
+                return Task.CompletedTask;
+            },
+
+            // トークン検証成功時でもブラックリストチェックの結果や例外はログ出力
             OnTokenValidated = async context =>
             {
                 try
@@ -132,11 +186,15 @@ builder
                     var iat = JwtBearerUtil.GetIssuedAtFromPrincipal(principal);
                     var blacklist = context.HttpContext.RequestServices.GetRequiredService<TokenBlacklistService>();
 
+                    var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
                     if (await blacklist.IsTokenRevokedAsync(userId, iat, jti))
                     {
+                        logger?.LogInformation("JwtBearer: Token revoked. UserId={UserId} Jti={Jti} Iat={Iat}", userId, jti, iat);
                         context.Fail("Token has been revoked or invalidated");
                         return;
                     }
+
+                    logger?.LogDebug("JwtBearer: Token validated. UserId={UserId} Jti={Jti} Iat={Iat}", userId, jti, iat);
                 }
                 catch (Exception ex)
                 {

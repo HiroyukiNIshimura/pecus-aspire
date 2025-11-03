@@ -53,24 +53,20 @@ export class SessionManager {
       const cookieStore = await cookies();
       const userString = JSON.stringify(data.user);
 
-      cookieStore.set(this.ACCESS_TOKEN_KEY, data.accessToken, {
+      // 保存するクッキーはデフォルトで SameSite=Lax にして、
+      // ブラウザのトップレベルナビゲーションや内部の RSC リクエストで
+      // より安定して送信されるようにする。
+      // セキュリティのため HttpOnly を true に変更（クライアントJSからの参照は不可）。
+      const cookieOptions = {
         path: "/",
-        httpOnly: false,
-        sameSite: "strict",
+        httpOnly: true,
+        sameSite: "lax" as const,
         secure: process.env.NODE_ENV === "production",
-      });
-      cookieStore.set(this.REFRESH_TOKEN_KEY, data.refreshToken, {
-        path: "/",
-        httpOnly: false,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      });
-      cookieStore.set(this.USER_KEY, userString, {
-        path: "/",
-        httpOnly: false,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      });
+      };
+
+      cookieStore.set(this.ACCESS_TOKEN_KEY, data.accessToken, cookieOptions);
+      cookieStore.set(this.REFRESH_TOKEN_KEY, data.refreshToken, cookieOptions);
+      cookieStore.set(this.USER_KEY, userString, cookieOptions);
 
       console.log("Server  Session saved successfully");
     } catch (error) {
