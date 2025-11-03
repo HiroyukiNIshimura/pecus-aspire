@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
@@ -12,6 +12,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import ConfirmDeleteModal, { ConfirmDeleteModalRef } from "@/components/common/ConfirmDeleteModal";
 import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
@@ -81,6 +82,15 @@ export default function AdminWorkspacesClient({
     initialGenres || [],
   );
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // Deletion modal control
+  const deleteModalRef = useRef<ConfirmDeleteModalRef>(null);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<WorkspaceListItemResponse | null>(null);
+
+  const handleDeleteClick = useCallback((workspace: WorkspaceListItemResponse) => {
+    setWorkspaceToDelete(workspace);
+    deleteModalRef.current?.open();
+  }, []);
 
   // 【バリデーションフック利用例】
   // useValidation フックを使用してワークスペース名のバリデーションを管理
@@ -510,7 +520,10 @@ export default function AdminWorkspacesClient({
                               >
                                 編集
                               </a>
-                              <button className="btn btn-sm btn-outline btn-error">
+                              <button
+                                className="btn btn-sm btn-outline btn-error"
+                                onClick={() => handleDeleteClick(workspace)}
+                              >
                                 削除
                               </button>
                             </div>
@@ -675,6 +688,18 @@ export default function AdminWorkspacesClient({
 
       {/* Footer */}
       <AdminFooter />
+
+      {/* 削除確認モーダル（削除処理は未実装） */}
+      <ConfirmDeleteModal
+        ref={deleteModalRef}
+        title="ワークスペースの削除"
+        message={`ワークスペース "${workspaceToDelete?.name}" を削除してもよろしいですか？この操作は取り消すことができません。`}
+        confirmText="削除する"
+        cancelText="キャンセル"
+        onConfirm={async () => {
+          // 現時点では削除処理は未実装
+        }}
+      />
     </div>
   );
 }
