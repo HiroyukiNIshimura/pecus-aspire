@@ -112,6 +112,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<TaskComment> TaskComments { get; set; }
 
     /// <summary>
+    /// リフレッシュトークンテーブル
+    /// </summary>
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -717,6 +722,28 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(tc => tc.CommentType);
             entity.HasIndex(tc => tc.IsDeleted);
             entity.HasIndex(tc => tc.CreatedAt);
+        });
+
+        // RefreshTokenエンティティの設定
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ExpiresAt).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.IsRevoked).HasDefaultValue(false);
+
+            // RefreshToken と User の多対一リレーションシップ
+            entity
+                .HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // インデックス（高速検索用）
+            entity.HasIndex(rt => rt.Token).IsUnique();
+            entity.HasIndex(rt => rt.UserId);
+            entity.HasIndex(rt => new { rt.UserId, rt.IsRevoked, rt.ExpiresAt });
         });
     }
 }
