@@ -11,17 +11,20 @@ public class ProfileService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ProfileService> _logger;
+    private readonly RefreshTokenService _refreshTokenService;
 
     /// <summary>
     /// コンストラクタ
     /// </summary>
     public ProfileService(
         ApplicationDbContext context,
-        ILogger<ProfileService> logger
+        ILogger<ProfileService> logger,
+        RefreshTokenService refreshTokenService
     )
     {
         _context = context;
         _logger = logger;
+        _refreshTokenService = refreshTokenService;
     }
 
     /// <summary>
@@ -90,5 +93,37 @@ public class ProfileService
         }).ToList();
 
         return response;
+    }
+
+    /// <summary>
+    /// ユーザーのデバイスを削除（関連するリフレッシュトークンも削除）
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="deviceId">デバイスID</param>
+    /// <returns>削除に成功した場合はtrue、デバイスが見つからない場合はfalse</returns>
+    public async Task<bool> DeleteUserDeviceAsync(int userId, int deviceId)
+    {
+        // デバイスを取得（ユーザー所有確認）
+        var device = await _context.Devices
+            .Include(d => d.RefreshTokens)
+            .FirstOrDefaultAsync(d => d.Id == deviceId && d.UserId == userId);
+
+        if (device == null)
+        {
+            _logger.LogWarning("デバイス削除失敗: デバイスが見つからないか、アクセス権限がありません。UserId: {UserId}, DeviceId: {DeviceId}", userId, deviceId);
+            return false;
+        }
+
+        // 関連するリフレッシュトークンを無効化
+        if (device.RefreshTokens.Any())
+        {
+            foreach (var refreshToken in device.RefreshTokens.Where(rt => !rt.IsRevoked))
+            {
+                await _refreshTokenService.RevokeRefreshTokenAsync(refreshToken.Token);
+            }
+            _logger.LogInformation("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, device.RefreshTokens.Count(rt => !rt.IsRevoked));
+        }
+
+        return true;
     }
 }

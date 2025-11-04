@@ -206,35 +206,4 @@ public class ProfileController : ControllerBase
             return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
-    /// <summary>
-    /// 自分の有効なデバイス情報の一覧を取得
-    /// </summary>
-    [HttpGet("devices")]
-    [ProducesResponseType(typeof(List<DeviceResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<List<DeviceResponse>>, NotFound, StatusCodeHttpResult>
-    > GetDevices()
-    {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var response = await _profileService.GetUserDevicesAsync(me);
-
-            if (response == null || response.Count == 0)
-            {
-                return TypedResults.NotFound();
-            }
-
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "デバイス情報取得中にエラーが発生しました。UserId: {UserId}", JwtBearerUtil.GetUserIdFromPrincipal(User));
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
 }
