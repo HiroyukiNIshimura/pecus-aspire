@@ -21,6 +21,7 @@ export type { CreateTagRequest } from './models/CreateTagRequest';
 export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithoutPasswordRequest';
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
+export { DeviceType } from './models/DeviceType';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenreCount } from './models/GenreCount';
@@ -40,6 +41,7 @@ export type { OrganizationListItemResponse } from './models/OrganizationListItem
 export type { OrganizationListItemResponsePagedResponse } from './models/OrganizationListItemResponsePagedResponse';
 export type { OrganizationResponse } from './models/OrganizationResponse';
 export type { OrganizationWithAdminResponse } from './models/OrganizationWithAdminResponse';
+export { OSPlatform } from './models/OSPlatform';
 export type { PermissionDetailInfoResponse } from './models/PermissionDetailInfoResponse';
 export type { PermissionDetailResponse } from './models/PermissionDetailResponse';
 export type { PermissionListItemResponse } from './models/PermissionListItemResponse';

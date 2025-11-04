@@ -14,5 +14,9 @@ export type SetUserPasswordRequest = {
      * 新しいパスワード
      */
     password: string;
+    /**
+     * すべてのデバイスのログイン状態をリセットするかどうか
+     */
+    resetAllDeviceSessions?: boolean | null;
 };
 

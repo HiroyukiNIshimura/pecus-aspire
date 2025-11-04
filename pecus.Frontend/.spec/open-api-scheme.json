@@ -6426,6 +6426,16 @@
         "additionalProperties": false,
         "description": "ワークスペース登録リクエスト"
       },
+      "DeviceType": {
+        "enum": [
+          1,
+          2,
+          3,
+          99
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "ErrorResponse": {
         "required": [
           "message"
@@ -6740,7 +6750,9 @@
       },
       "LoginRequest": {
         "required": [
+          "deviceType",
           "loginIdentifier",
+          "os",
           "password"
         ],
         "type": "object",
@@ -6754,6 +6766,42 @@
             "minLength": 1,
             "type": "string",
             "description": "パスワード"
+          },
+          "deviceName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "デバイス名（ユーザーが任意で付ける表示名）",
+            "nullable": true
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceType"
+          },
+          "os": {
+            "$ref": "#/components/schemas/OSPlatform"
+          },
+          "userAgent": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "ユーザーエージェント情報",
+            "nullable": true
+          },
+          "appVersion": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "アプリバージョン",
+            "nullable": true
+          },
+          "timezone": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "タイムゾーン",
+            "nullable": true
+          },
+          "ipAddress": {
+            "maxLength": 45,
+            "type": "string",
+            "description": "IPアドレス",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -6915,6 +6963,18 @@
         },
         "additionalProperties": false,
         "description": "メッセージレスポンス"
+      },
+      "OSPlatform": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "OrganizationDetailResponse": {
         "required": [
@@ -7702,6 +7762,11 @@
             "minLength": 6,
             "type": "string",
             "description": "新しいパスワード"
+          },
+          "resetAllDeviceSessions": {
+            "type": "boolean",
+            "description": "すべてのデバイスのログイン状態をリセットするかどうか",
+            "nullable": true
           }
         },
         "additionalProperties": false,
