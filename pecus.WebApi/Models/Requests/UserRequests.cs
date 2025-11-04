@@ -243,6 +243,8 @@ public class LoginRequest
     [MaxLength(50, ErrorMessage = "タイムゾーンは50文字以内で入力してください。")]
     public string? Timezone { get; set; }
 
+    public string? Location { get; set; }
+
     /// <summary>
     /// IPアドレス
     /// </summary>

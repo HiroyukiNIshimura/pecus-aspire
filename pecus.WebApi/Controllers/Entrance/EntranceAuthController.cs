@@ -1,7 +1,10 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Role;
 using Pecus.Models.Responses.User;
@@ -21,13 +24,17 @@ public class EntranceAuthController : ControllerBase
     private readonly UserService _userService;
     private readonly RefreshTokenService _refreshService;
     private readonly TokenBlacklistService _blacklistService;
+    private readonly EmailTasks _emailTasks;
+    private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<EntranceAuthController> _logger;
 
-    public EntranceAuthController(UserService userService, RefreshTokenService refreshService, TokenBlacklistService blacklistService, ILogger<EntranceAuthController> logger)
+    public EntranceAuthController(UserService userService, RefreshTokenService refreshService, TokenBlacklistService blacklistService, EmailTasks emailTasks, IBackgroundJobClient backgroundJobClient, ILogger<EntranceAuthController> logger)
     {
         _userService = userService;
         _refreshService = refreshService;
         _blacklistService = blacklistService;
+        _emailTasks = emailTasks;
+        _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
 
@@ -136,8 +143,36 @@ public class EntranceAuthController : ControllerBase
                     deviceInfo.IpAddress
                 );
 
-                //新しいデバイス作成時の追加処理があればここに記述
-                //TODO: ユーザーへセキュリティ通知のメール送信
+                // バックグラウンドでメール送信
+                var securitySettingsUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/settings/security";
+
+                var model = new SecurityNotificationEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    DeviceName = deviceInfo.DeviceName ?? "不明なデバイス",
+                    DeviceType = deviceInfo.DeviceType.ToString(),
+                    OS = deviceInfo.OS.ToString(),
+                    IpAddress = deviceInfo.IpAddress,
+                    Timezone = deviceInfo.Timezone,
+                    LoginAt = DateTime.UtcNow,
+                    SecuritySettingsUrl = securitySettingsUrl
+                };
+
+                _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                    x.SendTemplatedEmailAsync(
+                        user.Email,
+                        "セキュリティ通知: 新しいデバイスからのログインを検知しました",
+                        "security-notification",
+                        model
+                    )
+                );
+
+                _logger.LogInformation(
+                    "セキュリティ通知メールをHangfireジョブキューに投入しました。UserId: {UserId}, Email: {Email}",
+                    user.Id,
+                    user.Email
+                );
             }
 
             return TypedResults.Ok(response);

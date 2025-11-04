@@ -141,36 +141,4 @@ public class EmailTasks
 
         _logger.LogInformation("Bulk templated email sent to {Count} recipients", recipients.Count);
     }
-
-    /// <summary>
-    /// 各宛先に異なるモデルを使用して一括送信
-    /// </summary>
-    /// <typeparam name="TModel">テンプレートにバインドするモデルの型</typeparam>
-    /// <param name="emailData">宛先とモデルのペアのリスト</param>
-    /// <param name="subject">件名</param>
-    /// <param name="templateName">テンプレート名（拡張子なし）</param>
-    public async Task SendPersonalizedBulkEmailAsync<TModel>(
-        List<(string To, TModel Model)> emailData,
-        string subject,
-        string templateName
-    )
-    {
-        _logger.LogInformation(
-            "Sending personalized bulk email to {Count} recipients using template {Template}",
-            emailData.Count,
-            templateName
-        );
-
-        var tasks = emailData.Select(data =>
-            _emailService.SendTemplatedEmailAsync(data.To, subject, templateName, data.Model)
-        );
-
-        await Task.WhenAll(tasks);
-
-        _logger.LogInformation(
-            "Personalized bulk email sent to {Count} recipients",
-            emailData.Count
-        );
-    }
-
 }

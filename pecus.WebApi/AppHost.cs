@@ -77,6 +77,7 @@ builder.Services.AddSingleton<TokenBlacklistService>();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();
+builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 
 // Hangfireの設定

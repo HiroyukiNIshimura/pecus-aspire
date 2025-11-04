@@ -1,0 +1,40 @@
+@model Pecus.Libs.Mail.Templates.Models.SecurityNotificationEmailModel
+
+セキュリティ通知
+
+@Model.UserName さん
+
+⚠️ 新しいデバイスからのログインを検知しました
+
+あなたのアカウントに新しいデバイスからログインがありました。心当たりがない場合は、すぐにパスワードを変更し、サポートまでご連絡ください。
+
+ログイン情報:
+- 日時: @Model.LoginAt.ToString("yyyy年MM月dd日 HH:mm:ss") (UTC)
+- デバイス名: @Model.DeviceName
+- デバイスタイプ: @Model.DeviceType
+@if (!string.IsNullOrEmpty(Model.OS))
+{
+@: - OS: @Model.OS
+}
+@if (!string.IsNullOrEmpty(Model.IpAddress))
+{
+@: - IPアドレス: @Model.IpAddress
+}
+@if (!string.IsNullOrEmpty(Model.Timezone))
+{
+@: - タイムゾーン: @Model.Timezone
+}
+
+これはあなたのアカウントのセキュリティを保護するための自動通知です。
+
+セキュリティ設定を確認: @Model.SecuritySettingsUrl
+
+---
+心当たりがない場合:
+1. すぐにパスワードを変更してください
+2. すべてのデバイスからログアウトしてください
+3. サポート (support@pecus.example) までご連絡ください
+
+---
+このメールは Pecus から自動送信されています。返信しないでください。
+ご不明な点は support@pecus.example までご連絡ください。
