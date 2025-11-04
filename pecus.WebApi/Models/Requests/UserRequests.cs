@@ -243,6 +243,10 @@ public class LoginRequest
     [MaxLength(50, ErrorMessage = "タイムゾーンは50文字以内で入力してください。")]
     public string? Timezone { get; set; }
 
+    /// <summary>
+    /// ログイン位置情報更新リクエスト
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "Locationは200文字以内で入力してください。")]
     public string? Location { get; set; }
 
     /// <summary>

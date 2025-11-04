@@ -57,7 +57,7 @@ export default function LoginFormClient() {
       // === ログイン API 呼び出し ===
       try {
         // デバイス情報を取得
-        const deviceInfo = getDeviceInfo();
+        const deviceInfo = await getDeviceInfo();
 
         const result = await login({
           loginIdentifier,
@@ -68,6 +68,7 @@ export default function LoginFormClient() {
           userAgent: deviceInfo.userAgent,
           appVersion: deviceInfo.appVersion,
           timezone: deviceInfo.timezone,
+          location: deviceInfo.location ?? undefined,
           // ipAddress はサーバー側で取得するため送信しない
         });
 

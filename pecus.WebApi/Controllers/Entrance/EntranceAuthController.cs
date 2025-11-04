@@ -97,6 +97,7 @@ public class EntranceAuthController : ControllerBase
                 UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
                 AppVersion: request.AppVersion,
                 Timezone: request.Timezone,
+                LastSeenLocation: request.Location,
                 IpAddress: request.IpAddress ?? GetClientIpAddress()
             );
             var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);

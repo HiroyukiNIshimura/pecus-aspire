@@ -6797,6 +6797,12 @@
             "description": "タイムゾーン",
             "nullable": true
           },
+          "location": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "ログイン位置情報更新リクエスト",
+            "nullable": true
+          },
           "ipAddress": {
             "maxLength": 45,
             "type": "string",

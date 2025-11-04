@@ -42,6 +42,7 @@ public class RefreshTokenService
         string? UserAgent,
         string? AppVersion,
         string? Timezone,
+        string? LastSeenLocation,
         string? IpAddress
     );
 
@@ -360,6 +361,7 @@ public class RefreshTokenService
             existingDevice.LastSeenAt = now;
             existingDevice.LastIpMasked = MaskIpAddress(deviceInfo.IpAddress);
             existingDevice.Timezone = deviceInfo.Timezone;
+            existingDevice.LastSeenLocation = deviceInfo.LastSeenLocation;
 
             // リフレッシュトークンをデバイスに関連付け（まだ関連付けられていない場合）
             if (!existingDevice.RefreshTokens.Any(rt => rt.Id == refreshToken.Id))
@@ -387,6 +389,7 @@ public class RefreshTokenService
             LastSeenAt = now,
             LastIpMasked = MaskIpAddress(deviceInfo.IpAddress),
             Timezone = deviceInfo.Timezone,
+            LastSeenLocation = deviceInfo.LastSeenLocation,
             IsRevoked = false,
             UserId = userId,
             RefreshTokens = new List<RefreshToken> { refreshToken } // 作成時に直接関連付け

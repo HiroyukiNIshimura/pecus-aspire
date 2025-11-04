@@ -19,6 +19,7 @@ export async function login(request: {
   userAgent?: string;
   appVersion?: string;
   timezone?: string;
+  location?: string;
 }): Promise<ApiResponse<any>> {
   try {
     // Next.js のヘッダーからクライアントIPを取得
@@ -38,6 +39,7 @@ export async function login(request: {
       userAgent: request.userAgent,
       appVersion: request.appVersion,
       timezone: request.timezone,
+      location: request.location,
       ipAddress: clientIp,
     });
 

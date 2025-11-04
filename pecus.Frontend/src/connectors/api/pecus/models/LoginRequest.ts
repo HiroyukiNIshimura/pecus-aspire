@@ -35,6 +35,10 @@ export type LoginRequest = {
      */
     timezone?: string | null;
     /**
+     * ログイン位置情報更新リクエスト
+     */
+    location?: string | null;
+    /**
      * IPアドレス
      */
     ipAddress?: string | null;
