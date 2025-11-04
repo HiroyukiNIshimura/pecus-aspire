@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using StackExchange.Redis;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace Pecus.Services;
@@ -30,42 +33,63 @@ public class RefreshTokenService
     public record RefreshTokenInfo(string Token, int UserId, DateTime ExpiresAt);
 
     /// <summary>
+    /// デバイス作成情報
+    /// </summary>
+    public record DeviceInfo(
+        string? DeviceName,
+        DeviceType DeviceType,
+        OSPlatform OS,
+        string? UserAgent,
+        string? AppVersion,
+        string? Timezone,
+        string? IpAddress
+    );
+
+    /// <summary>
     /// リフレッシュトークンを作成します。
     /// </summary>
     /// <param name="userId"></param>
+    /// <param name="deviceInfo">デバイス情報（nullの場合はデバイス作成をスキップ）</param>
     /// <returns></returns>
-    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId)
+    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId, DeviceInfo? deviceInfo = null)
     {
-        var token = Guid.NewGuid().ToString("N");
-        var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
-
-        var info = new RefreshTokenInfo(token, userId, expiresAt);
-
-        // 1. Redis にキャッシュ（高速アクセス用）
-        var key = GetKey(token);
-        var payload = JsonSerializer.Serialize(info);
-        await _db.StringSetAsync(key, payload, expiresAt - DateTime.UtcNow);
-
-        // track per-user tokens with a Redis set
-        var userKey = GetUserKey(userId);
-        await _db.SetAddAsync(userKey, token);
-        await _db.KeyExpireAsync(userKey, TimeSpan.FromDays(31));
-
-        // 2. PostgreSQL に永続化（監査・復旧用）
-        var dbToken = new RefreshToken
-        {
-            Token = token,
-            UserId = userId,
-            ExpiresAt = expiresAt,
-            CreatedAt = DateTime.UtcNow,
-            IsRevoked = false
-        };
-        _context.RefreshTokens.Add(dbToken);
-        await _context.SaveChangesAsync();
-
-        // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
+        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
+            var token = Guid.NewGuid().ToString("N");
+            var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
+
+            var info = new RefreshTokenInfo(token, userId, expiresAt);
+
+            // 1. Redis にキャッシュ（高速アクセス用）
+            var key = GetKey(token);
+            var payload = JsonSerializer.Serialize(info);
+            await _db.StringSetAsync(key, payload, expiresAt - DateTime.UtcNow);
+
+            // track per-user tokens with a Redis set
+            var userKey = GetUserKey(userId);
+            await _db.SetAddAsync(userKey, token);
+            await _db.KeyExpireAsync(userKey, TimeSpan.FromDays(31));
+
+            // 2. PostgreSQL に永続化（監査・復旧用）
+            var dbToken = new RefreshToken
+            {
+                Token = token,
+                UserId = userId,
+                ExpiresAt = expiresAt,
+                CreatedAt = DateTime.UtcNow,
+                IsRevoked = false
+            };
+            _context.RefreshTokens.Add(dbToken);
+            await _context.SaveChangesAsync();
+
+            // 3. デバイス情報がある場合はDeviceテーブルにレコードを作成
+            if (deviceInfo != null)
+            {
+                await CreateDeviceAsync(userId, deviceInfo, dbToken);
+            }
+
+            // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
             var activeTokens = await _context.RefreshTokens
                 .Where(t => t.UserId == userId && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
                 .OrderBy(t => t.CreatedAt)
@@ -91,13 +115,15 @@ public class RefreshTokenService
 
                 await _context.SaveChangesAsync();
             }
+
+            await transaction.CommitAsync();
+            return info;
         }
         catch
         {
-            // トークン発行は成功させたいので、ここで失敗しても例外を突き上げない
+            await transaction.RollbackAsync();
+            throw;
         }
-
-        return info;
     }
 
     /// <summary>
@@ -224,4 +250,95 @@ public class RefreshTokenService
 
     private static string GetKey(string token) => $"refresh:{token}";
     private static string GetUserKey(int userId) => $"refresh_user:{userId}";
+
+    /// <summary>
+    /// IPアドレスをマスクします（例: 192.168.1.100 → 192.168.1.xxx）
+    /// </summary>
+    private static string? MaskIpAddress(string? ipAddress)
+    {
+        if (string.IsNullOrWhiteSpace(ipAddress)) return null;
+
+        // IPv4の場合
+        if (ipAddress.Contains('.'))
+        {
+            var parts = ipAddress.Split('.');
+            if (parts.Length == 4)
+            {
+                return $"{parts[0]}.{parts[1]}.{parts[2]}.xxx";
+            }
+        }
+        // IPv6の場合（簡易マスク）
+        else if (ipAddress.Contains(':'))
+        {
+            return ipAddress.Substring(0, Math.Min(8, ipAddress.Length)) + ":xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx";
+        }
+
+        return ipAddress; // 形式が不明な場合はそのまま
+    }
+
+    /// <summary>
+    /// デバイス識別子を生成します
+    /// </summary>
+    private static string GenerateDeviceIdentifier(DeviceInfo deviceInfo)
+    {
+        // デバイス固有の情報を組み合わせて識別子を生成
+        var identifier = $"{deviceInfo.DeviceType}:{deviceInfo.OS}:{deviceInfo.UserAgent ?? "unknown"}:{deviceInfo.IpAddress ?? "unknown"}";
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(identifier));
+        return Convert.ToBase64String(hash);
+    }
+
+    /// <summary>
+    /// Deviceテーブルにレコードを作成します
+    /// </summary>
+    private async Task CreateDeviceAsync(int userId, DeviceInfo deviceInfo, RefreshToken refreshToken)
+    {
+        var now = DateTime.UtcNow;
+        var publicId = Guid.NewGuid().ToString("N").Substring(0, 8); // 短縮GUID
+        var hashedIdentifier = GenerateDeviceIdentifier(deviceInfo);
+
+        // 既存のデバイスを検索（同じ識別子のデバイスが存在するか）
+        var existingDevice = await _context.Devices
+            .Include(d => d.RefreshTokens) // RefreshTokensをロード
+            .FirstOrDefaultAsync(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked);
+
+        if (existingDevice != null)
+        {
+            // 既存デバイスの最終確認日時を更新
+            existingDevice.LastSeenAt = now;
+            existingDevice.LastIpMasked = MaskIpAddress(deviceInfo.IpAddress);
+            existingDevice.Timezone = deviceInfo.Timezone;
+
+            // リフレッシュトークンをデバイスに関連付け（まだ関連付けられていない場合）
+            if (!existingDevice.RefreshTokens.Any(rt => rt.Id == refreshToken.Id))
+            {
+                existingDevice.RefreshTokens.Add(refreshToken);
+            }
+
+            await _context.SaveChangesAsync();
+            return;
+        }
+
+        // 新しいデバイスを作成
+        var device = new Device
+        {
+            PublicId = publicId,
+            HashedIdentifier = hashedIdentifier,
+            Name = deviceInfo.DeviceName,
+            DeviceType = deviceInfo.DeviceType,
+            OS = deviceInfo.OS,
+            Client = deviceInfo.UserAgent,
+            AppVersion = deviceInfo.AppVersion,
+            FirstSeenAt = now,
+            LastSeenAt = now,
+            LastIpMasked = MaskIpAddress(deviceInfo.IpAddress),
+            Timezone = deviceInfo.Timezone,
+            IsRevoked = false,
+            UserId = userId,
+            RefreshTokens = new List<RefreshToken> { refreshToken } // 作成時に直接関連付け
+        };
+
+        _context.Devices.Add(device);
+        await _context.SaveChangesAsync();
+    }
 }

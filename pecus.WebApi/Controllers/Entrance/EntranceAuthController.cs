@@ -32,6 +32,30 @@ public class EntranceAuthController : ControllerBase
     }
 
     /// <summary>
+    /// クライアントのIPアドレスを取得します
+    /// </summary>
+    private string? GetClientIpAddress()
+    {
+        // X-Forwarded-For ヘッダーをチェック（プロキシ経由の場合）
+        var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            // カンマ区切りで複数のIPが含まれる場合があるので、最初のものを取得
+            return forwardedFor.Split(',').First().Trim();
+        }
+
+        // X-Real-IP ヘッダーをチェック（Nginxなどのプロキシ）
+        var realIp = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(realIp))
+        {
+            return realIp;
+        }
+
+        // RemoteIpAddress を取得
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
+    }
+
+    /// <summary>
     /// ログイン
     /// </summary>
     /// <remarks>
@@ -59,7 +83,16 @@ public class EntranceAuthController : ControllerBase
             var expiresIn = JwtBearerUtil.GetExpiresMinutes() * 60; // 秒に変換
 
             // 発行したリフレッシュトークンを作成（rotation 用／保存）
-            var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id);
+            var deviceInfo = new RefreshTokenService.DeviceInfo(
+                DeviceName: request.DeviceName,
+                DeviceType: request.DeviceType,
+                OS: request.OS,
+                UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
+                AppVersion: request.AppVersion,
+                Timezone: request.Timezone,
+                IpAddress: request.IpAddress ?? GetClientIpAddress()
+            );
+            var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
 
             // 発行したアクセストークンの JTI をユーザーのトークン一覧に登録（追跡）
             var jti = JwtBearerUtil.GetJtiFromToken(token);

@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
@@ -203,6 +204,50 @@ public class LoginRequest
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
     public required string Password { get; set; }
+
+    /// <summary>
+    /// デバイス名（ユーザーが任意で付ける表示名）
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "デバイス名は100文字以内で入力してください。")]
+    public string? DeviceName { get; set; }
+
+    /// <summary>
+    /// デバイスタイプ
+    /// </summary>
+    [Required(ErrorMessage = "デバイスタイプは必須です。")]
+    [EnumDataType(typeof(DeviceType), ErrorMessage = "有効なデバイスタイプを指定してください。")]
+    public required DeviceType DeviceType { get; set; }
+
+    /// <summary>
+    /// OSプラットフォーム
+    /// </summary>
+    [Required(ErrorMessage = "OSプラットフォームは必須です。")]
+    [EnumDataType(typeof(OSPlatform), ErrorMessage = "有効なOSプラットフォームを指定してください。")]
+    public required OSPlatform OS { get; set; }
+
+    /// <summary>
+    /// ユーザーエージェント情報
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "ユーザーエージェント情報は200文字以内で入力してください。")]
+    public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// アプリバージョン
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "アプリバージョンは50文字以内で入力してください。")]
+    public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// タイムゾーン
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "タイムゾーンは50文字以内で入力してください。")]
+    public string? Timezone { get; set; }
+
+    /// <summary>
+    /// IPアドレス
+    /// </summary>
+    [MaxLength(45, ErrorMessage = "IPアドレスは45文字以内で入力してください。")]
+    public string? IpAddress { get; set; }
 }
 
 /// <summary>
