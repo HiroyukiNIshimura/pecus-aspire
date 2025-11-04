@@ -217,6 +217,7 @@ public class RefreshTokenService
                 if (dbToken.Device != null && !dbToken.Device.IsRevoked)
                 {
                     dbToken.Device.IsRevoked = true;
+                    dbToken.Device.LastSeenAt = DateTime.UtcNow;
                 }
 
                 await _context.SaveChangesAsync();
@@ -272,9 +273,11 @@ public class RefreshTokenService
                 .Distinct()
                 .Where(d => !d.IsRevoked);
 
+            var now = DateTime.UtcNow;
             foreach (var device in userDevices)
             {
                 device.IsRevoked = true;
+                device.LastSeenAt = now;
             }
 
             if (dbTokens.Any() || userDevices.Any())
