@@ -201,14 +201,33 @@ public class RefreshTokenService
         await _db.KeyDeleteAsync(key);
 
         // 2. DB でも無効化フラグを立てる（監査用）
-        var dbToken = await _context.RefreshTokens
-            .Where(t => t.Token == token)
-            .FirstOrDefaultAsync();
-
-        if (dbToken != null)
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            dbToken.IsRevoked = true;
-            await _context.SaveChangesAsync();
+            var dbToken = await _context.RefreshTokens
+                .Include(t => t.Device) // 関連するDeviceをロード
+                .Where(t => t.Token == token)
+                .FirstOrDefaultAsync();
+
+            if (dbToken != null)
+            {
+                dbToken.IsRevoked = true;
+
+                // 3. このトークンが関連付けられているDeviceも無効化
+                if (dbToken.Device != null && !dbToken.Device.IsRevoked)
+                {
+                    dbToken.Device.IsRevoked = true;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
         }
     }
 
@@ -219,32 +238,56 @@ public class RefreshTokenService
     /// <returns></returns>
     public async Task RevokeAllUserRefreshTokensAsync(int userId)
     {
-        // 1. Redis からユーザーの全トークンを削除
-        var userKey = GetUserKey(userId);
-        var members = await _db.SetMembersAsync(userKey);
-        foreach (var m in members)
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            if (m.IsNullOrEmpty) continue;
-            var token = m.ToString();
-            if (string.IsNullOrWhiteSpace(token)) continue;
-            await _db.KeyDeleteAsync(GetKey(token));
+            // 1. Redis からユーザーの全トークンを削除
+            var userKey = GetUserKey(userId);
+            var members = await _db.SetMembersAsync(userKey);
+            foreach (var m in members)
+            {
+                if (m.IsNullOrEmpty) continue;
+                var token = m.ToString();
+                if (string.IsNullOrWhiteSpace(token)) continue;
+                await _db.KeyDeleteAsync(GetKey(token));
+            }
+
+            await _db.KeyDeleteAsync(userKey);
+
+            // 2. DB でもユーザーの全トークンを無効化（監査用）
+            var dbTokens = await _context.RefreshTokens
+                .Include(t => t.Device) // 関連するDeviceをロード
+                .Where(t => t.UserId == userId && !t.IsRevoked)
+                .ToListAsync();
+
+            foreach (var dbToken in dbTokens)
+            {
+                dbToken.IsRevoked = true;
+            }
+
+            // 3. このユーザーの全Deviceも無効化
+            var userDevices = dbTokens
+                .Where(t => t.Device != null)
+                .Select(t => t.Device!)
+                .Distinct()
+                .Where(d => !d.IsRevoked);
+
+            foreach (var device in userDevices)
+            {
+                device.IsRevoked = true;
+            }
+
+            if (dbTokens.Any() || userDevices.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
         }
-
-        await _db.KeyDeleteAsync(userKey);
-
-        // 2. DB でもユーザーの全トークンを無効化（監査用）
-        var dbTokens = await _context.RefreshTokens
-            .Where(t => t.UserId == userId && !t.IsRevoked)
-            .ToListAsync();
-
-        foreach (var dbToken in dbTokens)
+        catch
         {
-            dbToken.IsRevoked = true;
-        }
-
-        if (dbTokens.Any())
-        {
-            await _context.SaveChangesAsync();
+            await transaction.RollbackAsync();
+            throw;
         }
     }
 
@@ -313,6 +356,8 @@ public class RefreshTokenService
             if (!existingDevice.RefreshTokens.Any(rt => rt.Id == refreshToken.Id))
             {
                 existingDevice.RefreshTokens.Add(refreshToken);
+                refreshToken.DeviceId = existingDevice.Id; // 逆方向の関連付け
+                refreshToken.Device = existingDevice;
             }
 
             await _context.SaveChangesAsync();
@@ -339,6 +384,11 @@ public class RefreshTokenService
         };
 
         _context.Devices.Add(device);
+        await _context.SaveChangesAsync();
+
+        // RefreshTokenのDevice関連付けを更新
+        refreshToken.DeviceId = device.Id;
+        refreshToken.Device = device;
         await _context.SaveChangesAsync();
     }
 }
