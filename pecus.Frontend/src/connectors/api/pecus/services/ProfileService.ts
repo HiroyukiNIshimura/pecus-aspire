@@ -21,6 +21,7 @@ export class ProfileService {
             url: '/api/profile',
             errors: {
                 404: `Not Found`,
+                500: `Internal Server Error`,
             },
         });
     }
@@ -41,6 +42,7 @@ export class ProfileService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                500: `Internal Server Error`,
             },
         });
     }
@@ -61,6 +63,7 @@ export class ProfileService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                500: `Internal Server Error`,
             },
         });
     }

@@ -21,6 +21,7 @@ export type { CreateTagRequest } from './models/CreateTagRequest';
 export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithoutPasswordRequest';
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
+export type { DeviceResponse } from './models/DeviceResponse';
 export { DeviceType } from './models/DeviceType';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileUploadResponse } from './models/FileUploadResponse';
@@ -122,6 +123,7 @@ export { BackendOrganizationService } from './services/BackendOrganizationServic
 export { BackendPermissionService } from './services/BackendPermissionService';
 export { BackendRoleService } from './services/BackendRoleService';
 export { BackendSpecsService } from './services/BackendSpecsService';
+export { DeviceService } from './services/DeviceService';
 export { EntranceAuthService } from './services/EntranceAuthService';
 export { EntranceOrganizationService } from './services/EntranceOrganizationService';
 export { EntrancePasswordService } from './services/EntrancePasswordService';

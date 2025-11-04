@@ -3783,6 +3783,133 @@
         }
       }
     },
+    "/api/profile/devices": {
+      "get": {
+        "tags": [
+          "Device"
+        ],
+        "summary": "自分の有効なデバイス情報の一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/devices/{deviceId}": {
+      "delete": {
+        "tags": [
+          "Device"
+        ],
+        "summary": "自分のデバイスを削除",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "description": "デバイスID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -4314,6 +4441,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       },
@@ -4385,6 +4515,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -4475,6 +4608,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -6425,6 +6561,82 @@
         },
         "additionalProperties": false,
         "description": "ワークスペース登録リクエスト"
+      },
+      "DeviceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "端末ID",
+            "format": "int32"
+          },
+          "publicId": {
+            "type": "string",
+            "description": "表示用短ID",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "表示名",
+            "nullable": true
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "端末の種類",
+            "nullable": true
+          },
+          "os": {
+            "type": "string",
+            "description": "OS",
+            "nullable": true
+          },
+          "client": {
+            "type": "string",
+            "description": "クライアント情報",
+            "nullable": true
+          },
+          "appVersion": {
+            "type": "string",
+            "description": "アプリバージョン",
+            "nullable": true
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "description": "初回確認日時",
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "description": "最終確認日時",
+            "format": "date-time"
+          },
+          "lastIpMasked": {
+            "type": "string",
+            "description": "マスクされたIPアドレス",
+            "nullable": true
+          },
+          "lastSeenLocation": {
+            "type": "string",
+            "description": "最終確認場所",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "description": "タイムゾーン",
+            "nullable": true
+          },
+          "refreshTokenCount": {
+            "type": "integer",
+            "description": "有効なリフレッシュトークン数",
+            "format": "int32"
+          },
+          "isRevoked": {
+            "type": "boolean",
+            "description": "無効化フラグ"
+          }
+        },
+        "additionalProperties": false,
+        "description": "デバイス情報レスポンス"
       },
       "DeviceType": {
         "enum": [
