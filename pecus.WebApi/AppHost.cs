@@ -56,6 +56,7 @@ builder.Services.AddScoped<OrganizationAccessHelper>();
 
 // サービスの登録
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<OrganizationService>();
