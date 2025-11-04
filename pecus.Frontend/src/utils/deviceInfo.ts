@@ -1,8 +1,10 @@
 import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
 import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
+import { getLocationFromCoordinates } from "@/actions/geolocation";
 
 /**
- * 緯度経度からおおよその地域を推定する
+ * 緯度経度からおおよその地域を推定する（フォールバック用）
+ * サーバーアクションで取得できない場合のみ使用
  */
 function getApproximateLocation(latitude: number, longitude: number): string {
   // 日本の範囲内かチェック
@@ -138,7 +140,7 @@ export async function getDeviceInfo() {
 
   const deviceName = `${browserName} on ${osName}`;
 
-  // Geolocation APIで位置情報を取得し、地域名に変換
+  // Geolocation APIで位置情報を取得し、Nominatim APIで詳細な地域情報に変換
   let location = null;
   if (navigator.geolocation) {
     try {
@@ -150,8 +152,24 @@ export async function getDeviceInfo() {
         });
       });
 
-      // 緯度経度からおおよその地域を推定
-      location = getApproximateLocation(position.coords.latitude, position.coords.longitude);
+      const { latitude, longitude } = position.coords;
+
+      // 【優先】Server Action で Nominatim API を呼び出し
+      const result = await getLocationFromCoordinates(latitude, longitude);
+
+      if ('data' in result && result.data) {
+        // Nominatim APIから取得した詳細な地域情報を使用
+        const parts = [
+          result.data.country && `${result.data.country}(${result.data.countryCode})`,
+          result.data.province,
+          result.data.county,
+        ].filter(Boolean);
+        location = parts.join(' ');
+      } else {
+        // Nominatim API が失敗した場合のフォールバック
+        console.warn('Nominatim APIからの位置情報取得に失敗しました');
+        location = getApproximateLocation(latitude, longitude);
+      }
     } catch (error) {
       console.warn('位置情報の取得に失敗しました:', error);
       // 位置情報が取得できない場合はnullのまま
