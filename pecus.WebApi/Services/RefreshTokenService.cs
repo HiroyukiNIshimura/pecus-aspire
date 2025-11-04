@@ -30,7 +30,7 @@ public class RefreshTokenService
         _context = context;
     }
 
-    public record RefreshTokenInfo(string Token, int UserId, DateTime ExpiresAt);
+    public record RefreshTokenInfo(string Token, int UserId, DateTime ExpiresAt, bool ChangeDevice = false);
 
     /// <summary>
     /// デバイス作成情報
@@ -85,7 +85,11 @@ public class RefreshTokenService
             // 3. デバイス情報がある場合はDeviceテーブルにレコードを作成
             if (deviceInfo != null)
             {
-                await CreateDeviceAsync(userId, deviceInfo, dbToken);
+                var changeDevice = await CreateDeviceAsync(userId, deviceInfo, dbToken);
+                if (changeDevice)
+                {
+                    info = info with { ChangeDevice = true };
+                }
             }
 
             // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
@@ -336,7 +340,7 @@ public class RefreshTokenService
     /// <summary>
     /// Deviceテーブルにレコードを作成します
     /// </summary>
-    private async Task CreateDeviceAsync(int userId, DeviceInfo deviceInfo, RefreshToken refreshToken)
+    private async Task<bool> CreateDeviceAsync(int userId, DeviceInfo deviceInfo, RefreshToken refreshToken)
     {
         var now = DateTime.UtcNow;
         var publicId = Guid.NewGuid().ToString("N").Substring(0, 8); // 短縮GUID
@@ -346,6 +350,9 @@ public class RefreshTokenService
         var existingDevice = await _context.Devices
             .Include(d => d.RefreshTokens) // RefreshTokensをロード
             .FirstOrDefaultAsync(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked);
+
+        // デバイスの件数
+        var deviceCount = await _context.Devices.CountAsync(d => d.UserId == userId && !d.IsRevoked);
 
         if (existingDevice != null)
         {
@@ -363,7 +370,7 @@ public class RefreshTokenService
             }
 
             await _context.SaveChangesAsync();
-            return;
+            return false; // 既存デバイスを更新しただけ
         }
 
         // 新しいデバイスを作成
@@ -392,5 +399,7 @@ public class RefreshTokenService
         refreshToken.DeviceId = device.Id;
         refreshToken.Device = device;
         await _context.SaveChangesAsync();
+
+        return deviceCount > 0; // 1件もデバイスがない状態で新規デバイスを作成
     }
 }

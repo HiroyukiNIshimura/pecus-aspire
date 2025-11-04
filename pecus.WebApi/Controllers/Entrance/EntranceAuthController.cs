@@ -125,6 +125,21 @@ public class EntranceAuthController : ControllerBase
                 RefreshToken = refreshToken.Token,
                 RefreshExpiresAt = refreshToken.ExpiresAt,
             };
+
+            if (refreshToken.ChangeDevice)
+            {
+                _logger.LogInformation(
+                    "新しいデバイスが作成されました。UserId: {UserId}, DeviceName: {DeviceName}, DeviceType: {DeviceType}, IP: {IpAddress}",
+                    user.Id,
+                    deviceInfo.DeviceName,
+                    deviceInfo.DeviceType,
+                    deviceInfo.IpAddress
+                );
+
+                //新しいデバイス作成時の追加処理があればここに記述
+                //TODO: ユーザーへセキュリティ通知のメール送信
+            }
+
             return TypedResults.Ok(response);
         }
         catch (Exception ex)
