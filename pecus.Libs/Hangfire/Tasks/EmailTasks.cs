@@ -6,7 +6,10 @@ using Pecus.Libs.Mail.Services;
 namespace Pecus.Libs.Hangfire.Tasks;
 
 /// <summary>
-/// メール配信用のHangfireタスク
+/// 【注意】このクラスは汎用的なメール送信専用です。
+/// 業務固有のメール送信処理（例：デバイス通知、パスワードリセット等）は
+/// サービス層や専用クラスで実装してください。
+/// EmailTasksへの追加は禁止です。
 /// </summary>
 public class EmailTasks
 {
