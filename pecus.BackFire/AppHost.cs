@@ -11,8 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddRedisClient("redis");
 
-// DbContextの登録 - ImageTasksで使用
+// DbContextの登録
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
+
+// ExecutionStrategyをNonRetryingExecutionStrategyに置き換え
+builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
+{
+    // NpgsqlRetryingExecutionStrategyを無効化してNonRetryingExecutionStrategyを使用
+    options.ReplaceService<Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy, Microsoft.EntityFrameworkCore.Storage.NonRetryingExecutionStrategy>();
+});
 
 // EmailSettings設定
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));

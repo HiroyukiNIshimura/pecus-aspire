@@ -17,6 +17,12 @@ builder.AddNpgsqlDbContext<ApplicationDbContext>(
             npgsqlBuilder.MigrationsAssembly("pecus.DbManager")
         )
 );
+// ExecutionStrategyをNonRetryingExecutionStrategyに置き換え
+builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
+{
+    // NpgsqlRetryingExecutionStrategyを無効化してNonRetryingExecutionStrategyを使用
+    options.ReplaceService<Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy, Microsoft.EntityFrameworkCore.Storage.NonRetryingExecutionStrategy>();
+});
 
 // DatabaseSeederの登録
 builder.Services.AddScoped<DatabaseSeeder>();

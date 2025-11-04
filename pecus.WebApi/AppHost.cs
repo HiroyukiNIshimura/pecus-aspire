@@ -34,7 +34,12 @@ builder.Services.AddHttpContextAccessor();
 
 // DbContextの登録 - Aspireの接続文字列を使用
 builder.AddNpgsqlDbContext<ApplicationDbContext>("pecusdb");
-
+// ExecutionStrategyをNonRetryingExecutionStrategyに置き換え
+builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
+{
+    // NpgsqlRetryingExecutionStrategyを無効化してNonRetryingExecutionStrategyを使用
+    options.ReplaceService<Microsoft.EntityFrameworkCore.Storage.IExecutionStrategy, Microsoft.EntityFrameworkCore.Storage.NonRetryingExecutionStrategy>();
+});
 // EmailSettings設定
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 

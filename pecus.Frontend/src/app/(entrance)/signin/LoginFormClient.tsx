@@ -7,6 +7,7 @@ import { useFormValidation } from "@/hooks/useFormValidation";
 import { useValidation } from "@/hooks/useValidation";
 import { loginSchema } from "@/schemas/signInSchemas";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import { getDeviceInfo } from "@/utils/deviceInfo";
 
 /**
  * ログインフォーム (Client Component)
@@ -55,9 +56,19 @@ export default function LoginFormClient() {
 
       // === ログイン API 呼び出し ===
       try {
+        // デバイス情報を取得
+        const deviceInfo = getDeviceInfo();
+
         const result = await login({
           loginIdentifier,
           password,
+          deviceName: deviceInfo.deviceName,
+          deviceType: deviceInfo.deviceType,
+          os: deviceInfo.os,
+          userAgent: deviceInfo.userAgent,
+          appVersion: deviceInfo.appVersion,
+          timezone: deviceInfo.timezone,
+          // ipAddress はサーバー側で取得するため送信しない
         });
 
         if (result.success) {

@@ -53,24 +53,23 @@ public class RefreshTokenService
     /// <returns></returns>
     public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId, DeviceInfo? deviceInfo = null)
     {
+        var token = Guid.NewGuid().ToString("N");
+        var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
+        var info = new RefreshTokenInfo(token, userId, expiresAt);
+
+        // 1. Redis にキャッシュ（高速アクセス用）
+        var key = GetKey(token);
+        var payload = JsonSerializer.Serialize(info);
+        await _db.StringSetAsync(key, payload, expiresAt - DateTime.UtcNow);
+
+        // track per-user tokens with a Redis set
+        var userKey = GetUserKey(userId);
+        await _db.SetAddAsync(userKey, token);
+        await _db.KeyExpireAsync(userKey, TimeSpan.FromDays(31));
+
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var token = Guid.NewGuid().ToString("N");
-            var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
-
-            var info = new RefreshTokenInfo(token, userId, expiresAt);
-
-            // 1. Redis にキャッシュ（高速アクセス用）
-            var key = GetKey(token);
-            var payload = JsonSerializer.Serialize(info);
-            await _db.StringSetAsync(key, payload, expiresAt - DateTime.UtcNow);
-
-            // track per-user tokens with a Redis set
-            var userKey = GetUserKey(userId);
-            await _db.SetAddAsync(userKey, token);
-            await _db.KeyExpireAsync(userKey, TimeSpan.FromDays(31));
-
             // 2. PostgreSQL に永続化（監査・復旧用）
             var dbToken = new RefreshToken
             {
@@ -239,22 +238,22 @@ public class RefreshTokenService
     /// <returns></returns>
     public async Task RevokeAllUserRefreshTokensAsync(int userId)
     {
+        // 1. Redis からユーザーの全トークンを削除
+        var userKey = GetUserKey(userId);
+        var members = await _db.SetMembersAsync(userKey);
+        foreach (var m in members)
+        {
+            if (m.IsNullOrEmpty) continue;
+            var token = m.ToString();
+            if (string.IsNullOrWhiteSpace(token)) continue;
+            await _db.KeyDeleteAsync(GetKey(token));
+        }
+
+        await _db.KeyDeleteAsync(userKey);
+
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // 1. Redis からユーザーの全トークンを削除
-            var userKey = GetUserKey(userId);
-            var members = await _db.SetMembersAsync(userKey);
-            foreach (var m in members)
-            {
-                if (m.IsNullOrEmpty) continue;
-                var token = m.ToString();
-                if (string.IsNullOrWhiteSpace(token)) continue;
-                await _db.KeyDeleteAsync(GetKey(token));
-            }
-
-            await _db.KeyDeleteAsync(userKey);
-
             // 2. DB でもユーザーの全トークンを無効化（監査用）
             var dbTokens = await _context.RefreshTokens
                 .Include(t => t.Device) // 関連するDeviceをロード

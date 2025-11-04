@@ -3,6 +3,9 @@
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import { ApiResponse } from "./types";
 import { SessionData, SessionManager } from "@/libs/session";
+import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
+import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
+import { headers } from 'next/headers';
 
 /**
  * Server Action: ログイン
@@ -10,12 +13,32 @@ import { SessionData, SessionManager } from "@/libs/session";
 export async function login(request: {
   loginIdentifier: string;
   password: string;
+  deviceName?: string;
+  deviceType: DeviceType;
+  os: OSPlatform;
+  userAgent?: string;
+  appVersion?: string;
+  timezone?: string;
 }): Promise<ApiResponse<any>> {
   try {
+    // Next.js のヘッダーからクライアントIPを取得
+    const headersList = await headers();
+    const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     headersList.get('x-real-ip') ||
+                     headersList.get('cf-connecting-ip') ||  // Cloudflare 対応
+                     undefined;
+
     const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
     const response = await api.entranceAuth.postApiEntranceAuthLogin({
       loginIdentifier: request.loginIdentifier,
       password: request.password,
+      deviceName: request.deviceName,
+      deviceType: request.deviceType,
+      os: request.os,
+      userAgent: request.userAgent,
+      appVersion: request.appVersion,
+      timezone: request.timezone,
+      ipAddress: clientIp,
     });
 
     // APIレスポンスからトークンを取得
