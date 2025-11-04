@@ -39,4 +39,14 @@ public class RefreshToken
     /// ユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User User { get; set; } = null!;
+
+    /// <summary>
+    /// 紐づく端末ID（任意）
+    /// </summary>
+    public int? DeviceId { get; set; }
+
+    /// <summary>
+    /// 紐づく端末（ナビゲーションプロパティ）
+    /// </summary>
+    public Device? Device { get; set; }
 }

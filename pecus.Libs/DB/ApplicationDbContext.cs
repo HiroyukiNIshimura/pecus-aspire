@@ -117,6 +117,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     /// <summary>
+    /// ユーザー端末（デバイス）テーブル
+    /// </summary>
+    public DbSet<Device> Devices { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -740,10 +745,44 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // RefreshToken と Device の多対一リレーションシップ（端末が削除されたら参照をクリア）
+            entity
+                .HasOne(rt => rt.Device)
+                .WithMany(d => d.RefreshTokens)
+                .HasForeignKey(rt => rt.DeviceId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // インデックス（高速検索用）
             entity.HasIndex(rt => rt.Token).IsUnique();
             entity.HasIndex(rt => rt.UserId);
             entity.HasIndex(rt => new { rt.UserId, rt.IsRevoked, rt.ExpiresAt });
+        });
+
+        // Deviceエンティティの設定
+        modelBuilder.Entity<Device>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PublicId).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.HashedIdentifier).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.Client).HasMaxLength(200);
+            entity.Property(e => e.AppVersion).HasMaxLength(50);
+            entity.Property(e => e.LastIpMasked).HasMaxLength(50);
+            entity.Property(e => e.LastSeenLocation).HasMaxLength(200);
+            entity.Property(e => e.Timezone).HasMaxLength(100);
+
+            // Device と User の多対一リレーションシップ
+            entity
+                .HasOne(d => d.User)
+                .WithMany(u => u.Devices)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // インデックス
+            entity.HasIndex(d => d.PublicId).IsUnique();
+            entity.HasIndex(d => d.HashedIdentifier);
+            entity.HasIndex(d => d.UserId);
+            entity.HasIndex(d => d.LastSeenAt);
         });
     }
 }

@@ -110,4 +110,9 @@ public class User
     /// このユーザーが持つスキル
     /// </summary>
     public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
+
+    /// <summary>
+    /// このユーザーに紐づく端末（デバイス）
+    /// </summary>
+    public List<Device> Devices { get; set; } = new();
 }
