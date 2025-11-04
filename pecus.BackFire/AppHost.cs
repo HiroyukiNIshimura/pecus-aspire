@@ -24,7 +24,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<HangfireTasks>();
 builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
-builder.Services.AddScoped<RefreshTokenCleanupTasks>();
+builder.Services.AddScoped<CleanupTasks>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
@@ -63,10 +63,29 @@ var cleanupMinute = cleanupSection.GetValue<int?>("Minute") ?? 0;
 cleanupHour = System.Math.Clamp(cleanupHour, 0, 23);
 cleanupMinute = System.Math.Clamp(cleanupMinute, 0, 59);
 
-RecurringJob.AddOrUpdate<RefreshTokenCleanupTasks>(
+RecurringJob.AddOrUpdate<CleanupTasks>(
     "RefreshTokenCleanup",
     task => task.CleanupExpiredTokensAsync(cleanupBatchSize, cleanupOlderThanDays),
     Cron.Daily(cleanupHour, cleanupMinute) // 設定で指定した時刻に実行
+);
+
+//DeviceCleanupTasksの定期実行設定
+// 設定からバッチサイズと古いデバイスの保持期間を取得
+var deviceCleanupSection = builder.Configuration.GetSection("DeviceCleanup");
+var deviceCleanupBatchSize = deviceCleanupSection.GetValue<int?>("BatchSize") ?? 1000;
+var deviceCleanupOlderThanDays = deviceCleanupSection.GetValue<int?>("OlderThanDays") ?? 30;
+var deviceCleanupVeryOldDays = deviceCleanupSection.GetValue<int?>("VeryOldDays") ?? 365;
+// Cron の時刻を設定から取得（デフォルト: 毎日 02:30）
+var deviceCleanupHour = deviceCleanupSection.GetValue<int?>("Hour") ?? 2;
+var deviceCleanupMinute = deviceCleanupSection.GetValue<int?>("Minute") ?? 30;
+// 値の範囲を安全にクリップ
+deviceCleanupHour = System.Math.Clamp(deviceCleanupHour, 0, 23);
+deviceCleanupMinute = System.Math.Clamp(deviceCleanupMinute, 0, 59);
+
+RecurringJob.AddOrUpdate<CleanupTasks>(
+    "DeviceCleanup",
+    task => task.CleanupOldDevicesAsync(deviceCleanupBatchSize, deviceCleanupOlderThanDays, deviceCleanupVeryOldDays),
+    Cron.Daily(deviceCleanupHour, deviceCleanupMinute) // 設定で指定した時刻に実行
 );
 
 app.Run();
