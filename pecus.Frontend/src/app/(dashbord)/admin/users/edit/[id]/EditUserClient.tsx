@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import {
   setUserActiveStatus,
@@ -83,70 +82,77 @@ export default function EditUserClient({
   // いずれかの項目が変更されている場合のみ更新ボタンを有効化
   const hasChanges = isActiveChanged || skillsChanged || rolesChanged;
 
-  const { formRef, isSubmitting, handleSubmit } = useFormValidation({
-    onSubmit: async () => {
-      try {
-        const updatePromises: Array<Promise<any>> = [];
-        const updateMessages: string[] = [];
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-        // === 並列で更新処理を実行 ===
-        // 3つの操作は相互に依存しないため、Promise.all()で並列実行可能
-        // - setUserActiveStatus: ユーザーのアクティブ状態を更新
-        // - setUserSkills: スキル割り当てを更新（多対多の関連付け）
-        // - setUserRoles: ロール割り当てを更新（多対多の関連付け）
-        // 各操作は独立しており、1つが失敗しても他に影響しない設計
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hasChanges) return;
 
-        if (isActiveChanged) {
-          updatePromises.push(
-            setUserActiveStatus(userDetail.id!, isActive).then(result => {
-              if (!result.success) {
-                throw new Error(result.error || "アクティブ状態の更新に失敗しました。");
-              }
-              updateMessages.push(isActive ? "ユーザーを有効化しました" : "ユーザーを無効化しました");
-            })
-          );
-        }
+    setIsSubmitting(true);
+    try {
+      const updatePromises: Array<Promise<any>> = [];
+      const updateMessages: string[] = [];
 
-        if (skillsChanged) {
-          updatePromises.push(
-            setUserSkills(userDetail.id!, selectedSkillIds).then(result => {
-              if (!result.success) {
-                throw new Error(result.error || "スキルの更新に失敗しました。");
-              }
-              updateMessages.push("スキルを更新しました");
-            })
-          );
-        }
+      // === 並列で更新処理を実行 ===
+      // 3つの操作は相互に依存しないため、Promise.all()で並列実行可能
+      // - setUserActiveStatus: ユーザーのアクティブ状態を更新
+      // - setUserSkills: スキル割り当てを更新（多対多の関連付け）
+      // - setUserRoles: ロール割り当てを更新（多対多の関連付け）
+      // 各操作は独立しており、1つが失敗しても他に影響しない設計
 
-        if (rolesChanged) {
-          updatePromises.push(
-            setUserRoles(userDetail.id!, selectedRoleIds).then(result => {
-              if (!result.success) {
-                throw new Error(result.error || "ロールの更新に失敗しました。");
-              }
-              updateMessages.push("ロールを更新しました");
-            })
-          );
-        }
-
-        // 全ての更新を並列実行し、すべて完了を待つ
-        await Promise.all(updatePromises);
-
-        // 成功時のフィードバック: 何が変更されたかを具体的に表示
-        if (updateMessages.length > 0) {
-          notify.success(`更新完了: ${updateMessages.join("、")}`);
-        } else {
-          notify.info("変更はありませんでした。");
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          notify.error(err.message);
-        } else {
-          notify.error("ユーザー情報の更新中にエラーが発生しました。");
-        }
+      if (isActiveChanged) {
+        updatePromises.push(
+          setUserActiveStatus(userDetail.id!, isActive).then(result => {
+            if (!result.success) {
+              throw new Error(result.error || "アクティブ状態の更新に失敗しました。");
+            }
+            updateMessages.push(isActive ? "ユーザーを有効化しました" : "ユーザーを無効化しました");
+          })
+        );
       }
-    },
-  });
+
+      if (skillsChanged) {
+        updatePromises.push(
+          setUserSkills(userDetail.id!, selectedSkillIds).then(result => {
+            if (!result.success) {
+              throw new Error(result.error || "スキルの更新に失敗しました。");
+            }
+            updateMessages.push("スキルを更新しました");
+          })
+        );
+      }
+
+      if (rolesChanged) {
+        updatePromises.push(
+          setUserRoles(userDetail.id!, selectedRoleIds).then(result => {
+            if (!result.success) {
+              throw new Error(result.error || "ロールの更新に失敗しました。");
+            }
+            updateMessages.push("ロールを更新しました");
+          })
+        );
+      }
+
+      // 全ての更新を並列実行し、すべて完了を待つ
+      await Promise.all(updatePromises);
+
+      // 成功時のフィードバック: 何が変更されたかを具体的に表示
+      if (updateMessages.length > 0) {
+        notify.success(`更新完了: ${updateMessages.join("、")}`);
+      } else {
+        notify.info("変更はありませんでした。");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        notify.error(err.message);
+      } else {
+        notify.error("ユーザー情報の更新中にエラーが発生しました。");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleCancel = () => {
     router.push("/admin/users");

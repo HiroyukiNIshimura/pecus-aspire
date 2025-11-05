@@ -6,7 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateTag } from "@/actions/admin/tags";
 import { editTagSchema } from "@/schemas/editSchemas";
@@ -49,7 +49,7 @@ export default function EditTagClient({
     validateField,
     shouldShowError,
     getFieldError,
-  } = useFormValidationV2({
+  } = useFormValidation({
     schema: editTagSchema,
     onSubmit: async (data) => {
       try {

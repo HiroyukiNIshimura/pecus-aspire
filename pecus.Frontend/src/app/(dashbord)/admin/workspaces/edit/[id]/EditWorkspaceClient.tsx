@@ -6,7 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspace } from "@/actions/admin/workspace";
 import { editWorkspaceSchema } from "@/schemas/editSchemas";
@@ -56,7 +56,7 @@ export default function EditWorkspaceClient({
     validateField,
     shouldShowError,
     getFieldError,
-  } = useFormValidationV2({
+  } = useFormValidation({
     schema: editWorkspaceSchema,
     onSubmit: async (data) => {
       try {

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { login } from "@/actions/auth";
-import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { loginSchema } from "@/schemas/signInSchemas";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { getDeviceInfo } from "@/utils/deviceInfo";
@@ -51,7 +51,7 @@ export default function LoginFormClient() {
     validateField,
     shouldShowError,
     getFieldError,
-  } = useFormValidationV2({
+  } = useFormValidation({
     schema: loginSchema,
     onSubmit: async (data) => {
       // エラーをクリア
