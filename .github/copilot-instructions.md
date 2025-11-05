@@ -229,11 +229,15 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
 1. **スキーマ定義層** (`src/schemas/`)
    - 再利用可能なZodスキーマを一元管理
    - 共通バリデーションルール（文字数制限、形式チェック等）を定義
+   - 型推論により TypeScript で自動的に型安全性を確保
 
    ```typescript
    // src/schemas/filterSchemas.ts
    import { z } from 'zod';
 
+   /**
+    * 名前検索用スキーマ（最大100文字）
+    */
    export const nameFilterSchema = z
      .string()
      .max(100, "検索名は100文字以内で入力してください。")
@@ -253,9 +257,16 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
    // src/utils/validation.ts
    import { z } from "zod";
 
+   /**
+    * Zodスキーマを使用してバリデーションを実行し、結果を返す（非同期版）
+    * refinements や transforms を含むスキーマにも対応
+    * @param schema Zodスキーマ
+    * @param data バリデーション対象のデータ
+    * @returns バリデーション結果オブジェクト { success: boolean, errors?: string[], data?: T }
+    */
    export async function validateWithSchema<T>(
      schema: z.ZodSchema<T>,
-     data: unknown
+     data: unknown,
    ): Promise<
      | { success: true; data: T; errors?: undefined }
      | { success: false; errors: string[]; data?: undefined }
@@ -263,43 +274,52 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
      const result = await schema.safeParseAsync(data);
 
      if (result.success) {
-       return { success: true, data: result.data };
+       return {
+         success: true,
+         data: result.data,
+       };
      } else {
        return {
          success: false,
-         errors: result.error.issues.map(issue => issue.message),
+         errors: result.error.issues.map((issue) => issue.message),
        };
      }
    }
    ```
 
-3. **フック層** (`src/hooks/useValidation.ts`)
-   - Reactフック形式でバリデーション状態を管理
-   - エラー状態、検証結果、クリア処理を提供
+3. **フック層** - 用途により2つのフックを使い分ける
+
+   **3-1. 個別フィールドバリデーション用 (`src/hooks/useValidation.ts`)**
+   - リアルタイムバリデーション（入力時）に最適
+   - 単一フィールド or フィールド単位の検証に使用
+   - 検索条件フィルター、インラインバリデーションなど
 
    ```typescript
    // src/hooks/useValidation.ts
-   import { useState, useCallback } from 'react';
-   import { z } from 'zod';
-   import { validateWithSchema } from '@/utils/validation';
+   import { useState, useCallback } from "react";
+   import { z } from "zod";
+   import { validateWithSchema } from "@/utils/validation";
 
    export function useValidation<T>(schema: z.ZodSchema<T>) {
      const [errors, setErrors] = useState<string[]>([]);
      const [isValid, setIsValid] = useState<boolean>(true);
 
-     const validate = useCallback(async (data: unknown) => {
-       const result = await validateWithSchema(schema, data);
+     const validate = useCallback(
+       async (data: unknown) => {
+         const result = await validateWithSchema(schema, data);
 
-       if (result.success) {
-         setErrors([]);
-         setIsValid(true);
-         return { success: true as const, data: result.data };
-       } else {
-         setErrors(result.errors);
-         setIsValid(false);
-         return { success: false as const, errors: result.errors };
-       }
-     }, [schema]);
+         if (result.success) {
+           setErrors([]);
+           setIsValid(true);
+           return { success: true as const, data: result.data };
+         } else {
+           setErrors(result.errors);
+           setIsValid(false);
+           return { success: false as const, errors: result.errors };
+         }
+       },
+       [schema],
+     );
 
      const clearErrors = useCallback(() => {
        setErrors([]);
@@ -317,13 +337,87 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
    }
    ```
 
+   **3-2. フォーム全体バリデーション用 (`src/hooks/useFormValidation.ts`)**
+   - フォーム送信時の包括的なバリデーション
+   - フィールド単位のエラー管理・表示
+   - Server Actions への連携
+   - 複数フィールドの入力時検証と送信時検証
+
+   ```typescript
+   // src/hooks/useFormValidation.ts（概要）
+   import { useState, useRef, useCallback } from "react";
+   import { z } from "zod";
+
+   interface UseFormValidationOptions<T extends Record<string, unknown>> {
+     schema: z.ZodSchema<T>;
+     onSubmit: (data: T) => Promise<void>;
+   }
+
+   export function useFormValidation<T extends Record<string, unknown>>({
+     schema,
+     onSubmit,
+   }: UseFormValidationOptions<T>) {
+     const formRef = useRef<HTMLFormElement>(null);
+     const [isSubmitting, setIsSubmitting] = useState(false);
+     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
+     const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+
+     // フィールド単位のZod検証（入力時用）
+     const validateField = useCallback(async (fieldName: string, value: unknown) => {
+       // スキーマから該当フィールドのスキーマを抽出して検証
+       // ...
+     }, [schema]);
+
+     // フィールド接触時のマーク
+     const markFieldAsTouched = useCallback((fieldName: string) => {
+       setTouchedFields((prev) => new Set([...prev, fieldName]));
+     }, []);
+
+     // フォーム全体のZod検証（サブミット時用）
+     const handleSubmit = useCallback(
+       async (event: React.FormEvent<HTMLFormElement>) => {
+         event.preventDefault();
+         // FormData から全フィールドを収集して検証
+         const data = Object.fromEntries(new FormData(formRef.current!));
+         const result = await schema.safeParseAsync(data);
+         // ...
+       },
+       [schema, onSubmit],
+     );
+
+     // エラー表示判定・取得
+     const shouldShowError = useCallback(
+       (fieldName: string) => !!fieldErrors[fieldName],
+       [fieldErrors],
+     );
+
+     const getFieldError = useCallback(
+       (fieldName: string) => fieldErrors[fieldName]?.[0] || null,
+       [fieldErrors],
+     );
+
+     return {
+       formRef,
+       isSubmitting,
+       fieldErrors,
+       handleSubmit,
+       validateField,
+       shouldShowError,
+       getFieldError,
+     };
+   }
+   ```
+
 ##### コンポーネントでの実装パターン
 
-**参考実装**: `pecus.Frontend/src/app/(dashbord)/admin/workspaces/AdminWorkspacesClient.tsx`
+**【1. フィルター検索用 - useValidation を使用】**
+
+`useValidation` フックは単一フィールドまたはフィルター条件のリアルタイムバリデーションに適しています。
 
 ```typescript
 "use client";
 
+import { useState } from "react";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
 
@@ -352,7 +446,9 @@ export default function AdminWorkspacesClient() {
     <div>
       {/* 【4】エラー時のスタイル切り替え */}
       <input
+        id="filterName"
         type="text"
+        placeholder="検索名を入力..."
         className={`input input-bordered ${nameValidation.hasErrors ? 'input-error' : ''}`}
         value={filterName}
         onChange={(e) => handleNameChange(e.target.value)}
@@ -371,22 +467,165 @@ export default function AdminWorkspacesClient() {
 
       {/* 【7】ボタンの有効/無効制御 */}
       <button
+        type="button"
         onClick={handleSearch}
         disabled={!nameValidation.isValid}
+        className="btn btn-primary"
       >
         検索
       </button>
 
       {/* 【8】リセット時のエラークリア */}
       <button
+        type="button"
         onClick={() => {
           setFilterName("");
           nameValidation.clearErrors();
         }}
+        className="btn btn-outline"
       >
         リセット
       </button>
     </div>
+  );
+}
+```
+
+**【2. フォーム送信用 - useFormValidation を使用】**
+
+`useFormValidation` フックはフォーム全体のバリデーション、フィールド単位のエラー管理、Server Actions との連携に最適です。
+
+```typescript
+"use client";
+
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import { createWorkspaceAction } from "@/actions/workspace";
+
+interface Props {
+  genres: GenreItem[];
+}
+
+export default function CreateWorkspaceForm({ genres }: Props) {
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidation({
+    schema: createWorkspaceSchema,
+    onSubmit: async (data) => {
+      const result = await createWorkspaceAction(data);
+      if (!result.success) {
+        // エラー表示（ただしサーバーエラーは別途処理が必要）
+        console.error(result.errors);
+      }
+    },
+  });
+
+  return (
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+      {/* ワークスペース名 */}
+      <div className="form-control">
+        <label htmlFor="name" className="label">
+          <span className="label-text font-semibold">ワークスペース名</span>
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          placeholder="例：プロジェクトA"
+          className={`input input-bordered ${
+            shouldShowError("name") ? "input-error" : ""
+          }`}
+          onBlur={() => validateField("name", this.value)}
+          disabled={isSubmitting}
+          required
+        />
+        {shouldShowError("name") && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {getFieldError("name")}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {/* コード */}
+      <div className="form-control">
+        <label htmlFor="code" className="label">
+          <span className="label-text font-semibold">コード</span>
+        </label>
+        <input
+          id="code"
+          name="code"
+          type="text"
+          placeholder="例：project-a"
+          className={`input input-bordered ${
+            shouldShowError("code") ? "input-error" : ""
+          }`}
+          onBlur={() => validateField("code", this.value)}
+          disabled={isSubmitting}
+          required
+        />
+        {shouldShowError("code") && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {getFieldError("code")}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {/* ジャンル */}
+      <div className="form-control">
+        <label htmlFor="genre" className="label">
+          <span className="label-text font-semibold">ジャンル</span>
+        </label>
+        <select
+          id="genre"
+          name="genreId"
+          className={`select select-bordered ${
+            shouldShowError("genreId") ? "select-error" : ""
+          }`}
+          disabled={isSubmitting}
+          required
+        >
+          <option value="">選択してください</option>
+          {genres.map((genre) => (
+            <option key={genre.id} value={genre.id}>
+              {genre.name}
+            </option>
+          ))}
+        </select>
+        {shouldShowError("genreId") && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {getFieldError("genreId")}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {/* 送信ボタン */}
+      <button
+        type="submit"
+        className="btn btn-primary"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <span className="loading loading-spinner loading-sm"></span>
+            作成中...
+          </>
+        ) : (
+          "作成"
+        )}
+      </button>
+    </form>
   );
 }
 ```
@@ -398,7 +637,9 @@ export default function AdminWorkspacesClient() {
 3. **型安全性**: TypeScript の型推論を最大限活用
 4. **パフォーマンス**: `safeParse` で例外をスローせず効率的に検証
 5. **宣言的**: フックでバリデーション状態を管理し、コンポーネントはUIのみに集中
-6. **再利用性**: 同じパターンをスキル、タグ、その他のフィルターでも適用可能
+6. **フック選択**:
+   - フィルター / 単一フィールド → `useValidation`
+   - フォーム全体 / 複数フィールド → `useFormValidation`
 7. **エラー表示**: 単一エラー（`error`）と全エラー（`errors`）の両方に対応
 
 ##### バリデーションルールの追加例
@@ -435,6 +676,348 @@ export const usernameSchema = z
 - スキーマ単体のテスト（Vitest/Jest）
 - バリデーションフックのテスト（React Testing Library）
 - 統合テスト（Playwright/Cypress）
+
+#### フォーム認証の実装パターン
+
+フォーム送信には **Server Actions と Zod バリデーションを組み合わせた以下のパターン** を採用してください。
+
+**【基本フロー】**
+1. クライアント側で `useValidation` フックでリアルタイムバリデーション
+2. 送信時にサーバーサイド検証を再実行
+3. 検証成功後に API 呼び出し
+4. 成功時は `redirect()` でリダイレクト、失敗時はエラーメッセージを返す
+
+**【実装例】**
+
+```typescript
+// src/schemas/workspaceSchemas.ts
+import { z } from "zod";
+
+export const createWorkspaceSchema = z.object({
+  name: z
+    .string()
+    .min(1, "ワークスペース名は必須です。")
+    .max(100, "ワークスペース名は100文字以内で入力してください。"),
+  code: z
+    .string()
+    .min(1, "コードは必須です。")
+    .max(50, "コードは50文字以内で入力してください。")
+    .regex(/^[a-zA-Z0-9_-]+$/, "コードは英数字とハイフン・アンダースコアのみ使用できます。"),
+  genreId: z
+    .number()
+    .int("ジャンルは必須です。")
+    .positive("ジャンルを選択してください。"),
+});
+
+export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
+```
+
+```typescript
+// src/actions/workspace.ts
+"use server";
+
+import { redirect } from "next/navigation";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { createWorkspaceSchema, type CreateWorkspaceInput } from "@/schemas/workspaceSchemas";
+
+/**
+ * ワークスペース作成アクション
+ * @param input - フォーム入力値
+ * @returns 成功時は redirect() を実行、失敗時はエラー情報を返す
+ */
+export async function createWorkspaceAction(
+  input: CreateWorkspaceInput
+): Promise<
+  | { success: true }
+  | { success: false; errors: string[] }
+> {
+  try {
+    // サーバーサイド検証（クライアント検証を信頼しない）
+    const validatedData = await createWorkspaceSchema.parseAsync(input);
+
+    // API クライアント生成
+    const clients = await createPecusApiClients();
+
+    // ワークスペース作成API呼び出し
+    const result = await clients.workspace.createWorkspace({
+      name: validatedData.name,
+      code: validatedData.code,
+      genreId: validatedData.genreId,
+    });
+
+    // 成功時はリダイレクト（Server Action内で実行）
+    redirect(`/admin/workspaces/${result.id}`);
+  } catch (error) {
+    // Zodバリデーションエラー
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        errors: error.issues.map((issue) => issue.message),
+      };
+    }
+
+    // API呼び出しエラー
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        errors: [error.message || "ワークスペース作成に失敗しました。"],
+      };
+    }
+
+    // 予期しないエラー
+    return {
+      success: false,
+      errors: ["予期しないエラーが発生しました。"],
+    };
+  }
+}
+```
+
+```typescript
+// src/app/(dashboard)/admin/workspaces/CreateWorkspaceForm.tsx
+"use client";
+
+import { useState } from "react";
+import { useValidation } from "@/hooks/useValidation";
+import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import { createWorkspaceAction } from "@/actions/workspace";
+import type { GenreItem } from "@/connectors/api/models";
+
+interface Props {
+  genres: GenreItem[];
+}
+
+export default function CreateWorkspaceForm({ genres }: Props) {
+  // フォーム入力値
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [genreId, setGenreId] = useState<number | "">(
+    genres.length > 0 ? genres[0].id : ""
+  );
+
+  // 状態管理
+  const [isLoading, setIsLoading] = useState(false);
+  const [serverErrors, setServerErrors] = useState<string[]>([]);
+
+  // 個別フィールドのバリデーション
+  const nameValidation = useValidation(
+    createWorkspaceSchema.pick({ name: true })
+  );
+  const codeValidation = useValidation(
+    createWorkspaceSchema.pick({ code: true })
+  );
+
+  // フォーム送信ハンドラー
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setServerErrors([]);
+
+    // クライアント側バリデーション
+    const nameResult = await nameValidation.validate(name);
+    const codeResult = await codeValidation.validate(code);
+
+    if (!nameResult.success || !codeResult.success) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await createWorkspaceAction({
+        name,
+        code,
+        genreId: genreId as number,
+      });
+
+      if (!result.success) {
+        setServerErrors(result.errors);
+      }
+      // 成功時は Server Action 内で redirect() が実行される
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // リセットハンドラー
+  const handleReset = () => {
+    setName("");
+    setCode("");
+    setGenreId(genres.length > 0 ? genres[0].id : "");
+    setServerErrors([]);
+    nameValidation.clearErrors();
+    codeValidation.clearErrors();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      {/* サーバーエラー表示 */}
+      {serverErrors.length > 0 && (
+        <div className="alert alert-error">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m0-4l6-6m-6 6v6m0-6H4m16 0h-4"
+            />
+          </svg>
+          <div>
+            <h3 className="font-bold">エラーが発生しました</h3>
+            <ul className="list-disc list-inside mt-2">
+              {serverErrors.map((error, idx) => (
+                <li key={idx}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* ワークスペース名 */}
+      <div className="form-control">
+        <label htmlFor="name" className="label">
+          <span className="label-text font-semibold">ワークスペース名</span>
+          <span className="label-text-alt text-error">*</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          placeholder="例：プロジェクトA"
+          className={`input input-bordered ${
+            nameValidation.hasErrors ? "input-error" : ""
+          }`}
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            nameValidation.validate(e.target.value);
+          }}
+          onBlur={() => nameValidation.validate(name)}
+          disabled={isLoading}
+          required
+        />
+        {nameValidation.error && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {nameValidation.error}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {/* コード */}
+      <div className="form-control">
+        <label htmlFor="code" className="label">
+          <span className="label-text font-semibold">コード</span>
+          <span className="label-text-alt text-error">*</span>
+        </label>
+        <input
+          id="code"
+          type="text"
+          placeholder="例：project-a"
+          className={`input input-bordered ${
+            codeValidation.hasErrors ? "input-error" : ""
+          }`}
+          value={code}
+          onChange={(e) => {
+            setCode(e.target.value.toLowerCase());
+            codeValidation.validate(e.target.value);
+          }}
+          onBlur={() => codeValidation.validate(code)}
+          disabled={isLoading}
+          required
+        />
+        {codeValidation.error && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {codeValidation.error}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {/* ジャンル */}
+      <div className="form-control">
+        <label htmlFor="genre" className="label">
+          <span className="label-text font-semibold">ジャンル</span>
+          <span className="label-text-alt text-error">*</span>
+        </label>
+        <select
+          id="genre"
+          className="select select-bordered"
+          value={genreId}
+          onChange={(e) =>
+            setGenreId(e.target.value ? parseInt(e.target.value) : "")
+          }
+          disabled={isLoading || genres.length === 0}
+          required
+        >
+          <option value="">選択してください</option>
+          {genres.map((genre) => (
+            <option key={genre.id} value={genre.id}>
+              {genre.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* ボタングループ */}
+      <div className="form-control gap-2 flex-row justify-end mt-6">
+        <button
+          type="reset"
+          className="btn btn-outline"
+          onClick={handleReset}
+          disabled={isLoading}
+        >
+          リセット
+        </button>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={
+            isLoading ||
+            nameValidation.hasErrors ||
+            codeValidation.hasErrors ||
+            genreId === ""
+          }
+        >
+          {isLoading ? (
+            <>
+              <span className="loading loading-spinner loading-sm"></span>
+              作成中...
+            </>
+          ) : (
+            "作成"
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+```
+
+**【実装のポイント】**
+
+1. **スキーマ定義**: 再利用可能なスキーマを `src/schemas/` に配置
+2. **Server Action**: `src/actions/` にサーバーサイド処理を集約
+3. **二重検証**: クライアント検証（UX）+ サーバー検証（セキュリティ）
+4. **エラーハンドリング**: Zod エラーと API エラーを区別して処理
+5. **ローディング状態**: 送信中はボタンを disabled にして多重送信を防止
+6. **リダイレクト**: 成功時は Server Action 内で `redirect()` を実行
+7. **フォーム値**:
+   - 必須項目は `required` 属性を付与
+   - 入力補助（自動小文字化など）はクライアント側で実施
+   - 選択系要素は初期値を明示的に設定
+
+**【禁止事項】**
+
+- ❌ Server Action から直接 `fetch()` で API 呼び出し（代わりに `createPecusApiClients()` を使用）
+- ❌ クライアントコンポーネント内で API エラーハンドリング（Server Action で集約）
+- ❌ サーバーエラーメッセージをそのまま表示（ユーザーフレンドリーなメッセージに変換）
+- ❌ 複数フォーム送信を許可（isLoading で防止）
 
 
 ### データ層（`pecus.Libs`）
