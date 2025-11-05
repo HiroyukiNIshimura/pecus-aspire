@@ -6,8 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
 import { useNotify } from "@/hooks/useNotify";
 import { updateSkill } from "@/actions/admin/skills";
 import { editSkillSchema } from "@/schemas/editSchemas";
@@ -34,50 +33,61 @@ export default function EditSkillClient({
   const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [name, setName] = useState(skillDetail.name || "");
-  const [description, setDescription] = useState(skillDetail.description || "");
-  const [isActive, setIsActive] = useState(skillDetail.isActive ?? true);
 
-  // UI検証（Pristine.js）
-  const { formRef, isSubmitting, validateField, handleSubmit } =
-    useFormValidation({
-      onSubmit: async () => {
-        // Pristineが成功した後、Zodバリデーションを実行
-        const validationResult = await dataValidation.validate({
-          name: name.trim(),
-          description: description.trim(),
-          isActive,
+  // フォーム状態
+  const [formData, setFormData] = useState({
+    name: skillDetail.name || "",
+    description: skillDetail.description || "",
+    isActive: skillDetail.isActive ?? true,
+  });
+
+  // Zod一本化フック
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidationV2({
+    schema: editSkillSchema,
+    onSubmit: async (data) => {
+      try {
+        const result = await updateSkill(skillDetail.id!, {
+          name: data.name,
+          description: data.description || undefined,
+          isActive: data.isActive,
         });
 
-        if (!validationResult.success) {
-          return;
+        if (result.success) {
+          notify.success("スキルを更新しました。");
+          router.push("/admin/skills");
+        } else {
+          console.error("スキルの更新に失敗しました:", result.error);
+          notify.error(
+            result.error
+              ? `スキルの更新中にエラーが発生しました。(${result.error})`
+              : "スキルの更新中にエラーが発生しました。",
+          );
         }
+      } catch (err: unknown) {
+        console.error("スキルの更新中にエラーが発生しました:", err);
+        notify.error("スキルの更新中にエラーが発生しました。");
+      }
+    },
+  });
 
-        try {
-          const result = await updateSkill(skillDetail.id!, {
-            name: name.trim(),
-            description: description.trim() || undefined,
-            isActive,
-          });
+  // 入力時の検証とフォーム状態更新
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-          if (result.success) {
-            notify.success("スキルを更新しました。");
-            router.push("/admin/skills");
-          } else {
-            console.error("スキルの更新に失敗しました:", result.error);
-            notify.error(
-              result.error ? `スキルの更新中にエラーが発生しました。(${result.error})` : "スキルの更新中にエラーが発生しました。",
-            );
-          }
-        } catch (err: unknown) {
-          console.error("スキルの更新中にエラーが発生しました:", err);
-          notify.error("スキルの更新中にエラーが発生しました。");
-        }
-      },
-    });
-
-  // データ検証（Zod）
-  const dataValidation = useValidation(editSkillSchema);
+    // フィールド検証を実行
+    await validateField(fieldName, value);
+  };
 
   const handleCancel = () => {
     router.push("/admin/skills");
@@ -165,53 +175,67 @@ export default function EditSkillClient({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="form-control">
-                      <label className="label">
-                        <span className="label-text font-semibold">スキル名 *</span>
+                      <label className="label" htmlFor="input-skill-name">
+                        <span className="label-text font-semibold">
+                          スキル名 *
+                        </span>
                       </label>
                       <input
+                        id="input-skill-name"
+                        name="name"
                         type="text"
-                        className="input input-bordered"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        className={`input input-bordered ${
+                          shouldShowError("name") ? "input-error" : ""
+                        }`}
+                        value={formData.name}
+                        onChange={(e) => handleFieldChange("name", e.target.value)}
                         required
                       />
+                      {shouldShowError("name") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("name")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control">
-                      <label className="label">
+                      <label className="label" htmlFor="input-description">
                         <span className="label-text font-semibold">説明</span>
                       </label>
                       <textarea
-                        className="textarea textarea-bordered"
+                        id="input-description"
+                        name="description"
+                        className={`textarea textarea-bordered ${
+                          shouldShowError("description") ? "textarea-error" : ""
+                        }`}
                         placeholder="スキルの説明を入力してください"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleFieldChange("description", e.target.value)
+                        }
                       ></textarea>
+                      {shouldShowError("description") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("description")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control">
                       <label className="label cursor-pointer">
                         <span className="label-text font-semibold">有効</span>
                         <input
+                          name="isActive"
                           type="checkbox"
                           className="checkbox"
-                          checked={isActive}
-                          onChange={(e) => setIsActive(e.target.checked)}
+                          checked={formData.isActive}
+                          onChange={(e) =>
+                            handleFieldChange("isActive", e.target.checked)
+                          }
                         />
                       </label>
                     </div>
                   </div>
-
-                  {/* Zod検証エラー表示 */}
-                  {dataValidation.hasErrors && (
-                    <div className="alert alert-error mt-4">
-                      <div className="flex flex-col gap-1">
-                        {dataValidation.errors.map((err, idx) => (
-                          <div key={idx} className="text-sm">{err}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* 操作ボタン */}
                   <div className="flex gap-3 justify-end mt-6">

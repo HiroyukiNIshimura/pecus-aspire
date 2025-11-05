@@ -83,7 +83,28 @@ export function useFormValidationV2<T extends Record<string, unknown>>({
       try {
         // フォームデータを収集
         const formData = new FormData(formRef.current!);
-        const data = Object.fromEntries(formData);
+        const data = Object.fromEntries(formData) as Record<string, any>;
+
+        // チェックボックス値を正しく処理
+        // FormData では未チェックのチェックボックスが含まれないため、スキーマから判定して追加
+        if (schema instanceof z.ZodObject) {
+          const shape = (schema as any).shape || {};
+          Object.keys(shape).forEach((key) => {
+            const fieldSchema = shape[key];
+            // boolean 型フィールドの場合、未設定なら false を設定
+            if (
+              fieldSchema instanceof z.ZodBoolean ||
+              (fieldSchema._def?.innerType instanceof z.ZodBoolean)
+            ) {
+              if (!(key in data)) {
+                data[key] = false;
+              } else {
+                // "on" という値を true に変換
+                data[key] = data[key] === "on" || data[key] === true;
+              }
+            }
+          });
+        }
 
         // Zodで全体を検証
         const result = await schema.safeParseAsync(data);

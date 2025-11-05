@@ -6,8 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
 import { useNotify } from "@/hooks/useNotify";
 import { updateTag } from "@/actions/admin/tags";
 import { editTagSchema } from "@/schemas/editSchemas";
@@ -34,47 +33,59 @@ export default function EditTagClient({
   const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [name, setName] = useState(tagDetail.name || "");
-  const [isActive, setIsActive] = useState(tagDetail.isActive ?? true);
 
-  // UI検証（Pristine.js）
-  const { formRef, isSubmitting, handleSubmit, validateField } =
-    useFormValidation({
-      onSubmit: async () => {
-        // Pristineが成功した後、Zodバリデーションを実行
-        const validationResult = await dataValidation.validate({
-          name: name.trim(),
-          isActive,
+  // フォーム状態
+  const [formData, setFormData] = useState({
+    name: tagDetail.name || "",
+    isActive: tagDetail.isActive ?? true,
+  });
+
+  // Zod一本化フック
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidationV2({
+    schema: editTagSchema,
+    onSubmit: async (data) => {
+      try {
+        const result = await updateTag(tagDetail.id!, {
+          name: data.name,
+          isActive: data.isActive,
         });
 
-        if (!validationResult.success) {
-          return;
+        if (result.success) {
+          notify.success("タグを更新しました。");
+          router.push("/admin/tags");
+        } else {
+          console.error("タグの更新に失敗しました:", result.error);
+          notify.error(
+            result.error
+              ? `タグの更新中にエラーが発生しました。(${result.error})`
+              : "タグの更新中にエラーが発生しました。",
+          );
         }
+      } catch (err: unknown) {
+        console.error("タグの更新中にエラーが発生しました:", err);
+        notify.error("タグの更新中にエラーが発生しました。");
+      }
+    },
+  });
 
-        try {
-          const result = await updateTag(tagDetail.id!, {
-            name: name.trim(),
-            isActive,
-          });
+  // 入力時の検証とフォーム状態更新
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-          if (result.success) {
-            notify.success("タグを更新しました。");
-            router.push("/admin/tags");
-          } else {
-            console.error("タグの更新に失敗しました:", result.error);
-            notify.error(
-              result.error ? `タグの更新中にエラーが発生しました。(${result.error})` : "タグの更新中にエラーが発生しました。",
-            );
-          }
-        } catch (err: unknown) {
-          console.error("タグの更新中にエラーが発生しました:", err);
-          notify.error("タグの更新中にエラーが発生しました。");
-        }
-      },
-    });
-
-  // データ検証（Zod）
-  const dataValidation = useValidation(editTagSchema);
+    // フィールド検証を実行
+    await validateField(fieldName, value);
+  };
 
   const handleCancel = () => {
     router.push("/admin/tags");
@@ -169,17 +180,20 @@ export default function EditTagClient({
                       id="name"
                       name="name"
                       type="text"
-                      className="input input-bordered w-full"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onBlur={(e) => validateField(e.target)}
+                      className={`input input-bordered w-full ${
+                        shouldShowError("name") ? "input-error" : ""
+                      }`}
+                      value={formData.name}
+                      onChange={(e) => handleFieldChange("name", e.target.value)}
                       placeholder="タグ名を入力"
                       disabled={isSubmitting}
                       required
-                      data-pristine-required-message="タグ名は必須です。"
-                      maxLength={100}
-                      data-pristine-maxlength-message="タグ名は100文字以内で入力してください。"
                     />
+                    {shouldShowError("name") && (
+                      <span className="label-text-alt text-error">
+                        {getFieldError("name")}
+                      </span>
+                    )}
                   </div>
 
                   <div className="form-control mt-4">
@@ -188,25 +202,17 @@ export default function EditTagClient({
                         アクティブ状態
                       </span>
                       <input
+                        name="isActive"
                         type="checkbox"
                         className="checkbox checkbox-primary"
-                        checked={isActive}
-                        onChange={(e) => setIsActive(e.target.checked)}
+                        checked={formData.isActive}
+                        onChange={(e) =>
+                          handleFieldChange("isActive", e.target.checked)
+                        }
                         disabled={isSubmitting}
                       />
                     </label>
                   </div>
-
-                  {/* Zod検証エラー表示 */}
-                  {dataValidation.hasErrors && (
-                    <div className="alert alert-error mt-4">
-                      <div className="flex flex-col gap-1">
-                        {dataValidation.errors.map((err, idx) => (
-                          <div key={idx} className="text-sm">{err}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">

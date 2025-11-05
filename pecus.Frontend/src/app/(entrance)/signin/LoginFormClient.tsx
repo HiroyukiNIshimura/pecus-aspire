@@ -4,8 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { login } from "@/actions/auth";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
 import { loginSchema } from "@/schemas/signInSchemas";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { getDeviceInfo } from "@/utils/deviceInfo";
@@ -16,14 +15,8 @@ import { deviceInfoAtom } from "@/libs/atoms/deviceInfoAtom";
  *
  * 責務:
  * - フォーム入力・送信処理
- * - データバリデーション (Pristine.js + Zod)
+ * - データバリデーション (Zod)
  * - エラー表示・成功時の処理
- *
- * 注: EditWorkspaceClient と同じパターンで実装
- * - useFormValidation で UI バリデーション管理（Pristine.js）
- * - useValidation で Zod バリデーション
- * - Server Action (login) で API 呼び出し
- * - LoadingOverlay で送信中表示
  */
 export default function LoginFormClient() {
   const router = useRouter();
@@ -32,8 +25,10 @@ export default function LoginFormClient() {
   const [deviceInfo, setDeviceInfo] = useAtom(deviceInfoAtom);
 
   // === フォーム入力状態の管理 ===
-  const [loginIdentifier, setLoginIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    loginIdentifier: "",
+    password: "",
+  });
 
   // === ページロード時にデバイス情報を取得 ===
   useEffect(() => {
@@ -44,40 +39,36 @@ export default function LoginFormClient() {
     fetchDeviceInfo();
   }, [setDeviceInfo]);
 
-  // === データバリデーション: Zod スキーマを使用 ===
-  const validation = useValidation(loginSchema);
-
   // === API エラー管理（ログイン失敗など） ===
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // === UI バリデーション管理（useFormValidation + Pristine.js） ===
-  const { formRef, isSubmitting, validateField, handleSubmit } = useFormValidation({
-    onSubmit: async () => {
+  // === Zod一本化フック ===
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidationV2({
+    schema: loginSchema,
+    onSubmit: async (data) => {
       // エラーをクリア
       setApiError(null);
-      validation.clearErrors();
-
-      // === データバリデーション (Zod): ビジネスロジック検証 ===
-      const validationResult = await validation.validate({
-        loginIdentifier,
-        password,
-      });
-
-      if (!validationResult.success) {
-        // Zod バリデーションエラーがある場合は処理を中断
-        return;
-      }
 
       // === ログイン API 呼び出し ===
       try {
         if (!deviceInfo) {
-          setApiError("デバイス情報の取得に失敗しました。ページを再読み込みしてください。");
+          setApiError(
+            "デバイス情報の取得に失敗しました。ページを再読み込みしてください。",
+          );
           return;
         }
 
         const result = await login({
-          loginIdentifier,
-          password,
+          loginIdentifier: data.loginIdentifier,
+          password: data.password,
           deviceName: deviceInfo.deviceName,
           deviceType: deviceInfo.deviceType,
           os: deviceInfo.os,
@@ -94,13 +85,28 @@ export default function LoginFormClient() {
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : "ログイン認証に失敗しました。",)
+        setApiError(
+          result.error
+            ? `ログイン認証に失敗しました。(${result.error})`
+            : "ログイン認証に失敗しました。",
+        );
       } catch (err: unknown) {
         console.error("ログイン処理中にエラーが発生:", err);
         setApiError("ログイン処理中にエラーが発生しました。");
       }
     },
   });
+
+  // 入力時の検証とフォーム状態更新
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+
+    // フィールド検証を実行
+    await validateField(fieldName, value);
+  };
 
   return (
     <>
@@ -117,19 +123,8 @@ export default function LoginFormClient() {
           </div>
         )}
 
-        {/* Zod検証エラー表示 */}
-        {validation.hasErrors && (
-          <div className="alert alert-error">
-            <div className="flex flex-col gap-1">
-              {validation.errors.map((err, idx) => (
-                <div key={idx} className="text-sm">{err}</div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* === ログインフォーム === */}
-          <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
+        <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
             <div className="form-control w-full mb-4">
               <label htmlFor="loginIdentifier" className="label">
                 <span className="label-text font-semibold">
@@ -139,19 +134,24 @@ export default function LoginFormClient() {
               <div className="w-full">
                 <input
                   type="text"
-                  name="loginIdentifier"
                   id="loginIdentifier"
+                  name="loginIdentifier"
                   placeholder="ログインIDまたはメールアドレス"
-                  className="input input-bordered w-full"
-                  value={loginIdentifier}
-                  onChange={(event) => setLoginIdentifier(event.target.value)}
-                  onBlur={(e) => validateField(e.target)}
+                  className={`input input-bordered w-full ${
+                    shouldShowError("loginIdentifier") ? "input-error" : ""
+                  }`}
+                  value={formData.loginIdentifier}
+                  onChange={(event) =>
+                    handleFieldChange("loginIdentifier", event.target.value)
+                  }
                   disabled={isSubmitting}
                   required
-                  data-pristine-required-message="ログインIDまたはメールアドレスは必須です。"
-                  maxLength={255}
-                  data-pristine-maxlength-message="ログインIDまたはメールアドレスは255文字以内で入力してください。"
                 />
+                {shouldShowError("loginIdentifier") && (
+                  <span className="label-text-alt text-error">
+                    {getFieldError("loginIdentifier")}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -164,19 +164,24 @@ export default function LoginFormClient() {
               <div className="w-full">
                 <input
                   type="password"
-                  name="password"
                   id="password"
+                  name="password"
                   placeholder="パスワード"
-                  className="input input-bordered w-full"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  onBlur={(e) => validateField(e.target)}
+                  className={`input input-bordered w-full ${
+                    shouldShowError("password") ? "input-error" : ""
+                  }`}
+                  value={formData.password}
+                  onChange={(event) =>
+                    handleFieldChange("password", event.target.value)
+                  }
                   disabled={isSubmitting}
                   required
-                  data-pristine-required-message="パスワードは必須です。"
-                  maxLength={255}
-                  data-pristine-maxlength-message="パスワードは255文字以内で入力してください。"
                 />
+                {shouldShowError("password") && (
+                  <span className="label-text-alt text-error">
+                    {getFieldError("password")}
+                  </span>
+                )}
               </div>
             </div>
 

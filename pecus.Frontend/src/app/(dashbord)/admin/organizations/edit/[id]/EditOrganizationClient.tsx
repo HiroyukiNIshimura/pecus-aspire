@@ -6,8 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
 import { useNotify } from "@/hooks/useNotify";
 import { updateOrganization } from "@/actions/admin/organizations";
 import { editOrganizationSchema } from "@/schemas/editSchemas";
@@ -35,57 +34,62 @@ export default function EditOrganizationClient({
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // フォーム状態
-  const [name, setName] = useState(organizationDetail.name || "");
-  const [description, setDescription] = useState(organizationDetail.description || "");
-  const [representativeName, setRepresentativeName] = useState(organizationDetail.representativeName || "");
-  const [phoneNumber, setPhoneNumber] = useState(organizationDetail.phoneNumber || "");
-  const [email, setEmail] = useState(organizationDetail.email || "");
+  // フォーム状態（スキーマの型に合わせる）
+  const [formData, setFormData] = useState({
+    name: organizationDetail.name || "",
+    description: organizationDetail.description || "",
+    representativeName: organizationDetail.representativeName || "",
+    phoneNumber: organizationDetail.phoneNumber || "",
+    email: organizationDetail.email || "",
+  });
 
-  // UI検証（Pristine.js）
-  const { formRef, isSubmitting, validateField, handleSubmit } =
-    useFormValidation({
-      onSubmit: async () => {
-        // Pristineが成功した後、Zodバリデーションを実行
-        const validationResult = await dataValidation.validate({
-          name: name.trim(),
-          description: description.trim(),
-          representativeName: representativeName.trim(),
-          phoneNumber: phoneNumber.trim(),
-          email: email.trim(),
+  // Zod一本化フック
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidationV2({
+    schema: editOrganizationSchema,
+    onSubmit: async (data) => {
+      try {
+        const result = await updateOrganization({
+          name: data.name,
+          description: data.description || undefined,
+          representativeName: data.representativeName || undefined,
+          phoneNumber: data.phoneNumber || undefined,
+          email: data.email || undefined,
         });
 
-        if (!validationResult.success) {
-          return;
+        if (result.success) {
+          notify.success("組織情報を更新しました。");
+          router.push("/admin");
+        } else {
+          console.error("組織情報の更新に失敗しました:", result.error);
+          notify.error(
+            result.error ? `組織情報の更新中にエラーが発生しました。(${result.error})` : "組織情報の更新中にエラーが発生しました。",
+          );
         }
+      } catch (err: unknown) {
+        console.error("組織情報の更新中にエラーが発生しました:", err);
+        notify.error("組織情報の更新中にエラーが発生しました。");
+      }
+    },
+  });
 
-        try {
-          const result = await updateOrganization({
-            name: name.trim(),
-            description: description.trim() || undefined,
-            representativeName: representativeName.trim() || undefined,
-            phoneNumber: phoneNumber.trim() || undefined,
-            email: email.trim() || undefined,
-          });
+  // 入力時の検証とフォーム状態更新
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-          if (result.success) {
-            notify.success("組織情報を更新しました。");
-            router.push("/admin");
-          } else {
-            console.error("組織情報の更新に失敗しました:", result.error);
-            notify.error(
-              result.error ? `組織情報の更新中にエラーが発生しました。(${result.error})` : "組織情報の更新中にエラーが発生しました。",
-            );
-          }
-        } catch (err: unknown) {
-          console.error("組織情報の更新中にエラーが発生しました:", err);
-          notify.error("組織情報の更新中にエラーが発生しました。");
-        }
-      },
-    });
-
-  // データ検証（Zod）
-  const dataValidation = useValidation(editOrganizationSchema);
+    // フィールド検証を実行
+    await validateField(fieldName, value);
+  };
 
   const handleCancel = () => {
     router.push("/admin");
@@ -192,78 +196,120 @@ export default function EditOrganizationClient({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="form-control">
-                      <label className="label">
+                      <label className="label" htmlFor="input-name">
                         <span className="label-text font-semibold">組織名 *</span>
                       </label>
                       <input
+                        id="input-name"
+                        name="name"
                         type="text"
-                        className="input input-bordered"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        className={`input input-bordered ${
+                          shouldShowError("name") ? "input-error" : ""
+                        }`}
+                        value={formData.name}
+                        onChange={(e) => handleFieldChange("name", e.target.value)}
                         required
                       />
+                      {shouldShowError("name") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("name")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control">
-                      <label className="label">
+                      <label className="label" htmlFor="input-representative-name">
                         <span className="label-text font-semibold">代表者名</span>
                       </label>
                       <input
+                        id="input-representative-name"
+                        name="representativeName"
                         type="text"
-                        className="input input-bordered"
-                        value={representativeName}
-                        onChange={(e) => setRepresentativeName(e.target.value)}
+                        className={`input input-bordered ${
+                          shouldShowError("representativeName")
+                            ? "input-error"
+                            : ""
+                        }`}
+                        value={formData.representativeName}
+                        onChange={(e) =>
+                          handleFieldChange("representativeName", e.target.value)
+                        }
                       />
+                      {shouldShowError("representativeName") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("representativeName")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control">
-                      <label className="label">
+                      <label className="label" htmlFor="input-email">
                         <span className="label-text font-semibold">メールアドレス</span>
                       </label>
                       <input
+                        id="input-email"
+                        name="email"
                         type="email"
-                        className="input input-bordered"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        className={`input input-bordered ${
+                          shouldShowError("email") ? "input-error" : ""
+                        }`}
+                        value={formData.email}
+                        onChange={(e) => handleFieldChange("email", e.target.value)}
                       />
+                      {shouldShowError("email") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("email")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control">
-                      <label className="label">
+                      <label className="label" htmlFor="input-phone-number">
                         <span className="label-text font-semibold">電話番号</span>
                       </label>
                       <input
+                        id="input-phone-number"
+                        name="phoneNumber"
                         type="text"
-                        className="input input-bordered"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className={`input input-bordered ${
+                          shouldShowError("phoneNumber") ? "input-error" : ""
+                        }`}
+                        value={formData.phoneNumber}
+                        onChange={(e) =>
+                          handleFieldChange("phoneNumber", e.target.value)
+                        }
                       />
+                      {shouldShowError("phoneNumber") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("phoneNumber")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="form-control md:col-span-2">
-                      <label className="label">
+                      <label className="label" htmlFor="input-description">
                         <span className="label-text font-semibold">説明</span>
                       </label>
                       <textarea
-                        className="textarea textarea-bordered"
+                        id="input-description"
+                        name="description"
+                        className={`textarea textarea-bordered ${
+                          shouldShowError("description") ? "textarea-error" : ""
+                        }`}
                         placeholder="組織の説明を入力してください"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleFieldChange("description", e.target.value)
+                        }
                         rows={3}
                       ></textarea>
+                      {shouldShowError("description") && (
+                        <span className="label-text-alt text-error">
+                          {getFieldError("description")}
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  {/* Zod検証エラー表示 */}
-                  {dataValidation.hasErrors && (
-                    <div className="alert alert-error mt-4">
-                      <div className="flex flex-col gap-1">
-                        {dataValidation.errors.map((err, idx) => (
-                          <div key={idx} className="text-sm">{err}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* 操作ボタン */}
                   <div className="flex gap-3 justify-end mt-6">
