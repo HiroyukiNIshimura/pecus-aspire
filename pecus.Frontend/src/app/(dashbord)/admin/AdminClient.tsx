@@ -221,7 +221,7 @@ export default function AdminClient({
                   </div>
 
                   <div className="card-actions justify-end mt-6">
-                    <button className="btn btn-primary" type="button">
+                    <button className="btn btn-primary" type="button" onClick={() => router.push("/admin/organizations/edit/1")}>
                       編集
                     </button>
                   </div>

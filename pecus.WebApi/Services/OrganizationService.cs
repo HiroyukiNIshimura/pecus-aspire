@@ -119,11 +119,58 @@ public class OrganizationService
     }
 
     /// <summary>
-    /// 組織を更新
+    /// 組織を更新（管理者用）
     /// </summary>
-    public async Task<Organization> UpdateOrganizationAsync(
+    public async Task<Organization> AdminUpdateOrganizationAsync(
         int organizationId,
-        UpdateOrganizationRequest request,
+        AdminUpdateOrganizationRequest request,
+        int? updatedByUserId = null
+    )
+    {
+        var organization = await _context.Organizations.FindAsync(organizationId);
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        if (request.Name != null)
+        {
+            organization.Name = request.Name;
+        }
+
+        if (request.Description != null)
+        {
+            organization.Description = request.Description;
+        }
+
+        if (request.RepresentativeName != null)
+        {
+            organization.RepresentativeName = request.RepresentativeName;
+        }
+
+        if (request.PhoneNumber != null)
+        {
+            organization.PhoneNumber = request.PhoneNumber;
+        }
+
+        if (request.Email != null)
+        {
+            organization.Email = request.Email;
+        }
+
+        organization.UpdatedAt = DateTime.UtcNow;
+        organization.UpdatedByUserId = updatedByUserId;
+
+        await _context.SaveChangesAsync();
+        return organization;
+    }
+
+    /// <summary>
+    /// 組織を更新（バックエンドサービス用）
+    /// </summary>
+    public async Task<Organization> BackendUpdateOrganizationAsync(
+        int organizationId,
+        BackendUpdateOrganizationRequest request,
         int? updatedByUserId = null
     )
     {
@@ -174,6 +221,11 @@ public class OrganizationService
         if (request.Email != null)
         {
             organization.Email = request.Email;
+        }
+
+        if (request.IsActive.HasValue)
+        {
+            organization.IsActive = request.IsActive.Value;
         }
 
         organization.UpdatedAt = DateTime.UtcNow;

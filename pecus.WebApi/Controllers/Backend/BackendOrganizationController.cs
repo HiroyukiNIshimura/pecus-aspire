@@ -196,14 +196,14 @@ public class BackendOrganizationController : ControllerBase
             NotFound<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > UpdateOrganization(int id, [FromBody] UpdateOrganizationRequest request)
+    > UpdateOrganization(int id, [FromBody] BackendUpdateOrganizationRequest request)
     {
         try
         {
             // ログイン中のユーザーIDを取得
             var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var organization = await _organizationService.UpdateOrganizationAsync(id, request, me);
+            var organization = await _organizationService.BackendUpdateOrganizationAsync(id, request, me);
 
             var response = new OrganizationResponse
             {

@@ -75,9 +75,47 @@ public class CreateOrganizationRequest
 }
 
 /// <summary>
-/// 組織更新リクエスト
+/// 組織更新リクエスト（管理者用）
 /// </summary>
-public class UpdateOrganizationRequest
+public class AdminUpdateOrganizationRequest
+{
+    /// <summary>
+    /// 組織名
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "組織名は100文字以内で入力してください。")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// 組織の説明
+    /// </summary>
+    [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// 代表者名
+    /// </summary>
+    [MaxLength(100, ErrorMessage = "代表者名は100文字以内で入力してください。")]
+    public string? RepresentativeName { get; set; }
+
+    /// <summary>
+    /// 電話番号
+    /// </summary>
+    [Phone(ErrorMessage = "有効な電話番号形式で入力してください。")]
+    [MaxLength(20, ErrorMessage = "電話番号は20文字以内で入力してください。")]
+    public string? PhoneNumber { get; set; }
+
+    /// <summary>
+    /// メールアドレス
+    /// </summary>
+    [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    public string? Email { get; set; }
+}
+
+/// <summary>
+/// 組織更新リクエスト（バックエンドサービス用）
+/// </summary>
+public class BackendUpdateOrganizationRequest
 {
     /// <summary>
     /// 組織名
@@ -116,4 +154,9 @@ public class UpdateOrganizationRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public string? Email { get; set; }
+
+    /// <summary>
+    /// 有効フラグ
+    /// </summary>
+    public bool? IsActive { get; set; }
 }

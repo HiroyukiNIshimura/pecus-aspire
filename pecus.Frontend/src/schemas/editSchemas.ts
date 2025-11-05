@@ -52,3 +52,41 @@ export const editTagSchema = z.object({
 });
 
 export type EditTagInput = z.infer<typeof editTagSchema>;
+
+/**
+ * 組織編集スキーマ
+ */
+export const editOrganizationSchema = z.object({
+  name: z
+    .string()
+    .min(1, "組織名は必須です。")
+    .max(100, "組織名は100文字以内で入力してください。"),
+  code: z
+    .string()
+    .max(50, "組織コードは50文字以内で入力してください。")
+    .optional()
+    .default(""),
+  description: z
+    .string()
+    .max(500, "説明は500文字以内で入力してください。")
+    .optional()
+    .default(""),
+  representativeName: z
+    .string()
+    .max(100, "代表者名は100文字以内で入力してください。")
+    .optional()
+    .default(""),
+  phoneNumber: z
+    .string()
+    .max(20, "電話番号は20文字以内で入力してください。")
+    .optional()
+    .default(""),
+  email: z
+    .string()
+    .email("有効なメールアドレスを入力してください。")
+    .max(255, "メールアドレスは255文字以内で入力してください。")
+    .optional()
+    .default(""),
+});
+
+export type EditOrganizationInput = z.infer<typeof editOrganizationSchema>;

@@ -126,7 +126,7 @@ public class AdminOrganizationController : ControllerBase
             NotFound<ErrorResponse>,
             StatusCodeHttpResult
         >
-    > UpdateMyOrganization([FromBody] UpdateOrganizationRequest request)
+    > UpdateMyOrganization([FromBody] AdminUpdateOrganizationRequest request)
     {
         try
         {
@@ -146,7 +146,7 @@ public class AdminOrganizationController : ControllerBase
                 );
             }
 
-            var organization = await _organizationService.UpdateOrganizationAsync(
+            var organization = await _organizationService.AdminUpdateOrganizationAsync(
                 user.OrganizationId.Value,
                 request,
                 me
