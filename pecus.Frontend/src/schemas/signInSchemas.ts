@@ -17,3 +17,19 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+/**
+ * パスワードリセットリクエスト検証スキーマ
+ * - メールアドレス: 有効なメール形式で1〜255文字
+ */
+export const requestPasswordResetSchema = z.object({
+  email: z
+    .string()
+    .min(1, "メールアドレスは必須です。")
+    .email("有効なメールアドレスを入力してください。")
+    .max(255, "メールアドレスは255文字以内で入力してください。"),
+});
+
+export type RequestPasswordResetInput = z.infer<
+  typeof requestPasswordResetSchema
+>;

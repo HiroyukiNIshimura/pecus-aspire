@@ -20,7 +20,8 @@ export async function middleware(request: NextRequest) {
     "/signin",
     "/signup",
     "/forgot-password",
-    "/reset-password",
+    "/password-reset",
+    "/error-test",
   ];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
