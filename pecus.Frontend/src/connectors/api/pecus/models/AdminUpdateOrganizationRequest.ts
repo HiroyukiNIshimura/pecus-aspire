@@ -3,17 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * 組織更新リクエスト
+ * 組織更新リクエスト（管理者用）
  */
-export type UpdateOrganizationRequest = {
+export type AdminUpdateOrganizationRequest = {
     /**
      * 組織名
      */
     name?: string | null;
-    /**
-     * 組織コード
-     */
-    code?: string | null;
     /**
      * 組織の説明
      */

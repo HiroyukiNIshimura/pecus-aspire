@@ -2,12 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { BackendUpdateOrganizationRequest } from '../models/BackendUpdateOrganizationRequest';
 import type { OrganizationDetailResponse } from '../models/OrganizationDetailResponse';
 import type { OrganizationListItemResponsePagedResponse } from '../models/OrganizationListItemResponsePagedResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { SetActiveStatusRequest } from '../models/SetActiveStatusRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
-import type { UpdateOrganizationRequest } from '../models/UpdateOrganizationRequest';
 import type { UserListItemResponse } from '../models/UserListItemResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -43,7 +43,7 @@ export class BackendOrganizationService {
      */
     public static putApiBackendOrganizations(
         id: number,
-        requestBody?: UpdateOrganizationRequest,
+        requestBody?: BackendUpdateOrganizationRequest,
     ): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

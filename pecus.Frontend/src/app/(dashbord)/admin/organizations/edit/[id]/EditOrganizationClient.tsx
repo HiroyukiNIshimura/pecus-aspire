@@ -37,7 +37,6 @@ export default function EditOrganizationClient({
 
   // フォーム状態
   const [name, setName] = useState(organizationDetail.name || "");
-  const [code, setCode] = useState(organizationDetail.code || "");
   const [description, setDescription] = useState(organizationDetail.description || "");
   const [representativeName, setRepresentativeName] = useState(organizationDetail.representativeName || "");
   const [phoneNumber, setPhoneNumber] = useState(organizationDetail.phoneNumber || "");
@@ -50,7 +49,6 @@ export default function EditOrganizationClient({
         // Pristineが成功した後、Zodバリデーションを実行
         const validationResult = await dataValidation.validate({
           name: name.trim(),
-          code: code.trim(),
           description: description.trim(),
           representativeName: representativeName.trim(),
           phoneNumber: phoneNumber.trim(),
@@ -64,7 +62,6 @@ export default function EditOrganizationClient({
         try {
           const result = await updateOrganization({
             name: name.trim(),
-            code: code.trim() || undefined,
             description: description.trim() || undefined,
             representativeName: representativeName.trim() || undefined,
             phoneNumber: phoneNumber.trim() || undefined,
@@ -153,10 +150,15 @@ export default function EditOrganizationClient({
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">基本情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">組織ID</p>
                     <p className="text-lg font-semibold">{organizationDetail.id || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-base-content/60">組織コード</p>
+                    <p className="text-lg font-semibold">{organizationDetail.code || "-"}</p>
                   </div>
 
                   <div>
@@ -204,18 +206,6 @@ export default function EditOrganizationClient({
 
                     <div className="form-control">
                       <label className="label">
-                        <span className="label-text font-semibold">組織コード</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="input input-bordered"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-control">
-                      <label className="label">
                         <span className="label-text font-semibold">代表者名</span>
                       </label>
                       <input
@@ -228,18 +218,6 @@ export default function EditOrganizationClient({
 
                     <div className="form-control">
                       <label className="label">
-                        <span className="label-text font-semibold">電話番号</span>
-                      </label>
-                      <input
-                        type="tel"
-                        className="input input-bordered"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-control md:col-span-2">
-                      <label className="label">
                         <span className="label-text font-semibold">メールアドレス</span>
                       </label>
                       <input
@@ -247,6 +225,18 @@ export default function EditOrganizationClient({
                         className="input input-bordered"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">電話番号</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="input input-bordered"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
                       />
                     </div>
 

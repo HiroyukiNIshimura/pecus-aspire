@@ -2,9 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AdminUpdateOrganizationRequest } from '../models/AdminUpdateOrganizationRequest';
 import type { OrganizationDetailResponse } from '../models/OrganizationDetailResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
-import type { UpdateOrganizationRequest } from '../models/UpdateOrganizationRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -33,7 +33,7 @@ export class AdminOrganizationService {
      * @throws ApiError
      */
     public static putApiAdminOrganization(
-        requestBody?: UpdateOrganizationRequest,
+        requestBody?: AdminUpdateOrganizationRequest,
     ): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

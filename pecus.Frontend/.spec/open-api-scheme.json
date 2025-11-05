@@ -49,17 +49,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/AdminUpdateOrganizationRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/AdminUpdateOrganizationRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/AdminUpdateOrganizationRequest"
               }
             }
           }
@@ -2914,17 +2914,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationRequest"
+                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
               }
             }
           }
@@ -6196,6 +6196,95 @@
         "additionalProperties": false,
         "description": "ワークスペースアイテム関連追加レスポンス"
       },
+      "AdminUpdateOrganizationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "組織名",
+            "nullable": true
+          },
+          "description": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "組織の説明",
+            "nullable": true
+          },
+          "representativeName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "電話番号",
+            "format": "tel",
+            "nullable": true
+          },
+          "email": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "メールアドレス",
+            "format": "email",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織更新リクエスト（管理者用）"
+      },
+      "BackendUpdateOrganizationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "組織名",
+            "nullable": true
+          },
+          "code": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "組織コード",
+            "nullable": true
+          },
+          "description": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "組織の説明",
+            "nullable": true
+          },
+          "representativeName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "電話番号",
+            "format": "tel",
+            "nullable": true
+          },
+          "email": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "メールアドレス",
+            "format": "email",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "有効フラグ",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織更新リクエスト（バックエンドサービス用）"
+      },
       "BatchResponse": {
         "required": [
           "jobIds",
@@ -8619,51 +8708,6 @@
         },
         "additionalProperties": false,
         "description": "ジャンル更新リクエスト"
-      },
-      "UpdateOrganizationRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 100,
-            "type": "string",
-            "description": "組織名",
-            "nullable": true
-          },
-          "code": {
-            "maxLength": 50,
-            "type": "string",
-            "description": "組織コード",
-            "nullable": true
-          },
-          "description": {
-            "maxLength": 500,
-            "type": "string",
-            "description": "組織の説明",
-            "nullable": true
-          },
-          "representativeName": {
-            "maxLength": 100,
-            "type": "string",
-            "description": "代表者名",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "maxLength": 20,
-            "type": "string",
-            "description": "電話番号",
-            "format": "tel",
-            "nullable": true
-          },
-          "email": {
-            "maxLength": 100,
-            "type": "string",
-            "description": "メールアドレス",
-            "format": "email",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織更新リクエスト"
       },
       "UpdateProfileRequest": {
         "type": "object",

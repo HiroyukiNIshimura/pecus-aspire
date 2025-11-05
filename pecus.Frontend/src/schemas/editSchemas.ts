@@ -61,11 +61,6 @@ export const editOrganizationSchema = z.object({
     .string()
     .min(1, "組織名は必須です。")
     .max(100, "組織名は100文字以内で入力してください。"),
-  code: z
-    .string()
-    .max(50, "組織コードは50文字以内で入力してください。")
-    .optional()
-    .default(""),
   description: z
     .string()
     .max(500, "説明は500文字以内で入力してください。")
