@@ -145,20 +145,6 @@ export default function EditTagClient({
               </div>
             )}
 
-            {/* 基本情報カード（読み取り専用） */}
-            <div className="card bg-base-200 shadow-lg mb-6">
-              <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-base-content/60">タグ名</p>
-                    <p className="text-lg font-semibold">{tagDetail.name || "-"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* 編集フォーム */}
             <form
               ref={formRef}

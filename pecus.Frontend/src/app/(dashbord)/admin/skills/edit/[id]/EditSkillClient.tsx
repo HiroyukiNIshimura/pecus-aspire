@@ -147,20 +147,6 @@ export default function EditSkillClient({
               </div>
             )}
 
-            {/* 基本情報カード（読み取り専用） */}
-            <div className="card bg-base-200 shadow-lg mb-6">
-              <div className="card-body">
-                <h2 className="card-title text-lg mb-4">基本情報</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-base-content/60">スキル名</p>
-                    <p className="text-lg font-semibold">{skillDetail.name || "-"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* 編集フォーム */}
             <form
               ref={formRef}
@@ -168,81 +154,87 @@ export default function EditSkillClient({
               noValidate
               className="mb-6"
             >
-              {/* スキル基本情報カード */}
-              <div className="card bg-base-100 border border-base-300 mb-6">
+              <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">編集</h2>
+                  <h2 className="card-title text-lg mb-4">編集項目</h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="form-control">
-                      <label className="label" htmlFor="input-skill-name">
-                        <span className="label-text font-semibold">
-                          スキル名 *
-                        </span>
-                      </label>
-                      <input
-                        id="input-skill-name"
-                        name="name"
-                        type="text"
-                        className={`input input-bordered ${
-                          shouldShowError("name") ? "input-error" : ""
-                        }`}
-                        value={formData.name}
-                        onChange={(e) => handleFieldChange("name", e.target.value)}
-                        required
-                      />
-                      {shouldShowError("name") && (
-                        <span className="label-text-alt text-error">
-                          {getFieldError("name")}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="form-control">
-                      <label className="label" htmlFor="input-description">
-                        <span className="label-text font-semibold">説明</span>
-                      </label>
-                      <textarea
-                        id="input-description"
-                        name="description"
-                        className={`textarea textarea-bordered ${
-                          shouldShowError("description") ? "textarea-error" : ""
-                        }`}
-                        placeholder="スキルの説明を入力してください"
-                        value={formData.description}
-                        onChange={(e) =>
-                          handleFieldChange("description", e.target.value)
-                        }
-                      ></textarea>
-                      {shouldShowError("description") && (
-                        <span className="label-text-alt text-error">
-                          {getFieldError("description")}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="form-control">
-                      <label className="label cursor-pointer">
-                        <span className="label-text font-semibold">有効</span>
-                        <input
-                          name="isActive"
-                          type="checkbox"
-                          className="checkbox"
-                          checked={formData.isActive}
-                          onChange={(e) =>
-                            handleFieldChange("isActive", e.target.checked)
-                          }
-                        />
-                      </label>
-                    </div>
+                  <div className="form-control">
+                    <label className="label" htmlFor="input-skill-name">
+                      <span className="label-text font-semibold">
+                        スキル名 <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <input
+                      id="input-skill-name"
+                      name="name"
+                      type="text"
+                      className={`input input-bordered w-full ${
+                        shouldShowError("name") ? "input-error" : ""
+                      }`}
+                      value={formData.name}
+                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      placeholder="スキル名を入力"
+                      disabled={isSubmitting}
+                      required
+                    />
+                    {shouldShowError("name") && (
+                      <span className="label-text-alt text-error">
+                        {getFieldError("name")}
+                      </span>
+                    )}
                   </div>
 
-                  {/* 操作ボタン */}
-                  <div className="flex gap-3 justify-end mt-6">
+                  <div className="form-control mt-4">
+                    <label className="label" htmlFor="input-description">
+                      <span className="label-text font-semibold">説明</span>
+                    </label>
+                    <textarea
+                      id="input-description"
+                      name="description"
+                      className={`textarea textarea-bordered w-full ${
+                        shouldShowError("description") ? "textarea-error" : ""
+                      }`}
+                      placeholder="スキルの説明を入力してください"
+                      value={formData.description}
+                      onChange={(e) =>
+                        handleFieldChange("description", e.target.value)
+                      }
+                      disabled={isSubmitting}
+                      rows={3}
+                    ></textarea>
+                    {shouldShowError("description") && (
+                      <span className="label-text-alt text-error">
+                        {getFieldError("description")}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="form-control mt-4">
+                    <label className="label cursor-pointer">
+                      <span className="label-text font-semibold">
+                        有効
+                      </span>
+                      <input
+                        name="isActive"
+                        type="checkbox"
+                        className="checkbox checkbox-primary"
+                        checked={formData.isActive}
+                        onChange={(e) =>
+                          handleFieldChange("isActive", e.target.checked)
+                        }
+                        disabled={isSubmitting}
+                      />
+                    </label>
+                  </div>
+
+                  {/* アクションボタン */}
+                                    {/* アクションボタン */}
+                  <div className="card-actions justify-end mt-6">
                     <button
                       type="button"
-                      className="btn btn-outline"
+                      className="btn btn-ghost"
                       onClick={handleCancel}
+                      disabled={isSubmitting}
                     >
                       キャンセル
                     </button>
@@ -253,7 +245,7 @@ export default function EditSkillClient({
                     >
                       {isSubmitting ? (
                         <>
-                          <span className="loading loading-spinner loading-sm"></span>
+                          <span className="loading loading-spinner"></span>
                           更新中...
                         </>
                       ) : (
