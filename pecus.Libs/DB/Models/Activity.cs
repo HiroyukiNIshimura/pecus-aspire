@@ -92,4 +92,10 @@ public class Activity
     /// 操作ユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User? User { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -69,4 +71,10 @@ public class Skill
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

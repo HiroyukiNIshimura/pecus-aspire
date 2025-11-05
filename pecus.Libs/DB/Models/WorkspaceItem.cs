@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Libs.DB.Models;
 
@@ -137,4 +138,10 @@ public class WorkspaceItem
     /// </summary>
     public ICollection<WorkspaceItemRelation> RelationsTo { get; set; } =
         new List<WorkspaceItemRelation>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

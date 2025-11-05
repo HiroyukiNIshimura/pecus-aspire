@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -66,4 +68,10 @@ public class Tag
     /// </summary>
     public ICollection<WorkspaceItemTag> WorkspaceItemTags { get; set; } =
         new List<WorkspaceItemTag>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

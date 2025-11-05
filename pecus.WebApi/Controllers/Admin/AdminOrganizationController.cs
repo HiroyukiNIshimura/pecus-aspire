@@ -118,12 +118,14 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<OrganizationResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > UpdateMyOrganization([FromBody] AdminUpdateOrganizationRequest request)
@@ -165,6 +167,16 @@ public class AdminOrganizationController : ControllerBase
             };
 
             return TypedResults.Ok(response);
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
+                    Message = ex.Message,
+                }
+            );
         }
         catch (NotFoundException ex)
         {

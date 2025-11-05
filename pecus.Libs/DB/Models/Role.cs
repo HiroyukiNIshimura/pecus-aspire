@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -49,4 +51,10 @@ public class Role
     /// このロールを持つユーザー
     /// </summary>
     public ICollection<User> Users { get; set; } = new List<User>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

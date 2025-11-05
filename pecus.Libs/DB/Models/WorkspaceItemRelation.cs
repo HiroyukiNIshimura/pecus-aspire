@@ -80,4 +80,10 @@ public class WorkspaceItemRelation
     /// </summary>
     [ForeignKey(nameof(CreatedByUserId))]
     public User? CreatedByUser { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -59,4 +61,10 @@ public class Genre
     /// このジャンルを持つワークスペース
     /// </summary>
     public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

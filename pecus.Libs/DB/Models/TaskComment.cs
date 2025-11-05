@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pecus.Libs.DB.Models;
@@ -76,4 +77,10 @@ public class TaskComment
     /// </summary>
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

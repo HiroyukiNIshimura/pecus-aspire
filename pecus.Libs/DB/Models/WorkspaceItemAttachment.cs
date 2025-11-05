@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -70,4 +72,10 @@ public class WorkspaceItemAttachment
     /// アップロードしたユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User? UploadedByUser { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

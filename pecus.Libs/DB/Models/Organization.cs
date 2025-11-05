@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -84,4 +86,10 @@ public class Organization
     /// この組織で管理されているスキル
     /// </summary>
     public ICollection<Skill> Skills { get; set; } = new List<Skill>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }

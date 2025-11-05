@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -79,4 +81,10 @@ public class Workspace
     /// このワークスペースに属するアイテム
     /// </summary>
     public ICollection<WorkspaceItem> WorkspaceItems { get; set; } = new List<WorkspaceItem>();
+
+    /// <summary>
+    /// 楽観的ロック用タイムスタンプ
+    /// </summary>
+    [Timestamp]
+    public byte[]? RowVersion { get; set; }
 }
