@@ -1,13 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAtom } from "jotai";
 import { login } from "@/actions/auth";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useValidation } from "@/hooks/useValidation";
 import { loginSchema } from "@/schemas/signInSchemas";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { getDeviceInfo } from "@/utils/deviceInfo";
+import { deviceInfoAtom } from "@/libs/atoms/deviceInfoAtom";
 
 /**
  * ログインフォーム (Client Component)
@@ -26,9 +28,21 @@ import { getDeviceInfo } from "@/utils/deviceInfo";
 export default function LoginFormClient() {
   const router = useRouter();
 
+  // === デバイス情報管理 (Jotai) ===
+  const [deviceInfo, setDeviceInfo] = useAtom(deviceInfoAtom);
+
   // === フォーム入力状態の管理 ===
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
+
+  // === ページロード時にデバイス情報を取得 ===
+  useEffect(() => {
+    const fetchDeviceInfo = async () => {
+      const info = await getDeviceInfo();
+      setDeviceInfo(info);
+    };
+    fetchDeviceInfo();
+  }, [setDeviceInfo]);
 
   // === データバリデーション: Zod スキーマを使用 ===
   const validation = useValidation(loginSchema);
@@ -56,8 +70,10 @@ export default function LoginFormClient() {
 
       // === ログイン API 呼び出し ===
       try {
-        // デバイス情報を取得
-        const deviceInfo = await getDeviceInfo();
+        if (!deviceInfo) {
+          setApiError("デバイス情報の取得に失敗しました。ページを再読み込みしてください。");
+          return;
+        }
 
         const result = await login({
           loginIdentifier,
