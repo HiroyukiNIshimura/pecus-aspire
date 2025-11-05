@@ -10,6 +10,8 @@ export interface DeviceInfo {
   appVersion: string;
   timezone: string;
   location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export const deviceInfoAtom = atom<DeviceInfo | null>(null);

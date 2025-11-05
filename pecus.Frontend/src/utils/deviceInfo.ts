@@ -1,6 +1,7 @@
 import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
 import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
 import { getLocationFromCoordinates } from "@/actions/geolocation";
+import { DeviceInfo } from "@/libs/atoms/deviceInfoAtom";
 
 /**
  * 緯度経度からおおよその地域を推定する（フォールバック用）
@@ -107,7 +108,7 @@ function getApproximateLocation(latitude: number, longitude: number): string {
 /**
  * ブラウザのデバイス情報を取得する
  */
-export async function getDeviceInfo() {
+export async function getDeviceInfo(): Promise<DeviceInfo> {
   const userAgent = navigator.userAgent;
 
   // OS判定 (navigator.userAgentから判定 - navigator.platformは非推奨)
@@ -142,17 +143,20 @@ export async function getDeviceInfo() {
 
   // Geolocation APIで位置情報を取得し、Nominatim APIで詳細な地域情報に変換
   let location = null;
+  let latitude: number | null = null;
+  let longitude: number | null = null;
   if (navigator.geolocation) {
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000, // 5分以内のキャッシュを使用
+          timeout: 3000,
+          maximumAge: 180000, // 3分以内のキャッシュを使用
         });
       });
 
-      const { latitude, longitude } = position.coords;
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
 
       // 【優先】Server Action で Nominatim API を呼び出し
       const result = await getLocationFromCoordinates(latitude, longitude);
@@ -184,5 +188,7 @@ export async function getDeviceInfo() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     appVersion: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     location,
+    latitude,
+    longitude,
   };
 }
