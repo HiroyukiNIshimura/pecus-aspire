@@ -40,7 +40,6 @@ export default function LoginFormClient() {
     const fetchDeviceInfo = async () => {
       const info = await getDeviceInfo();
       setDeviceInfo(info);
-      console.log("取得したデバイス情報:", info);
     };
     fetchDeviceInfo();
   }, [setDeviceInfo]);
