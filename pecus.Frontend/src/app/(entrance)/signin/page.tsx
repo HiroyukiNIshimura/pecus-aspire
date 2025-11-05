@@ -34,7 +34,7 @@ export default async function SignInPage() {
 
   return (
     <div className="font-sans flex items-center justify-center min-h-screen p-8 pb-20 sm:p-20">
-      <main className="flex flex-col gap-8 items-center w-full max-w-2xs">
+      <main className="flex flex-col gap-8 items-center w-full max-w-sm">
         <Suspense>
           <LoginFormClient />
         </Suspense>
