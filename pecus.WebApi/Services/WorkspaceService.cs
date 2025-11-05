@@ -225,7 +225,17 @@ public class WorkspaceService
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return workspace;
     }
 
@@ -259,7 +269,18 @@ public class WorkspaceService
         workspace.IsActive = false;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return true;
     }
 
@@ -277,7 +298,18 @@ public class WorkspaceService
         workspace.IsActive = true;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return true;
     }
 

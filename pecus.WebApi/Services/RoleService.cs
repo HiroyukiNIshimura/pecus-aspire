@@ -35,7 +35,17 @@ public class RoleService
         };
 
         _context.Roles.Add(role);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return role;
     }
@@ -69,7 +79,17 @@ public class RoleService
             role.Permissions.Add(permission);
             role.UpdatedAt = DateTime.UtcNow;
             role.UpdatedByUserId = updatedByUserId;
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new ConcurrencyException(
+                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+                );
+            }
         }
 
         return true;
@@ -102,7 +122,17 @@ public class RoleService
         role.Permissions.Remove(permission);
         role.UpdatedAt = DateTime.UtcNow;
         role.UpdatedByUserId = updatedByUserId;
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return true;
     }

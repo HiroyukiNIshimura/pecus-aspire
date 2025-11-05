@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Models.Responses.User;
 
@@ -55,7 +56,17 @@ public class ProfileService
         user.Email = newEmail;
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = userId;
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", userId, newEmail);
         return true;

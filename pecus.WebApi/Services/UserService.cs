@@ -263,12 +263,22 @@ public class UserService
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return user;
     }
 
     /// <summary>
-    /// ユーザーのアバター情報を更新
+    /// ユーザーのアバターを更新
     /// </summary>
     public async Task<User> UpdateUserAvatarAsync(
         int userId,
@@ -288,7 +298,17 @@ public class UserService
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return user;
     }
 
@@ -306,7 +326,18 @@ public class UserService
         user.IsActive = isActive;
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         return true;
     }
 

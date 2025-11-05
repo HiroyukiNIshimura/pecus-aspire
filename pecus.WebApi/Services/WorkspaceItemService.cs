@@ -369,7 +369,16 @@ public class WorkspaceItemService
 
         item.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -449,7 +458,16 @@ public class WorkspaceItemService
 
         item.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();

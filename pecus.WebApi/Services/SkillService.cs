@@ -48,7 +48,17 @@ public class SkillService
         };
 
         _context.Skills.Add(skill);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return skill;
     }
@@ -150,7 +160,17 @@ public class SkillService
         skill.UpdatedByUserId = updatedByUserId;
 
         _context.Skills.Update(skill);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return skill;
     }
@@ -167,7 +187,17 @@ public class SkillService
         }
 
         _context.Skills.Remove(skill);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return true;
     }
@@ -188,7 +218,17 @@ public class SkillService
         skill.UpdatedByUserId = updatedByUserId;
 
         _context.Skills.Update(skill);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return true;
     }
@@ -209,7 +249,17 @@ public class SkillService
         skill.UpdatedByUserId = updatedByUserId;
 
         _context.Skills.Update(skill);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return true;
     }

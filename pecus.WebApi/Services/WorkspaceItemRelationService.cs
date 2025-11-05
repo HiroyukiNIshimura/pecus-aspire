@@ -87,7 +87,17 @@ public class WorkspaceItemRelationService
         };
 
         _context.WorkspaceItemRelations.Add(relation);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         // 作成された関連を詳細情報付きで取得
         var createdRelation = await _context
@@ -176,7 +186,17 @@ public class WorkspaceItemRelationService
         }
 
         _context.WorkspaceItemRelations.Remove(relation);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "ワークスペースアイテム関連を削除しました。RelationId: {RelationId}, FromItemId: {FromItemId}, ToItemId: {ToItemId}",

@@ -69,7 +69,17 @@ public class WorkspaceItemPinService
         };
 
         _context.WorkspaceItemPins.Add(pin);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         return pin;
     }
@@ -103,6 +113,16 @@ public class WorkspaceItemPinService
         }
 
         _context.WorkspaceItemPins.Remove(pin);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
     }
 }

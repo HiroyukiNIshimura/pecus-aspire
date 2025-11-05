@@ -317,12 +317,14 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<WorkspaceResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > UpdateWorkspace(int id, [FromBody] UpdateWorkspaceRequest request)
@@ -375,6 +377,16 @@ public class AdminWorkspaceController : ControllerBase
                 new ErrorResponse
                 {
                     StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
                     Message = ex.Message,
                 }
             );
@@ -464,9 +476,10 @@ public class AdminWorkspaceController : ControllerBase
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > DeactivateWorkspace(int id)
     {
         try
@@ -506,6 +519,16 @@ public class AdminWorkspaceController : ControllerBase
                 }
             );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
+                    Message = ex.Message,
+                }
+            );
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "ワークスペース無効化中にエラーが発生しました。ID: {Id}", id);
@@ -519,9 +542,10 @@ public class AdminWorkspaceController : ControllerBase
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > ActivateWorkspace(int id)
     {
         try
@@ -558,6 +582,16 @@ public class AdminWorkspaceController : ControllerBase
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "ワークスペースが正常に有効化されました。",
+                }
+            );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
+                    Message = ex.Message,
                 }
             );
         }

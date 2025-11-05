@@ -56,7 +56,17 @@ public class TagService
         };
 
         _context.Tags.Add(tag);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "タグを作成しました。TagId: {TagId}, Name: {Name}, OrganizationId: {OrganizationId}",
@@ -169,7 +179,17 @@ public class TagService
         tag.UpdatedByUserId = updatedByUserId;
 
         _context.Tags.Update(tag);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "タグを更新しました。TagId: {TagId}, Name: {Name}",
@@ -193,7 +213,17 @@ public class TagService
         }
 
         _context.Tags.Remove(tag);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "タグを削除しました。TagId: {TagId}, Name: {Name}",
@@ -220,7 +250,17 @@ public class TagService
         tag.UpdatedByUserId = updatedByUserId;
 
         _context.Tags.Update(tag);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "タグを無効化しました。TagId: {TagId}, Name: {Name}",
@@ -247,7 +287,17 @@ public class TagService
         tag.UpdatedByUserId = updatedByUserId;
 
         _context.Tags.Update(tag);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
 
         _logger.LogInformation(
             "タグを有効化しました。TagId: {TagId}, Name: {Name}",
