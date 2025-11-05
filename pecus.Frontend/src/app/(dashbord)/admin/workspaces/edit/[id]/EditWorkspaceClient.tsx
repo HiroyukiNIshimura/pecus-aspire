@@ -6,8 +6,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidationV2 } from "@/hooks/useFormValidationV2";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspace } from "@/actions/admin/workspace";
 import { editWorkspaceSchema } from "@/schemas/editSchemas";
@@ -39,57 +38,61 @@ export default function EditWorkspaceClient({
   const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [name, setName] = useState(workspaceDetail.name || "");
-  const [description, setDescription] = useState(
-    workspaceDetail.description || "",
-  );
-  const [genreId, setGenreId] = useState<number | null>(
-    (workspaceDetail as any).genreId || null,
-  );
-  const [isActive, setIsActive] = useState(workspaceDetail.isActive ?? true);
 
-  // UI検証（Pristine.js）
-  const { formRef, isSubmitting, validateField, handleSubmit } =
-    useFormValidation({
-      onSubmit: async () => {
-        // Pristineが成功した後、Zodバリデーションを実行
-        const validationResult = await dataValidation.validate({
-          name: name.trim(),
-          description: description.trim(),
-          genreId: genreId ? String(genreId) : "",
-          isActive,
+  // フォーム状態（スキーマの型に合わせる）
+  const [formData, setFormData] = useState({
+    name: workspaceDetail.name || "",
+    description: workspaceDetail.description || "",
+    genreId: (workspaceDetail as any).genreId ? String((workspaceDetail as any).genreId) : "",
+    isActive: workspaceDetail.isActive ?? true,
+  });
+
+  // Zod一本化フック
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidationV2({
+    schema: editWorkspaceSchema,
+    onSubmit: async (data) => {
+      try {
+        const result = await updateWorkspace(workspaceDetail.id!, {
+          name: data.name,
+          description: data.description || undefined,
+          genreId: data.genreId ? parseInt(data.genreId, 10) : undefined,
+          isActive: data.isActive,
         });
 
-        if (!validationResult.success) {
-          return;
+        if (result.success) {
+          notify.success("ワークスペースを更新しました。");
+          router.push("/admin/workspaces");
+        } else {
+          console.error("ワークスペースの更新に失敗しました:", result.error);
+          notify.error(
+            result.error ? `ワークスペースの更新中にエラーが発生しました。(${result.error})` : "ワークスペースの更新中にエラーが発生しました。",
+          );
         }
+      } catch (err: unknown) {
+        console.error("ワークスペースの更新中にエラーが発生しました:", err);
+        notify.error("ワークスペースの更新中にエラーが発生しました。");
+      }
+    },
+  });
 
-        try {
-          const result = await updateWorkspace(workspaceDetail.id!, {
-            name: name.trim(),
-            description: description.trim() || undefined,
-            genreId: genreId || undefined,
-            isActive,
-          });
+  // 入力時の検証とフォーム状態更新
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-          if (result.success) {
-            notify.success("ワークスペースを更新しました。");
-            router.push("/admin/workspaces");
-          } else {
-            console.error("ワークスペースの更新に失敗しました:", result.error);
-            notify.error(
-              result.error ? `ワークスペースの更新中にエラーが発生しました。(${result.error})` : "ワークスペースの更新中にエラーが発生しました。",
-            );
-          }
-        } catch (err: unknown) {
-          console.error("ワークスペースの更新中にエラーが発生しました:", err);
-          notify.error("ワークスペースの更新中にエラーが発生しました。");
-        }
-      },
-    });
-
-  // データ検証（Zod）
-  const dataValidation = useValidation(editWorkspaceSchema);
+    // フィールド検証を実行
+    await validateField(fieldName, value);
+  };
 
   const handleCancel = () => {
     router.push("/admin/workspaces");
@@ -190,17 +193,21 @@ export default function EditWorkspaceClient({
                       id="name"
                       name="name"
                       type="text"
-                      className="input input-bordered w-full"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onBlur={(e) => validateField(e.target)}
+                      className={`input input-bordered w-full ${
+                        shouldShowError("name") ? "input-error" : ""
+                      }`}
+                      value={formData.name}
+                      onChange={(e) => handleFieldChange("name", e.target.value)}
                       placeholder="ワークスペース名を入力"
                       disabled={isSubmitting}
-                      required
-                      data-pristine-required-message="ワークスペース名は必須です。"
-                      maxLength={100}
-                      data-pristine-maxlength-message="ワークスペース名は100文字以内で入力してください。"
                     />
+                    {shouldShowError("name") && (
+                      <label className="label">
+                        <span className="label-text-alt text-error">
+                          {getFieldError("name")}
+                        </span>
+                      </label>
+                    )}
                   </div>
 
                   {/* 説明 */}
@@ -211,9 +218,11 @@ export default function EditWorkspaceClient({
                     <textarea
                       id="description"
                       name="description"
-                      className="textarea textarea-bordered w-full"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      className={`textarea textarea-bordered w-full ${
+                        shouldShowError("description") ? "textarea-error" : ""
+                      }`}
+                      value={formData.description}
+                      onChange={(e) => handleFieldChange("description", e.target.value)}
                       placeholder="ワークスペースの説明を入力（任意）"
                       disabled={isSubmitting}
                       maxLength={500}
@@ -221,31 +230,32 @@ export default function EditWorkspaceClient({
                     />
                     <label className="label">
                       <span className="label-text-alt text-xs">
-                        {description.length}/500 文字
+                        {formData.description.length}/500 文字
                       </span>
+                      {shouldShowError("description") && (
+                        <span className="label-text-alt text-error text-xs">
+                          {getFieldError("description")}
+                        </span>
+                      )}
                     </label>
                   </div>
 
                   {/* ジャンル */}
                   {genres.length > 0 && (
                     <div className="form-control mt-4">
-                      <label htmlFor="genre" className="label">
+                      <label htmlFor="genreId" className="label">
                         <span className="label-text font-semibold">
                           ジャンル
                         </span>
                       </label>
                       <select
-                        id="genre"
-                        name="genre"
-                        className="select select-bordered w-full"
-                        value={genreId ?? ""}
-                        onChange={(e) =>
-                          setGenreId(
-                            e.target.value
-                              ? parseInt(e.target.value, 10)
-                              : null,
-                          )
-                        }
+                        id="genreId"
+                        name="genreId"
+                        className={`select select-bordered w-full ${
+                          shouldShowError("genreId") ? "select-error" : ""
+                        }`}
+                        value={formData.genreId}
+                        onChange={(e) => handleFieldChange("genreId", e.target.value)}
                         disabled={isSubmitting}
                       >
                         <option value="">選択してください</option>
@@ -255,6 +265,13 @@ export default function EditWorkspaceClient({
                           </option>
                         ))}
                       </select>
+                      {shouldShowError("genreId") && (
+                        <label className="label">
+                          <span className="label-text-alt text-error">
+                            {getFieldError("genreId")}
+                          </span>
+                        </label>
+                      )}
                     </div>
                   )}
 
@@ -266,24 +283,14 @@ export default function EditWorkspaceClient({
                       </span>
                       <input
                         type="checkbox"
+                        name="isActive"
                         className="checkbox checkbox-primary"
-                        checked={isActive}
-                        onChange={(e) => setIsActive(e.target.checked)}
+                        checked={formData.isActive}
+                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
                         disabled={isSubmitting}
                       />
                     </label>
                   </div>
-
-                  {/* Zod検証エラー表示 */}
-                  {dataValidation.hasErrors && (
-                    <div className="alert alert-error mt-4">
-                      <div className="flex flex-col gap-1">
-                        {dataValidation.errors.map((err, idx) => (
-                          <div key={idx} className="text-sm">{err}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">
