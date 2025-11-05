@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { z } from "zod";
+import { $ZodIssueBase } from "zod/v4/core";
 
 interface FieldError {
   [fieldName: string]: string[];
@@ -48,7 +49,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
           });
           return { isValid: true, errors: [] };
         } else {
-          const errors = result.error.issues.map((issue: z.ZodIssue) => issue.message);
+          const errors = result.error.issues.map((issue: $ZodIssueBase) => issue.message);
           setFieldErrors((prev) => ({
             ...prev,
             [fieldName]: errors,
@@ -112,7 +113,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
         if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: FieldError = {};
-          result.error.issues.forEach((issue: z.ZodIssue) => {
+          result.error.issues.forEach((issue) => {
             const path = issue.path.join(".");
             if (!errors[path]) errors[path] = [];
             errors[path].push(issue.message);

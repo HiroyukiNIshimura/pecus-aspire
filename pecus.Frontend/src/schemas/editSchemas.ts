@@ -77,7 +77,6 @@ export const editOrganizationSchema = z.object({
     .optional()
     .default(""),
   email: z
-    .string()
     .email("有効なメールアドレスを入力してください。")
     .max(255, "メールアドレスは255文字以内で入力してください。")
     .optional()
