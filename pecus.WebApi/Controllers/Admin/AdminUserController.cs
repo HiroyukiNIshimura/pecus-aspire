@@ -233,8 +233,9 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult, Conflict<ErrorResponse>>
     > SetUserActiveStatus(int id, [FromBody] SetUserActiveStatusRequest request)
     {
         try
@@ -273,6 +274,14 @@ public class AdminUserController : ControllerBase
                 ? "ユーザーを有効化しました。"
                 : "ユーザーを無効化しました。";
             return TypedResults.Ok(new SuccessResponse { Message = message });
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
         }
         catch (Exception ex)
         {

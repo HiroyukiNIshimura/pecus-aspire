@@ -53,12 +53,14 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(TagResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<TagResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > CreateTag([FromBody] CreateTagRequest request)
@@ -120,6 +122,14 @@ public class AdminTagController : ControllerBase
                     Message = ex.Message,
                 }
             );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
         }
         catch (DuplicateException ex)
         {
@@ -291,12 +301,14 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(TagResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<TagResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > UpdateTag(int id, [FromBody] UpdateTagRequest request)
@@ -359,6 +371,14 @@ public class AdminTagController : ControllerBase
                 }
             );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (DuplicateException ex)
         {
             return TypedResults.BadRequest(
@@ -392,9 +412,10 @@ public class AdminTagController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > DeleteTag(int id)
     {
         try
@@ -442,6 +463,14 @@ public class AdminTagController : ControllerBase
                 }
             );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "タグ削除中にエラーが発生しました。ID: {Id}", id);
@@ -455,9 +484,10 @@ public class AdminTagController : ControllerBase
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > DeactivateTag(int id)
     {
         try
@@ -507,6 +537,14 @@ public class AdminTagController : ControllerBase
                 }
             );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "タグ無効化中にエラーが発生しました。ID: {Id}", id);
@@ -520,9 +558,10 @@ public class AdminTagController : ControllerBase
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > ActivateTag(int id)
     {
         try
@@ -571,6 +610,14 @@ public class AdminTagController : ControllerBase
                     Message = "タグが正常に有効化されました。",
                 }
             );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
         }
         catch (Exception ex)
         {

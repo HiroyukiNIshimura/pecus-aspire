@@ -46,12 +46,14 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
           Ok<SkillResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > CreateSkill([FromBody] CreateSkillRequest request)
@@ -116,6 +118,14 @@ public class AdminSkillController : ControllerBase
                             Message = ex.Message,
                         }
            );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
         }
         catch (DuplicateException ex)
         {
@@ -292,12 +302,14 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
        Ok<SkillResponse>,
       BadRequest<ErrorResponse>,
  NotFound<ErrorResponse>,
+     Conflict<ErrorResponse>,
      StatusCodeHttpResult
         >
     > UpdateSkill(int id, [FromBody] UpdateSkillRequest request)
@@ -363,6 +375,14 @@ public class AdminSkillController : ControllerBase
               }
            );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (DuplicateException ex)
         {
             return TypedResults.BadRequest(
@@ -396,9 +416,10 @@ new ErrorResponse
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-  Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+  Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > DeleteSkill(int id)
     {
         try
@@ -447,6 +468,14 @@ new ErrorResponse
                          }
                  );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "スキル削除中にエラーが発生しました。ID: {Id}", id);
@@ -460,9 +489,10 @@ new ErrorResponse
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > DeactivateSkill(int id)
     {
         try
@@ -514,6 +544,14 @@ new ErrorResponse
          }
                 );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "スキル無効化中にエラーが発生しました。ID: {Id}", id);
@@ -527,9 +565,10 @@ new ErrorResponse
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
     > ActivateSkill(int id)
     {
         try
@@ -580,6 +619,14 @@ new ErrorResponse
                    Message = "スキルが正常に有効化されました。",
                }
                   );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status409Conflict,
+                Message = ex.Message,
+            });
         }
         catch (Exception ex)
         {
