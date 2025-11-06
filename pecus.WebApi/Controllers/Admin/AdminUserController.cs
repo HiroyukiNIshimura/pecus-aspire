@@ -360,12 +360,19 @@ public class AdminUserController : ControllerBase
     /// <response code="200">スキルを設定しました</response>
     /// <response code="403">他組織のユーザーは操作できません</response>
     /// <response code="404">ユーザーが見つかりません</response>
+    /// <response code="409">競合: スキル情報が別のユーザーにより更新されています</response>
     [HttpPut("{id}/skills")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+        Results<
+            Ok<SuccessResponse>,
+            NotFound<ErrorResponse>,
+            UnauthorizedHttpResult,
+            Conflict<ErrorResponse>
+        >
     > SetUserSkills(int id, [FromBody] SetUserSkillsRequest request)
     {
         try
@@ -388,7 +395,12 @@ public class AdminUserController : ControllerBase
                 return TypedResults.Unauthorized();
             }
 
-            var result = await _userService.SetUserSkillsAsync(id, request.SkillIds, me);
+            var result = await _userService.SetUserSkillsAsync(
+                userId: id,
+                skillIds: request.SkillIds,
+                userRowVersion: request.UserRowVersion,
+                updatedByUserId: me
+            );
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -397,6 +409,12 @@ public class AdminUserController : ControllerBase
             }
 
             return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse { Message = ex.Message }
+            );
         }
         catch (Exception ex)
         {
@@ -648,8 +666,8 @@ public class AdminUserController : ControllerBase
 
             var result = await _userService.SetUserRolesAsync(
                 userId: id,
-                roleRequests: request.Roles,
-                userRowVersion: request.RowVersion,
+                roleIds: request.Roles,
+                userRowVersion: request.UserRowVersion,
                 updatedByUserId: me
             );
             if (!result)
@@ -730,7 +748,14 @@ public class SetUserActiveStatusRequest
 public class SetUserSkillsRequest
 {
     /// <summary>
-    /// スキルIDのリスト
+    /// スキルIDのリスト。既存のすべてのスキルを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのスキルを削除します。
     /// </summary>
     public required List<int> SkillIds { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用RowVersion。
+    /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
+    /// </summary>
+    public byte[]? UserRowVersion { get; set; }
 }

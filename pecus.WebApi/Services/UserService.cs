@@ -545,9 +545,19 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザーのスキルを設定（洗い替え）
+    /// ユーザーのスキルを設定（洗い替え、楽観的ロック対応）
     /// </summary>
-    public async Task<bool> SetUserSkillsAsync(int userId, List<int> skillIds, int updatedByUserId)
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="skillIds">スキルIDのリスト</param>
+    /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <returns>スキル更新の成功フラグ</returns>
+    public async Task<bool> SetUserSkillsAsync(
+        int userId,
+        List<int>? skillIds,
+        byte[]? userRowVersion = null,
+        int? updatedByUserId = null
+    )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -561,22 +571,37 @@ public class UserService
                 return false;
             }
 
+            // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
+            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
+            {
+                throw new ConcurrencyException(
+                    "スキルは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                );
+            }
+
             // 既存のスキルをすべて削除
             _context.UserSkills.RemoveRange(user.UserSkills);
             await _context.SaveChangesAsync();
 
             // 新しいスキルを追加
-            foreach (var skillId in skillIds)
+            if (skillIds != null && skillIds.Any())
             {
-                var userSkill = new UserSkill
+                foreach (var skillId in skillIds)
                 {
-                    UserId = userId,
-                    SkillId = skillId,
-                    AddedAt = DateTime.UtcNow,
-                    AddedByUserId = updatedByUserId,
-                };
-                _context.UserSkills.Add(userSkill);
+                    var userSkill = new UserSkill
+                    {
+                        UserId = userId,
+                        SkillId = skillId,
+                        AddedAt = DateTime.UtcNow,
+                        AddedByUserId = updatedByUserId,
+                    };
+                    _context.UserSkills.Add(userSkill);
+                }
             }
+
+            // 更新時刻を設定
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = updatedByUserId;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -717,17 +742,16 @@ public class UserService
     }
 
     /// <summary>
-    /// <summary>
     /// ユーザーのロールを設定（洗い替え、楽観的ロック対応）
     /// </summary>
     /// <param name="userId">ユーザーID</param>
-    /// <param name="roleRequests">ロール情報のリスト（ID、RowVersionを含む）</param>
+    /// <param name="roleIds">ロールIDのリスト</param>
     /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
     /// <param name="updatedByUserId">更新者のユーザーID</param>
     /// <returns>ロール更新の成功フラグ</returns>
     public async Task<bool> SetUserRolesAsync(
         int userId,
-        List<Pecus.Models.Requests.RoleItemRequest>? roleRequests,
+        List<int>? roleIds,
         byte[]? userRowVersion = null,
         int? updatedByUserId = null
     )
@@ -757,35 +781,22 @@ public class UserService
             // 現在のロールをクリア
             user.Roles.Clear();
 
-            // 新しいロールを設定（ロール情報がある場合のみ）
-            if (roleRequests != null && roleRequests.Any())
+            // 新しいロールを設定（ロールIDがある場合のみ）
+            if (roleIds != null && roleIds.Any())
             {
-                foreach (var roleRequest in roleRequests)
+                // 指定されたロールIDが実際に存在するか確認
+                var roles = await _context.Roles
+                    .Where(r => roleIds.Contains(r.Id))
+                    .ToListAsync();
+
+                if (roles.Count != roleIds.Count)
                 {
-                    if (!roleRequest.Id.HasValue)
-                    {
-                        continue;
-                    }
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
 
-                    var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == roleRequest.Id.Value);
-                    if (role == null)
-                    {
-                        throw new NotFoundException(
-                            $"ロールID {roleRequest.Id.Value} が見つかりません。"
-                        );
-                    }
-
-                    // 楽観的ロック：ロールのRowVersionをチェック
-                    if (
-                        roleRequest.RowVersion != null
-                        && (role.RowVersion == null || !role.RowVersion.SequenceEqual(roleRequest.RowVersion))
-                    )
-                    {
-                        throw new ConcurrencyException(
-                            $"ロール '{role.Name}' は別のユーザーにより更新されています。ページをリロードして再度お試しください。"
-                        );
-                    }
-
+                // ロールを追加
+                foreach (var role in roles)
+                {
                     user.Roles.Add(role);
                 }
             }

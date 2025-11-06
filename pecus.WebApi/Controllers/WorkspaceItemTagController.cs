@@ -90,9 +90,9 @@ public class WorkspaceItemTagController : ControllerBase
             var tags = await _tagService.SetTagsToItemAsync(
                 workspaceId: workspaceId,
                 itemId: itemId,
-                tagRequests: request.Tags,
+                tagNames: request.Tags,
                 userId: me,
-                itemRowVersion: request.RowVersion
+                itemRowVersion: request.ItemRowVersion
             );
 
             // 更新後のアイテムを取得
