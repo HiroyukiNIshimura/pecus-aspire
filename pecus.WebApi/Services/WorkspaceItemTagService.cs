@@ -54,13 +54,6 @@ public class WorkspaceItemTagService
                 throw new NotFoundException("アイテムが見つかりません。");
             }
 
-            // ユーザーがワークスペースのメンバーか確認
-            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
-                userId,
-                workspaceId,
-                "ワークスペースのメンバーのみがタグを設定できます。"
-            );
-
             // ワークスペース情報を取得（OrganizationId取得用）
             var workspace = await _context.Workspaces.FindAsync(workspaceId);
             if (workspace == null)

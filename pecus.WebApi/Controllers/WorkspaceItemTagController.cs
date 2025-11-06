@@ -71,6 +71,19 @@ public class WorkspaceItemTagController : ControllerBase
                 );
             }
 
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがタグを設定できます。",
+                    }
+                );
+            }
+
             // タグを一括設定
             var tags = await _tagService.SetTagsToItemAsync(
                 workspaceId,

@@ -103,13 +103,6 @@ public class WorkspaceItemAttachmentService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        // ユーザーがワークスペースのメンバーか確認
-        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
-            userId,
-            workspaceId,
-            "ワークスペースのメンバーのみが添付ファイルをアップロードできます。"
-        );
-
         var attachment = new WorkspaceItemAttachment
         {
             WorkspaceItemId = itemId,
@@ -217,13 +210,6 @@ public class WorkspaceItemAttachmentService
     )
     {
         var attachment = await GetAttachmentAsync(workspaceId, itemId, attachmentId);
-
-        // ユーザーがワークスペースのメンバーか確認
-        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
-            userId,
-            workspaceId,
-            "ワークスペースのメンバーのみが添付ファイルを削除できます。"
-        );
 
         // アイテムのオーナーまたはアップロードしたユーザーのみ削除可能
         var item = await _context.WorkspaceItems.FindAsync(itemId);

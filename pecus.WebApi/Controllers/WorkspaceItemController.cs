@@ -68,6 +68,19 @@ public class WorkspaceItemController : ControllerBase
                 );
             }
 
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムを作成できます。",
+                    }
+                );
+            }
+
             var item = await _workspaceItemService.CreateWorkspaceItemAsync(
                 workspaceId,
                 request,
@@ -253,12 +266,14 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<WorkspaceItemResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > UpdateWorkspaceItem(
@@ -281,6 +296,19 @@ public class WorkspaceItemController : ControllerBase
                     {
                         StatusCode = StatusCodes.Status404NotFound,
                         Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムを更新できます。",
                     }
                 );
             }
@@ -314,6 +342,16 @@ public class WorkspaceItemController : ControllerBase
                 }
             );
         }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
+                    Message = ex.Message,
+                }
+            );
+        }
         catch (InvalidOperationException ex)
         {
             return TypedResults.BadRequest(
@@ -342,12 +380,14 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<WorkspaceItemResponse>,
             BadRequest<ErrorResponse>,
             NotFound<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > UpdateWorkspaceItemStatus(
@@ -370,6 +410,19 @@ public class WorkspaceItemController : ControllerBase
                     {
                         StatusCode = StatusCodes.Status404NotFound,
                         Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムのステータスを更新できます。",
                     }
                 );
             }
@@ -399,6 +452,16 @@ public class WorkspaceItemController : ControllerBase
                 new ErrorResponse
                 {
                     StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
                     Message = ex.Message,
                 }
             );
@@ -455,6 +518,19 @@ public class WorkspaceItemController : ControllerBase
                     {
                         StatusCode = StatusCodes.Status404NotFound,
                         Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムを削除できます。",
                     }
                 );
             }

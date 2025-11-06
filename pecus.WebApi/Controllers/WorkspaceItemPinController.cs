@@ -73,6 +73,19 @@ public class WorkspaceItemPinController : ControllerBase
                 );
             }
 
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムをPINできます。",
+                    }
+                );
+            }
+
             var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, me);
 
             // 更新後のアイテムを取得
@@ -148,6 +161,19 @@ public class WorkspaceItemPinController : ControllerBase
                     {
                         StatusCode = StatusCodes.Status404NotFound,
                         Message = "ワークスペースが見つかりません。",
+                    }
+                );
+            }
+
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = "ワークスペースのメンバーのみがアイテムのPINを削除できます。",
                     }
                 );
             }

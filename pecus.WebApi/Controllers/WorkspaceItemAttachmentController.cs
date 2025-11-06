@@ -75,6 +75,15 @@ public class WorkspaceItemAttachmentController : ControllerBase
                 );
             }
 
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse { Message = "ワークスペースのメンバーのみが添付ファイルをアップロードできます。" }
+                );
+            }
+
             if (file == null || file.Length == 0)
             {
                 return TypedResults.BadRequest(
@@ -250,11 +259,18 @@ public class WorkspaceItemAttachmentController : ControllerBase
     /// <returns>削除結果</returns>
     [HttpDelete("{attachmentId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
-        Results<NoContent, UnauthorizedHttpResult, NotFound<ErrorResponse>, StatusCodeHttpResult>
+        Results<
+            NoContent,
+            BadRequest<ErrorResponse>,
+            UnauthorizedHttpResult,
+            NotFound<ErrorResponse>,
+            StatusCodeHttpResult
+        >
     > DeleteAttachment(int workspaceId, int itemId, int attachmentId)
     {
         try
@@ -268,6 +284,15 @@ public class WorkspaceItemAttachmentController : ControllerBase
             {
                 return TypedResults.NotFound(
                     new ErrorResponse { Message = "ワークスペースが見つかりません。" }
+                );
+            }
+
+            // ユーザーがワークスペースのメンバーか確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+            if (!isMember)
+            {
+                return TypedResults.BadRequest(
+                    new ErrorResponse { Message = "ワークスペースのメンバーのみが添付ファイルを削除できます。" }
                 );
             }
 

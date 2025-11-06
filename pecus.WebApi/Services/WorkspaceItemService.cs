@@ -51,13 +51,6 @@ public class WorkspaceItemService
                 throw new NotFoundException("ワークスペースが見つかりません。");
             }
 
-            // オーナーがワークスペースのメンバーか確認
-            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
-                ownerId,
-                workspaceId,
-                "ワークスペースのメンバーのみがアイテムを作成できます。"
-            );
-
             // Assigneeが指定されている場合、存在確認とメンバーチェック
             if (request.AssigneeId.HasValue)
             {
@@ -349,11 +342,16 @@ public class WorkspaceItemService
         if (request.AssigneeId.HasValue)
         {
             // Assigneeが指定されている場合、メンバーチェック
-            await _accessHelper.EnsureActiveWorkspaceMemberAsync(
+            var isAssigneeMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
                 request.AssigneeId.Value,
-                workspaceId,
-                "作業者はワークスペースのメンバーである必要があります。"
+                workspaceId
             );
+            if (!isAssigneeMember)
+            {
+                throw new InvalidOperationException(
+                    "作業者はワークスペースのメンバーである必要があります。"
+                );
+            }
             item.AssigneeId = request.AssigneeId.Value;
         }
 

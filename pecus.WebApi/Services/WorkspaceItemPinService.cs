@@ -45,13 +45,6 @@ public class WorkspaceItemPinService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        // ユーザーがワークスペースのメンバーか確認
-        await _accessHelper.EnsureActiveWorkspaceMemberAsync(
-            userId,
-            workspaceId,
-            "ワークスペースのメンバーのみがアイテムをPINできます。"
-        );
-
         // 既にPINされているか確認
         var existingPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(p =>
             p.WorkspaceItemId == itemId && p.UserId == userId
