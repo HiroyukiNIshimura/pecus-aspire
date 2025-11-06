@@ -1809,15 +1809,67 @@ dotnet run --project pecus.AppHost
 
 ## DB 競合（楽観ロック）簡易ポイント
 
-- 概要: `RowVersion`（EF Core の `byte[]` / PostgreSQL の `bytea`）を用いた楽観ロックを採用しています。詳細は `docs/db-concurrency.md` を参照してください。
-- 主要事項:
+- **概要**: `RowVersion`（EF Core の `byte[]` / PostgreSQL の `bytea`）を用いた楽観ロックを採用しています。詳細は `docs/db-concurrency.md` を参照してください。
+
+- **DbUpdateConcurrencyException の発生条件**:
+  - **発生する**: UPDATE 操作で WHERE RowVersion が不一致（0行更新）の場合 **のみ**
+  - **発生しない**: INSERT 操作（各レコード固有のため）、DELETE 操作（DELETE SQL に WHERE RowVersion 条件がないため）
+  - **結論**: DbUpdateConcurrencyException は **UPDATE 操作にのみ try-catch で対応** し、CREATE/DELETE には不要
+
+- **主要事項**:
   - JSON 送受信では RowVersion は Base64 文字列として扱われる（System.Text.Json の既定動作）
   - 更新リクエストには最新の `RowVersion` を含める（`UpdateXxxRequest` に `RowVersion: byte[]?` を追加）
-  - サービス層では、クライアントから RowVersion が送られてきた場合にのみ DB の RowVersion と比較し、不一致なら `ConcurrencyException` を投げる
+  - サービス層では UPDATE 前に `RowVersion` を比較：`if (!entity.RowVersion?.SequenceEqual(request.RowVersion) ?? true) throw ConcurrencyException(...)` で早期検出
+  - UPDATE 時の `SaveChangesAsync()` で DbUpdateConcurrencyException が発生した場合、`FindAsync()` で最新データを再取得して `ConcurrencyException<T>` に渡す（**必ず最新 DB データを含める**）
   - `ConcurrencyException` は `GlobalExceptionFilter` により HTTP 409 Conflict にマッピングされる
   - クライアント側: 409 を受けたら最新データを再取得（GET）し、必要に応じてマージ／再試行する
-- テスト/運用メモ:
+
+- **実装パターン** (UPDATE 操作の標準形):
+  ```csharp
+  // 前提: リクエストに RowVersion が存在する場合
+  try
+  {
+      // 前置チェック: 早期検出（オプションだが推奨）
+      if (!entity.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+      {
+          var latestEntity = await _context.Entity.FindAsync(id);
+          throw new ConcurrencyException<Entity>("RowVersion が一致しません", latestEntity);
+      }
+
+      // エンティティを更新
+      entity.Property1 = request.Property1;
+      entity.RowVersion = request.RowVersion; // 更新前データで比較するため設定
+
+      await _context.SaveChangesAsync();
+  }
+  catch (DbUpdateConcurrencyException)
+  {
+      // 後置チェック: DB でも競合を検出
+      // FindAsync で最新データを再取得（重要: 最新データを必ず含める）
+      var latestEntity = await _context.Entity.FindAsync(id);
+      throw new ConcurrencyException<Entity>(
+          "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+          latestEntity  // 最新 DB データを返す（リクエストデータではなく）
+      );
+  }
+  ```
+
+- **CREATE/DELETE では DbUpdateConcurrencyException を処理しない**:
+  ```csharp
+  // ✅ 正しい: INSERT は try-catch 不要
+  _context.Entity.Add(entity);
+  await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生しない
+
+  // ✅ 正しい: DELETE は try-catch 不要
+  _context.Entity.Remove(entity);
+  await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生しない
+
+  // ❌ 避けるべき: INSERT/DELETE に try-catch をつけない
+  ```
+
+- **テスト/運用メモ**:
   - サービス層の単体テストで RowVersion 不一致時に `ConcurrencyException` を投げることを検証する
   - 結合テストで並列更新シナリオを再現し、409 が返ることを確認する
+  - **重要**: ConcurrencyException に最新 DB データが含まれていることを検証（クライアント側の再試行に必要）
 
 
