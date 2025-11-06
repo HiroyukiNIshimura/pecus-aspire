@@ -1788,3 +1788,36 @@ dotnet run --project pecus.AppHost
 - バックグラウンド処理にすべきか？
 - 環境依存か？
 - Aspire の依存設定（DB / Redis など）は何か？
+
+## Global Exception Handling（簡易ポイント）
+
+- 目的: コントローラーの個別 try/catch を廃し、サービス層で例外を投げて `GlobalExceptionFilter` で一元変換することで実装を簡潔に保つ
+- 実装参照: `docs/global-exception-handling.md` を参照して詳細を確認してください（このファイルに運用方針・マッピング・テスト手順を記載）
+- 主要マッピング（要点）:
+  - `NotFoundException` → HTTP 404
+  - `ConcurrencyException` → HTTP 409 (RowVersion による楽観的同時実行制御)
+  - `DuplicateException` / `InvalidOperationException` → HTTP 400
+  - その他未捕捉例外 → HTTP 500
+- 開発時ルール（ポイント）:
+  - 更新 API はリクエストに `RowVersion` を含める（存在しない場合はサービス設計を見直す）
+  - サービスは更新前に `RowVersion` を比較して不一致なら `ConcurrencyException` を投げる
+  - `DbUpdateConcurrencyException` はサービス内で変換して `ConcurrencyException` に再スローする
+  - コントローラーは例外を捕捉せず通常の戻り型（Ok/NoContent 等）を返す
+- ロギング/運用:
+  - フィルタ内でエラーを構造化ログ（Serilog）に残す
+  - クライアント向けには `Pecus.Models.Responses.Common.ErrorResponse` を返す（詳細は docs を参照）
+
+## DB 競合（楽観ロック）簡易ポイント
+
+- 概要: `RowVersion`（EF Core の `byte[]` / PostgreSQL の `bytea`）を用いた楽観ロックを採用しています。詳細は `docs/db-concurrency.md` を参照してください。
+- 主要事項:
+  - JSON 送受信では RowVersion は Base64 文字列として扱われる（System.Text.Json の既定動作）
+  - 更新リクエストには最新の `RowVersion` を含める（`UpdateXxxRequest` に `RowVersion: byte[]?` を追加）
+  - サービス層では、クライアントから RowVersion が送られてきた場合にのみ DB の RowVersion と比較し、不一致なら `ConcurrencyException` を投げる
+  - `ConcurrencyException` は `GlobalExceptionFilter` により HTTP 409 Conflict にマッピングされる
+  - クライアント側: 409 を受けたら最新データを再取得（GET）し、必要に応じてマージ／再試行する
+- テスト/運用メモ:
+  - サービス層の単体テストで RowVersion 不一致時に `ConcurrencyException` を投げることを検証する
+  - 結合テストで並列更新シナリオを再現し、409 が返ることを確認する
+
+
