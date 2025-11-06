@@ -121,17 +121,6 @@ public class SkillService
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // 楽観的ロック：RowVersion を検証
-        if (!skill.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        {
-            // 最新データを取得
-            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestSkill
-            );
-        }
-
         // 更新前に同じ組織の同じ名前のスキルが存在しないかチェック
         if (!string.IsNullOrEmpty(request.Name) && request.Name != skill.Name)
         {

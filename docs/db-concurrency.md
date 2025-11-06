@@ -35,31 +35,17 @@
 #### 標準実装パターン（UPDATE 操作）
 
 ```csharp
-// 前提: リクエストに RowVersion が存在する場合
+// 後置チェック（DB レベルの競合検出）のみ
 try
 {
-    // ★ ステップ 1: 前置チェック（早期検出）
-    if (!entity.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-    {
-        var latestEntity = await _context.Entity.FindAsync(id);
-        throw new ConcurrencyException<Entity>(
-            "RowVersion が一致しません。別のユーザーが同時に変更しました。",
-            latestEntity
-        );
-    }
-
-    // ★ ステップ 2: エンティティを更新
     entity.Property1 = request.Property1;
     entity.Property2 = request.Property2;
-    entity.RowVersion = request.RowVersion; // 更新前データで比較するため設定
-
-    // ★ ステップ 3: DB に保存
+    entity.RowVersion = request.RowVersion; // 比較用に設定
     await _context.SaveChangesAsync();
 }
 catch (DbUpdateConcurrencyException)
 {
-    // ★ ステップ 4: 後置チェック（DB レベルでの競合検出）
-    // FindAsync で最新データを再取得（重要: 最新データを必ず含める）
+    // 最新データを再取得（重要: 最新データを必ず含める）
     var latestEntity = await _context.Entity.FindAsync(id);
     throw new ConcurrencyException<Entity>(
         "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
@@ -67,6 +53,47 @@ catch (DbUpdateConcurrencyException)
     );
 }
 ```
+
+#### パターンの特徴
+
+1. **シンプルさ**: 前置チェックを削除し、後置チェック（catch）のみ
+2. **DB による確実な検出**: EF Core が自動的に WHERE RowVersion を追加
+3. **パフォーマンス最適**: 通常時は追加クエリなし、競合時のみ FindAsync() を呼ぶ
+4. **保守性**: チェックロジックが1箇所に集約（DRY 原則）
+
+#### なぜ `DbUpdateConcurrencyException.Entries` ではなく `FindAsync()` で再取得するのか
+
+2つのアプローチの比較：
+
+**方式 A: `DbUpdateConcurrencyException.Entries` を使用**
+```csharp
+catch (DbUpdateConcurrencyException ex)
+{
+    // Entries から CurrentValues, OriginalValues, DatabaseValues を抽出
+    var databaseValues = ex.Entries[0].GetDatabaseValues();
+    var latestEntity = (Entity)databaseValues?.ToObject();
+    throw new ConcurrencyException<Entity>(..., latestEntity);
+}
+```
+- 利点: 追加クエリなし、即座にデータが得られる
+- 欠点: 複雑な API、Entries の操作が直感的でない、ナビゲーションプロパティが未ロード
+
+**方式 B: `FindAsync()` で再取得（採用方式）** ✅
+```csharp
+catch (DbUpdateConcurrencyException)
+{
+    var latestEntity = await _context.Entity.FindAsync(id);
+    throw new ConcurrencyException<Entity>(..., latestEntity);
+}
+```
+- 利点:
+  - **コードの意図が明確**: 「最新データを DB から取得する」という読みやすいコード
+  - **ナビゲーションプロパティ対応**: Include を使えば関連データも取得可能
+  - **保守性**: 複数の競合処理で統一パターンが使える
+  - **競合は稀**: 追加クエリはほぼ発生しない（競合は稀なケース）
+- 欠点: 競合時に 1 クエリ追加（許容範囲）
+
+**結論**: **シンプルさと保守性を優先** して `FindAsync()` を採用。競合検出が稀であり、パフォーマンス差は無視できるため。
 
 #### CREATE/DELETE 操作では try-catch 不要
 
@@ -84,9 +111,8 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 
 #### 重要なポイント
 1. **最新 DB データを常に返す**: ConcurrencyException には必ず `FindAsync()` で取得した最新エンティティを渡す（クライアント側の再試行に必要）
-2. **前置チェックは早期検出**: `SaveChangesAsync()` の前に RowVersion を比較することで、無駄な DB 処理を避ける
-3. **後置チェックはフォールバック**: DB レベルでも競合検出（稀なケースをカバー）
-4. **リクエストデータは返さない**: 古いリクエストデータではなく、DB から再取得した最新データをクライアントに返す
+2. **DB が競合を確実に検出**: EF Core は SaveChangesAsync() 時に自動的に WHERE RowVersion を追加。不一致時は DbUpdateConcurrencyException が確実に発生
+3. **シンプルさが利点**: 前置チェックを削除することで、コード行数削減・保守性向上・パフォーマンス改善を実現
 
 ### 実装パターン（コントローラー層）
 1. サービス呼び出しの前にアクセス権や存在チェックを行う（`CanAccessUserAsync` など）
@@ -114,10 +140,8 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 ### テストと検証
 
 #### 単体テスト
-- サービス層で RowVersion が不一致の時に `ConcurrencyException` が投げられることを検証
-  - 前置チェック（SaveChangesAsync の前に throw）
-  - 後置チェック（DbUpdateConcurrencyException のキャッチと再 throw）
-- リクエストから最新 DB データが ConcurrencyException に含まれていることを確認
+- サービス層で RowVersion が不一致の時に `DbUpdateConcurrencyException` → `ConcurrencyException` が投げられることを検証
+- ConcurrencyException に最新 DB データが含まれていることを確認
 
 #### 結合テスト
 - 同一リソースを並列で更新するシナリオで 409 が返ることを確認
@@ -199,12 +223,13 @@ UPDATE 操作で DbUpdateConcurrencyException を処理するサービスメソ�
 
 ### ドキュメント更新履歴
 
-**2025-11-06 版**
+**2025-11-06 版（最新）**
+- **前置チェック廃止**: DB による確実な検出で十分。シンプルさ・保守性・パフォーマンスを優先
 - DbUpdateConcurrencyException の発生条件を明確化（UPDATE のみ）
 - CREATE/DELETE 操作では try-catch 不要であることを明記
-- 標準実装パターン（前置チェック + 後置チェック）を具体化
+- 標準実装パターン: 後置チェック（catch）のみ
 - **重要**: 最新 DB データを ConcurrencyException に渡すことの重要性を強調
 - 参照箇所を全サービスメソッドで最新化
 - テスト手法を具体化（手動テストシナリオを追加）
 
-このドキュメントはプロジェクト内での実装方針と現状のコードパターンに基づいて作成しています。実装に変更が必生じた場合は、該当サービス／コントローラーの実装を参照し、このドキュメントを更新してください。
+このドキュメントはプロジェクト内での実装方針と現状のコードパターンに基づいて作成しています。実装に変更が必要な場合は、該当サービス／コントローラーの実装を参照し、このドキュメントを更新してください。

@@ -133,15 +133,6 @@ public class OrganizationService
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        // 楽観的ロック：RowVersion を検証
-        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        {
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                organization
-            );
-        }
-
         if (request.Name != null)
         {
             organization.Name = request.Name;
@@ -196,15 +187,6 @@ public class OrganizationService
         if (organization == null)
         {
             throw new NotFoundException("組織が見つかりません。");
-        }
-
-        // 楽観的ロック：RowVersion を検証
-        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        {
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                organization
-            );
         }
 
         // 組織コードの重複チェック（自分以外）
@@ -295,15 +277,6 @@ public class OrganizationService
                 return false;
             }
 
-            // 削除前に RowVersion をチェック（更新と同じ設計パターン）
-            if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-            {
-                throw new ConcurrencyException<Organization>(
-                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                    organization
-                );
-            }
-
             // 所属ユーザーも一緒に削除
             if (organization.Users.Any())
             {
@@ -339,14 +312,6 @@ public class OrganizationService
         }
 
         // 楽観的ロック：RowVersion を検証
-        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        {
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                organization
-            );
-        }
-
         organization.IsActive = request.IsActive;
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;

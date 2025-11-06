@@ -1819,33 +1819,25 @@ dotnet run --project pecus.AppHost
 - **主要事項**:
   - JSON 送受信では RowVersion は Base64 文字列として扱われる（System.Text.Json の既定動作）
   - 更新リクエストには最新の `RowVersion` を含める（`UpdateXxxRequest` に `RowVersion: byte[]?` を追加）
-  - サービス層では UPDATE 前に `RowVersion` を比較：`if (!entity.RowVersion?.SequenceEqual(request.RowVersion) ?? true) throw ConcurrencyException(...)` で早期検出
   - UPDATE 時の `SaveChangesAsync()` で DbUpdateConcurrencyException が発生した場合、`FindAsync()` で最新データを再取得して `ConcurrencyException<T>` に渡す（**必ず最新 DB データを含める**）
   - `ConcurrencyException` は `GlobalExceptionFilter` により HTTP 409 Conflict にマッピングされる
   - クライアント側: 409 を受けたら最新データを再取得（GET）し、必要に応じてマージ／再試行する
+  - **なぜ FindAsync で再取得するのか**: `DbUpdateConcurrencyException.Entries` のような複雑な API ではなく、シンプルで直感的な `FindAsync()` を選択。競合は稀なため、1 クエリのオーバーヘッドは許容範囲内。ナビゲーションプロパティの取得も容易。
 
 - **実装パターン** (UPDATE 操作の標準形):
   ```csharp
-  // 前提: リクエストに RowVersion が存在する場合
+  // 後置チェック（DB レベルの競合検出）のみ
   try
   {
-      // 前置チェック: 早期検出（オプションだが推奨）
-      if (!entity.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-      {
-          var latestEntity = await _context.Entity.FindAsync(id);
-          throw new ConcurrencyException<Entity>("RowVersion が一致しません", latestEntity);
-      }
-
-      // エンティティを更新
       entity.Property1 = request.Property1;
-      entity.RowVersion = request.RowVersion; // 更新前データで比較するため設定
+      entity.Property2 = request.Property2;
+      entity.RowVersion = request.RowVersion; // 比較用に設定
 
       await _context.SaveChangesAsync();
   }
   catch (DbUpdateConcurrencyException)
   {
-      // 後置チェック: DB でも競合を検出
-      // FindAsync で最新データを再取得（重要: 最新データを必ず含める）
+      // 最新データを再取得（重要: 最新データを必ず含める）
       var latestEntity = await _context.Entity.FindAsync(id);
       throw new ConcurrencyException<Entity>(
           "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
@@ -1853,6 +1845,12 @@ dotnet run --project pecus.AppHost
       );
   }
   ```
+
+- **パターンの特徴**:
+  - シンプルさ: 前置チェックを削除し、後置チェック（catch）のみで十分
+  - DB による確実な検出: EF Core が自動的に WHERE RowVersion を追加
+  - パフォーマンス最適: 通常時は追加クエリなし
+  - 保守性: チェックロジックが1箇所に集約（DRY 原則）
 
 - **CREATE/DELETE では DbUpdateConcurrencyException を処理しない**:
   ```csharp

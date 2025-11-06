@@ -151,17 +151,6 @@ public class GenreService
             throw new NotFoundException("ジャンルが見つかりません。");
         }
 
-        // 楽観的ロック：RowVersion を検証
-        if (!genre.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        {
-            // 最新データを取得
-            var latestGenre = await _context.Genres.FindAsync(id);
-            throw new ConcurrencyException<Genre>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestGenre
-            );
-        }
-
         // 名前の重複チェック（自分以外）
         if (request.Name != null && request.Name != genre.Name)
         {
