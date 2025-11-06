@@ -175,9 +175,9 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<SuccessResponse>> DeleteOrganization(int id)
+    public async Task<Ok<SuccessResponse>> DeleteOrganization(int id, [FromBody] DeleteOrganizationRequest request)
     {
-        var result = await _organizationService.DeleteOrganizationAsync(id);
+        var result = await _organizationService.DeleteOrganizationAsync(id, request);
         if (!result)
         {
             throw new NotFoundException("組織が見つかりません。");
@@ -203,13 +203,17 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > SetOrganizationActiveStatus(int id, [FromBody] SetActiveStatusRequest request)
+    > SetOrganizationActiveStatus(int id, [FromBody] SetOrganizationActiveStatusRequest request)
     {
         try
         {
+            // ログイン中のユーザーIDを取得
+            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
             var result = await _organizationService.SetOrganizationActiveStatusAsync(
                 id,
-                request.IsActive
+                request,
+                me
             );
             if (!result)
             {
@@ -240,7 +244,7 @@ public class BackendOrganizationController : ControllerBase
 }
 
 /// <summary>
-/// アクティブ状態設定リクエスト
+/// アクティブ状態設定リクエスト（レガシー用）
 /// </summary>
 public class SetActiveStatusRequest
 {

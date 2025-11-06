@@ -173,3 +173,33 @@ public class BackendUpdateOrganizationRequest
     [Required(ErrorMessage = "RowVersionは必須です。")]
     public required byte[] RowVersion { get; set; }
 }
+
+/// <summary>
+/// 組織削除リクエスト
+/// </summary>
+public class DeleteOrganizationRequest
+{
+    /// <summary>
+    /// 組織の楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+}
+
+/// <summary>
+/// 組織のアクティブ状態変更リクエスト
+/// </summary>
+public class SetOrganizationActiveStatusRequest
+{
+    /// <summary>
+    /// 有効フラグ
+    /// </summary>
+    [Required(ErrorMessage = "IsActiveは必須です。")]
+    public required bool IsActive { get; set; }
+
+    /// <summary>
+    /// 組織の楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+}

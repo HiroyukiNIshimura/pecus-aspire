@@ -278,7 +278,10 @@ public class OrganizationService
     /// <summary>
     /// 組織を削除
     /// </summary>
-    public async Task<bool> DeleteOrganizationAsync(int organizationId)
+    public async Task<bool> DeleteOrganizationAsync(
+        int organizationId,
+        DeleteOrganizationRequest request
+    )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -290,6 +293,15 @@ public class OrganizationService
             if (organization == null)
             {
                 return false;
+            }
+
+            // 削除前に RowVersion をチェック（更新と同じ設計パターン）
+            if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+            {
+                throw new ConcurrencyException<Organization>(
+                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                    organization
+                );
             }
 
             // 所属ユーザーも一緒に削除
@@ -316,7 +328,7 @@ public class OrganizationService
     /// </summary>
     public async Task<bool> SetOrganizationActiveStatusAsync(
         int organizationId,
-        bool isActive,
+        SetOrganizationActiveStatusRequest request,
         int? updatedByUserId = null
     )
     {
@@ -326,7 +338,16 @@ public class OrganizationService
             return false;
         }
 
-        organization.IsActive = isActive;
+        // 楽観的ロック：RowVersion を検証
+        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                organization
+            );
+        }
+
+        organization.IsActive = request.IsActive;
         organization.UpdatedAt = DateTime.UtcNow;
         organization.UpdatedByUserId = updatedByUserId;
 
