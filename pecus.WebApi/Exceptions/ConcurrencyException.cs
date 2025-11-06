@@ -3,7 +3,7 @@ namespace Pecus.Exceptions;
 /// <summary>
 /// DB競合エラー（楽観的ロック）
 /// </summary>
-public class ConcurrencyException<T> : Exception
+public class ConcurrencyException<T> : Exception, IConcurrencyException
     where T : class
 {
     /// <summary>
@@ -11,6 +11,11 @@ public class ConcurrencyException<T> : Exception
     /// </summary>
     /// <value></value>
     public T? ConflictedModel { get; }
+
+    /// <summary>
+    /// IConcurrencyException インターフェース実装（object型で公開）
+    /// </summary>
+    object? IConcurrencyException.ConflictedModel => ConflictedModel;
 
     /// <summary>
     /// コンストラクタ

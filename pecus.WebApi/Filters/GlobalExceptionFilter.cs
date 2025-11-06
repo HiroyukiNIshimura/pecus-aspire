@@ -23,11 +23,10 @@ public class GlobalExceptionFilter : IExceptionFilter
         if (context.Exception is null)
             return;
 
-        // ConcurrencyException<T> のジェネリック型をチェック
-        var exceptionType = context.Exception.GetType();
-        if (exceptionType.IsGenericType && exceptionType.GetGenericTypeDefinition() == typeof(ConcurrencyException<>))
+        // IConcurrencyException インターフェースで型安全に処理
+        if (context.Exception is IConcurrencyException concurrencyEx)
         {
-            context.Result = HandleConcurrencyExceptionDynamic(context.Exception, context);
+            context.Result = HandleConcurrencyException(concurrencyEx, context);
             context.ExceptionHandled = true;
             return;
         }
@@ -46,41 +45,22 @@ public class GlobalExceptionFilter : IExceptionFilter
     }
 
     /// <summary>
-    /// ConcurrencyException&lt;T&gt; の動的ハンドリング
+    /// ConcurrencyException のハンドリング（インターフェース経由）
     /// </summary>
-    /// <param name="exception"></param>
-    /// <param name="context"></param>
-    private IActionResult HandleConcurrencyExceptionDynamic(Exception exception, ExceptionContext context)
+    private IActionResult HandleConcurrencyException(IConcurrencyException ex, ExceptionContext context)
     {
-        var exceptionType = exception.GetType();
-        var modelType = exceptionType.GetGenericArguments()[0];
-
-        // Message と ConflictedModel プロパティを取得
-        var messageProperty = exceptionType.GetProperty("Message", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        var modelProperty = exceptionType.GetProperty("ConflictedModel", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-
-        var message = messageProperty?.GetValue(exception) as string ?? "別のユーザーが同時に変更しました。";
-        var conflictedModel = modelProperty?.GetValue(exception);
-
         _logger.LogWarning(
             "Concurrency Exception: {Message}, ConflictedModel: {@Model}",
-            message,
-            conflictedModel
+            ex.Message,
+            ex.ConflictedModel
         );
 
-        // ConcurrencyErrorResponse<T> を動的に生成
-        var responseType = typeof(ConcurrencyErrorResponse<>).MakeGenericType(modelType);
-        var response = Activator.CreateInstance(responseType) as ErrorResponse;
-
-        if (response != null)
+        var response = new ConcurrencyErrorResponse<object>
         {
-            response.StatusCode = StatusCodes.Status409Conflict;
-            response.Message = message;
-
-            // Current プロパティを設定
-            var currentProperty = responseType.GetProperty("Current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            currentProperty?.SetValue(response, conflictedModel);
-        }
+            StatusCode = StatusCodes.Status409Conflict,
+            Message = ex.Message,
+            Current = ex.ConflictedModel,
+        };
 
         return new ObjectResult(response)
         {
