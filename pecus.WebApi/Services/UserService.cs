@@ -717,9 +717,20 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザーのロールを設定（洗い替え）
+    /// <summary>
+    /// ユーザーのロールを設定（洗い替え、楽観的ロック対応）
     /// </summary>
-    public async Task<bool> SetUserRolesAsync(int userId, List<int> roleIds, int? updatedByUserId = null)
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="roleRequests">ロール情報のリスト（ID、RowVersionを含む）</param>
+    /// <param name="userRowVersion">ユーザーの楽観的ロック用のRowVersion</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <returns>ロール更新の成功フラグ</returns>
+    public async Task<bool> SetUserRolesAsync(
+        int userId,
+        List<Pecus.Models.Requests.RoleItemRequest>? roleRequests,
+        byte[]? userRowVersion = null,
+        int? updatedByUserId = null
+    )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -735,23 +746,48 @@ public class UserService
                 return false;
             }
 
-            // 指定されたロールIDが実際に存在するか確認
-            var roles = await _context.Roles
-                .Where(r => roleIds.Contains(r.Id))
-                .ToListAsync();
-
-            if (roles.Count != roleIds.Count)
+            // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
+            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
             {
-                throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                throw new ConcurrencyException(
+                    "ロールは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                );
             }
 
             // 現在のロールをクリア
             user.Roles.Clear();
 
-            // 新しいロールを設定
-            foreach (var role in roles)
+            // 新しいロールを設定（ロール情報がある場合のみ）
+            if (roleRequests != null && roleRequests.Any())
             {
-                user.Roles.Add(role);
+                foreach (var roleRequest in roleRequests)
+                {
+                    if (!roleRequest.Id.HasValue)
+                    {
+                        continue;
+                    }
+
+                    var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == roleRequest.Id.Value);
+                    if (role == null)
+                    {
+                        throw new NotFoundException(
+                            $"ロールID {roleRequest.Id.Value} が見つかりません。"
+                        );
+                    }
+
+                    // 楽観的ロック：ロールのRowVersionをチェック
+                    if (
+                        roleRequest.RowVersion != null
+                        && (role.RowVersion == null || !role.RowVersion.SequenceEqual(roleRequest.RowVersion))
+                    )
+                    {
+                        throw new ConcurrencyException(
+                            $"ロール '{role.Name}' は別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                        );
+                    }
+
+                    user.Roles.Add(role);
+                }
             }
 
             // 更新時刻を設定

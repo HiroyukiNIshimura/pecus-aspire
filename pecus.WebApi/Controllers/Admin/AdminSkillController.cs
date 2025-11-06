@@ -306,11 +306,11 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
-       Ok<SkillResponse>,
-      BadRequest<ErrorResponse>,
- NotFound<ErrorResponse>,
-     Conflict<ErrorResponse>,
-     StatusCodeHttpResult
+        Ok<SkillResponse>,
+        BadRequest<ErrorResponse>,
+        NotFound<ErrorResponse>,
+        Conflict<ErrorResponse>,
+        StatusCodeHttpResult
         >
     > UpdateSkill(int id, [FromBody] UpdateSkillRequest request)
     {
@@ -396,11 +396,11 @@ public class AdminSkillController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return TypedResults.BadRequest(
-new ErrorResponse
-{
-    StatusCode = StatusCodes.Status400BadRequest,
-    Message = ex.Message,
-}
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
+                }
             );
         }
         catch (Exception ex)

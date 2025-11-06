@@ -607,16 +607,23 @@ public class AdminUserController : ControllerBase
     /// 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
     /// </remarks>
     /// <param name="id">ユーザーID</param>
-    /// <param name="request">ロールIDのリスト</param>
+    /// <param name="request">ロール情報のリスト</param>
     /// <response code="200">ロールを設定しました</response>
     /// <response code="403">他組織のユーザーは操作できません</response>
     /// <response code="404">ユーザーが見つかりません</response>
+    /// <response code="409">競合: ロール情報が別のユーザーにより更新されています</response>
     [HttpPut("{id}/roles")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
+        Results<
+            Ok<SuccessResponse>,
+            NotFound<ErrorResponse>,
+            UnauthorizedHttpResult,
+            Conflict<ErrorResponse>
+        >
     > SetUserRoles(int id, [FromBody] SetUserRolesRequest request)
     {
         try
@@ -639,7 +646,12 @@ public class AdminUserController : ControllerBase
                 return TypedResults.Unauthorized();
             }
 
-            var result = await _userService.SetUserRolesAsync(id, request.RoleIds, me);
+            var result = await _userService.SetUserRolesAsync(
+                userId: id,
+                roleRequests: request.Roles,
+                userRowVersion: request.RowVersion,
+                updatedByUserId: me
+            );
             if (!result)
             {
                 return TypedResults.NotFound(
@@ -648,6 +660,18 @@ public class AdminUserController : ControllerBase
             }
 
             return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse { Message = ex.Message }
+            );
+        }
+        catch (NotFoundException ex)
+        {
+            return TypedResults.NotFound(
+                new ErrorResponse { Message = ex.Message }
+            );
         }
         catch (Exception ex)
         {

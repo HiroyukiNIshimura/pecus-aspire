@@ -276,8 +276,17 @@ public class UpdateEmailRequest
 public class SetUserRolesRequest
 {
     /// <summary>
-    /// ロールIDのリスト
+    /// ロール情報のリスト（ID、RowVersionを含む）
+    /// 既存ロールの場合はId、RowVersionを指定。
+    /// 新規ロールの場合はId=null、RowVersion=nullを指定。
+    /// 空のリストまたはnullの場合はすべてのロールを削除します。
     /// </summary>
-    [Required(ErrorMessage = "ロールIDリストは必須です。")]
-    public required List<int> RoleIds { get; set; }
+    [Required(ErrorMessage = "ロール情報リストは必須です。")]
+    public required List<RoleItemRequest> Roles { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用RowVersion。
+    /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }
