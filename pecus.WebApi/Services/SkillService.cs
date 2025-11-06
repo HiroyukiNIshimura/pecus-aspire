@@ -48,18 +48,7 @@ public class SkillService
         };
 
         _context.Skills.Add(skill);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                null
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return skill;
     }

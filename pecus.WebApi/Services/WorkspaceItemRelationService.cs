@@ -87,22 +87,7 @@ public class WorkspaceItemRelationService
         };
 
         _context.WorkspaceItemRelations.Add(relation);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 可能な限り最新の関連を取得して返す
-            var latestRelation = await _context.WorkspaceItemRelations.FirstOrDefaultAsync(r =>
-                r.FromItemId == fromItemId && r.ToItemId == request.ToItemId && r.RelationType == request.RelationType
-            );
-            throw new ConcurrencyException<WorkspaceItemRelation>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestRelation
-            );
-        }
+        await _context.SaveChangesAsync();
 
         // 作成された関連を詳細情報付きで取得
         var createdRelation = await _context

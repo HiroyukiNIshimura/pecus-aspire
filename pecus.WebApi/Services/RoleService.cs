@@ -87,9 +87,13 @@ public class RoleService
             }
             catch (DbUpdateConcurrencyException)
             {
+                // 最新データを取得
+                var latestRole = await _context
+                    .Roles.Include(r => r.Permissions)
+                    .FirstOrDefaultAsync(r => r.Id == roleId);
                 throw new ConcurrencyException<Role>(
                     "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                    role
+                    latestRole
                 );
             }
         }
@@ -131,9 +135,13 @@ public class RoleService
         }
         catch (DbUpdateConcurrencyException)
         {
+            // 最新データを取得
+            var latestRole = await _context
+                .Roles.Include(r => r.Permissions)
+                .FirstOrDefaultAsync(r => r.Id == roleId);
             throw new ConcurrencyException<Role>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                role
+                latestRole
             );
         }
 

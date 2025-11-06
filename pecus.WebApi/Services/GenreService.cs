@@ -121,18 +121,7 @@ public class GenreService
         };
 
         _context.Genres.Add(genre);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Genre>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                genre
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return new GenreResponse
         {
@@ -165,9 +154,11 @@ public class GenreService
         // 楽観的ロック：RowVersion を検証
         if (!genre.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
+            // 最新データを取得
+            var latestGenre = await _context.Genres.FindAsync(id);
             throw new ConcurrencyException<Genre>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                genre
+                latestGenre
             );
         }
 
@@ -247,20 +238,7 @@ public class GenreService
         }
 
         _context.Genres.Remove(genre);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 最新データを取得
-            var latestGenre = await _context.Genres.FindAsync(id);
-            throw new ConcurrencyException<Genre>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestGenre
-            );
-        }
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>

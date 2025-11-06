@@ -56,18 +56,7 @@ public class TagService
         };
 
         _context.Tags.Add(tag);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Tag>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                null
-            );
-        }
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation(
             "タグを作成しました。TagId: {TagId}, Name: {Name}, OrganizationId: {OrganizationId}",
@@ -228,20 +217,7 @@ public class TagService
         }
 
         _context.Tags.Remove(tag);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 最新データを取得
-            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
-            throw new ConcurrencyException<Tag>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTag
-            );
-        }
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation(
             "タグを削除しました。TagId: {TagId}, Name: {Name}",

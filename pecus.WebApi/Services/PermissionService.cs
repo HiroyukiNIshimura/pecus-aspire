@@ -39,18 +39,7 @@ public class PermissionService
         };
 
         _context.Permissions.Add(permission);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Permission>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                permission
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return permission;
     }
@@ -96,18 +85,7 @@ public class PermissionService
         }
 
         _context.Permissions.Remove(permission);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Permission>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                permission
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return true;
     }

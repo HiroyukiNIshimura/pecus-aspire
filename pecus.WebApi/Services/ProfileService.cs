@@ -64,9 +64,11 @@ public class ProfileService
         }
         catch (DbUpdateConcurrencyException)
         {
+            // 最新データを取得
+            var latestUser = await _context.Users.FindAsync(userId);
             throw new ConcurrencyException<User>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                user
+                latestUser
             );
         }
 

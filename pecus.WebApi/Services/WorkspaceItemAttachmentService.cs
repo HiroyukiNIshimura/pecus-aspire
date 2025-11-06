@@ -118,20 +118,7 @@ public class WorkspaceItemAttachmentService
         };
 
         _context.WorkspaceItemAttachments.Add(attachment);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 最新データを取得
-            var latestAttachment = await _context.WorkspaceItemAttachments.FindAsync(attachment.Id);
-            throw new ConcurrencyException<WorkspaceItemAttachment>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestAttachment
-            );
-        }
+        await _context.SaveChangesAsync();
 
         // ナビゲーションプロパティをロード
         await _context.Entry(attachment).Reference(a => a.UploadedByUser).LoadAsync();
@@ -224,18 +211,7 @@ public class WorkspaceItemAttachmentService
         }
 
         _context.WorkspaceItemAttachments.Remove(attachment);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<WorkspaceItemAttachment>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                attachment
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return attachment;
     }

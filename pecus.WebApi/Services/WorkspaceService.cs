@@ -199,9 +199,11 @@ public class WorkspaceService
         // 楽観的ロック：RowVersion を検証
         if (!workspace.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
+            // 最新データを取得
+            var latestWorkspace = await _context.Workspaces.FindAsync(workspaceId);
             throw new ConcurrencyException<Workspace>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                workspace
+                latestWorkspace
             );
         }
 
