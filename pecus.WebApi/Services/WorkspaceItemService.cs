@@ -314,6 +314,14 @@ public class WorkspaceItemService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
+        // 楽観的ロック：RowVersion を検証
+        if (!item.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         // アーカイブ済みの場合は更新不可
         if (item.IsArchived)
         {

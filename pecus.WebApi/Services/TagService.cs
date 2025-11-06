@@ -165,6 +165,14 @@ public class TagService
             throw new NotFoundException("タグが見つかりません。");
         }
 
+        // 楽観的ロック：RowVersion を検証
+        if (!tag.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         // 同じ組織内で同じタグ名が存在しないか確認（自分自身は除外）
         var existingTag = await _context.Tags.FirstOrDefaultAsync(t =>
             t.OrganizationId == tag.OrganizationId && t.Name == request.Name && t.Id != tagId

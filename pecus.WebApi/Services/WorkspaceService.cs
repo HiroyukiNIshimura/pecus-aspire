@@ -196,6 +196,14 @@ public class WorkspaceService
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
+        // 楽観的ロック：RowVersion を検証
+        if (!workspace.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         if (request.Name != null)
         {
             workspace.Name = request.Name;

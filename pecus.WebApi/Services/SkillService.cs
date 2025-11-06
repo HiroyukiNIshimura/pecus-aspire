@@ -131,6 +131,14 @@ public class SkillService
             throw new NotFoundException("スキルが見つかりません。");
         }
 
+        // 楽観的ロック：RowVersion を検証
+        if (!skill.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         // 更新前に同じ組織の同じ名前のスキルが存在しないかチェック
         if (!string.IsNullOrEmpty(request.Name) && request.Name != skill.Name)
         {

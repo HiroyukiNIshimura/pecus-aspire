@@ -622,6 +622,21 @@ public class UserService
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
+            // ユーザーを取得して RowVersion をチェック
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new NotFoundException("ユーザーが見つかりません。");
+            }
+
+            // 楽観的ロック：RowVersion を検証
+            if (!user.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+            {
+                throw new ConcurrencyException(
+                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+                );
+            }
+
             // 基本プロフィール情報の更新
             var updateUserRequest = new UpdateUserRequest
             {

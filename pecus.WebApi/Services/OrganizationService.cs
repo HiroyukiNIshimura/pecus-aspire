@@ -133,6 +133,14 @@ public class OrganizationService
             throw new NotFoundException("組織が見つかりません。");
         }
 
+        // 楽観的ロック：RowVersion を検証
+        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
+        }
+
         if (request.Name != null)
         {
             organization.Name = request.Name;
@@ -184,6 +192,14 @@ public class OrganizationService
         if (organization == null)
         {
             throw new NotFoundException("組織が見つかりません。");
+        }
+
+        // 楽観的ロック：RowVersion を検証
+        if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
+        {
+            throw new ConcurrencyException(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            );
         }
 
         // 組織コードの重複チェック（自分以外）
