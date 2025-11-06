@@ -44,49 +44,29 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<OrganizationDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetOrganization(int id)
+    public async Task<Ok<OrganizationDetailResponse>> GetOrganization(int id)
     {
-        try
+        var organization = await _organizationService.GetOrganizationByIdAsync(id);
+        if (organization == null)
         {
-            var organization = await _organizationService.GetOrganizationByIdAsync(id);
-            if (organization == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "組織が見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("組織が見つかりません。");
+        }
 
-            var response = new OrganizationDetailResponse
-            {
-                Id = organization.Id,
-                Name = organization.Name,
-                Code = organization.Code,
-                Description = organization.Description,
-                RepresentativeName = organization.RepresentativeName,
-                PhoneNumber = organization.PhoneNumber,
-                Email = organization.Email,
-                CreatedAt = organization.CreatedAt,
-                UpdatedAt = organization.UpdatedAt,
-                IsActive = organization.IsActive,
-                UserCount = organization.Users.Count,
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
+        var response = new OrganizationDetailResponse
         {
-            _logger.LogError(
-                ex,
-                "組織情報取得中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = organization.Id,
+            Name = organization.Name,
+            Code = organization.Code,
+            Description = organization.Description,
+            RepresentativeName = organization.RepresentativeName,
+            PhoneNumber = organization.PhoneNumber,
+            Email = organization.Email,
+            CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -99,48 +79,38 @@ public class BackendOrganizationController : ControllerBase
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PagedResponse<OrganizationListItemResponse>>, StatusCodeHttpResult>
-    > GetOrganizations([FromQuery] GetOrganizationsRequest request)
+    public async Task<Ok<PagedResponse<OrganizationListItemResponse>>> GetOrganizations([FromQuery] GetOrganizationsRequest request)
     {
-        try
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<Organization> organizations, int totalCount) = await _organizationService.GetOrganizationsPagedAsync(
+            validatedPage,
+            pageSize,
+            request.ActiveOnly
+        );
+
+        var organizationResponses = organizations.Select(o => new OrganizationListItemResponse
         {
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
+            Id = o.Id,
+            Name = o.Name,
+            Code = o.Code,
+            RepresentativeName = o.RepresentativeName,
+            PhoneNumber = o.PhoneNumber,
+            Email = o.Email,
+            IsActive = o.IsActive,
+            CreatedAt = o.CreatedAt,
+            UserCount = o.Users.Count,
+        });
 
-            (List<Organization> organizations, int totalCount) = await _organizationService.GetOrganizationsPagedAsync(
-                validatedPage,
-                pageSize,
-                request.ActiveOnly
-            );
+        var response = PaginationHelper.CreatePagedResponse(
+            data: organizationResponses,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize
+        );
 
-            var organizationResponses = organizations.Select(o => new OrganizationListItemResponse
-            {
-                Id = o.Id,
-                Name = o.Name,
-                Code = o.Code,
-                RepresentativeName = o.RepresentativeName,
-                PhoneNumber = o.PhoneNumber,
-                Email = o.Email,
-                IsActive = o.IsActive,
-                CreatedAt = o.CreatedAt,
-                UserCount = o.Users.Count,
-            });
-
-            var response = PaginationHelper.CreatePagedResponse(
-                data: organizationResponses,
-                totalCount: totalCount,
-                page: validatedPage,
-                pageSize: pageSize
-            );
-
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "組織一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -149,36 +119,22 @@ public class BackendOrganizationController : ControllerBase
     [HttpGet("{id}/users")]
     [ProducesResponseType(typeof(IEnumerable<UserListItemResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<IEnumerable<UserListItemResponse>>, StatusCodeHttpResult>
-    > GetOrganizationUsers(int id)
+    public async Task<Ok<IEnumerable<UserListItemResponse>>> GetOrganizationUsers(int id)
     {
-        try
+        var users = await _organizationService.GetOrganizationUsersAsync(id);
+        var response = users.Select(u => new UserListItemResponse
         {
-            var users = await _organizationService.GetOrganizationUsersAsync(id);
-            var response = users.Select(u => new UserListItemResponse
-            {
-                Id = u.Id,
-                LoginId = u.LoginId,
-                Username = u.Username,
-                Email = u.Email,
-                IsActive = u.IsActive,
-                CreatedAt = u.CreatedAt,
-                LastLoginAt = u.LastLoginAt,
-                RoleCount = u.Roles.Count,
-            });
+            Id = u.Id,
+            LoginId = u.LoginId,
+            Username = u.Username,
+            Email = u.Email,
+            IsActive = u.IsActive,
+            CreatedAt = u.CreatedAt,
+            LastLoginAt = u.LastLoginAt,
+            RoleCount = u.Roles.Count,
+        });
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "組織の所属ユーザー取得中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -189,64 +145,25 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<OrganizationResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateOrganization(int id, [FromBody] BackendUpdateOrganizationRequest request)
+    public async Task<Ok<OrganizationResponse>> UpdateOrganization(int id, [FromBody] BackendUpdateOrganizationRequest request)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var organization = await _organizationService.BackendUpdateOrganizationAsync(id, request, me);
+        var organization = await _organizationService.BackendUpdateOrganizationAsync(id, request, me);
 
-            var response = new OrganizationResponse
-            {
-                Id = organization.Id,
-                Name = organization.Name,
-                Code = organization.Code,
-                Description = organization.Description,
-                RepresentativeName = organization.RepresentativeName,
-                PhoneNumber = organization.PhoneNumber,
-                Email = organization.Email,
-                CreatedAt = organization.CreatedAt,
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
+        var response = new OrganizationResponse
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "組織更新中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = organization.Id,
+            Name = organization.Name,
+            Code = organization.Code,
+            Description = organization.Description,
+            RepresentativeName = organization.RepresentativeName,
+            PhoneNumber = organization.PhoneNumber,
+            Email = organization.Email,
+            CreatedAt = organization.CreatedAt,
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -257,46 +174,21 @@ public class BackendOrganizationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > DeleteOrganization(int id)
+    public async Task<Ok<SuccessResponse>> DeleteOrganization(int id)
     {
-        try
+        var result = await _organizationService.DeleteOrganizationAsync(id);
+        if (!result)
         {
-            var result = await _organizationService.DeleteOrganizationAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "組織が見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("組織が見つかりません。");
+        }
 
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "組織を削除しました。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "組織削除中にエラーが発生しました。OrganizationId: {OrganizationId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "組織を削除しました。",
+            }
+        );
     }
 
     /// <summary>

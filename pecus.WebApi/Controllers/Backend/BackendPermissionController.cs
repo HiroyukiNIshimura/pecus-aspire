@@ -39,43 +39,23 @@ public class BackendPermissionController : ControllerBase
     [ProducesResponseType(typeof(PermissionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PermissionResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > CreatePermission([FromBody] CreatePermissionRequest request)
+    public async Task<Ok<PermissionResponse>> CreatePermission([FromBody] CreatePermissionRequest request)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var permission = await _permissionService.CreatePermissionAsync(request, me);
+        var permission = await _permissionService.CreatePermissionAsync(request, me);
 
-            var response = new PermissionResponse
-            {
-                Id = permission.Id,
-                Name = permission.Name,
-                Description = permission.Description,
-                Category = permission.Category,
-                CreatedAt = permission.CreatedAt,
-            };
+        var response = new PermissionResponse
+        {
+            Id = permission.Id,
+            Name = permission.Name,
+            Description = permission.Description,
+            Category = permission.Category,
+            CreatedAt = permission.CreatedAt,
+        };
 
-            return TypedResults.Ok(response);
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "権限作成中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -85,47 +65,27 @@ public class BackendPermissionController : ControllerBase
     [ProducesResponseType(typeof(PermissionDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PermissionDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetPermission(int id)
+    public async Task<Ok<PermissionDetailResponse>> GetPermission(int id)
     {
-        try
+        var permission = await _permissionService.GetPermissionByIdAsync(id);
+        if (permission == null)
         {
-            var permission = await _permissionService.GetPermissionByIdAsync(id);
-            if (permission == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "権限が見つかりません。",
-                    }
-                );
-            }
-
-            var response = new PermissionDetailResponse
-            {
-                Id = permission.Id,
-                Name = permission.Name,
-                Description = permission.Description,
-                Category = permission.Category,
-                CreatedAt = permission.CreatedAt,
-                Roles = permission
-                    .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
-                    .ToList(),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("権限が見つかりません。");
         }
-        catch (Exception ex)
+
+        var response = new PermissionDetailResponse
         {
-            _logger.LogError(
-                ex,
-                "権限取得中にエラーが発生しました。PermissionId: {PermissionId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = permission.Id,
+            Name = permission.Name,
+            Description = permission.Description,
+            Category = permission.Category,
+            CreatedAt = permission.CreatedAt,
+            Roles = permission
+                .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
+                .ToList(),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -134,30 +94,20 @@ public class BackendPermissionController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<PermissionListItemResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<IEnumerable<PermissionListItemResponse>>, StatusCodeHttpResult>
-    > GetAllPermissions()
+    public async Task<Ok<IEnumerable<PermissionListItemResponse>>> GetAllPermissions()
     {
-        try
+        var permissions = await _permissionService.GetAllPermissionsAsync();
+        var response = permissions.Select(p => new PermissionListItemResponse
         {
-            var permissions = await _permissionService.GetAllPermissionsAsync();
-            var response = permissions.Select(p => new PermissionListItemResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                CreatedAt = p.CreatedAt,
-                RoleCount = p.Roles.Count,
-            });
+            Id = p.Id,
+            Name = p.Name,
+            Description = p.Description,
+            Category = p.Category,
+            CreatedAt = p.CreatedAt,
+            RoleCount = p.Roles.Count,
+        });
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "全権限取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -166,34 +116,20 @@ public class BackendPermissionController : ControllerBase
     [HttpGet("category/{category}")]
     [ProducesResponseType(typeof(IEnumerable<PermissionListItemResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<IEnumerable<PermissionListItemResponse>>, StatusCodeHttpResult>
-    > GetPermissionsByCategory(string category)
+    public async Task<Ok<IEnumerable<PermissionListItemResponse>>> GetPermissionsByCategory(string category)
     {
-        try
+        var permissions = await _permissionService.GetPermissionsByCategoryAsync(category);
+        var response = permissions.Select(p => new PermissionListItemResponse
         {
-            var permissions = await _permissionService.GetPermissionsByCategoryAsync(category);
-            var response = permissions.Select(p => new PermissionListItemResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                Category = p.Category,
-                CreatedAt = p.CreatedAt,
-                RoleCount = p.Roles.Count,
-            });
+            Id = p.Id,
+            Name = p.Name,
+            Description = p.Description,
+            Category = p.Category,
+            CreatedAt = p.CreatedAt,
+            RoleCount = p.Roles.Count,
+        });
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "カテゴリ別権限取得中にエラーが発生しました。Category: {Category}",
-                category
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -203,40 +139,20 @@ public class BackendPermissionController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeletePermission(int id)
+    public async Task<Ok<SuccessResponse>> DeletePermission(int id)
     {
-        try
+        var result = await _permissionService.DeletePermissionAsync(id);
+        if (!result)
         {
-            var result = await _permissionService.DeletePermissionAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "権限が見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("権限が見つかりません。");
+        }
 
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "権限を削除しました。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "権限削除中にエラーが発生しました。PermissionId: {PermissionId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "権限を削除しました。",
+            }
+        );
     }
 }

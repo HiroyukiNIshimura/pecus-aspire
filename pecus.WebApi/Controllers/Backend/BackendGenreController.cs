@@ -43,36 +43,22 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(PagedResponse<GenreListItemResponse>), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<
-            Ok<PagedResponse<GenreListItemResponse>>,
-            BadRequest<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > GetGenres([FromQuery] GetGenresRequest request)
+    public async Task<Ok<PagedResponse<GenreListItemResponse>>> GetGenres([FromQuery] GetGenresRequest request)
     {
-        try
-        {
-            var currentPage = request.Page ?? 1;
-            (List<GenreListItemResponse> genres, int totalCount) = await _genreService.GetGenresPagedAsync(
-                currentPage,
-                request.ActiveOnly
-            );
+        var currentPage = request.Page ?? 1;
+        (List<GenreListItemResponse> genres, int totalCount) = await _genreService.GetGenresPagedAsync(
+            currentPage,
+            request.ActiveOnly
+        );
 
-            var response = PaginationHelper.CreatePagedResponse(
-                data: genres,
-                totalCount: totalCount,
-                page: currentPage,
-                pageSize: _config.Pagination.DefaultPageSize
-            );
+        var response = PaginationHelper.CreatePagedResponse(
+            data: genres,
+            totalCount: totalCount,
+            page: currentPage,
+            pageSize: _config.Pagination.DefaultPageSize
+        );
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンル一覧の取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(500);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -84,26 +70,10 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(GenreDetailResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<Ok<GenreDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetGenreById(int id)
+    public async Task<Ok<GenreDetailResponse>> GetGenreById(int id)
     {
-        try
-        {
-            var genre = await _genreService.GetGenreByIdAsync(id);
-            return TypedResults.Ok(genre);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse { StatusCode = 404, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンル詳細の取得中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(500);
-        }
+        var genre = await _genreService.GetGenreByIdAsync(id);
+        return TypedResults.Ok(genre);
     }
 
     /// <summary>
@@ -115,27 +85,11 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(GenreResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<Ok<GenreResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > CreateGenre([FromBody] CreateGenreRequest request)
+    public async Task<Ok<GenreResponse>> CreateGenre([FromBody] CreateGenreRequest request)
     {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var genre = await _genreService.CreateGenreAsync(request, me);
-            return TypedResults.Ok(genre);
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse { StatusCode = 400, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンルの作成中にエラーが発生しました。");
-            return TypedResults.StatusCode(500);
-        }
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var genre = await _genreService.CreateGenreAsync(request, me);
+        return TypedResults.Ok(genre);
     }
 
     /// <summary>
@@ -149,38 +103,11 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<
-            Ok<GenreResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateGenre(int id, [FromBody] UpdateGenreRequest request)
+    public async Task<Ok<GenreResponse>> UpdateGenre(int id, [FromBody] UpdateGenreRequest request)
     {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var genre = await _genreService.UpdateGenreAsync(id, request, me);
-            return TypedResults.Ok(genre);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse { StatusCode = 404, Message = ex.Message }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse { StatusCode = 400, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンルの更新中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(500);
-        }
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var genre = await _genreService.UpdateGenreAsync(id, request, me);
+        return TypedResults.Ok(genre);
     }
 
     /// <summary>
@@ -193,39 +120,12 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > DeleteGenre(int id)
+    public async Task<Ok<SuccessResponse>> DeleteGenre(int id)
     {
-        try
-        {
-            await _genreService.DeleteGenreAsync(id);
-            return TypedResults.Ok(
-                new SuccessResponse { StatusCode = 200, Message = "ジャンルを削除しました。" }
-            );
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse { StatusCode = 404, Message = ex.Message }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse { StatusCode = 400, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンルの削除中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(500);
-        }
+        await _genreService.DeleteGenreAsync(id);
+        return TypedResults.Ok(
+            new SuccessResponse { StatusCode = 200, Message = "ジャンルを削除しました。" }
+        );
     }
 
     /// <summary>
@@ -239,44 +139,13 @@ public class BackendGenreController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > SetGenreActiveStatus(int id, [FromBody] SetActiveStatusRequest request)
+    public async Task<Ok<SuccessResponse>> SetGenreActiveStatus(int id, [FromBody] SetActiveStatusRequest request)
     {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            await _genreService.SetGenreActiveStatusAsync(id, request.IsActive, me);
-            var message = request.IsActive
-                ? "ジャンルを有効化しました。"
-                : "ジャンルを無効化しました。";
-            return TypedResults.Ok(new SuccessResponse { StatusCode = 200, Message = message });
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse { StatusCode = 404, Message = ex.Message }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse { StatusCode = 400, Message = ex.Message }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ジャンルのアクティブ状態設定中にエラーが発生しました。ID: {Id}",
-                id
-            );
-            return TypedResults.StatusCode(500);
-        }
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        await _genreService.SetGenreActiveStatusAsync(id, request.IsActive, me);
+        var message = request.IsActive
+            ? "ジャンルを有効化しました。"
+            : "ジャンルを無効化しました。";
+        return TypedResults.Ok(new SuccessResponse { StatusCode = 200, Message = message });
     }
 }

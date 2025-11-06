@@ -40,37 +40,17 @@ public class BackendSpecsController : ControllerBase
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public Results<Ok<string>, NotFound<MessageResponse>, StatusCodeHttpResult> GetOpenApiSchema(string documentName = "v1")
+    public Ok<string> GetOpenApiSchema(string documentName = "v1")
     {
-        try
-        {
-            var swagger = _swaggerProvider.GetSwagger(documentName);
+        var swagger = _swaggerProvider.GetSwagger(documentName);
 
-            // OpenAPIドキュメントをJSON文字列に変換
-            using var stringWriter = new StringWriter();
-            var jsonWriter = new OpenApiJsonWriter(stringWriter);
-            swagger.SerializeAsV3(jsonWriter);
-            var json = stringWriter.ToString();
+        // OpenAPIドキュメントをJSON文字列に変換
+        using var stringWriter = new StringWriter();
+        var jsonWriter = new OpenApiJsonWriter(stringWriter);
+        swagger.SerializeAsV3(jsonWriter);
+        var json = stringWriter.ToString();
 
-            return TypedResults.Ok(json);
-        }
-        catch (UnknownSwaggerDocument)
-        {
-            _logger.LogWarning(
-                "OpenAPIドキュメントが見つかりませんでした。DocumentName: {DocumentName}",
-                documentName
-            );
-            return TypedResults.NotFound(new MessageResponse { Message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "OpenAPIスキーマ取得中にエラーが発生しました。DocumentName: {DocumentName}",
-                documentName
-            );
-            return TypedResults.StatusCode(500);
-        }
+        return TypedResults.Ok(json);
     }
 
     /// <summary>
@@ -85,36 +65,16 @@ public class BackendSpecsController : ControllerBase
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public Results<Ok<string>, NotFound<MessageResponse>, StatusCodeHttpResult> GetOpenApiSchemaYaml(string documentName = "v1")
+    public Ok<string> GetOpenApiSchemaYaml(string documentName = "v1")
     {
-        try
-        {
-            var swagger = _swaggerProvider.GetSwagger(documentName);
+        var swagger = _swaggerProvider.GetSwagger(documentName);
 
-            // OpenAPIドキュメントをYAML文字列に変換
-            using var stringWriter = new StringWriter();
-            var yamlWriter = new OpenApiYamlWriter(stringWriter);
-            swagger.SerializeAsV3(yamlWriter);
-            var yaml = stringWriter.ToString();
+        // OpenAPIドキュメントをYAML文字列に変換
+        using var stringWriter = new StringWriter();
+        var yamlWriter = new OpenApiYamlWriter(stringWriter);
+        swagger.SerializeAsV3(yamlWriter);
+        var yaml = stringWriter.ToString();
 
-            return TypedResults.Ok(yaml);
-        }
-        catch (UnknownSwaggerDocument)
-        {
-            _logger.LogWarning(
-                "OpenAPIドキュメントが見つかりませんでした。DocumentName: {DocumentName}",
-                documentName
-            );
-            return TypedResults.NotFound(new MessageResponse { Message = $"OpenAPIドキュメント '{documentName}' が見つかりません。" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "OpenAPIスキーマ(YAML)取得中にエラーが発生しました。DocumentName: {DocumentName}",
-                documentName
-            );
-            return TypedResults.StatusCode(500);
-        }
+        return TypedResults.Ok(yaml);
     }
 }

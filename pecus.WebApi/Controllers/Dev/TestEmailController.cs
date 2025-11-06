@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Responses.Common;
@@ -44,9 +45,7 @@ public class TestEmailController : ControllerBase
     [HttpPost("send")]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<MessageResponse>, StatusCodeHttpResult>
-    > Send([FromQuery] string? template)
+    public async Task<Ok<MessageResponse>> Send([FromQuery] string? template)
     {
         template ??= "test-email";
         var to = TestEmailConfig.Recipient;
@@ -55,62 +54,54 @@ public class TestEmailController : ControllerBase
         var request = _httpContextAccessor.HttpContext?.Request;
         var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "https://localhost";
 
-        try
+        switch (template)
         {
-            switch (template)
-            {
-                case "welcome":
-                    var welcomeModel = new WelcomeEmailModel
-                    {
-                        UserName = "Test User",
-                        Email = to,
-                        OrganizationName = "Pecus Demo Org",
-                        WorkspaceName = "Demo Workspace",
-                        LoginUrl = $"{baseUrl}/login",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _emailService.SendTemplatedEmailAsync(to, "ようこそ - Pecus", "welcome", welcomeModel);
-                    break;
+            case "welcome":
+                var welcomeModel = new WelcomeEmailModel
+                {
+                    UserName = "Test User",
+                    Email = to,
+                    OrganizationName = "Pecus Demo Org",
+                    WorkspaceName = "Demo Workspace",
+                    LoginUrl = $"{baseUrl}/login",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _emailService.SendTemplatedEmailAsync(to, "ようこそ - Pecus", "welcome", welcomeModel);
+                break;
 
-                case "password-setup":
-                    var setupModel = new PasswordSetupEmailModel
-                    {
-                        UserName = "Test User",
-                        Email = to,
-                        OrganizationName = "Pecus Demo Org",
-                        PasswordSetupUrl = $"{baseUrl}/setup?token=mock-token",
-                        TokenExpiresAt = DateTime.UtcNow.AddHours(24),
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _emailService.SendTemplatedEmailAsync(to, "パスワード設定のお知らせ", "password-setup", setupModel);
-                    break;
+            case "password-setup":
+                var setupModel = new PasswordSetupEmailModel
+                {
+                    UserName = "Test User",
+                    Email = to,
+                    OrganizationName = "Pecus Demo Org",
+                    PasswordSetupUrl = $"{baseUrl}/setup?token=mock-token",
+                    TokenExpiresAt = DateTime.UtcNow.AddHours(24),
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _emailService.SendTemplatedEmailAsync(to, "パスワード設定のお知らせ", "password-setup", setupModel);
+                break;
 
-                case "password-reset":
-                    var resetModel = new PasswordResetEmailModel
-                    {
-                        UserName = "Test User",
-                        Email = to,
-                        PasswordResetUrl = $"{baseUrl}/reset?token=mock-token",
-                        TokenExpiresAt = DateTime.UtcNow.AddHours(1),
-                        RequestedAt = DateTime.UtcNow
-                    };
-                    await _emailService.SendTemplatedEmailAsync(to, "パスワードリセット", "password-reset", resetModel);
-                    break;
+            case "password-reset":
+                var resetModel = new PasswordResetEmailModel
+                {
+                    UserName = "Test User",
+                    Email = to,
+                    PasswordResetUrl = $"{baseUrl}/reset?token=mock-token",
+                    TokenExpiresAt = DateTime.UtcNow.AddHours(1),
+                    RequestedAt = DateTime.UtcNow
+                };
+                await _emailService.SendTemplatedEmailAsync(to, "パスワードリセット", "password-reset", resetModel);
+                break;
 
-                case "test-email":
-                default:
-                    var model = new { Email = to };
-                    await _emailService.SendTemplatedEmailAsync(to, "テストメール - Pecus", "test-email", model);
-                    break;
-            }
-
-            return TypedResults.Ok(new MessageResponse { Message = "メール送信要求を実行しました。受信トレイを確認してください。" });
+            case "test-email":
+            default:
+                var model = new { Email = to };
+                await _emailService.SendTemplatedEmailAsync(to, "テストメール - Pecus", "test-email", model);
+                break;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "テストメール送信に失敗しました。template={Template}, to={To}", template, to);
-            return TypedResults.StatusCode(500);
-        }
+
+        return TypedResults.Ok(new MessageResponse { Message = "メール送信要求を実行しました。受信トレイを確認してください。" });
     }
 
     /// <summary>
@@ -119,11 +110,12 @@ public class TestEmailController : ControllerBase
     [HttpPost("set-recipient")]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-    public Results<Ok<MessageResponse>, BadRequest<MessageResponse>> SetRecipient([FromBody] RecipientRequest req)
+    public Ok<MessageResponse> SetRecipient([FromBody] RecipientRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req?.Email)) return TypedResults.BadRequest(new MessageResponse { Message = "Email is required." });
+        if (string.IsNullOrWhiteSpace(req?.Email))
+            throw new InvalidOperationException("メールアドレスは必須です。");
         TestEmailConfig.Recipient = req.Email.Trim();
-        return TypedResults.Ok(new MessageResponse { Message = "Recipient updated." });
+        return TypedResults.Ok(new MessageResponse { Message = "受信者を更新しました。" });
     }
 
     public class RecipientRequest { public string Email { get; set; } = string.Empty; }

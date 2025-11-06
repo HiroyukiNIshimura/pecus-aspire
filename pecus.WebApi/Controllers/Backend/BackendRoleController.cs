@@ -36,40 +36,20 @@ public class BackendRoleController : ControllerBase
     [ProducesResponseType(typeof(RoleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<RoleResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > CreateRole([FromBody] CreateRoleRequest request)
+    public async Task<Ok<RoleResponse>> CreateRole([FromBody] CreateRoleRequest request)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var role = await _roleService.CreateRoleAsync(request, me);
-            var response = new RoleResponse
-            {
-                Id = role.Id,
-                Name = role.Name,
-                Description = role.Description,
-                CreatedAt = role.CreatedAt,
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (DuplicateException ex)
+        var role = await _roleService.CreateRoleAsync(request, me);
+        var response = new RoleResponse
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ロール作成中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
+            CreatedAt = role.CreatedAt,
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -79,48 +59,32 @@ public class BackendRoleController : ControllerBase
     [ProducesResponseType(typeof(RoleDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<RoleDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetRole(int id)
+    public async Task<Ok<RoleDetailResponse>> GetRole(int id)
     {
-        try
+        var role = await _roleService.GetRoleByIdAsync(id);
+        if (role == null)
         {
-            var role = await _roleService.GetRoleByIdAsync(id);
-            if (role == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ロールが見つかりません。",
-                    }
-                );
-            }
-
-            var response = new RoleDetailResponse
-            {
-                Id = role.Id,
-                Name = role.Name,
-                Description = role.Description,
-                CreatedAt = role.CreatedAt,
-                Permissions = role
-                    .Permissions.Select(p => new PermissionDetailInfoResponse
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Description = p.Description,
-                        Category = p.Category,
-                    })
-                    .ToList(),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ロールが見つかりません。");
         }
-        catch (Exception ex)
+
+        var response = new RoleDetailResponse
         {
-            _logger.LogError(ex, "ロール取得中にエラーが発生しました。RoleId: {RoleId}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
+            CreatedAt = role.CreatedAt,
+            Permissions = role
+                .Permissions.Select(p => new PermissionDetailInfoResponse
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Category = p.Category,
+                })
+                .ToList(),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -129,29 +93,19 @@ public class BackendRoleController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RoleListItemResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<IEnumerable<RoleListItemResponse>>, StatusCodeHttpResult>
-    > GetAllRoles()
+    public async Task<Ok<IEnumerable<RoleListItemResponse>>> GetAllRoles()
     {
-        try
+        var roles = await _roleService.GetAllRolesAsync();
+        var response = roles.Select(r => new RoleListItemResponse
         {
-            var roles = await _roleService.GetAllRolesAsync();
-            var response = roles.Select(r => new RoleListItemResponse
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Description = r.Description,
-                CreatedAt = r.CreatedAt,
-                PermissionCount = r.Permissions.Count,
-            });
+            Id = r.Id,
+            Name = r.Name,
+            Description = r.Description,
+            CreatedAt = r.CreatedAt,
+            PermissionCount = r.Permissions.Count,
+        });
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "全ロール取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -162,73 +116,42 @@ public class BackendRoleController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<RoleDetailResponse>,
-            NotFound<ErrorResponse>,
-            BadRequest<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > SetPermissionsToRole(int roleId, [FromBody] SetPermissionsToRoleRequest request)
+    public async Task<Ok<RoleDetailResponse>> SetPermissionsToRole(int roleId, [FromBody] SetPermissionsToRoleRequest request)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // まずロールの存在を確認
-            var existingRole = await _roleService.GetRoleByIdAsync(roleId);
-            if (existingRole == null)
+        // まずロールの存在を確認
+        var existingRole = await _roleService.GetRoleByIdAsync(roleId);
+        if (existingRole == null)
+        {
+            throw new NotFoundException("ロールが見つかりません。");
+        }
+
+        // 権限を一括設定
+        var permissions = await _roleService.SetPermissionsToRoleAsync(
+            roleId,
+            request.PermissionIds,
+            me
+        );
+
+        // レスポンスを構築（既存のロール情報と更新された権限を使用）
+        var response = new RoleDetailResponse
+        {
+            Id = existingRole.Id,
+            Name = existingRole.Name,
+            Description = existingRole.Description,
+            CreatedAt = existingRole.CreatedAt,
+            Permissions = permissions.Select(p => new PermissionDetailInfoResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ロールが見つかりません。",
-                    }
-                );
-            }
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Category = p.Category,
+            }).ToList(),
+        };
 
-            // 権限を一括設定
-            var permissions = await _roleService.SetPermissionsToRoleAsync(
-                roleId,
-                request.PermissionIds,
-                me
-            );
-
-            // レスポンスを構築（既存のロール情報と更新された権限を使用）
-            var response = new RoleDetailResponse
-            {
-                Id = existingRole.Id,
-                Name = existingRole.Name,
-                Description = existingRole.Description,
-                CreatedAt = existingRole.CreatedAt,
-                Permissions = permissions.Select(p => new PermissionDetailInfoResponse
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    Category = p.Category,
-                }).ToList(),
-            };
-
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "権限一括設定中にエラーが発生しました。RoleId: {RoleId}", roleId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -238,36 +161,20 @@ public class BackendRoleController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteRole(int id)
+    public async Task<Ok<SuccessResponse>> DeleteRole(int id)
     {
-        try
+        var result = await _roleService.DeleteRoleAsync(id);
+        if (!result)
         {
-            var result = await _roleService.DeleteRoleAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ロールが見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("ロールが見つかりません。");
+        }
 
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "ロールを削除しました。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ロール削除中にエラーが発生しました。RoleId: {RoleId}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "ロールを削除しました。",
+            }
+        );
     }
 }
