@@ -186,6 +186,13 @@ public class UpdateProfileRequest
     /// </summary>
     [IntListRange(1, 50)]
     public List<int>? SkillIds { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>

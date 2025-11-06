@@ -37,6 +37,13 @@ public class UpdateRoleRequest
     /// </summary>
     [MaxLength(200, ErrorMessage = "説明は200文字以内で入力してください。")]
     public string? Description { get; set; }
+
+    /// <summary>
+    /// ロールの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>

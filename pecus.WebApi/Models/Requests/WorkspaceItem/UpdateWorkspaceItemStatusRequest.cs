@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Requests.WorkspaceItem;
 
 /// <summary>
@@ -14,4 +16,11 @@ public class UpdateWorkspaceItemStatusRequest
     /// アーカイブフラグ
     /// </summary>
     public bool? IsArchived { get; set; }
+
+    /// <summary>
+    /// アイテムの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }

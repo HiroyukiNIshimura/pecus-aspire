@@ -66,6 +66,13 @@ public class UpdateGenreRequest
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// ジャンルの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>

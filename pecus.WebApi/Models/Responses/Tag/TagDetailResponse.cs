@@ -49,4 +49,9 @@ public class TagDetailResponse
     /// このタグが付与されているアイテム数
     /// </summary>
     public int ItemCount { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

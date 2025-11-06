@@ -62,4 +62,9 @@ public class UserDetailResponse
     /// ユーザーの権限一覧（ロールから取得）
     /// </summary>
     public List<PermissionInfoResponse> Permissions { get; set; } = new();
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

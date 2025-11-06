@@ -126,4 +126,9 @@ public class WorkspaceItemDetailResponse
     /// このアイテムのPIN総数
     /// </summary>
     public int PinCount { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

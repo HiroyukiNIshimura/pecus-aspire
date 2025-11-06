@@ -49,4 +49,11 @@ public class UpdatePermissionRequest
     /// </summary>
     [MaxLength(50, ErrorMessage = "カテゴリは50文字以内で入力してください。")]
     public string? Category { get; set; }
+
+    /// <summary>
+    /// 権限の楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }

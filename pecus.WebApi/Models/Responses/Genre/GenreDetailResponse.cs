@@ -59,4 +59,9 @@ public class GenreDetailResponse
     /// 有効フラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

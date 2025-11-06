@@ -31,4 +31,9 @@ public class RoleDetailResponse
     /// ロールが持つ権限一覧
     /// </summary>
     public List<PermissionDetailInfoResponse> Permissions { get; set; } = new();
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

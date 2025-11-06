@@ -66,6 +66,13 @@ public class UpdateWorkspaceRequest
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// ワークスペースの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>

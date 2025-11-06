@@ -110,6 +110,13 @@ public class AdminUpdateOrganizationRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public string? Email { get; set; }
+
+    /// <summary>
+    /// 組織の楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>
@@ -159,4 +166,10 @@ public class BackendUpdateOrganizationRequest
     /// 有効フラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// 組織の楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
 }

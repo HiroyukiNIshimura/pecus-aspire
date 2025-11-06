@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Requests.WorkspaceItem;
 
 /// <summary>
@@ -18,7 +20,7 @@ public class TagItemRequest
     /// <summary>
     /// タグ名
     /// </summary>
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "タグ名は必須です。")]
-    [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "タグ名は50文字以内です。")]
+    [Required(ErrorMessage = "タグ名は必須です。")]
+    [StringLength(50, ErrorMessage = "タグ名は50文字以内です。")]
     public string? Name { get; set; }
 }

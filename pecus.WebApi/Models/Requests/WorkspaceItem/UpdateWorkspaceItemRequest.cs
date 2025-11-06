@@ -60,4 +60,10 @@ public class UpdateWorkspaceItemRequest
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// アイテムの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
 }

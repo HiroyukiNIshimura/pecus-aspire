@@ -81,4 +81,9 @@ public class WorkspaceDetailResponse
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

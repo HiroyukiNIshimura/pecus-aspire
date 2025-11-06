@@ -42,6 +42,13 @@ public class UpdateSkillRequest
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// スキルの楽観的ロック用のRowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required byte[] RowVersion { get; set; }
+
 }
 
 /// <summary>

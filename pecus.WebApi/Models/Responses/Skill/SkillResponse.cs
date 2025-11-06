@@ -54,6 +54,11 @@ public class SkillDetailResponse
     /// ユーザー数
     /// </summary>
     public int UserCount { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }
 
 /// <summary>
