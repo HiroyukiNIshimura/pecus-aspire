@@ -14,5 +14,9 @@ export type UpdateTagRequest = {
      * アクティブフラグ
      */
     isActive?: boolean | null;
+    /**
+     * タグの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

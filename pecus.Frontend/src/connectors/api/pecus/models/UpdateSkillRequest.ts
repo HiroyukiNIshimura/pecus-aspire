@@ -18,5 +18,9 @@ export type UpdateSkillRequest = {
      * アクティブフラグ
      */
     isActive?: boolean | null;
+    /**
+     * スキルの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

@@ -42,5 +42,9 @@ export type TagDetailResponse = {
      * このタグが付与されているアイテム数
      */
     itemCount?: number;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

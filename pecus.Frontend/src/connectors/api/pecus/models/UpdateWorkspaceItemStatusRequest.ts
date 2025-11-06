@@ -14,5 +14,9 @@ export type UpdateWorkspaceItemStatusRequest = {
      * アーカイブフラグ
      */
     isArchived?: boolean | null;
+    /**
+     * アイテムの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

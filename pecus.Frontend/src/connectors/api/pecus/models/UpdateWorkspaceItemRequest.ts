@@ -44,5 +44,9 @@ export type UpdateWorkspaceItemRequest = {
      * アクティブフラグ
      */
     isActive?: boolean | null;
+    /**
+     * アイテムの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

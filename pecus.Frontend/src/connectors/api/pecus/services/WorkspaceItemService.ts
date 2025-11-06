@@ -129,6 +129,7 @@ export class WorkspaceItemService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                409: `Conflict`,
                 500: `Internal Server Error`,
             },
         });
@@ -183,6 +184,7 @@ export class WorkspaceItemService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                409: `Conflict`,
                 500: `Internal Server Error`,
             },
         });

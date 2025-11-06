@@ -26,5 +26,9 @@ export type UpdateWorkspaceRequest = {
      * アクティブフラグ
      */
     isActive?: boolean | null;
+    /**
+     * ワークスペースの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

@@ -7,8 +7,14 @@
  */
 export type SetUserRolesRequest = {
     /**
-     * ロールIDのリスト
+     * ロールIDのリスト。既存のすべてのロールを置き換えます。
+     * 空のリストまたはnullの場合はすべてのロールを削除します。
      */
-    roleIds: Array<number>;
+    roles: Array<number>;
+    /**
+     * ユーザーの楽観的ロック用RowVersion。
+     * 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
+     */
+    userRowVersion?: string | null;
 };
 

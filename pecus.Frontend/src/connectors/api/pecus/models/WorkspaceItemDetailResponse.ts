@@ -101,5 +101,9 @@ export type WorkspaceItemDetailResponse = {
      * このアイテムのPIN総数
      */
     pinCount?: number;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

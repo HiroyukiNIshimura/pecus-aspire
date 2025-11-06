@@ -26,5 +26,9 @@ export type UpdateGenreRequest = {
      * アクティブフラグ
      */
     isActive?: boolean | null;
+    /**
+     * ジャンルの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

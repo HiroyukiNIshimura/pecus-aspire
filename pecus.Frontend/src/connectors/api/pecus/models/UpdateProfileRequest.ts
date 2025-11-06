@@ -22,5 +22,9 @@ export type UpdateProfileRequest = {
      * スキルIDリスト
      */
     skillIds?: Array<number> | null;
+    /**
+     * ユーザーの楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

@@ -7,10 +7,14 @@
  */
 export type SetTagsToItemRequest = {
     /**
-     * List of tag names to set on the item. Replaces all existing tags.
-     * Tags will be auto-created in the organization if they don't exist.
-     * Empty list or null will remove all tags.
+     * タグ名のリスト。既存のすべてのタグを置き換えます。
+     * 空のリストまたはnullの場合はすべてのタグを削除します。
      */
-    tagNames?: Array<string> | null;
+    tags?: Array<string> | null;
+    /**
+     * アイテムの楽観的ロック用RowVersion。
+     * 競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。
+     */
+    itemRowVersion?: string | null;
 };
 

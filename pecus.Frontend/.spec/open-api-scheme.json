@@ -95,6 +95,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -149,6 +159,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -332,6 +352,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -366,6 +396,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -418,6 +458,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -454,6 +504,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -516,6 +576,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -699,6 +769,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -733,6 +813,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -785,6 +875,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -821,6 +921,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -1101,6 +1211,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1167,6 +1287,16 @@
           },
           "404": {
             "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: スキル情報が別のユーザーにより更新されています",
             "content": {
               "application/json": {
                 "schema": {
@@ -1312,7 +1442,7 @@
           }
         ],
         "requestBody": {
-          "description": "ロールIDのリスト",
+          "description": "ロール情報のリスト",
           "content": {
             "application/json": {
               "schema": {
@@ -1354,6 +1484,16 @@
           },
           "404": {
             "description": "ユーザーが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: ロール情報が別のユーザーにより更新されています",
             "content": {
               "application/json": {
                 "schema": {
@@ -1619,6 +1759,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -1705,6 +1855,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -1741,6 +1901,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -5250,6 +5420,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -5385,6 +5565,16 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -5592,6 +5782,16 @@
         "responses": {
           "204": {
             "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -6124,6 +6324,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -6197,6 +6407,9 @@
         "description": "ワークスペースアイテム関連追加レスポンス"
       },
       "AdminUpdateOrganizationRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -6230,12 +6443,20 @@
             "description": "メールアドレス",
             "format": "email",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
       },
       "BackendUpdateOrganizationRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -6280,6 +6501,11 @@
             "type": "boolean",
             "description": "有効フラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -6883,6 +7109,12 @@
           "isActive": {
             "type": "boolean",
             "description": "有効フラグ"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -7344,6 +7576,12 @@
             "type": "integer",
             "description": "所属ユーザー数",
             "format": "int32"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -7610,6 +7848,12 @@
               "$ref": "#/components/schemas/RoleInfoResponse"
             },
             "description": "この権限を持つロール一覧",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
             "nullable": true
           }
         },
@@ -7878,6 +8122,12 @@
             },
             "description": "ロールが持つ権限一覧",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8026,12 +8276,19 @@
       "SetTagsToItemRequest": {
         "type": "object",
         "properties": {
-          "tagNames": {
+          "tags": {
+            "maxItems": 20,
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "List of tag names to set on the item. Replaces all existing tags.\r\nTags will be auto-created in the organization if they don't exist.\r\nEmpty list or null will remove all tags.",
+            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\r\n空のリストまたはnullの場合はすべてのタグを削除します。",
+            "nullable": true
+          },
+          "itemRowVersion": {
+            "type": "string",
+            "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
+            "format": "byte",
             "nullable": true
           }
         },
@@ -8081,17 +8338,23 @@
       },
       "SetUserRolesRequest": {
         "required": [
-          "roleIds"
+          "roles"
         ],
         "type": "object",
         "properties": {
-          "roleIds": {
+          "roles": {
             "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
             },
-            "description": "ロールIDのリスト"
+            "description": "ロールIDのリスト。既存のすべてのロールを置き換えます。\r\n空のリストまたはnullの場合はすべてのロールを削除します。"
+          },
+          "userRowVersion": {
+            "type": "string",
+            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8109,7 +8372,13 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
+          },
+          "userRowVersion": {
+            "type": "string",
+            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "format": "byte",
             "nullable": true
           }
         },
@@ -8173,6 +8442,12 @@
             "type": "integer",
             "description": "ユーザー数",
             "format": "int32"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8459,6 +8734,12 @@
             "type": "integer",
             "description": "このタグが付与されているアイテム数",
             "format": "int32"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8672,6 +8953,9 @@
         "description": "メールアドレス変更リクエスト"
       },
       "UpdateGenreRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -8704,12 +8988,20 @@
             "type": "boolean",
             "description": "アクティブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "ジャンルの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "ジャンル更新リクエスト"
       },
       "UpdateProfileRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "username": {
@@ -8738,12 +9030,20 @@
             },
             "description": "スキルIDリスト",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "ユーザーの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "プロフィール更新リクエスト"
       },
       "UpdateSkillRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -8762,6 +9062,11 @@
             "type": "boolean",
             "description": "アクティブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "スキルの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -8769,7 +9074,8 @@
       },
       "UpdateTagRequest": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -8783,12 +9089,20 @@
             "type": "boolean",
             "description": "アクティブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "タグの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "タグ更新リクエスト"
       },
       "UpdateWorkspaceItemRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "subject": {
@@ -8844,12 +9158,20 @@
             "type": "boolean",
             "description": "アクティブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "アイテムの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "ワークスペースアイテム更新リクエスト"
       },
       "UpdateWorkspaceItemStatusRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "isDraft": {
@@ -8861,12 +9183,20 @@
             "type": "boolean",
             "description": "アーカイブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "アイテムの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "ワークスペースアイテムステータス更新リクエスト"
       },
       "UpdateWorkspaceRequest": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -8899,6 +9229,11 @@
             "type": "boolean",
             "description": "アクティブフラグ",
             "nullable": true
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "ワークスペースの楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -9253,6 +9588,12 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -9442,6 +9783,12 @@
             "type": "integer",
             "description": "このアイテムのPIN総数",
             "format": "int32"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,

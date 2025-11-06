@@ -26,5 +26,9 @@ export type AdminUpdateOrganizationRequest = {
      * メールアドレス
      */
     email?: string | null;
+    /**
+     * 組織の楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

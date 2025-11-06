@@ -50,5 +50,9 @@ export type OrganizationDetailResponse = {
      * 所属ユーザー数
      */
     userCount?: number;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

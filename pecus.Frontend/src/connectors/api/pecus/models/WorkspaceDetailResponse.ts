@@ -65,5 +65,9 @@ export type WorkspaceDetailResponse = {
      * アクティブフラグ
      */
     isActive?: boolean;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

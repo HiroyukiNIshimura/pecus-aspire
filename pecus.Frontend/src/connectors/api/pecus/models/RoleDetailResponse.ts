@@ -27,5 +27,9 @@ export type RoleDetailResponse = {
      * ロールが持つ権限一覧
      */
     permissions?: Array<PermissionDetailInfoResponse> | null;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

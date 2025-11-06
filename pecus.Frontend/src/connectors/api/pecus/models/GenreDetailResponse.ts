@@ -50,5 +50,9 @@ export type GenreDetailResponse = {
      * 有効フラグ
      */
     isActive?: boolean;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion?: string | null;
 };
 

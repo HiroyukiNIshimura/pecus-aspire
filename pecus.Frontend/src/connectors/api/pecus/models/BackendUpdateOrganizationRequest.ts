@@ -34,5 +34,9 @@ export type BackendUpdateOrganizationRequest = {
      * 有効フラグ
      */
     isActive?: boolean | null;
+    /**
+     * 組織の楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

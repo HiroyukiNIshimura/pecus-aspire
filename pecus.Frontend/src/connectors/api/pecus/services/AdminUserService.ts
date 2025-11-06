@@ -118,6 +118,7 @@ export class AdminUserService {
             errors: {
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,
+                409: `Conflict`,
             },
         });
     }
@@ -144,6 +145,7 @@ export class AdminUserService {
             errors: {
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,
+                409: `競合: スキル情報が別のユーザーにより更新されています`,
             },
         });
     }
@@ -196,7 +198,7 @@ export class AdminUserService {
      * ユーザーのロールを設定
      * 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
      * @param id ユーザーID
-     * @param requestBody ロールIDのリスト
+     * @param requestBody ロール情報のリスト
      * @returns SuccessResponse ロールを設定しました
      * @throws ApiError
      */
@@ -215,6 +217,7 @@ export class AdminUserService {
             errors: {
                 403: `他組織のユーザーは操作できません`,
                 404: `ユーザーが見つかりません`,
+                409: `競合: ロール情報が別のユーザーにより更新されています`,
             },
         });
     }
