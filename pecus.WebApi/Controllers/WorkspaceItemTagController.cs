@@ -43,12 +43,14 @@ public class WorkspaceItemTagController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<
         Results<
             Ok<WorkspaceItemResponse>,
             NotFound<ErrorResponse>,
             BadRequest<ErrorResponse>,
+            Conflict<ErrorResponse>,
             StatusCodeHttpResult
         >
     > SetTagsToItem(int workspaceId, int itemId, [FromBody] SetTagsToItemRequest request)
@@ -84,12 +86,13 @@ public class WorkspaceItemTagController : ControllerBase
                 );
             }
 
-            // タグを一括設定
+            // タグを一括設定（楽観的ロック対応）
             var tags = await _tagService.SetTagsToItemAsync(
-                workspaceId,
-                itemId,
-                request.TagNames,
-                me
+                workspaceId: workspaceId,
+                itemId: itemId,
+                tagRequests: request.Tags,
+                userId: me,
+                itemRowVersion: request.RowVersion
             );
 
             // 更新後のアイテムを取得
@@ -111,6 +114,16 @@ public class WorkspaceItemTagController : ControllerBase
                 new ErrorResponse
                 {
                     StatusCode = StatusCodes.Status404NotFound,
+                    Message = ex.Message,
+                }
+            );
+        }
+        catch (ConcurrencyException ex)
+        {
+            return TypedResults.Conflict(
+                new ErrorResponse
+                {
+                    StatusCode = StatusCodes.Status409Conflict,
                     Message = ex.Message,
                 }
             );

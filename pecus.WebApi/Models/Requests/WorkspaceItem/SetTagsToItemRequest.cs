@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Requests.WorkspaceItem;
 
 /// <summary>
@@ -6,10 +8,17 @@ namespace Pecus.Models.Requests.WorkspaceItem;
 public class SetTagsToItemRequest
 {
     /// <summary>
-    /// List of tag names to set on the item. Replaces all existing tags.
-    /// Tags will be auto-created in the organization if they don't exist.
-    /// Empty list or null will remove all tags.
+    /// タグ情報のリスト。既存のすべてのタグを置き換えます。
+    /// 既存タグの場合はId、RowVersion、Nameを指定。
+    /// 新規タグの場合はId=null、RowVersion=null、Nameを指定。
+    /// 空のリストまたはnullの場合はすべてのタグを削除します。
     /// </summary>
-    [Validation.StringListItems(50)]
-    public List<string>? TagNames { get; set; }
+    [MaxLength(20, ErrorMessage = "タグの数は最大20件までです。")]
+    public List<TagItemRequest>? Tags { get; set; }
+
+    /// <summary>
+    /// アイテムの楽観的ロック用RowVersion。
+    /// 競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。
+    /// </summary>
+    public byte[]? RowVersion { get; set; }
 }

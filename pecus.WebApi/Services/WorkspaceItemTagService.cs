@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Requests.WorkspaceItem;
 
 namespace Pecus.Services;
 
@@ -31,14 +32,16 @@ public class WorkspaceItemTagService
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
-    /// <param name="tagNames">タグ名のリスト</param>
+    /// <param name="tagRequests">タグ情報のリスト（ID、RowVersion、名前を含む）</param>
     /// <param name="userId">設定するユーザーID</param>
+    /// <param name="itemRowVersion">アイテムの楽観的ロック用のRowVersion</param>
     /// <returns>設定されたタグのリスト</returns>
     public async Task<List<Tag>> SetTagsToItemAsync(
         int workspaceId,
         int itemId,
-        List<string>? tagNames,
-        int userId
+        List<TagItemRequest>? tagRequests,
+        int userId,
+        byte[]? itemRowVersion = null
     )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -52,6 +55,14 @@ public class WorkspaceItemTagService
             if (item == null)
             {
                 throw new NotFoundException("アイテムが見つかりません。");
+            }
+
+            // 楽観的ロック：ItemRowVersionが指定されている場合は競合チェック
+            if (itemRowVersion != null && (item.RowVersion == null || !item.RowVersion.SequenceEqual(itemRowVersion)))
+            {
+                throw new ConcurrencyException(
+                    "タグは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                );
             }
 
             // ワークスペース情報を取得（OrganizationId取得用）
@@ -68,35 +79,70 @@ public class WorkspaceItemTagService
             _context.WorkspaceItemTags.RemoveRange(existingRelations);
             await _context.SaveChangesAsync();
 
-            // 新しいタグを設定（タグ名がある場合のみ）
+            // 新しいタグを設定（タグ情報がある場合のみ）
             var resultTags = new List<Tag>();
-            if (tagNames != null && tagNames.Any())
+            if (tagRequests != null && tagRequests.Any())
             {
-                // タグ名をクリーンアップ（重複排除、空文字除外、トリミング）
-                var cleanedTagNames = tagNames
-                    .Where(name => !string.IsNullOrWhiteSpace(name))
-                    .Select(name => name.Trim())
-                    .Distinct()
-                    .ToList();
-
-                foreach (var tagName in cleanedTagNames)
+                foreach (var tagRequest in tagRequests)
                 {
-                    // タグを取得または作成
-                    var tag = await _context.Tags.FirstOrDefaultAsync(t =>
-                        t.OrganizationId == workspace.OrganizationId && t.Name == tagName
-                    );
-
-                    if (tag == null)
+                    if (string.IsNullOrWhiteSpace(tagRequest.Name))
                     {
-                        tag = new Tag
+                        continue;
+                    }
+
+                    Tag? tag = null;
+
+                    // 既存タグの場合（IDが指定されている）
+                    if (tagRequest.Id.HasValue)
+                    {
+                        tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagRequest.Id.Value);
+                        if (tag == null)
                         {
-                            OrganizationId = workspace.OrganizationId,
-                            Name = tagName,
-                            CreatedByUserId = userId,
-                            CreatedAt = DateTime.UtcNow,
-                        };
-                        _context.Tags.Add(tag);
-                        await _context.SaveChangesAsync(); // タグIDを取得するため保存
+                            throw new NotFoundException(
+                                $"タグID {tagRequest.Id.Value} が見つかりません。"
+                            );
+                        }
+
+                        // 楽観的ロック：タグのRowVersionをチェック
+                        if (
+                            tagRequest.RowVersion != null
+                            && (tag.RowVersion == null || !tag.RowVersion.SequenceEqual(tagRequest.RowVersion))
+                        )
+                        {
+                            throw new ConcurrencyException(
+                                $"タグ '{tag.Name}' は別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                            );
+                        }
+
+                        // タグが同じ組織に属しているか確認
+                        if (tag.OrganizationId != workspace.OrganizationId)
+                        {
+                            throw new InvalidOperationException(
+                                $"タグ '{tag.Name}' はこのワークスペースの組織に属していません。"
+                            );
+                        }
+                    }
+                    else
+                    {
+                        // 新規タグの場合：名前で検索または作成
+                        var trimmedName = tagRequest.Name.Trim();
+                        tag = await _context.Tags.FirstOrDefaultAsync(t =>
+                            t.OrganizationId == workspace.OrganizationId
+                            && t.Name == trimmedName
+                        );
+
+                        if (tag == null)
+                        {
+                            tag = new Tag
+                            {
+                                OrganizationId = workspace.OrganizationId,
+                                Name = trimmedName,
+                                CreatedByUserId = userId,
+                                CreatedAt = DateTime.UtcNow,
+                            };
+                            _context.Tags.Add(tag);
+                            await _context.SaveChangesAsync(); // タグIDを取得するため保存
+                        }
                     }
 
                     // WorkspaceItemTagを作成
@@ -112,6 +158,10 @@ public class WorkspaceItemTagService
                     resultTags.Add(tag);
                 }
             }
+
+            // アイテムのUpdatedAtを更新（RowVersionも自動更新される）
+            item.UpdatedAt = DateTime.UtcNow;
+            _context.WorkspaceItems.Update(item);
 
             await _context.SaveChangesAsync();
 
