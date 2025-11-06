@@ -52,5 +52,9 @@ export type UserResponse = {
      * 作成日時
      */
     createdAt?: string;
+    /**
+     * ユーザーの楽観的ロック用RowVersion
+     */
+    rowVersion: string | null;
 };
 

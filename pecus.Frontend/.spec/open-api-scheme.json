@@ -7049,7 +7049,8 @@
       },
       "GenreDetailResponse": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -7518,7 +7519,8 @@
       "OrganizationDetailResponse": {
         "required": [
           "name",
-          "phoneNumber"
+          "phoneNumber",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -7813,7 +7815,8 @@
       },
       "PermissionDetailResponse": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -8091,7 +8094,8 @@
       },
       "RoleDetailResponse": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -8387,7 +8391,8 @@
       },
       "SkillDetailResponse": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -8687,6 +8692,9 @@
         "description": "成功メッセージレスポンス"
       },
       "TagDetailResponse": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8737,7 +8745,7 @@
           },
           "rowVersion": {
             "type": "string",
-            "description": "楽観的ロック用のRowVersion",
+            "description": "楽観的ロック用RowVersion",
             "format": "byte",
             "nullable": true
           }
@@ -9305,6 +9313,7 @@
         "required": [
           "email",
           "loginId",
+          "rowVersion",
           "username"
         ],
         "type": "object",
@@ -9367,6 +9376,12 @@
             "type": "string",
             "description": "作成日時",
             "format": "date-time"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "ユーザーの楽観的ロック用RowVersion",
+            "format": "byte",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -9506,7 +9521,8 @@
       },
       "WorkspaceDetailResponse": {
         "required": [
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -9662,6 +9678,9 @@
         "description": "ワークスペースアイテム添付ファイルレスポンス"
       },
       "WorkspaceItemDetailResponse": {
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {

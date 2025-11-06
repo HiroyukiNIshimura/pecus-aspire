@@ -53,6 +53,6 @@ export type GenreDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion?: string | null;
+    rowVersion: string | null;
 };
 

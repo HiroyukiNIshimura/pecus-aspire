@@ -43,8 +43,8 @@ export type TagDetailResponse = {
      */
     itemCount?: number;
     /**
-     * 楽観的ロック用のRowVersion
+     * 楽観的ロック用RowVersion
      */
-    rowVersion?: string | null;
+    rowVersion: string | null;
 };
 
