@@ -125,8 +125,11 @@ public class WorkspaceItemAttachmentService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestAttachment = await _context.WorkspaceItemAttachments.FindAsync(attachment.Id);
+            throw new ConcurrencyException<WorkspaceItemAttachment>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestAttachment
             );
         }
 
@@ -228,8 +231,9 @@ public class WorkspaceItemAttachmentService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<WorkspaceItemAttachment>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                attachment
             );
         }
 

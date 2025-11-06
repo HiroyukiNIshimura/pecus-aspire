@@ -60,8 +60,9 @@ public class WorkspaceItemTagService
             // 楽観的ロック：ItemRowVersionが指定されている場合は競合チェック
             if (itemRowVersion != null && (item.RowVersion == null || !item.RowVersion.SequenceEqual(itemRowVersion)))
             {
-                throw new ConcurrencyException(
-                    "タグは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                throw new ConcurrencyException<WorkspaceItem>(
+                    "タグは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
+                    item
                 );
             }
 

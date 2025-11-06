@@ -69,8 +69,11 @@ public class WorkspaceItemPinService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 追加時は同一のアイテム+ユーザーで最新のPINを取得して返す
+            var latestPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(p => p.WorkspaceItemId == itemId && p.UserId == userId);
+            throw new ConcurrencyException<WorkspaceItemPin>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestPin
             );
         }
 
@@ -113,8 +116,11 @@ public class WorkspaceItemPinService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 削除時はワークスペースアイテムID+ユーザーIDで最新のPINを取得して返す
+            var latestPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(p => p.WorkspaceItemId == itemId && p.UserId == userId);
+            throw new ConcurrencyException<WorkspaceItemPin>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestPin
             );
         }
     }

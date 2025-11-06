@@ -128,8 +128,9 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Genre>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                genre
             );
         }
 
@@ -164,8 +165,9 @@ public class GenreService
         // 楽観的ロック：RowVersion を検証
         if (!genre.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Genre>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                genre
             );
         }
 
@@ -203,8 +205,11 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestGenre = await _context.Genres.FindAsync(id);
+            throw new ConcurrencyException<Genre>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestGenre
             );
         }
 
@@ -249,8 +254,11 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestGenre = await _context.Genres.FindAsync(id);
+            throw new ConcurrencyException<Genre>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestGenre
             );
         }
     }
@@ -282,8 +290,11 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestGenre = await _context.Genres.FindAsync(id);
+            throw new ConcurrencyException<Genre>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestGenre
             );
         }
     }

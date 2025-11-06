@@ -63,8 +63,9 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                null
             );
         }
 
@@ -168,8 +169,11 @@ public class TagService
         // 楽観的ロック：RowVersion を検証
         if (!tag.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestTag
             );
         }
 
@@ -194,8 +198,11 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestTag
             );
         }
 
@@ -228,8 +235,11 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestTag
             );
         }
 
@@ -265,8 +275,11 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestTag
             );
         }
 
@@ -302,8 +315,11 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
+            throw new ConcurrencyException<Tag>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestTag
             );
         }
 

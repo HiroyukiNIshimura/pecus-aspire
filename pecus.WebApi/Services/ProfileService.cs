@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models;
 using Pecus.Models.Responses.User;
 
 namespace Pecus.Services;
@@ -63,8 +64,9 @@ public class ProfileService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<User>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                user
             );
         }
 

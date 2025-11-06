@@ -136,8 +136,9 @@ public class OrganizationService
         // 楽観的ロック：RowVersion を検証
         if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                organization
             );
         }
 
@@ -175,8 +176,11 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestOrganization
             );
         }
 
@@ -197,8 +201,9 @@ public class OrganizationService
         // 楽観的ロック：RowVersion を検証
         if (!organization.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                organization
             );
         }
 
@@ -259,8 +264,11 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestOrganization
             );
         }
 
@@ -328,8 +336,11 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
+            throw new ConcurrencyException<Organization>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestOrganization
             );
         }
 

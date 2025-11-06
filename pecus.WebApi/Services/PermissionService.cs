@@ -46,8 +46,9 @@ public class PermissionService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Permission>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                permission
             );
         }
 
@@ -102,8 +103,9 @@ public class PermissionService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Permission>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                permission
             );
         }
 

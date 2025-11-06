@@ -55,8 +55,9 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                null
             );
         }
 
@@ -134,8 +135,11 @@ public class SkillService
         // 楽観的ロック：RowVersion を検証
         if (!skill.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestSkill
             );
         }
 
@@ -175,8 +179,10 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestSkill
             );
         }
 
@@ -202,8 +208,10 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestSkill
             );
         }
 
@@ -233,8 +241,10 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestSkill
             );
         }
 
@@ -264,8 +274,10 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
+            throw new ConcurrencyException<Skill>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestSkill
             );
         }
 

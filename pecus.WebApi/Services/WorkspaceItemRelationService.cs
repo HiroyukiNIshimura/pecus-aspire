@@ -94,8 +94,13 @@ public class WorkspaceItemRelationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 可能な限り最新の関連を取得して返す
+            var latestRelation = await _context.WorkspaceItemRelations.FirstOrDefaultAsync(r =>
+                r.FromItemId == fromItemId && r.ToItemId == request.ToItemId && r.RelationType == request.RelationType
+            );
+            throw new ConcurrencyException<WorkspaceItemRelation>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestRelation
             );
         }
 
@@ -193,8 +198,11 @@ public class WorkspaceItemRelationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 削除時はIDで最新の状態を取得して返す
+            var latestRelation = await _context.WorkspaceItemRelations.FirstOrDefaultAsync(r => r.Id == relationId);
+            throw new ConcurrencyException<WorkspaceItemRelation>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestRelation
             );
         }
 

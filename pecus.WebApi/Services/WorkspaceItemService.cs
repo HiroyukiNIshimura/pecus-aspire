@@ -317,8 +317,9 @@ public class WorkspaceItemService
         // 楽観的ロック：RowVersion を検証
         if (!item.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<WorkspaceItem>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                item
             );
         }
 
@@ -381,8 +382,11 @@ public class WorkspaceItemService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestItem = await _context.WorkspaceItems.FindAsync(itemId);
+            throw new ConcurrencyException<WorkspaceItem>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestItem
             );
         }
 
@@ -470,8 +474,11 @@ public class WorkspaceItemService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            // 最新データを取得
+            var latestItem = await _context.WorkspaceItems.FindAsync(itemId);
+            throw new ConcurrencyException<WorkspaceItem>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestItem
             );
         }
 

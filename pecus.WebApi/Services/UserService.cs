@@ -269,8 +269,10 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            throw new ConcurrencyException<User>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestUser
             );
         }
 
@@ -304,8 +306,10 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            throw new ConcurrencyException<User>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestUser
             );
         }
 
@@ -333,8 +337,10 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            throw new ConcurrencyException<User>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                latestUser
             );
         }
 
@@ -574,8 +580,10 @@ public class UserService
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
             if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
             {
-                throw new ConcurrencyException(
-                    "スキルは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                throw new ConcurrencyException<User>(
+                    "スキルは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
+                    latestUser
                 );
             }
 
@@ -632,8 +640,10 @@ public class UserService
             // 楽観的ロック：RowVersion を検証
             if (!user.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
             {
-                throw new ConcurrencyException(
-                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+                var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                throw new ConcurrencyException<User>(
+                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                    latestUser
                 );
             }
 
@@ -788,8 +798,10 @@ public class UserService
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
             if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
             {
-                throw new ConcurrencyException(
-                    "ロールは別のユーザーにより更新されています。ページをリロードして再度お試しください。"
+                var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                throw new ConcurrencyException<User>(
+                    "ロールは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
+                    latestUser
                 );
             }
 

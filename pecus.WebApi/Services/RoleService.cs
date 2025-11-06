@@ -42,8 +42,9 @@ public class RoleService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Role>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                role
             );
         }
 
@@ -86,8 +87,9 @@ public class RoleService
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new ConcurrencyException(
-                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+                throw new ConcurrencyException<Role>(
+                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                    role
                 );
             }
         }
@@ -129,8 +131,9 @@ public class RoleService
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConcurrencyException(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。"
+            throw new ConcurrencyException<Role>(
+                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+                role
             );
         }
 
