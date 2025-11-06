@@ -29,11 +29,20 @@ export async function getCurrentUser(): Promise<ApiResponse<any>> {
  */
 export async function updateProfile(request: {
   username?: string;
-  email?: string;
+  avatarType?: string;
+  avatarUrl?: string;
+  skillIds?: number[];
+  rowVersion: string; // 楽観的ロック用
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profile.putApiProfile(request);
+    const response = await api.profile.putApiProfile({
+      username: request.username,
+      avatarType: request.avatarType,
+      avatarUrl: request.avatarUrl,
+      skillIds: request.skillIds,
+      rowVersion: request.rowVersion,
+    });
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to update profile:", error);

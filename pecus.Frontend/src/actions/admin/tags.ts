@@ -70,12 +70,14 @@ export async function updateTag(
   request: {
     name: string;
     isActive?: boolean;
+    rowVersion: string; // 楽観的ロック用
   },
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.putApiAdminTags(id, {
       name: request.name,
+      rowVersion: request.rowVersion,
     });
 
     // isActive が指定されている場合、activate/deactivate を呼び出す

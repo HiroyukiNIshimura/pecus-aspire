@@ -35,6 +35,7 @@ export async function updateOrganization(
     phoneNumber?: string;
     email?: string;
     isActive?: boolean;
+    rowVersion: string; // 楽観的ロック用
   },
 ): Promise<ApiResponse<any>> {
   try {

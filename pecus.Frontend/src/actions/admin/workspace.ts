@@ -85,6 +85,7 @@ export async function updateWorkspace(
     description?: string;
     genreId?: number;
     isActive?: boolean;
+    rowVersion: string; // 楽観的ロック用
   },
 ): Promise<ApiResponse<any>> {
   try {

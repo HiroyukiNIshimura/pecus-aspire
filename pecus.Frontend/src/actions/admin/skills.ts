@@ -122,6 +122,7 @@ export async function updateSkill(
     name: string;
     description?: string;
     isActive?: boolean;
+    rowVersion: string; // 楽観的ロック用
   },
 ): Promise<ApiResponse<any>> {
   try {
@@ -129,6 +130,7 @@ export async function updateSkill(
     const response = await api.adminSkill.putApiAdminSkills(id, {
       name: request.name,
       description: request.description,
+      rowVersion: request.rowVersion,
     });
 
     // isActive が指定されている場合、activate/deactivate を呼び出す

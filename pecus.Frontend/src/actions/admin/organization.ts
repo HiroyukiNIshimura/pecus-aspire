@@ -27,6 +27,7 @@ export async function getOrganization(): Promise<ApiResponse<any>> {
 export async function updateOrganization(request: {
   name?: string;
   description?: string;
+  rowVersion: string; // 楽観的ロック用
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
