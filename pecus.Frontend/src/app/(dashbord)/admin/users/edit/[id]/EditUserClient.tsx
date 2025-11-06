@@ -114,7 +114,7 @@ export default function EditUserClient({
 
       if (skillsChanged) {
         updatePromises.push(
-          setUserSkills(userDetail.id!, selectedSkillIds).then(result => {
+          setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then(result => {
             if (!result.success) {
               throw new Error(result.error || "スキルの更新に失敗しました。");
             }
@@ -125,7 +125,7 @@ export default function EditUserClient({
 
       if (rolesChanged) {
         updatePromises.push(
-          setUserRoles(userDetail.id!, selectedRoleIds).then(result => {
+          setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then(result => {
             if (!result.success) {
               throw new Error(result.error || "ロールの更新に失敗しました。");
             }
