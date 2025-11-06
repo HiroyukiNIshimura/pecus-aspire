@@ -181,11 +181,13 @@ export async function updateUser(
 export async function setUserSkills(
   userId: number,
   skillIds: number[],
+  userRowVersion?: string,
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersSkills(userId, {
       skillIds,
+      userRowVersion,
     });
     return { success: true, data: response };
   } catch (error: any) {
@@ -206,11 +208,13 @@ export async function setUserSkills(
 export async function setUserRoles(
   userId: number,
   roleIds: number[],
+  userRowVersion?: string,
 ): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersRoles(userId, {
-      roleIds,
+      roles: roleIds,
+      userRowVersion,
     });
     return { success: true, data: response };
   } catch (error: any) {

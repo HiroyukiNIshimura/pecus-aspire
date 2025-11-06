@@ -54,10 +54,17 @@ export default function EditSkillClient({
     schema: editSkillSchema,
     onSubmit: async (data) => {
       try {
+        // rowVersion が存在しない場合はエラー
+        if (!skillDetail.rowVersion) {
+          notify.error("スキル情報の更新に必要なバージョン情報が取得できませんでした。");
+          return;
+        }
+
         const result = await updateSkill(skillDetail.id!, {
           name: data.name,
           description: data.description || undefined,
           isActive: data.isActive,
+          rowVersion: skillDetail.rowVersion,
         });
 
         if (result.success) {

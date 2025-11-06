@@ -60,11 +60,18 @@ export default function EditWorkspaceClient({
     schema: editWorkspaceSchema,
     onSubmit: async (data) => {
       try {
+        // rowVersion が存在しない場合はエラー
+        if (!workspaceDetail.rowVersion) {
+          notify.error("ワークスペース情報の更新に必要なバージョン情報が取得できませんでした。");
+          return;
+        }
+
         const result = await updateWorkspace(workspaceDetail.id!, {
           name: data.name,
           description: data.description || undefined,
           genreId: data.genreId ? parseInt(data.genreId, 10) : undefined,
           isActive: data.isActive,
+          rowVersion: workspaceDetail.rowVersion,
         });
 
         if (result.success) {

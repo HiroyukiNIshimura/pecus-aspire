@@ -1735,7 +1735,7 @@ dotnet run --project pecus.AppHost
 # 1. コードフォーマット実行
 npm run format
 
-# 2. 型確認
+# 2. 型確認（成功したら3.へ）
 npx tsc --noEmit
 
 # 3. ビルド確認

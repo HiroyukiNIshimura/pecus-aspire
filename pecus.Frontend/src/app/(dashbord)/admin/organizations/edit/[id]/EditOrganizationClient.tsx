@@ -56,12 +56,19 @@ export default function EditOrganizationClient({
     schema: editOrganizationSchema,
     onSubmit: async (data) => {
       try {
+        // rowVersion が存在しない場合はエラー
+        if (!organizationDetail.rowVersion) {
+          notify.error("組織情報の更新に必要なバージョン情報が取得できませんでした。");
+          return;
+        }
+
         const result = await updateOrganization({
           name: data.name,
           description: data.description || undefined,
           representativeName: data.representativeName || undefined,
           phoneNumber: data.phoneNumber || undefined,
           email: data.email || undefined,
+          rowVersion: organizationDetail.rowVersion,
         });
 
         if (result.success) {

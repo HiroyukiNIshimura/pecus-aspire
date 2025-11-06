@@ -53,9 +53,16 @@ export default function EditTagClient({
     schema: editTagSchema,
     onSubmit: async (data) => {
       try {
+        // rowVersion が存在しない場合はエラー
+        if (!tagDetail.rowVersion) {
+          notify.error("タグ情報の更新に必要なバージョン情報が取得できませんでした。");
+          return;
+        }
+
         const result = await updateTag(tagDetail.id!, {
           name: data.name,
           isActive: data.isActive,
+          rowVersion: tagDetail.rowVersion,
         });
 
         if (result.success) {
