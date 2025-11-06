@@ -130,5 +130,5 @@ public class WorkspaceItemDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
-    public byte[]? RowVersion { get; set; }
+    public required byte[] RowVersion { get; set; }
 }

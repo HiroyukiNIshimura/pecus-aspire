@@ -81,6 +81,7 @@ public static class WorkspaceItemResponseHelper
                 && item.WorkspaceItemPins != null
                 && item.WorkspaceItemPins.Any(wip => wip.UserId == currentUserId.Value),
             PinCount = item.WorkspaceItemPins?.Count ?? 0,
+            RowVersion = item.RowVersion!,
         };
     }
 }

@@ -89,6 +89,7 @@ public class AdminTagController : ControllerBase
                 CreatedByUserId = tag.CreatedByUserId,
                 IsActive = tag.IsActive,
                 ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+                RowVersion = tag.RowVersion!,
             },
         };
         return TypedResults.Ok(response);
@@ -120,6 +121,7 @@ public class AdminTagController : ControllerBase
             UpdatedByUserId = tag.UpdatedByUserId,
             IsActive = tag.IsActive,
             ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+            RowVersion = tag.RowVersion!,
         };
 
         return TypedResults.Ok(response);
@@ -232,6 +234,7 @@ public class AdminTagController : ControllerBase
                 UpdatedByUserId = updatedTag.UpdatedByUserId,
                 IsActive = updatedTag.IsActive,
                 ItemCount = updatedTag.WorkspaceItemTags?.Count ?? 0,
+                RowVersion = tag.RowVersion!,
             },
         };
         return TypedResults.Ok(response);

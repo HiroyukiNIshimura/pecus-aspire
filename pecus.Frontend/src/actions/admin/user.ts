@@ -177,6 +177,10 @@ export async function updateUser(
 
 /**
  * Server Action: ユーザーのスキルを更新
+ *
+ * Note: userRowVersion は楽観的ロック用で、バックエンド側で検証されます。
+ * 現在のバックエンドで UserResponse に rowVersion が含まれていないため、
+ * オプション扱いですが、将来的には必須化予定です。
  */
 export async function setUserSkills(
   userId: number,
@@ -204,6 +208,10 @@ export async function setUserSkills(
 
 /**
  * Server Action: ユーザーのロールを更新
+ *
+ * Note: userRowVersion は楽観的ロック用で、バックエンド側で検証されます。
+ * 現在のバックエンドで UserResponse に rowVersion が含まれていないため、
+ * オプション扱いですが、将来的には必須化予定です。
  */
 export async function setUserRoles(
   userId: number,

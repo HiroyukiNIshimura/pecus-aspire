@@ -96,6 +96,7 @@ public class AdminUserController : ControllerBase
             AvatarType = targetUser.AvatarType,
             IdentityIconUrl = targetUser.AvatarUrl,
             CreatedAt = targetUser.CreatedAt,
+            RowVersion = targetUser.RowVersion!,
             Roles = targetUser.Roles?
                 .Select(r => new UserRoleResponse
                 {
@@ -179,7 +180,8 @@ public class AdminUserController : ControllerBase
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
-            IsActive = u.IsActive
+            IsActive = u.IsActive,
+            RowVersion = u.RowVersion!,
         });
 
         // 統計情報を取得
@@ -426,7 +428,8 @@ public class AdminUserController : ControllerBase
             IdentityIconUrl = user.AvatarUrl,
             CreatedAt = user.CreatedAt,
             IsActive = user.IsActive,
-            Skills = new List<UserSkillResponse>()
+            Skills = new List<UserSkillResponse>(),
+            RowVersion = user.RowVersion!,
         };
 
         return TypedResults.Created($"/api/admin/users/{user.Id}", response);

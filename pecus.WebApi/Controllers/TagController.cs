@@ -69,6 +69,7 @@ public class TagController : ControllerBase
                 CreatedByUserId = tag.CreatedByUserId,
                 IsActive = tag.IsActive,
                 ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+                RowVersion = tag.RowVersion!,
             },
         };
 
@@ -105,6 +106,7 @@ public class TagController : ControllerBase
                 CreatedByUserId = tag.CreatedByUserId,
                 IsActive = tag.IsActive,
                 ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+                RowVersion = tag.RowVersion!,
             })
             .ToList();
 

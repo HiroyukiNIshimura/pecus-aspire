@@ -80,6 +80,7 @@ public class BackendPermissionController : ControllerBase
             Description = permission.Description,
             Category = permission.Category,
             CreatedAt = permission.CreatedAt,
+            RowVersion = permission.RowVersion!,
             Roles = permission
                 .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
                 .ToList(),

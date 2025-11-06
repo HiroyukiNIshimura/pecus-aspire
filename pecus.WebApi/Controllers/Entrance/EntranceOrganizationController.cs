@@ -67,6 +67,7 @@ public class EntranceOrganizationController : ControllerBase
                 Username = adminUser.Username,
                 Email = adminUser.Email,
                 CreatedAt = adminUser.CreatedAt,
+                RowVersion = adminUser.RowVersion!,
             },
         };
         return TypedResults.Ok(response);

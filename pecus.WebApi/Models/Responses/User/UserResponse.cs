@@ -59,4 +59,9 @@ public class UserResponse
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用RowVersion
+    /// </summary>
+    public required byte[] RowVersion { get; set; }
 }

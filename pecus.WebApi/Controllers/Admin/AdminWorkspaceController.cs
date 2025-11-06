@@ -81,6 +81,12 @@ public class AdminWorkspaceController : ControllerBase
                 CreatedAt = workspace.CreatedAt,
                 CreatedByUserId = workspace.CreatedByUserId,
                 IsActive = workspace.IsActive,
+                GenreId = workspace.GenreId,
+                GenreName = workspace.Genre?.Name,
+                GenreIcon = workspace.Genre?.Icon,
+                UpdatedAt = workspace.UpdatedAt,
+                UpdatedByUserId = workspace.UpdatedByUserId,
+                RowVersion = workspace.RowVersion!,
             },
         };
         return TypedResults.Ok(response);
@@ -139,6 +145,7 @@ public class AdminWorkspaceController : ControllerBase
             UpdatedAt = workspace.UpdatedAt,
             UpdatedByUserId = workspace.UpdatedByUserId,
             IsActive = workspace.IsActive,
+            RowVersion = workspace.RowVersion!,
         };
 
         return TypedResults.Ok(response);
@@ -277,6 +284,7 @@ public class AdminWorkspaceController : ControllerBase
                 UpdatedAt = workspace.UpdatedAt,
                 UpdatedByUserId = workspace.UpdatedByUserId,
                 IsActive = workspace.IsActive,
+                RowVersion = workspace.RowVersion!,
             },
         };
         return TypedResults.Ok(response);

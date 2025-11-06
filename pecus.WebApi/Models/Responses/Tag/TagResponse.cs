@@ -19,4 +19,5 @@ public class TagResponse
     /// タグ情報
     /// </summary>
     public TagDetailResponse? Tag { get; set; }
+
 }

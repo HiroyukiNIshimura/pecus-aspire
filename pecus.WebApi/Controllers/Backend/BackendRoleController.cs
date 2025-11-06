@@ -73,6 +73,7 @@ public class BackendRoleController : ControllerBase
             Name = role.Name,
             Description = role.Description,
             CreatedAt = role.CreatedAt,
+            RowVersion = role.RowVersion!,
             Permissions = role
                 .Permissions.Select(p => new PermissionDetailInfoResponse
                 {
@@ -142,6 +143,7 @@ public class BackendRoleController : ControllerBase
             Name = existingRole.Name,
             Description = existingRole.Description,
             CreatedAt = existingRole.CreatedAt,
+            RowVersion = existingRole.RowVersion!,
             Permissions = permissions.Select(p => new PermissionDetailInfoResponse
             {
                 Id = p.Id,

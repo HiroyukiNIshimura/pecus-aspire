@@ -51,7 +51,7 @@ public class TagDetailResponse
     public int ItemCount { get; set; }
 
     /// <summary>
-    /// 楽観的ロック用のRowVersion
+    /// 楽観的ロック用RowVersion
     /// </summary>
-    public byte[]? RowVersion { get; set; }
+    public required byte[] RowVersion { get; set; }
 }

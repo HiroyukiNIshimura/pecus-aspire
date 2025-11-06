@@ -91,6 +91,7 @@ public class GenreService
             UpdatedAt = genre.UpdatedAt,
             UpdatedByUserId = genre.UpdatedByUserId,
             IsActive = genre.IsActive,
+            RowVersion = genre.RowVersion!,
         };
     }
 

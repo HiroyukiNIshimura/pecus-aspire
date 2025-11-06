@@ -65,6 +65,7 @@ public class BackendOrganizationController : ControllerBase
             UpdatedAt = organization.UpdatedAt,
             IsActive = organization.IsActive,
             UserCount = organization.Users.Count,
+            RowVersion = organization.RowVersion!,
         };
         return TypedResults.Ok(response);
     }

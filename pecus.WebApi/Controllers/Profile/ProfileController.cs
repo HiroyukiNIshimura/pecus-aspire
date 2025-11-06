@@ -78,6 +78,7 @@ public class ProfileController : ControllerBase
                 .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
             IsActive = user.IsActive,
+            RowVersion = user.RowVersion!,
         };
 
         return TypedResults.Ok(response);
