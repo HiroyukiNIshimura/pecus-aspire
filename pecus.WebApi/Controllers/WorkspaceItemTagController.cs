@@ -45,103 +45,51 @@ public class WorkspaceItemTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            NotFound<ErrorResponse>,
-            BadRequest<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > SetTagsToItem(int workspaceId, int itemId, [FromBody] SetTagsToItemRequest request)
+    public async Task<Ok<WorkspaceItemResponse>> SetTagsToItem(
+        int workspaceId,
+        int itemId,
+        [FromBody] SetTagsToItemRequest request
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがタグを設定できます。",
-                    }
-                );
-            }
-
-            // タグを一括設定（楽観的ロック対応）
-            var tags = await _tagService.SetTagsToItemAsync(
-                workspaceId: workspaceId,
-                itemId: itemId,
-                tagNames: request.Tags,
-                userId: me,
-                itemRowVersion: request.ItemRowVersion
-            );
-
-            // 更新後のアイテムを取得
-            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
-
-            // レスポンスを構築
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "タグを設定しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがタグを設定できます。"
             );
         }
-        catch (ConcurrencyException ex)
+
+        // タグを一括設定（楽観的ロック対応）
+        var tags = await _tagService.SetTagsToItemAsync(
+            workspaceId: workspaceId,
+            itemId: itemId,
+            tagNames: request.Tags,
+            userId: me,
+            itemRowVersion: request.ItemRowVersion
+        );
+
+        // 更新後のアイテムを取得
+        var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
+
+        // レスポンスを構築
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ一括設定中にエラーが発生しました。ItemId: {ItemId}", itemId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "タグを設定しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 }

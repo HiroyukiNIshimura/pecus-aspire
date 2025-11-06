@@ -41,86 +41,44 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > CreateWorkspaceItem(int workspaceId, [FromBody] CreateWorkspaceItemRequest request)
+    public async Task<Ok<WorkspaceItemResponse>> CreateWorkspaceItem(
+        int workspaceId,
+        [FromBody] CreateWorkspaceItemRequest request
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムを作成できます。",
-                    }
-                );
-            }
-
-            var item = await _workspaceItemService.CreateWorkspaceItemAsync(
-                workspaceId,
-                request,
-                me
-            );
-
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "ワークスペースアイテムを作成しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムを作成できます。"
             );
         }
-        catch (InvalidOperationException ex)
+
+        var item = await _workspaceItemService.CreateWorkspaceItemAsync(
+            workspaceId,
+            request,
+            me
+        );
+
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペースアイテム作成中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "ワークスペースアイテムを作成しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -130,53 +88,26 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<WorkspaceItemDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetWorkspaceItem(int workspaceId, int itemId)
+    public async Task<Ok<WorkspaceItemDetailResponse>> GetWorkspaceItem(
+        int workspaceId,
+        int itemId
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースアイテムが見つかりません。",
-                    }
-                );
-            }
-
-            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
-
-            var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me);
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースアイテムが見つかりません。");
         }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースアイテム取得中にエラーが発生しました。ItemId: {ItemId}",
-                itemId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
+
+        var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me);
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -188,75 +119,59 @@ public class WorkspaceItemController : ControllerBase
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PagedResponse<WorkspaceItemDetailResponse>>, StatusCodeHttpResult>
-    > GetWorkspaceItems(
+    public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse>>> GetWorkspaceItems(
         int workspaceId,
         [FromQuery] GetWorkspaceItemsRequest request
     )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                // 空の結果を返す
-                var emptyResponse = PaginationHelper.CreatePagedResponse(
-                    data: new List<WorkspaceItemDetailResponse>(),
-                    totalCount: 0,
-                    page: request.Page,
-                    pageSize: _config.Pagination.DefaultPageSize
-                );
-                return TypedResults.Ok(emptyResponse);
-            }
-
-            // pinnedフィルタを使用する場合は認証が必要
-            int? pinnedByUserId = null;
-            if (request.Pinned.HasValue && request.Pinned.Value)
-            {
-                pinnedByUserId = me;
-            }
-
-            var pageSize = _config.Pagination.DefaultPageSize;
-            var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
-                workspaceId,
-                request.Page,
-                pageSize,
-                request.IsDraft,
-                request.IsArchived,
-                request.AssigneeId,
-                request.Priority,
-                pinnedByUserId
-            );
-
-            var itemResponses = items
-                .Select(item =>
-                    WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me)
-                )
-                .ToList();
-
-            var response = PaginationHelper.CreatePagedResponse(
-                data: itemResponses,
-                totalCount: totalCount,
+            // 空の結果を返す
+            var emptyResponse = PaginationHelper.CreatePagedResponse(
+                data: new List<WorkspaceItemDetailResponse>(),
+                totalCount: 0,
                 page: request.Page,
-                pageSize: pageSize
+                pageSize: _config.Pagination.DefaultPageSize
             );
+            return TypedResults.Ok(emptyResponse);
+        }
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
+        // pinnedフィルタを使用する場合は認証が必要
+        int? pinnedByUserId = null;
+        if (request.Pinned.HasValue && request.Pinned.Value)
         {
-            _logger.LogError(
-                ex,
-                "ワークスペースアイテム一覧取得中にエラーが発生しました。WorkspaceId: {WorkspaceId}",
-                workspaceId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            pinnedByUserId = me;
         }
+
+        var pageSize = _config.Pagination.DefaultPageSize;
+        var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
+            workspaceId,
+            request.Page,
+            pageSize,
+            request.IsDraft,
+            request.IsArchived,
+            request.AssigneeId,
+            request.Priority,
+            pinnedByUserId
+        );
+
+        var itemResponses = items
+            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
+            .ToList();
+
+        var response = PaginationHelper.CreatePagedResponse(
+            data: itemResponses,
+            totalCount: totalCount,
+            page: request.Page,
+            pageSize: pageSize
+        );
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -268,109 +183,46 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateWorkspaceItem(
+    public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItem(
         int workspaceId,
         int itemId,
         [FromBody] UpdateWorkspaceItemRequest request
     )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムを更新できます。",
-                    }
-                );
-            }
-
-            var item = await _workspaceItemService.UpdateWorkspaceItemAsync(
-                workspaceId,
-                itemId,
-                request,
-                me
-            );
-
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "ワークスペースアイテムを更新しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(
-                    item,
-                    me
-                ),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムを更新できます。"
             );
         }
-        catch (ConcurrencyException ex)
+
+        var item = await _workspaceItemService.UpdateWorkspaceItemAsync(
+            workspaceId,
+            itemId,
+            request,
+            me
+        );
+
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースアイテム更新中にエラーが発生しました。ItemId: {ItemId}",
-                itemId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "ワークスペースアイテムを更新しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -382,109 +234,46 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateWorkspaceItemStatus(
+    public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItemStatus(
         int workspaceId,
         int itemId,
         [FromBody] UpdateWorkspaceItemStatusRequest request
     )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムのステータスを更新できます。",
-                    }
-                );
-            }
-
-            var item = await _workspaceItemService.UpdateWorkspaceItemStatusAsync(
-                workspaceId,
-                itemId,
-                request,
-                me
-            );
-
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "ワークスペースアイテムのステータスを更新しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(
-                    item,
-                    me
-                ),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムのステータスを更新できます。"
             );
         }
-        catch (ConcurrencyException ex)
+
+        var item = await _workspaceItemService.UpdateWorkspaceItemStatusAsync(
+            workspaceId,
+            itemId,
+            request,
+            me
+        );
+
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースアイテムステータス更新中にエラーが発生しました。ItemId: {ItemId}",
-                itemId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "ワークスペースアイテムのステータスを更新しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -495,88 +284,35 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > DeleteWorkspaceItem(int workspaceId, int itemId)
+    public async Task<Ok<SuccessResponse>> DeleteWorkspaceItem(int workspaceId, int itemId)
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムを削除できます。",
-                    }
-                );
-            }
-
-            await _workspaceItemService.DeleteWorkspaceItemAsync(
-                workspaceId,
-                itemId,
-                me
-            );
-
-            var response = new SuccessResponse
-            {
-                StatusCode = StatusCodes.Status200OK,
-                Message = "ワークスペースアイテムを削除しました。",
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムを削除できます。"
             );
         }
-        catch (InvalidOperationException ex)
+
+        await _workspaceItemService.DeleteWorkspaceItemAsync(workspaceId, itemId, me);
+
+        var response = new SuccessResponse
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースアイテム削除中にエラーが発生しました。ItemId: {ItemId}",
-                itemId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            StatusCode = StatusCodes.Status200OK,
+            Message = "ワークスペースアイテムを削除しました。",
+        };
+
+        return TypedResults.Ok(response);
     }
 }

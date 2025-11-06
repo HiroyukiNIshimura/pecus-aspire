@@ -39,30 +39,22 @@ public class MasterDataController : ControllerBase
     [HttpGet("genres")]
     [ProducesResponseType(typeof(List<MasterGenreResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Results<Ok<List<MasterGenreResponse>>, StatusCodeHttpResult>> GetGenres()
+    public async Task<Ok<List<MasterGenreResponse>>> GetGenres()
     {
-        try
-        {
-            var genres = await _masterDataService.GetActiveGenresAsync();
+        var genres = await _masterDataService.GetActiveGenresAsync();
 
-            var response = genres
-          .Select(g => new MasterGenreResponse
-          {
-              Id = g.Id,
-              Name = g.Name,
-              Description = g.Description,
-              Icon = g.Icon,
-              DisplayOrder = g.DisplayOrder,
-          })
+        var response = genres
+            .Select(g => new MasterGenreResponse
+            {
+                Id = g.Id,
+                Name = g.Name,
+                Description = g.Description,
+                Icon = g.Icon,
+                DisplayOrder = g.DisplayOrder,
+            })
             .ToList();
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ジャンル一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -72,44 +64,30 @@ public class MasterDataController : ControllerBase
     [ProducesResponseType(typeof(List<MasterSkillResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Results<Ok<List<MasterSkillResponse>>, BadRequest<ErrorResponse>, StatusCodeHttpResult>> GetSkills()
+    public async Task<Ok<List<MasterSkillResponse>>> GetSkills()
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ユーザーの所属組織を取得
-            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
-            if (!organizationId.HasValue)
+        // ユーザーの所属組織を取得
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        if (!organizationId.HasValue)
+        {
+            throw new InvalidOperationException("ユーザーが組織に所属していません。");
+        }
+
+        var skills = await _masterDataService.GetActiveSkillsByOrganizationAsync(organizationId.Value);
+
+        var response = skills
+            .Select(s => new MasterSkillResponse
             {
-                return TypedResults.BadRequest(
-                  new ErrorResponse
-                  {
-                      StatusCode = StatusCodes.Status400BadRequest,
-                      Message = "ユーザーが組織に所属していません。",
-                  }
-                   );
-            }
+                Id = s.Id,
+                Name = s.Name,
+                Description = s.Description,
+            })
+            .ToList();
 
-            var skills = await _masterDataService.GetActiveSkillsByOrganizationAsync(organizationId.Value);
-
-            var response = skills
-                .Select(s => new MasterSkillResponse
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Description = s.Description,
-                })
-        .ToList();
-
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "スキル一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -118,28 +96,20 @@ public class MasterDataController : ControllerBase
     [HttpGet("roles")]
     [ProducesResponseType(typeof(List<RoleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Results<Ok<List<RoleResponse>>, StatusCodeHttpResult>> GetRoles()
+    public async Task<Ok<List<RoleResponse>>> GetRoles()
     {
-        try
-        {
-            var roles = await _masterDataService.GetAllRolesAsync();
+        var roles = await _masterDataService.GetAllRolesAsync();
 
-            var response = roles
-                .Select(r => new RoleResponse
-                {
-                    Id = r.Id,
-                    Name = r.Name,
-                    Description = r.Description,
-                    CreatedAt = r.CreatedAt,
-                })
-                .ToList();
+        var response = roles
+            .Select(r => new RoleResponse
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Description = r.Description,
+                CreatedAt = r.CreatedAt,
+            })
+            .ToList();
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ロール一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 }

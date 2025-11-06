@@ -1,11 +1,8 @@
-using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Pecus.Exceptions;
 using Pecus.Libs;
-using Pecus.Libs.DB;
-using Pecus.Libs.Mail.Services;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
@@ -22,11 +19,7 @@ namespace Pecus.Controllers.Profile;
 public class ProfileController : ControllerBase
 {
     private readonly UserService _userService;
-    private readonly ApplicationDbContext _context;
     private readonly ILogger<ProfileController> _logger;
-    private readonly IBackgroundJobClient _backgroundJobClient;
-    private readonly IEmailService _emailService;
-    private readonly IConfiguration _config;
     private readonly ProfileService _profileService;
 
     /// <summary>
@@ -34,20 +27,12 @@ public class ProfileController : ControllerBase
     /// </summary>
     public ProfileController(
         UserService userService,
-        ApplicationDbContext context,
         ILogger<ProfileController> logger,
-        IBackgroundJobClient backgroundJobClient,
-        IEmailService emailService,
-        IConfiguration config,
         ProfileService profileService
     )
     {
         _userService = userService;
-        _context = context;
         _logger = logger;
-        _backgroundJobClient = backgroundJobClient;
-        _emailService = emailService;
-        _config = config;
         _profileService = profileService;
     }
 
@@ -58,54 +43,44 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<UserResponse>, NotFound, StatusCodeHttpResult>
-    > GetProfile()
+    public async Task<Ok<UserResponse>> GetProfile()
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var user = await _userService.GetUserByIdAsync(me);
-            if (user == null)
-            {
-                return TypedResults.NotFound();
-            }
-
-            var response = new UserResponse
-            {
-                Id = user.Id,
-                LoginId = user.LoginId,
-                Username = user.Username,
-                Email = user.Email,
-                AvatarType = user.AvatarType,
-                IdentityIconUrl = user.AvatarUrl,
-                CreatedAt = user.CreatedAt,
-                Roles = user.Roles?
-                    .Select(r => new UserRoleResponse
-                    {
-                        Id = r.Id,
-                        Name = r.Name,
-                    })
-                    .ToList() ?? new List<UserRoleResponse>(),
-                Skills = user.UserSkills?
-                    .Select(us => new UserSkillResponse
-                    {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                    })
-                    .ToList() ?? new List<UserSkillResponse>(),
-                IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
-                IsActive = user.IsActive,
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        var response = new UserResponse
         {
-            _logger.LogError(ex, "プロフィール情報取得中にエラーが発生しました。UserId: {UserId}", JwtBearerUtil.GetUserIdFromPrincipal(User));
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = user.Id,
+            LoginId = user.LoginId,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarType = user.AvatarType,
+            IdentityIconUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            Roles = user.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? new List<UserRoleResponse>(),
+            Skills = user.UserSkills?
+                .Select(us => new UserSkillResponse
+                {
+                    Id = us.Skill.Id,
+                    Name = us.Skill.Name,
+                })
+                .ToList() ?? new List<UserSkillResponse>(),
+            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsActive = user.IsActive,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -118,39 +93,26 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok, BadRequest<ErrorResponse>, NotFound, StatusCodeHttpResult>
-    > UpdateProfile(
-        UpdateProfileRequest request
-    )
+    public async Task<Ok> UpdateProfile(UpdateProfileRequest request)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // バリデーション: AvatarType="user-avatar"の場合、AvatarUrlが必須
+        if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // バリデーション: AvatarType="user-avatar"の場合、AvatarUrlが必須
-            if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
-            {
-                return TypedResults.BadRequest(new ErrorResponse
-                {
-                    Message = "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
-                });
-            }
-
-            var updatedUser = await _userService.UpdateProfileAsync(me, request, me);
-            if (updatedUser == null)
-            {
-                return TypedResults.NotFound();
-            }
-
-            _logger.LogInformation("ユーザープロフィールを更新しました。UserId: {UserId}", me);
-            return TypedResults.Ok();
+            throw new InvalidOperationException(
+                "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
+            );
         }
-        catch (Exception ex)
+
+        var updatedUser = await _userService.UpdateProfileAsync(me, request, me);
+        if (updatedUser == null)
         {
-            _logger.LogError(ex, "プロフィール更新中にエラーが発生しました。UserId: {UserId}", JwtBearerUtil.GetUserIdFromPrincipal(User));
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        _logger.LogInformation("ユーザープロフィールを更新しました。UserId: {UserId}", me);
+        return TypedResults.Ok();
     }
 
     /// <summary>
@@ -163,47 +125,37 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<MessageResponse>, BadRequest<ErrorResponse>, NotFound, StatusCodeHttpResult>
-    > UpdateEmail(UpdateEmailRequest request)
+    public async Task<Ok<MessageResponse>> UpdateEmail(UpdateEmailRequest request)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 新しいメールアドレスが現在のものと同じかチェック
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // 新しいメールアドレスが現在のものと同じかチェック
-            var user = await _userService.GetUserByIdAsync(me);
-            if (user == null)
-            {
-                return TypedResults.NotFound();
-            }
-
-            if (user.Email.Equals(request.NewEmail, StringComparison.OrdinalIgnoreCase))
-            {
-                return TypedResults.BadRequest(new ErrorResponse
-                {
-                    Message = "新しいメールアドレスは現在のメールアドレスと異なっている必要があります。"
-                });
-            }
-
-            // 新しいメールアドレスが既に使用されていないかチェックとDB更新
-            var updateResult = await _profileService.UpdateEmailAsync(me, request.NewEmail);
-            if (!updateResult)
-            {
-                return TypedResults.BadRequest(new ErrorResponse
-                {
-                    Message = "このメールアドレスは既に使用されています。"
-                });
-            }
-
-            _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", me, request.NewEmail);
-
-            return TypedResults.Ok(new MessageResponse { Message = "メールアドレスを変更しました。" });
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        if (user.Email.Equals(request.NewEmail, StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogError(ex, "メールアドレス変更中にエラーが発生しました。UserId: {UserId}", JwtBearerUtil.GetUserIdFromPrincipal(User));
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new InvalidOperationException(
+                "新しいメールアドレスは現在のメールアドレスと異なっている必要があります。"
+            );
         }
+
+        // 新しいメールアドレスが既に使用されていないかチェックとDB更新
+        var updateResult = await _profileService.UpdateEmailAsync(me, request.NewEmail);
+        if (!updateResult)
+        {
+            throw new DuplicateException("このメールアドレスは既に使用されています。");
+        }
+
+        _logger.LogInformation(
+            "メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}",
+            me,
+            request.NewEmail
+        );
+
+        return TypedResults.Ok(new MessageResponse { Message = "メールアドレスを変更しました。" });
     }
 }

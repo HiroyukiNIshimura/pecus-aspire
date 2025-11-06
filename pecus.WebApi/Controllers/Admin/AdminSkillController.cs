@@ -48,110 +48,48 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-          Ok<SkillResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > CreateSkill([FromBody] CreateSkillRequest request)
+    public async Task<Ok<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ログインユーザーの情報を取得して組織IDを取得
-            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
-            if (!organizationId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                   new ErrorResponse
-                   {
-                       StatusCode = StatusCodes.Status400BadRequest,
-                       Message = "ユーザーが組織に所属していません。",
-                   }
-                  );
-            }
+        // ログインユーザーの情報を取得して組織IDを取得
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        if (!organizationId.HasValue)
+        {
+            throw new InvalidOperationException("ユーザーが組織に所属していません。");
+        }
 
-            // 組織内のスキル数をチェック
-            var existingSkillCount = await _skillService.GetSkillCountByOrganizationAsync(organizationId.Value);
-            if (existingSkillCount >= _config.Limits.MaxSkillsPerOrganization)
-            {
-                return TypedResults.BadRequest(
-                   new ErrorResponse
-                   {
-                       StatusCode = StatusCodes.Status400BadRequest,
-                       Message = $"組織あたりの最大スキル数({_config.Limits.MaxSkillsPerOrganization})に達しています。",
-                   }
-                  );
-            }
+        // 組織内のスキル数をチェック
+        var existingSkillCount = await _skillService.GetSkillCountByOrganizationAsync(
+            organizationId.Value
+        );
+        if (existingSkillCount >= _config.Limits.MaxSkillsPerOrganization)
+        {
+            throw new InvalidOperationException(
+                $"組織あたりの最大スキル数({_config.Limits.MaxSkillsPerOrganization})に達しています。"
+            );
+        }
 
-            var skill = await _skillService.CreateSkillAsync(request, organizationId.Value, me);
+        var skill = await _skillService.CreateSkillAsync(request, organizationId.Value, me);
 
-            var response = new SkillResponse
+        var response = new SkillResponse
+        {
+            Success = true,
+            Message = "スキルが正常に作成されました。",
+            Skill = new SkillDetailResponse
             {
-                Success = true,
-                Message = "スキルが正常に作成されました。",
-                Skill = new SkillDetailResponse
-                {
-                    Id = skill.Id,
-                    Name = skill.Name,
-                    Description = skill.Description,
-                    OrganizationId = skill.OrganizationId,
-                    CreatedAt = skill.CreatedAt,
-                    CreatedByUserId = skill.CreatedByUserId,
-                    IsActive = skill.IsActive,
-                    UserCount = 0,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                        new ErrorResponse
-                        {
-                            StatusCode = StatusCodes.Status404NotFound,
-                            Message = ex.Message,
-                        }
-           );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-        new ErrorResponse
-        {
-            StatusCode = StatusCodes.Status400BadRequest,
-            Message = ex.Message,
-        }
-     );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-               new ErrorResponse
-               {
-                   StatusCode = StatusCodes.Status400BadRequest,
-                   Message = ex.Message,
-               }
-                     );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "スキル登録中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = skill.Id,
+                Name = skill.Name,
+                Description = skill.Description,
+                OrganizationId = skill.OrganizationId,
+                CreatedAt = skill.CreatedAt,
+                CreatedByUserId = skill.CreatedByUserId,
+                IsActive = skill.IsActive,
+                UserCount = 0,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -161,57 +99,35 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(SkillDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-    Results<Ok<SkillDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetSkill(int id)
+    public async Task<Ok<SkillDetailResponse>> GetSkill(int id)
     {
-        try
+        var skill = await _skillService.GetSkillByIdAsync(id);
+        if (skill == null)
         {
-            var skill = await _skillService.GetSkillByIdAsync(id);
-            if (skill == null)
-            {
-                return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = "スキルが見つかりません。",
-                }
-         );
-            }
-
-            // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-            if (!await CanAccessSkillAsync(skill))
-            {
-                return TypedResults.NotFound(
-                         new ErrorResponse
-                         {
-                             StatusCode = StatusCodes.Status404NotFound,
-                             Message = "スキルが見つかりません。",
-                         }
-                        );
-            }
-
-            var response = new SkillDetailResponse
-            {
-                Id = skill.Id,
-                Name = skill.Name,
-                Description = skill.Description,
-                OrganizationId = skill.OrganizationId,
-                CreatedAt = skill.CreatedAt,
-                CreatedByUserId = skill.CreatedByUserId,
-                UpdatedAt = skill.UpdatedAt,
-                UpdatedByUserId = skill.UpdatedByUserId,
-                IsActive = skill.IsActive,
-                UserCount = skill.UserSkills?.Count ?? 0,
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
+        if (!await CanAccessSkillAsync(skill))
         {
-            _logger.LogError(ex, "スキル情報取得中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("スキルが見つかりません。");
         }
+
+        var response = new SkillDetailResponse
+        {
+            Id = skill.Id,
+            Name = skill.Name,
+            Description = skill.Description,
+            OrganizationId = skill.OrganizationId,
+            CreatedAt = skill.CreatedAt,
+            CreatedByUserId = skill.CreatedByUserId,
+            UpdatedAt = skill.UpdatedAt,
+            UpdatedByUserId = skill.UpdatedByUserId,
+            IsActive = skill.IsActive,
+            UserCount = skill.UserSkills?.Count ?? 0,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -225,74 +141,73 @@ public class AdminSkillController : ControllerBase
     /// <param name="request">スキル一覧取得リクエスト</param>
     [HttpGet]
     [ProducesResponseType(
-  typeof(PagedResponse<SkillListItemResponse, SkillStatistics>),
+        typeof(PagedResponse<SkillListItemResponse, SkillStatistics>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-      Results<Ok<PagedResponse<SkillListItemResponse, SkillStatistics>>, StatusCodeHttpResult>
-    > GetSkills([FromQuery] GetSkillsRequest request)
+    public async Task<Ok<PagedResponse<SkillListItemResponse, SkillStatistics>>> GetSkills(
+        [FromQuery] GetSkillsRequest request
+    )
     {
-        try
+        var organizationId = await GetUserOrganizationIdAsync();
+        if (!organizationId.HasValue)
         {
-            var organizationId = await GetUserOrganizationIdAsync();
-            if (!organizationId.HasValue)
-            {
-                // 認証済みユーザーが組織に所属していない場合、空のリストを返す
-                return TypedResults.Ok(
-             PaginationHelper.CreatePagedResponse<SkillListItemResponse, SkillStatistics>(
-              data: new List<SkillListItemResponse>(),
+            // 認証済みユーザーが組織に所属していない場合、空のリストを返す
+            return TypedResults.Ok(
+                PaginationHelper.CreatePagedResponse<
+                    SkillListItemResponse,
+                    SkillStatistics
+                >(
+                    data: new List<SkillListItemResponse>(),
                     totalCount: 0,
-                  page: 1,
-                      pageSize: _config.Pagination.DefaultPageSize,
-               summary: null
+                    page: 1,
+                    pageSize: _config.Pagination.DefaultPageSize,
+                    summary: null
                 )
-                 );
-            }
-
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
-
-            (List<Skill> skills, int totalCount) =
-                   await _skillService.GetSkillsByOrganizationPagedAsync(
-        organizationId.Value,
-          validatedPage,
-           pageSize,
-             request.IsActive,
-             request.UnusedOnly,
-             request.Name
-                   );
-
-            var items = skills
-                .Select(s => new SkillListItemResponse
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Description = s.Description,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt,
-                    IsActive = s.IsActive,
-                    UserCount = s.UserSkills?.Count ?? 0,
-                })
-                .ToList();
-
-            // 統計情報を取得
-            var statistics = await _skillService.GetSkillStatisticsByOrganizationAsync(organizationId.Value);
-
-            var response = PaginationHelper.CreatePagedResponse(
-          data: items,
-       totalCount: totalCount,
-      page: validatedPage,
-       pageSize: pageSize,
-        summary: statistics
-         );
-            return TypedResults.Ok(response);
+            );
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "スキル一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<Skill> skills, int totalCount) =
+            await _skillService.GetSkillsByOrganizationPagedAsync(
+                organizationId.Value,
+                validatedPage,
+                pageSize,
+                request.IsActive,
+                request.UnusedOnly,
+                request.Name
+            );
+
+        var items = skills
+            .Select(
+                s =>
+                    new SkillListItemResponse
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Description = s.Description,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt,
+                        IsActive = s.IsActive,
+                        UserCount = s.UserSkills?.Count ?? 0,
+                    }
+            )
+            .ToList();
+
+        // 統計情報を取得
+        var statistics =
+            await _skillService.GetSkillStatisticsByOrganizationAsync(organizationId.Value);
+
+        var response = PaginationHelper.CreatePagedResponse(
+            data: items,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize,
+            summary: statistics
+        );
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -304,110 +219,47 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-        Ok<SkillResponse>,
-        BadRequest<ErrorResponse>,
-        NotFound<ErrorResponse>,
-        Conflict<ErrorResponse>,
-        StatusCodeHttpResult
-        >
-    > UpdateSkill(int id, [FromBody] UpdateSkillRequest request)
+    public async Task<Ok<SkillResponse>> UpdateSkill(
+        int id,
+        [FromBody] UpdateSkillRequest request
+    )
     {
-        try
+        var skill = await _skillService.GetSkillByIdAsync(id);
+        if (skill == null)
         {
-            var skill = await _skillService.GetSkillByIdAsync(id);
-            if (skill == null)
-            {
-                return TypedResults.NotFound(
-                        new ErrorResponse
-                        {
-                            StatusCode = StatusCodes.Status404NotFound,
-                            Message = "スキルが見つかりません。",
-                        }
-                  );
-            }
+            throw new NotFoundException("スキルが見つかりません。");
+        }
 
-            // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-            if (!await CanAccessSkillAsync(skill))
-            {
-                return TypedResults.NotFound(
-             new ErrorResponse
-             {
-                 StatusCode = StatusCodes.Status404NotFound,
-                 Message = "スキルが見つかりません。",
-             }
-                 );
-            }
+        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
+        if (!await CanAccessSkillAsync(skill))
+        {
+            throw new NotFoundException("スキルが見つかりません。");
+        }
 
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var updatedSkill = await _skillService.UpdateSkillAsync(id, request, me);
+        var updatedSkill = await _skillService.UpdateSkillAsync(id, request, me);
 
-            var response = new SkillResponse
+        var response = new SkillResponse
+        {
+            Success = true,
+            Message = "スキルが正常に更新されました。",
+            Skill = new SkillDetailResponse
             {
-                Success = true,
-                Message = "スキルが正常に更新されました。",
-                Skill = new SkillDetailResponse
-                {
-                    Id = updatedSkill.Id,
-                    Name = updatedSkill.Name,
-                    Description = updatedSkill.Description,
-                    OrganizationId = updatedSkill.OrganizationId,
-                    CreatedAt = updatedSkill.CreatedAt,
-                    CreatedByUserId = updatedSkill.CreatedByUserId,
-                    UpdatedAt = updatedSkill.UpdatedAt,
-                    UpdatedByUserId = updatedSkill.UpdatedByUserId,
-                    IsActive = updatedSkill.IsActive,
-                    UserCount = updatedSkill.UserSkills?.Count ?? 0,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-              new ErrorResponse
-              {
-                  StatusCode = StatusCodes.Status404NotFound,
-                  Message = ex.Message,
-              }
-           );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-          new ErrorResponse
-          {
-              StatusCode = StatusCodes.Status400BadRequest,
-              Message = ex.Message,
-          }
-                  );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "スキル更新中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = updatedSkill.Id,
+                Name = updatedSkill.Name,
+                Description = updatedSkill.Description,
+                OrganizationId = updatedSkill.OrganizationId,
+                CreatedAt = updatedSkill.CreatedAt,
+                CreatedByUserId = updatedSkill.CreatedByUserId,
+                UpdatedAt = updatedSkill.UpdatedAt,
+                UpdatedByUserId = updatedSkill.UpdatedByUserId,
+                IsActive = updatedSkill.IsActive,
+                UserCount = updatedSkill.UserSkills?.Count ?? 0,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -418,69 +270,33 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-  Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteSkill(int id)
+    public async Task<Ok<SuccessResponse>> DeleteSkill(int id)
     {
-        try
+        var skill = await _skillService.GetSkillByIdAsync(id);
+        if (skill == null)
         {
-            var skill = await _skillService.GetSkillByIdAsync(id);
-            if (skill == null)
-            {
-                return TypedResults.NotFound(
-                     new ErrorResponse
-                     {
-                         StatusCode = StatusCodes.Status404NotFound,
-                         Message = "スキルが見つかりません。",
-                     }
-                   );
-            }
-
-            // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-            if (!await CanAccessSkillAsync(skill))
-            {
-                return TypedResults.NotFound(
-              new ErrorResponse
-              {
-                  StatusCode = StatusCodes.Status404NotFound,
-                  Message = "スキルが見つかりません。",
-              }
-               );
-            }
-
-            var result = await _skillService.DeleteSkillAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-               new ErrorResponse
-               {
-                   StatusCode = StatusCodes.Status404NotFound,
-                   Message = "スキルが見つかりません。",
-               }
-                  );
-            }
-
-            return TypedResults.Ok(
-                         new SuccessResponse
-                         {
-                             StatusCode = StatusCodes.Status200OK,
-                             Message = "スキルが正常に削除されました。",
-                         }
-                 );
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
+        if (!await CanAccessSkillAsync(skill))
         {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _skillService.DeleteSkillAsync(id);
+        if (!result)
         {
-            _logger.LogError(ex, "スキル削除中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("スキルが見つかりません。");
         }
+
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "スキルが正常に削除されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -491,72 +307,36 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > DeactivateSkill(int id)
+    public async Task<Ok<SuccessResponse>> DeactivateSkill(int id)
     {
-        try
+        var skill = await _skillService.GetSkillByIdAsync(id);
+        if (skill == null)
         {
-            var skill = await _skillService.GetSkillByIdAsync(id);
-            if (skill == null)
-            {
-                return TypedResults.NotFound(
-             new ErrorResponse
-             {
-                 StatusCode = StatusCodes.Status404NotFound,
-                 Message = "スキルが見つかりません。",
-             }
-            );
-            }
-
-            // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-            if (!await CanAccessSkillAsync(skill))
-            {
-                return TypedResults.NotFound(
-             new ErrorResponse
-             {
-                 StatusCode = StatusCodes.Status404NotFound,
-                 Message = "スキルが見つかりません。",
-             }
-              );
-            }
-
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var result = await _skillService.DeactivateSkillAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-             new ErrorResponse
-             {
-                 StatusCode = StatusCodes.Status404NotFound,
-                 Message = "スキルが見つかりません。",
-             }
-                    );
-            }
-
-            return TypedResults.Ok(
-         new SuccessResponse
-         {
-             StatusCode = StatusCodes.Status200OK,
-             Message = "スキルが正常に無効化されました。",
-         }
-                );
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
+        if (!await CanAccessSkillAsync(skill))
         {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var result = await _skillService.DeactivateSkillAsync(id, me);
+        if (!result)
         {
-            _logger.LogError(ex, "スキル無効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("スキルが見つかりません。");
         }
+
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "スキルが正常に無効化されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -567,72 +347,36 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > ActivateSkill(int id)
+    public async Task<Ok<SuccessResponse>> ActivateSkill(int id)
     {
-        try
+        var skill = await _skillService.GetSkillByIdAsync(id);
+        if (skill == null)
         {
-            var skill = await _skillService.GetSkillByIdAsync(id);
-            if (skill == null)
-            {
-                return TypedResults.NotFound(
-                     new ErrorResponse
-                     {
-                         StatusCode = StatusCodes.Status404NotFound,
-                         Message = "スキルが見つかりません。",
-                     }
-               );
-            }
-
-            // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
-            if (!await CanAccessSkillAsync(skill))
-            {
-                return TypedResults.NotFound(
-                   new ErrorResponse
-                   {
-                       StatusCode = StatusCodes.Status404NotFound,
-                       Message = "スキルが見つかりません。",
-                   }
-              );
-            }
-
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var result = await _skillService.ActivateSkillAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                   new ErrorResponse
-                   {
-                       StatusCode = StatusCodes.Status404NotFound,
-                       Message = "スキルが見つかりません。",
-                   }
-                );
-            }
-
-            return TypedResults.Ok(
-               new SuccessResponse
-               {
-                   StatusCode = StatusCodes.Status200OK,
-                   Message = "スキルが正常に有効化されました。",
-               }
-                  );
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        // ログイン中のユーザーの組織を確認して、アクセス権限をチェック
+        if (!await CanAccessSkillAsync(skill))
         {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
+            throw new NotFoundException("スキルが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var result = await _skillService.ActivateSkillAsync(id, me);
+        if (!result)
         {
-            _logger.LogError(ex, "スキル有効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("スキルが見つかりません。");
         }
+
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "スキルが正常に有効化されました。",
+            }
+        );
     }
 
     /// <summary>

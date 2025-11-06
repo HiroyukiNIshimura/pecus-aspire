@@ -69,64 +69,52 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<
-        Results<Ok<UserResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
-    > GetUserById(int id)
+    public async Task<Ok<UserResponse>> GetUserById(int id)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 取得対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // 取得対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var response = new UserResponse
-            {
-                Id = targetUser.Id,
-                LoginId = targetUser.LoginId,
-                Username = targetUser.Username,
-                Email = targetUser.Email,
-                AvatarType = targetUser.AvatarType,
-                IdentityIconUrl = targetUser.AvatarUrl,
-                CreatedAt = targetUser.CreatedAt,
-                Roles = targetUser.Roles?
-                    .Select(r => new UserRoleResponse
-                    {
-                        Id = r.Id,
-                        Name = r.Name,
-                    })
-                    .ToList() ?? new List<UserRoleResponse>(),
-                Skills = targetUser.UserSkills?
-                    .Select(us => new UserSkillResponse
-                    {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                    })
-                    .ToList() ?? new List<UserSkillResponse>(),
-                IsAdmin = targetUser.Roles?.Any(r => r.Name == "Admin") ?? false,
-                IsActive = targetUser.IsActive
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
         {
-            _logger.LogError(ex, "ユーザー情報取得中にエラーが発生しました: UserId={UserId}", id);
-            throw;
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        var response = new UserResponse
+        {
+            Id = targetUser.Id,
+            LoginId = targetUser.LoginId,
+            Username = targetUser.Username,
+            Email = targetUser.Email,
+            AvatarType = targetUser.AvatarType,
+            IdentityIconUrl = targetUser.AvatarUrl,
+            CreatedAt = targetUser.CreatedAt,
+            Roles = targetUser.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? new List<UserRoleResponse>(),
+            Skills = targetUser.UserSkills?
+                .Select(us => new UserSkillResponse
+                {
+                    Id = us.Skill.Id,
+                    Name = us.Skill.Name,
+                })
+                .ToList() ?? new List<UserSkillResponse>(),
+            IsAdmin = targetUser.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsActive = targetUser.IsActive
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -141,81 +129,73 @@ public class AdminUserController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<UserResponse, UserStatistics>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Results<Ok<PagedResponse<UserResponse, UserStatistics>>, NotFound<ErrorResponse>>> GetUsers(
+    public async Task<Ok<PagedResponse<UserResponse, UserStatistics>>> GetUsers(
         [FromQuery] GetUsersRequest request
     )
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ログインユーザーの組織IDを取得
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user?.OrganizationId == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ログインユーザーの組織IDを取得
-            var user = await _userService.GetUserByIdAsync(me);
-            if (user?.OrganizationId == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "組織に所属していません。" }
-                );
-            }
-
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
-
-            (List<User> users, int totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
-                organizationId: user.OrganizationId.Value,
-                page: validatedPage,
-                pageSize: pageSize,
-                isActive: request.IsActive,
-                username: request.Username,
-                skillIds: request.SkillIds,
-                skillFilterMode: request.SkillFilterMode
-            );
-
-            var userResponses = users.Select(u => new UserResponse
-            {
-                Id = u.Id,
-                LoginId = u.LoginId,
-                Username = u.Username,
-                Email = u.Email,
-                AvatarType = u.AvatarType,
-                IdentityIconUrl = u.AvatarUrl,
-                CreatedAt = u.CreatedAt,
-                Roles = u.Roles?
-                    .Select(r => new UserRoleResponse
-                    {
-                        Id = r.Id,
-                        Name = r.Name,
-                    })
-                    .ToList() ?? new List<UserRoleResponse>(),
-                Skills = u.UserSkills?
-                    .Select(us => new UserSkillResponse
-                    {
-                        Id = us.Skill.Id,
-                        Name = us.Skill.Name,
-                    })
-                    .ToList() ?? new List<UserSkillResponse>(),
-                IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
-                IsActive = u.IsActive
-            });
-
-            // 統計情報を取得
-            var statistics = await _userService.GetUserStatisticsByOrganizationAsync(user.OrganizationId.Value);
-
-            var response = PaginationHelper.CreatePagedResponse(
-                data: userResponses,
-                totalCount: totalCount,
-                page: validatedPage,
-                pageSize: pageSize,
-                summary: statistics
-            );
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("組織に所属していません。");
         }
-        catch (Exception ex)
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<User> users, int totalCount) = await _userService.GetUsersByOrganizationPagedAsync(
+            organizationId: user.OrganizationId.Value,
+            page: validatedPage,
+            pageSize: pageSize,
+            isActive: request.IsActive,
+            username: request.Username,
+            skillIds: request.SkillIds,
+            skillFilterMode: request.SkillFilterMode
+        );
+
+        var userResponses = users.Select(u => new UserResponse
         {
-            _logger.LogError(ex, "組織内ユーザー一覧取得中にエラーが発生しました");
-            throw;
-        }
+            Id = u.Id,
+            LoginId = u.LoginId,
+            Username = u.Username,
+            Email = u.Email,
+            AvatarType = u.AvatarType,
+            IdentityIconUrl = u.AvatarUrl,
+            CreatedAt = u.CreatedAt,
+            Roles = u.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? new List<UserRoleResponse>(),
+            Skills = u.UserSkills?
+                .Select(us => new UserSkillResponse
+                {
+                    Id = us.Skill.Id,
+                    Name = us.Skill.Name,
+                })
+                .ToList() ?? new List<UserSkillResponse>(),
+            IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
+            IsActive = u.IsActive
+        });
+
+        // 統計情報を取得
+        var statistics = await _userService.GetUserStatisticsByOrganizationAsync(
+            user.OrganizationId.Value
+        );
+
+        var response = PaginationHelper.CreatePagedResponse(
+            data: userResponses,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize,
+            summary: statistics
+        );
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -234,64 +214,41 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult, Conflict<ErrorResponse>>
-    > SetUserActiveStatus(int id, [FromBody] SetUserActiveStatusRequest request)
+    public async Task<Ok<SuccessResponse>> SetUserActiveStatus(
+        int id,
+        [FromBody] SetUserActiveStatusRequest request
+    )
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 操作対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // 操作対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var result = await _userService.SetUserActiveStatusAsync(
-                id,
-                request.IsActive,
-                me
-            );
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            var message = request.IsActive
-                ? "ユーザーを有効化しました。"
-                : "ユーザーを無効化しました。";
-            return TypedResults.Ok(new SuccessResponse { Message = message });
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
         {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _userService.SetUserActiveStatusAsync(
+            id,
+            request.IsActive,
+            me
+        );
+        if (!result)
         {
-            _logger.LogError(
-                ex,
-                "ユーザーアクティブ状態設定中にエラーが発生しました: UserId={UserId}",
-                id
-            );
-            throw;
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        var message = request.IsActive
+            ? "ユーザーを有効化しました。"
+            : "ユーザーを無効化しました。";
+        return TypedResults.Ok(new SuccessResponse { Message = message });
     }
 
     /// <summary>
@@ -308,45 +265,31 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
-    > DeleteUser(int id)
+    public async Task<Ok<SuccessResponse>> DeleteUser(int id)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 操作対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // 操作対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var result = await _userService.DeleteUserAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            return TypedResults.Ok(new SuccessResponse { Message = "ユーザーを削除しました。" });
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
         {
-            _logger.LogError(ex, "ユーザー削除中にエラーが発生しました: UserId={UserId}", id);
-            throw;
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        var result = await _userService.DeleteUserAsync(id);
+        if (!result)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return TypedResults.Ok(new SuccessResponse { Message = "ユーザーを削除しました。" });
     }
 
     /// <summary>
@@ -366,61 +309,39 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            NotFound<ErrorResponse>,
-            UnauthorizedHttpResult,
-            Conflict<ErrorResponse>
-        >
-    > SetUserSkills(int id, [FromBody] SetUserSkillsRequest request)
+    public async Task<Ok<SuccessResponse>> SetUserSkills(
+        int id,
+        [FromBody] SetUserSkillsRequest request
+    )
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 操作対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // 操作対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var result = await _userService.SetUserSkillsAsync(
-                userId: id,
-                skillIds: request.SkillIds,
-                userRowVersion: request.UserRowVersion,
-                updatedByUserId: me
-            );
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
         {
-            return TypedResults.Conflict(
-                new ErrorResponse { Message = ex.Message }
-            );
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _userService.SetUserSkillsAsync(
+            userId: id,
+            skillIds: request.SkillIds,
+            userRowVersion: request.UserRowVersion,
+            updatedByUserId: me
+        );
+        if (!result)
         {
-            _logger.LogError(ex, "スキル設定中にエラーが発生しました: UserId={UserId}", id);
-            throw;
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
     }
 
     /// <summary>
@@ -438,91 +359,77 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<
-        Results<Created<UserResponse>, BadRequest<ErrorResponse>, NotFound<ErrorResponse>>
-    > CreateUserWithoutPassword([FromBody] CreateUserWithoutPasswordRequest request)
+    public async Task<Created<UserResponse>> CreateUserWithoutPassword(
+        [FromBody] CreateUserWithoutPasswordRequest request
+    )
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ログインユーザーの組織IDを取得
+        var currentUser = await _userService.GetUserByIdAsync(me);
+        if (currentUser?.OrganizationId == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ログインユーザーの組織IDを取得
-            var currentUser = await _userService.GetUserByIdAsync(me);
-            if (currentUser?.OrganizationId == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "組織に所属していません。" }
-                );
-            }
-
-            // パスワードなしでユーザーを作成
-            var user = await _userService.CreateUserWithoutPasswordAsync(request, me);
-
-            // 組織IDを設定（同じ組織に所属させる）
-            user.OrganizationId = currentUser.OrganizationId;
-            await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest(), me);
-
-            // 組織情報を取得
-            var organization = await _organizationService.GetOrganizationByIdAsync(
-                currentUser.OrganizationId.Value
-            );
-            if (organization == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "組織が見つかりません。" }
-                );
-            }
-
-            // 動的にBaseUrlを取得
-            var requestContext = _httpContextAccessor.HttpContext?.Request;
-            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
-
-            // パスワード設定URLを生成
-            var passwordSetupUrl =
-                $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
-
-            // パスワード設定メールを送信
-            _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                x.SendTemplatedEmailAsync(
-                    user.Email,
-                    "パスワード設定のお知らせ",
-                    "password-setup",
-                    new PasswordSetupEmailModel
-                    {
-                        UserName = user.Username,
-                        Email = user.Email,
-                        OrganizationName = organization.Name,
-                        PasswordSetupUrl = passwordSetupUrl,
-                        TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
-                        CreatedAt = user.CreatedAt,
-                    }
-                )
-            );
-
-            var response = new UserResponse
-            {
-                Id = user.Id,
-                LoginId = user.LoginId,
-                Username = user.Username,
-                Email = user.Email,
-                AvatarType = user.AvatarType,
-                IdentityIconUrl = user.AvatarUrl,
-                CreatedAt = user.CreatedAt,
-                IsActive = user.IsActive,
-                Skills = new List<UserSkillResponse>()
-            };
-
-            return TypedResults.Created($"/api/admin/users/{user.Id}", response);
+            throw new NotFoundException("組織に所属していません。");
         }
-        catch (DuplicateException ex)
+
+        // パスワードなしでユーザーを作成
+        var user = await _userService.CreateUserWithoutPasswordAsync(request, me);
+
+        // 組織IDを設定（同じ組織に所属させる）
+        user.OrganizationId = currentUser.OrganizationId;
+        await _userService.UpdateUserAsync(user.Id, new UpdateUserRequest(), me);
+
+        // 組織情報を取得
+        var organization = await _organizationService.GetOrganizationByIdAsync(
+            currentUser.OrganizationId.Value
+        );
+        if (organization == null)
         {
-            return TypedResults.BadRequest(new ErrorResponse { Message = ex.Message });
+            throw new NotFoundException("組織が見つかりません。");
         }
-        catch (Exception ex)
+
+        // 動的にBaseUrlを取得
+        var requestContext = _httpContextAccessor.HttpContext?.Request;
+        var baseUrl =
+            requestContext != null
+                ? $"{requestContext.Scheme}://{requestContext.Host}"
+                : "https://localhost";
+
+        // パスワード設定URLを生成
+        var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
+
+        // パスワード設定メールを送信
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                user.Email,
+                "パスワード設定のお知らせ",
+                "password-setup",
+                new PasswordSetupEmailModel
+                {
+                    UserName = user.Username,
+                    Email = user.Email,
+                    OrganizationName = organization.Name,
+                    PasswordSetupUrl = passwordSetupUrl,
+                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                    CreatedAt = user.CreatedAt,
+                }
+            )
+        );
+
+        var response = new UserResponse
         {
-            _logger.LogError(ex, "パスワードなしユーザー作成中にエラーが発生しました");
-            throw;
-        }
+            Id = user.Id,
+            LoginId = user.LoginId,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarType = user.AvatarType,
+            IdentityIconUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            IsActive = user.IsActive,
+            Skills = new List<UserSkillResponse>()
+        };
+
+        return TypedResults.Created($"/api/admin/users/{user.Id}", response);
     }
 
     /// <summary>
@@ -540,82 +447,66 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, UnauthorizedHttpResult>
-    > RequestPasswordReset(int id)
+    public async Task<Ok<SuccessResponse>> RequestPasswordReset(int id)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // 操作対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
 
-            // 操作対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
+        if (success && user != null)
+        {
+            // 動的にBaseUrlを取得
+            var requestContext = _httpContextAccessor.HttpContext?.Request;
+            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
+            // パスワードリセットURLを構築
+            var resetUrl =
+                $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
+
+            // パスワードリセットメールを送信
+            var emailModel = new PasswordResetEmailModel
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
+                UserName = user.Username,
+                Email = user.Email,
+                PasswordResetUrl = resetUrl,
+                TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                RequestedAt = DateTime.UtcNow,
+            };
 
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
+            // バックグラウンドでメール送信
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "パスワードリセット",
+                    "password-reset",
+                    emailModel
+                )
+            );
 
-            (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
-            if (success && user != null)
-            {
-                // 動的にBaseUrlを取得
-                var requestContext = _httpContextAccessor.HttpContext?.Request;
-                var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
-
-                // パスワードリセットURLを構築
-                var resetUrl =
-                    $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
-
-                // パスワードリセットメールを送信
-                var emailModel = new PasswordResetEmailModel
-                {
-                    UserName = user.Username,
-                    Email = user.Email,
-                    PasswordResetUrl = resetUrl,
-                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
-                    RequestedAt = DateTime.UtcNow,
-                };
-
-                // バックグラウンドでメール送信
-                _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                    x.SendTemplatedEmailAsync(
-                        user.Email,
-                        "パスワードリセット",
-                        "password-reset",
-                        emailModel
-                    )
-                );
-
-                _logger.LogInformation(
-                    "管理者によるパスワードリセットリクエスト: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
-                    me,
-                    id,
-                    user.Email
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
+            _logger.LogInformation(
+                "管理者によるパスワードリセットリクエスト: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
+                me,
+                id,
+                user.Email
             );
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "管理者によるパスワードリセットリクエスト中にエラーが発生しました: UserId={UserId}",
-                id
-            );
-            throw;
-        }
+
+        return TypedResults.Ok(
+            new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
+        );
     }
 
     /// <summary>
@@ -635,67 +526,39 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<
-        Results<
-            Ok<SuccessResponse>,
-            NotFound<ErrorResponse>,
-            UnauthorizedHttpResult,
-            Conflict<ErrorResponse>
-        >
-    > SetUserRoles(int id, [FromBody] SetUserRolesRequest request)
+    public async Task<Ok<SuccessResponse>> SetUserRoles(
+        int id,
+        [FromBody] SetUserRolesRequest request
+    )
     {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // 操作対象ユーザーが存在するか確認
-            var targetUser = await _userService.GetUserByIdAsync(id);
-            if (targetUser == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            // ログインユーザーと同じ組織に所属しているか確認
-            var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
-            if (!canAccess)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var result = await _userService.SetUserRolesAsync(
-                userId: id,
-                roleIds: request.Roles,
-                userRowVersion: request.UserRowVersion,
-                updatedByUserId: me
-            );
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ユーザーが見つかりません。" }
-                );
-            }
-
-            return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
-        }
-        catch (ConcurrencyException ex)
+        // 操作対象ユーザーが存在するか確認
+        var targetUser = await _userService.GetUserByIdAsync(id);
+        if (targetUser == null)
         {
-            return TypedResults.Conflict(
-                new ErrorResponse { Message = ex.Message }
-            );
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ログインユーザーと同じ組織に所属しているか確認
+        var canAccess = await _accessHelper.CanAccessUserAsync(me, id);
+        if (!canAccess)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse { Message = ex.Message }
-            );
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _userService.SetUserRolesAsync(
+            userId: id,
+            roleIds: request.Roles,
+            userRowVersion: request.UserRowVersion,
+            updatedByUserId: me
+        );
+        if (!result)
         {
-            _logger.LogError(ex, "ロール設定中にエラーが発生しました: UserId={UserId}", id);
-            throw;
+            throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
     }
 
     /// <summary>
@@ -712,22 +575,14 @@ public class AdminUserController : ControllerBase
     )]
     public async Task<Ok<List<RoleListItemResponse>>> GetRoles()
     {
-        try
+        var roles = await _roleService.GetAllRolesAsync();
+        var response = roles.Select(r => new RoleListItemResponse
         {
-            var roles = await _roleService.GetAllRolesAsync();
-            var response = roles.Select(r => new RoleListItemResponse
-            {
-                Id = r.Id,
-                Name = r.Name,
-            }).ToList();
+            Id = r.Id,
+            Name = r.Name,
+        }).ToList();
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "全ロール取得中にエラーが発生しました。");
-            throw;
-        }
+        return TypedResults.Ok(response);
     }
 }
 

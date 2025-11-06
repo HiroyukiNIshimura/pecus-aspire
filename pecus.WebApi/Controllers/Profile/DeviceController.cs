@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
@@ -38,28 +39,18 @@ public class DeviceController : ControllerBase
     [ProducesResponseType(typeof(List<DeviceResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<List<DeviceResponse>>, NotFound, StatusCodeHttpResult>
-    > GetDevices()
+    public async Task<Ok<List<DeviceResponse>>> GetDevices()
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var response = await _profileService.GetUserDevicesAsync(me);
+
+        if (response == null || response.Count == 0)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var response = await _profileService.GetUserDevicesAsync(me);
-
-            if (response == null || response.Count == 0)
-            {
-                return TypedResults.NotFound();
-            }
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("デバイスが見つかりません。");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "デバイス情報取得中にエラーが発生しました。UserId: {UserId}", JwtBearerUtil.GetUserIdFromPrincipal(User));
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -71,30 +62,16 @@ public class DeviceController : ControllerBase
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<MessageResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteDevice(int deviceId)
+    public async Task<Ok<MessageResponse>> DeleteDevice(int deviceId)
     {
-        try
-        {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var result = await _profileService.DeleteUserDeviceAsync(me, deviceId);
-            if (!result)
-            {
-                return TypedResults.NotFound(new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = "デバイスが見つかりません。"
-                });
-            }
-
-            return TypedResults.Ok(new MessageResponse { Message = "デバイスを削除しました。" });
-        }
-        catch (Exception ex)
+        var result = await _profileService.DeleteUserDeviceAsync(me, deviceId);
+        if (!result)
         {
-            _logger.LogError(ex, "デバイス削除中にエラーが発生しました。UserId: {UserId}, DeviceId: {DeviceId}", JwtBearerUtil.GetUserIdFromPrincipal(User), deviceId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("デバイスが見つかりません。");
         }
+
+        return TypedResults.Ok(new MessageResponse { Message = "デバイスを削除しました。" });
     }
 }

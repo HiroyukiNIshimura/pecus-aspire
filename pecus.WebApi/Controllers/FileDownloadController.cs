@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Services;
 
@@ -28,58 +29,42 @@ public class FileDownloadController : ControllerBase
     [HttpGet("{fileType}/{resourceId}/{fileName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<
-        Results<FileContentHttpResult, NotFound>
-    > GetIcon(string fileType, int resourceId, string fileName)
+    public async Task<FileContentHttpResult> GetIcon(string fileType, int resourceId, string fileName)
     {
-        try
+        // ファイルタイプの検証
+        if (!FileUploadHelper.IsValidFileType(fileType))
         {
-            // ファイルタイプの検証
-            if (!FileUploadHelper.IsValidFileType(fileType))
-            {
-                return TypedResults.NotFound();
-            }
-
-            // ログインユーザーの組織IDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(me);
-
-            if (user?.OrganizationId == null)
-            {
-                return TypedResults.NotFound();
-            }
-
-            // 組織IDを使用してファイルパスを構築
-            var uploadsPath = "uploads";
-            var filePath = Path.Combine(
-                uploadsPath,
-                user.OrganizationId.Value.ToString(),
-                fileType,
-                resourceId.ToString(),
-                fileName
-            );
-
-            if (!System.IO.File.Exists(filePath))
-            {
-                return TypedResults.NotFound();
-            }
-
-            var contentType = GetContentType(fileName);
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-
-            return TypedResults.File(fileBytes, contentType);
+            throw new NotFoundException("ファイルが見つかりません。");
         }
-        catch (Exception ex)
+
+        // ログインユーザーの組織IDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var user = await _userService.GetUserByIdAsync(me);
+
+        if (user?.OrganizationId == null)
         {
-            _logger.LogError(
-                ex,
-                "アイコン取得中にエラーが発生しました。FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}",
-                fileType,
-                resourceId,
-                fileName
-            );
-            return TypedResults.NotFound();
+            throw new NotFoundException("ファイルが見つかりません。");
         }
+
+        // 組織IDを使用してファイルパスを構築
+        var uploadsPath = "uploads";
+        var filePath = Path.Combine(
+            uploadsPath,
+            user.OrganizationId.Value.ToString(),
+            fileType,
+            resourceId.ToString(),
+            fileName
+        );
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            throw new NotFoundException("ファイルが見つかりません。");
+        }
+
+        var contentType = GetContentType(fileName);
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+        return TypedResults.File(fileBytes, contentType);
     }
 
     /// <summary>

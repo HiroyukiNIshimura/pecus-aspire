@@ -55,107 +55,43 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<TagResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > CreateTag([FromBody] CreateTagRequest request)
+    public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        try
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        if (!organizationId.HasValue)
         {
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
-            if (!organizationId.HasValue)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ユーザーが組織に所属していません。",
-                    }
-                );
-            }
-
-            // 組織内のタグ数をチェック
-            var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(organizationId.Value);
-            if (existingTagCount >= _config.Limits.MaxTagsPerOrganization)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = $"組織あたりの最大タグ数({_config.Limits.MaxTagsPerOrganization})に達しています。",
-                    }
-                );
-            }
-
-            var tag = await _tagService.CreateTagAsync(request, organizationId.Value, me);
-
-            var response = new TagResponse
-            {
-                Success = true,
-                Message = "タグが正常に作成されました。",
-                Tag = new TagDetailResponse
-                {
-                    Id = tag.Id,
-                    Name = tag.Name,
-                    OrganizationId = tag.OrganizationId,
-                    CreatedAt = tag.CreatedAt,
-                    CreatedByUserId = tag.CreatedByUserId,
-                    IsActive = tag.IsActive,
-                    ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
-                },
-            };
-            return TypedResults.Ok(response);
+            throw new InvalidOperationException("ユーザーが組織に所属していません。");
         }
-        catch (NotFoundException ex)
+
+        // 組織内のタグ数をチェック
+        var existingTagCount = await _tagService.GetTagCountByOrganizationAsync(organizationId.Value);
+        if (existingTagCount >= _config.Limits.MaxTagsPerOrganization)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                $"組織あたりの最大タグ数({_config.Limits.MaxTagsPerOrganization})に達しています。"
             );
         }
-        catch (ConcurrencyException ex)
+
+        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, me);
+
+        var response = new TagResponse
         {
-            return TypedResults.Conflict(new ErrorResponse
+            Success = true,
+            Message = "タグが正常に作成されました。",
+            Tag = new TagDetailResponse
             {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ登録中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = tag.Id,
+                Name = tag.Name,
+                OrganizationId = tag.OrganizationId,
+                CreatedAt = tag.CreatedAt,
+                CreatedByUserId = tag.CreatedByUserId,
+                IsActive = tag.IsActive,
+                ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -165,55 +101,28 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(TagDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<TagDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetTag(int id)
+    public async Task<Ok<TagDetailResponse>> GetTag(int id)
     {
-        try
+        var tag = await _tagService.GetTagByIdAsync(id);
+        if (tag == null || !await CanAccessTagAsync(tag))
         {
-            var tag = await _tagService.GetTagByIdAsync(id);
-            if (tag == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            if (!await CanAccessTagAsync(tag))
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            var response = new TagDetailResponse
-            {
-                Id = tag.Id,
-                Name = tag.Name,
-                OrganizationId = tag.OrganizationId,
-                CreatedAt = tag.CreatedAt,
-                CreatedByUserId = tag.CreatedByUserId,
-                UpdatedAt = tag.UpdatedAt,
-                UpdatedByUserId = tag.UpdatedByUserId,
-                IsActive = tag.IsActive,
-                ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("タグが見つかりません。");
         }
-        catch (Exception ex)
+
+        var response = new TagDetailResponse
         {
-            _logger.LogError(ex, "タグ情報取得中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = tag.Id,
+            Name = tag.Name,
+            OrganizationId = tag.OrganizationId,
+            CreatedAt = tag.CreatedAt,
+            CreatedByUserId = tag.CreatedByUserId,
+            UpdatedAt = tag.UpdatedAt,
+            UpdatedByUserId = tag.UpdatedByUserId,
+            IsActive = tag.IsActive,
+            ItemCount = tag.WorkspaceItemTags?.Count ?? 0,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -230,68 +139,61 @@ public class AdminTagController : ControllerBase
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PagedResponse<TagListItemResponse, TagStatistics>>, StatusCodeHttpResult>
-    > GetTags([FromQuery] GetTagsRequest request)
+    public async Task<Ok<PagedResponse<TagListItemResponse, TagStatistics>>> GetTags(
+        [FromQuery] GetTagsRequest request
+    )
     {
-        try
+        var organizationId = await GetUserOrganizationIdAsync();
+
+        // 組織IDが取得できない場合は空のリストを返す（GraphQL的なnull-safety）
+        if (!organizationId.HasValue)
         {
-            var organizationId = await GetUserOrganizationIdAsync();
-            if (!organizationId.HasValue)
-            {
-                return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
-                        data: new List<TagListItemResponse>(),
-                        totalCount: 0,
-                        page: 1,
-                        pageSize: _config.Pagination.DefaultPageSize,
-                        summary: null
-                    )
-                );
-            }
-
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
-
-            (List<Tag> tags, int totalCount) =
-                await _tagService.GetTagsByOrganizationPagedAsync(
-                    organizationId.Value,
-                    validatedPage,
-                    pageSize,
-                    request.IsActive,
-                    request.UnusedOnly,
-                    request.Name
-                );
-
-            var items = tags
-                .Select(t => new TagListItemResponse
-                {
-                    Id = t.Id,
-                    Name = t.Name,
-                    CreatedAt = t.CreatedAt,
-                    UpdatedAt = t.UpdatedAt,
-                    IsActive = t.IsActive,
-                    ItemCount = t.WorkspaceItemTags?.Count ?? 0,
-                })
-                .ToList();
-
-            // 統計情報を取得
-            var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(organizationId.Value);
-
-            var response = PaginationHelper.CreatePagedResponse(
-                data: items,
-                totalCount: totalCount,
-                page: validatedPage,
-                pageSize: pageSize,
-                summary: statistics
+            return TypedResults.Ok(
+                PaginationHelper.CreatePagedResponse<TagListItemResponse, TagStatistics>(
+                    data: new List<TagListItemResponse>(),
+                    totalCount: 0,
+                    page: 1,
+                    pageSize: _config.Pagination.DefaultPageSize,
+                    summary: null
+                )
             );
-            return TypedResults.Ok(response);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<Tag> tags, int totalCount) = await _tagService.GetTagsByOrganizationPagedAsync(
+            organizationId.Value,
+            validatedPage,
+            pageSize,
+            request.IsActive,
+            request.UnusedOnly,
+            request.Name
+        );
+
+        var items = tags
+            .Select(t => new TagListItemResponse
+            {
+                Id = t.Id,
+                Name = t.Name,
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt,
+                IsActive = t.IsActive,
+                ItemCount = t.WorkspaceItemTags?.Count ?? 0,
+            })
+            .ToList();
+
+        // 統計情報を取得
+        var statistics = await _tagService.GetTagStatisticsByOrganizationAsync(organizationId.Value);
+
+        var response = PaginationHelper.CreatePagedResponse(
+            data: items,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize,
+            summary: statistics
+        );
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -303,107 +205,36 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<TagResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateTag(int id, [FromBody] UpdateTagRequest request)
+    public async Task<Ok<TagResponse>> UpdateTag(int id, [FromBody] UpdateTagRequest request)
     {
-        try
+        var tag = await _tagService.GetTagByIdAsync(id);
+        if (tag == null || !await CanAccessTagAsync(tag))
         {
-            var tag = await _tagService.GetTagByIdAsync(id);
-            if (tag == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("タグが見つかりません。");
+        }
 
-            if (!await CanAccessTagAsync(tag))
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var updatedTag = await _tagService.UpdateTagAsync(id, request, me);
 
-            var updatedTag = await _tagService.UpdateTagAsync(id, request, me);
-
-            var response = new TagResponse
+        var response = new TagResponse
+        {
+            Success = true,
+            Message = "タグが正常に更新されました。",
+            Tag = new TagDetailResponse
             {
-                Success = true,
-                Message = "タグが正常に更新されました。",
-                Tag = new TagDetailResponse
-                {
-                    Id = updatedTag.Id,
-                    Name = updatedTag.Name,
-                    OrganizationId = updatedTag.OrganizationId,
-                    CreatedAt = updatedTag.CreatedAt,
-                    CreatedByUserId = updatedTag.CreatedByUserId,
-                    UpdatedAt = updatedTag.UpdatedAt,
-                    UpdatedByUserId = updatedTag.UpdatedByUserId,
-                    IsActive = updatedTag.IsActive,
-                    ItemCount = updatedTag.WorkspaceItemTags?.Count ?? 0,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(new ErrorResponse
-            {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ更新中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = updatedTag.Id,
+                Name = updatedTag.Name,
+                OrganizationId = updatedTag.OrganizationId,
+                CreatedAt = updatedTag.CreatedAt,
+                CreatedByUserId = updatedTag.CreatedByUserId,
+                UpdatedAt = updatedTag.UpdatedAt,
+                UpdatedByUserId = updatedTag.UpdatedByUserId,
+                IsActive = updatedTag.IsActive,
+                ItemCount = updatedTag.WorkspaceItemTags?.Count ?? 0,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -414,68 +245,27 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteTag(int id)
+    public async Task<Ok<SuccessResponse>> DeleteTag(int id)
     {
-        try
+        var tag = await _tagService.GetTagByIdAsync(id);
+        if (tag == null || !await CanAccessTagAsync(tag))
         {
-            var tag = await _tagService.GetTagByIdAsync(id);
-            if (tag == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            if (!await CanAccessTagAsync(tag))
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            var result = await _tagService.DeleteTagAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "タグが正常に削除されました。",
-                }
-            );
+            throw new NotFoundException("タグが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        var result = await _tagService.DeleteTagAsync(id);
+        if (!result)
         {
-            return TypedResults.Conflict(new ErrorResponse
+            throw new NotFoundException("タグが見つかりません。");
+        }
+
+        return TypedResults.Ok(
+            new SuccessResponse
             {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ削除中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                StatusCode = StatusCodes.Status200OK,
+                Message = "タグが正常に削除されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -486,70 +276,29 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > DeactivateTag(int id)
+    public async Task<Ok<SuccessResponse>> DeactivateTag(int id)
     {
-        try
+        var tag = await _tagService.GetTagByIdAsync(id);
+        if (tag == null || !await CanAccessTagAsync(tag))
         {
-            var tag = await _tagService.GetTagByIdAsync(id);
-            if (tag == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            if (!await CanAccessTagAsync(tag))
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var result = await _tagService.DeactivateTagAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "タグが正常に無効化されました。",
-                }
-            );
+            throw new NotFoundException("タグが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var result = await _tagService.DeactivateTagAsync(id, me);
+        if (!result)
         {
-            return TypedResults.Conflict(new ErrorResponse
+            throw new NotFoundException("タグが見つかりません。");
+        }
+
+        return TypedResults.Ok(
+            new SuccessResponse
             {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ無効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                StatusCode = StatusCodes.Status200OK,
+                Message = "タグが正常に無効化されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -560,70 +309,29 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > ActivateTag(int id)
+    public async Task<Ok<SuccessResponse>> ActivateTag(int id)
     {
-        try
+        var tag = await _tagService.GetTagByIdAsync(id);
+        if (tag == null || !await CanAccessTagAsync(tag))
         {
-            var tag = await _tagService.GetTagByIdAsync(id);
-            if (tag == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            if (!await CanAccessTagAsync(tag))
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            var result = await _tagService.ActivateTagAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "タグが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "タグが正常に有効化されました。",
-                }
-            );
+            throw new NotFoundException("タグが見つかりません。");
         }
-        catch (ConcurrencyException ex)
+
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var result = await _tagService.ActivateTagAsync(id, me);
+        if (!result)
         {
-            return TypedResults.Conflict(new ErrorResponse
+            throw new NotFoundException("タグが見つかりません。");
+        }
+
+        return TypedResults.Ok(
+            new SuccessResponse
             {
-                StatusCode = StatusCodes.Status409Conflict,
-                Message = ex.Message,
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "タグ有効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                StatusCode = StatusCodes.Status200OK,
+                Message = "タグが正常に有効化されました。",
+            }
+        );
     }
 
     /// <summary>

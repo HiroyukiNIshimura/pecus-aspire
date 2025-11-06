@@ -42,53 +42,33 @@ public class EntranceOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationWithAdminResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<OrganizationWithAdminResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > CreateOrganization([FromBody] CreateOrganizationRequest request)
+    public async Task<Ok<OrganizationWithAdminResponse>> CreateOrganization([FromBody] CreateOrganizationRequest request)
     {
-        try
-        {
-            var (organization, adminUser) =
-                await _organizationService.CreateOrganizationWithUserAsync(request);
+        var (organization, adminUser) =
+            await _organizationService.CreateOrganizationWithUserAsync(request);
 
-            var response = new OrganizationWithAdminResponse
+        var response = new OrganizationWithAdminResponse
+        {
+            Organization = new OrganizationResponse
             {
-                Organization = new OrganizationResponse
-                {
-                    Id = organization.Id,
-                    Name = organization.Name,
-                    Code = organization.Code,
-                    Description = organization.Description,
-                    RepresentativeName = organization.RepresentativeName,
-                    PhoneNumber = organization.PhoneNumber,
-                    Email = organization.Email,
-                    CreatedAt = organization.CreatedAt,
-                },
-                AdminUser = new UserResponse
-                {
-                    Id = adminUser.Id,
-                    LoginId = adminUser.LoginId,
-                    Username = adminUser.Username,
-                    Email = adminUser.Email,
-                    CreatedAt = adminUser.CreatedAt,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "組織登録中にエラーが発生しました。Name: {Name}", request.Name);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = organization.Id,
+                Name = organization.Name,
+                Code = organization.Code,
+                Description = organization.Description,
+                RepresentativeName = organization.RepresentativeName,
+                PhoneNumber = organization.PhoneNumber,
+                Email = organization.Email,
+                CreatedAt = organization.CreatedAt,
+            },
+            AdminUser = new UserResponse
+            {
+                Id = adminUser.Id,
+                LoginId = adminUser.LoginId,
+                Username = adminUser.Username,
+                Email = adminUser.Email,
+                CreatedAt = adminUser.CreatedAt,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 }

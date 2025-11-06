@@ -51,139 +51,115 @@ public class WorkspaceItemAttachmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Created<WorkspaceItemAttachmentResponse>,
-            BadRequest<ErrorResponse>,
-            UnauthorizedHttpResult,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UploadAttachment(int workspaceId, int itemId, IFormFile file)
+    public async Task<Created<WorkspaceItemAttachmentResponse>> UploadAttachment(
+        int workspaceId,
+        int itemId,
+        IFormFile file
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
 
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse { Message = "ワークスペースのメンバーのみが添付ファイルをアップロードできます。" }
-                );
-            }
-
-            if (file == null || file.Length == 0)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse { Message = "ファイルが指定されていません。" }
-                );
-            }
-
-            // ファイル名とMIMEタイプを取得
-            var fileName = Path.GetFileName(file.FileName);
-            var mimeType = file.ContentType;
-
-            // ファイルを保存するパスを生成
-            var uploadsDir = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                _config.FileUpload.StoragePath,
-                "workspaces",
-                workspaceId.ToString(),
-                "items",
-                itemId.ToString()
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみが添付ファイルをアップロードできます。"
             );
-            Directory.CreateDirectory(uploadsDir);
+        }
 
-            var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
-            var filePath = Path.Combine(uploadsDir, uniqueFileName);
+        if (file == null || file.Length == 0)
+        {
+            throw new InvalidOperationException("ファイルが指定されていません。");
+        }
 
-            // ファイルを保存
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+        // ファイル名とMIMEタイプを取得
+        var fileName = Path.GetFileName(file.FileName);
+        var mimeType = file.ContentType;
 
-            // ダウンロードURLを生成
-            var downloadUrl =
-                $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{uniqueFileName}";
+        // ファイルを保存するパスを生成
+        var uploadsDir = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            _config.FileUpload.StoragePath,
+            "workspaces",
+            workspaceId.ToString(),
+            "items",
+            itemId.ToString()
+        );
+        Directory.CreateDirectory(uploadsDir);
 
-            // 画像ファイルの場合、サムネイルパスを事前に計算
-            string? thumbnailMediumPath = null;
-            string? thumbnailSmallPath = null;
+        var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
+        var filePath = Path.Combine(uploadsDir, uniqueFileName);
 
-            if (ThumbnailHelper.IsImageFile(mimeType))
-            {
-                thumbnailMediumPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "medium");
-                thumbnailSmallPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "small");
-            }
+        // ファイルを保存
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
 
-            // DBに保存（サムネイルパスも保存）
-            var attachment = await _attachmentService.AddAttachmentAsync(
-                workspaceId,
-                itemId,
-                fileName,
-                file.Length,
-                mimeType,
-                filePath,
-                downloadUrl,
-                thumbnailMediumPath,
-                thumbnailSmallPath,
-                me
+        // ダウンロードURLを生成
+        var downloadUrl =
+            $"/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{uniqueFileName}";
+
+        // 画像ファイルの場合、サムネイルパスを事前に計算
+        string? thumbnailMediumPath = null;
+        string? thumbnailSmallPath = null;
+
+        if (ThumbnailHelper.IsImageFile(mimeType))
+        {
+            thumbnailMediumPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "medium");
+            thumbnailSmallPath = ThumbnailHelper.GenerateThumbnailPath(filePath, "small");
+        }
+
+        // DBに保存（サムネイルパスも保存）
+        var attachment = await _attachmentService.AddAttachmentAsync(
+            workspaceId,
+            itemId,
+            fileName,
+            file.Length,
+            mimeType,
+            filePath,
+            downloadUrl,
+            thumbnailMediumPath,
+            thumbnailSmallPath,
+            me
+        );
+
+        // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
+        if (ThumbnailHelper.IsImageFile(mimeType))
+        {
+            var mediumSize = _config.FileUpload.ThumbnailMediumSize;
+            var smallSize = _config.FileUpload.ThumbnailSmallSize;
+
+            _backgroundJobClient.Enqueue<ImageTasks>(x =>
+                x.GenerateThumbnailsAsync(attachment.Id, filePath, mediumSize, smallSize)
             );
-
-            // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
-            if (ThumbnailHelper.IsImageFile(mimeType))
-            {
-                var mediumSize = _config.FileUpload.ThumbnailMediumSize;
-                var smallSize = _config.FileUpload.ThumbnailSmallSize;
-
-                _backgroundJobClient.Enqueue<ImageTasks>(x =>
-                    x.GenerateThumbnailsAsync(attachment.Id, filePath, mediumSize, smallSize)
-                );
-            }
-
-            var response = new WorkspaceItemAttachmentResponse
-            {
-                Id = attachment.Id,
-                WorkspaceItemId = attachment.WorkspaceItemId,
-                FileName = attachment.FileName,
-                FileSize = attachment.FileSize,
-                MimeType = attachment.MimeType,
-                DownloadUrl = attachment.DownloadUrl,
-                ThumbnailMediumUrl = attachment.ThumbnailMediumPath,
-                ThumbnailSmallUrl = attachment.ThumbnailSmallPath,
-                UploadedAt = attachment.UploadedAt,
-                UploadedByUserId = attachment.UploadedByUserId,
-                UploadedByUsername = attachment.UploadedByUser?.Username,
-            };
-
-            return TypedResults.Created(attachment.DownloadUrl, response);
         }
-        catch (NotFoundException ex)
+
+        var response = new WorkspaceItemAttachmentResponse
         {
-            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(new ErrorResponse { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "添付ファイルのアップロード中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Id = attachment.Id,
+            WorkspaceItemId = attachment.WorkspaceItemId,
+            FileName = attachment.FileName,
+            FileSize = attachment.FileSize,
+            MimeType = attachment.MimeType,
+            DownloadUrl = attachment.DownloadUrl,
+            ThumbnailMediumUrl = attachment.ThumbnailMediumPath,
+            ThumbnailSmallUrl = attachment.ThumbnailSmallPath,
+            UploadedAt = attachment.UploadedAt,
+            UploadedByUserId = attachment.UploadedByUserId,
+            UploadedByUsername = attachment.UploadedByUser?.Username,
+        };
+
+        return TypedResults.Created(attachment.DownloadUrl, response);
     }
 
     /// <summary>
@@ -196,58 +172,41 @@ public class WorkspaceItemAttachmentController : ControllerBase
     [ProducesResponseType(typeof(List<WorkspaceItemAttachmentResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<List<WorkspaceItemAttachmentResponse>>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > GetAttachments(int workspaceId, int itemId)
+    public async Task<Ok<List<WorkspaceItemAttachmentResponse>>> GetAttachments(
+        int workspaceId,
+        int itemId
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
+
+        var response = attachments
+            .Select(a => new WorkspaceItemAttachmentResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
-                );
-            }
+                Id = a.Id,
+                WorkspaceItemId = a.WorkspaceItemId,
+                FileName = a.FileName,
+                FileSize = a.FileSize,
+                MimeType = a.MimeType,
+                DownloadUrl = a.DownloadUrl,
+                ThumbnailMediumUrl = a.ThumbnailMediumPath,
+                ThumbnailSmallUrl = a.ThumbnailSmallPath,
+                UploadedAt = a.UploadedAt,
+                UploadedByUserId = a.UploadedByUserId,
+                UploadedByUsername = a.UploadedByUser?.Username,
+            })
+            .ToList();
 
-            var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
-
-            var response = attachments
-                .Select(a => new WorkspaceItemAttachmentResponse
-                {
-                    Id = a.Id,
-                    WorkspaceItemId = a.WorkspaceItemId,
-                    FileName = a.FileName,
-                    FileSize = a.FileSize,
-                    MimeType = a.MimeType,
-                    DownloadUrl = a.DownloadUrl,
-                    ThumbnailMediumUrl = a.ThumbnailMediumPath,
-                    ThumbnailSmallUrl = a.ThumbnailSmallPath,
-                    UploadedAt = a.UploadedAt,
-                    UploadedByUserId = a.UploadedByUserId,
-                    UploadedByUsername = a.UploadedByUser?.Username,
-                })
-                .ToList();
-
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "添付ファイル一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -263,80 +222,58 @@ public class WorkspaceItemAttachmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            NoContent,
-            BadRequest<ErrorResponse>,
-            UnauthorizedHttpResult,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > DeleteAttachment(int workspaceId, int itemId, int attachmentId)
+    public async Task<NoContent> DeleteAttachment(int workspaceId, int itemId, int attachmentId)
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
 
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse { Message = "ワークスペースが見つかりません。" }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse { Message = "ワークスペースのメンバーのみが添付ファイルを削除できます。" }
-                );
-            }
-
-            var attachment = await _attachmentService.DeleteAttachmentAsync(
-                workspaceId,
-                itemId,
-                attachmentId,
-                me
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみが添付ファイルを削除できます。"
             );
-
-            // 物理ファイルを削除
-            if (System.IO.File.Exists(attachment.FilePath))
-            {
-                System.IO.File.Delete(attachment.FilePath);
-            }
-
-            // サムネイルも削除
-            if (
-                !string.IsNullOrEmpty(attachment.ThumbnailMediumPath)
-                && System.IO.File.Exists(attachment.ThumbnailMediumPath)
-            )
-            {
-                System.IO.File.Delete(attachment.ThumbnailMediumPath);
-            }
-
-            if (
-                !string.IsNullOrEmpty(attachment.ThumbnailSmallPath)
-                && System.IO.File.Exists(attachment.ThumbnailSmallPath)
-            )
-            {
-                System.IO.File.Delete(attachment.ThumbnailSmallPath);
-            }
-
-            return TypedResults.NoContent();
         }
-        catch (NotFoundException ex)
+
+        var attachment = await _attachmentService.DeleteAttachmentAsync(
+            workspaceId,
+            itemId,
+            attachmentId,
+            me
+        );
+
+        // 物理ファイルを削除
+        if (System.IO.File.Exists(attachment.FilePath))
         {
-            return TypedResults.NotFound(new ErrorResponse { Message = ex.Message });
+            System.IO.File.Delete(attachment.FilePath);
         }
-        catch (Exception ex)
+
+        // サムネイルも削除
+        if (
+            !string.IsNullOrEmpty(attachment.ThumbnailMediumPath)
+            && System.IO.File.Exists(attachment.ThumbnailMediumPath)
+        )
         {
-            _logger.LogError(ex, "添付ファイル削除中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            System.IO.File.Delete(attachment.ThumbnailMediumPath);
         }
+
+        if (
+            !string.IsNullOrEmpty(attachment.ThumbnailSmallPath)
+            && System.IO.File.Exists(attachment.ThumbnailSmallPath)
+        )
+        {
+            System.IO.File.Delete(attachment.ThumbnailSmallPath);
+        }
+
+        return TypedResults.NoContent();
     }
 
     /// <summary>
@@ -350,62 +287,58 @@ public class WorkspaceItemAttachmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IResult> DownloadAttachment(int workspaceId, int itemId, string fileName)
+    public async Task<FileContentHttpResult> DownloadAttachment(
+        int workspaceId,
+        int itemId,
+        string fileName
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound();
-            }
-
-            // ファイルパスを構築
-            var filePath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                _config.FileUpload.StoragePath,
-                "workspaces",
-                workspaceId.ToString(),
-                "items",
-                itemId.ToString(),
-                fileName
-            );
-
-            // ファイルの存在確認
-            if (!System.IO.File.Exists(filePath))
-            {
-                return TypedResults.NotFound();
-            }
-
-            // DBから添付ファイル情報を取得して、権限チェックを行う
-            var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
-            var attachment = attachments.FirstOrDefault(a =>
-                a.FilePath == filePath || Path.GetFileName(a.FilePath) == fileName
-            );
-
-            if (attachment == null)
-            {
-                return TypedResults.NotFound();
-            }
-
-            // ファイルを読み込んで返す
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            var contentType = attachment.MimeType ?? "application/octet-stream";
-
-            return Results.File(fileBytes, contentType, attachment.FileName);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException)
+
+        // ファイルパスを構築
+        var filePath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            _config.FileUpload.StoragePath,
+            "workspaces",
+            workspaceId.ToString(),
+            "items",
+            itemId.ToString(),
+            fileName
+        );
+
+        // ファイルの存在確認
+        if (!System.IO.File.Exists(filePath))
         {
-            return TypedResults.NotFound();
+            throw new NotFoundException("ファイルが見つかりません。");
         }
-        catch (Exception ex)
+
+        // DBから添付ファイル情報を取得して、権限チェックを行う
+        var attachments = await _attachmentService.GetAttachmentsAsync(workspaceId, itemId);
+        var attachment = attachments.FirstOrDefault(a =>
+            a.FilePath == filePath || Path.GetFileName(a.FilePath) == fileName
+        );
+
+        if (attachment == null)
         {
-            _logger.LogError(ex, "添付ファイルのダウンロード中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("添付ファイルが見つかりません。");
         }
+
+        // ファイルを読み込んで返す
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+        var contentType = attachment.MimeType ?? "application/octet-stream";
+
+        return TypedResults.File(
+            fileContents: fileBytes,
+            contentType: contentType,
+            fileDownloadName: attachment.FileName
+        );
     }
 }

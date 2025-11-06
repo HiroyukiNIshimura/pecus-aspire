@@ -47,96 +47,43 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > CreateWorkspace([FromBody] CreateWorkspaceRequest request)
+    public async Task<Ok<WorkspaceResponse>> CreateWorkspace(
+        [FromBody] CreateWorkspaceRequest request
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ログインユーザーの情報を取得して組織IDを取得
-            var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
-            if (!organizationId.HasValue)
+        // ログインユーザーの情報を取得して組織IDを取得
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        if (!organizationId.HasValue)
+        {
+            throw new InvalidOperationException("ユーザーが組織に所属していません。");
+        }
+
+        var workspace = await _workspaceService.CreateWorkspaceAsync(
+            request,
+            organizationId.Value,
+            me
+        );
+
+        var response = new WorkspaceResponse
+        {
+            Success = true,
+            Message = "ワークスペースが正常に作成されました。",
+            Workspace = new WorkspaceDetailResponse
             {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ユーザーが組織に所属していません。",
-                    }
-                );
-            }
-
-            var workspace = await _workspaceService.CreateWorkspaceAsync(
-                request,
-                organizationId.Value,
-                me
-            );
-
-            var response = new WorkspaceResponse
-            {
-                Success = true,
-                Message = "ワークスペースが正常に作成されました。",
-                Workspace = new WorkspaceDetailResponse
-                {
-                    Id = workspace.Id,
-                    Name = workspace.Name,
-                    Code = workspace.Code,
-                    Description = workspace.Description,
-                    OrganizationId = workspace.OrganizationId,
-                    CreatedAt = workspace.CreatedAt,
-                    CreatedByUserId = workspace.CreatedByUserId,
-                    IsActive = workspace.IsActive,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペース登録中にエラーが発生しました。Name: {Name}",
-                request.Name
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = workspace.Id,
+                Name = workspace.Name,
+                Code = workspace.Code,
+                Description = workspace.Description,
+                OrganizationId = workspace.OrganizationId,
+                CreatedAt = workspace.CreatedAt,
+                CreatedByUserId = workspace.CreatedByUserId,
+                IsActive = workspace.IsActive,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -146,44 +93,117 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<WorkspaceDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetWorkspace(int id)
+    public async Task<Ok<WorkspaceDetailResponse>> GetWorkspace(int id)
     {
-        try
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
         {
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
 
-            var response = new WorkspaceDetailResponse
+        var response = new WorkspaceDetailResponse
+        {
+            Id = workspace.Id,
+            Name = workspace.Name,
+            Code = workspace.Code,
+            Description = workspace.Description,
+            OrganizationId = workspace.OrganizationId,
+            Organization =
+                workspace.Organization != null
+                    ? new Models.Responses.Organization.OrganizationInfoResponse
+                    {
+                        Id = workspace.Organization.Id,
+                        Name = workspace.Organization.Name,
+                        Code = workspace.Organization.Code,
+                    }
+                    : null,
+            GenreId = workspace.GenreId,
+            GenreName = workspace.Genre?.Name,
+            GenreIcon = workspace.Genre?.Icon,
+            Members = workspace.WorkspaceUsers?
+                .Where(wu => wu.User != null && wu.User.IsActive)
+                .Select(wu => new WorkspaceUserDetailResponse
+                {
+                    WorkspaceId = wu.WorkspaceId,
+                    UserId = wu.UserId,
+                    Username = wu.User!.Username,
+                    Email = wu.User.Email,
+                    WorkspaceRole = wu.WorkspaceRole,
+                    JoinedAt = wu.JoinedAt,
+                    LastAccessedAt = wu.LastAccessedAt,
+                    IsActive = wu.User.IsActive,
+                })
+                .ToList(),
+            CreatedAt = workspace.CreatedAt,
+            CreatedByUserId = workspace.CreatedByUserId,
+            UpdatedAt = workspace.UpdatedAt,
+            UpdatedByUserId = workspace.UpdatedByUserId,
+            IsActive = workspace.IsActive,
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ワークスペース一覧取得（ページネーション）
+    /// </summary>
+    /// <param name="request">ワークスペース一覧取得リクエスト</param>
+    [HttpGet]
+    [ProducesResponseType(
+        typeof(PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>>> GetWorkspaces(
+        [FromQuery] GetWorkspacesRequest request
+    )
+    {
+        var organizationId = await GetUserOrganizationIdAsync();
+        if (!organizationId.HasValue)
+        {
+            // 認証済みユーザーが組織に所属していない場合、空のリストを返す
+            return TypedResults.Ok(
+                PaginationHelper.CreatePagedResponse(
+                    data: new List<WorkspaceListItemResponse>(),
+                    totalCount: 0,
+                    page: 1,
+                    pageSize: _config.Pagination.DefaultPageSize,
+                    summary: new WorkspaceStatistics()
+                )
+            );
+        }
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<Workspace> workspaces, int totalCount) =
+            await _workspaceService.GetWorkspacesByOrganizationPagedAsync(
+                organizationId.Value,
+                validatedPage,
+                pageSize,
+                request.IsActive,
+                request.GenreId,
+                request.Name
+            );
+
+        var items = workspaces
+            .Select(w => new WorkspaceListItemResponse
             {
-                Id = workspace.Id,
-                Name = workspace.Name,
-                Code = workspace.Code,
-                Description = workspace.Description,
-                OrganizationId = workspace.OrganizationId,
-                Organization =
-                    workspace.Organization != null
-                        ? new Models.Responses.Organization.OrganizationInfoResponse
-                        {
-                            Id = workspace.Organization.Id,
-                            Name = workspace.Organization.Name,
-                            Code = workspace.Organization.Code,
-                        }
-                        : null,
-                GenreId = workspace.GenreId,
-                GenreName = workspace.Genre?.Name,
-                GenreIcon = workspace.Genre?.Icon,
-                Members = workspace.WorkspaceUsers?
+                Id = w.Id,
+                Name = w.Name,
+                Code = w.Code,
+                Description = w.Description,
+                OrganizationId = w.OrganizationId,
+                OrganizationName = w.Organization?.Name,
+                GenreId = w.GenreId,
+                GenreName = w.Genre?.Name,
+                GenreIcon = w.Genre?.Icon,
+                ActiveItemCount = w.WorkspaceItems?.Count(wi => wi.IsActive) ?? 0,
+                CreatedAt = w.CreatedAt,
+                UpdatedAt = w.UpdatedAt,
+                IsActive = w.IsActive,
+                MemberCount = w.WorkspaceUsers?.Count ?? 0, // フィルタ済みコレクションの件数
+                Members = w.WorkspaceUsers?
                     .Where(wu => wu.User != null && wu.User.IsActive)
                     .Select(wu => new WorkspaceUserDetailResponse
                     {
@@ -197,117 +217,20 @@ public class AdminWorkspaceController : ControllerBase
                         IsActive = wu.User.IsActive,
                     })
                     .ToList(),
-                CreatedAt = workspace.CreatedAt,
-                CreatedByUserId = workspace.CreatedByUserId,
-                UpdatedAt = workspace.UpdatedAt,
-                UpdatedByUserId = workspace.UpdatedByUserId,
-                IsActive = workspace.IsActive,
-            };
+            })
+            .ToList();
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペース情報取得中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
+        // 統計情報を取得
+        var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(organizationId.Value);
 
-    /// <summary>
-    /// ワークスペース一覧取得（ページネーション）
-    /// </summary>
-    /// <param name="request">ワークスペース一覧取得リクエスト</param>
-    [HttpGet]
-    [ProducesResponseType(
-        typeof(PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>),
-        StatusCodes.Status200OK
-    )]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PagedResponse<WorkspaceListItemResponse, WorkspaceStatistics>>, StatusCodeHttpResult>
-    > GetWorkspaces([FromQuery] GetWorkspacesRequest request)
-    {
-        try
-        {
-            var organizationId = await GetUserOrganizationIdAsync();
-            if (!organizationId.HasValue)
-            {
-                // 認証済みユーザーが組織に所属していない場合、空のリストを返す
-                return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse(
-                        data: new List<WorkspaceListItemResponse>(),
-                        totalCount: 0,
-                        page: 1,
-                        pageSize: _config.Pagination.DefaultPageSize,
-                        summary: new WorkspaceStatistics()
-                    )
-                );
-            }
-
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
-
-            (List<Workspace> workspaces, int totalCount) =
-                await _workspaceService.GetWorkspacesByOrganizationPagedAsync(
-                    organizationId.Value,
-                    validatedPage,
-                    pageSize,
-                    request.IsActive,
-                    request.GenreId,
-                    request.Name
-                );
-
-            var items = workspaces
-                .Select(w => new WorkspaceListItemResponse
-                {
-                    Id = w.Id,
-                    Name = w.Name,
-                    Code = w.Code,
-                    Description = w.Description,
-                    OrganizationId = w.OrganizationId,
-                    OrganizationName = w.Organization?.Name,
-                    GenreId = w.GenreId,
-                    GenreName = w.Genre?.Name,
-                    GenreIcon = w.Genre?.Icon,
-                    ActiveItemCount = w.WorkspaceItems?.Count(wi => wi.IsActive) ?? 0,
-                    CreatedAt = w.CreatedAt,
-                    UpdatedAt = w.UpdatedAt,
-                    IsActive = w.IsActive,
-                    MemberCount = w.WorkspaceUsers?.Count ?? 0, // フィルタ済みコレクションの件数
-                    Members = w.WorkspaceUsers?
-                        .Where(wu => wu.User != null && wu.User.IsActive)
-                        .Select(wu => new WorkspaceUserDetailResponse
-                        {
-                            WorkspaceId = wu.WorkspaceId,
-                            UserId = wu.UserId,
-                            Username = wu.User!.Username,
-                            Email = wu.User.Email,
-                            WorkspaceRole = wu.WorkspaceRole,
-                            JoinedAt = wu.JoinedAt,
-                            LastAccessedAt = wu.LastAccessedAt,
-                            IsActive = wu.User.IsActive,
-                        })
-                        .ToList(),
-                })
-                .ToList();
-
-            // 統計情報を取得
-            var statistics = await _workspaceService.GetWorkspaceStatisticsAsync(organizationId.Value);
-
-            var response = PaginationHelper.CreatePagedResponse(
-                data: items,
-                totalCount: totalCount,
-                page: validatedPage,
-                pageSize: pageSize,
-                summary: statistics
-            );
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペース一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        var response = PaginationHelper.CreatePagedResponse(
+            data: items,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize,
+            summary: statistics
+        );
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -319,103 +242,44 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateWorkspace(int id, [FromBody] UpdateWorkspaceRequest request)
+    public async Task<Ok<WorkspaceResponse>> UpdateWorkspace(
+        int id,
+        [FromBody] UpdateWorkspaceRequest request
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var (hasAccess, existingWorkspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || existingWorkspace == null)
+        var (hasAccess, existingWorkspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || existingWorkspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, me);
+
+        var response = new WorkspaceResponse
+        {
+            Success = true,
+            Message = "ワークスペースが正常に更新されました。",
+            Workspace = new WorkspaceDetailResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, me);
-
-            var response = new WorkspaceResponse
-            {
-                Success = true,
-                Message = "ワークスペースが正常に更新されました。",
-                Workspace = new WorkspaceDetailResponse
-                {
-                    Id = workspace.Id,
-                    Name = workspace.Name,
-                    Code = workspace.Code,
-                    Description = workspace.Description,
-                    OrganizationId = workspace.OrganizationId,
-                    GenreId = workspace.GenreId,
-                    GenreName = workspace.Genre?.Name,
-                    GenreIcon = workspace.Genre?.Icon,
-                    CreatedAt = workspace.CreatedAt,
-                    CreatedByUserId = workspace.CreatedByUserId,
-                    UpdatedAt = workspace.UpdatedAt,
-                    UpdatedByUserId = workspace.UpdatedByUserId,
-                    IsActive = workspace.IsActive,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペース更新中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                Id = workspace.Id,
+                Name = workspace.Name,
+                Code = workspace.Code,
+                Description = workspace.Description,
+                OrganizationId = workspace.OrganizationId,
+                GenreId = workspace.GenreId,
+                GenreName = workspace.Genre?.Name,
+                GenreIcon = workspace.Genre?.Icon,
+                CreatedAt = workspace.CreatedAt,
+                CreatedByUserId = workspace.CreatedByUserId,
+                UpdatedAt = workspace.UpdatedAt,
+                UpdatedByUserId = workspace.UpdatedByUserId,
+                IsActive = workspace.IsActive,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -425,49 +289,27 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > DeleteWorkspace(int id)
+    public async Task<Ok<SuccessResponse>> DeleteWorkspace(int id)
     {
-        try
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
         {
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            var result = await _workspaceService.DeleteWorkspaceAsync(id);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "ワークスペースが正常に削除されました。",
-                }
-            );
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _workspaceService.DeleteWorkspaceAsync(id);
+        if (!result)
         {
-            _logger.LogError(ex, "ワークスペース削除中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
+
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "ワークスペースが正常に削除されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -478,62 +320,30 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > DeactivateWorkspace(int id)
+    public async Task<Ok<SuccessResponse>> DeactivateWorkspace(int id)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var result = await _workspaceService.DeactivateWorkspaceAsync(id, me);
+        if (!result)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        return TypedResults.Ok(
+            new SuccessResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
+                StatusCode = StatusCodes.Status200OK,
+                Message = "ワークスペースが正常に無効化されました。",
             }
-
-            var result = await _workspaceService.DeactivateWorkspaceAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "ワークスペースが正常に無効化されました。",
-                }
-            );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペース無効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        );
     }
 
     /// <summary>
@@ -544,62 +354,30 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>, StatusCodeHttpResult>
-    > ActivateWorkspace(int id)
+    public async Task<Ok<SuccessResponse>> ActivateWorkspace(int id)
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var result = await _workspaceService.ActivateWorkspaceAsync(id, me);
+        if (!result)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        return TypedResults.Ok(
+            new SuccessResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
+                StatusCode = StatusCodes.Status200OK,
+                Message = "ワークスペースが正常に有効化されました。",
             }
-
-            var result = await _workspaceService.ActivateWorkspaceAsync(id, me);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "ワークスペースが正常に有効化されました。",
-                }
-            );
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ワークスペース有効化中にエラーが発生しました。ID: {Id}", id);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        );
     }
 
     /// <summary>
@@ -610,96 +388,43 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceUserResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > AddUserToWorkspace(int id, [FromBody] AddUserToWorkspaceRequest request)
+    public async Task<Ok<WorkspaceUserResponse>> AddUserToWorkspace(
+        int id,
+        [FromBody] AddUserToWorkspaceRequest request
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
+            id,
+            request,
+            me
+        );
+
+        var response = new WorkspaceUserResponse
+        {
+            Success = true,
+            Message = "ユーザーがワークスペースに正常に参加しました。",
+            WorkspaceUser = new WorkspaceUserDetailResponse
             {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
-                id,
-                request,
-                me
-            );
-
-            var response = new WorkspaceUserResponse
-            {
-                Success = true,
-                Message = "ユーザーがワークスペースに正常に参加しました。",
-                WorkspaceUser = new WorkspaceUserDetailResponse
-                {
-                    WorkspaceId = workspaceUser.WorkspaceId,
-                    UserId = workspaceUser.UserId,
-                    Username = workspaceUser.User?.Username,
-                    Email = workspaceUser.User?.Email,
-                    WorkspaceRole = workspaceUser.WorkspaceRole,
-                    JoinedAt = workspaceUser.JoinedAt,
-                    LastAccessedAt = workspaceUser.LastAccessedAt,
-                    IsActive = workspaceUser.User?.IsActive ?? false,
-                },
-            };
-            return TypedResults.Ok(response);
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースにユーザーを参加させる処理中にエラーが発生しました。WorkspaceId: {WorkspaceId}, UserId: {UserId}",
-                id,
-                request.UserId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                WorkspaceId = workspaceUser.WorkspaceId,
+                UserId = workspaceUser.UserId,
+                Username = workspaceUser.User?.Username,
+                Email = workspaceUser.User?.Email,
+                WorkspaceRole = workspaceUser.WorkspaceRole,
+                JoinedAt = workspaceUser.JoinedAt,
+                LastAccessedAt = workspaceUser.LastAccessedAt,
+                IsActive = workspaceUser.User?.IsActive ?? false,
+            },
+        };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -709,54 +434,27 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<SuccessResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > RemoveUserFromWorkspace(int id, int userId)
+    public async Task<Ok<SuccessResponse>> RemoveUserFromWorkspace(int id, int userId)
     {
-        try
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
         {
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            var result = await _workspaceService.RemoveUserFromWorkspaceAsync(id, userId);
-            if (!result)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースメンバーが見つかりません。",
-                    }
-                );
-            }
-
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "ユーザーがワークスペースから正常に削除されました。",
-                }
-            );
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (Exception ex)
+
+        var result = await _workspaceService.RemoveUserFromWorkspaceAsync(id, userId);
+        if (!result)
         {
-            _logger.LogError(
-                ex,
-                "ワークスペースからユーザーを削除する処理中にエラーが発生しました。WorkspaceId: {WorkspaceId}, UserId: {UserId}",
-                id,
-                userId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("ワークスペースメンバーが見つかりません。");
         }
+
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "ユーザーがワークスペースから正常に削除されました。",
+            }
+        );
     }
 
     /// <summary>
@@ -770,69 +468,58 @@ public class AdminWorkspaceController : ControllerBase
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<PagedResponse<WorkspaceUserDetailResponse, object>>, StatusCodeHttpResult>
-    > GetWorkspaceMembers(int id, [FromQuery] GetWorkspaceMembersRequest request)
+    public async Task<Ok<PagedResponse<WorkspaceUserDetailResponse, object>>> GetWorkspaceMembers(
+        int id,
+        [FromQuery] GetWorkspaceMembersRequest request
+    )
     {
-        try
+        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        if (!hasAccess || workspace == null)
         {
-            var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
-            if (!hasAccess || workspace == null)
+            // 空のリストを返す（ワークスペースが存在しない or アクセス権がない）
+            return TypedResults.Ok(
+                PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
+                    data: new List<WorkspaceUserDetailResponse>(),
+                    totalCount: 0,
+                    page: 1,
+                    pageSize: _config.Pagination.DefaultPageSize,
+                    summary: null
+                )
+            );
+        }
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        (List<WorkspaceUser> members, int totalCount) = await _workspaceService.GetWorkspaceMembersPagedAsync(
+            id,
+            validatedPage,
+            pageSize,
+            request.ActiveOnly
+        );
+
+        var items = members
+            .Select(m => new WorkspaceUserDetailResponse
             {
-                // 空のリストを返す（ワークスペースが存在しない or アクセス権がない）
-                return TypedResults.Ok(
-                    PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
-                        data: new List<WorkspaceUserDetailResponse>(),
-                        totalCount: 0,
-                        page: 1,
-                        pageSize: _config.Pagination.DefaultPageSize,
-                        summary: null
-                    )
-                );
-            }
+                WorkspaceId = m.WorkspaceId,
+                UserId = m.UserId,
+                Username = m.User?.Username,
+                Email = m.User?.Email,
+                WorkspaceRole = m.WorkspaceRole,
+                JoinedAt = m.JoinedAt,
+                LastAccessedAt = m.LastAccessedAt,
+                IsActive = m.User?.IsActive ?? false,
+            })
+            .ToList();
 
-            var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-            var pageSize = _config.Pagination.DefaultPageSize;
-
-            (List<WorkspaceUser> members, int totalCount) = await _workspaceService.GetWorkspaceMembersPagedAsync(
-                id,
-                validatedPage,
-                pageSize,
-                request.ActiveOnly
-            );
-
-            var items = members
-                .Select(m => new WorkspaceUserDetailResponse
-                {
-                    WorkspaceId = m.WorkspaceId,
-                    UserId = m.UserId,
-                    Username = m.User?.Username,
-                    Email = m.User?.Email,
-                    WorkspaceRole = m.WorkspaceRole,
-                    JoinedAt = m.JoinedAt,
-                    LastAccessedAt = m.LastAccessedAt,
-                    IsActive = m.User?.IsActive ?? false,
-                })
-                .ToList();
-
-            var response = PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
-                data: items,
-                totalCount: totalCount,
-                page: validatedPage,
-                pageSize: pageSize,
-                summary: null
-            );
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ワークスペースメンバー一覧取得中にエラーが発生しました。WorkspaceId: {WorkspaceId}",
-                id
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        var response = PaginationHelper.CreatePagedResponse<WorkspaceUserDetailResponse, object>(
+            data: items,
+            totalCount: totalCount,
+            page: validatedPage,
+            pageSize: pageSize,
+            summary: null
+        );
+        return TypedResults.Ok(response);
     }
 
     /// <summary>

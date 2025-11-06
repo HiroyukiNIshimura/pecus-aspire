@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
@@ -24,16 +25,14 @@ public class EntranceAuthController : ControllerBase
     private readonly UserService _userService;
     private readonly RefreshTokenService _refreshService;
     private readonly TokenBlacklistService _blacklistService;
-    private readonly EmailTasks _emailTasks;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<EntranceAuthController> _logger;
 
-    public EntranceAuthController(UserService userService, RefreshTokenService refreshService, TokenBlacklistService blacklistService, EmailTasks emailTasks, IBackgroundJobClient backgroundJobClient, ILogger<EntranceAuthController> logger)
+    public EntranceAuthController(UserService userService, RefreshTokenService refreshService, TokenBlacklistService blacklistService, IBackgroundJobClient backgroundJobClient, ILogger<EntranceAuthController> logger)
     {
         _userService = userService;
         _refreshService = refreshService;
         _blacklistService = blacklistService;
-        _emailTasks = emailTasks;
         _backgroundJobClient = backgroundJobClient;
         _logger = logger;
     }
@@ -72,120 +71,106 @@ public class EntranceAuthController : ControllerBase
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<LoginResponse>, UnauthorizedHttpResult, StatusCodeHttpResult>
-    > Login([FromBody] LoginRequest request)
+    public async Task<Ok<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        try
+        var user = await _userService.AuthenticateAsync(request);
+        if (user == null)
         {
-            var user = await _userService.AuthenticateAsync(request);
-            if (user == null)
-            {
-                return TypedResults.Unauthorized();
-            }
+            throw new InvalidOperationException("認証に失敗しました。メールアドレス（またはログインID）またはパスワードが正しくありません。");
+        }
 
-            // JWTトークンを生成
-            var token = JwtBearerUtil.GenerateToken(user);
-            var expiresAt = JwtBearerUtil.GetTokenExpiration();
-            var expiresIn = JwtBearerUtil.GetExpiresMinutes() * 60; // 秒に変換
+        // JWTトークンを生成
+        var token = JwtBearerUtil.GenerateToken(user);
+        var expiresAt = JwtBearerUtil.GetTokenExpiration();
+        var expiresIn = JwtBearerUtil.GetExpiresMinutes() * 60; // 秒に変換
 
-            // 発行したリフレッシュトークンを作成（rotation 用／保存）
-            var deviceInfo = new RefreshTokenService.DeviceInfo(
-                DeviceName: request.DeviceName,
-                DeviceType: request.DeviceType,
-                OS: request.OS,
-                UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
-                AppVersion: request.AppVersion,
-                Timezone: request.Timezone,
-                LastSeenLocation: request.Location,
-                IpAddress: request.IpAddress ?? GetClientIpAddress()
+        // 発行したリフレッシュトークンを作成（rotation 用／保存）
+        var deviceInfo = new RefreshTokenService.DeviceInfo(
+            DeviceName: request.DeviceName,
+            DeviceType: request.DeviceType,
+            OS: request.OS,
+            UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
+            AppVersion: request.AppVersion,
+            Timezone: request.Timezone,
+            LastSeenLocation: request.Location,
+            IpAddress: request.IpAddress ?? GetClientIpAddress()
+        );
+        var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
+
+        // 発行したアクセストークンの JTI をユーザーのトークン一覧に登録（追跡）
+        var jti = JwtBearerUtil.GetJtiFromToken(token);
+        if (!string.IsNullOrWhiteSpace(jti))
+        {
+            await _blacklistService.RegisterUserJtiAsync(user.Id, jti);
+        }
+
+        var response = new LoginResponse
+        {
+            AccessToken = token,
+            TokenType = "Bearer",
+            ExpiresAt = expiresAt,
+            ExpiresIn = expiresIn,
+            UserId = user.Id,
+            LoginId = user.LoginId,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarType = user.AvatarType,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                user.AvatarType,
+                user.Id,
+                user.Username,
+                user.Email,
+                user.AvatarUrl
+            ),
+            Roles = user
+                .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
+                .ToList(),
+            RefreshToken = refreshToken.Token,
+            RefreshExpiresAt = refreshToken.ExpiresAt,
+        };
+
+        if (refreshToken.ChangeDevice)
+        {
+            _logger.LogInformation(
+                "新しいデバイスが作成されました。UserId: {UserId}, DeviceName: {DeviceName}, DeviceType: {DeviceType}, IP: {IpAddress}",
+                user.Id,
+                deviceInfo.DeviceName,
+                deviceInfo.DeviceType,
+                deviceInfo.IpAddress
             );
-            var refreshToken = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
 
-            // 発行したアクセストークンの JTI をユーザーのトークン一覧に登録（追跡）
-            var jti = JwtBearerUtil.GetJtiFromToken(token);
-            if (!string.IsNullOrWhiteSpace(jti))
-            {
-                await _blacklistService.RegisterUserJtiAsync(user.Id, jti);
-            }
+            // バックグラウンドでメール送信
+            var securitySettingsUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/settings/security";
 
-            var response = new LoginResponse
+            var model = new SecurityNotificationEmailModel
             {
-                AccessToken = token,
-                TokenType = "Bearer",
-                ExpiresAt = expiresAt,
-                ExpiresIn = expiresIn,
-                UserId = user.Id,
-                LoginId = user.LoginId,
-                Username = user.Username,
+                UserName = user.Username,
                 Email = user.Email,
-                AvatarType = user.AvatarType,
-                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                    user.AvatarType,
-                    user.Id,
-                    user.Username,
-                    user.Email,
-                    user.AvatarUrl
-                ),
-                Roles = user
-                    .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
-                    .ToList(),
-                RefreshToken = refreshToken.Token,
-                RefreshExpiresAt = refreshToken.ExpiresAt,
+                DeviceName = deviceInfo.DeviceName ?? "不明なデバイス",
+                DeviceType = deviceInfo.DeviceType.ToString(),
+                OS = deviceInfo.OS.ToString(),
+                IpAddress = deviceInfo.IpAddress,
+                Timezone = deviceInfo.Timezone,
+                LoginAt = DateTime.UtcNow,
+                SecuritySettingsUrl = securitySettingsUrl
             };
 
-            if (refreshToken.ChangeDevice)
-            {
-                _logger.LogInformation(
-                    "新しいデバイスが作成されました。UserId: {UserId}, DeviceName: {DeviceName}, DeviceType: {DeviceType}, IP: {IpAddress}",
-                    user.Id,
-                    deviceInfo.DeviceName,
-                    deviceInfo.DeviceType,
-                    deviceInfo.IpAddress
-                );
-
-                // バックグラウンドでメール送信
-                var securitySettingsUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/settings/security";
-
-                var model = new SecurityNotificationEmailModel
-                {
-                    UserName = user.Username,
-                    Email = user.Email,
-                    DeviceName = deviceInfo.DeviceName ?? "不明なデバイス",
-                    DeviceType = deviceInfo.DeviceType.ToString(),
-                    OS = deviceInfo.OS.ToString(),
-                    IpAddress = deviceInfo.IpAddress,
-                    Timezone = deviceInfo.Timezone,
-                    LoginAt = DateTime.UtcNow,
-                    SecuritySettingsUrl = securitySettingsUrl
-                };
-
-                _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                    x.SendTemplatedEmailAsync(
-                        user.Email,
-                        "セキュリティ通知: 新しいデバイスからのログインを検知しました",
-                        "security-notification",
-                        model
-                    )
-                );
-
-                _logger.LogInformation(
-                    "セキュリティ通知メールをHangfireジョブキューに投入しました。UserId: {UserId}, Email: {Email}",
-                    user.Id,
-                    user.Email
-                );
-            }
-
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "ログイン中にエラーが発生しました。LoginIdentifier: {LoginIdentifier}",
-                request.LoginIdentifier
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "セキュリティ通知: 新しいデバイスからのログインを検知しました",
+                    "security-notification",
+                    model
+                )
             );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+
+            _logger.LogInformation(
+                "セキュリティ通知メールをHangfireジョブキューに投入しました。UserId: {UserId}, Email: {Email}",
+                user.Id,
+                user.Email
+            );
         }
+
+        return TypedResults.Ok(response);
     }
 }

@@ -215,6 +215,8 @@ builder
 
 builder.Services.AddControllers(options =>
 {
+    // グローバル例外ハンドリングフィルターを追加
+    options.Filters.Add<GlobalExceptionFilter>();
     // 共通の検証フィルターを追加
     options.Filters.Add<ValidationFilter>();
     // グローバル認証ポリシーを追加

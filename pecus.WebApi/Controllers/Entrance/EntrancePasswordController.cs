@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
@@ -57,32 +58,22 @@ public class EntrancePasswordController : ControllerBase
     [HttpPost("set")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<Results<Ok<SuccessResponse>, BadRequest<ErrorResponse>>> SetPassword(
+    public async Task<Ok<SuccessResponse>> SetPassword(
         [FromBody] SetUserPasswordRequest request
     )
     {
-        try
+        var result = await _userService.SetUserPasswordAsync(request);
+        if (!result)
         {
-            var result = await _userService.SetUserPasswordAsync(request);
-            if (!result)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse { Message = "トークンが無効または期限切れです。" }
-                );
-            }
+            throw new InvalidOperationException("トークンが無効または期限切れです。");
+        }
 
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    Message = "パスワードが設定されました。ログインしてください。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "パスワード設定中にエラーが発生しました");
-            throw;
-        }
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                Message = "パスワードが設定されました。ログインしてください。",
+            }
+        );
     }
 
     /// <summary>
@@ -100,54 +91,46 @@ public class EntrancePasswordController : ControllerBase
         [FromBody] RequestPasswordResetRequest request
     )
     {
-        try
+        var (success, user) = await _userService.RequestPasswordResetAsync(request);
+        if (success && user != null)
         {
-            var (success, user) = await _userService.RequestPasswordResetAsync(request);
-            if (success && user != null)
+            // 動的にBaseUrlを取得
+            var requestContext = _httpContextAccessor.HttpContext?.Request;
+            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
+            // パスワードリセットURLを構築
+            var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
+
+            // パスワードリセットメールを送信
+            var emailModel = new PasswordResetEmailModel
             {
-                // 動的にBaseUrlを取得
-                var requestContext = _httpContextAccessor.HttpContext?.Request;
-                var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+                UserName = user.Username,
+                Email = user.Email,
+                PasswordResetUrl = resetUrl,
+                TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
+                RequestedAt = DateTime.UtcNow,
+            };
 
-                // パスワードリセットURLを構築
-                var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
+            // バックグラウンドでメール送信
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "パスワードリセット",
+                    "password-reset",
+                    emailModel
+                )
+            );
 
-                // パスワードリセットメールを送信
-                var emailModel = new PasswordResetEmailModel
-                {
-                    UserName = user.Username,
-                    Email = user.Email,
-                    PasswordResetUrl = resetUrl,
-                    TokenExpiresAt = user.PasswordResetTokenExpiresAt!.Value,
-                    RequestedAt = DateTime.UtcNow,
-                };
-
-                // バックグラウンドでメール送信
-                _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                    x.SendTemplatedEmailAsync(
-                        user.Email,
-                        "パスワードリセット",
-                        "password-reset",
-                        emailModel
-                    )
-                );
-
-                _logger.LogInformation(
-                    "パスワードリセットメールを送信しました: {Email}",
-                    request.Email
-                );
-            }
-
-            // セキュリティのため、常に成功メッセージを返す
-            return TypedResults.Ok(
-                new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
+            _logger.LogInformation(
+                "パスワードリセットメールを送信しました: {Email}",
+                request.Email
             );
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "パスワードリセットリクエスト中にエラーが発生しました");
-            throw;
-        }
+
+        // セキュリティのため、常に成功メッセージを返す
+        return TypedResults.Ok(
+            new SuccessResponse { Message = "パスワードリセットメールが送信されました。" }
+        );
     }
 
     /// <summary>
@@ -163,32 +146,22 @@ public class EntrancePasswordController : ControllerBase
     [HttpPost("reset")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<Results<Ok<SuccessResponse>, BadRequest<ErrorResponse>>> ResetPassword(
+    public async Task<Ok<SuccessResponse>> ResetPassword(
         [FromBody] ResetPasswordRequest request
     )
     {
-        try
+        var result = await _userService.ResetPasswordAsync(request);
+        if (!result)
         {
-            var result = await _userService.ResetPasswordAsync(request);
-            if (!result)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse { Message = "トークンが無効または期限切れです。" }
-                );
-            }
+            throw new InvalidOperationException("トークンが無効または期限切れです。");
+        }
 
-            return TypedResults.Ok(
-                new SuccessResponse
-                {
-                    Message =
-                        "パスワードがリセットされました。新しいパスワードでログインしてください。",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "パスワードリセット中にエラーが発生しました");
-            throw;
-        }
+        return TypedResults.Ok(
+            new SuccessResponse
+            {
+                Message =
+                    "パスワードがリセットされました。新しいパスワードでログインしてください。",
+            }
+        );
     }
 }

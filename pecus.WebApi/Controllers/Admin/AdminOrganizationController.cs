@@ -44,68 +44,42 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<OrganizationDetailResponse>, NotFound<ErrorResponse>, StatusCodeHttpResult>
-    > GetMyOrganization()
+    public async Task<Ok<OrganizationDetailResponse>> GetMyOrganization()
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ユーザー情報を取得して組織IDを取得
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user == null || user.OrganizationId == null)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ユーザー情報を取得して組織IDを取得
-            var user = await _userService.GetUserByIdAsync(me);
-            if (user == null || user.OrganizationId == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ユーザーが組織に所属していません。",
-                    }
-                );
-            }
-
-            var organization = await _organizationService.GetOrganizationByIdAsync(
-                user.OrganizationId.Value
-            );
-            if (organization == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "組織が見つかりません。",
-                    }
-                );
-            }
-
-            var response = new OrganizationDetailResponse
-            {
-                Id = organization.Id,
-                Name = organization.Name,
-                Code = organization.Code,
-                Description = organization.Description,
-                RepresentativeName = organization.RepresentativeName,
-                PhoneNumber = organization.PhoneNumber,
-                Email = organization.Email,
-                CreatedAt = organization.CreatedAt,
-                UpdatedAt = organization.UpdatedAt,
-                IsActive = organization.IsActive,
-                UserCount = organization.Users.Count,
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ユーザーが組織に所属していません。");
         }
-        catch (Exception ex)
+
+        var organization = await _organizationService.GetOrganizationByIdAsync(
+            user.OrganizationId.Value
+        );
+        if (organization == null)
         {
-            _logger.LogError(
-                ex,
-                "組織情報取得中にエラーが発生しました。UserId: {UserId}",
-                JwtBearerUtil.GetUserIdFromPrincipal(User)
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            throw new NotFoundException("組織が見つかりません。");
         }
+
+        var response = new OrganizationDetailResponse
+        {
+            Id = organization.Id,
+            Name = organization.Name,
+            Code = organization.Code,
+            Description = organization.Description,
+            RepresentativeName = organization.RepresentativeName,
+            PhoneNumber = organization.PhoneNumber,
+            Email = organization.Email,
+            CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -120,92 +94,38 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<OrganizationResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            Conflict<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > UpdateMyOrganization([FromBody] AdminUpdateOrganizationRequest request)
+    public async Task<Ok<OrganizationResponse>> UpdateMyOrganization(
+        [FromBody] AdminUpdateOrganizationRequest request
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            // ユーザー情報を取得して組織IDを取得
-            var user = await _userService.GetUserByIdAsync(me);
-            if (user == null || user.OrganizationId == null)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ユーザーが組織に所属していません。",
-                    }
-                );
-            }
+        // ユーザー情報を取得して組織IDを取得
+        var user = await _userService.GetUserByIdAsync(me);
+        if (user == null || user.OrganizationId == null)
+        {
+            throw new NotFoundException("ユーザーが組織に所属していません。");
+        }
 
-            var organization = await _organizationService.AdminUpdateOrganizationAsync(
-                user.OrganizationId.Value,
-                request,
-                me
-            );
+        var organization = await _organizationService.AdminUpdateOrganizationAsync(
+            user.OrganizationId.Value,
+            request,
+            me
+        );
 
-            var response = new OrganizationResponse
-            {
-                Id = organization.Id,
-                Name = organization.Name,
-                Code = organization.Code,
-                Description = organization.Description,
-                RepresentativeName = organization.RepresentativeName,
-                PhoneNumber = organization.PhoneNumber,
-                Email = organization.Email,
-                CreatedAt = organization.CreatedAt,
-            };
+        var response = new OrganizationResponse
+        {
+            Id = organization.Id,
+            Name = organization.Name,
+            Code = organization.Code,
+            Description = organization.Description,
+            RepresentativeName = organization.RepresentativeName,
+            PhoneNumber = organization.PhoneNumber,
+            Email = organization.Email,
+            CreatedAt = organization.CreatedAt,
+        };
 
-            return TypedResults.Ok(response);
-        }
-        catch (ConcurrencyException ex)
-        {
-            return TypedResults.Conflict(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (NotFoundException ex)
-        {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (DuplicateException ex)
-        {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "組織更新中にエラーが発生しました。UserId: {UserId}",
-                JwtBearerUtil.GetUserIdFromPrincipal(User)
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 }

@@ -46,85 +46,38 @@ public class WorkspaceItemPinController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > AddPinToItem(int workspaceId, int itemId)
+    public async Task<Ok<WorkspaceItemResponse>> AddPinToItem(int workspaceId, int itemId)
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムをPINできます。",
-                    }
-                );
-            }
-
-            var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, me);
-
-            // 更新後のアイテムを取得
-            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
-
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "PINを追加しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
-            );
+            throw new InvalidOperationException("ワークスペースのメンバーのみがアイテムをPINできます。");
         }
-        catch (InvalidOperationException ex)
+
+        var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, me);
+
+        // 更新後のアイテムを取得
+        var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
+
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "PIN追加中にエラーが発生しました。ItemId: {ItemId}", itemId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "PINを追加しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -138,85 +91,40 @@ public class WorkspaceItemPinController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<WorkspaceItemResponse>,
-            BadRequest<ErrorResponse>,
-            NotFound<ErrorResponse>,
-            StatusCodeHttpResult
-        >
-    > RemovePinFromItem(int workspaceId, int itemId)
+    public async Task<Ok<WorkspaceItemResponse>> RemovePinFromItem(int workspaceId, int itemId)
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        if (!hasAccess)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-            // ワークスペースへのアクセス権限をチェック
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
-            if (!hasAccess)
-            {
-                return TypedResults.NotFound(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = "ワークスペースが見つかりません。",
-                    }
-                );
-            }
-
-            // ユーザーがワークスペースのメンバーか確認
-            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
-            if (!isMember)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ワークスペースのメンバーのみがアイテムのPINを削除できます。",
-                    }
-                );
-            }
-
-            await _pinService.RemovePinFromItemAsync(workspaceId, itemId, me);
-
-            // 更新後のアイテムを取得
-            var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
-
-            var response = new WorkspaceItemResponse
-            {
-                Success = true,
-                Message = "PINを削除しました。",
-                WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
-            };
-
-            return TypedResults.Ok(response);
+            throw new NotFoundException("ワークスペースが見つかりません。");
         }
-        catch (NotFoundException ex)
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        if (!isMember)
         {
-            return TypedResults.NotFound(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = ex.Message,
-                }
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムのPINを削除できます。"
             );
         }
-        catch (InvalidOperationException ex)
+
+        await _pinService.RemovePinFromItemAsync(workspaceId, itemId, me);
+
+        // 更新後のアイテムを取得
+        var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
+
+        var response = new WorkspaceItemResponse
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "PIN削除中にエラーが発生しました。ItemId: {ItemId}", itemId);
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+            Success = true,
+            Message = "PINを削除しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -229,43 +137,31 @@ public class WorkspaceItemPinController : ControllerBase
     )]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<
-            Ok<PagedResponse<WorkspaceItemDetailResponse>>,
-            UnauthorizedHttpResult,
-            StatusCodeHttpResult
-        >
-    > GetMyPinnedItems([FromQuery] GetMyPinnedItemsRequest request)
+    public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse>>> GetMyPinnedItems(
+        [FromQuery] GetMyPinnedItemsRequest request
+    )
     {
-        try
-        {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-            var pageSize = _config.Pagination.DefaultPageSize;
-            var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
-                me,
-                request.Page,
-                pageSize
-            );
+        var pageSize = _config.Pagination.DefaultPageSize;
+        var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
+            me,
+            request.Page,
+            pageSize
+        );
 
-            var itemResponses = items
-                .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
-                .ToList();
+        var itemResponses = items
+            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
+            .ToList();
 
-            var response = PaginationHelper.CreatePagedResponse(
-                data: itemResponses,
-                totalCount: totalCount,
-                page: request.Page,
-                pageSize: pageSize
-            );
+        var response = PaginationHelper.CreatePagedResponse(
+            data: itemResponses,
+            totalCount: totalCount,
+            page: request.Page,
+            pageSize: pageSize
+        );
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "PIN済みアイテム一覧取得中にエラーが発生しました。");
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        return TypedResults.Ok(response);
     }
 }

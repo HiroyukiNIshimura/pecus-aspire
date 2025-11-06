@@ -42,125 +42,80 @@ public class FileUploadController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<
-        Results<Ok<FileUploadResponse>, BadRequest<ErrorResponse>, StatusCodeHttpResult>
-    > UploadFile(string fileType, int resourceId, IFormFile file)
+    public async Task<Ok<FileUploadResponse>> UploadFile(
+        string fileType,
+        int resourceId,
+        IFormFile file
+    )
     {
-        try
+        // ログイン中のユーザーIDを取得
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        var user = await _userService.GetUserByIdAsync(me);
+
+        if (user == null)
         {
-            // ログイン中のユーザーIDを取得
-            var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-            var user = await _userService.GetUserByIdAsync(me);
+            throw new InvalidOperationException("ユーザーが見つかりません。");
+        }
 
-            if (user == null)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "ユーザーが見つかりません。",
-                    }
-                );
-            }
+        if (user.OrganizationId == null)
+        {
+            throw new InvalidOperationException("組織に所属していません。");
+        }
 
-            if (user.OrganizationId == null)
-            {
-                return TypedResults.BadRequest(
-                    new ErrorResponse
-                    {
-                        StatusCode = StatusCodes.Status400BadRequest,
-                        Message = "組織に所属していません。",
-                    }
-                );
-            }
-
-            // ファイルの種類に応じたバリデーション
-            if (fileType.ToLowerInvariant() == "avatar")
-            {
-                // アバターの場合、リソースIDはユーザーIDであることを確認
-                if (
-                    !await _fileUploadService.ValidateUserResourceAsync(
-                        resourceId,
-                        user.OrganizationId.Value
-                    )
+        // ファイルの種類に応じたバリデーション
+        if (fileType.ToLowerInvariant() == "avatar")
+        {
+            // アバターの場合、リソースIDはユーザーIDであることを確認
+            if (
+                !await _fileUploadService.ValidateUserResourceAsync(
+                    resourceId,
+                    user.OrganizationId.Value
                 )
-                {
-                    return TypedResults.BadRequest(
-                        new ErrorResponse
-                        {
-                            StatusCode = StatusCodes.Status403Forbidden,
-                            Message = "指定されたリソースへのアクセス権限がありません。",
-                        }
-                    );
-                }
-            }
-            else if (fileType.ToLowerInvariant() == "genre")
+            )
             {
-                // ジャンルの場合、リソースIDはジャンルIDであることを確認
-                if (!await _fileUploadService.ValidateGenreResourceAsync(resourceId))
-                {
-                    return TypedResults.BadRequest(
-                        new ErrorResponse
-                        {
-                            StatusCode = StatusCodes.Status403Forbidden,
-                            Message = "指定されたジャンルが見つかりません。",
-                        }
-                    );
-                }
+                throw new InvalidOperationException("指定されたリソースへのアクセス権限がありません。");
             }
-
-            // ファイルをアップロード
-            var filePath = await _fileUploadService.UploadFileAsync(
-                file,
-                fileType,
-                resourceId,
-                user.OrganizationId.Value
-            );
-
-            // アバターの場合、ユーザー情報を更新
-            if (fileType.ToLowerInvariant() == "avatar" && resourceId == me)
-            {
-                await UpdateUserAvatarAsync(me, filePath);
-            }
-
-            // ジャンルの場合、ジャンル情報を更新
-            if (fileType.ToLowerInvariant() == "genre")
-            {
-                await UpdateGenreIconAsync(resourceId, filePath, me);
-            }
-
-            var response = new FileUploadResponse
-            {
-                Success = true,
-                FileUrl = $"/api/downloads/{fileType}/{resourceId}/{Path.GetFileName(filePath)}",
-                FileSize = file.Length,
-                ContentType = file.ContentType,
-                UploadedAt = DateTime.UtcNow,
-                Message = "ファイルのアップロードに成功しました。",
-            };
-
-            return TypedResults.Ok(response);
         }
-        catch (InvalidOperationException ex)
+        else if (fileType.ToLowerInvariant() == "genre")
         {
-            return TypedResults.BadRequest(
-                new ErrorResponse
-                {
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Message = ex.Message,
-                }
-            );
+            // ジャンルの場合、リソースIDはジャンルIDであることを確認
+            if (!await _fileUploadService.ValidateGenreResourceAsync(resourceId))
+            {
+                throw new InvalidOperationException("指定されたジャンルが見つかりません。");
+            }
         }
-        catch (Exception ex)
+
+        // ファイルをアップロード
+        var filePath = await _fileUploadService.UploadFileAsync(
+            file,
+            fileType,
+            resourceId,
+            user.OrganizationId.Value
+        );
+
+        // アバターの場合、ユーザー情報を更新
+        if (fileType.ToLowerInvariant() == "avatar" && resourceId == me)
         {
-            _logger.LogError(
-                ex,
-                "ファイルアップロード中にエラーが発生しました。FileType: {FileType}, ResourceId: {ResourceId}",
-                fileType,
-                resourceId
-            );
-            return TypedResults.StatusCode(StatusCodes.Status500InternalServerError);
+            await UpdateUserAvatarAsync(me, filePath);
         }
+
+        // ジャンルの場合、ジャンル情報を更新
+        if (fileType.ToLowerInvariant() == "genre")
+        {
+            await UpdateGenreIconAsync(resourceId, filePath, me);
+        }
+
+        var response = new FileUploadResponse
+        {
+            Success = true,
+            FileUrl = $"/api/downloads/{fileType}/{resourceId}/{Path.GetFileName(filePath)}",
+            FileSize = file.Length,
+            ContentType = file.ContentType,
+            UploadedAt = DateTime.UtcNow,
+            Message = "ファイルのアップロードに成功しました。",
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
