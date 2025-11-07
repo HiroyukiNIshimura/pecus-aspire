@@ -175,7 +175,14 @@ public class AdminWorkspaceController : ControllerBase
                     totalCount: 0,
                     page: 1,
                     pageSize: _config.Pagination.DefaultPageSize,
-                    summary: new WorkspaceStatistics()
+                    summary: new WorkspaceStatistics
+                    {
+                        ActiveWorkspaceCount = 0,
+                        InactiveWorkspaceCount = 0,
+                        UniqueMemberCount = 0,
+                        RecentWorkspaceCount = 0,
+                        WorkspaceCountByGenre = new List<GenreCount>()
+                    }
                 )
             );
         }

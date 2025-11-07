@@ -709,7 +709,15 @@ public class UserService
     /// </summary>
     public async Task<UserStatistics> GetUserStatisticsByOrganizationAsync(int organizationId)
     {
-        var statistics = new UserStatistics();
+        var statistics = new UserStatistics
+        {
+            ActiveUserCount = 0,
+            InactiveUserCount = 0,
+            SkillCounts = new List<SkillUserCountResponse>(),
+            RoleCounts = new List<RoleUserCountResponse>(),
+            WorkspaceParticipationCount = 0,
+            NoWorkspaceParticipationCount = 0
+        };
 
         // DbContextは並列実行に対応していないため、逐次実行に変更
         // アクティブなユーザー数

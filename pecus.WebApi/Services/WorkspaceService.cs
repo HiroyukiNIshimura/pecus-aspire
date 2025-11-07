@@ -430,7 +430,14 @@ public class WorkspaceService
     /// </summary>
     public async Task<WorkspaceStatistics> GetWorkspaceStatisticsAsync(int organizationId)
     {
-        var statistics = new WorkspaceStatistics();
+        var statistics = new WorkspaceStatistics
+        {
+            ActiveWorkspaceCount = 0,
+            InactiveWorkspaceCount = 0,
+            UniqueMemberCount = 0,
+            RecentWorkspaceCount = 0,
+            WorkspaceCountByGenre = new List<GenreCount>()
+        };
 
         // アクティブ/非アクティブのワークスペース数を取得
         var workspaceCounts = await _context.Workspaces
@@ -455,7 +462,7 @@ public class WorkspaceService
             .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
             .Select(g => new GenreCount
             {
-                GenreId = g.Key.GenreId,
+                GenreId = g.Key.GenreId!.Value,
                 GenreName = g.Key.GenreName,
                 Count = g.Count()
             })

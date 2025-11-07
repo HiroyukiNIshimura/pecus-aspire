@@ -10,32 +10,38 @@ public class UserStatistics
     /// <summary>
     /// スキルごとのユーザー数サマリ
     /// </summary>
-    public List<SkillUserCountResponse> SkillCounts { get; set; } = new();
+    [Required]
+    public required List<SkillUserCountResponse> SkillCounts { get; set; } = new();
 
     /// <summary>
     /// ロールごとのユーザー数サマリ
     /// </summary>
-    public List<RoleUserCountResponse> RoleCounts { get; set; } = new();
+    [Required]
+    public required List<RoleUserCountResponse> RoleCounts { get; set; } = new();
 
     /// <summary>
     /// アクティブなユーザー数
     /// </summary>
-    public int ActiveUserCount { get; set; }
+    [Required]
+    public required int ActiveUserCount { get; set; } = 0;
 
     /// <summary>
     /// 非アクティブなユーザー数
     /// </summary>
-    public int InactiveUserCount { get; set; }
+    [Required]
+    public required int InactiveUserCount { get; set; } = 0;
 
     /// <summary>
     /// ワークスペースに参加しているユーザー数
     /// </summary>
-    public int WorkspaceParticipationCount { get; set; }
+    [Required]
+    public required int WorkspaceParticipationCount { get; set; } = 0;
 
     /// <summary>
     /// ワークスペースに参加していないユーザー数
     /// </summary>
-    public int NoWorkspaceParticipationCount { get; set; }
+    [Required]
+    public required int NoWorkspaceParticipationCount { get; set; } = 0;
 }
 
 /// <summary>
@@ -58,7 +64,8 @@ public class SkillUserCountResponse
     /// <summary>
     /// ユーザー数
     /// </summary>
-    public int Count { get; set; }
+    [Required]
+    public required int Count { get; set; } = 0;
 }
 
 /// <summary>
@@ -81,5 +88,6 @@ public class RoleUserCountResponse
     /// <summary>
     /// ユーザー数
     /// </summary>
-    public int Count { get; set; }
+    [Required]
+    public required int Count { get; set; } = 0;
 }
