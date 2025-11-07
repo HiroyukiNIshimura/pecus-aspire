@@ -11,13 +11,7 @@ import { useNotify } from "@/hooks/useNotify";
 import { updateSkill } from "@/actions/admin/skills";
 import { editSkillSchema } from "@/schemas/editSchemas";
 import type { SkillDetailResponse } from "@/connectors/api/pecus";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
+import { UserInfo } from "@/types/userInfo";
 
 interface EditSkillClientProps {
   initialUser: UserInfo | null;

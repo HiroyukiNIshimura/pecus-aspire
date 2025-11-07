@@ -1,15 +1,9 @@
 import AdminSkillsClient from "./AdminSkillsClient";
 import { getCurrentUser } from "@/actions/profile";
 import { getSkills } from "@/actions/admin/skills";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminSkills() {

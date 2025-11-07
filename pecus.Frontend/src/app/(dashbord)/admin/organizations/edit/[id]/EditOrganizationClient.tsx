@@ -11,13 +11,7 @@ import { useNotify } from "@/hooks/useNotify";
 import { updateOrganization } from "@/actions/admin/organizations";
 import { editOrganizationSchema } from "@/schemas/editSchemas";
 import type { OrganizationDetailResponse } from "@/connectors/api/pecus";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
+import { UserInfo } from "@/types/userInfo";
 
 interface EditOrganizationClientProps {
   initialUser: UserInfo | null;

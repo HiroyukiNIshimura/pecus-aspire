@@ -2,15 +2,9 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/actions/profile";
 import { getOrganizationDetail } from "@/actions/admin/organizations";
 import EditOrganizationClient from "./EditOrganizationClient";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditOrganizationPage() {
   let user: UserInfo | null = null;

@@ -2,6 +2,7 @@ import AdminClient from "./AdminClient";
 import { getOrganization } from "@/actions/admin/organization";
 import { getCurrentUser } from "@/actions/profile";
 import type { ApiErrorResponse } from "@/types/errors";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,6 @@ type OrganizationData = {
   updatedAt?: string | null;
   isActive?: boolean;
   userCount?: number | null;
-};
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
 };
 
 // Server-side page (SSR). Fetch required data here and pass to client component.

@@ -14,13 +14,7 @@ import {
   requestPasswordReset
 } from "@/actions/admin/user";
 import type { UserResponse } from "@/connectors/api/pecus";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
+import { UserInfo } from "@/types/userInfo";
 
 interface Skill {
   id: number;

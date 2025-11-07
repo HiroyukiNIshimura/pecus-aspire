@@ -2,15 +2,9 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/actions/profile";
 import { getSkillDetail } from "@/actions/admin/skills";
 import EditSkillClient from "./EditSkillClient";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditSkillPage({
   params,

@@ -3,15 +3,9 @@ import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
 import { getAllSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 interface Skill {
   id: number;

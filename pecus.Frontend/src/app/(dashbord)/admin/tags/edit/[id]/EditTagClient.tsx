@@ -11,13 +11,7 @@ import { useNotify } from "@/hooks/useNotify";
 import { updateTag } from "@/actions/admin/tags";
 import { editTagSchema } from "@/schemas/editSchemas";
 import type { TagDetailResponse } from "@/connectors/api/pecus";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
+import { UserInfo } from "@/types/userInfo";
 
 interface EditTagClientProps {
   initialUser: UserInfo | null;

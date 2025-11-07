@@ -4,15 +4,9 @@ import { getWorkspaceDetail } from "@/actions/admin/workspace";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import EditWorkspaceClient from "./EditWorkspaceClient";
 import type { MasterGenreResponse } from "@/connectors/api/pecus";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditWorkspacePage({
   params,

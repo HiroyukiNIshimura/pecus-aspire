@@ -41,7 +41,7 @@ export async function getUsers(
 export async function createUserWithoutPassword(request: {
   email: string;
   username: string;
-  roleIds: number[];
+  roles: number[];
 }): Promise<ApiResponse<any>> {
   try {
     const api = createPecusApiClients();

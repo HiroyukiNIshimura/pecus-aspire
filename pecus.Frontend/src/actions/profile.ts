@@ -2,6 +2,7 @@
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import { ApiResponse } from "./types";
+import { UserInfo } from "@/types/userInfo";
 
 /**
  * Server Action: 現在のユーザー情報を取得
@@ -9,11 +10,18 @@ import { ApiResponse } from "./types";
  * Note: Middlewareがトークンの有効性を事前に検証するため、
  * ここではenableRefreshの指定は不要（デフォルト値を使用）
  */
-export async function getCurrentUser(): Promise<ApiResponse<any>> {
+export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.getApiProfile();
-    return { success: true, data: response };
+    return {
+      success: true, data: {
+        id: response.id,
+        name: response.username,
+        email: response.email,
+        roles: response.roles,
+        isAdmin: response.isAdmin ?? false,
+    } };
   } catch (error: any) {
     console.error("Failed to fetch current user:", error);
     return {

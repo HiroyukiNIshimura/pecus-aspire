@@ -4,15 +4,9 @@ import { getUserDetail } from "@/actions/admin/user";
 import { getAllSkills } from "@/actions/admin/skills";
 import { getAllRoles } from "@/actions/admin/role";
 import EditUserClient from "./EditUserClient";
+import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditUserPage({
   params,
