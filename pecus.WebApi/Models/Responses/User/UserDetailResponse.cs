@@ -1,5 +1,6 @@
 using Pecus.Models.Responses.Permission;
 using Pecus.Models.Responses.Role;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.User;
 
@@ -11,21 +12,25 @@ public class UserDetailResponse
     /// <summary>
     /// ユーザーID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ログインID
     /// </summary>
+    [Required]
     public required string LoginId { get; set; }
 
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [Required]
     public required string Username { get; set; }
 
     /// <summary>
     /// メールアドレス
     /// </summary>
+    [Required]
     public required string Email { get; set; }
 
     /// <summary>
@@ -66,5 +71,6 @@ public class UserDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

@@ -1,4 +1,5 @@
 using Pecus.Models.Responses.Organization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Workspace;
 
@@ -10,11 +11,13 @@ public class WorkspaceDetailResponse
     /// <summary>
     /// ワークスペースID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ワークスペース名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -85,5 +88,6 @@ public class WorkspaceDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

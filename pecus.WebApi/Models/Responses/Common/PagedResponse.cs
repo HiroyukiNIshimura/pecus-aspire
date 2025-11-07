@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Common;
 
 /// <summary>
@@ -9,6 +11,7 @@ public class PagedResponse<T>
     /// <summary>
     /// データのリスト
     /// </summary>
+    [Required]
     public required IEnumerable<T> Data { get; set; }
 
     /// <summary>

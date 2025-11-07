@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
@@ -44,11 +46,13 @@ public class SkillUserCountResponse
     /// <summary>
     /// スキルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// スキル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -65,11 +69,13 @@ public class RoleUserCountResponse
     /// <summary>
     /// ロールID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ロール名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

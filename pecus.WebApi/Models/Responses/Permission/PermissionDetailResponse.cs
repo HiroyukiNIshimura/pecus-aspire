@@ -1,4 +1,5 @@
 using Pecus.Models.Responses.Role;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Permission;
 
@@ -10,11 +11,13 @@ public class PermissionDetailResponse
     /// <summary>
     /// 権限ID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 権限名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -40,5 +43,6 @@ public class PermissionDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

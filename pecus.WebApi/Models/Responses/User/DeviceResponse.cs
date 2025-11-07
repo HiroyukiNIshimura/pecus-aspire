@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
@@ -8,7 +10,8 @@ public class DeviceResponse
     /// <summary>
     /// 端末ID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 表示用短ID

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Tag;
 
 /// <summary>
@@ -39,10 +41,12 @@ public class TagUsageItem
     /// <summary>
     /// タグID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// タグ名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 }

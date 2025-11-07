@@ -60,6 +60,13 @@ public class CreateUserWithoutPasswordRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string Email { get; set; }
+
+    /// <summary>
+    /// ロールIDのリスト。既存のすべてのロールを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのロールを削除します。
+    /// </summary>
+    [Required(ErrorMessage = "ロールIDリストは必須です。")]
+    public required List<int> Roles { get; set; }
 }
 
 /// <summary>

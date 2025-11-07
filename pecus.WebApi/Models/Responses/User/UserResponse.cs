@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
@@ -8,21 +10,25 @@ public class UserResponse
     /// <summary>
     /// ユーザーID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ログインID
     /// </summary>
+    [Required]
     public required string LoginId { get; set; }
 
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [Required]
     public required string Username { get; set; }
 
     /// <summary>
     /// メールアドレス
     /// </summary>
+    [Required]
     public required string Email { get; set; }
 
     /// <summary>
@@ -38,7 +44,8 @@ public class UserResponse
     /// <summary>
     /// ユーザーのロール一覧
     /// </summary>
-    public List<UserRoleResponse> Roles { get; set; } = new();
+    [Required]
+    public required List<UserRoleResponse> Roles { get; set; } = new();
 
     /// <summary>
     /// ユーザーのスキル一覧
@@ -48,7 +55,8 @@ public class UserResponse
     /// <summary>
     /// 管理者権限を持つかどうか
     /// </summary>
-    public bool IsAdmin { get; set; }
+    [Required]
+    public required bool IsAdmin { get; set; }
 
     /// <summary>
     /// アクティブなユーザーかどうか
@@ -63,5 +71,6 @@ public class UserResponse
     /// <summary>
     /// ユーザーの楽観的ロック用RowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

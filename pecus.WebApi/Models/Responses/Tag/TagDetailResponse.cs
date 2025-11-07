@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Tag;
 
 /// <summary>
@@ -8,7 +10,8 @@ public class TagDetailResponse
     /// <summary>
     /// タグID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 組織ID
@@ -53,5 +56,6 @@ public class TagDetailResponse
     /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

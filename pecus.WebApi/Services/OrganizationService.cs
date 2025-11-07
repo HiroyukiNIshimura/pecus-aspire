@@ -67,6 +67,14 @@ public class OrganizationService
 
             var adminUser = await _userService.CreateUserAsync(adminUserRequest, null);
 
+            // Admin ロールを取得
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            if (adminRole != null)
+            {
+                adminUser.Roles.Add(adminRole);
+                await _context.SaveChangesAsync();
+            }
+
             // 組織の作成者を管理者ユーザーに設定
             organization.CreatedByUserId = adminUser.Id;
             await _context.SaveChangesAsync();

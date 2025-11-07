@@ -66,8 +66,16 @@ public class EntranceOrganizationController : ControllerBase
                 LoginId = adminUser.LoginId,
                 Username = adminUser.Username,
                 Email = adminUser.Email,
+                Roles = adminUser.Roles?
+                    .Select(r => new UserRoleResponse
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                    })
+                    .ToList() ?? new List<UserRoleResponse>(),
                 CreatedAt = adminUser.CreatedAt,
                 RowVersion = adminUser.RowVersion!,
+                IsAdmin = true,
             },
         };
         return TypedResults.Ok(response);

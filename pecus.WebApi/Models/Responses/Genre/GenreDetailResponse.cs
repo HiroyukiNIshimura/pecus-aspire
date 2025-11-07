@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Genre;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class GenreDetailResponse
     /// <summary>
     /// ジャンルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ジャンル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -63,5 +67,6 @@ public class GenreDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
+    [Required]
     public required byte[] RowVersion { get; set; }
 }

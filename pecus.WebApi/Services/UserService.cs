@@ -365,42 +365,75 @@ public class UserService
 
     /// <summary>
     /// パスワードなしでユーザーを作成（管理者用）
+    /// ロール情報も同時に登録します
     /// </summary>
     public async Task<User> CreateUserWithoutPasswordAsync(
         CreateUserWithoutPasswordRequest request,
         int? createdByUserId = null
     )
     {
-        // メールアドレスの重複チェックのみ
+        // メールアドレスの重複チェック
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
             throw new DuplicateException("メールアドレスは既に使用されています。");
         }
 
-        // ユニークなLoginIdを生成
-        var loginId = await GenerateUniqueLoginIdAsync(_context);
-
-        // パスワード設定トークンを生成（24時間有効）
-        var token = GeneratePasswordResetToken();
-        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
-
-        var user = new User
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            LoginId = loginId,
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = "", // パスワードは未設定
-            PasswordResetToken = token,
-            PasswordResetTokenExpiresAt = tokenExpiresAt,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUserId = createdByUserId,
-            IsActive = true,
-        };
+            // ユニークなLoginIdを生成
+            var loginId = await GenerateUniqueLoginIdAsync(_context);
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+            // パスワード設定トークンを生成（24時間有効）
+            var token = GeneratePasswordResetToken();
+            var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
 
-        return user;
+            var user = new User
+            {
+                LoginId = loginId,
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = "", // パスワードは未設定
+                PasswordResetToken = token,
+                PasswordResetTokenExpiresAt = tokenExpiresAt,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = createdByUserId,
+                IsActive = true,
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // ロールを設定（指定されている場合）
+            if (request.Roles != null && request.Roles.Any())
+            {
+                // 指定されたロールIDが実際に存在するか確認
+                var roles = await _context.Roles
+                    .Where(r => request.Roles.Contains(r.Id))
+                    .ToListAsync();
+
+                if (roles.Count != request.Roles.Count)
+                {
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
+
+                // ロールを追加
+                foreach (var role in roles)
+                {
+                    user.Roles.Add(role);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return user;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>

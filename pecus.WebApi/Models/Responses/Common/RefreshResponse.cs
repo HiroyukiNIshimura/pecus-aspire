@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Common;
 
 /// <summary>
@@ -8,6 +10,7 @@ public class RefreshResponse
     /// <summary>
     /// JWTアクセストークン
     /// </summary>
+    [Required]
     public required string AccessToken { get; set; }
 
     /// <summary>
@@ -28,6 +31,7 @@ public class RefreshResponse
     /// <summary>
     /// リフレッシュトークン
     /// </summary>
+    [Required]
     public required string RefreshToken { get; set; }
 
     /// <summary>

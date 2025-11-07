@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
@@ -8,21 +10,25 @@ public class UserListItemResponse
     /// <summary>
     /// ユーザーID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ログインID
     /// </summary>
+    [Required]
     public required string LoginId { get; set; }
 
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [Required]
     public required string Username { get; set; }
 
     /// <summary>
     /// メールアドレス
     /// </summary>
+    [Required]
     public required string Email { get; set; }
 
     /// <summary>

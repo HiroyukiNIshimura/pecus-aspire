@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class WorkspaceListItemResponse
     /// <summary>
     /// ワークスペースID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ワークスペース名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

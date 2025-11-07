@@ -374,7 +374,7 @@ public class AdminUserController : ControllerBase
             throw new NotFoundException("組織に所属していません。");
         }
 
-        // パスワードなしでユーザーを作成
+        // パスワードなしでユーザーを作成（ロール設定を含む）
         var user = await _userService.CreateUserWithoutPasswordAsync(request, me);
 
         // 組織IDを設定（同じ組織に所属させる）
@@ -428,7 +428,15 @@ public class AdminUserController : ControllerBase
             IdentityIconUrl = user.AvatarUrl,
             CreatedAt = user.CreatedAt,
             IsActive = user.IsActive,
+            Roles = user.Roles?
+                .Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                })
+                .ToList() ?? new List<UserRoleResponse>(),
             Skills = new List<UserSkillResponse>(),
+            IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
             RowVersion = user.RowVersion!,
         };
 
