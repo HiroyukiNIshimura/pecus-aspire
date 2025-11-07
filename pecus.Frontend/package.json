@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/generate-pecus-api-client.js",
+    "predev": "npm run generate:conflict-types && node scripts/generate-pecus-api-client.js",
     "dev": "next dev",
-    "prebuild": "node scripts/generate-pecus-api-client.js",
+    "prebuild": "npm run generate:conflict-types && node scripts/generate-pecus-api-client.js",
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
+    "generate:conflict-types": "node scripts/generate-conflict-types.js",
     "clean:api": "rimraf src/connectors/api/pecus",
-    "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus",
+    "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus && npm run generate:conflict-types",
     "generate:client": "node scripts/generate-pecus-api-client.js"
   },
   "dependencies": {

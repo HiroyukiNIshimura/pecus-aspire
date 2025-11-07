@@ -4,8 +4,7 @@ import {
   createApiClientInstances,
 } from "./PecusApiClient.generated";
 import Axios from "axios";
-import { ErrorResponse } from "./pecus";
-import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes";
+import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
 
 /**
  * 並行更新による競合エラー（汎用型）

@@ -2,7 +2,7 @@
  * Server Actions 共通型定義
  */
 
-import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes";
+import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes.generated";
 
 /**
  * 409 Conflict レスポンス型

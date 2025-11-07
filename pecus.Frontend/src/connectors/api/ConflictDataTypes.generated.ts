@@ -1,11 +1,16 @@
 /**
  * 409 Conflict レスポンスで返される最新データの型定義
  *
- * 複数のエンティティ型に対応するため、discriminator 型（union with type field）を使用します。
- * 各レスポンスは `type` フィールドを持ち、TypeScript の型絞り込みが可能です。
+ * この ファイルは scripts/generate-conflict-types.js により自動生成されます。
+ * 手動での編集は行わないでください。
  *
- * NOTE: 将来的に自動生成ツール（openapi-typescript-codegen 等）で生成することを想定しています。
- * 現在は手動で主要なエンティティ型をサポートしています。
+ * 更新するには以下を実行してください:
+ * ```
+ * npm run generate:conflict-types
+ * ```
+ *
+ * 元になる OpenAPI 定義:
+ * pecus.Frontend/.spec/open-api-scheme.json
  */
 
 import type {
@@ -56,28 +61,26 @@ export type ConcurrencyErrorResponseBody<T = unknown> = {
  */
 export type ConflictLatestData =
   | {
-      type: 'workspace';
-      data: WorkspaceDetailResponse;
-    }
-  | {
-      type: 'tag';
-      data: TagDetailResponse;
+      type: 'organization';
+      data: OrganizationResponse;
     }
   | {
       type: 'skill';
       data: SkillDetailResponse;
     }
   | {
+      type: 'tag';
+      data: TagDetailResponse;
+    }
+  | {
       type: 'user';
       data: UserResponse;
     }
   | {
-      type: 'organization';
-      data: OrganizationResponse;
+      type: 'workspace';
+      data: WorkspaceDetailResponse;
     }
   | {
       type: 'workspaceItem';
       data: WorkspaceItemDetailResponse;
     };
-
-
