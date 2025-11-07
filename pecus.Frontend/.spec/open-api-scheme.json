@@ -3151,6 +3151,25 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3290,17 +3309,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             }
           }
@@ -6877,6 +6896,21 @@
         "additionalProperties": false,
         "description": "ワークスペース登録リクエスト"
       },
+      "DeleteOrganizationRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "rowVersion": {
+            "type": "string",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "byte"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織削除リクエスト"
+      },
       "DeviceResponse": {
         "type": "object",
         "properties": {
@@ -8259,7 +8293,27 @@
           }
         },
         "additionalProperties": false,
-        "description": "アクティブ状態設定リクエスト"
+        "description": "アクティブ状態設定リクエスト（レガシー用）"
+      },
+      "SetOrganizationActiveStatusRequest": {
+        "required": [
+          "isActive",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "有効フラグ"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "byte"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織のアクティブ状態変更リクエスト"
       },
       "SetPermissionsToRoleRequest": {
         "type": "object",
