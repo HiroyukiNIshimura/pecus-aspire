@@ -15,10 +15,12 @@ export async function getAllRoles(): Promise<ApiResponse<any>> {
     console.error("Failed to fetch roles:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "ロール一覧の取得に失敗しました",
     };
   }
 }
+

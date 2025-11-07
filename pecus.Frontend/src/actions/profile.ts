@@ -18,7 +18,8 @@ export async function getCurrentUser(): Promise<ApiResponse<any>> {
     console.error("Failed to fetch current user:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to fetch current user",
     };
   }
@@ -48,7 +49,8 @@ export async function updateProfile(request: {
     console.error("Failed to update profile:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to update profile",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to update profile",
     };
   }
 }

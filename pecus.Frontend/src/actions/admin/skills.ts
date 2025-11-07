@@ -1,6 +1,6 @@
 "use server";
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import { ApiResponse } from "../types";
 
 /**
@@ -18,7 +18,8 @@ export async function getSkills(
     console.error("Failed to fetch skills:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "スキル一覧の取得に失敗しました",
@@ -66,7 +67,8 @@ export async function getAllSkills(
     console.error("Failed to fetch all skills:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "全スキルの取得に失敗しました",
     };
   }
@@ -84,7 +86,8 @@ export async function getSkillDetail(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to fetch skill detail:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "スキル情報の取得に失敗しました",
@@ -107,7 +110,8 @@ export async function createSkill(request: {
     console.error("Failed to create skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの作成に失敗しました",
     };
   }
@@ -115,6 +119,7 @@ export async function createSkill(request: {
 
 /**
  * Server Action: スキルを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function updateSkill(
   id: number,
@@ -144,10 +149,22 @@ export async function updateSkill(
 
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
+
     console.error("Failed to update skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの更新に失敗しました",
     };
   }
@@ -165,7 +182,8 @@ export async function deleteSkill(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to delete skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの削除に失敗しました",
     };
   }
@@ -180,10 +198,20 @@ export async function activateSkill(id: number): Promise<ApiResponse<any>> {
     const response = await api.adminSkill.patchApiAdminSkillsActivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
     console.error("Failed to activate skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの有効化に失敗しました",
     };
   }
@@ -198,10 +226,20 @@ export async function deactivateSkill(id: number): Promise<ApiResponse<any>> {
     const response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
     console.error("Failed to deactivate skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの無効化に失敗しました",
     };
   }

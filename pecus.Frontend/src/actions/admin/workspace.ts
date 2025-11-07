@@ -1,6 +1,6 @@
 "use server";
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import { ApiResponse } from "../types";
 
 /**
@@ -23,7 +23,8 @@ export async function getWorkspaces(
     console.error("Failed to fetch workspaces:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to fetch workspaces",
     };
   }
@@ -44,7 +45,8 @@ export async function getWorkspaceDetail(
     console.error("Failed to fetch workspace detail:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "Failed to fetch workspace detail",
@@ -69,7 +71,8 @@ export async function createWorkspace(request: {
     console.error("Failed to create workspace:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to create workspace",
     };
   }
@@ -77,6 +80,7 @@ export async function createWorkspace(request: {
 
 /**
  * Server Action: ワークスペースを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function updateWorkspace(
   workspaceId: number,
@@ -96,10 +100,22 @@ export async function updateWorkspace(
     );
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
+
     console.error("Failed to update workspace:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to update workspace",
     };
   }
@@ -120,7 +136,8 @@ export async function deleteWorkspace(
     console.error("Failed to delete workspace:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to delete workspace",
     };
   }
@@ -128,6 +145,7 @@ export async function deleteWorkspace(
 
 /**
  * Server Action: ワークスペースを有効化
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function activateWorkspace(
   workspaceId: number,
@@ -138,10 +156,22 @@ export async function activateWorkspace(
       await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId);
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
+
     console.error("Failed to activate workspace:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "Failed to activate workspace",
     };
   }
@@ -149,6 +179,7 @@ export async function activateWorkspace(
 
 /**
  * Server Action: ワークスペースを無効化
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function deactivateWorkspace(
   workspaceId: number,
@@ -159,10 +190,22 @@ export async function deactivateWorkspace(
       await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId);
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
+
     console.error("Failed to deactivate workspace:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "Failed to deactivate workspace",

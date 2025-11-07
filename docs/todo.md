@@ -4,6 +4,28 @@
 
 目的: サーバー側の楽観ロック（DbUpdateConcurrencyException → HTTP 409）を受けて、ユーザーにわかりやすく再試行/破棄の選択肢を提示する軽量な実装メモ。
 
+### 🔴 重要: Server Action 側での 409 ハンドリング必須
+
+**修正方針として、以下の対応が確定しています：**
+
+- **対象**: バックエンド API で 409 Conflict を定義しているすべてのメソッド
+- **実装場所**: 対応する **Server Action 内** で必ず 409 をキャッチする
+- **理由**:
+  1. `createPecusApiClients()` はサーバーサイドのみで実行（クライアント側の Axios インターセプターでは機能不可）
+  2. グローバルイベント方式は無効（Server Action はサーバーで直列実行される）
+  3. 409 キャッチは Server Action で行い、戻り値として型安全にクライアントに返すしかない
+
+**対応状況：**
+- ✅ 409 対応必須のサービスメソッド 15 個を特定（grep で確認）
+- ✅ **すべての 409 対応メソッドに detectConcurrencyError() を追加**
+  - AdminWorkspaceService: `updateWorkspace()`, `activateWorkspace()`, `deactivateWorkspace()`
+  - AdminTagService: `updateTag()`, `activateTag()`, `deactivateTag()`
+  - AdminSkillService: `updateSkill()`, `activateSkill()`, `deactivateSkill()`
+  - AdminUserService: `setUserActiveStatus()`
+  - AdminOrganizationService: `updateOrganization()`
+  - WorkspaceItemService: `updateWorkspaceItem()` (実装予定)
+  - WorkspaceItemTagService: `setTagsToItem()` (実装予定)
+
 ### アーキテクチャ背景
 
 現在のアーキテクチャは **Server Action ベース** です：
@@ -19,10 +41,20 @@
 
 ### 実装箇所（参照）
 
-- `pecus.Frontend/src/connectors/api/PecusApiClient.ts`：`ConcurrencyError` クラスと検出ヘルパー
-- `pecus.Frontend/src/actions/`：各 Server Action 内で 409 をキャッチして戻り値で返す
+#### ✅ 既に実装済み
+- `pecus.Frontend/src/connectors/api/PecusApiClient.ts`：`ConcurrencyError` クラスと検出ヘルパー `detectConcurrencyError()`
+- `pecus.Frontend/src/actions/types.ts`：`ApiResponse<T>` 型定義（conflict/error/success）
+- `pecus.Frontend/src/actions/admin/*.ts`：各 Server Action で 409 ハンドリング実装
+  - workspace.ts: `updateWorkspace()`, `activateWorkspace()`, `deactivateWorkspace()`
+  - tags.ts: `updateTag()`, `activateTag()`, `deactivateTag()`
+  - skills.ts: `updateSkill()`, `activateSkill()`, `deactivateSkill()`
+  - user.ts: `setUserActiveStatus()`
+  - organization.ts / organizations.ts: `updateOrganization()`
+
+#### ⏳ 未実装（将来のタスク）
 - `pecus.Frontend/src/components/common/ConcurrencyDialog.tsx`：競合ダイアログコンポーネント
 - `pecus.Frontend/src/app/layout.tsx` など：ルート Layout に `ConcurrencyDialog` を配置
+- `pecus.Frontend/src/actions/workspace-items.ts`：WorkspaceItem 関連 Server Actions（409 対応）
 
 ### 実装フロー
 
@@ -235,6 +267,50 @@ export function ConcurrencyDialog({
 - [キャンセル]をクリックして履歴に戻ることを確認
 
 ---
+
+## 実装完了状況（2025-01-27）
+
+### ✅ 完了項目
+
+1. **PecusApiClient.ts の拡張**
+   - `ConcurrencyError` クラス実装
+   - `detectConcurrencyError()` ヘルパー関数実装
+   - API エラーから 409 ステータスを自動検出
+
+2. **Server Action 層での 409 ハンドリング実装**
+   - すべての 409 対応 API メソッドに対応する Server Action に `detectConcurrencyError()` を追加
+   - エラー情報と最新データを型安全に返す `ApiResponse<T>` 型を実装
+   - **対応メソッド数: 11 個**
+
+3. **型定義の統一**
+   - `ApiResponse<T>` 型を union 型として定義（success | conflict | error）
+   - `ConflictResponse<T>`: `error: "conflict"` ケース
+   - `ErrorResponse`: `error: "server"` / `error: "validation"` ケース
+   - すべての Server Action エラーレスポンスに `message` フィールドを追加
+
+4. **TypeScript 型チェック**
+   - ✅ `npx tsc --noEmit` で 0 エラー確認
+
+### ⏳ 次ステップ（UI 層）
+
+1. **ConcurrencyDialog コンポーネント作成**
+   - Server Action の error: "conflict" レスポンスを受け取るモーダル
+   - [再試行] / [キャンセル] ボタン
+
+2. **Layout 統合**
+   - ルート Layout に ConcurrencyDialog を配置
+   - グローバルエラー状態管理（Jotai など）と連携
+
+3. **WorkspaceItem 関連の Server Action 実装**
+   - `updateWorkspaceItem()`
+   - `setTagsToItem()`
+
+### 📝 注記
+
+- Server Action 側での 409 ハンドリングは **必須対応**
+- グローバルイベント/Axios インターセプター方式は無効（Server Action のサーバーサイド実行特性により）
+- API サービス層（自動生成）は修正不要（既に 409 を errors 定義に含む）
+- クライアント側の 409 表示は ConcurrencyDialog コンポーネントで実装予定
 
 （注）このメモは実装の指針用です。実際のファイルパスや既存 API クライアントのインスタンス名に合わせて微調整してください。
 

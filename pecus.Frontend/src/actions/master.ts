@@ -15,7 +15,8 @@ export async function getGenres(): Promise<ApiResponse<any>> {
     console.error("Failed to fetch genres:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to fetch genres",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to fetch genres",
     };
   }
 }

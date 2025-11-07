@@ -50,7 +50,8 @@ export async function login(request: {
     if (!accessToken) {
       return {
         success: false,
-        error: "Invalid response from server",
+        error: "server",
+        message: "Invalid response from server",
       };
     }
 
@@ -75,7 +76,8 @@ export async function login(request: {
     console.error("Failed to login:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to login",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to login",
     };
   }
 }
@@ -100,7 +102,8 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] 
     console.error("Failed to get current user:", error);
     return {
       success: false,
-      error: error.message || "Failed to get current user",
+      error: "server",
+      message: error.message || "Failed to get current user",
     };
   }
 }
@@ -118,7 +121,8 @@ export async function logout(): Promise<ApiResponse<any>> {
     console.error("Failed to logout:", error);
     return {
       success: false,
-      error: error.message || "Failed to logout",
+      error: "server",
+      message: error.message || "Failed to logout",
     };
   }
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import { ApiResponse } from "../types";
 
 /**
@@ -18,7 +18,8 @@ export async function getTags(
     console.error("Failed to fetch tags:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "タグ一覧の取得に失敗しました",
     };
   }
@@ -36,7 +37,8 @@ export async function getTagDetail(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to fetch tag detail:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "タグ情報の取得に失敗しました",
     };
   }
@@ -57,13 +59,15 @@ export async function createTag(request: {
     console.error("Failed to create tag:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "タグの作成に失敗しました",
+      error: "server",
+      message: error.body?.message || error.message || "タグの作成に失敗しました",
     };
   }
 }
 
 /**
  * Server Action: タグを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function updateTag(
   id: number,
@@ -91,10 +95,22 @@ export async function updateTag(
 
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
+
     console.error("Failed to update tag:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "タグの更新に失敗しました",
+      error: "server",
+      message: error.body?.message || error.message || "タグの更新に失敗しました",
     };
   }
 }
@@ -111,7 +127,8 @@ export async function deleteTag(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to delete tag:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "タグの削除に失敗しました",
+      error: "server",
+      message: error.body?.message || error.message || "タグの削除に失敗しました",
     };
   }
 }
@@ -125,10 +142,20 @@ export async function activateTag(id: number): Promise<ApiResponse<any>> {
     const response = await api.adminTag.patchApiAdminTagsActivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
     console.error("Failed to activate tag:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "タグの有効化に失敗しました",
     };
   }
@@ -143,10 +170,20 @@ export async function deactivateTag(id: number): Promise<ApiResponse<any>> {
     const response = await api.adminTag.patchApiAdminTagsDeactivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload,
+      };
+    }
     console.error("Failed to deactivate tag:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "タグの無効化に失敗しました",
     };
   }
