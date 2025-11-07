@@ -2,15 +2,24 @@
  * Server Actions 共通型定義
  */
 
+import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes";
+
 /**
  * 409 Conflict レスポンス型
  * 並行更新による競合時に、最新データと共に返される
+ *
+ * @template T - エンティティの汎用型パラメータ（将来の拡張用）
  */
 export type ConflictResponse<T> = {
   success: false;
   error: "conflict";
   message: string;
-  latest?: T;
+  /**
+   * 最新の DB データ
+   * discriminator 型（union with type field）で型安全に定義
+   * latest.type で各エンティティ型を判別可能
+   */
+  latest?: ConflictLatestData;
 };
 
 /**

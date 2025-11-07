@@ -44,7 +44,10 @@ export async function updateOrganization(request: {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
-        latest: concurrencyError.payload,
+        latest: {
+          type: "organization",
+          data: concurrencyError.payload,
+        } as const,
       };
     }
 

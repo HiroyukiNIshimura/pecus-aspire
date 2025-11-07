@@ -159,7 +159,7 @@ export default function EditWorkspaceForm({ workspace }) {
         // 409: 競合ダイアログを表示
         setConflictData({
           message: result.message,
-          latest: result.latest,
+          latest: result.latest, // 最新 DB データを保持
         });
         setShowConflictDialog(true);
         return;
@@ -176,6 +176,7 @@ export default function EditWorkspaceForm({ workspace }) {
 
   const handleConflictRetry = () => {
     // 最新データを使って再試行（例: ページリロード）
+    // 将来: conflictData.latest を使ったマージロジックもここに実装可能
     window.location.reload();
   };
 
@@ -195,6 +196,7 @@ export default function EditWorkspaceForm({ workspace }) {
       {showConflictDialog && conflictData && (
         <ConcurrencyDialog
           message={conflictData.message}
+          latest={conflictData.latest} // 最新データを ConcurrencyDialog に渡す
           onRetry={handleConflictRetry}
           onCancel={handleConflictCancel}
         />
@@ -206,21 +208,32 @@ export default function EditWorkspaceForm({ workspace }) {
 
 #### 【4】ConcurrencyDialog コンポーネント
 
+**仕様**:
+- Server Action からの error: "conflict" レスポンスを受け取る
+- `latest` フィールドには最新の DB データ（型は `unknown`）が含まれる
+- 表示はまだ検討中（多岐にわたるデータ型のため）
+- Props として `latest` データを受け取り、内部で管理
+
 ```typescript
 // src/components/common/ConcurrencyDialog.tsx
 "use client";
 
 interface ConcurrencyDialogProps {
   message: string;
+  latest?: unknown; // 最新 DB データ（型は多岐にわたるため unknown）
   onRetry: () => void;
   onCancel: () => void;
 }
 
 export function ConcurrencyDialog({
   message,
+  latest,
   onRetry,
   onCancel,
 }: ConcurrencyDialogProps) {
+  // latest データは内部で保持（表示方法は今後検討）
+  // 例: onRetry 時に latest データを使って再試行ロジックを実装可能
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded shadow-lg max-w-lg w-full p-6">
@@ -229,6 +242,14 @@ export function ConcurrencyDialog({
         <p className="mb-4 text-sm text-gray-600">
           別のユーザーが変更した可能性があります。最新データを取得して再度試してください。
         </p>
+
+        {/*
+          NOTE: latest データの表示は今後検討
+          - JSON 形式で表示するか
+          - 重要なフィールドのみ抽出して表示するか
+          - diff 表示するか
+          複数のエンティティ型があるため、表示方法を検討後に実装
+        */}
 
         <div className="flex justify-end gap-2">
           <button
@@ -251,6 +272,12 @@ export function ConcurrencyDialog({
   );
 }
 ```
+
+**実装のポイント**:
+- `latest` は `unknown` 型で受け取る（複数のエンティティ型に対応するため）
+- 現在は props で受け取るが、表示はしない（今後の検討対象）
+- クライアント側で `latest` データを使って再試行ロジックを組むことは可能
+- 例: onRetry 時に `latest` データから新しい `rowVersion` を取得して再度 Server Action を呼び出す、など
 
 ### 注意事項
 

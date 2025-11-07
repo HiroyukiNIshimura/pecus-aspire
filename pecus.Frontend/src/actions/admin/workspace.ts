@@ -107,7 +107,10 @@ export async function updateWorkspace(
         success: false,
         error: "conflict",
         message: concurrencyError.message,
-        latest: concurrencyError.payload,
+        latest: {
+          type: "workspace",
+          data: concurrencyError.payload,
+        } as const,
       };
     }
 
@@ -163,7 +166,10 @@ export async function activateWorkspace(
         success: false,
         error: "conflict",
         message: concurrencyError.message,
-        latest: concurrencyError.payload,
+        latest: {
+          type: "workspace",
+          data: concurrencyError.payload,
+        } as const,
       };
     }
 
@@ -197,7 +203,10 @@ export async function deactivateWorkspace(
         success: false,
         error: "conflict",
         message: concurrencyError.message,
-        latest: concurrencyError.payload,
+        latest: {
+          type: "workspace",
+          data: concurrencyError.payload,
+        } as const,
       };
     }
 
