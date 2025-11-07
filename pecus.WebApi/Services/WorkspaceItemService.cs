@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
+using Pecus.Models.Responses.WorkspaceItem;
 
 namespace Pecus.Services;
 
@@ -373,12 +374,7 @@ public class WorkspaceItemService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestItem = await _context.WorkspaceItems.FindAsync(itemId);
-            throw new ConcurrencyException<WorkspaceItem>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestItem
-            );
+            await RaiseConflictException(itemId);
         }
 
         // ナビゲーションプロパティをロード
@@ -465,12 +461,7 @@ public class WorkspaceItemService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestItem = await _context.WorkspaceItems.FindAsync(itemId);
-            throw new ConcurrencyException<WorkspaceItem>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestItem
-            );
+            await RaiseConflictException(itemId);
         }
 
         // ナビゲーションプロパティをロード
@@ -518,5 +509,35 @@ public class WorkspaceItemService
 
         _context.WorkspaceItems.Remove(item);
         await _context.SaveChangesAsync();
+    }
+
+    private async Task RaiseConflictException(int itemId)
+    {
+        // 最新データを取得
+        var latestItem = await _context.WorkspaceItems.FindAsync(itemId);
+        if (latestItem == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+        throw new ConcurrencyException<WorkspaceItemDetailResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new WorkspaceItemDetailResponse
+            {
+                Id = latestItem.Id,
+                WorkspaceId = latestItem.WorkspaceId,
+                Code = latestItem.Code,
+                Subject = latestItem.Subject,
+                Body = latestItem.Body,
+                OwnerId = latestItem.OwnerId,
+                AssigneeId = latestItem.AssigneeId,
+                Priority = latestItem.Priority,
+                DueDate = latestItem.DueDate,
+                IsDraft = latestItem.IsDraft,
+                IsArchived = latestItem.IsArchived,
+                CreatedAt = latestItem.CreatedAt,
+                UpdatedAt = latestItem.UpdatedAt,
+                RowVersion = latestItem.RowVersion!,
+            }
+        );
     }
 }

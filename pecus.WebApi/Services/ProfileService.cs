@@ -58,19 +58,7 @@ public class ProfileService
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = userId;
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 最新データを取得
-            var latestUser = await _context.Users.FindAsync(userId);
-            throw new ConcurrencyException<User>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestUser
-            );
-        }
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation("メールアドレスを変更しました。UserId: {UserId}, NewEmail: {NewEmail}", userId, newEmail);
         return true;

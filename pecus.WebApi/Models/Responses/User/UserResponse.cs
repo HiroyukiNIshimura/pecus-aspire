@@ -5,7 +5,7 @@ namespace Pecus.Models.Responses.User;
 /// <summary>
 /// ユーザー情報レスポンス
 /// </summary>
-public class UserResponse
+public class UserResponse : IConflictModel
 {
     /// <summary>
     /// ユーザーID

@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests.Tag;
+using Pecus.Models.Responses.Tag;
 
 namespace Pecus.Services;
 
@@ -176,12 +177,7 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
-            throw new ConcurrencyException<Tag>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTag
-            );
+            await RaiseConflictException(tagId);
         }
 
         _logger.LogInformation(
@@ -240,12 +236,7 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
-            throw new ConcurrencyException<Tag>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTag
-            );
+            await RaiseConflictException(tagId);
         }
 
         _logger.LogInformation(
@@ -280,12 +271,7 @@ public class TagService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestTag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagId);
-            throw new ConcurrencyException<Tag>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTag
-            );
+            await RaiseConflictException(tagId);
         }
 
         _logger.LogInformation(
@@ -364,5 +350,29 @@ public class TagService
             TopUsedTags = topUsedTags,
             UnusedTags = unusedTags,
         };
+    }
+
+    private async Task RaiseConflictException(int tagId)
+    {
+        var latestTag = await _context.Tags.FindAsync(tagId);
+        if (latestTag == null)
+        {
+            throw new NotFoundException("タグが見つかりません。");
+        }
+        throw new ConcurrencyException<TagDetailResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new TagDetailResponse
+            {
+                Id = latestTag.Id,
+                Name = latestTag.Name,
+                OrganizationId = latestTag.OrganizationId,
+                CreatedAt = latestTag.CreatedAt,
+                CreatedByUserId = latestTag.CreatedByUserId,
+                UpdatedAt = latestTag.UpdatedAt,
+                UpdatedByUserId = latestTag.UpdatedByUserId,
+                IsActive = latestTag.IsActive,
+                RowVersion = latestTag.RowVersion!,
+            }
+        );
     }
 }

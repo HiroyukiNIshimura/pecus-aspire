@@ -67,10 +67,10 @@ public class BackendGenreController : ControllerBase
     /// <param name="id">ジャンルID</param>
     /// <returns>ジャンル詳細</returns>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(GenreDetailResponse), 200)]
+    [ProducesResponseType(typeof(GenreResponse), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
     [ProducesResponseType(typeof(ErrorResponse), 500)]
-    public async Task<Ok<GenreDetailResponse>> GetGenreById(int id)
+    public async Task<Ok<GenreResponse>> GetGenreById(int id)
     {
         var genre = await _genreService.GetGenreByIdAsync(id);
         return TypedResults.Ok(genre);

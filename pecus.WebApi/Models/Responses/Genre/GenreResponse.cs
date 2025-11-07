@@ -5,7 +5,7 @@ namespace Pecus.Models.Responses.Genre;
 /// <summary>
 /// ジャンル基本レスポンス
 /// </summary>
-public class GenreResponse
+public class GenreResponse : IConflictModel
 {
     /// <summary>
     /// ジャンルID
@@ -35,9 +35,19 @@ public class GenreResponse
     public int DisplayOrder { get; set; }
 
     /// <summary>
+    /// このジャンルを使用しているワークスペース数
+    /// </summary>
+    public int WorkspaceCount { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// 作成者ユーザーID
+    /// </summary>
+    public int? CreatedByUserId { get; set; }
 
     /// <summary>
     /// 更新日時
@@ -45,7 +55,18 @@ public class GenreResponse
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>
+    /// 更新者ユーザーID
+    /// </summary>
+    public int? UpdatedByUserId { get; set; }
+
+    /// <summary>
     /// 有効フラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    [Required]
+    public required byte[] RowVersion { get; set; }
 }

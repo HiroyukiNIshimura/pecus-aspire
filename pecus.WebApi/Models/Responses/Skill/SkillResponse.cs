@@ -5,7 +5,7 @@ namespace Pecus.Models.Responses.Skill;
 /// <summary>
 /// スキル詳細レスポンス
 /// </summary>
-public class SkillDetailResponse
+public class SkillDetailResponse : IConflictModel
 {
     /// <summary>
     /// スキルID

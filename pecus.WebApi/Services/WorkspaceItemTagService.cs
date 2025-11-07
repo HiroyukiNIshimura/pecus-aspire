@@ -4,6 +4,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests.WorkspaceItem;
+using Pecus.Models.Responses.WorkspaceItem;
 
 namespace Pecus.Services;
 
@@ -60,9 +61,29 @@ public class WorkspaceItemTagService
             // 楽観的ロック：ItemRowVersionが指定されている場合は競合チェック
             if (itemRowVersion != null && (item.RowVersion == null || !item.RowVersion.SequenceEqual(itemRowVersion)))
             {
-                throw new ConcurrencyException<WorkspaceItem>(
+                var tags = await _context
+                    .WorkspaceItemTags
+                    .Where(wit => wit.WorkspaceItemId == itemId)
+                    .Include(wit => wit.Tag)
+                    .Select(wit => wit.Tag)
+                    .ToListAsync();
+
+                throw new ConcurrencyException<WorkspaceItemDetailResponse>(
                     "タグは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
-                    item
+                    new WorkspaceItemDetailResponse
+                    {
+                        Id = item.Id,
+                        WorkspaceId = item.WorkspaceId,
+                        Subject = item.Subject,
+                        CreatedAt = item.CreatedAt,
+                        UpdatedAt = item.UpdatedAt,
+                        Tags = tags.Where(t => t != null).Select(t => new TagInfoResponse
+                        {
+                            Id = t!.Id,
+                            Name = t.Name
+                        }).ToList(),
+                        RowVersion = item.RowVersion!
+                    }
                 );
             }
 

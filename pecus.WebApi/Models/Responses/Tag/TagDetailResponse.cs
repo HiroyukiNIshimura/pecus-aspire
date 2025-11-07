@@ -5,7 +5,7 @@ namespace Pecus.Models.Responses.Tag;
 /// <summary>
 /// タグ詳細レスポンス
 /// </summary>
-public class TagDetailResponse
+public class TagDetailResponse : IConflictModel
 {
     /// <summary>
     /// タグID

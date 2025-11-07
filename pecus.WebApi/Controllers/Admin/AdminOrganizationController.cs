@@ -41,10 +41,10 @@ public class AdminOrganizationController : ControllerBase
     /// ログイン中のユーザーが属する組織の詳細情報を取得します。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<OrganizationDetailResponse>> GetMyOrganization()
+    public async Task<Ok<OrganizationResponse>> GetMyOrganization()
     {
         // ログイン中のユーザーIDを取得
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
@@ -64,7 +64,7 @@ public class AdminOrganizationController : ControllerBase
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        var response = new OrganizationDetailResponse
+        var response = new OrganizationResponse
         {
             Id = organization.Id,
             Name = organization.Name,
@@ -93,7 +93,7 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<OrganizationDetailResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<OrganizationResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationResponse>> UpdateMyOrganization(
         [FromBody] AdminUpdateOrganizationRequest request
@@ -125,6 +125,10 @@ public class AdminOrganizationController : ControllerBase
             PhoneNumber = organization.PhoneNumber,
             Email = organization.Email,
             CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+            RowVersion = organization.RowVersion!,
         };
 
         return TypedResults.Ok(response);

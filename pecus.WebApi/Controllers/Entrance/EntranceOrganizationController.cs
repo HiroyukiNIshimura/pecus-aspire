@@ -59,6 +59,7 @@ public class EntranceOrganizationController : ControllerBase
                 PhoneNumber = organization.PhoneNumber,
                 Email = organization.Email,
                 CreatedAt = organization.CreatedAt,
+                RowVersion = organization.RowVersion!,
             },
             AdminUser = new UserResponse
             {

@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests;
+using Pecus.Models.Responses.Skill;
 
 namespace Pecus.Services;
 
@@ -127,10 +128,10 @@ public class SkillService
             var existingSkill = await _context
       .Skills
       .Where(s =>
-  s.OrganizationId == skill.OrganizationId
-        && s.Name == request.Name
-    && s.Id != skillId
-    )
+            s.OrganizationId == skill.OrganizationId
+            && s.Name == request.Name
+            && s.Id != skillId
+        )
       .FirstOrDefaultAsync();
 
             if (existingSkill != null)
@@ -157,11 +158,7 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestSkill
-            );
+            await _context.SaveChangesAsync();
         }
 
         return skill;
@@ -180,18 +177,7 @@ public class SkillService
 
         _context.Skills.Remove(skill);
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestSkill
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return true;
     }
@@ -219,13 +205,8 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestSkill
-            );
+            await RaiseConflictException(skillId);
         }
-
         return true;
     }
 
@@ -252,11 +233,7 @@ public class SkillService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
-            throw new ConcurrencyException<Skill>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestSkill
-            );
+            await RaiseConflictException(skillId);
         }
 
         return true;
@@ -329,5 +306,31 @@ public class SkillService
             TopUsedSkills = topUsedSkills,
             UnusedSkills = unusedSkills,
         };
+    }
+
+    private async Task RaiseConflictException(int skillId)
+    {
+        var latestSkill = await _context.Skills.FindAsync(skillId);
+        if (latestSkill == null)
+        {
+            throw new NotFoundException("スキルが見つかりません。");
+        }
+        throw new ConcurrencyException<SkillDetailResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new SkillDetailResponse
+            {
+                Id = latestSkill.Id,
+                Name = latestSkill.Name,
+                Description = latestSkill.Description,
+                OrganizationId = latestSkill.OrganizationId,
+                CreatedAt = latestSkill.CreatedAt,
+                CreatedByUserId = latestSkill.CreatedByUserId,
+                UpdatedAt = latestSkill.UpdatedAt,
+                UpdatedByUserId = latestSkill.UpdatedByUserId,
+                IsActive = latestSkill.IsActive,
+                RowVersion = latestSkill.RowVersion!,
+                UserCount = latestSkill.UserSkills?.Count ?? 0,
+            }
+        );
     }
 }

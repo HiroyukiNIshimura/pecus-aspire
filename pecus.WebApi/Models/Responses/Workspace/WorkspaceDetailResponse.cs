@@ -6,7 +6,7 @@ namespace Pecus.Models.Responses.Workspace;
 /// <summary>
 /// ワークスペース詳細情報レスポンス
 /// </summary>
-public class WorkspaceDetailResponse
+public class WorkspaceDetailResponse : IConflictModel
 {
     /// <summary>
     /// ワークスペースID

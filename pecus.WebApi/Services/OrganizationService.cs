@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests;
+using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Services;
 
@@ -175,12 +176,7 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestOrganization
-            );
+            await RaiseConflictException(organizationId);
         }
 
         return organization;
@@ -254,12 +250,7 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestOrganization
-            );
+            await RaiseConflictException(organizationId);
         }
 
         return organization;
@@ -330,12 +321,7 @@ public class OrganizationService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestOrganization = await _context.Organizations.FindAsync(organizationId);
-            throw new ConcurrencyException<Organization>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestOrganization
-            );
+            await RaiseConflictException(organizationId);
         }
 
         return true;
@@ -349,4 +335,32 @@ public class OrganizationService
             .Users.Include(u => u.Roles)
             .Where(u => u.OrganizationId == organizationId)
             .ToListAsync();
+
+
+    private async Task RaiseConflictException(int organizationId)
+    {
+        var latestOrganization = await _context.Organizations.FindAsync(organizationId);
+        if (latestOrganization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+        throw new ConcurrencyException<OrganizationResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new OrganizationResponse
+            {
+                Id = latestOrganization.Id,
+                Name = latestOrganization.Name,
+                Code = latestOrganization.Code,
+                Description = latestOrganization.Description,
+                RepresentativeName = latestOrganization.RepresentativeName,
+                PhoneNumber = latestOrganization.PhoneNumber,
+                Email = latestOrganization.Email,
+                CreatedAt = latestOrganization.CreatedAt,
+                UpdatedAt = latestOrganization.UpdatedAt,
+                IsActive = latestOrganization.IsActive,
+                UserCount = latestOrganization.Users.Count,
+                RowVersion = latestOrganization.RowVersion!,
+            }
+        );
+    }
 }

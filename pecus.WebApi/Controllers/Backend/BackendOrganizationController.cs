@@ -41,10 +41,10 @@ public class BackendOrganizationController : ControllerBase
     /// 組織情報取得
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<OrganizationDetailResponse>> GetOrganization(int id)
+    public async Task<Ok<OrganizationResponse>> GetOrganization(int id)
     {
         var organization = await _organizationService.GetOrganizationByIdAsync(id);
         if (organization == null)
@@ -52,7 +52,7 @@ public class BackendOrganizationController : ControllerBase
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        var response = new OrganizationDetailResponse
+        var response = new OrganizationResponse
         {
             Id = organization.Id,
             Name = organization.Name,
@@ -163,6 +163,10 @@ public class BackendOrganizationController : ControllerBase
             PhoneNumber = organization.PhoneNumber,
             Email = organization.Email,
             CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+            RowVersion = organization.RowVersion!,
         };
         return TypedResults.Ok(response);
     }
