@@ -1,6 +1,11 @@
 "use server";
 
 import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type {
+  UserResponseUserStatisticsPagedResponse,
+  UserResponse,
+  SuccessResponse,
+} from "@/connectors/api/pecus";
 import { ApiResponse } from "../types";
 
 /**
@@ -13,7 +18,7 @@ export async function getUsers(
   username?: string,
   skillIds?: number[],
   skillFilterMode: string = "and",
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<UserResponseUserStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers1(
@@ -42,7 +47,7 @@ export async function createUserWithoutPassword(request: {
   email: string;
   username: string;
   roles: number[];
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -61,7 +66,7 @@ export async function createUserWithoutPassword(request: {
 /**
  * Server Action: ユーザーを削除
  */
-export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
+export async function deleteUser(userId: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.deleteApiAdminUsers(userId);
@@ -83,7 +88,7 @@ export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
 export async function setUserActiveStatus(
   userId: number,
   isActive: boolean,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, {
@@ -93,13 +98,15 @@ export async function setUserActiveStatus(
   } catch (error: any) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload as any,
+          data: current as UserResponse,
         },
       };
     }
@@ -120,7 +127,7 @@ export async function setUserActiveStatus(
  */
 export async function requestPasswordReset(
   userId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -142,7 +149,7 @@ export async function requestPasswordReset(
 /**
  * Server Action: ユーザー情報を取得
  */
-export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
+export async function getUserDetail(userId: number): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers(userId);
@@ -161,42 +168,6 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
 }
 
 /**
- * Server Action: ユーザー情報を更新（基本情報）
- * 注意: バックエンドで PUT /api/admin/users/{id} エンドポイントが実装されている必要があります
- */
-export async function updateUser(
-  userId: number,
-  request: {
-    username: string;
-    email: string;
-  },
-): Promise<ApiResponse<any>> {
-  try {
-    const api = createPecusApiClients();
-    // 現在のバックエンドにはユーザー基本情報の更新エンドポイントがないため、
-    // 以下は将来の実装を想定しています
-    // const response = await api.adminUser.putApiAdminUsers(userId, request);
-    // 代わりにアクティブ状態の更新のみ対応
-    console.warn(
-      "updateUser: ユーザー基本情報の更新エンドポイントは未実装です",
-    );
-    return {
-      success: false,
-      error: "server",
-      message: "ユーザー基本情報の更新機能は現在利用できません",
-    };
-  } catch (error: any) {
-    console.error("Failed to update user:", error);
-    return {
-      success: false,
-      error: "server",
-      message:
-        error.body?.message || error.message || "ユーザーの更新に失敗しました",
-    };
-  }
-}
-
-/**
  * Server Action: ユーザーのスキルを更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
@@ -204,7 +175,7 @@ export async function setUserSkills(
   userId: number,
   skillIds: number[],
   userRowVersion: string,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersSkills(userId, {
@@ -216,13 +187,15 @@ export async function setUserSkills(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload as any,
+          data: current as UserResponse,
         },
       };
     }
@@ -251,7 +224,7 @@ export async function setUserRoles(
   userId: number,
   roleIds: number[],
   userRowVersion: string,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersRoles(userId, {
@@ -263,13 +236,15 @@ export async function setUserRoles(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload as any,
+          data: current as UserResponse,
         },
       };
     }
