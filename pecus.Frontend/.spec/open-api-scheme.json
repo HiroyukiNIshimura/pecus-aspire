@@ -6538,17 +6538,16 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "jobIds": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "ジョブIDのリスト",
-            "nullable": true
+            "description": "ジョブIDのリスト"
           }
         },
         "additionalProperties": false,
@@ -6563,19 +6562,19 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "parentJobId": {
+            "minLength": 1,
             "type": "string",
-            "description": "親ジョブID",
-            "nullable": true
+            "description": "親ジョブID"
           },
           "childJobId": {
+            "minLength": 1,
             "type": "string",
-            "description": "子ジョブID",
-            "nullable": true
+            "description": "子ジョブID"
           }
         },
         "additionalProperties": false,
@@ -6778,6 +6777,7 @@
       "CreateUserWithoutPasswordRequest": {
         "required": [
           "email",
+          "roles",
           "username"
         ],
         "type": "object",
@@ -6794,6 +6794,14 @@
             "type": "string",
             "description": "メールアドレス",
             "format": "email"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "ロールIDのリスト。既存のすべてのロールを置き換えます。\r\n空のリストまたはnullの場合はすべてのロールを削除します。"
           }
         },
         "additionalProperties": false,
@@ -6912,6 +6920,9 @@
         "description": "組織削除リクエスト"
       },
       "DeviceResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -7009,9 +7020,9 @@
             "format": "int32"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "エラーメッセージ",
-            "nullable": true
+            "description": "エラーメッセージ"
           },
           "details": {
             "type": "string",
@@ -7083,6 +7094,7 @@
       },
       "GenreDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -7094,9 +7106,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7148,8 +7160,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -7157,6 +7168,7 @@
       },
       "GenreListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7167,9 +7179,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7210,8 +7222,7 @@
             "items": {
               "$ref": "#/components/schemas/GenreListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -7247,6 +7258,7 @@
       },
       "GenreResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7257,9 +7269,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7303,14 +7315,14 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "jobId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジョブID",
-            "nullable": true
+            "description": "ジョブID"
           }
         },
         "additionalProperties": false,
@@ -7391,9 +7403,9 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "JWTアクセストークン",
-            "nullable": true
+            "description": "JWTアクセストークン"
           },
           "tokenType": {
             "type": "string",
@@ -7416,19 +7428,19 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
             "type": "string",
@@ -7465,6 +7477,7 @@
       },
       "MasterGenreResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7475,9 +7488,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7500,6 +7513,7 @@
       },
       "MasterSkillResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7510,9 +7524,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -7530,9 +7544,9 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           }
         },
         "additionalProperties": false,
@@ -7552,6 +7566,7 @@
       },
       "OrganizationDetailResponse": {
         "required": [
+          "id",
           "name",
           "phoneNumber",
           "rowVersion"
@@ -7564,9 +7579,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7584,9 +7599,9 @@
             "nullable": true
           },
           "phoneNumber": {
+            "minLength": 1,
             "type": "string",
-            "description": "電話番号",
-            "nullable": true
+            "description": "電話番号"
           },
           "email": {
             "type": "string",
@@ -7616,8 +7631,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -7625,6 +7639,7 @@
       },
       "OrganizationInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7635,9 +7650,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7650,6 +7665,7 @@
       },
       "OrganizationListItemResponse": {
         "required": [
+          "id",
           "name",
           "phoneNumber"
         ],
@@ -7661,9 +7677,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7676,9 +7692,9 @@
             "nullable": true
           },
           "phoneNumber": {
+            "minLength": 1,
             "type": "string",
-            "description": "電話番号",
-            "nullable": true
+            "description": "電話番号"
           },
           "email": {
             "type": "string",
@@ -7714,8 +7730,7 @@
             "items": {
               "$ref": "#/components/schemas/OrganizationListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -7751,6 +7766,7 @@
       },
       "OrganizationResponse": {
         "required": [
+          "id",
           "name",
           "phoneNumber"
         ],
@@ -7762,9 +7778,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7782,9 +7798,9 @@
             "nullable": true
           },
           "phoneNumber": {
+            "minLength": 1,
             "type": "string",
-            "description": "電話番号",
-            "nullable": true
+            "description": "電話番号"
           },
           "email": {
             "type": "string",
@@ -7819,6 +7835,7 @@
       },
       "PermissionDetailInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7829,9 +7846,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7849,6 +7866,7 @@
       },
       "PermissionDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -7860,9 +7878,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7890,8 +7908,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -7899,6 +7916,7 @@
       },
       "PermissionListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7909,9 +7927,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7939,6 +7957,7 @@
       },
       "PermissionResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7949,9 +7968,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -8017,14 +8036,14 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "recurringJobId": {
+            "minLength": 1,
             "type": "string",
-            "description": "繰り返しジョブID",
-            "nullable": true
+            "description": "繰り返しジョブID"
           }
         },
         "additionalProperties": false,
@@ -8054,9 +8073,9 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "JWTアクセストークン",
-            "nullable": true
+            "description": "JWTアクセストークン"
           },
           "tokenType": {
             "type": "string",
@@ -8074,9 +8093,9 @@
             "format": "int32"
           },
           "refreshToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "リフレッシュトークン",
-            "nullable": true
+            "description": "リフレッシュトークン"
           },
           "refreshExpiresAt": {
             "type": "string",
@@ -8128,6 +8147,7 @@
       },
       "RoleDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -8139,9 +8159,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8164,8 +8184,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -8173,6 +8192,7 @@
       },
       "RoleInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8183,9 +8203,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           }
         },
         "additionalProperties": false,
@@ -8193,6 +8213,7 @@
       },
       "RoleListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8203,9 +8224,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8228,6 +8249,7 @@
       },
       "RoleResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8238,9 +8260,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8258,6 +8280,7 @@
       },
       "RoleUserCountResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8268,9 +8291,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "count": {
             "type": "integer",
@@ -8445,6 +8468,7 @@
       },
       "SkillDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -8456,9 +8480,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -8505,8 +8529,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -8514,6 +8537,7 @@
       },
       "SkillListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8524,9 +8548,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -8582,8 +8606,7 @@
             "items": {
               "$ref": "#/components/schemas/SkillListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -8631,9 +8654,9 @@
             "description": "成功フラグ"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "skill": {
             "$ref": "#/components/schemas/SkillDetailResponse"
@@ -8682,6 +8705,7 @@
       },
       "SkillUsageItem": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8692,9 +8716,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           }
         },
         "additionalProperties": false,
@@ -8702,6 +8726,7 @@
       },
       "SkillUserCountResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8712,9 +8737,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "count": {
             "type": "integer",
@@ -8737,9 +8762,9 @@
             "format": "int32"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "成功メッセージ",
-            "nullable": true
+            "description": "成功メッセージ"
           }
         },
         "additionalProperties": false,
@@ -8747,6 +8772,7 @@
       },
       "TagDetailResponse": {
         "required": [
+          "id",
           "rowVersion"
         ],
         "type": "object",
@@ -8800,14 +8826,16 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用RowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "タグ詳細レスポンス"
       },
       "TagInfoResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8825,6 +8853,9 @@
         "description": "タグ情報レスポンス"
       },
       "TagListItemResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8872,8 +8903,7 @@
             "items": {
               "$ref": "#/components/schemas/TagListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -8969,6 +8999,7 @@
       },
       "TagUsageItem": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8979,9 +9010,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "タグ名",
-            "nullable": true
+            "description": "タグ名"
           }
         },
         "additionalProperties": false,
@@ -9304,6 +9335,7 @@
       "UserListItemResponse": {
         "required": [
           "email",
+          "id",
           "loginId",
           "username"
         ],
@@ -9315,19 +9347,19 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
             "type": "string",
@@ -9366,7 +9398,10 @@
       "UserResponse": {
         "required": [
           "email",
+          "id",
+          "isAdmin",
           "loginId",
+          "roles",
           "rowVersion",
           "username"
         ],
@@ -9378,19 +9413,19 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
             "type": "string",
@@ -9407,8 +9442,7 @@
             "items": {
               "$ref": "#/components/schemas/UserRoleResponse"
             },
-            "description": "ユーザーのロール一覧",
-            "nullable": true
+            "description": "ユーザーのロール一覧"
           },
           "skills": {
             "type": "array",
@@ -9434,8 +9468,7 @@
           "rowVersion": {
             "type": "string",
             "description": "ユーザーの楽観的ロック用RowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -9452,8 +9485,7 @@
             "items": {
               "$ref": "#/components/schemas/UserResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -9492,6 +9524,7 @@
       },
       "UserRoleResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -9502,9 +9535,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           }
         },
         "additionalProperties": false,
@@ -9512,6 +9545,7 @@
       },
       "UserSkillResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -9522,9 +9556,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           }
         },
         "additionalProperties": false,
@@ -9575,6 +9609,7 @@
       },
       "WorkspaceDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -9586,9 +9621,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ワークスペース名",
-            "nullable": true
+            "description": "ワークスペース名"
           },
           "code": {
             "type": "string",
@@ -9662,14 +9697,16 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "ワークスペース詳細情報レスポンス"
       },
       "WorkspaceItemAttachmentResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9733,6 +9770,7 @@
       },
       "WorkspaceItemDetailResponse": {
         "required": [
+          "id",
           "rowVersion"
         ],
         "type": "object",
@@ -9860,8 +9898,7 @@
           "rowVersion": {
             "type": "string",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -9878,8 +9915,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -9914,6 +9950,9 @@
         "description": "ページネーション付きレスポンス"
       },
       "WorkspaceItemRelationResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10024,6 +10063,7 @@
       },
       "WorkspaceListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -10034,9 +10074,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ワークスペース名",
-            "nullable": true
+            "description": "ワークスペース名"
           },
           "code": {
             "type": "string",
@@ -10122,8 +10162,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -10284,8 +10323,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
