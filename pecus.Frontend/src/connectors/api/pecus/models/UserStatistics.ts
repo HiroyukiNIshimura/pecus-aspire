@@ -11,26 +11,26 @@ export type UserStatistics = {
     /**
      * スキルごとのユーザー数サマリ
      */
-    skillCounts?: Array<SkillUserCountResponse> | null;
+    skillCounts: Array<SkillUserCountResponse>;
     /**
      * ロールごとのユーザー数サマリ
      */
-    roleCounts?: Array<RoleUserCountResponse> | null;
+    roleCounts: Array<RoleUserCountResponse>;
     /**
      * アクティブなユーザー数
      */
-    activeUserCount?: number;
+    activeUserCount: number;
     /**
      * 非アクティブなユーザー数
      */
-    inactiveUserCount?: number;
+    inactiveUserCount: number;
     /**
      * ワークスペースに参加しているユーザー数
      */
-    workspaceParticipationCount?: number;
+    workspaceParticipationCount: number;
     /**
      * ワークスペースに参加していないユーザー数
      */
-    noWorkspaceParticipationCount?: number;
+    noWorkspaceParticipationCount: number;
 };
 

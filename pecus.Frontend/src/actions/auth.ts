@@ -1,6 +1,7 @@
 "use server";
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { LoginResponse, SuccessResponse } from "@/connectors/api/pecus";
 import { ApiResponse } from "./types";
 import { SessionData, SessionManager } from "@/libs/session";
 import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
@@ -20,7 +21,7 @@ export async function login(request: {
   appVersion?: string;
   timezone?: string;
   location?: string;
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<LoginResponse>> {
   try {
     // Next.js のヘッダーからクライアントIPを取得
     const headersList = await headers();
@@ -111,7 +112,7 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] 
 /**
  * Server Action: ログアウト
  */
-export async function logout(): Promise<ApiResponse<any>> {
+export async function logout(): Promise<ApiResponse<null>> {
   try {
     // セッション情報をクリア（WebAPI呼び出しなし）
     await SessionManager.clearSession();

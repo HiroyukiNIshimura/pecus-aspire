@@ -1,6 +1,7 @@
 "use server";
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { UserResponse } from "@/connectors/api/pecus";
 import { ApiResponse } from "./types";
 import { UserInfo } from "@/types/userInfo";
 
@@ -42,7 +43,7 @@ export async function updateProfile(request: {
   avatarUrl?: string;
   skillIds?: number[];
   rowVersion: string; // 楽観的ロック用
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({

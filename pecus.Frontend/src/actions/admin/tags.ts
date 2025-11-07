@@ -1,6 +1,13 @@
 "use server";
 
 import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type {
+  TagDetailResponse,
+  TagListItemResponse,
+  TagListItemResponseTagStatisticsPagedResponse,
+  TagResponse,
+  SuccessResponse,
+} from "@/connectors/api/pecus";
 import { ApiResponse } from "../types";
 
 /**
@@ -9,7 +16,7 @@ import { ApiResponse } from "../types";
 export async function getTags(
   page: number = 1,
   isActive: boolean = true,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<TagListItemResponseTagStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags(page, isActive);
@@ -28,7 +35,7 @@ export async function getTags(
 /**
  * Server Action: タグ情報を取得
  */
-export async function getTagDetail(id: number): Promise<ApiResponse<any>> {
+export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags1(id);
@@ -50,7 +57,7 @@ export async function getTagDetail(id: number): Promise<ApiResponse<any>> {
 export async function createTag(request: {
   name: string;
   description?: string;
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<TagResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.postApiAdminTags(request);
@@ -76,10 +83,10 @@ export async function updateTag(
     isActive?: boolean;
     rowVersion: string; // 楽観的ロック用
   },
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<TagResponse | TagDetailResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminTag.putApiAdminTags(id, {
+    let response = await api.adminTag.putApiAdminTags(id, {
       name: request.name,
       rowVersion: request.rowVersion,
     });
@@ -87,9 +94,9 @@ export async function updateTag(
     // isActive が指定されている場合、activate/deactivate を呼び出す
     if (request.isActive !== undefined) {
       if (request.isActive) {
-        await api.adminTag.patchApiAdminTagsActivate(id);
+        response = await api.adminTag.patchApiAdminTagsActivate(id);
       } else {
-        await api.adminTag.patchApiAdminTagsDeactivate(id);
+        response = await api.adminTag.patchApiAdminTagsDeactivate(id);
       }
     }
 
@@ -98,13 +105,15 @@ export async function updateTag(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as TagDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload as any,
+          data: current as TagDetailResponse,
         },
       };
     }
@@ -121,7 +130,7 @@ export async function updateTag(
 /**
  * Server Action: タグを削除
  */
-export async function deleteTag(id: number): Promise<ApiResponse<any>> {
+export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.deleteApiAdminTags(id);
@@ -139,7 +148,7 @@ export async function deleteTag(id: number): Promise<ApiResponse<any>> {
 /**
  * Server Action: タグを有効化
  */
-export async function activateTag(id: number): Promise<ApiResponse<any>> {
+export async function activateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsActivate(id);
@@ -147,13 +156,15 @@ export async function activateTag(id: number): Promise<ApiResponse<any>> {
   } catch (error: any) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as TagDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload as any,
+          data: current as TagDetailResponse,
         },
       };
     }
@@ -170,7 +181,7 @@ export async function activateTag(id: number): Promise<ApiResponse<any>> {
 /**
  * Server Action: タグを無効化
  */
-export async function deactivateTag(id: number): Promise<ApiResponse<any>> {
+export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsDeactivate(id);
@@ -178,13 +189,15 @@ export async function deactivateTag(id: number): Promise<ApiResponse<any>> {
   } catch (error: any) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as TagDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload as any,
+          data: current as TagDetailResponse,
         },
       };
     }

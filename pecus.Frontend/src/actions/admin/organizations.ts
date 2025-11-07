@@ -1,12 +1,15 @@
 "use server";
 
 import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type {
+  OrganizationResponse,
+} from "@/connectors/api/pecus";
 import { ApiResponse } from "../types";
 
 /**
  * Server Action: 自組織の詳細情報を取得
  */
-export async function getOrganizationDetail(): Promise<ApiResponse<any>> {
+export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.getApiAdminOrganization();
@@ -39,7 +42,7 @@ export async function updateOrganization(
     isActive?: boolean;
     rowVersion: string; // 楽観的ロック用
   },
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.putApiAdminOrganization(request);
@@ -48,13 +51,15 @@ export async function updateOrganization(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as OrganizationResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "organization",
-          data: concurrencyError.payload as any,
+          data: current as OrganizationResponse,
         },
       };
     }

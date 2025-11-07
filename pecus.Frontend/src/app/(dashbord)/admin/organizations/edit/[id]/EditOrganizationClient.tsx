@@ -10,12 +10,12 @@ import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
 import { updateOrganization } from "@/actions/admin/organizations";
 import { editOrganizationSchema } from "@/schemas/editSchemas";
-import type { OrganizationDetailResponse } from "@/connectors/api/pecus";
+import type { OrganizationResponse } from "@/connectors/api/pecus";
 import { UserInfo } from "@/types/userInfo";
 
 interface EditOrganizationClientProps {
   initialUser: UserInfo | null;
-  organizationDetail: OrganizationDetailResponse;
+  organizationDetail: OrganizationResponse;
   fetchError: string | null;
 }
 

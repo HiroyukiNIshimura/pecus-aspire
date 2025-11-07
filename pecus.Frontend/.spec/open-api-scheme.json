@@ -7030,18 +7030,22 @@
         "description": "ファイルアップロードレスポンス"
       },
       "GenreCount": {
+        "required": [
+          "count",
+          "genreId",
+          "genreName"
+        ],
         "type": "object",
         "properties": {
           "genreId": {
             "type": "integer",
             "description": "ジャンルID",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "genreName": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "count": {
             "type": "integer",
@@ -8165,6 +8169,7 @@
       },
       "RoleUserCountResponse": {
         "required": [
+          "count",
           "id",
           "name"
         ],
@@ -8579,6 +8584,13 @@
         "description": "スキルレスポンス"
       },
       "SkillStatistics": {
+        "required": [
+          "activeSkills",
+          "inactiveSkills",
+          "topUsedSkills",
+          "totalSkills",
+          "unusedSkills"
+        ],
         "type": "object",
         "properties": {
           "totalSkills": {
@@ -8601,16 +8613,14 @@
             "items": {
               "$ref": "#/components/schemas/SkillUsageItem"
             },
-            "description": "利用されているスキルのトップ５",
-            "nullable": true
+            "description": "利用されているスキルのトップ５"
           },
           "unusedSkills": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillUsageItem"
             },
-            "description": "利用されていないスキルのリスト",
-            "nullable": true
+            "description": "利用されていないスキルのリスト"
           }
         },
         "additionalProperties": false,
@@ -8639,6 +8649,7 @@
       },
       "SkillUserCountResponse": {
         "required": [
+          "count",
           "id",
           "name"
         ],
@@ -8901,6 +8912,13 @@
         "description": "タグレスポンス"
       },
       "TagStatistics": {
+        "required": [
+          "activeTags",
+          "inactiveTags",
+          "topUsedTags",
+          "totalTags",
+          "unusedTags"
+        ],
         "type": "object",
         "properties": {
           "totalTags": {
@@ -8923,16 +8941,14 @@
             "items": {
               "$ref": "#/components/schemas/TagUsageItem"
             },
-            "description": "利用されているタグのトップ５",
-            "nullable": true
+            "description": "利用されているタグのトップ５"
           },
           "unusedTags": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TagUsageItem"
             },
-            "description": "利用されていないタグのリスト",
-            "nullable": true
+            "description": "利用されていないタグのリスト"
           }
         },
         "additionalProperties": false,
@@ -9534,6 +9550,14 @@
         "description": "ユーザースキル情報レスポンス"
       },
       "UserStatistics": {
+        "required": [
+          "activeUserCount",
+          "inactiveUserCount",
+          "noWorkspaceParticipationCount",
+          "roleCounts",
+          "skillCounts",
+          "workspaceParticipationCount"
+        ],
         "type": "object",
         "properties": {
           "skillCounts": {
@@ -9541,16 +9565,14 @@
             "items": {
               "$ref": "#/components/schemas/SkillUserCountResponse"
             },
-            "description": "スキルごとのユーザー数サマリ",
-            "nullable": true
+            "description": "スキルごとのユーザー数サマリ"
           },
           "roleCounts": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleUserCountResponse"
             },
-            "description": "ロールごとのユーザー数サマリ",
-            "nullable": true
+            "description": "ロールごとのユーザー数サマリ"
           },
           "activeUserCount": {
             "type": "integer",
@@ -10244,6 +10266,15 @@
         "description": "ワークスペース操作レスポンス"
       },
       "WorkspaceStatistics": {
+        "required": [
+          "activeWorkspaceCount",
+          "averageMembersPerWorkspace",
+          "inactiveWorkspaceCount",
+          "recentWorkspaceCount",
+          "totalWorkspaceCount",
+          "uniqueMemberCount",
+          "workspaceCountByGenre"
+        ],
         "type": "object",
         "properties": {
           "activeWorkspaceCount": {
@@ -10283,8 +10314,7 @@
             "items": {
               "$ref": "#/components/schemas/GenreCount"
             },
-            "description": "ワークスペースのジャンルごとのワークスペース数",
-            "nullable": true
+            "description": "ワークスペースのジャンルごとのワークスペース数"
           }
         },
         "additionalProperties": false,

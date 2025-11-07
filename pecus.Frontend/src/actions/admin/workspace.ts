@@ -1,6 +1,13 @@
 "use server";
 
 import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type {
+  WorkspaceDetailResponse,
+  WorkspaceListItemResponse,
+  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
+  WorkspaceResponse,
+  SuccessResponse,
+} from "@/connectors/api/pecus";
 import { ApiResponse } from "../types";
 
 /**
@@ -10,7 +17,7 @@ export async function getWorkspaces(
   page: number = 1,
   isActive?: boolean,
   genreId?: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.getApiAdminWorkspaces(
@@ -35,7 +42,7 @@ export async function getWorkspaces(
  */
 export async function getWorkspaceDetail(
   workspaceId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<WorkspaceDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -62,7 +69,7 @@ export async function createWorkspace(request: {
   name: string;
   description?: string;
   genreId: number;
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<WorkspaceResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
@@ -91,7 +98,7 @@ export async function updateWorkspace(
     isActive?: boolean;
     rowVersion: string; // 楽観的ロック用
   },
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<WorkspaceResponse | WorkspaceDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.putApiAdminWorkspaces(
@@ -103,13 +110,15 @@ export async function updateWorkspace(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload as any,
+          data: current as WorkspaceDetailResponse,
         },
       };
     }
@@ -129,7 +138,7 @@ export async function updateWorkspace(
  */
 export async function deleteWorkspace(
   workspaceId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -152,7 +161,7 @@ export async function deleteWorkspace(
  */
 export async function activateWorkspace(
   workspaceId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -162,13 +171,15 @@ export async function activateWorkspace(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload as any,
+          data: current as WorkspaceDetailResponse,
         },
       };
     }
@@ -189,7 +200,7 @@ export async function activateWorkspace(
  */
 export async function deactivateWorkspace(
   workspaceId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -199,13 +210,15 @@ export async function deactivateWorkspace(
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
         error: "conflict",
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload as any,
+          data: current as WorkspaceDetailResponse,
         },
       };
     }

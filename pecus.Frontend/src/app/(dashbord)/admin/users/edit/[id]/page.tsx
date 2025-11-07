@@ -22,9 +22,9 @@ export default async function EditUserPage({
 
   let user: UserInfo | null = null;
   let userDetail = null;
-  let skills = [];
-  let roles = [];
-  let fetchError = null;
+  let skills: any[] = [];
+  let roles: any[] = [];
+  let fetchError: string | null = null;
 
   try {
     const userResult = await getCurrentUser();

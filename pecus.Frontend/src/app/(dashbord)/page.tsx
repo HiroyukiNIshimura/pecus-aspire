@@ -17,7 +17,7 @@ export default async function Dashboard() {
       const roles = userData.roles ?? [];
       user = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         roles,
         isAdmin: roles.some((r: any) =>

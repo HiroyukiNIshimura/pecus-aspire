@@ -17,6 +17,6 @@ export type RoleUserCountResponse = {
     /**
      * ユーザー数
      */
-    count?: number;
+    count: number;
 };
 

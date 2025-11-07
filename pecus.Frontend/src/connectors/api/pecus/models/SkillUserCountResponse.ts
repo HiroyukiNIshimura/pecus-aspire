@@ -17,6 +17,6 @@ export type SkillUserCountResponse = {
     /**
      * ユーザー数
      */
-    count?: number;
+    count: number;
 };
 

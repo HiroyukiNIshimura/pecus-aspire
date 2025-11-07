@@ -10,22 +10,22 @@ export type SkillStatistics = {
     /**
      * スキルのトータル件数
      */
-    totalSkills?: number;
+    totalSkills: number;
     /**
      * アクティブなスキルの件数
      */
-    activeSkills?: number;
+    activeSkills: number;
     /**
      * 非アクティブなスキルの件数
      */
-    inactiveSkills?: number;
+    inactiveSkills: number;
     /**
      * 利用されているスキルのトップ５
      */
-    topUsedSkills?: Array<SkillUsageItem> | null;
+    topUsedSkills: Array<SkillUsageItem>;
     /**
      * 利用されていないスキルのリスト
      */
-    unusedSkills?: Array<SkillUsageItem> | null;
+    unusedSkills: Array<SkillUsageItem>;
 };
 

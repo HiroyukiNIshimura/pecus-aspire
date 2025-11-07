@@ -38,7 +38,7 @@ export default async function AdminTags() {
       const userData = userResult.data;
       user = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;

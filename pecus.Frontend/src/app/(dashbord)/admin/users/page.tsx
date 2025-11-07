@@ -79,7 +79,7 @@ export default async function AdminUsers() {
       const userData = userResult.data;
       userInfo = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;
