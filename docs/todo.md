@@ -4,142 +4,235 @@
 
 目的: サーバー側の楽観ロック（DbUpdateConcurrencyException → HTTP 409）を受けて、ユーザーにわかりやすく再試行/破棄の選択肢を提示する軽量な実装メモ。
 
-方針（シンプル推奨）
-- Axios インターセプターで HTTP 409 を検出 → グローバルイベント `pecus:conflict` を発火
-- ルート Layout に `ConcurrencyDialog` コンポーネントを置き、イベント受信でモーダル表示
-- モーダルに [再試行]（最新データ取得／`window.location.reload()`）と [キャンセル]（編集破棄・一覧へ戻る）を配置
+### アーキテクチャ背景
 
-実装箇所（参照）
-- 編集対象（手動編集可）: `pecus.Frontend/src/connectors/api/PecusApiClient.ts`（interceptor追加）
-- 自動生成ファイル（編集禁止）: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`
-- UI コンポーネント: `pecus.Frontend/src/components/common/ConcurrencyDialog.tsx`
-- 配置: ルート Layout（`src/app/layout.tsx` 等）に `ConcurrencyDialog` を追加
+現在のアーキテクチャは **Server Action ベース** です：
+- `createPecusApiClients()` は **Server Action / API Routes 内でのみ使用**（サーバーサイド実行）
+- クライアント側からダイレクトに API は呼ばない
+- 409 エラーはサーバーで検出され、クライアントに戻り値で通知される
 
-サーバー側協力点
-- 409 レスポンスに短いユーザー向け `message` と必要なら最新データ（`current`）を含めると UX が良好
+**このため、グローバルイベント方式は機能しません。** 正しいフローは以下の通り：
 
-注意事項
-- 自動生成クライアントは編集しないこと（generate スクリプトにより上書きされる）
-- まずは最小実装（全ページ reload）で運用し、必要に応じてリソース単位の差分再取得ロジックに拡張する
+1. **Server Action 側**: 409 をキャッチして、エラー情報と最新データを戻り値で返す
+2. **Client Component 側**: Server Action からのエラー通知を受けて、モーダルで競合を表示
+3. **ユーザー操作**: [再試行]（最新データで再取得）or [キャンセル]（編集破棄）
 
----
+### 実装箇所（参照）
 
-サンプル: `PecusApiClient.ts` に追加する Axios interceptor（例）
+- `pecus.Frontend/src/connectors/api/PecusApiClient.ts`：`ConcurrencyError` クラスと検出ヘルパー
+- `pecus.Frontend/src/actions/`：各 Server Action 内で 409 をキャッチして戻り値で返す
+- `pecus.Frontend/src/components/common/ConcurrencyDialog.tsx`：競合ダイアログコンポーネント
+- `pecus.Frontend/src/app/layout.tsx` など：ルート Layout に `ConcurrencyDialog` を配置
 
-```ts
-// PecusApiClient.ts - 例: Axios インスタンスに 409 ハンドリングを追加
-import axios from "axios";
+### 実装フロー
 
+#### 【1】`PecusApiClient.ts` に ConcurrencyError を定義
+
+```typescript
 export class ConcurrencyError extends Error {
-   public payload: any;
-   constructor(message: string, payload?: any) {
-      super(message);
-      this.name = "ConcurrencyError";
-      this.payload = payload;
-   }
+  public readonly payload: unknown;
+  constructor(message: string, payload?: unknown) {
+    super(message);
+    this.name = "ConcurrencyError";
+    this.payload = payload;
+  }
 }
 
-export const apiClient = axios.create({
-   baseURL: process.env.API_BASE_URL,
-   withCredentials: true,
-   // 他の設定
-});
-
-apiClient.interceptors.response.use(
-   (res) => res,
-   (error) => {
-      const resp = error?.response;
-      if (resp && resp.status === 409) {
-         // サーバーが返す形に合わせて抽出
-         const payload = resp.data ?? { message: "別のユーザーにより変更されました。" };
-         const message = payload.message ?? "別のユーザーが変更しました。";
-
-         // グローバルイベント発火（ページ側でリスンしてモーダルを表示）
-         try {
-            window.dispatchEvent(new CustomEvent("pecus:conflict", { detail: { message, payload } }));
-         } catch (e) {
-            // SSR などで window が無い場合は無視
-         }
-
-         // 呼び出し元で処理したければカスタム例外を投げる
-         return Promise.reject(new ConcurrencyError(message, payload));
-      }
-
-      return Promise.reject(error);
-   }
-);
-
-export default apiClient;
+export function detectConcurrencyError(error: unknown): ConcurrencyError | null {
+  // ApiError から 409 を検出して ConcurrencyError に変換
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as Record<string, unknown>).status === 409
+  ) {
+    const apiError = error as Record<string, unknown>;
+    const body = apiError.body ?? {};
+    const message = (typeof body === "object" && "message" in body
+      ? (body as Record<string, unknown>).message
+      : null) || "別のユーザーにより変更されました。";
+    return new ConcurrencyError(String(message), body);
+  }
+  return null;
+}
 ```
 
-サンプル: `ConcurrencyDialog.tsx`（簡易モーダル）
+#### 【2】Server Action 内で 409 をキャッチ
 
-```tsx
+```typescript
+// src/actions/workspace.ts
+"use server";
+
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { detectConcurrencyError, ConcurrencyError } from "@/connectors/api/PecusApiClient";
+
+export async function updateWorkspaceAction(
+  id: number,
+  input: UpdateWorkspaceInput
+): Promise<
+  | { success: true }
+  | { success: false; error: "conflict"; message: string; latest?: unknown }
+  | { success: false; error: "validation" | "server"; message: string }
+> {
+  try {
+    const clients = await createPecusApiClients();
+    await clients.adminWorkspace.updateWorkspace(id, input);
+    return { success: true };
+  } catch (error) {
+    // 409 Conflict の検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: concurrencyError.payload, // 最新データをクライアントに返す
+      };
+    }
+
+    // その他のエラー処理...
+    return {
+      success: false,
+      error: "server",
+      message: "更新に失敗しました。",
+    };
+  }
+}
+```
+
+#### 【3】Client Component で 409 エラーをハンドリング
+
+```typescript
+// src/components/admin/workspaces/EditWorkspaceForm.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { updateWorkspaceAction } from "@/actions/workspace";
+import { ConcurrencyDialog } from "@/components/common/ConcurrencyDialog";
 
-export default function ConcurrencyDialog() {
-   const [open, setOpen] = useState(false);
-   const [message, setMessage] = useState<string | null>(null);
+export default function EditWorkspaceForm({ workspace }) {
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+  const [conflictData, setConflictData] = useState<{
+    message: string;
+    latest?: unknown;
+  } | null>(null);
 
-   useEffect(() => {
-      const handler = (e: Event) => {
-         const detail = (e as CustomEvent).detail ?? {};
-         setMessage(detail.message ?? "別のユーザーが変更しました。");
-         setOpen(true);
-      };
-      window.addEventListener("pecus:conflict", handler as EventListener);
-      return () => window.removeEventListener("pecus:conflict", handler as EventListener);
-   }, []);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // フォームデータ取得...
+    const result = await updateWorkspaceAction(workspace.id, formData);
 
-   if (!open) return null;
+    if (!result.success) {
+      if (result.error === "conflict") {
+        // 409: 競合ダイアログを表示
+        setConflictData({
+          message: result.message,
+          latest: result.latest,
+        });
+        setShowConflictDialog(true);
+        return;
+      }
 
-   return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-         <div className="bg-white rounded shadow-lg max-w-lg w-full p-6">
-            <h3 className="text-lg font-semibold mb-2">競合が発生しました</h3>
-            <p className="mb-4">{message}</p>
+      // その他のエラー...
+      setError(result.message);
+      return;
+    }
 
-            <div className="flex justify-end gap-2">
-               <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => {
-                     setOpen(false);
-                     // キャンセル: 編集破棄して一覧へ戻る等に変更可能
-                     window.history.back();
-                  }}
-               >
-                  キャンセル
-               </button>
+    // 成功: リダイレクト等...
+    redirect(`/admin/workspaces/${workspace.id}`);
+  };
 
-               <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={async () => {
-                     setOpen(false);
-                     // 再試行: シンプルにページ全体を再読み込み
-                     window.location.reload();
-                  }}
-               >
-                  再試行
-               </button>
-            </div>
-         </div>
-      </div>
-   );
+  const handleConflictRetry = () => {
+    // 最新データを使って再試行（例: ページリロード）
+    window.location.reload();
+  };
+
+  const handleConflictCancel = () => {
+    setShowConflictDialog(false);
+    setConflictData(null);
+    // 編集フォームをリセット or 一覧へ戻る
+    window.history.back();
+  };
+
+  return (
+    <>
+      <form onSubmit={handleSubmit}>
+        {/* フォーム内容 */}
+      </form>
+
+      {showConflictDialog && conflictData && (
+        <ConcurrencyDialog
+          message={conflictData.message}
+          onRetry={handleConflictRetry}
+          onCancel={handleConflictCancel}
+        />
+      )}
+    </>
+  );
 }
 ```
 
-導入手順（短いガイド）
-1. `PecusApiClient.ts`（手動編集可能なファイル）に interceptor を追加する。
-2. `ConcurrencyDialog.tsx` を `pecus.Frontend/src/components/common/` に作成する。
-3. ルート Layout（`src/app/layout.tsx` 等）に `<ConcurrencyDialog />` を置く。
-4. サーバー側は 409 レスポンスに `message` や `current` を含めるようにすると UX が良い。
+#### 【4】ConcurrencyDialog コンポーネント
 
-テスト
-- E2E で 2 クライアント同時更新シナリオを作り、2 回目が 409 を受けてモーダルが表示されることを確認する。
+```typescript
+// src/components/common/ConcurrencyDialog.tsx
+"use client";
+
+interface ConcurrencyDialogProps {
+  message: string;
+  onRetry: () => void;
+  onCancel: () => void;
+}
+
+export function ConcurrencyDialog({
+  message,
+  onRetry,
+  onCancel,
+}: ConcurrencyDialogProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white rounded shadow-lg max-w-lg w-full p-6">
+        <h3 className="text-lg font-semibold mb-2">競合が発生しました</h3>
+        <p className="mb-4 text-gray-700">{message}</p>
+        <p className="mb-4 text-sm text-gray-600">
+          別のユーザーが変更した可能性があります。最新データを取得して再度試してください。
+        </p>
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={onCancel}
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onRetry}
+          >
+            再試行
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### 注意事項
+
+- **Server Action は自動的にサーバーで実行される** ため、409 エラーはサーバー側で最初に検出される
+- `ConcurrencyError` は Server Action 内でのみ使用（クライアント側では戻り値経由で情報を受け取る）
+- 最新データが必要な場合は、Server Action の戻り値に含めてクライアントに返す
+- `ConcurrencyDialog` は props で制御するため、複数の場所で再利用可能
+
+### テスト
+
+- E2E で 2 クライアント同時更新シナリオを作成
+- 2 回目の更新が 409 を受けて、モーダルが表示されることを確認
+- [再試行]をクリックしてページリロード後、最新データで再試行できることを確認
+- [キャンセル]をクリックして履歴に戻ることを確認
 
 ---
 
