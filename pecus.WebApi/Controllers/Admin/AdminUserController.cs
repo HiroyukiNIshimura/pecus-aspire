@@ -215,7 +215,7 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SuccessResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserActiveStatus(
         int id,
         [FromBody] SetUserActiveStatusRequest request
@@ -310,7 +310,7 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SuccessResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserSkills(
         int id,
         [FromBody] SetUserSkillsRequest request
@@ -536,7 +536,7 @@ public class AdminUserController : ControllerBase
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SuccessResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserRoles(
         int id,
         [FromBody] SetUserRolesRequest request
