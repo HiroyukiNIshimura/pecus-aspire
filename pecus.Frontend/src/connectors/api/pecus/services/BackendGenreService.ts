@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateGenreRequest } from '../models/CreateGenreRequest';
-import type { GenreDetailResponse } from '../models/GenreDetailResponse';
 import type { GenreListItemResponsePagedResponse } from '../models/GenreListItemResponsePagedResponse';
 import type { GenreResponse } from '../models/GenreResponse';
 import type { SetActiveStatusRequest } from '../models/SetActiveStatusRequest';
@@ -60,12 +59,12 @@ export class BackendGenreService {
     /**
      * ジャンル詳細を取得
      * @param id ジャンルID
-     * @returns GenreDetailResponse OK
+     * @returns GenreResponse OK
      * @throws ApiError
      */
     public static getApiBackendGenres1(
         id: number,
-    ): CancelablePromise<GenreDetailResponse> {
+    ): CancelablePromise<GenreResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/backend/genres/{id}',

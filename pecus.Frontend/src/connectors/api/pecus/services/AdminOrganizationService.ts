@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AdminUpdateOrganizationRequest } from '../models/AdminUpdateOrganizationRequest';
-import type { OrganizationDetailResponse } from '../models/OrganizationDetailResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -12,10 +11,10 @@ export class AdminOrganizationService {
     /**
      * 自組織の情報を取得
      * ログイン中のユーザーが属する組織の詳細情報を取得します。
-     * @returns OrganizationDetailResponse OK
+     * @returns OrganizationResponse OK
      * @throws ApiError
      */
-    public static getApiAdminOrganization(): CancelablePromise<OrganizationDetailResponse> {
+    public static getApiAdminOrganization(): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/organization',

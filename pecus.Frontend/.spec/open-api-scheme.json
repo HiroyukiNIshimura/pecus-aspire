@@ -19,7 +19,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                  "$ref": "#/components/schemas/OrganizationResponse"
                 }
               }
             }
@@ -100,7 +100,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/OrganizationResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -159,16 +159,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -357,7 +347,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -396,16 +386,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -463,7 +443,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -517,7 +497,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -576,16 +556,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -774,7 +744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -813,16 +783,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -880,7 +840,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -934,7 +894,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1217,7 +1177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1300,7 +1260,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1497,7 +1457,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1764,7 +1724,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1860,7 +1820,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1914,7 +1874,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -2302,17 +2262,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               }
             }
@@ -3044,7 +3004,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                  "$ref": "#/components/schemas/OrganizationResponse"
                 }
               }
             }
@@ -5444,7 +5404,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -5597,7 +5557,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -6348,7 +6308,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -7092,80 +7052,6 @@
         "additionalProperties": false,
         "description": "ジャンルごとのワークスペース数"
       },
-      "GenreDetailResponse": {
-        "required": [
-          "id",
-          "name",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ジャンルID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ジャンル名"
-          },
-          "description": {
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          },
-          "workspaceCount": {
-            "type": "integer",
-            "description": "このジャンルを使用しているワークスペース数",
-            "format": "int32"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "更新日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedByUserId": {
-            "type": "integer",
-            "description": "更新者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "有効フラグ"
-          },
-          "rowVersion": {
-            "type": "string",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル詳細レスポンス"
-      },
       "GenreListItemResponse": {
         "required": [
           "id",
@@ -7259,7 +7145,8 @@
       "GenreResponse": {
         "required": [
           "id",
-          "name"
+          "name",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -7288,10 +7175,21 @@
             "description": "表示順",
             "format": "int32"
           },
+          "workspaceCount": {
+            "type": "integer",
+            "description": "このジャンルを使用しているワークスペース数",
+            "format": "int32"
+          },
           "createdAt": {
             "type": "string",
             "description": "作成日時",
             "format": "date-time"
+          },
+          "createdByUserId": {
+            "type": "integer",
+            "description": "作成者ユーザーID",
+            "format": "int32",
+            "nullable": true
           },
           "updatedAt": {
             "type": "string",
@@ -7299,9 +7197,20 @@
             "format": "date-time",
             "nullable": true
           },
+          "updatedByUserId": {
+            "type": "integer",
+            "description": "更新者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
           "isActive": {
             "type": "boolean",
             "description": "有効フラグ"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
@@ -7564,79 +7473,6 @@
         "type": "integer",
         "format": "int32"
       },
-      "OrganizationDetailResponse": {
-        "required": [
-          "id",
-          "name",
-          "phoneNumber",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "組織ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "組織名"
-          },
-          "code": {
-            "type": "string",
-            "description": "組織コード",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "組織の説明",
-            "nullable": true
-          },
-          "representativeName": {
-            "type": "string",
-            "description": "代表者名",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "minLength": 1,
-            "type": "string",
-            "description": "電話番号"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "更新日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          },
-          "userCount": {
-            "type": "integer",
-            "description": "所属ユーザー数",
-            "format": "int32"
-          },
-          "rowVersion": {
-            "type": "string",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織詳細レスポンス"
-      },
       "OrganizationInfoResponse": {
         "required": [
           "id",
@@ -7768,7 +7604,8 @@
         "required": [
           "id",
           "name",
-          "phoneNumber"
+          "phoneNumber",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -7811,10 +7648,58 @@
             "type": "string",
             "description": "作成日時",
             "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
+          },
+          "userCount": {
+            "type": "integer",
+            "description": "所属ユーザー数",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "string",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "byte"
           }
         },
         "additionalProperties": false,
         "description": "組織情報レスポンス"
+      },
+      "OrganizationResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/OrganizationResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "OrganizationWithAdminResponse": {
         "required": [
@@ -8535,6 +8420,34 @@
         "additionalProperties": false,
         "description": "スキル詳細レスポンス"
       },
+      "SkillDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/SkillDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "SkillListItemResponse": {
         "required": [
           "id",
@@ -8831,6 +8744,34 @@
         },
         "additionalProperties": false,
         "description": "タグ詳細レスポンス"
+      },
+      "TagDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/TagDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "TagInfoResponse": {
         "required": [
@@ -9474,6 +9415,34 @@
         "additionalProperties": false,
         "description": "ユーザー情報レスポンス"
       },
+      "UserResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "UserResponseUserStatisticsPagedResponse": {
         "required": [
           "data"
@@ -9703,6 +9672,34 @@
         "additionalProperties": false,
         "description": "ワークスペース詳細情報レスポンス"
       },
+      "WorkspaceDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/WorkspaceDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "WorkspaceItemAttachmentResponse": {
         "required": [
           "id"
@@ -9903,6 +9900,34 @@
         },
         "additionalProperties": false,
         "description": "ワークスペースアイテム詳細レスポンス"
+      },
+      "WorkspaceItemDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "WorkspaceItemDetailResponsePagedResponse": {
         "required": [

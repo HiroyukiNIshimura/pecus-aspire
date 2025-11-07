@@ -4,7 +4,6 @@
 /* eslint-disable */
 import type { BackendUpdateOrganizationRequest } from '../models/BackendUpdateOrganizationRequest';
 import type { DeleteOrganizationRequest } from '../models/DeleteOrganizationRequest';
-import type { OrganizationDetailResponse } from '../models/OrganizationDetailResponse';
 import type { OrganizationListItemResponsePagedResponse } from '../models/OrganizationListItemResponsePagedResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { SetOrganizationActiveStatusRequest } from '../models/SetOrganizationActiveStatusRequest';
@@ -17,12 +16,12 @@ export class BackendOrganizationService {
     /**
      * 組織情報取得
      * @param id
-     * @returns OrganizationDetailResponse OK
+     * @returns OrganizationResponse OK
      * @throws ApiError
      */
     public static getApiBackendOrganizations(
         id: number,
-    ): CancelablePromise<OrganizationDetailResponse> {
+    ): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/backend/organizations/{id}',

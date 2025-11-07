@@ -38,5 +38,21 @@ export type OrganizationResponse = {
      * 作成日時
      */
     createdAt?: string;
+    /**
+     * 更新日時
+     */
+    updatedAt?: string | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean;
+    /**
+     * 所属ユーザー数
+     */
+    userCount?: number;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion: string;
 };
 

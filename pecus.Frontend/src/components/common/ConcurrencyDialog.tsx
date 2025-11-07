@@ -1,7 +1,6 @@
 "use client";
 
 import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes";
-import { isConflictLatestData } from "@/connectors/api/ConflictDataTypes";
 
 /**
  * ConcurrencyDialog コンポーネントのプロパティ
@@ -66,8 +65,6 @@ export function ConcurrencyDialog({
   onRetry,
   onCancel,
 }: ConcurrencyDialogProps) {
-  // latest データの妥当性チェック
-  const hasValidLatestData = isConflictLatestData(latest);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -111,7 +108,7 @@ export function ConcurrencyDialog({
         */}
 
         {/* DEBUG: latest データの内容確認用 */}
-        {hasValidLatestData && latest && (
+        {latest && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs text-gray-600">
             <p className="font-semibold mb-1">最新データ情報</p>
             <p>タイプ: {latest.type}</p>
