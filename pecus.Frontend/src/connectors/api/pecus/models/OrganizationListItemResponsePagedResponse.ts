@@ -10,7 +10,7 @@ export type OrganizationListItemResponsePagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<OrganizationListItemResponse> | null;
+    data: Array<OrganizationListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

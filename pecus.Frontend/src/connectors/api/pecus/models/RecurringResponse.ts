@@ -9,10 +9,10 @@ export type RecurringResponse = {
     /**
      * メッセージ
      */
-    message: string | null;
+    message: string;
     /**
      * 繰り返しジョブID
      */
-    recurringJobId: string | null;
+    recurringJobId: string;
 };
 

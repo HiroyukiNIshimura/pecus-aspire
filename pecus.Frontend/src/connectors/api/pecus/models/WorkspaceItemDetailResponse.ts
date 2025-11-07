@@ -11,7 +11,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * アイテムID
      */
-    id?: number;
+    id: number;
     /**
      * ワークスペースID
      */
@@ -104,6 +104,6 @@ export type WorkspaceItemDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: string;
 };
 

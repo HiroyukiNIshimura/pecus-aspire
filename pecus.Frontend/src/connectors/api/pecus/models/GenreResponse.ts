@@ -9,11 +9,11 @@ export type GenreResponse = {
     /**
      * ジャンルID
      */
-    id?: number;
+    id: number;
     /**
      * ジャンル名
      */
-    name: string | null;
+    name: string;
     /**
      * ジャンルの説明
      */

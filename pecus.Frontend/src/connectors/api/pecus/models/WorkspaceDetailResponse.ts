@@ -11,11 +11,11 @@ export type WorkspaceDetailResponse = {
     /**
      * ワークスペースID
      */
-    id?: number;
+    id: number;
     /**
      * ワークスペース名
      */
-    name: string | null;
+    name: string;
     /**
      * ワークスペースコード
      */
@@ -68,6 +68,6 @@ export type WorkspaceDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: string;
 };
 

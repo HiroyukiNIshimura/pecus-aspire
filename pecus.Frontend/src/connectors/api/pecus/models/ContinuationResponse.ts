@@ -9,14 +9,14 @@ export type ContinuationResponse = {
     /**
      * メッセージ
      */
-    message: string | null;
+    message: string;
     /**
      * 親ジョブID
      */
-    parentJobId: string | null;
+    parentJobId: string;
     /**
      * 子ジョブID
      */
-    childJobId: string | null;
+    childJobId: string;
 };
 

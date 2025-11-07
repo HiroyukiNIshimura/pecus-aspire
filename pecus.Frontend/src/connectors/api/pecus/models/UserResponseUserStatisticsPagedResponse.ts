@@ -11,7 +11,7 @@ export type UserResponseUserStatisticsPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<UserResponse> | null;
+    data: Array<UserResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

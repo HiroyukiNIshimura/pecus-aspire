@@ -9,7 +9,7 @@ export type RefreshResponse = {
     /**
      * JWTアクセストークン
      */
-    accessToken: string | null;
+    accessToken: string;
     /**
      * トークンタイプ（常に "Bearer"）
      */
@@ -25,7 +25,7 @@ export type RefreshResponse = {
     /**
      * リフレッシュトークン
      */
-    refreshToken: string | null;
+    refreshToken: string;
     /**
      * リフレッシュトークンの有効期限（UTC）
      */

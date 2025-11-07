@@ -11,19 +11,19 @@ export type UserResponse = {
     /**
      * ユーザーID
      */
-    id?: number;
+    id: number;
     /**
      * ログインID
      */
-    loginId: string | null;
+    loginId: string;
     /**
      * ユーザー名
      */
-    username: string | null;
+    username: string;
     /**
      * メールアドレス
      */
-    email: string | null;
+    email: string;
     /**
      * アバタータイプ
      */
@@ -35,7 +35,7 @@ export type UserResponse = {
     /**
      * ユーザーのロール一覧
      */
-    roles?: Array<UserRoleResponse> | null;
+    roles: Array<UserRoleResponse>;
     /**
      * ユーザーのスキル一覧
      */
@@ -43,7 +43,7 @@ export type UserResponse = {
     /**
      * 管理者権限を持つかどうか
      */
-    isAdmin?: boolean;
+    isAdmin: boolean;
     /**
      * アクティブなユーザーかどうか
      */
@@ -55,6 +55,6 @@ export type UserResponse = {
     /**
      * ユーザーの楽観的ロック用RowVersion
      */
-    rowVersion: string | null;
+    rowVersion: string;
 };
 

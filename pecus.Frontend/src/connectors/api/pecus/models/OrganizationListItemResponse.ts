@@ -9,11 +9,11 @@ export type OrganizationListItemResponse = {
     /**
      * 組織ID
      */
-    id?: number;
+    id: number;
     /**
      * 組織名
      */
-    name: string | null;
+    name: string;
     /**
      * 組織コード
      */
@@ -25,7 +25,7 @@ export type OrganizationListItemResponse = {
     /**
      * 電話番号
      */
-    phoneNumber: string | null;
+    phoneNumber: string;
     /**
      * メールアドレス
      */

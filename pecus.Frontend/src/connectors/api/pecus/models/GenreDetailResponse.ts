@@ -9,11 +9,11 @@ export type GenreDetailResponse = {
     /**
      * ジャンルID
      */
-    id?: number;
+    id: number;
     /**
      * ジャンル名
      */
-    name: string | null;
+    name: string;
     /**
      * ジャンルの説明
      */
@@ -53,6 +53,6 @@ export type GenreDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: string;
 };
 

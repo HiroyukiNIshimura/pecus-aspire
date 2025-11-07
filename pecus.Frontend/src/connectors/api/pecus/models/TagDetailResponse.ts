@@ -9,7 +9,7 @@ export type TagDetailResponse = {
     /**
      * タグID
      */
-    id?: number;
+    id: number;
     /**
      * 組織ID
      */
@@ -45,6 +45,6 @@ export type TagDetailResponse = {
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: string | null;
+    rowVersion: string;
 };
 

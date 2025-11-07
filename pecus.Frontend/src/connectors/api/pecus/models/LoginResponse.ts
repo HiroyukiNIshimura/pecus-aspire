@@ -10,7 +10,7 @@ export type LoginResponse = {
     /**
      * JWTアクセストークン
      */
-    accessToken: string | null;
+    accessToken: string;
     /**
      * トークンタイプ（常に "Bearer"）
      */
@@ -30,15 +30,15 @@ export type LoginResponse = {
     /**
      * ログインID
      */
-    loginId: string | null;
+    loginId: string;
     /**
      * ユーザー名
      */
-    username: string | null;
+    username: string;
     /**
      * メールアドレス
      */
-    email: string | null;
+    email: string;
     /**
      * アバタータイプ
      */

@@ -9,10 +9,10 @@ export type JobResponse = {
     /**
      * メッセージ
      */
-    message: string | null;
+    message: string;
     /**
      * ジョブID
      */
-    jobId: string | null;
+    jobId: string;
 };
 

@@ -9,10 +9,10 @@ export type BatchResponse = {
     /**
      * メッセージ
      */
-    message: string | null;
+    message: string;
     /**
      * ジョブIDのリスト
      */
-    jobIds: Array<string> | null;
+    jobIds: Array<string>;
 };
 

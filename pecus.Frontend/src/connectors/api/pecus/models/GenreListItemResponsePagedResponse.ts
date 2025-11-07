@@ -10,7 +10,7 @@ export type GenreListItemResponsePagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<GenreListItemResponse> | null;
+    data: Array<GenreListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

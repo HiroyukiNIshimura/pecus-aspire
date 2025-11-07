@@ -13,6 +13,6 @@ export type SuccessResponse = {
     /**
      * 成功メッセージ
      */
-    message: string | null;
+    message: string;
 };
 

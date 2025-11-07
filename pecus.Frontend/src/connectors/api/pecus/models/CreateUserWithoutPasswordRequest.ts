@@ -14,5 +14,10 @@ export type CreateUserWithoutPasswordRequest = {
      * メールアドレス
      */
     email: string;
+    /**
+     * ロールIDのリスト。既存のすべてのロールを置き換えます。
+     * 空のリストまたはnullの場合はすべてのロールを削除します。
+     */
+    roles: Array<number>;
 };
 

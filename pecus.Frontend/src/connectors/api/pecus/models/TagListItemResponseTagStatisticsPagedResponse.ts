@@ -11,7 +11,7 @@ export type TagListItemResponseTagStatisticsPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<TagListItemResponse> | null;
+    data: Array<TagListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

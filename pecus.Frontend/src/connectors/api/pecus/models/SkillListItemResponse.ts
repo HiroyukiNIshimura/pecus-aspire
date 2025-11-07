@@ -9,11 +9,11 @@ export type SkillListItemResponse = {
     /**
      * スキルID
      */
-    id?: number;
+    id: number;
     /**
      * スキル名
      */
-    name: string | null;
+    name: string;
     /**
      * スキルの説明
      */

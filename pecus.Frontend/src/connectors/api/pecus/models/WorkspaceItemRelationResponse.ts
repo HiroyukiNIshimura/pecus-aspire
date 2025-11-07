@@ -9,7 +9,7 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 関連ID
      */
-    id?: number;
+    id: number;
     /**
      * 関連元アイテムID
      */

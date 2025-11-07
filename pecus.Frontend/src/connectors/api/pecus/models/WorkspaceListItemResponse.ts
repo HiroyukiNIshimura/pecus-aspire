@@ -10,11 +10,11 @@ export type WorkspaceListItemResponse = {
     /**
      * ワークスペースID
      */
-    id?: number;
+    id: number;
     /**
      * ワークスペース名
      */
-    name: string | null;
+    name: string;
     /**
      * ワークスペースコード
      */

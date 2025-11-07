@@ -11,7 +11,7 @@ export type WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<WorkspaceListItemResponse> | null;
+    data: Array<WorkspaceListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */
