@@ -75,3 +75,11 @@ export async function updateOrganization(
     };
   }
 }
+
+/**
+ * Server Action: 組織情報を取得（getOrganizationDetail() のエイリアス）
+ * 互換性のための別名関数
+ */
+export async function getOrganization(): Promise<ApiResponse<OrganizationResponse>> {
+  return getOrganizationDetail();
+}

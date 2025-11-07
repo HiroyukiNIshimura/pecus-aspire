@@ -1,5 +1,5 @@
 import AdminClient from "./AdminClient";
-import { getOrganization } from "@/actions/admin/organization";
+import { getOrganization } from "@/actions/admin/organizations";
 import { getCurrentUser } from "@/actions/profile";
 import type { ApiErrorResponse } from "@/types/errors";
 import { UserInfo } from "@/types/userInfo";
