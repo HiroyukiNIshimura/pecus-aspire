@@ -158,8 +158,8 @@ export async function updateSkill(
         message: concurrencyError.message,
         latest: {
           type: "skill",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 
@@ -209,8 +209,8 @@ export async function activateSkill(id: number): Promise<ApiResponse<any>> {
         message: concurrencyError.message,
         latest: {
           type: "skill",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
     console.error("Failed to activate skill:", error);
@@ -240,8 +240,8 @@ export async function deactivateSkill(id: number): Promise<ApiResponse<any>> {
         message: concurrencyError.message,
         latest: {
           type: "skill",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
     console.error("Failed to deactivate skill:", error);

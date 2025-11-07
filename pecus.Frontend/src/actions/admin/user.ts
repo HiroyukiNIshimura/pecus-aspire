@@ -99,8 +99,8 @@ export async function setUserActiveStatus(
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
     console.error("Failed to set user active status:", error);
@@ -222,8 +222,8 @@ export async function setUserSkills(
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 
@@ -269,8 +269,8 @@ export async function setUserRoles(
         message: concurrencyError.message,
         latest: {
           type: "user",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 

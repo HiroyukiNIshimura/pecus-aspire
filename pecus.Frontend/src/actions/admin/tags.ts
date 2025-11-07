@@ -104,8 +104,8 @@ export async function updateTag(
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 
@@ -153,8 +153,8 @@ export async function activateTag(id: number): Promise<ApiResponse<any>> {
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
     console.error("Failed to activate tag:", error);
@@ -184,8 +184,8 @@ export async function deactivateTag(id: number): Promise<ApiResponse<any>> {
         message: concurrencyError.message,
         latest: {
           type: "tag",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
     console.error("Failed to deactivate tag:", error);

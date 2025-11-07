@@ -8,24 +8,14 @@
  * 現在は手動で主要なエンティティ型をサポートしています。
  */
 
-// 409 Conflict で返される可能性のあるレスポンス型（後で自動生成ファイルから import する予定）
-// 型名は API の OpenAPI 定義に基づいています
-// import type {
-//   WorkspaceResponse,
-//   TagResponse,
-//   SkillResponse,
-//   UserResponse,
-//   OrganizationResponse,
-//   WorkspaceItemResponse,
-// } from './PecusApiClient.generated';
-
-// 暫定: any 型で定義（実装完了後に自動生成ファイルから import に変更）
-type WorkspaceResponse = any;
-type TagResponse = any;
-type SkillResponse = any;
-type UserResponse = any;
-type OrganizationResponse = any;
-type WorkspaceItemResponse = any;
+import type {
+  OrganizationResponse,
+  SkillResponse,
+  TagResponse,
+  UserResponse,
+  WorkspaceItemResponse,
+  WorkspaceResponse,
+} from "./pecus";
 
 /**
  * 409 Conflict で返される最新データ（discriminator 型）
@@ -143,12 +133,14 @@ export function assertConflictLatestDataType<T extends ConflictLatestData['type'
  * if (workspaceData) {
  *   console.log(workspaceData.id);
  * }
+ *
+ * NOTE: 内部実装では assertConflictLatestDataType を使用することを推奨
  */
 export function getConflictDataByType<T extends ConflictLatestData['type']>(
   latest: ConflictLatestData | null | undefined,
   expectedType: T,
-): Extract<ConflictLatestData, { type: T }>['data'] | null {
-  if (assertConflictLatestDataType(latest, expectedType)) {
+): any | null {
+  if (latest !== null && latest !== undefined && latest.type === expectedType) {
     return latest.data;
   }
   return null;

@@ -109,8 +109,8 @@ export async function updateWorkspace(
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 
@@ -168,8 +168,8 @@ export async function activateWorkspace(
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 
@@ -205,8 +205,8 @@ export async function deactivateWorkspace(
         message: concurrencyError.message,
         latest: {
           type: "workspace",
-          data: concurrencyError.payload,
-        } as const,
+          data: concurrencyError.payload as any,
+        },
       };
     }
 

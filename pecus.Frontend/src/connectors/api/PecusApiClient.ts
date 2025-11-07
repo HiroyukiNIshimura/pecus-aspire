@@ -3,10 +3,13 @@ import {
   configureOpenAPI,
   createApiClientInstances,
 } from "./PecusApiClient.generated";
+import type { ConflictLatestData } from "./ConflictDataTypes";
 
 /**
- * 並行更新による競合エラー
+ * 並行更新による競合エラー（汎用型）
  * サーバーからの 409 Conflict レスポンスをラップ
+ *
+ * @template T - payload の型（デフォルト: unknown）
  *
  * @example
  * try {
@@ -16,17 +19,17 @@ import {
  *   if (concurrencyError) {
  *     // 409 Conflict: 最新データで再試行が必要
  *     console.log(concurrencyError.message); // ユーザーメッセージ
- *     console.log(concurrencyError.payload); // サーバーからのレスポンスボディ
+ *     console.log(concurrencyError.payload); // サーバーからのレスポンスボディ（ConflictLatestData 型）
  *   }
  * }
  */
-export class ConcurrencyError extends Error {
-  public readonly payload: unknown;
+export class ConcurrencyError<T = unknown> extends Error {
+  public readonly payload: T;
 
-  constructor(message: string, payload?: unknown) {
+  constructor(message: string, payload?: T) {
     super(message);
     this.name = "ConcurrencyError";
-    this.payload = payload;
+    this.payload = payload as T;
     Object.setPrototypeOf(this, ConcurrencyError.prototype);
   }
 }
@@ -35,7 +38,7 @@ export class ConcurrencyError extends Error {
  * openapi-typescript-codegen の ApiError から 409 Conflict を検出
  *
  * @param error - キャッチしたエラーオブジェクト
- * @returns 409 の場合は ConcurrencyError、それ以外は null
+ * @returns 409 の場合は ConcurrencyError<ConflictLatestData>、それ以外は null
  *
  * @example
  * try {
@@ -43,6 +46,7 @@ export class ConcurrencyError extends Error {
  * } catch (error) {
  *   const concurrencyError = detectConcurrencyError(error);
  *   if (concurrencyError) {
+ *     // payload は ConflictLatestData 型に型推論される
  *     return {
  *       success: false,
  *       error: "conflict",
@@ -53,7 +57,7 @@ export class ConcurrencyError extends Error {
  *   throw error; // その他のエラーは再スロー
  * }
  */
-export function detectConcurrencyError(error: unknown): ConcurrencyError | null {
+export function detectConcurrencyError(error: unknown): ConcurrencyError<ConflictLatestData> | null {
   // ApiError の場合、status が 409 かをチェック
   if (
     typeof error === "object" &&
@@ -72,7 +76,7 @@ export function detectConcurrencyError(error: unknown): ConcurrencyError | null 
         ? (body as Record<string, unknown>).message
         : null) || "別のユーザーにより変更されました。";
 
-    return new ConcurrencyError(String(message), body);
+    return new ConcurrencyError<ConflictLatestData>(String(message), body as ConflictLatestData);
   }
 
   return null;
