@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Models.Requests;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -21,16 +22,14 @@ public class FileDownloadController : BaseSecureController
     /// <summary>
     /// アイコンファイルを取得（画像を返す）
     /// </summary>
-    /// <param name="fileType">ファイルの種類（avatar, genre）</param>
-    /// <param name="resourceId">リソースID</param>
-    /// <param name="fileName">ファイル名</param>
+    /// <param name="request">アイコン取得リクエスト</param>
     [HttpGet("{fileType}/{resourceId}/{fileName}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<FileContentHttpResult> GetIcon(string fileType, int resourceId, string fileName)
+    public async Task<FileContentHttpResult> GetIcon([FromRoute] GetIconRequest request)
     {
         // ファイルタイプの検証
-        if (!FileUploadHelper.IsValidFileType(fileType))
+        if (!FileUploadHelper.IsValidFileType(request.FileType))
         {
             throw new NotFoundException("ファイルが見つかりません。");
         }
@@ -46,9 +45,9 @@ public class FileDownloadController : BaseSecureController
         var filePath = Path.Combine(
             uploadsPath,
             CurrentUser.OrganizationId.Value.ToString(),
-            fileType,
-            resourceId.ToString(),
-            fileName
+            request.FileType,
+            request.ResourceId.ToString(),
+            request.FileName
         );
 
         if (!System.IO.File.Exists(filePath))
@@ -56,7 +55,7 @@ public class FileDownloadController : BaseSecureController
             throw new NotFoundException("ファイルが見つかりません。");
         }
 
-        var contentType = GetContentType(fileName);
+        var contentType = GetContentType(request.FileName);
         var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
 
         return TypedResults.File(fileBytes, contentType);
