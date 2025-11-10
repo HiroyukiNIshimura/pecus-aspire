@@ -86,7 +86,7 @@ export default function SecurityTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-base-100">
       {/* 現在のパスワード */}
       <div className="form-control">
         <label htmlFor="currentPassword" className="label">

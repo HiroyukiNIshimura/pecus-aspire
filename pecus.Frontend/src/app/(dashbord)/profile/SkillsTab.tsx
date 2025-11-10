@@ -61,7 +61,7 @@ export default function SkillsTab({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-base-100">
       {/* スキル選択ドロップダウン */}
       <div className="dropdown w-full">
         <button

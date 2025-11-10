@@ -87,7 +87,7 @@ export default function BasicInfoTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-base-100">
       <div className="form-control">
         <label htmlFor="username" className="label">
           <span className="label-text font-semibold">ユーザー名</span>

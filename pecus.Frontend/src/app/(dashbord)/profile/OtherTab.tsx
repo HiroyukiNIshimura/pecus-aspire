@@ -19,7 +19,7 @@ export default function OtherTab({ user }: OtherTabProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-base-100">
       {/* ユーザーID */}
       <div className="form-control">
         <label className="label">
