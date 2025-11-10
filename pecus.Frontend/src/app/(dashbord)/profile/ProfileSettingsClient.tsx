@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import AppHeader from "@/components/common/AppHeader";
 import type {
   UserResponse,
   MasterSkillResponse,
-  MessageResponse,
-  SuccessResponse,
 } from "@/connectors/api/pecus";
-import type { ApiResponse } from "@/actions/types";
 import {
   updateUserEmail,
   updateUserPassword,
@@ -28,6 +26,14 @@ interface ProfileSettingsClientProps {
   fetchError?: string | null;
 }
 
+interface UserInfo {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  roles?: any[];
+  isAdmin: boolean;
+}
+
 type TabType = "basic" | "skills" | "security" | "other";
 type AlertType = "success" | "error" | "info";
 
@@ -36,30 +42,24 @@ interface AlertMessage {
   message: string;
 }
 
-/**
- * プロフィール設定クライアントコンポーネント
- * タブ構成で4つのセクション管理
- */
 export default function ProfileSettingsClient({
   initialUser,
   masterSkills,
   fetchError,
 }: ProfileSettingsClientProps) {
-  // タブ状態
   const [activeTab, setActiveTab] = useState<TabType>("basic");
-
-  // ユーザー情報
   const [user, setUser] = useState<UserResponse>(initialUser);
-
-  // アラートメッセージ
   const [alert, setAlert] = useState<AlertMessage | null>(null);
-
-  // ローディング状態
   const [isLoading, setIsLoading] = useState(false);
 
-  // ============================================
-  // タブ1: 基本情報（ユーザー名、メール、アバター）
-  // ============================================
+  const userInfo: UserInfo = {
+    id: initialUser.id,
+    name: initialUser.username,
+    email: initialUser.email,
+    isAdmin: initialUser.isAdmin || false,
+  };
+
+  // Basic Info
   const [username, setUsername] = useState<string>(user.username || "");
   const [newEmail, setNewEmail] = useState<string>(user.email || "");
   const [selectedAvatarType, setSelectedAvatarType] = useState<
@@ -67,40 +67,19 @@ export default function ProfileSettingsClient({
   >(user.avatarType || "Gravatar");
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
-
-  // メール検証
   const emailValidation = useValidation(updateEmailFormSchema);
 
-  // ============================================
-  // タブ2: スキル
-  // ============================================
+  // Skills
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<number>>(
     new Set(user.skills?.map((s) => s.id) || [])
   );
 
-  // ============================================
-  // タブ3: パスワード
-  // ============================================
+  // Password
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [showPasswords, setShowPasswords] = useState<boolean>(false);
-
-  // パスワード検証
   const passwordValidation = useValidation(updatePasswordFormSchema);
-
-  // ============================================
-  // ハンドラー: 基本情報
-  // ============================================
-
-  const handleUsernameChange = (newUsername: string) => {
-    setUsername(newUsername);
-  };
-
-  const handleEmailChange = async (email: string) => {
-    setNewEmail(email);
-    await emailValidation.validate({ newEmail: email });
-  };
 
   const handleEmailSubmit = async () => {
     if (emailValidation.hasErrors) {
@@ -120,11 +99,6 @@ export default function ProfileSettingsClient({
           message: "メールアドレスが変更されました",
         });
         setNewEmail("");
-      } else if (result.error === "conflict") {
-        setAlert({
-          type: "error",
-          message: result.message || "別のユーザーが変更しました",
-        });
       } else {
         setAlert({
           type: "error",
@@ -148,8 +122,7 @@ export default function ProfileSettingsClient({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // ファイル検証
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
     if (file.size > maxSize) {
@@ -169,14 +142,12 @@ export default function ProfileSettingsClient({
       return;
     }
 
-    // プレビュー表示
     const reader = new FileReader();
     reader.onload = (e) => {
       setAvatarPreviewUrl(e.target?.result as string);
     };
     reader.readAsDataURL(file);
 
-    // ファイルアップロード
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -233,14 +204,6 @@ export default function ProfileSettingsClient({
           type: "success",
           message: "基本情報が更新されました",
         });
-      } else if (result.error === "conflict") {
-        setAlert({
-          type: "error",
-          message: result.message || "別のユーザーが変更しました",
-        });
-        if ("latest" in result && result.latest?.data && result.latest.type === "user") {
-          setUser(result.latest.data as UserResponse);
-        }
       } else {
         setAlert({
           type: "error",
@@ -257,10 +220,6 @@ export default function ProfileSettingsClient({
       setIsLoading(false);
     }
   };
-
-  // ============================================
-  // ハンドラー: スキル
-  // ============================================
 
   const handleSkillToggle = (skillId: number) => {
     setSelectedSkillIds((prev) => {
@@ -286,11 +245,6 @@ export default function ProfileSettingsClient({
           type: "success",
           message: "スキルが更新されました",
         });
-      } else if (result.error === "conflict") {
-        setAlert({
-          type: "error",
-          message: result.message || "別のユーザーが変更しました",
-        });
       } else {
         setAlert({
           type: "error",
@@ -308,12 +262,7 @@ export default function ProfileSettingsClient({
     }
   };
 
-  // ============================================
-  // ハンドラー: パスワード
-  // ============================================
-
   const handlePasswordChange = async () => {
-    // バリデーション
     const result = await passwordValidation.validate({
       currentPassword,
       newPassword,
@@ -361,168 +310,167 @@ export default function ProfileSettingsClient({
     }
   };
 
-  // ============================================
-  // レンダリング
-  // ============================================
-
   return (
-    <div className="min-h-screen bg-base-200 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* ヘッダー */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">プロフィール設定</h1>
-          <p className="text-base-content/70">
-            ユーザー情報、スキル、パスワードを管理します
-          </p>
-        </div>
+    <div className="flex flex-col min-h-screen">
+      <AppHeader
+        userInfo={userInfo}
+        sidebarOpen={false}
+        setSidebarOpen={() => {}}
+        hideProfileMenu={true}
+      />
 
-        {/* 初期フェッチエラー */}
-        {fetchError && (
-          <div className="alert alert-error mb-6">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 shrink-0 stroke-current"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m0-4l2 2m0 0l2 2"
-              />
-            </svg>
-            <span>{fetchError}</span>
-          </div>
-        )}
+      <main className="flex-1 p-6 bg-base-100">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold mb-2">プロフィール設定</h1>
+              <p className="text-base-content/70">
+                ユーザー情報、スキル、パスワードを管理します
+              </p>
+            </div>
 
-        {/* アラートメッセージ */}
-        {alert && (
-          <div className={`alert alert-${alert.type} mb-6`}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 shrink-0 stroke-current"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d={
-                  alert.type === "success"
-                    ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                }
-              />
-            </svg>
-            <span>{alert.message}</span>
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost"
-              onClick={() => setAlert(null)}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {/* タブ */}
-        <div className="card bg-base-100 shadow-lg">
-          {/* FlyonUI タブナビゲーション */}
-          <div className="tabs tab-bordered" role="tablist">
-            <button
-              role="tab"
-              className={`tab ${activeTab === "basic" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("basic")}
-              type="button"
-            >
-              基本情報
-            </button>
-            <button
-              role="tab"
-              className={`tab ${activeTab === "skills" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("skills")}
-              type="button"
-            >
-              スキル
-            </button>
-            <button
-              role="tab"
-              className={`tab ${activeTab === "security" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("security")}
-              type="button"
-            >
-              セキュリティ
-            </button>
-            <button
-              role="tab"
-              className={`tab ${activeTab === "other" ? "tab-active" : ""}`}
-              onClick={() => setActiveTab("other")}
-              type="button"
-            >
-              その他の情報
-            </button>
-          </div>
-
-          {/* タブコンテンツ */}
-          <div className="p-6">
-            {activeTab === "basic" && (
-              <BasicInfoTab
-                user={user}
-                username={username}
-                newEmail={newEmail}
-                selectedAvatarType={selectedAvatarType}
-                avatarPreviewUrl={avatarPreviewUrl}
-                emailValidation={emailValidation}
-                isLoading={isLoading}
-                onUsernameChange={handleUsernameChange}
-                onEmailChange={handleEmailChange}
-                onEmailSubmit={handleEmailSubmit}
-                onAvatarTypeChange={setSelectedAvatarType}
-                onAvatarFileSelect={handleAvatarFileSelect}
-                onSubmit={handleBasicInfoSubmit}
-              />
+            {fetchError && (
+              <div className="alert alert-error mb-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m0-4l2 2m0 0l2 2"
+                  />
+                </svg>
+                <span>{fetchError}</span>
+              </div>
             )}
 
-            {activeTab === "skills" && (
-              <SkillsTab
-                masterSkills={masterSkills}
-                selectedSkillIds={selectedSkillIds}
-                isLoading={isLoading}
-                onSkillToggle={handleSkillToggle}
-                onSubmit={handleSkillsSubmit}
-              />
+            {alert && (
+              <div className={`alert alert-${alert.type} mb-6`}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={
+                      alert.type === "success"
+                        ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        : "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    }
+                  />
+                </svg>
+                <span>{alert.message}</span>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => setAlert(null)}
+                >
+                  ✕
+                </button>
+              </div>
             )}
 
-            {activeTab === "security" && (
-              <SecurityTab
-                currentPassword={currentPassword}
-                newPassword={newPassword}
-                confirmPassword={confirmPassword}
-                showPasswords={showPasswords}
-                passwordValidation={passwordValidation}
-                isLoading={isLoading}
-                onCurrentPasswordChange={setCurrentPassword}
-                onNewPasswordChange={setNewPassword}
-                onConfirmPasswordChange={setConfirmPassword}
-                onShowPasswordsToggle={() => setShowPasswords(!showPasswords)}
-                onSubmit={handlePasswordChange}
-              />
-            )}
+            <div className="card bg-base-100 shadow-lg">
+              <div className="tabs tab-bordered" role="tablist">
+                <button
+                  role="tab"
+                  className={`tab ${activeTab === "basic" ? "tab-active" : ""}`}
+                  onClick={() => setActiveTab("basic")}
+                  type="button"
+                >
+                  基本情報
+                </button>
+                <button
+                  role="tab"
+                  className={`tab ${activeTab === "skills" ? "tab-active" : ""}`}
+                  onClick={() => setActiveTab("skills")}
+                  type="button"
+                >
+                  スキル
+                </button>
+                <button
+                  role="tab"
+                  className={`tab ${activeTab === "security" ? "tab-active" : ""}`}
+                  onClick={() => setActiveTab("security")}
+                  type="button"
+                >
+                  セキュリティ
+                </button>
+                <button
+                  role="tab"
+                  className={`tab ${activeTab === "other" ? "tab-active" : ""}`}
+                  onClick={() => setActiveTab("other")}
+                  type="button"
+                >
+                  その他の情報
+                </button>
+              </div>
 
-            {activeTab === "other" && <OtherTab user={user} />}
+              <div className="p-6">
+                {activeTab === "basic" && (
+                  <BasicInfoTab
+                    user={user}
+                    username={username}
+                    newEmail={newEmail}
+                    selectedAvatarType={selectedAvatarType}
+                    avatarPreviewUrl={avatarPreviewUrl}
+                    emailValidation={emailValidation}
+                    isLoading={isLoading}
+                    onUsernameChange={setUsername}
+                    onEmailChange={async (email) => {
+                      setNewEmail(email);
+                      await emailValidation.validate({ newEmail: email });
+                    }}
+                    onEmailSubmit={handleEmailSubmit}
+                    onAvatarTypeChange={setSelectedAvatarType}
+                    onAvatarFileSelect={handleAvatarFileSelect}
+                    onSubmit={handleBasicInfoSubmit}
+                  />
+                )}
+
+                {activeTab === "skills" && (
+                  <SkillsTab
+                    masterSkills={masterSkills}
+                    selectedSkillIds={selectedSkillIds}
+                    isLoading={isLoading}
+                    onSkillToggle={handleSkillToggle}
+                    onSubmit={handleSkillsSubmit}
+                  />
+                )}
+
+                {activeTab === "security" && (
+                  <SecurityTab
+                    currentPassword={currentPassword}
+                    newPassword={newPassword}
+                    confirmPassword={confirmPassword}
+                    showPasswords={showPasswords}
+                    passwordValidation={passwordValidation}
+                    isLoading={isLoading}
+                    onCurrentPasswordChange={setCurrentPassword}
+                    onNewPasswordChange={setNewPassword}
+                    onConfirmPasswordChange={setConfirmPassword}
+                    onShowPasswordsToggle={() => setShowPasswords(!showPasswords)}
+                    onSubmit={handlePasswordChange}
+                  />
+                )}
+
+                {activeTab === "other" && <OtherTab user={user} />}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </main>
     </div>
   );
 }
 
-// ============================================
-// タブコンポーネント
-// ============================================
-
+// Tab Components
 interface BasicInfoTabProps {
   user: UserResponse;
   username: string;
@@ -532,7 +480,7 @@ interface BasicInfoTabProps {
   emailValidation: any;
   isLoading: boolean;
   onUsernameChange: (value: string) => void;
-  onEmailChange: (value: string) => void;
+  onEmailChange: (value: string) => Promise<void>;
   onEmailSubmit: () => void;
   onAvatarTypeChange: (value: "Gravatar" | "UserAvatar" | "AutoGenerated") => void;
   onAvatarFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -540,7 +488,6 @@ interface BasicInfoTabProps {
 }
 
 function BasicInfoTab({
-  user,
   username,
   newEmail,
   selectedAvatarType,
@@ -558,7 +505,6 @@ function BasicInfoTab({
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">基本情報</h2>
 
-      {/* ユーザー名 */}
       <div className="form-control">
         <label htmlFor="username" className="label">
           <span className="label-text font-semibold">ユーザー名</span>
@@ -578,7 +524,6 @@ function BasicInfoTab({
         </label>
       </div>
 
-      {/* メールアドレス */}
       <div className="form-control">
         <label htmlFor="email" className="label">
           <span className="label-text font-semibold">メールアドレス</span>
@@ -618,7 +563,6 @@ function BasicInfoTab({
         )}
       </div>
 
-      {/* アバター設定 */}
       <div className="divider">アバター設定</div>
 
       <div className="form-control">
@@ -645,7 +589,6 @@ function BasicInfoTab({
         </div>
       </div>
 
-      {/* ファイルアップロード（UserAvatar 選択時） */}
       {selectedAvatarType === "UserAvatar" && (
         <div className="form-control">
           <label htmlFor="avatar-file" className="label">
@@ -663,7 +606,6 @@ function BasicInfoTab({
             <span className="label-text-alt">最大 5MB、JPEG/PNG/WebP/GIF</span>
           </label>
 
-          {/* プレビュー */}
           {avatarPreviewUrl && (
             <div className="mt-4">
               <p className="text-sm font-semibold mb-2">プレビュー:</p>
@@ -677,7 +619,6 @@ function BasicInfoTab({
         </div>
       )}
 
-      {/* 保存ボタン */}
       <div className="flex gap-2 pt-4">
         <button
           type="button"
@@ -726,7 +667,6 @@ function SkillsTab({
           </span>
         </label>
 
-        {/* ドロップダウンスキル選択 */}
         <details className="dropdown w-full">
           <summary className="btn btn-outline w-full justify-start">
             {selectedSkillIds.size > 0
@@ -764,7 +704,6 @@ function SkillsTab({
           </ul>
         </details>
 
-        {/* 選択されたスキルのバッジ表示 */}
         {selectedSkillIds.size > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
             {Array.from(selectedSkillIds).map((skillId) => {
@@ -859,7 +798,6 @@ function SecurityTab({
         </span>
       </div>
 
-      {/* 現在のパスワード */}
       <div className="form-control">
         <label htmlFor="current-password" className="label">
           <span className="label-text font-semibold">現在のパスワード</span>
@@ -875,7 +813,6 @@ function SecurityTab({
         />
       </div>
 
-      {/* 新しいパスワード */}
       <div className="form-control">
         <label htmlFor="new-password" className="label">
           <span className="label-text font-semibold">新しいパスワード</span>
@@ -893,7 +830,6 @@ function SecurityTab({
         />
       </div>
 
-      {/* 確認用パスワード */}
       <div className="form-control">
         <label htmlFor="confirm-password" className="label">
           <span className="label-text font-semibold">
@@ -915,7 +851,6 @@ function SecurityTab({
         />
       </div>
 
-      {/* 表示・非表示切り替え */}
       <label className="label cursor-pointer">
         <span className="label-text">パスワードを表示</span>
         <input
@@ -927,7 +862,6 @@ function SecurityTab({
         />
       </label>
 
-      {/* エラー表示 */}
       {passwordValidation.error && (
         <div className="alert alert-error">
           <svg
@@ -983,7 +917,6 @@ function OtherTab({ user }: OtherTabProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">その他の情報</h2>
 
-      {/* アイデンティティアイコン */}
       {user.identityIconUrl && (
         <div className="form-control">
           <label className="label">
@@ -1004,7 +937,6 @@ function OtherTab({ user }: OtherTabProps) {
         </div>
       )}
 
-      {/* ユーザー ID */}
       <div className="form-control">
         <label className="label">
           <span className="label-text font-semibold">ユーザー ID</span>
@@ -1017,7 +949,6 @@ function OtherTab({ user }: OtherTabProps) {
         />
       </div>
 
-      {/* 作成日 */}
       <div className="form-control">
         <label className="label">
           <span className="label-text font-semibold">アカウント作成日</span>
@@ -1030,7 +961,6 @@ function OtherTab({ user }: OtherTabProps) {
         />
       </div>
 
-      {/* 管理者権限 */}
       <div className="form-control">
         <label className="label">
           <span className="label-text font-semibold">管理者権限</span>

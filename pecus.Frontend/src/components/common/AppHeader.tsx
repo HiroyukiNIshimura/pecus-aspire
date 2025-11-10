@@ -18,6 +18,7 @@ interface AppHeaderProps {
   setSidebarOpen: (open: boolean) => void;
   loading?: boolean;
   showAdminLink?: boolean;
+  hideProfileMenu?: boolean;
   onLogout?: () => void;
 }
 
@@ -27,6 +28,7 @@ export default function AppHeader({
   setSidebarOpen,
   loading = false,
   showAdminLink = true,
+  hideProfileMenu = false,
   onLogout,
 }: AppHeaderProps) {
   const { theme, changeTheme, mounted } = useTheme();
@@ -161,11 +163,13 @@ export default function AppHeader({
               </div>
             </button>
             <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
-              <li>
-                <a className="dropdown-item" href="/profile">
-                  プロフィール
-                </a>
-              </li>
+              {!hideProfileMenu && (
+                <li>
+                  <a className="dropdown-item" href="/profile">
+                    プロフィール
+                  </a>
+                </li>
+              )}
               <li>
                 <a className="dropdown-item" href="/settings">
                   設定
