@@ -1,0 +1,161 @@
+"use client";
+
+import { useState } from "react";
+import type { MasterSkillResponse } from "@/connectors/api/pecus";
+import { setUserSkills } from "@/actions/profile";
+
+interface SkillsTabProps {
+  initialSkillIds: number[];
+  masterSkills: MasterSkillResponse[];
+  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+}
+
+export default function SkillsTab({
+  initialSkillIds,
+  masterSkills,
+  onAlert,
+  isLoading,
+  setIsLoading,
+}: SkillsTabProps) {
+  const [selectedSkillIds, setSelectedSkillIds] = useState<Set<number>>(
+    new Set(initialSkillIds)
+  );
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSkillToggle = (skillId: number) => {
+    setSelectedSkillIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(skillId)) {
+        newSet.delete(skillId);
+      } else {
+        newSet.add(skillId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSkillsSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const result = await setUserSkills({
+        skillIds: Array.from(selectedSkillIds),
+      });
+
+      if (result.success) {
+        onAlert("success", "スキルが更新されました");
+      } else {
+        onAlert("error", result.message || "スキル更新に失敗しました");
+      }
+    } catch (error) {
+      console.error("Skills update error:", error);
+      onAlert("error", "予期しないエラーが発生しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const selectedSkills = masterSkills.filter((skill) =>
+    selectedSkillIds.has(skill.id)
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* スキル選択ドロップダウン */}
+      <div className="dropdown w-full">
+        <button
+          type="button"
+          className="btn btn-outline w-full justify-start"
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={isLoading}
+        >
+          <span className="flex-1 text-left">
+            {selectedSkillIds.size > 0
+              ? `${selectedSkillIds.size}個のスキルを選択`
+              : "スキルを選択"}
+          </span>
+          <svg
+            className={`w-5 h-5 transition-transform ${
+              isOpen ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
+        </button>
+        {isOpen && (
+          <div className="dropdown-content bg-base-100 border border-base-300 rounded-lg shadow-lg w-full z-50 max-h-80 overflow-y-auto">
+            <div className="p-4 space-y-2">
+              {masterSkills.map((skill) => (
+                <label
+                  key={skill.id}
+                  className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm"
+                    checked={selectedSkillIds.has(skill.id)}
+                    onChange={() => handleSkillToggle(skill.id)}
+                    disabled={isLoading}
+                  />
+                  <span className="text-sm">{skill.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 選択されたスキルのバッジ表示 */}
+      {selectedSkills.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">選択されたスキル:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedSkills.map((skill) => (
+              <div
+                key={skill.id}
+                className="badge badge-lg badge-primary flex items-center gap-2"
+              >
+                <span>{skill.name}</span>
+                <button
+                  type="button"
+                  onClick={() => handleSkillToggle(skill.id)}
+                  disabled={isLoading}
+                  className="hover:opacity-70 transition-opacity"
+                  aria-label={`Remove ${skill.name}`}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 保存ボタン */}
+      <button
+        type="button"
+        onClick={handleSkillsSubmit}
+        className="btn btn-primary w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <span className="loading loading-spinner loading-sm"></span>
+            保存中...
+          </>
+        ) : (
+          "スキルを保存"
+        )}
+      </button>
+    </div>
+  );
+}
