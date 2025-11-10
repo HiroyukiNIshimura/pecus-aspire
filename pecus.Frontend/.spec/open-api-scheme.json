@@ -1190,13 +1190,13 @@
         "tags": [
           "AdminUser"
         ],
-        "summary": "ユーザーのスキルを設定",
-        "description": "指定したユーザーのスキルを設定します（洗い替え）。組織内のユーザーのみ操作可能です。",
+        "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
+        "description": "\r\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n            指定されたスキル以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\r\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ユーザーID",
+            "description": "対象ユーザーID",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1387,13 +1387,13 @@
         "tags": [
           "AdminUser"
         ],
-        "summary": "ユーザーのロールを設定",
-        "description": "指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。",
+        "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
+        "description": "\r\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n            指定されたロール以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\r\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ユーザーID",
+            "description": "対象ユーザーID",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1402,7 +1402,7 @@
           }
         ],
         "requestBody": {
-          "description": "ロール情報のリスト",
+          "description": "ロールIDのリスト",
           "content": {
             "application/json": {
               "schema": {
@@ -4118,7 +4118,7 @@
           "EntranceOrganization"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -4550,6 +4550,7 @@
           "Profile"
         ],
         "summary": "自分のプロフィール情報を取得",
+        "description": "ユーザーの基本情報（ユーザー名、アバター、スキル、ロール等）を取得します。",
         "responses": {
           "200": {
             "description": "OK",
@@ -4601,6 +4602,7 @@
           "Profile"
         ],
         "summary": "自分のプロフィール情報を更新",
+        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
         "requestBody": {
           "description": "更新情報",
           "content": {
@@ -4623,7 +4625,249 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/skills": {
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のスキルを設定",
+        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "requestBody": {
+          "description": "スキルIDのリスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "スキルを設定しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが無効です",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: スキル情報が別のユーザーにより更新されています",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/email": {
+      "patch": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "メールアドレスを変更",
+        "description": "ユーザーがメールアドレスを変更します。重要なセキュリティ変更です。\r\n新しいメールアドレスが既に使用されていないか事前チェックを行います。",
+        "requestBody": {
+          "description": "変更情報",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -4671,28 +4915,29 @@
         }
       }
     },
-    "/api/profile/email": {
+    "/api/profile/password": {
       "patch": {
         "tags": [
           "Profile"
         ],
-        "summary": "メールアドレスを変更",
+        "summary": "パスワードを変更",
+        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
         "requestBody": {
           "description": "変更情報",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
               }
             }
           }
@@ -6578,7 +6823,6 @@
       "CreateOrganizationRequest": {
         "required": [
           "adminEmail",
-          "adminPassword",
           "adminUsername",
           "name",
           "phoneNumber"
@@ -6635,12 +6879,6 @@
             "type": "string",
             "description": "管理者メールアドレス",
             "format": "email"
-          },
-          "adminPassword": {
-            "maxLength": 100,
-            "minLength": 8,
-            "type": "string",
-            "description": "管理者パスワード"
           }
         },
         "additionalProperties": false,
@@ -8026,7 +8264,8 @@
           },
           "password": {
             "maxLength": 100,
-            "minLength": 6,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
             "type": "string",
             "description": "新しいパスワード"
           }
@@ -8228,6 +8467,28 @@
         "additionalProperties": false,
         "description": "組織のアクティブ状態変更リクエスト"
       },
+      "SetOwnSkillsRequest": {
+        "type": "object",
+        "properties": {
+          "skillIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
+          },
+          "userRowVersion": {
+            "type": "string",
+            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "format": "byte",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "自ユーザースキル設定リクエスト"
+      },
       "SetPermissionsToRoleRequest": {
         "type": "object",
         "properties": {
@@ -8294,7 +8555,8 @@
           },
           "password": {
             "maxLength": 100,
-            "minLength": 6,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
             "type": "string",
             "description": "新しいパスワード"
           },
@@ -9047,6 +9309,30 @@
         },
         "additionalProperties": false,
         "description": "ジャンル更新リクエスト"
+      },
+      "UpdatePasswordRequest": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "type": "string",
+            "description": "現在のパスワード（確認用）"
+          },
+          "newPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+            "type": "string",
+            "description": "新しいパスワード"
+          }
+        },
+        "additionalProperties": false,
+        "description": "パスワード変更リクエスト"
       },
       "UpdateProfileRequest": {
         "required": [

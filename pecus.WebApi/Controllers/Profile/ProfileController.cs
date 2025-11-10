@@ -71,12 +71,12 @@ public class ProfileController : ControllerBase
     /// <param name="request">更新情報</param>
     /// <returns>更新結果</returns>
     [HttpPut]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok> UpdateProfile(UpdateProfileRequest request)
+    public async Task<Ok<UserResponse>> UpdateProfile(UpdateProfileRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
@@ -87,7 +87,14 @@ public class ProfileController : ControllerBase
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        return TypedResults.Ok();
+        // 更新後のプロフィール情報を取得して返す
+        var response = await _profileService.GetOwnProfileAsync(me);
+        if (response == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>

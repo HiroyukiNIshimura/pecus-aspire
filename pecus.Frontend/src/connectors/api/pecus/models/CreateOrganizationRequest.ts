@@ -38,9 +38,5 @@ export type CreateOrganizationRequest = {
      * 管理者メールアドレス
      */
     adminEmail: string;
-    /**
-     * 管理者パスワード
-     */
-    adminPassword: string;
 };
 

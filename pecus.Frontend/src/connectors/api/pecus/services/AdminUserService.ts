@@ -123,9 +123,14 @@ export class AdminUserService {
         });
     }
     /**
-     * ユーザーのスキルを設定
-     * 指定したユーザーのスキルを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
-     * @param id ユーザーID
+     * ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）
+     *
+     * 管理者が組織内のユーザーのスキルを設定します（洗い替え）。
+     * 指定されたスキル以外は削除されます。
+     *
+     * <strong>重要</strong>：このエンドポイントは管理者による操作であり、
+     * ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。
+     * @param id 対象ユーザーID
      * @param requestBody スキルIDのリスト
      * @returns SuccessResponse スキルを設定しました
      * @throws ApiError
@@ -195,10 +200,15 @@ export class AdminUserService {
         });
     }
     /**
-     * ユーザーのロールを設定
-     * 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
-     * @param id ユーザーID
-     * @param requestBody ロール情報のリスト
+     * ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
+     *
+     * 管理者が組織内のユーザーのロールを設定します（洗い替え）。
+     * 指定されたロール以外は削除されます。
+     *
+     * <strong>重要</strong>：このエンドポイントは管理者による操作です。
+     * ユーザーのロールはシステム管理者によってのみ変更されるべきです。
+     * @param id 対象ユーザーID
+     * @param requestBody ロールIDのリスト
      * @returns SuccessResponse ロールを設定しました
      * @throws ApiError
      */
