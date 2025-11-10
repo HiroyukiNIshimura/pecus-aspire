@@ -11,6 +11,7 @@ export type { AddUserToWorkspaceRequest } from './models/AddUserToWorkspaceReque
 export type { AddWorkspaceItemRelationRequest } from './models/AddWorkspaceItemRelationRequest';
 export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItemRelationResponse';
 export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganizationRequest';
+export type { AvatarType } from './models/AvatarType';
 export type { BackendUpdateOrganizationRequest } from './models/BackendUpdateOrganizationRequest';
 export type { BatchResponse } from './models/BatchResponse';
 export type { ContinuationResponse } from './models/ContinuationResponse';
@@ -27,6 +28,7 @@ export type { DeleteOrganizationRequest } from './models/DeleteOrganizationReque
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';
 export type { ErrorResponse } from './models/ErrorResponse';
+export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenreCount } from './models/GenreCount';
 export type { GenreListItemResponse } from './models/GenreListItemResponse';

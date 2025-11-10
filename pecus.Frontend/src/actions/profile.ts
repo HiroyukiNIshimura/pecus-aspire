@@ -1,7 +1,7 @@
 "use server";
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse } from "@/connectors/api/pecus";
+import type { AvatarType, UserResponse } from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
 import type { ApiResponse } from "./types";
 
@@ -41,7 +41,7 @@ export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
  */
 export async function updateProfile(request: {
   username?: string;
-  avatarType?: string;
+  avatarType?: AvatarType;
   avatarUrl?: string;
   skillIds?: number[];
   rowVersion: string; // 楽観的ロック用

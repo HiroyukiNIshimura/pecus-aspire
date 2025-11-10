@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FileType } from '../models/FileType';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -15,7 +16,7 @@ export class FileDownloadService {
      * @throws ApiError
      */
     public static getApiDownloads(
-        fileType: string,
+        fileType: FileType,
         resourceId: number,
         fileName: string,
     ): CancelablePromise<any> {

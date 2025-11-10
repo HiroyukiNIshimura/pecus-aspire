@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FileType } from '../models/FileType';
 import type { FileUploadResponse } from '../models/FileUploadResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -15,10 +16,7 @@ export class FileUploadService {
      */
     public static postApiFiles(
         formData?: {
-            /**
-             * ファイルの種類（avatar, genre）
-             */
-            FileType: string;
+            FileType: FileType;
             /**
              * リソースID（ユーザーIDまたはジャンルID）
              */

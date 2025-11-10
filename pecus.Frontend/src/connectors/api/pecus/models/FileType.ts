@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type DeviceType = 'Browser' | 'MobileApp' | 'DesktopApp' | 'Other';
+/**
+ * ファイル種別
+ */
+export type FileType = 'Avatar' | 'Genre';

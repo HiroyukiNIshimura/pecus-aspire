@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AvatarType } from './AvatarType';
 import type { RoleInfoResponse } from './RoleInfoResponse';
 /**
  * ログインレスポンス
@@ -39,10 +40,7 @@ export type LoginResponse = {
      * メールアドレス
      */
     email: string;
-    /**
-     * アバタータイプ
-     */
-    avatarType?: string | null;
+    avatarType?: AvatarType;
     /**
      * アイデンティティアイコンURL
      */
