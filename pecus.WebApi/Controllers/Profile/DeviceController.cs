@@ -43,6 +43,12 @@ public class DeviceController : ControllerBase
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
         var response = await _profileService.GetUserDevicesAsync(me);
 
         if (response == null || response.Count == 0)
@@ -65,6 +71,12 @@ public class DeviceController : ControllerBase
     public async Task<Ok<MessageResponse>> DeleteDevice(int deviceId)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
 
         var result = await _profileService.DeleteUserDeviceAsync(me, deviceId);
         if (!result)

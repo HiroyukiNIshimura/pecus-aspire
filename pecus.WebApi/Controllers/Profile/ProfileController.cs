@@ -52,6 +52,12 @@ public class ProfileController : ControllerBase
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
         var response = await _profileService.GetOwnProfileAsync(me);
         if (response == null)
         {
@@ -79,6 +85,12 @@ public class ProfileController : ControllerBase
     public async Task<Ok<UserResponse>> UpdateProfile(UpdateProfileRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
 
         // プロフィール情報を更新（ProfileService 経由）
         var result = await _profileService.UpdateOwnProfileAsync(me, request);
@@ -120,6 +132,12 @@ public class ProfileController : ControllerBase
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
         // スキルを設定（ProfileService 経由）
         var result = await _profileService.SetOwnSkillsAsync(
             userId: me,
@@ -152,6 +170,12 @@ public class ProfileController : ControllerBase
     public async Task<Ok<MessageResponse>> UpdateEmail(UpdateEmailRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
 
         // 新しいメールアドレスが現在のものと同じかチェック
         // (ProfileService 経由で最終的に取得)
@@ -195,6 +219,12 @@ public class ProfileController : ControllerBase
     public async Task<Ok<MessageResponse>> UpdatePassword(UpdatePasswordRequest request)
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        var user = await _profileService.GetUserAsync(me);
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
 
         // パスワードを変更（ProfileService 経由）
         var result = await _profileService.UpdatePasswordAsync(

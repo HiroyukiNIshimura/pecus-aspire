@@ -1,6 +1,7 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Pecus.Filters;
@@ -198,6 +199,16 @@ builder
                     {
                         logger?.LogInformation("JwtBearer: Token revoked. UserId={UserId} Jti={Jti} Iat={Iat}", userId, jti, iat);
                         context.Fail("Token has been revoked or invalidated");
+                        return;
+                    }
+
+                    // ユーザーが無効な場合はトークンを拒否
+                    var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                    var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                    if (user == null || !user.IsActive)
+                    {
+                        logger?.LogInformation("JwtBearer: User is inactive or not found. UserId={UserId}", userId);
+                        context.Fail("User is inactive or not found");
                         return;
                     }
 

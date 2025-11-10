@@ -113,25 +113,7 @@ public class UserService
        .Users.Include(u => u.Roles)
             .ThenInclude(r => r.Permissions)
        .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-       .FirstOrDefaultAsync(u => u.Id == userId);
-
-    /// <summary>
-    /// ユーザー名で取得(ロールと権限を含む)
-    /// </summary>
-    public async Task<User?> GetUserByUsernameAsync(string username) =>
-        await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.Username == username);
-
-    /// <summary>
-    /// LoginIdで取得(ロールと権限を含む)
-    /// </summary>
-    public async Task<User?> GetUserByLoginIdAsync(string loginId) =>
-        await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.LoginId == loginId);
+       .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
