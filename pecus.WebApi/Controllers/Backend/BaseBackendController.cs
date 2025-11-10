@@ -9,7 +9,7 @@ namespace Pecus.Controllers.Backend;
 /// Backend ロール（内部サービス用）での認可を提供します。
 /// </summary>
 [Authorize(Roles = "Backend")]
-public abstract class BaseBackendController : Pecus.Controllers.BaseSecureController, IAsyncActionFilter
+public abstract class BaseBackendController : BaseSecureController, IAsyncActionFilter
 {
     protected BaseBackendController(
         ProfileService profileService,
