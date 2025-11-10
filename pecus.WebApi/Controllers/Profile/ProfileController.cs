@@ -80,14 +80,6 @@ public class ProfileController : ControllerBase
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
 
-        // バリデーション: AvatarType="user-avatar"の場合、AvatarUrlが必須
-        if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
-        {
-            throw new InvalidOperationException(
-                "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
-            );
-        }
-
         // プロフィール情報を更新（ProfileService 経由）
         var result = await _profileService.UpdateOwnProfileAsync(me, request);
         if (!result)
