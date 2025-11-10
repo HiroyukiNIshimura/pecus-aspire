@@ -234,17 +234,17 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
   // OS判定 (navigator.userAgentから判定 - navigator.platformは非推奨)
   let os: OSPlatform;
   if (userAgent.includes("Windows")) {
-    os = OSPlatform._1; // Windows
+    os = "Windows";
   } else if (userAgent.includes("Mac")) {
-    os = OSPlatform._2; // MacOS
+    os = "MacOS";
   } else if (userAgent.includes("Linux")) {
-    os = OSPlatform._3; // Linux
+    os = "Linux";
   } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
-    os = OSPlatform._4; // iOS
+    os = "iOS";
   } else if (userAgent.includes("Android")) {
-    os = OSPlatform._5; // Android
+    os = "Android";
   } else {
-    os = OSPlatform._0; // Unknown
+    os = "Unknown";
   }
 
   // デバイス名生成（ブラウザ名 + OS名）
@@ -259,15 +259,15 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
           : "Browser";
 
   const osName =
-    os === OSPlatform._1
+    os === "Windows"
       ? "Windows"
-      : os === OSPlatform._2
+      : os === "MacOS"
         ? "macOS"
-        : os === OSPlatform._3
+        : os === "Linux"
           ? "Linux"
-          : os === OSPlatform._4
+          : os === "iOS"
             ? "iOS"
-            : os === OSPlatform._5
+            : os === "Android"
               ? "Android"
               : "Unknown";
 
@@ -316,7 +316,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
   }
 
   return {
-    deviceType: DeviceType._1, // Browser
+    deviceType: "Browser", // Browser
     os,
     userAgent,
     deviceName,
