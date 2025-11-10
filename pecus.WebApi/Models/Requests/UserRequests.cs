@@ -25,17 +25,6 @@ public class CreateUserRequest
     public required string Email { get; set; }
 
     /// <summary>
-    /// パスワード
-    /// </summary>
-    [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
-    )]
-    public required string Password { get; set; }
-
-    /// <summary>
     /// 組織ID
     /// </summary>
     public int? OrganizationId { get; set; }
@@ -84,10 +73,10 @@ public class SetUserPasswordRequest
     /// 新しいパスワード
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
     )]
     public required string Password { get; set; }
 
@@ -126,10 +115,10 @@ public class ResetPasswordRequest
     /// 新しいパスワード
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
     )]
     public required string Password { get; set; }
 }
@@ -169,6 +158,20 @@ public class UpdateUserRequest
 /// </summary>
 public class UpdateProfileRequest
 {
+    [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
+    [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// 新しいパスワード
+    /// </summary>
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
+    )]
+    public string? Password { get; set; }
+
     /// <summary>
     /// ユーザー名
     /// </summary>
@@ -193,6 +196,13 @@ public class UpdateProfileRequest
     /// </summary>
     [IntListRange(1, 50)]
     public List<int>? SkillIds { get; set; }
+
+    /// <summary>
+    /// ロールIDのリスト。既存のすべてのロールを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのロールを削除します。
+    /// </summary>
+    [IntListRange(1, 5)]
+    public List<int>? Roles { get; set; }
 
     /// <summary>
     /// ユーザーの楽観的ロック用のRowVersion
@@ -294,6 +304,7 @@ public class SetUserRolesRequest
     /// 空のリストまたはnullの場合はすべてのロールを削除します。
     /// </summary>
     [Required(ErrorMessage = "ロールIDリストは必須です。")]
+    [IntListRange(1, 5)]
     public required List<int> Roles { get; set; }
 
     /// <summary>
@@ -301,4 +312,28 @@ public class SetUserRolesRequest
     /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
     /// </summary>
     public byte[]? UserRowVersion { get; set; }
+}
+
+/// <summary>
+/// パスワード変更リクエスト
+/// </summary>
+public class UpdatePasswordRequest
+{
+    /// <summary>
+    /// 現在のパスワード（確認用）
+    /// </summary>
+    [Required(ErrorMessage = "現在のパスワードは必須です。")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    public required string CurrentPassword { get; set; }
+
+    /// <summary>
+    /// 新しいパスワード
+    /// </summary>
+    [Required(ErrorMessage = "新しいパスワードは必須です。")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
+    )]
+    public required string NewPassword { get; set; }
 }

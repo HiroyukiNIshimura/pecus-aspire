@@ -1,7 +1,11 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.Organization;
@@ -20,15 +24,27 @@ namespace Pecus.Controllers.Entrance;
 public class EntranceOrganizationController : ControllerBase
 {
     private readonly OrganizationService _organizationService;
+    private readonly EmailTasks _emailTasks;
+    private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly ILogger<EntranceOrganizationController> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public EntranceOrganizationController(
         OrganizationService organizationService,
-        ILogger<EntranceOrganizationController> logger
+        EmailTasks emailTasks,
+        PecusConfig config,
+        IBackgroundJobClient backgroundJobClient,
+        ILogger<EntranceOrganizationController> logger,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _organizationService = organizationService;
+        _emailTasks = emailTasks;
+        _config = config;
+        _backgroundJobClient = backgroundJobClient;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -37,6 +53,7 @@ public class EntranceOrganizationController : ControllerBase
     /// <remarks>
     /// 新規組織を登録し、管理者ユーザーを同時に作成します。
     /// このエンドポイントは未認証でアクセス可能です（新規サインアップ用）。
+    /// 管理者ユーザーへはパスワード設定メールが送信されます。
     /// </remarks>
     [HttpPost]
     [ProducesResponseType(typeof(OrganizationWithAdminResponse), StatusCodes.Status200OK)]
@@ -44,8 +61,43 @@ public class EntranceOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationWithAdminResponse>> CreateOrganization([FromBody] CreateOrganizationRequest request)
     {
-        var (organization, adminUser) =
+        var (organization, adminUser, passwordSetupToken, tokenExpiresAt) =
             await _organizationService.CreateOrganizationWithUserAsync(request);
+
+        // 動的にBaseUrlを取得
+        var requestContext = _httpContextAccessor.HttpContext?.Request;
+        var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
+
+        // パスワード設定URLを構築
+        var passwordSetupUrl = $"{baseUrl}/password-setup?token={passwordSetupToken}";
+
+        // 組織登録完了メールを送信（Hangfireでバックグラウンド実行）
+        var emailModel = new OrganizationCreatedEmailModel
+        {
+            OrganizationName = organization.Name,
+            OrganizationEmail = organization.Email ?? string.Empty,
+            RepresentativeName = organization.RepresentativeName ?? string.Empty,
+            AdminUserName = adminUser.Username,
+            AdminEmail = adminUser.Email,
+            PasswordSetupUrl = passwordSetupUrl,
+            TokenExpiresAt = tokenExpiresAt,
+            CreatedAt = organization.CreatedAt,
+        };
+
+        // バックグラウンドでメール送信
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                organization.Email ?? string.Empty,
+                "組織登録完了",
+                "organization-created",
+                emailModel
+            )
+        );
+
+        _logger.LogInformation(
+            "組織を登録しました。管理者登録完了メールを送信しました: {Email}",
+            organization.Email
+        );
 
         var response = new OrganizationWithAdminResponse
         {

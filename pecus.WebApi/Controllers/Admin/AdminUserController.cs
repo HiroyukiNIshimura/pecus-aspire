@@ -295,12 +295,19 @@ public class AdminUserController : ControllerBase
     }
 
     /// <summary>
-    /// ユーザーのスキルを設定
+    /// ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）
     /// </summary>
     /// <remarks>
-    /// 指定したユーザーのスキルを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
+    /// <para>
+    /// 管理者が組織内のユーザーのスキルを設定します（洗い替え）。
+    /// 指定されたスキル以外は削除されます。
+    /// </para>
+    /// <para>
+    /// <strong>重要</strong>：このエンドポイントは管理者による操作であり、
+    /// ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。
+    /// </para>
     /// </remarks>
-    /// <param name="id">ユーザーID</param>
+    /// <param name="id">対象ユーザーID</param>
     /// <param name="request">スキルIDのリスト</param>
     /// <response code="200">スキルを設定しました</response>
     /// <response code="403">他組織のユーザーは操作できません</response>
@@ -332,6 +339,8 @@ public class AdminUserController : ControllerBase
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
+        // 管理者が別のユーザーのスキルを設定（洗い替え）
+        // 操作実行者（me = 管理者）がスキル情報を変更
         var result = await _userService.SetUserSkillsAsync(
             userId: id,
             skillIds: request.SkillIds,
@@ -342,6 +351,13 @@ public class AdminUserController : ControllerBase
         {
             throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        _logger.LogInformation(
+            "管理者がユーザーのスキルを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, SkillCount: {SkillCount}",
+            me,
+            id,
+            request.SkillIds?.Count ?? 0
+        );
 
         return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
     }
@@ -521,13 +537,20 @@ public class AdminUserController : ControllerBase
     }
 
     /// <summary>
-    /// ユーザーのロールを設定
+    /// ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
     /// </summary>
     /// <remarks>
-    /// 指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。
+    /// <para>
+    /// 管理者が組織内のユーザーのロールを設定します（洗い替え）。
+    /// 指定されたロール以外は削除されます。
+    /// </para>
+    /// <para>
+    /// <strong>重要</strong>：このエンドポイントは管理者による操作です。
+    /// ユーザーのロールはシステム管理者によってのみ変更されるべきです。
+    /// </para>
     /// </remarks>
-    /// <param name="id">ユーザーID</param>
-    /// <param name="request">ロール情報のリスト</param>
+    /// <param name="id">対象ユーザーID</param>
+    /// <param name="request">ロールIDのリスト</param>
     /// <response code="200">ロールを設定しました</response>
     /// <response code="403">他組織のユーザーは操作できません</response>
     /// <response code="404">ユーザーが見つかりません</response>
@@ -558,6 +581,8 @@ public class AdminUserController : ControllerBase
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
+        // 管理者が別のユーザーのロールを設定（洗い替え）
+        // 操作実行者（me = 管理者）がロール情報を変更
         var result = await _userService.SetUserRolesAsync(
             userId: id,
             roleIds: request.Roles,
@@ -568,6 +593,13 @@ public class AdminUserController : ControllerBase
         {
             throw new NotFoundException("ユーザーが見つかりません。");
         }
+
+        _logger.LogInformation(
+            "管理者がユーザーのロールを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, RoleCount: {RoleCount}",
+            me,
+            id,
+            request.Roles?.Count ?? 0
+        );
 
         return TypedResults.Ok(new SuccessResponse { Message = "ロールを設定しました。" });
     }

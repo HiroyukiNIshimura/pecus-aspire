@@ -13,6 +13,40 @@ namespace Pecus.Services;
 /// <summary>
 /// ユーザー管理サービス
 /// </summary>
+/// <remarks>
+/// <para>
+/// <strong>責務</strong>：ユーザーの基本情報・属性の取得・管理を担当
+/// </para>
+/// <list type="bullet">
+/// <item>
+///   <description>
+///     ユーザー基本情報：ユーザーID、ログインID、ユーザー名、メール、アバター等の属性
+///   </description>
+/// </item>
+/// <item>
+///   <description>
+///     ユーザー属性：スキル、ロール、権限、組織、ワークスペース等の関連情報
+///   </description>
+/// </item>
+/// </list>
+/// <para>
+/// <strong>対比：ProfileService との使い分け</strong>
+/// </para>
+/// <list type="bullet">
+/// <item>
+///   <description>
+///     <strong>UserService</strong>：ユーザーの基本情報・属性
+///     <br/>ユーザー名、アバター、スキル、ロール、属性管理
+///   </description>
+/// </item>
+/// <item>
+///   <description>
+///     <strong>ProfileService</strong>：ユーザー設定・セキュリティ関連
+///     <br/>メール変更（セキュリティ）、デバイス管理（セッション）
+///   </description>
+/// </item>
+/// </list>
+/// </remarks>
 public class UserService
 {
     private readonly ApplicationDbContext _context;
@@ -25,43 +59,6 @@ public class UserService
     {
         _context = context;
         _refreshTokenService = refreshTokenService;
-    }
-
-    /// <summary>
-    /// ユーザーを作成
-    /// </summary>
-    public async Task<User> CreateUserAsync(CreateUserRequest request, int? createdByUserId = null)
-    {
-        // 既存ユーザーチェック
-        if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-        {
-            throw new DuplicateException("ユーザー名は既に使用されています。");
-        }
-
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-        {
-            throw new DuplicateException("メールアドレスは既に使用されています。");
-        }
-
-        // ユニークなLoginIdを生成
-        var loginId = await GenerateUniqueLoginIdAsync(_context);
-
-        var user = new User
-        {
-            LoginId = loginId,
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = HashPassword(request.Password),
-            OrganizationId = request.OrganizationId,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUserId = createdByUserId,
-            IsActive = true,
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        return user;
     }
 
     /// <summary>
@@ -631,71 +628,6 @@ public class UserService
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return true;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// ユーザープロフィールを更新（基本情報 + スキル）
-    /// </summary>
-    public async Task<User?> UpdateProfileAsync(int userId, UpdateProfileRequest request, int updatedByUserId)
-    {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            // ユーザーを取得して RowVersion をチェック
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new NotFoundException("ユーザーが見つかりません。");
-            }
-
-            // 基本プロフィール情報の更新
-            var updateUserRequest = new UpdateUserRequest
-            {
-                Username = request.Username,
-                AvatarType = request.AvatarType,
-                AvatarUrl = request.AvatarUrl
-            };
-
-            var updatedUser = await UpdateUserAsync(userId, updateUserRequest, updatedByUserId);
-            if (updatedUser == null)
-            {
-                return null;
-            }
-
-            // スキルの更新（指定されている場合のみ）
-            if (request.SkillIds != null)
-            {
-                // 既存のスキルをすべて削除
-                var existingUserSkills = await _context.UserSkills
-                    .Where(us => us.UserId == userId)
-                    .ToListAsync();
-                _context.UserSkills.RemoveRange(existingUserSkills);
-                await _context.SaveChangesAsync();
-
-                // 新しいスキルを追加
-                foreach (var skillId in request.SkillIds)
-                {
-                    var userSkill = new UserSkill
-                    {
-                        UserId = userId,
-                        SkillId = skillId,
-                        AddedAt = DateTime.UtcNow,
-                        AddedByUserId = updatedByUserId,
-                    };
-                    _context.UserSkills.Add(userSkill);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-
-            await transaction.CommitAsync();
-            return updatedUser;
         }
         catch
         {

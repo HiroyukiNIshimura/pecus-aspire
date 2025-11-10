@@ -24,7 +24,12 @@ public class OrganizationService
     /// <summary>
     /// 組織を作成（管理者ユーザーも同時作成）
     /// </summary>
-    public async Task<(Organization organization, User adminUser)> CreateOrganizationWithUserAsync(
+    /// <remarks>
+    /// 組織と管理者ユーザーを作成します。
+    /// 管理者ユーザーのパスワードはリクエストから取得せず、パスワード設定トークンを生成します。
+    /// トークンはメール送信で使用されます。
+    /// </remarks>
+    public async Task<(Organization organization, User adminUser, string passwordSetupToken, DateTime tokenExpiresAt)> CreateOrganizationWithUserAsync(
         CreateOrganizationRequest request
     )
     {
@@ -57,37 +62,62 @@ public class OrganizationService
             _context.Organizations.Add(organization);
             await _context.SaveChangesAsync();
 
-            // 管理者ユーザーを作成
-            var adminUserRequest = new CreateUserRequest
+            // 管理者ユーザーを作成（パスワード未設定）
+            // User オブジェクトを直接作成し、パスワードは未設定状態で保存
+            var adminUser = new User
             {
                 Username = request.AdminUsername,
                 Email = request.AdminEmail,
-                Password = request.AdminPassword,
+                LoginId = request.AdminEmail, // LoginId はメールアドレスを使用
+                PasswordHash = string.Empty, // パスワード未設定
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
                 OrganizationId = organization.Id,
             };
 
-            var adminUser = await _userService.CreateUserAsync(adminUserRequest, null);
+            _context.Users.Add(adminUser);
+            await _context.SaveChangesAsync();
+
+            // パスワード設定トークンを生成
+            var token = GeneratePasswordResetToken();
+            var tokenExpiresAt = DateTime.UtcNow.AddHours(24); // 24時間有効
+
+            // 管理者ユーザーに設定（パスワードは未設定状態にする）
+            adminUser.PasswordHash = string.Empty; // パスワード未設定
+            adminUser.PasswordResetToken = token;
+            adminUser.PasswordResetTokenExpiresAt = tokenExpiresAt;
 
             // Admin ロールを取得
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
             if (adminRole != null)
             {
                 adminUser.Roles.Add(adminRole);
-                await _context.SaveChangesAsync();
             }
 
             // 組織の作成者を管理者ユーザーに設定
             organization.CreatedByUserId = adminUser.Id;
+
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
-            return (organization, adminUser);
+            return (organization, adminUser, token, tokenExpiresAt);
         }
         catch
         {
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    /// <summary>
+    /// パスワード設定トークンを生成
+    /// </summary>
+    private static string GeneratePasswordResetToken()
+    {
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        var tokenBytes = new byte[32];
+        rng.GetBytes(tokenBytes);
+        return Convert.ToBase64String(tokenBytes);
     }
 
     /// <summary>

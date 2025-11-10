@@ -61,17 +61,6 @@ public class CreateOrganizationRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string AdminEmail { get; set; }
-
-    /// <summary>
-    /// 管理者パスワード
-    /// </summary>
-    [Required(ErrorMessage = "管理者パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 8,
-        ErrorMessage = "パスワードは8文字以上100文字以内で入力してください。"
-    )]
-    public required string AdminPassword { get; set; }
 }
 
 /// <summary>
