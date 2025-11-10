@@ -48,6 +48,7 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
     /// <summary>
     /// アクション実行前に呼び出され、ユーザーの有効性を確認します
     /// </summary>
+    [NonAction]
     public async Task OnActionExecutionAsync(
         ActionExecutingContext context,
         ActionExecutionDelegate next

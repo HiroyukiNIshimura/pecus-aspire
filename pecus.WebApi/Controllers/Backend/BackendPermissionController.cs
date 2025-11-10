@@ -21,9 +21,10 @@ public class BackendPermissionController : BaseBackendController
 
     public BackendPermissionController(
         PermissionService permissionService,
+        ProfileService profileService,
         ILogger<BackendPermissionController> logger
     )
-        : base(logger)
+        : base(profileService, logger)
     {
         _permissionService = permissionService;
     }

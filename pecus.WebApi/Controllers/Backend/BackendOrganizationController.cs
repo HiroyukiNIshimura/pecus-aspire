@@ -21,16 +21,19 @@ public class BackendOrganizationController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;
     private readonly PecusConfig _config;
+    private readonly ILogger<BackendOrganizationController> _logger;
 
     public BackendOrganizationController(
         OrganizationService organizationService,
         ILogger<BackendOrganizationController> logger,
+        ProfileService profileService,
         PecusConfig config
     )
-        : base(logger)
+        : base(profileService, logger)
     {
         _organizationService = organizationService;
         _config = config;
+        _logger = logger;
     }
 
     /// <summary>

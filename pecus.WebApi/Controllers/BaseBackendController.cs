@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Pecus.Controllers.Admin;
+using Pecus.Services;
 
 namespace Pecus.Controllers;
 
@@ -9,30 +11,13 @@ namespace Pecus.Controllers;
 /// Backend ロール（内部サービス用）での認可を提供し、
 /// IAsyncActionFilter を実装してアクション実行前にロール確認を行います。
 /// </summary>
-[ApiController]
 [Authorize(Roles = "Backend")]
-public abstract class BaseBackendController : ControllerBase, IAsyncActionFilter
+public abstract class BaseBackendController : BaseSecureController, IAsyncActionFilter
 {
-    protected readonly ILogger _logger;
-
-    protected BaseBackendController(ILogger logger)
+    protected BaseBackendController(
+        ProfileService profileService,
+        ILogger<BaseBackendController> logger
+    ) : base(profileService, logger)
     {
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// アクション実行前にロール確認を行うフィルター
-    /// </summary>
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-    {
-        // Backend ロール確認
-        if (!User.IsInRole("Backend"))
-        {
-            context.Result = new UnauthorizedResult();
-            return;
-        }
-
-        // アクション実行
-        await next();
     }
 }

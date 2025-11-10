@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Responses.Common;
+using Pecus.Services;
 
 namespace Pecus.Controllers.Backend;
 
@@ -17,11 +18,12 @@ public class BackendHangfireTestController : BaseBackendController
     private readonly IRecurringJobManager _recurringJobManager;
 
     public BackendHangfireTestController(
-        ILogger<BackendHangfireTestController> logger,
         IBackgroundJobClient backgroundJobClient,
-        IRecurringJobManager recurringJobManager
+        IRecurringJobManager recurringJobManager,
+        ILogger<BackendHangfireTestController> logger,
+        ProfileService profileService
     )
-        : base(logger)
+        : base(profileService, logger)
     {
         _backgroundJobClient = backgroundJobClient;
         _recurringJobManager = recurringJobManager;

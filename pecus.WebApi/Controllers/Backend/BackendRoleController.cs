@@ -19,8 +19,11 @@ public class BackendRoleController : BaseBackendController
 {
     private readonly RoleService _roleService;
 
-    public BackendRoleController(RoleService roleService, ILogger<BackendRoleController> logger)
-        : base(logger)
+    public BackendRoleController(
+        RoleService roleService,
+        ProfileService profileService,
+        ILogger<BackendRoleController> logger)
+        : base(profileService, logger)
     {
         _roleService = roleService;
     }

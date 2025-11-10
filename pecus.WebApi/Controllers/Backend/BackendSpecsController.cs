@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Writers;
 using Pecus.Models.Responses.Common;
+using Pecus.Services;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Pecus.Controllers.Backend;
@@ -17,9 +18,10 @@ public class BackendSpecsController : BaseBackendController
 
     public BackendSpecsController(
         ISwaggerProvider swaggerProvider,
+        ProfileService profileService,
         ILogger<BackendSpecsController> logger
     )
-        : base(logger)
+        : base(profileService, logger)
     {
         _swaggerProvider = swaggerProvider;
     }

@@ -22,9 +22,10 @@ public class BackendGenreController : BaseBackendController
     public BackendGenreController(
         GenreService genreService,
         PecusConfig config,
+        ProfileService profileService,
         ILogger<BackendGenreController> logger
     )
-        : base(logger)
+        : base(profileService, logger)
     {
         _genreService = genreService;
         _config = config;
