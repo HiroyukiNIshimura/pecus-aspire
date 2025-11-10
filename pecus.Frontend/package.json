@@ -13,7 +13,7 @@
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
     "generate:conflict-types": "node scripts/generate-conflict-types.js",
     "clean:api": "rimraf src/connectors/api/pecus",
-    "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus && npm run generate:conflict-types",
+    "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus --useUnionTypes && npm run generate:conflict-types",
     "generate:client": "node scripts/generate-pecus-api-client.js"
   },
   "dependencies": {

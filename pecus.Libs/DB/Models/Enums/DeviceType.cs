@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.DB.Models.Enums;
 
 /// <summary>
 /// 端末の種類（簡易分類）
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<DeviceType>))]
 public enum DeviceType
 {
     /// <summary>

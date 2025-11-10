@@ -4316,30 +4316,36 @@
         "summary": "アイコンファイルを取得（画像を返す）",
         "parameters": [
           {
-            "name": "fileType",
+            "name": "FileType",
             "in": "path",
             "description": "ファイルの種類（avatar, genre）",
             "required": true,
             "schema": {
+              "maxLength": 50,
+              "minLength": 0,
               "type": "string"
             }
           },
           {
-            "name": "resourceId",
+            "name": "ResourceId",
             "in": "path",
-            "description": "リソースID",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
             "required": true,
             "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
               "type": "integer",
               "format": "int32"
             }
           },
           {
-            "name": "fileName",
+            "name": "FileName",
             "in": "path",
             "description": "ファイル名",
             "required": true,
             "schema": {
+              "maxLength": 255,
+              "minLength": 0,
               "type": "string"
             }
           }
@@ -4361,40 +4367,37 @@
         }
       }
     },
-    "/api/files/{fileType}/{resourceId}": {
+    "/api/files": {
       "post": {
         "tags": [
           "FileUpload"
         ],
         "summary": "ファイルをアップロード",
-        "parameters": [
-          {
-            "name": "fileType",
-            "in": "path",
-            "description": "ファイルの種類（avatar, genre）",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "resourceId",
-            "in": "path",
-            "description": "リソースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "File",
+                  "FileType",
+                  "ResourceId"
+                ],
                 "type": "object",
                 "properties": {
-                  "file": {
+                  "FileType": {
+                    "maxLength": 50,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "ファイルの種類（avatar, genre）"
+                  },
+                  "ResourceId": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
+                    "type": "integer",
+                    "description": "リソースID（ユーザーIDまたはジャンルID）",
+                    "format": "int32"
+                  },
+                  "File": {
                     "type": "string",
                     "description": "アップロードするファイル",
                     "format": "binary"
@@ -4402,7 +4405,13 @@
                 }
               },
               "encoding": {
-                "file": {
+                "FileType": {
+                  "style": "form"
+                },
+                "ResourceId": {
+                  "style": "form"
+                },
+                "File": {
                   "style": "form"
                 }
               }
@@ -8539,7 +8548,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "アクティブ状態設定リクエスト"
+        "description": "ユーザーのアクティブ状態設定リクエスト"
       },
       "SetUserPasswordRequest": {
         "required": [
@@ -8605,8 +8614,7 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
-            "nullable": true
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。"
           },
           "userRowVersion": {
             "type": "string",
@@ -8616,7 +8624,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "スキル設定リクエスト"
+        "description": "ユーザーのスキル設定リクエスト"
       },
       "SkillDetailResponse": {
         "required": [

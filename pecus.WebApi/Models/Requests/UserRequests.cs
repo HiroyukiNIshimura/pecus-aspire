@@ -137,8 +137,9 @@ public class UpdateUserRequest
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    [AvatarType]
-    public string? AvatarType { get; set; }
+
+    [EnumDataType(typeof(AvatarType), ErrorMessage = "有効なアバタータイプを指定してください。")]
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL
@@ -167,8 +168,8 @@ public class UpdateProfileRequest
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    [AvatarType]
-    public string? AvatarType { get; set; }
+    [EnumDataType(typeof(AvatarType), ErrorMessage = "有効なアバタータイプを指定してください。")]
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL

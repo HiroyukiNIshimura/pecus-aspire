@@ -9,7 +9,7 @@ export class FileDownloadService {
     /**
      * アイコンファイルを取得（画像を返す）
      * @param fileType ファイルの種類（avatar, genre）
-     * @param resourceId リソースID
+     * @param resourceId リソースID（ユーザーIDまたはジャンルID）
      * @param fileName ファイル名
      * @returns any OK
      * @throws ApiError
@@ -23,9 +23,9 @@ export class FileDownloadService {
             method: 'GET',
             url: '/api/downloads/{fileType}/{resourceId}/{fileName}',
             path: {
-                'fileType': fileType,
-                'resourceId': resourceId,
-                'fileName': fileName,
+                'FileType': fileType,
+                'ResourceId': resourceId,
+                'FileName': fileName,
             },
             errors: {
                 404: `Not Found`,

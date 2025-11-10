@@ -9,29 +9,29 @@ import { request as __request } from '../core/request';
 export class FileUploadService {
     /**
      * ファイルをアップロード
-     * @param fileType ファイルの種類（avatar, genre）
-     * @param resourceId リソースID
      * @param formData
      * @returns FileUploadResponse OK
      * @throws ApiError
      */
     public static postApiFiles(
-        fileType: string,
-        resourceId: number,
         formData?: {
+            /**
+             * ファイルの種類（avatar, genre）
+             */
+            FileType: string;
+            /**
+             * リソースID（ユーザーIDまたはジャンルID）
+             */
+            ResourceId: number;
             /**
              * アップロードするファイル
              */
-            file?: Blob;
+            File: Blob;
         },
     ): CancelablePromise<FileUploadResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/files/{fileType}/{resourceId}',
-            path: {
-                'fileType': fileType,
-                'resourceId': resourceId,
-            },
+            url: '/api/files',
             formData: formData,
             mediaType: 'multipart/form-data',
             errors: {

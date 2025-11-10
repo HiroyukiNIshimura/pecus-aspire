@@ -11,8 +11,8 @@ public class FileUploadRequest
     /// ファイルの種類（avatar, genre）
     /// </summary>
     [Required(ErrorMessage = "ファイルの種類は必須です。")]
-    [StringLength(50, ErrorMessage = "ファイルの種類は50文字以内で入力してください。")]
-    public required string FileType { get; set; }
+    [EnumDataType(typeof(FileType), ErrorMessage = "ファイルの種類が無効です。")]
+    public required FileType FileType { get; set; }
 
     /// <summary>
     /// リソースID（ユーザーIDまたはジャンルID）

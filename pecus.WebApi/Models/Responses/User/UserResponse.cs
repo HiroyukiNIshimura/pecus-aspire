@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.User;
@@ -34,7 +35,7 @@ public class UserResponse : IConflictModel
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    public string AvatarType { get; set; } = "auto-generated";
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アイデンティティアイコンURL

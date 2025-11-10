@@ -40,12 +40,6 @@ public class FileUploadService
         int organizationId
     )
     {
-        // ファイルの種類をバリデーション
-        if (!FileUploadHelper.IsValidFileType(fileType))
-        {
-            throw new InvalidOperationException($"無効なファイルタイプです: {fileType}");
-        }
-
         // ファイルサイズチェック
         if (!FileUploadHelper.IsAllowedFileSize(file.Length, _config.FileUpload.MaxFileSize))
         {

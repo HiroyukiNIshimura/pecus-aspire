@@ -15,6 +15,7 @@ using Pecus.Services;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -238,6 +239,8 @@ builder.Services.AddControllers(options =>
         opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         // リクエスト側は大文字小文字を無視してマッピング（PascalCase のプロパティ名も許可）
         opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        // Enumを文字列としてシリアライズ/デシリアライズ
+        opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
 // Swagger/OpenAPIの設定

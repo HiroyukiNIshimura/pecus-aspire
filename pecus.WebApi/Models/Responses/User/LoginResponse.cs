@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Responses.Role;
 using System.ComponentModel.DataAnnotations;
 
@@ -55,7 +56,7 @@ public class LoginResponse
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    public string AvatarType { get; set; } = "auto-generated";
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アイデンティティアイコンURL

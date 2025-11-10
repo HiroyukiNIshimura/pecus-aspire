@@ -25,7 +25,7 @@ export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemReq
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { DeleteOrganizationRequest } from './models/DeleteOrganizationRequest';
 export type { DeviceResponse } from './models/DeviceResponse';
-export { DeviceType } from './models/DeviceType';
+export type { DeviceType } from './models/DeviceType';
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenreCount } from './models/GenreCount';
@@ -44,7 +44,7 @@ export type { OrganizationListItemResponsePagedResponse } from './models/Organiz
 export type { OrganizationResponse } from './models/OrganizationResponse';
 export type { OrganizationResponseConcurrencyErrorResponse } from './models/OrganizationResponseConcurrencyErrorResponse';
 export type { OrganizationWithAdminResponse } from './models/OrganizationWithAdminResponse';
-export { OSPlatform } from './models/OSPlatform';
+export type { OSPlatform } from './models/OSPlatform';
 export type { PermissionDetailInfoResponse } from './models/PermissionDetailInfoResponse';
 export type { PermissionDetailResponse } from './models/PermissionDetailResponse';
 export type { PermissionListItemResponse } from './models/PermissionListItemResponse';
@@ -87,7 +87,7 @@ export type { TagListItemResponseTagStatisticsPagedResponse } from './models/Tag
 export type { TagResponse } from './models/TagResponse';
 export type { TagStatistics } from './models/TagStatistics';
 export type { TagUsageItem } from './models/TagUsageItem';
-export { TaskPriority } from './models/TaskPriority';
+export type { TaskPriority } from './models/TaskPriority';
 export type { UpdateEmailRequest } from './models/UpdateEmailRequest';
 export type { UpdateGenreRequest } from './models/UpdateGenreRequest';
 export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';

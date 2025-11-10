@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.User;
@@ -267,7 +268,7 @@ public class ProfileService
             if (request.AvatarType != null)
             {
                 // AvatarType="user-avatar"の場合、AvatarUrlが必須
-                if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
+                if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
                 {
                     throw new InvalidOperationException(
                         "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"

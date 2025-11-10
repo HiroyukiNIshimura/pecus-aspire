@@ -2,11 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export enum OSPlatform {
-    '_0' = 0,
-    '_1' = 1,
-    '_2' = 2,
-    '_3' = 3,
-    '_4' = 4,
-    '_5' = 5,
-}
+export type OSPlatform = 0 | 1 | 2 | 3 | 4 | 5;

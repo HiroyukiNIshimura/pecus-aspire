@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * アクティブ状態設定リクエスト
+ * ユーザーのアクティブ状態設定リクエスト
  */
 export type SetUserActiveStatusRequest = {
     /**

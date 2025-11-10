@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Requests;
@@ -28,12 +29,6 @@ public class FileDownloadController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<FileContentHttpResult> GetIcon([FromRoute] GetIconRequest request)
     {
-        // ファイルタイプの検証
-        if (!FileUploadHelper.IsValidFileType(request.FileType))
-        {
-            throw new NotFoundException("ファイルが見つかりません。");
-        }
-
         // CurrentUser は基底クラスで有効性チェック済み
         if (CurrentUser?.OrganizationId == null)
         {
@@ -45,7 +40,7 @@ public class FileDownloadController : BaseSecureController
         var filePath = Path.Combine(
             uploadsPath,
             CurrentUser.OrganizationId.Value.ToString(),
-            request.FileType,
+            request.FileType.GetDisplayName().ToLowerInvariant(),
             request.ResourceId.ToString(),
             request.FileName
         );

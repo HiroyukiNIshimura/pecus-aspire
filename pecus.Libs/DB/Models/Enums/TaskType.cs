@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.DB.Models.Enums;
 
 /// <summary>
 /// タスクの種類を表す列挙型
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TaskType>))]
 public enum TaskType
 {
     /// <summary>
