@@ -75,12 +75,23 @@ export default function ProfileSettingsClient({
               <button type="button" onClick={() => setAlert(null)} className="btn btn-sm btn-ghost">✕</button>
             </div>
           )}
-          <div className="tabs tabs-bordered mb-6">
-            {tabs.map((tab) => (
-              <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`tab ${activeTab === tab.id ? "tab-active" : ""}`}>
-                {tab.label}
-              </button>
-            ))}
+          <div className="mb-6">
+            <div className="flex border-b border-base-300">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2 font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? "text-primary border-b-2 border-primary -mb-0.5"
+                      : "text-base-content/70 hover:text-base-content"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
           {/* タブコンテンツ */}
           <div className="bg-base-100 rounded-lg shadow-md p-6">
