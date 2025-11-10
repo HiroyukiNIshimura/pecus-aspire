@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -16,14 +15,11 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// 組織管理コントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/organizations")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendOrganizationController : ControllerBase
+public class BackendOrganizationController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;
-    private readonly ILogger<BackendOrganizationController> _logger;
     private readonly PecusConfig _config;
 
     public BackendOrganizationController(
@@ -31,9 +27,9 @@ public class BackendOrganizationController : ControllerBase
         ILogger<BackendOrganizationController> logger,
         PecusConfig config
     )
+        : base(logger)
     {
         _organizationService = organizationService;
-        _logger = logger;
         _config = config;
     }
 

@@ -1,5 +1,4 @@
 using Hangfire;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs.Hangfire.Tasks;
@@ -10,13 +9,10 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// Hangfire動作確認用のテストコントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/hangfire-test")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendHangfireTestController : ControllerBase
+public class BackendHangfireTestController : BaseBackendController
 {
-    private readonly ILogger<BackendHangfireTestController> _logger;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly IRecurringJobManager _recurringJobManager;
 
@@ -25,8 +21,8 @@ public class BackendHangfireTestController : ControllerBase
         IBackgroundJobClient backgroundJobClient,
         IRecurringJobManager recurringJobManager
     )
+        : base(logger)
     {
-        _logger = logger;
         _backgroundJobClient = backgroundJobClient;
         _recurringJobManager = recurringJobManager;
     }

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Writers;
@@ -10,22 +9,19 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// OpenAPI仕様書管理コントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/specs")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendSpecsController : ControllerBase
+public class BackendSpecsController : BaseBackendController
 {
     private readonly ISwaggerProvider _swaggerProvider;
-    private readonly ILogger<BackendSpecsController> _logger;
 
     public BackendSpecsController(
         ISwaggerProvider swaggerProvider,
         ILogger<BackendSpecsController> logger
     )
+        : base(logger)
     {
         _swaggerProvider = swaggerProvider;
-        _logger = logger;
     }
 
     /// <summary>

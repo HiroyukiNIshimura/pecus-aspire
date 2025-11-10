@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -14,19 +13,16 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// ロール管理コントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/roles")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendRoleController : ControllerBase
+public class BackendRoleController : BaseBackendController
 {
     private readonly RoleService _roleService;
-    private readonly ILogger<BackendRoleController> _logger;
 
     public BackendRoleController(RoleService roleService, ILogger<BackendRoleController> logger)
+        : base(logger)
     {
         _roleService = roleService;
-        _logger = logger;
     }
 
     /// <summary>

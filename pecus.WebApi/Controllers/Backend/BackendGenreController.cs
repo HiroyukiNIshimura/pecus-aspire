@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -14,24 +13,21 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// ジャンルコントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/genres")]
-[Authorize(Roles = "Backend")]
-public class BackendGenreController : ControllerBase
+public class BackendGenreController : BaseBackendController
 {
     private readonly GenreService _genreService;
     private readonly PecusConfig _config;
-    private readonly ILogger<BackendGenreController> _logger;
 
     public BackendGenreController(
         GenreService genreService,
         PecusConfig config,
         ILogger<BackendGenreController> logger
     )
+        : base(logger)
     {
         _genreService = genreService;
         _config = config;
-        _logger = logger;
     }
 
     /// <summary>
