@@ -12,14 +12,12 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/workspaces/{workspaceId}/items/{itemId}/attachments")]
 [Produces("application/json")]
-public class WorkspaceItemAttachmentController : ControllerBase
+public class WorkspaceItemAttachmentController : BaseSecureController
 {
     private readonly WorkspaceItemAttachmentService _attachmentService;
     private readonly OrganizationAccessHelper _accessHelper;
-    private readonly ILogger<WorkspaceItemAttachmentController> _logger;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
 
@@ -28,12 +26,13 @@ public class WorkspaceItemAttachmentController : ControllerBase
         OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemAttachmentController> logger,
         PecusConfig config,
-        IBackgroundJobClient backgroundJobClient
+        IBackgroundJobClient backgroundJobClient,
+        ProfileService profileService
     )
+        : base(profileService, logger)
     {
         _attachmentService = attachmentService;
         _accessHelper = accessHelper;
-        _logger = logger;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
     }
@@ -57,18 +56,15 @@ public class WorkspaceItemAttachmentController : ControllerBase
         IFormFile file
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -130,7 +126,7 @@ public class WorkspaceItemAttachmentController : ControllerBase
             downloadUrl,
             thumbnailMediumPath,
             thumbnailSmallPath,
-            me
+            CurrentUserId
         );
 
         // 画像ファイルの場合、バックグラウンドでサムネイル生成をキュー
@@ -177,11 +173,8 @@ public class WorkspaceItemAttachmentController : ControllerBase
         int itemId
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -224,18 +217,15 @@ public class WorkspaceItemAttachmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<NoContent> DeleteAttachment(int workspaceId, int itemId, int attachmentId)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -247,7 +237,7 @@ public class WorkspaceItemAttachmentController : ControllerBase
             workspaceId,
             itemId,
             attachmentId,
-            me
+            CurrentUserId
         );
 
         // 物理ファイルを削除
@@ -293,11 +283,8 @@ public class WorkspaceItemAttachmentController : ControllerBase
         string fileName
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");

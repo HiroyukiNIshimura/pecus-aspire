@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
@@ -12,11 +11,9 @@ namespace Pecus.Controllers;
 /// <summary>
 /// マスターデータ取得コントローラー
 /// </summary>
-[ApiController]
 [Route("api/master")]
 [Produces("application/json")]
-[Authorize]
-public class MasterDataController : ControllerBase
+public class MasterDataController : BaseSecureController
 {
     private readonly MasterDataService _masterDataService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -25,8 +22,9 @@ public class MasterDataController : ControllerBase
     public MasterDataController(
         MasterDataService masterDataService,
         OrganizationAccessHelper accessHelper,
+        ProfileService profileService,
         ILogger<MasterDataController> logger
-    )
+    ) : base(profileService, logger)
     {
         _masterDataService = masterDataService;
         _accessHelper = accessHelper;
@@ -66,11 +64,8 @@ public class MasterDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<MasterSkillResponse>>> GetSkills()
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        // ユーザーの所属組織を取得
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        // CurrentUser は基底クラスで有効性チェック済み
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             throw new InvalidOperationException("ユーザーが組織に所属していません。");

@@ -9,27 +9,26 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/workspaces/{workspaceId}/items/{itemId}")]
 [Produces("application/json")]
-public class WorkspaceItemTagController : ControllerBase
+public class WorkspaceItemTagController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly WorkspaceItemTagService _tagService;
     private readonly OrganizationAccessHelper _accessHelper;
-    private readonly ILogger<WorkspaceItemTagController> _logger;
 
     public WorkspaceItemTagController(
         WorkspaceItemService workspaceItemService,
         WorkspaceItemTagService tagService,
         OrganizationAccessHelper accessHelper,
-        ILogger<WorkspaceItemTagController> logger
+        ILogger<WorkspaceItemTagController> logger,
+        ProfileService profileService
     )
+        : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
         _tagService = tagService;
         _accessHelper = accessHelper;
-        _logger = logger;
     }
 
     /// <summary>
@@ -51,18 +50,15 @@ public class WorkspaceItemTagController : ControllerBase
         [FromBody] SetTagsToItemRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -75,7 +71,7 @@ public class WorkspaceItemTagController : ControllerBase
             workspaceId: workspaceId,
             itemId: itemId,
             tagNames: request.Tags,
-            userId: me,
+            userId: CurrentUserId,
             itemRowVersion: request.ItemRowVersion
         );
 
@@ -87,7 +83,7 @@ public class WorkspaceItemTagController : ControllerBase
         {
             Success = true,
             Message = "タグを設定しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);

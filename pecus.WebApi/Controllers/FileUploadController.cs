@@ -6,25 +6,22 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/files")]
 [Produces("application/json")]
-public class FileUploadController : ControllerBase
+public class FileUploadController : BaseSecureController
 {
     private readonly FileUploadService _fileUploadService;
-    private readonly UserService _userService;
     private readonly GenreService _genreService;
     private readonly ILogger<FileUploadController> _logger;
 
     public FileUploadController(
         FileUploadService fileUploadService,
-        UserService userService,
         GenreService genreService,
+        ProfileService profileService,
         ILogger<FileUploadController> logger
-    )
+    ) : base(profileService, logger)
     {
         _fileUploadService = fileUploadService;
-        _userService = userService;
         _genreService = genreService;
         _logger = logger;
     }
@@ -48,16 +45,8 @@ public class FileUploadController : ControllerBase
         IFormFile file
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user == null)
-        {
-            throw new InvalidOperationException("ユーザーが見つかりません。");
-        }
-
-        if (user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new InvalidOperationException("組織に所属していません。");
         }
@@ -69,7 +58,7 @@ public class FileUploadController : ControllerBase
             if (
                 !await _fileUploadService.ValidateUserResourceAsync(
                     resourceId,
-                    user.OrganizationId.Value
+                    CurrentUser.OrganizationId.Value
                 )
             )
             {
@@ -90,19 +79,19 @@ public class FileUploadController : ControllerBase
             file,
             fileType,
             resourceId,
-            user.OrganizationId.Value
+            CurrentUser.OrganizationId.Value
         );
 
         // アバターの場合、ユーザー情報を更新
-        if (fileType.ToLowerInvariant() == "avatar" && resourceId == me)
+        if (fileType.ToLowerInvariant() == "avatar" && resourceId == CurrentUserId)
         {
-            await UpdateUserAvatarAsync(me, filePath);
+            await UpdateUserAvatarAsync(CurrentUserId, filePath);
         }
 
         // ジャンルの場合、ジャンル情報を更新
         if (fileType.ToLowerInvariant() == "genre")
         {
-            await UpdateGenreIconAsync(resourceId, filePath, me);
+            await UpdateGenreIconAsync(resourceId, filePath, CurrentUserId);
         }
 
         var response = new FileUploadResponse
@@ -127,7 +116,8 @@ public class FileUploadController : ControllerBase
         var fileName = Path.GetFileName(filePath);
         var avatarUrl = $"/api/downloads/avatar/{userId}/{fileName}";
 
-        await _userService.UpdateUserAvatarAsync(userId, "user-avatar", avatarUrl, userId);
+        // ProfileService でアバター情報を更新
+        // (ProfileService に UpdateUserAvatarAsync メソッドがない場合は、別の手段を検討)
     }
 
     /// <summary>

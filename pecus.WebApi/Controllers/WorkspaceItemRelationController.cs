@@ -9,24 +9,23 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/workspaces/{workspaceId}/items/{itemId}/relations")]
 [Produces("application/json")]
-public class WorkspaceItemRelationController : ControllerBase
+public class WorkspaceItemRelationController : BaseSecureController
 {
     private readonly WorkspaceItemRelationService _relationService;
     private readonly OrganizationAccessHelper _accessHelper;
-    private readonly ILogger<WorkspaceItemRelationController> _logger;
 
     public WorkspaceItemRelationController(
         WorkspaceItemRelationService relationService,
         OrganizationAccessHelper accessHelper,
-        ILogger<WorkspaceItemRelationController> logger
+        ILogger<WorkspaceItemRelationController> logger,
+        ProfileService profileService
     )
+        : base(profileService, logger)
     {
         _relationService = relationService;
         _accessHelper = accessHelper;
-        _logger = logger;
     }
 
     /// <summary>
@@ -43,11 +42,8 @@ public class WorkspaceItemRelationController : ControllerBase
         [FromBody] AddWorkspaceItemRelationRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -57,7 +53,7 @@ public class WorkspaceItemRelationController : ControllerBase
             workspaceId,
             itemId,
             request,
-            currentUserId
+            CurrentUserId
         );
 
         var response = new AddWorkspaceItemRelationResponse
@@ -92,11 +88,8 @@ public class WorkspaceItemRelationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemRelationsResponse>> GetRelations(int workspaceId, int itemId)
     {
-        // ログイン中のユーザーIDを取得
-        var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
@@ -160,11 +153,8 @@ public class WorkspaceItemRelationController : ControllerBase
         int relationId
     )
     {
-        // ログイン中のユーザーIDを取得
-        var currentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(currentUserId, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -174,7 +164,7 @@ public class WorkspaceItemRelationController : ControllerBase
             workspaceId,
             itemId,
             relationId,
-            currentUserId
+            CurrentUserId
         );
 
         var response = new SuccessResponse

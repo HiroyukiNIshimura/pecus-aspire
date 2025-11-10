@@ -6,17 +6,15 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/downloads")]
 [Produces("application/json")]
-public class FileDownloadController : ControllerBase
+public class FileDownloadController : BaseSecureController
 {
-    private readonly UserService _userService;
     private readonly ILogger<FileDownloadController> _logger;
 
-    public FileDownloadController(UserService userService, ILogger<FileDownloadController> logger)
+    public FileDownloadController(ProfileService profileService, ILogger<FileDownloadController> logger)
+        : base(profileService, logger)
     {
-        _userService = userService;
         _logger = logger;
     }
 
@@ -37,11 +35,8 @@ public class FileDownloadController : ControllerBase
             throw new NotFoundException("ファイルが見つかりません。");
         }
 
-        // ログインユーザーの組織IDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user?.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ファイルが見つかりません。");
         }
@@ -50,7 +45,7 @@ public class FileDownloadController : ControllerBase
         var uploadsPath = "uploads";
         var filePath = Path.Combine(
             uploadsPath,
-            user.OrganizationId.Value.ToString(),
+            CurrentUser.OrganizationId.Value.ToString(),
             fileType,
             resourceId.ToString(),
             fileName
