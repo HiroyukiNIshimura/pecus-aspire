@@ -316,3 +316,33 @@ public class UpdatePasswordRequest
     )]
     public required string NewPassword { get; set; }
 }
+
+/// <summary>
+/// ユーザーのアクティブ状態設定リクエスト
+/// </summary>
+public class SetUserActiveStatusRequest
+{
+    /// <summary>
+    /// アクティブ状態（true: 有効, false: 無効）
+    /// </summary>
+    public required bool IsActive { get; set; }
+}
+
+/// <summary>
+/// ユーザーのスキル設定リクエスト
+/// </summary>
+public class SetUserSkillsRequest
+{
+    /// <summary>
+    /// スキルIDのリスト。既存のすべてのスキルを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのスキルを削除します。
+    /// </summary>
+    [Required(ErrorMessage = "スキルIDのリストは必須です。")]
+    public required List<int> SkillIds { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用RowVersion。
+    /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
+    /// </summary>
+    public byte[]? UserRowVersion { get; set; }
+}

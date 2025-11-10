@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -18,10 +17,8 @@ namespace Pecus.Controllers.Profile;
 /// 自ユーザーのプロフィール、スキル、メールアドレス変更など自己管理機能を提供します。
 /// すべての操作は ProfileService 経由で実行されます。
 /// </remarks>
-[ApiController]
 [Route("api/profile")]
-[Authorize]
-public class ProfileController : ControllerBase
+public class ProfileController : BaseSecureController
 {
     private readonly ProfileService _profileService;
     private readonly ILogger<ProfileController> _logger;
@@ -32,7 +29,7 @@ public class ProfileController : ControllerBase
     public ProfileController(
         ILogger<ProfileController> logger,
         ProfileService profileService
-    )
+    ) : base(profileService, logger)
     {
         _logger = logger;
         _profileService = profileService;
@@ -50,15 +47,8 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<UserResponse>> GetProfile()
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var user = await _profileService.GetUserAsync(me);
-        if (user == null || !user.IsActive)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        var response = await _profileService.GetOwnProfileAsync(me);
+        // CurrentUser は基底クラスで有効性チェック済み
+        var response = await _profileService.GetOwnProfileAsync(CurrentUserId);
         if (response == null)
         {
             throw new NotFoundException("ユーザーが見つかりません。");
@@ -84,23 +74,16 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<UserResponse>> UpdateProfile(UpdateProfileRequest request)
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var user = await _profileService.GetUserAsync(me);
-        if (user == null || !user.IsActive)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
+        // CurrentUser は基底クラスで有効性チェック済み
         // プロフィール情報を更新（ProfileService 経由）
-        var result = await _profileService.UpdateOwnProfileAsync(me, request);
+        var result = await _profileService.UpdateOwnProfileAsync(CurrentUserId, request);
         if (!result)
         {
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
         // 更新後のプロフィール情報を取得して返す
-        var response = await _profileService.GetOwnProfileAsync(me);
+        var response = await _profileService.GetOwnProfileAsync(CurrentUserId);
         if (response == null)
         {
             throw new NotFoundException("ユーザーが見つかりません。");
@@ -130,17 +113,10 @@ public class ProfileController : ControllerBase
         [FromBody] SetOwnSkillsRequest request
     )
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var user = await _profileService.GetUserAsync(me);
-        if (user == null || !user.IsActive)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
+        // CurrentUser は基底クラスで有効性チェック済み
         // スキルを設定（ProfileService 経由）
         var result = await _profileService.SetOwnSkillsAsync(
-            userId: me,
+            userId: CurrentUserId,
             skillIds: request.SkillIds,
             userRowVersion: request.UserRowVersion
         );
@@ -169,17 +145,9 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<MessageResponse>> UpdateEmail(UpdateEmailRequest request)
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var user = await _profileService.GetUserAsync(me);
-        if (user == null || !user.IsActive)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
+        // CurrentUser は基底クラスで有効性チェック済み
         // 新しいメールアドレスが現在のものと同じかチェック
-        // (ProfileService 経由で最終的に取得)
-        var response = await _profileService.GetOwnProfileAsync(me);
+        var response = await _profileService.GetOwnProfileAsync(CurrentUserId);
         if (response == null)
         {
             throw new NotFoundException("ユーザーが見つかりません。");
@@ -193,7 +161,7 @@ public class ProfileController : ControllerBase
         }
 
         // 新しいメールアドレスが既に使用されていないかチェックとDB更新
-        var updateResult = await _profileService.UpdateEmailAsync(me, request.NewEmail);
+        var updateResult = await _profileService.UpdateEmailAsync(CurrentUserId, request.NewEmail);
         if (!updateResult)
         {
             throw new DuplicateException("このメールアドレスは既に使用されています。");
@@ -218,17 +186,10 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<MessageResponse>> UpdatePassword(UpdatePasswordRequest request)
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var user = await _profileService.GetUserAsync(me);
-        if (user == null || !user.IsActive)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
+        // CurrentUser は基底クラスで有効性チェック済み
         // パスワードを変更（ProfileService 経由）
         var result = await _profileService.UpdatePasswordAsync(
-            userId: me,
+            userId: CurrentUserId,
             currentPassword: request.CurrentPassword,
             newPassword: request.NewPassword
         );

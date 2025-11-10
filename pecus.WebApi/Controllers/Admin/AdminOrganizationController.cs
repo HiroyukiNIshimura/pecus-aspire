@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -13,11 +12,9 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// 組織管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/organization")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminOrganizationController : ControllerBase
+public class AdminOrganizationController : BaseAdminController
 {
     private readonly OrganizationService _organizationService;
     private readonly UserService _userService;
@@ -26,8 +23,9 @@ public class AdminOrganizationController : ControllerBase
     public AdminOrganizationController(
         OrganizationService organizationService,
         UserService userService,
+        ProfileService profileService,
         ILogger<AdminOrganizationController> logger
-    )
+    ) : base(profileService, logger)
     {
         _organizationService = organizationService;
         _userService = userService;
@@ -46,18 +44,14 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationResponse>> GetMyOrganization()
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        // ユーザー情報を取得して組織IDを取得
-        var user = await _userService.GetUserByIdAsync(me);
-        if (user == null || user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ユーザーが組織に所属していません。");
         }
 
         var organization = await _organizationService.GetOrganizationByIdAsync(
-            user.OrganizationId.Value
+            CurrentUser.OrganizationId.Value
         );
         if (organization == null)
         {
@@ -99,20 +93,16 @@ public class AdminOrganizationController : ControllerBase
         [FromBody] AdminUpdateOrganizationRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        // ユーザー情報を取得して組織IDを取得
-        var user = await _userService.GetUserByIdAsync(me);
-        if (user == null || user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ユーザーが組織に所属していません。");
         }
 
         var organization = await _organizationService.AdminUpdateOrganizationAsync(
-            user.OrganizationId.Value,
+            CurrentUser.OrganizationId.Value,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new OrganizationResponse

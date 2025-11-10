@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -15,11 +14,9 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// タグ管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/tags")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminTagController : ControllerBase
+public class AdminTagController : BaseAdminController
 {
     private readonly TagService _tagService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -33,12 +30,14 @@ public class AdminTagController : ControllerBase
     /// <param name="accessHelper"></param>
     /// <param name="logger"></param>
     /// <param name="config"></param>
+    /// <param name="profileService"></param>
     public AdminTagController(
         TagService tagService,
         OrganizationAccessHelper accessHelper,
         ILogger<AdminTagController> logger,
-        PecusConfig config
-    )
+        PecusConfig config,
+        ProfileService profileService
+    ) : base(profileService, logger)
     {
         _tagService = tagService;
         _accessHelper = accessHelper;
@@ -56,9 +55,7 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             throw new InvalidOperationException("ユーザーが組織に所属していません。");
@@ -73,7 +70,7 @@ public class AdminTagController : ControllerBase
             );
         }
 
-        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, me);
+        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -144,7 +141,7 @@ public class AdminTagController : ControllerBase
         [FromQuery] GetTagsRequest request
     )
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
 
         // 組織IDが取得できない場合は空のリストを返す（GraphQL的なnull-safety）
         if (!organizationId.HasValue)
@@ -214,9 +211,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var updatedTag = await _tagService.UpdateTagAsync(id, request, me);
+        var updatedTag = await _tagService.UpdateTagAsync(id, request, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -285,9 +280,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _tagService.DeactivateTagAsync(id, me);
+        var result = await _tagService.DeactivateTagAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -318,9 +311,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _tagService.ActivateTagAsync(id, me);
+        var result = await _tagService.ActivateTagAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -338,18 +329,12 @@ public class AdminTagController : ControllerBase
     /// <summary>
     /// ログインユーザーの組織IDを取得
     /// </summary>
-    private async Task<int?> GetUserOrganizationIdAsync()
-    {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.GetUserOrganizationIdAsync(me);
-    }
-
     /// <summary>
     /// ログインユーザーが指定したタグにアクセス可能かチェック
     /// </summary>
     private async Task<bool> CanAccessTagAsync(Tag tag)
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         return organizationId.HasValue && organizationId.Value == tag.OrganizationId;
     }
 }
