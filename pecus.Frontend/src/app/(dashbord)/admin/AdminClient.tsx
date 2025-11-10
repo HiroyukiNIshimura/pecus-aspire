@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useRouter } from "next/navigation";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
-import { isAuthenticationError, type ApiErrorResponse } from "@/types/errors";
+import { type ApiErrorResponse, isAuthenticationError } from "@/types/errors";
 
 interface OrganizationData {
   id?: number | string;
@@ -221,7 +221,11 @@ export default function AdminClient({
                   </div>
 
                   <div className="card-actions justify-end mt-6">
-                    <button className="btn btn-primary" type="button" onClick={() => router.push("/admin/organizations/edit/1")}>
+                    <button
+                      className="btn btn-primary"
+                      type="button"
+                      onClick={() => router.push("/admin/organizations/edit/1")}
+                    >
                       編集
                     </button>
                   </div>

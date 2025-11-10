@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/actions/profile";
 import { getWorkspaceDetail } from "@/actions/admin/workspace";
+import { getCurrentUser } from "@/actions/profile";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import EditWorkspaceClient from "./EditWorkspaceClient";
 import type { MasterGenreResponse } from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
+import EditWorkspaceClient from "./EditWorkspaceClient";
 
 export const dynamic = "force-dynamic";
 

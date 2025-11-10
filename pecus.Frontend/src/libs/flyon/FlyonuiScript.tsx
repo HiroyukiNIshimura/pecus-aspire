@@ -1,6 +1,11 @@
 "use client";
 
-import { HSAccordion, HSDropdown, HSOverlay, HSStaticMethods } from "flyonui/flyonui";
+import type {
+  HSAccordion,
+  HSDropdown,
+  HSOverlay,
+  HSStaticMethods,
+} from "flyonui/flyonui";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateOrganization } from "@/actions/admin/organizations";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import type { OrganizationResponse } from "@/connectors/api/pecus";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
-import { updateOrganization } from "@/actions/admin/organizations";
 import { editOrganizationSchema } from "@/schemas/editSchemas";
-import type { OrganizationResponse } from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
 
 interface EditOrganizationClientProps {
   initialUser: UserInfo | null;
@@ -52,7 +52,9 @@ export default function EditOrganizationClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!organizationDetail.rowVersion) {
-          notify.error("組織情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error(
+            "組織情報の更新に必要なバージョン情報が取得できませんでした。",
+          );
           return;
         }
 
@@ -71,7 +73,9 @@ export default function EditOrganizationClient({
         } else {
           console.error("組織情報の更新に失敗しました:", result.error);
           notify.error(
-            result.error ? `組織情報の更新中にエラーが発生しました。(${result.error})` : "組織情報の更新中にエラーが発生しました。",
+            result.error
+              ? `組織情報の更新中にエラーが発生しました。(${result.error})`
+              : "組織情報の更新中にエラーが発生しました。",
           );
         }
       } catch (err: unknown) {
@@ -158,24 +162,34 @@ export default function EditOrganizationClient({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">組織ID</p>
-                    <p className="text-lg font-semibold">{organizationDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {organizationDetail.id || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">組織コード</p>
-                    <p className="text-lg font-semibold">{organizationDetail.code || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {organizationDetail.code || "-"}
+                    </p>
                   </div>
 
                   <div>
-                    <p className="text-sm text-base-content/60">所属ユーザー数</p>
-                    <p className="text-lg font-semibold">{organizationDetail.userCount || 0} 人</p>
+                    <p className="text-sm text-base-content/60">
+                      所属ユーザー数
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {organizationDetail.userCount || 0} 人
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
                       {organizationDetail.createdAt
-                        ? new Date(organizationDetail.createdAt).toLocaleString("ja-JP")
+                        ? new Date(organizationDetail.createdAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>
@@ -198,7 +212,9 @@ export default function EditOrganizationClient({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="form-control">
                       <label className="label" htmlFor="input-name">
-                        <span className="label-text font-semibold">組織名 *</span>
+                        <span className="label-text font-semibold">
+                          組織名 *
+                        </span>
                       </label>
                       <input
                         id="input-name"
@@ -208,7 +224,9 @@ export default function EditOrganizationClient({
                           shouldShowError("name") ? "input-error" : ""
                         }`}
                         value={formData.name}
-                        onChange={(e) => handleFieldChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange("name", e.target.value)
+                        }
                         required
                       />
                       {shouldShowError("name") && (
@@ -219,8 +237,13 @@ export default function EditOrganizationClient({
                     </div>
 
                     <div className="form-control">
-                      <label className="label" htmlFor="input-representative-name">
-                        <span className="label-text font-semibold">代表者名</span>
+                      <label
+                        className="label"
+                        htmlFor="input-representative-name"
+                      >
+                        <span className="label-text font-semibold">
+                          代表者名
+                        </span>
                       </label>
                       <input
                         id="input-representative-name"
@@ -233,7 +256,10 @@ export default function EditOrganizationClient({
                         }`}
                         value={formData.representativeName}
                         onChange={(e) =>
-                          handleFieldChange("representativeName", e.target.value)
+                          handleFieldChange(
+                            "representativeName",
+                            e.target.value,
+                          )
                         }
                       />
                       {shouldShowError("representativeName") && (
@@ -245,7 +271,9 @@ export default function EditOrganizationClient({
 
                     <div className="form-control">
                       <label className="label" htmlFor="input-email">
-                        <span className="label-text font-semibold">メールアドレス</span>
+                        <span className="label-text font-semibold">
+                          メールアドレス
+                        </span>
                       </label>
                       <input
                         id="input-email"
@@ -255,7 +283,9 @@ export default function EditOrganizationClient({
                           shouldShowError("email") ? "input-error" : ""
                         }`}
                         value={formData.email}
-                        onChange={(e) => handleFieldChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange("email", e.target.value)
+                        }
                       />
                       {shouldShowError("email") && (
                         <span className="label-text-alt text-error">
@@ -266,7 +296,9 @@ export default function EditOrganizationClient({
 
                     <div className="form-control">
                       <label className="label" htmlFor="input-phone-number">
-                        <span className="label-text font-semibold">電話番号</span>
+                        <span className="label-text font-semibold">
+                          電話番号
+                        </span>
                       </label>
                       <input
                         id="input-phone-number"
@@ -350,7 +382,9 @@ export default function EditOrganizationClient({
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
                       {organizationDetail.updatedAt
-                        ? new Date(organizationDetail.updatedAt).toLocaleString("ja-JP")
+                        ? new Date(organizationDetail.updatedAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>

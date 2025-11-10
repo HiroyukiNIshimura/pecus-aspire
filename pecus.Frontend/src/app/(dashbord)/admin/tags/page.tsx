@@ -1,7 +1,7 @@
-import AdminTagsClient from "./AdminTagsClient";
-import { getCurrentUser } from "@/actions/profile";
 import { getTags } from "@/actions/admin/tags";
-import { UserInfo } from "@/types/userInfo";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
+import AdminTagsClient from "./AdminTagsClient";
 
 export const dynamic = "force-dynamic";
 

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/actions/profile";
 import { getTagDetail } from "@/actions/admin/tags";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
 import EditTagClient from "./EditTagClient";
-import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
 

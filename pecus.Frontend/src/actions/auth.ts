@@ -1,12 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { LoginResponse, SuccessResponse } from "@/connectors/api/pecus";
-import { ApiResponse } from "./types";
-import { SessionData, SessionManager } from "@/libs/session";
-import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
-import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
-import { headers } from 'next/headers';
+import type { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
+import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
+import { type SessionData, SessionManager } from "@/libs/session";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: ログイン
@@ -25,10 +25,11 @@ export async function login(request: {
   try {
     // Next.js のヘッダーからクライアントIPを取得
     const headersList = await headers();
-    const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                     headersList.get('x-real-ip') ||
-                     headersList.get('cf-connecting-ip') ||  // Cloudflare 対応
-                     undefined;
+    const clientIp =
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headersList.get("x-real-ip") ||
+      headersList.get("cf-connecting-ip") || // Cloudflare 対応
+      undefined;
 
     const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
     const response = await api.entranceAuth.postApiEntranceAuthLogin({
@@ -90,7 +91,9 @@ export async function login(request: {
  * - ログイン済みならユーザー情報を返す
  * - 未認証なら null を返す
  */
-export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] | null>> {
+export async function getCurrentUser(): Promise<
+  ApiResponse<SessionData["user"] | null>
+> {
   try {
     const session = await SessionManager.getSession();
 

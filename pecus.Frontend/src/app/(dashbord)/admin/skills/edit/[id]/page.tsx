@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/actions/profile";
 import { getSkillDetail } from "@/actions/admin/skills";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
 import EditSkillClient from "./EditSkillClient";
-import { UserInfo } from "@/types/userInfo";
 
 export const dynamic = "force-dynamic";
 

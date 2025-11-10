@@ -13,10 +13,7 @@ export const editWorkspaceSchema = z.object({
     .max(500, "説明は500文字以内で入力してください。")
     .optional()
     .default(""),
-  genreId: z
-    .string()
-    .optional()
-    .default(""),
+  genreId: z.string().optional().default(""),
   isActive: z.boolean().default(true),
 });
 

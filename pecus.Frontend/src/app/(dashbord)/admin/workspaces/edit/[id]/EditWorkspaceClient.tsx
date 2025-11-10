@@ -1,20 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateWorkspace } from "@/actions/admin/workspace";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import type {
+  MasterGenreResponse,
+  WorkspaceDetailResponse,
+} from "@/connectors/api/pecus";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
-import { updateWorkspace } from "@/actions/admin/workspace";
 import { editWorkspaceSchema } from "@/schemas/editSchemas";
-import type {
-  WorkspaceDetailResponse,
-  MasterGenreResponse,
-} from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -37,7 +37,9 @@ export default function EditWorkspaceClient({
   const [formData, setFormData] = useState({
     name: workspaceDetail.name || "",
     description: workspaceDetail.description || "",
-    genreId: (workspaceDetail as any).genreId ? String((workspaceDetail as any).genreId) : "",
+    genreId: (workspaceDetail as any).genreId
+      ? String((workspaceDetail as any).genreId)
+      : "",
     isActive: workspaceDetail.isActive ?? true,
   });
 
@@ -56,7 +58,9 @@ export default function EditWorkspaceClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!workspaceDetail.rowVersion) {
-          notify.error("ワークスペース情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error(
+            "ワークスペース情報の更新に必要なバージョン情報が取得できませんでした。",
+          );
           return;
         }
 
@@ -74,7 +78,9 @@ export default function EditWorkspaceClient({
         } else {
           console.error("ワークスペースの更新に失敗しました:", result.error);
           notify.error(
-            result.error ? `ワークスペースの更新中にエラーが発生しました。(${result.error})` : "ワークスペースの更新中にエラーが発生しました。",
+            result.error
+              ? `ワークスペースの更新中にエラーが発生しました。(${result.error})`
+              : "ワークスペースの更新中にエラーが発生しました。",
           );
         }
       } catch (err: unknown) {
@@ -160,13 +166,19 @@ export default function EditWorkspaceClient({
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-base-content/60">ワークスペース名</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.name || "-"}</p>
+                    <p className="text-sm text-base-content/60">
+                      ワークスペース名
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.name || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">コード</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.code || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.code || "-"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -198,7 +210,9 @@ export default function EditWorkspaceClient({
                         shouldShowError("name") ? "input-error" : ""
                       }`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("name", e.target.value)
+                      }
                       placeholder="ワークスペース名を入力"
                       disabled={isSubmitting}
                     />
@@ -223,7 +237,9 @@ export default function EditWorkspaceClient({
                         shouldShowError("description") ? "textarea-error" : ""
                       }`}
                       value={formData.description}
-                      onChange={(e) => handleFieldChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("description", e.target.value)
+                      }
                       placeholder="ワークスペースの説明を入力（任意）"
                       disabled={isSubmitting}
                       maxLength={500}
@@ -256,7 +272,9 @@ export default function EditWorkspaceClient({
                           shouldShowError("genreId") ? "select-error" : ""
                         }`}
                         value={formData.genreId}
-                        onChange={(e) => handleFieldChange("genreId", e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange("genreId", e.target.value)
+                        }
                         disabled={isSubmitting}
                       >
                         <option value="">選択してください</option>
@@ -287,7 +305,9 @@ export default function EditWorkspaceClient({
                         name="isActive"
                         className="checkbox checkbox-primary"
                         checked={formData.isActive}
-                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
+                        onChange={(e) =>
+                          handleFieldChange("isActive", e.target.checked)
+                        }
                         disabled={isSubmitting}
                       />
                     </label>
@@ -329,25 +349,35 @@ export default function EditWorkspaceClient({
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <p className="text-sm text-base-content/60">ワークスペースID</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.id || "-"}</p>
+                    <p className="text-sm text-base-content/60">
+                      ワークスペースID
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.id || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">所属組織</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.organization?.name || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.organization?.name || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">メンバー数</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.members?.length || 0} 人</p>
+                    <p className="text-lg font-semibold">
+                      {workspaceDetail.members?.length || 0} 人
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
                       {workspaceDetail.createdAt
-                        ? new Date(workspaceDetail.createdAt).toLocaleString("ja-JP")
+                        ? new Date(workspaceDetail.createdAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>
@@ -356,7 +386,9 @@ export default function EditWorkspaceClient({
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
                       {workspaceDetail.updatedAt
-                        ? new Date(workspaceDetail.updatedAt).toLocaleString("ja-JP")
+                        ? new Date(workspaceDetail.updatedAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>

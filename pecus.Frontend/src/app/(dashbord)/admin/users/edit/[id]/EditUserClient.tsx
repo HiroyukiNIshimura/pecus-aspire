@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import {
+  requestPasswordReset,
+  setUserActiveStatus,
+  setUserRoles,
+  setUserSkills,
+} from "@/actions/admin/user";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useNotify } from "@/hooks/useNotify";
-import {
-  setUserActiveStatus,
-  setUserSkills,
-  setUserRoles,
-  requestPasswordReset
-} from "@/actions/admin/user";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import { useNotify } from "@/hooks/useNotify";
+import type { UserInfo } from "@/types/userInfo";
 
 interface Skill {
   id: number;
@@ -50,10 +50,14 @@ export default function EditUserClient({
   // 変更検知フラグで「更新ボタンの有効/無効」を制御している
   const [isActive, setIsActive] = useState(userDetail.isActive ?? true);
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>(
-    userDetail.skills?.map(s => s.id).filter((id): id is number => id !== undefined) || []
+    userDetail.skills
+      ?.map((s) => s.id)
+      .filter((id): id is number => id !== undefined) || [],
   );
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
-    userDetail.roles?.map(r => r.id).filter((id): id is number => id !== undefined) || []
+    userDetail.roles
+      ?.map((r) => r.id)
+      .filter((id): id is number => id !== undefined) || [],
   );
 
   // === 変更検知: 元の値と現在の値を比較 ===
@@ -63,14 +67,24 @@ export default function EditUserClient({
   // 3. 実際の更新（Promise.all）で「どの操作を実行するか」を判定
   const isActiveChanged = isActive !== (userDetail.isActive ?? true);
   const skillsChanged = (() => {
-    const currentSkillIds = userDetail.skills?.map(s => s.id).filter((id): id is number => id !== undefined) || [];
-    return selectedSkillIds.length !== currentSkillIds.length ||
-           !selectedSkillIds.every(id => currentSkillIds.includes(id));
+    const currentSkillIds =
+      userDetail.skills
+        ?.map((s) => s.id)
+        .filter((id): id is number => id !== undefined) || [];
+    return (
+      selectedSkillIds.length !== currentSkillIds.length ||
+      !selectedSkillIds.every((id) => currentSkillIds.includes(id))
+    );
   })();
   const rolesChanged = (() => {
-    const currentRoleIds = userDetail.roles?.map(r => r.id).filter((id): id is number => id !== undefined) || [];
-    return selectedRoleIds.length !== currentRoleIds.length ||
-           !selectedRoleIds.every(id => currentRoleIds.includes(id));
+    const currentRoleIds =
+      userDetail.roles
+        ?.map((r) => r.id)
+        .filter((id): id is number => id !== undefined) || [];
+    return (
+      selectedRoleIds.length !== currentRoleIds.length ||
+      !selectedRoleIds.every((id) => currentRoleIds.includes(id))
+    );
   })();
 
   // いずれかの項目が変更されている場合のみ更新ボタンを有効化
@@ -97,34 +111,48 @@ export default function EditUserClient({
 
       if (isActiveChanged) {
         updatePromises.push(
-          setUserActiveStatus(userDetail.id!, isActive).then(result => {
+          setUserActiveStatus(userDetail.id!, isActive).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || "アクティブ状態の更新に失敗しました。");
+              throw new Error(
+                result.error || "アクティブ状態の更新に失敗しました。",
+              );
             }
-            updateMessages.push(isActive ? "ユーザーを有効化しました" : "ユーザーを無効化しました");
-          })
+            updateMessages.push(
+              isActive
+                ? "ユーザーを有効化しました"
+                : "ユーザーを無効化しました",
+            );
+          }),
         );
       }
 
       if (skillsChanged) {
         updatePromises.push(
-          setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then(result => {
+          setUserSkills(
+            userDetail.id!,
+            selectedSkillIds,
+            userDetail.rowVersion!,
+          ).then((result) => {
             if (!result.success) {
               throw new Error(result.error || "スキルの更新に失敗しました。");
             }
             updateMessages.push("スキルを更新しました");
-          })
+          }),
         );
       }
 
       if (rolesChanged) {
         updatePromises.push(
-          setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then(result => {
+          setUserRoles(
+            userDetail.id!,
+            selectedRoleIds,
+            userDetail.rowVersion!,
+          ).then((result) => {
             if (!result.success) {
               throw new Error(result.error || "ロールの更新に失敗しました。");
             }
             updateMessages.push("ロールを更新しました");
-          })
+          }),
         );
       }
 
@@ -159,16 +187,16 @@ export default function EditUserClient({
   const toggleSkill = (skillId: number) => {
     setSelectedSkillIds((prev) =>
       prev.includes(skillId)
-        ? prev.filter(id => id !== skillId)
-        : [...prev, skillId]
+        ? prev.filter((id) => id !== skillId)
+        : [...prev, skillId],
     );
   };
 
   const toggleRole = (roleId: number) => {
     setSelectedRoleIds((prev) =>
       prev.includes(roleId)
-        ? prev.filter(id => id !== roleId)
-        : [...prev, roleId]
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId],
     );
   };
 
@@ -181,7 +209,9 @@ export default function EditUserClient({
       if (result.success) {
         notify.success("パスワードリセットメールを送信しました。");
       } else {
-        notify.error(result.error || "パスワードリセットの送信に失敗しました。");
+        notify.error(
+          result.error || "パスワードリセットの送信に失敗しました。",
+        );
       }
     } catch (err: unknown) {
       console.error("パスワードリセット送信中にエラーが発生:", err);
@@ -260,24 +290,37 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザー名</p>
-                    <p className="text-lg font-semibold">{userDetail.username || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {userDetail.username || "-"}
+                    </p>
                   </div>
 
                   <div>
-                    <p className="text-sm text-base-content/60">メールアドレス</p>
-                    <p className="text-lg font-semibold">{userDetail.email || "-"}</p>
+                    <p className="text-sm text-base-content/60">
+                      メールアドレス
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {userDetail.email || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">ログインID</p>
-                    <p className="text-lg font-semibold">{userDetail.loginId || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {userDetail.loginId || "-"}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 編集フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              noValidate
+              className="mb-6"
+            >
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -305,7 +348,9 @@ export default function EditUserClient({
                     {isActiveChanged && (
                       <div className="alert alert-info mt-2">
                         <span className="text-sm">
-                          {isActive ? "✓ ユーザーを有効化します" : "✗ ユーザーを無効化します"}
+                          {isActive
+                            ? "✓ ユーザーを有効化します"
+                            : "✗ ユーザーを無効化します"}
                         </span>
                       </div>
                     )}
@@ -315,9 +360,12 @@ export default function EditUserClient({
                   <div className="divider my-4"></div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text font-semibold text-base">スキル</span>
+                      <span className="label-text font-semibold text-base">
+                        スキル
+                      </span>
                       <span className="label-text-alt">
-                        {selectedSkillIds.length} / {availableSkills.length} 個選択中
+                        {selectedSkillIds.length} / {availableSkills.length}{" "}
+                        個選択中
                       </span>
                     </label>
                     <details className="dropdown w-full">
@@ -341,7 +389,9 @@ export default function EditUserClient({
                                   onChange={() => toggleSkill(skill.id)}
                                   className="checkbox checkbox-primary checkbox-sm"
                                 />
-                                <span className="label-text flex-1">{skill.name}</span>
+                                <span className="label-text flex-1">
+                                  {skill.name}
+                                </span>
                               </label>
                             </li>
                           ))
@@ -352,9 +402,14 @@ export default function EditUserClient({
                     {selectedSkillIds.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
                         {selectedSkillIds.map((skillId) => {
-                          const skill = availableSkills.find(s => s.id === skillId);
+                          const skill = availableSkills.find(
+                            (s) => s.id === skillId,
+                          );
                           return (
-                            <div key={skillId} className="badge badge-primary gap-2">
+                            <div
+                              key={skillId}
+                              className="badge badge-primary gap-2"
+                            >
                               {skill?.name || `スキルID: ${skillId}`}
                               <button
                                 type="button"
@@ -372,7 +427,9 @@ export default function EditUserClient({
 
                     {skillsChanged && (
                       <div className="alert alert-info mt-3">
-                        <span className="text-sm">✓ スキルが変更されています</span>
+                        <span className="text-sm">
+                          ✓ スキルが変更されています
+                        </span>
                       </div>
                     )}
                   </div>
@@ -381,9 +438,12 @@ export default function EditUserClient({
                   <div className="divider my-4"></div>
                   <div className="form-control">
                     <label className="label">
-                      <span className="label-text font-semibold text-base">ロール</span>
+                      <span className="label-text font-semibold text-base">
+                        ロール
+                      </span>
                       <span className="label-text-alt">
-                        {selectedRoleIds.length} / {availableRoles.length} 個選択中
+                        {selectedRoleIds.length} / {availableRoles.length}{" "}
+                        個選択中
                       </span>
                     </label>
                     <details className="dropdown w-full">
@@ -407,7 +467,9 @@ export default function EditUserClient({
                                   onChange={() => toggleRole(role.id)}
                                   className="checkbox checkbox-primary checkbox-sm"
                                 />
-                                <span className="label-text flex-1">{role.name}</span>
+                                <span className="label-text flex-1">
+                                  {role.name}
+                                </span>
                               </label>
                             </li>
                           ))
@@ -418,9 +480,14 @@ export default function EditUserClient({
                     {selectedRoleIds.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
                         {selectedRoleIds.map((roleId) => {
-                          const role = availableRoles.find(r => r.id === roleId);
+                          const role = availableRoles.find(
+                            (r) => r.id === roleId,
+                          );
                           return (
-                            <div key={roleId} className="badge badge-secondary gap-2">
+                            <div
+                              key={roleId}
+                              className="badge badge-secondary gap-2"
+                            >
                               {role?.name || `ロールID: ${roleId}`}
                               <button
                                 type="button"
@@ -438,7 +505,9 @@ export default function EditUserClient({
 
                     {rolesChanged && (
                       <div className="alert alert-info mt-3">
-                        <span className="text-sm">✓ ロールが変更されています</span>
+                        <span className="text-sm">
+                          ✓ ロールが変更されています
+                        </span>
                       </div>
                     )}
                   </div>
@@ -464,7 +533,11 @@ export default function EditUserClient({
                           更新中...
                         </>
                       ) : (
-                        <>更新{hasChanges && ` (${[isActiveChanged && 'アクティブ', skillsChanged && 'スキル', rolesChanged && 'ロール'].filter(Boolean).join('・')})`}</>
+                        <>
+                          更新
+                          {hasChanges &&
+                            ` (${[isActiveChanged && "アクティブ", skillsChanged && "スキル", rolesChanged && "ロール"].filter(Boolean).join("・")})`}
+                        </>
                       )}
                     </button>
                   </div>
@@ -480,17 +553,23 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザーID</p>
-                    <p className="text-lg font-semibold">{userDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {userDetail.id || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">{formatDate(userDetail.createdAt)}</p>
+                    <p className="text-lg font-semibold">
+                      {formatDate(userDetail.createdAt)}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">管理者権限</p>
-                    <p className="text-lg font-semibold">{userDetail.isAdmin ? "有効" : "なし"}</p>
+                    <p className="text-lg font-semibold">
+                      {userDetail.isAdmin ? "有効" : "なし"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -506,8 +585,19 @@ export default function EditUserClient({
                   className="btn btn-outline w-full"
                   onClick={handleRequestPasswordReset}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                    />
                   </svg>
                   パスワードリセットメール送信
                 </button>

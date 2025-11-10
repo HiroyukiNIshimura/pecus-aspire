@@ -1,6 +1,6 @@
 "use server";
 
-import { ApiResponse } from "./types";
+import type { ApiResponse } from "./types";
 
 /**
  * Nominatim OpenStreetMap API から返されるレスポンス
@@ -63,7 +63,7 @@ export interface LocationInfo {
  */
 export async function getLocationFromCoordinates(
   latitude: number,
-  longitude: number
+  longitude: number,
 ): Promise<ApiResponse<LocationInfo>> {
   try {
     // 入力値の検証
@@ -98,7 +98,7 @@ export async function getLocationFromCoordinates(
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
         // User-Agent を指定（Nominatim の利用規約で推奨）
         "User-Agent": "pecus-aspire-location-service/1.0",
       },
@@ -107,7 +107,9 @@ export async function getLocationFromCoordinates(
     });
 
     if (!response.ok) {
-      console.error(`Nominatim API error: ${response.status} ${response.statusText}`);
+      console.error(
+        `Nominatim API error: ${response.status} ${response.statusText}`,
+      );
       return {
         success: false,
         error: "server",
@@ -178,7 +180,7 @@ export async function getLocationFromCoordinates(
  * ]);
  */
 export async function getLocationsFromCoordinates(
-  coordinates: Array<{ latitude: number; longitude: number }>
+  coordinates: Array<{ latitude: number; longitude: number }>,
 ): Promise<ApiResponse<LocationInfo[]>> {
   try {
     if (!Array.isArray(coordinates) || coordinates.length === 0) {
@@ -199,15 +201,18 @@ export async function getLocationsFromCoordinates(
     }
 
     const locationPromises = coordinates.map((coord) =>
-      getLocationFromCoordinates(coord.latitude, coord.longitude)
+      getLocationFromCoordinates(coord.latitude, coord.longitude),
     );
 
     const results = await Promise.all(locationPromises);
 
     // 失敗したリクエストをフィルタリング
     const locationInfos = results
-      .filter((result): result is ApiResponse<LocationInfo> & { data: LocationInfo } =>
-        result.success && result.data !== undefined
+      .filter(
+        (
+          result,
+        ): result is ApiResponse<LocationInfo> & { data: LocationInfo } =>
+          result.success && result.data !== undefined,
       )
       .map((result) => result.data);
 

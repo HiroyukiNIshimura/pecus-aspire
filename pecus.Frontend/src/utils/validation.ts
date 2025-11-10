@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * Zodスキーマを使用してバリデーションを実行し、結果を返す（非同期版）

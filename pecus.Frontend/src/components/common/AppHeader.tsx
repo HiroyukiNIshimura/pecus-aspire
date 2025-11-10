@@ -1,8 +1,8 @@
 "use client";
 
-import { useTheme } from "@/hooks/useTheme";
 import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth";
+import { useTheme } from "@/hooks/useTheme";
 
 interface UserInfo {
   id: number;

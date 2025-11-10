@@ -1,7 +1,7 @@
-import AdminSkillsClient from "./AdminSkillsClient";
-import { getCurrentUser } from "@/actions/profile";
 import { getSkills } from "@/actions/admin/skills";
-import { UserInfo } from "@/types/userInfo";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
+import AdminSkillsClient from "./AdminSkillsClient";
 
 export const dynamic = "force-dynamic";
 

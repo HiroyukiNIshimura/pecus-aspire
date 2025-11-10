@@ -1,14 +1,17 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
 import type {
+  SuccessResponse,
   TagDetailResponse,
   TagListItemResponse,
   TagListItemResponseTagStatisticsPagedResponse,
   TagResponse,
-  SuccessResponse,
 } from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: タグ一覧を取得（ページネーション対応）
@@ -35,7 +38,9 @@ export async function getTags(
 /**
  * Server Action: タグ情報を取得
  */
-export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailResponse>> {
+export async function getTagDetail(
+  id: number,
+): Promise<ApiResponse<TagDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags1(id);
@@ -67,7 +72,8 @@ export async function createTag(request: {
     return {
       success: false,
       error: "server",
-      message: error.body?.message || error.message || "タグの作成に失敗しました",
+      message:
+        error.body?.message || error.message || "タグの作成に失敗しました",
     };
   }
 }
@@ -122,7 +128,8 @@ export async function updateTag(
     return {
       success: false,
       error: "server",
-      message: error.body?.message || error.message || "タグの更新に失敗しました",
+      message:
+        error.body?.message || error.message || "タグの更新に失敗しました",
     };
   }
 }
@@ -130,7 +137,9 @@ export async function updateTag(
 /**
  * Server Action: タグを削除
  */
-export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteTag(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.deleteApiAdminTags(id);
@@ -140,7 +149,8 @@ export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse
     return {
       success: false,
       error: "server",
-      message: error.body?.message || error.message || "タグの削除に失敗しました",
+      message:
+        error.body?.message || error.message || "タグの削除に失敗しました",
     };
   }
 }
@@ -148,7 +158,9 @@ export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse
 /**
  * Server Action: タグを有効化
  */
-export async function activateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function activateTag(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsActivate(id);
@@ -181,7 +193,9 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
 /**
  * Server Action: タグを無効化
  */
-export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateTag(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsDeactivate(id);

@@ -65,7 +65,6 @@ export function ConcurrencyDialog({
   onRetry,
   onCancel,
 }: ConcurrencyDialogProps) {
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded shadow-lg max-w-lg w-full p-6">
@@ -118,18 +117,10 @@ export function ConcurrencyDialog({
 
         {/* ボタングループ */}
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={onCancel}
-          >
+          <button type="button" className="btn btn-outline" onClick={onCancel}>
             キャンセル
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={onRetry}
-          >
+          <button type="button" className="btn btn-primary" onClick={onRetry}>
             再試行
           </button>
         </div>

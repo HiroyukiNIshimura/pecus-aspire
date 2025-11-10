@@ -1,11 +1,11 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import BadgeIcon from "@mui/icons-material/Badge";
 import BuildIcon from "@mui/icons-material/Business";
 import GridIcon from "@mui/icons-material/GridView";
-import PeopleIcon from "@mui/icons-material/People";
-import BadgeIcon from "@mui/icons-material/Badge";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import PeopleIcon from "@mui/icons-material/People";
+import { usePathname } from "next/navigation";
 
 interface AdminSidebarProps {
   sidebarOpen: boolean;

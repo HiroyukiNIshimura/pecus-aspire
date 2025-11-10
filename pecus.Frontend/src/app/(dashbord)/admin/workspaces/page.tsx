@@ -1,13 +1,13 @@
-import AdminWorkspacesClient from "./AdminWorkspacesClient";
 import { getWorkspaces } from "@/actions/admin/workspace";
-import { getCurrentUser } from "@/actions/profile";
 import { getGenres } from "@/actions/master";
-import {
+import { getCurrentUser } from "@/actions/profile";
+import type {
+  MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
-  MasterGenreResponse,
 } from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
+import AdminWorkspacesClient from "./AdminWorkspacesClient";
 
 export const dynamic = "force-dynamic";
 

@@ -1,14 +1,17 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
 import type {
+  SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceResponse,
-  SuccessResponse,
 } from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: ワークスペース一覧を取得
@@ -17,7 +20,9 @@ export async function getWorkspaces(
   page: number = 1,
   isActive?: boolean,
   genreId?: number,
-): Promise<ApiResponse<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse>> {
+): Promise<
+  ApiResponse<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse>
+> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.getApiAdminWorkspaces(

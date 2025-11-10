@@ -1,6 +1,9 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
 import type {
   SkillDetailResponse,
   SkillListItemResponse,
@@ -8,7 +11,7 @@ import type {
   SkillResponse,
   SuccessResponse,
 } from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: スキル一覧を取得（ページネーション対応）
@@ -84,7 +87,9 @@ export async function getAllSkills(
 /**
  * Server Action: スキル情報を取得
  */
-export async function getSkillDetail(id: number): Promise<ApiResponse<SkillDetailResponse>> {
+export async function getSkillDetail(
+  id: number,
+): Promise<ApiResponse<SkillDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.getApiAdminSkills1(id);
@@ -185,7 +190,9 @@ export async function updateSkill(
 /**
  * Server Action: スキルを削除
  */
-export async function deleteSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.deleteApiAdminSkills(id);
@@ -204,7 +211,9 @@ export async function deleteSkill(id: number): Promise<ApiResponse<SuccessRespon
 /**
  * Server Action: スキルを有効化
  */
-export async function activateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function activateSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsActivate(id);
@@ -237,7 +246,9 @@ export async function activateSkill(id: number): Promise<ApiResponse<SuccessResp
 /**
  * Server Action: スキルを無効化
  */
-export async function deactivateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);

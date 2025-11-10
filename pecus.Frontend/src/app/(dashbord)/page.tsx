@@ -1,6 +1,6 @@
-import { UserInfo } from "@/types/userInfo";
-import DashboardClient from "./DashboardClient";
 import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
+import DashboardClient from "./DashboardClient";
 
 export const dynamic = "force-dynamic";
 

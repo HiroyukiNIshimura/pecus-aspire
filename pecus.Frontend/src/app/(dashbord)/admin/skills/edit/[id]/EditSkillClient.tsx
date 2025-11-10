@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateSkill } from "@/actions/admin/skills";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import type { SkillDetailResponse } from "@/connectors/api/pecus";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
-import { updateSkill } from "@/actions/admin/skills";
 import { editSkillSchema } from "@/schemas/editSchemas";
-import type { SkillDetailResponse } from "@/connectors/api/pecus";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
 
 interface EditSkillClientProps {
   initialUser: UserInfo | null;
@@ -50,7 +50,9 @@ export default function EditSkillClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!skillDetail.rowVersion) {
-          notify.error("スキル情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error(
+            "スキル情報の更新に必要なバージョン情報が取得できませんでした。",
+          );
           return;
         }
 
@@ -173,7 +175,9 @@ export default function EditSkillClient({
                         shouldShowError("name") ? "input-error" : ""
                       }`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("name", e.target.value)
+                      }
                       placeholder="スキル名を入力"
                       disabled={isSubmitting}
                       required
@@ -212,9 +216,7 @@ export default function EditSkillClient({
 
                   <div className="form-control mt-4">
                     <label className="label cursor-pointer">
-                      <span className="label-text font-semibold">
-                        有効
-                      </span>
+                      <span className="label-text font-semibold">有効</span>
                       <input
                         name="isActive"
                         type="checkbox"
@@ -229,7 +231,7 @@ export default function EditSkillClient({
                   </div>
 
                   {/* アクションボタン */}
-                                    {/* アクションボタン */}
+                  {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">
                     <button
                       type="button"
@@ -266,19 +268,25 @@ export default function EditSkillClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">スキルID</p>
-                    <p className="text-lg font-semibold">{skillDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {skillDetail.id || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">保有者数</p>
-                    <p className="text-lg font-semibold">{skillDetail.userCount || 0} 人</p>
+                    <p className="text-lg font-semibold">
+                      {skillDetail.userCount || 0} 人
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
                       {skillDetail.createdAt
-                        ? new Date(skillDetail.createdAt).toLocaleString("ja-JP")
+                        ? new Date(skillDetail.createdAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>
@@ -287,7 +295,9 @@ export default function EditSkillClient({
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
                       {skillDetail.updatedAt
-                        ? new Date(skillDetail.updatedAt).toLocaleString("ja-JP")
+                        ? new Date(skillDetail.updatedAt).toLocaleString(
+                            "ja-JP",
+                          )
                         : "-"}
                     </p>
                   </div>

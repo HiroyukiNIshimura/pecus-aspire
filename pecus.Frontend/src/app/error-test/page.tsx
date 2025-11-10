@@ -42,9 +42,7 @@ export default function ErrorTestPage() {
                   key={errorType}
                   onClick={() => setSelectedError(errorType)}
                   className={`btn btn-sm ${
-                    selectedError === errorType
-                      ? "btn-primary"
-                      : "btn-outline"
+                    selectedError === errorType ? "btn-primary" : "btn-outline"
                   }`}
                 >
                   {errorType} エラー
@@ -56,15 +54,16 @@ export default function ErrorTestPage() {
       </div>
 
       {/* エラーページプレビュー */}
-      <div className="min-h-[calc(100vh-120px)]">
-        {renderErrorPage()}
-      </div>
+      <div className="min-h-[calc(100vh-120px)]">{renderErrorPage()}</div>
 
       {/* フッター情報 */}
       <div className="bg-base-100 border-t border-base-300 py-4 px-4">
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
           <p>
-            現在表示中: <span className="font-bold text-primary">{selectedError} エラーページ</span>
+            現在表示中:{" "}
+            <span className="font-bold text-primary">
+              {selectedError} エラーページ
+            </span>
           </p>
           <p className="mt-2">
             ✅ このページはテスト用です。本番環境では存在しません。

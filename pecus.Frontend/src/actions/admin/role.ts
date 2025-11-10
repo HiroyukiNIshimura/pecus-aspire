@@ -2,7 +2,7 @@
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { RoleResponse } from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: ロール一覧を取得
@@ -24,4 +24,3 @@ export async function getAllRoles(): Promise<ApiResponse<RoleResponse[]>> {
     };
   }
 }
-

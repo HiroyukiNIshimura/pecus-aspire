@@ -2,7 +2,7 @@
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { MasterGenreResponse } from "@/connectors/api/pecus";
-import { ApiResponse } from "./types";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: マスタージャンル一覧を取得

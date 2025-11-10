@@ -2,8 +2,8 @@
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { ApiResponse } from "./types";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: 現在のユーザー情報を取得
@@ -16,13 +16,15 @@ export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
     const api = createPecusApiClients();
     const response = await api.profile.getApiProfile();
     return {
-      success: true, data: {
+      success: true,
+      data: {
         id: response.id,
         name: response.username,
         email: response.email,
         roles: response.roles,
         isAdmin: response.isAdmin ?? false,
-    } };
+      },
+    };
   } catch (error: any) {
     console.error("Failed to fetch current user:", error);
     return {
@@ -59,7 +61,8 @@ export async function updateProfile(request: {
     return {
       success: false,
       error: "server",
-      message: error.body?.message || error.message || "Failed to update profile",
+      message:
+        error.body?.message || error.message || "Failed to update profile",
     };
   }
 }

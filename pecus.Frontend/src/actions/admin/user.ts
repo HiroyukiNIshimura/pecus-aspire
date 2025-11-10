@@ -1,12 +1,15 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
 import type {
-  UserResponseUserStatisticsPagedResponse,
-  UserResponse,
   SuccessResponse,
+  UserResponse,
+  UserResponseUserStatisticsPagedResponse,
 } from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: ユーザー一覧を取得
@@ -66,7 +69,9 @@ export async function createUserWithoutPassword(request: {
 /**
  * Server Action: ユーザーを削除
  */
-export async function deleteUser(userId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteUser(
+  userId: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.deleteApiAdminUsers(userId);
@@ -149,7 +154,9 @@ export async function requestPasswordReset(
 /**
  * Server Action: ユーザー情報を取得
  */
-export async function getUserDetail(userId: number): Promise<ApiResponse<UserResponse>> {
+export async function getUserDetail(
+  userId: number,
+): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers(userId);

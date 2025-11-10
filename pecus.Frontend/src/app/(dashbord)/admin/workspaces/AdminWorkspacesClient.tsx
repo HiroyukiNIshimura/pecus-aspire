@@ -1,20 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import {
+import { useCallback, useEffect, useRef, useState } from "react";
+import AdminFooter from "@/components/admin/AdminFooter";
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import ConfirmDeleteModal, {
+  type ConfirmDeleteModalRef,
+} from "@/components/common/ConfirmDeleteModal";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
+import Pagination from "@/components/common/Pagination";
+import type {
+  MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
-  MasterGenreResponse,
 } from "@/connectors/api/pecus";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminFooter from "@/components/admin/AdminFooter";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import Pagination from "@/components/common/Pagination";
-import ConfirmDeleteModal, { ConfirmDeleteModalRef } from "@/components/common/ConfirmDeleteModal";
-import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
 
@@ -85,12 +87,16 @@ export default function AdminWorkspacesClient({
 
   // Deletion modal control
   const deleteModalRef = useRef<ConfirmDeleteModalRef>(null);
-  const [workspaceToDelete, setWorkspaceToDelete] = useState<WorkspaceListItemResponse | null>(null);
+  const [workspaceToDelete, setWorkspaceToDelete] =
+    useState<WorkspaceListItemResponse | null>(null);
 
-  const handleDeleteClick = useCallback((workspace: WorkspaceListItemResponse) => {
-    setWorkspaceToDelete(workspace);
-    deleteModalRef.current?.open();
-  }, []);
+  const handleDeleteClick = useCallback(
+    (workspace: WorkspaceListItemResponse) => {
+      setWorkspaceToDelete(workspace);
+      deleteModalRef.current?.open();
+    },
+    [],
+  );
 
   // 【バリデーションフック利用例】
   // useValidation フックを使用してワークスペース名のバリデーションを管理

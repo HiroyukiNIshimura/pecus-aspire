@@ -1,15 +1,18 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type {
-  OrganizationResponse,
-} from "@/connectors/api/pecus";
-import { ApiResponse } from "../types";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
+import type { OrganizationResponse } from "@/connectors/api/pecus";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: 自組織の詳細情報を取得
  */
-export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationResponse>> {
+export async function getOrganizationDetail(): Promise<
+  ApiResponse<OrganizationResponse>
+> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.getApiAdminOrganization();
@@ -20,9 +23,7 @@ export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationR
       success: false,
       error: "server",
       message:
-        error.body?.message ||
-        error.message ||
-        "組織情報の取得に失敗しました",
+        error.body?.message || error.message || "組織情報の取得に失敗しました",
     };
   }
 }
@@ -31,21 +32,20 @@ export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationR
  * Server Action: 自組織の情報を更新
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function updateOrganization(
-  request: {
-    name?: string;
-    code?: string;
-    description?: string;
-    representativeName?: string;
-    phoneNumber?: string;
-    email?: string;
-    isActive?: boolean;
-    rowVersion: string; // 楽観的ロック用
-  },
-): Promise<ApiResponse<OrganizationResponse>> {
+export async function updateOrganization(request: {
+  name?: string;
+  code?: string;
+  description?: string;
+  representativeName?: string;
+  phoneNumber?: string;
+  email?: string;
+  isActive?: boolean;
+  rowVersion: string; // 楽観的ロック用
+}): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminOrganization.putApiAdminOrganization(request);
+    const response =
+      await api.adminOrganization.putApiAdminOrganization(request);
     return { success: true, data: response };
   } catch (error: any) {
     // 409 Conflict: 並行更新による競合を検出
@@ -69,9 +69,7 @@ export async function updateOrganization(
       success: false,
       error: "server",
       message:
-        error.body?.message ||
-        error.message ||
-        "組織情報の更新に失敗しました",
+        error.body?.message || error.message || "組織情報の更新に失敗しました",
     };
   }
 }
@@ -80,6 +78,8 @@ export async function updateOrganization(
  * Server Action: 組織情報を取得（getOrganizationDetail() のエイリアス）
  * 互換性のための別名関数
  */
-export async function getOrganization(): Promise<ApiResponse<OrganizationResponse>> {
+export async function getOrganization(): Promise<
+  ApiResponse<OrganizationResponse>
+> {
   return getOrganizationDetail();
 }

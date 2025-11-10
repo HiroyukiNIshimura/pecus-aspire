@@ -1,9 +1,9 @@
-import AdminUsersClient from "./AdminUsersClient";
+import { getAllSkills } from "@/actions/admin/skills";
 import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
-import { getAllSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
-import { UserInfo } from "@/types/userInfo";
+import type { UserInfo } from "@/types/userInfo";
+import AdminUsersClient from "./AdminUsersClient";
 
 export const dynamic = "force-dynamic";
 
