@@ -11,6 +11,7 @@ namespace Pecus.Controllers;
 
 [Route("api/workspaces/{workspaceId}/items/{itemId}/relations")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "WorkspaceItem")]
 public class WorkspaceItemRelationController : BaseSecureController
 {
     private readonly WorkspaceItemRelationService _relationService;

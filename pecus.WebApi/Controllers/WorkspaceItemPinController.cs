@@ -11,6 +11,7 @@ using Pecus.Services;
 namespace Pecus.Controllers;
 
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "WorkspaceItem")]
 public class WorkspaceItemPinController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;

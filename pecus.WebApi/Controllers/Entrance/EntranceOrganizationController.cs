@@ -21,6 +21,7 @@ namespace Pecus.Controllers.Entrance;
 [Route("api/entrance/organizations")]
 [Produces("application/json")]
 [AllowAnonymous]
+[ApiExplorerSettings(GroupName = "Entrance - Organization")]
 public class EntranceOrganizationController : ControllerBase
 {
     private readonly OrganizationService _organizationService;

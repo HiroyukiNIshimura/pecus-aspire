@@ -12,6 +12,7 @@ namespace Pecus.Controllers;
 
 [Route("api/workspaces/{workspaceId}/items")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "WorkspaceItem")]
 public class WorkspaceItemController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;

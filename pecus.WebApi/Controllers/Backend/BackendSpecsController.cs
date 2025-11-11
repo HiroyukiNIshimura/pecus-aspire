@@ -12,6 +12,7 @@ namespace Pecus.Controllers.Backend;
 /// </summary>
 [Route("api/backend/specs")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Backend - Specs")]
 public class BackendSpecsController : BaseBackendController
 {
     private readonly ISwaggerProvider _swaggerProvider;

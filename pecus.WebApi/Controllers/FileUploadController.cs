@@ -11,6 +11,7 @@ namespace Pecus.Controllers;
 
 [Route("api/files")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "File")]
 public class FileUploadController : BaseSecureController
 {
     private readonly FileUploadService _fileUploadService;

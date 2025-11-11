@@ -12,6 +12,7 @@ namespace Pecus.Controllers.Entrance;
 [ApiController]
 [Route("api/entrance")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Entrance - Auth")]
 public class RefreshController : ControllerBase
 {
     private readonly RefreshTokenService _refreshService;

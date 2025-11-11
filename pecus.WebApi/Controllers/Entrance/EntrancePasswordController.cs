@@ -20,6 +20,7 @@ namespace Pecus.Controllers.Entrance;
 [Route("api/entrance/password")]
 [Produces("application/json")]
 [AllowAnonymous]
+[ApiExplorerSettings(GroupName = "Entrance - Password")]
 public class EntrancePasswordController : ControllerBase
 {
     private readonly UserService _userService;

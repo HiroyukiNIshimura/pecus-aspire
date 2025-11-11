@@ -14,6 +14,7 @@ namespace Pecus.Controllers.Admin;
 /// </summary>
 [Route("api/admin/organization")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Admin - Organization")]
 public class AdminOrganizationController : BaseAdminController
 {
     private readonly OrganizationService _organizationService;

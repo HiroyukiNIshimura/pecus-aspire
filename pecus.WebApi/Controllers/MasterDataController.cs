@@ -13,6 +13,7 @@ namespace Pecus.Controllers;
 /// </summary>
 [Route("api/master")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Master")]
 public class MasterDataController : BaseSecureController
 {
     private readonly MasterDataService _masterDataService;

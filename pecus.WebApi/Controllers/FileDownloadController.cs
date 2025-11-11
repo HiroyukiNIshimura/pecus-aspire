@@ -10,6 +10,7 @@ namespace Pecus.Controllers;
 
 [Route("api/downloads")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "File")]
 public class FileDownloadController : BaseSecureController
 {
     private readonly ILogger<FileDownloadController> _logger;

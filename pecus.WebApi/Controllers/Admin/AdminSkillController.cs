@@ -16,6 +16,7 @@ namespace Pecus.Controllers.Admin;
 /// </summary>
 [Route("api/admin/skills")]
 [Produces("application/json")]
+[ApiExplorerSettings(GroupName = "Admin - Skill")]
 public class AdminSkillController : BaseAdminController
 {
     private readonly SkillService _skillService;
