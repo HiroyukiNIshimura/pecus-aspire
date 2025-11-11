@@ -63,3 +63,4 @@ public class WorkspaceItemAttachmentResponse
     /// </summary>
     public string? UploadedByUsername { get; set; }
 }
+

@@ -61,3 +61,4 @@ public class UserListItemResponse
     /// </summary>
     public int RoleCount { get; set; }
 }
+

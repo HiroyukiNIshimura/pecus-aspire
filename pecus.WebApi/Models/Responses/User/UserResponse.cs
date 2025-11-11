@@ -73,5 +73,6 @@ public class UserResponse : IConflictModel
     /// ユーザーの楽観的ロック用RowVersion
     /// </summary>
     [Required]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+

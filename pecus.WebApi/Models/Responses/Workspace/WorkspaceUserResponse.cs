@@ -66,3 +66,4 @@ public class WorkspaceUserResponse
     /// </summary>
     public WorkspaceUserDetailResponse? WorkspaceUser { get; set; }
 }
+

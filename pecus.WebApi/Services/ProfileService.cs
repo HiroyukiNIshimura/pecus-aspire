@@ -371,7 +371,7 @@ public class ProfileService
     /// <param name="skillIds">スキルIDのリスト</param>
     /// <param name="userRowVersion">ユーザーの楽観的ロック用 RowVersion</param>
     /// <returns>成功時は true、失敗時は false</returns>
-    public async Task<bool> SetOwnSkillsAsync(int userId, List<int>? skillIds, byte[]? userRowVersion = null)
+    public async Task<bool> SetOwnSkillsAsync(int userId, List<int>? skillIds, uint? userRowVersion = null)
     {
         // UserService で実装されているスキル設定を呼び出し
         // updatedByUserId を userId に設定（自己変更）

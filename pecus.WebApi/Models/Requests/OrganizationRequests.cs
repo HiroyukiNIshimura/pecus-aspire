@@ -104,7 +104,7 @@ public class AdminUpdateOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -160,7 +160,7 @@ public class BackendUpdateOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -172,7 +172,7 @@ public class DeleteOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -190,5 +190,6 @@ public class SetOrganizationActiveStatusRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+

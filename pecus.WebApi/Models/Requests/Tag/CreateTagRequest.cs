@@ -14,3 +14,4 @@ public class CreateTagRequest
     [MaxLength(50, ErrorMessage = "タグ名は50文字以内で入力してください。")]
     public required string Name { get; set; }
 }
+

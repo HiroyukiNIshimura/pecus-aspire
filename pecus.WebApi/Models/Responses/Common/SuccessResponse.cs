@@ -18,3 +18,4 @@ public class SuccessResponse
     [Required]
     public required string Message { get; set; }
 }
+

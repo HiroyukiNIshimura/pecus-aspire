@@ -71,7 +71,7 @@ public class UpdateWorkspaceRequest
     /// ワークスペースの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -129,3 +129,4 @@ public class GetWorkspaceMembersRequest
 
     public bool? ActiveOnly { get; set; } = true;
 }
+

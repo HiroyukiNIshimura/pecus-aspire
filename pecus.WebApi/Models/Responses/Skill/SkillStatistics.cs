@@ -55,3 +55,4 @@ public class SkillUsageItem
     [Required]
     public required string Name { get; set; }
 }
+

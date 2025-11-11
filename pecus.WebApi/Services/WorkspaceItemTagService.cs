@@ -42,7 +42,7 @@ public class WorkspaceItemTagService
         int itemId,
         List<string>? tagNames,
         int userId,
-        byte[]? itemRowVersion = null
+        uint? itemRowVersion = null
     )
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -59,7 +59,7 @@ public class WorkspaceItemTagService
             }
 
             // 楽観的ロック：ItemRowVersionが指定されている場合は競合チェック
-            if (itemRowVersion != null && (item.RowVersion == null || !item.RowVersion.SequenceEqual(itemRowVersion)))
+            if (itemRowVersion != null && item.RowVersion != itemRowVersion)
             {
                 var tags = await _context
                     .WorkspaceItemTags

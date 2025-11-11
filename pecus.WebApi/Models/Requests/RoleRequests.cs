@@ -42,7 +42,7 @@ public class UpdateRoleRequest
     /// ロールの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -58,3 +58,4 @@ public class SetPermissionsToRoleRequest
     [Validation.IntListRange(0, 200)]
     public List<int>? PermissionIds { get; set; }
 }
+

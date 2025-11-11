@@ -44,5 +44,6 @@ public class PermissionDetailResponse
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+

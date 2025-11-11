@@ -65,5 +65,6 @@ public class UpdateWorkspaceItemRequest
     /// アイテムの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+

@@ -28,3 +28,4 @@ public class GetIconRequest
     [StringLength(255, ErrorMessage = "ファイル名は255文字以内で入力してください。")]
     public required string FileName { get; set; }
 }
+

@@ -785,5 +785,150 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(d => d.UserId);
             entity.HasIndex(d => d.LastSeenAt);
         });
+
+        // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
+        ConfigureRowVersionForAllEntities(modelBuilder);
+    }
+
+    /// <summary>
+    /// すべてのエンティティの RowVersion プロパティを PostgreSQL の xmin にマッピング
+    /// </summary>
+    /// <param name="modelBuilder">ModelBuilder</param>
+    private static void ConfigureRowVersionForAllEntities(ModelBuilder modelBuilder)
+    {
+        // User
+        modelBuilder
+            .Entity<User>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Role
+        modelBuilder
+            .Entity<Role>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Permission
+        modelBuilder
+            .Entity<Permission>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Organization
+        modelBuilder
+            .Entity<Organization>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Workspace
+        modelBuilder
+            .Entity<Workspace>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // WorkspaceItem
+        modelBuilder
+            .Entity<WorkspaceItem>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // WorkspaceItemAttachment
+        modelBuilder
+            .Entity<WorkspaceItemAttachment>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // WorkspaceItemRelation
+        modelBuilder
+            .Entity<WorkspaceItemRelation>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // WorkspaceTask
+        modelBuilder
+            .Entity<WorkspaceTask>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // TaskComment
+        modelBuilder
+            .Entity<TaskComment>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Tag
+        modelBuilder
+            .Entity<Tag>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Skill
+        modelBuilder
+            .Entity<Skill>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Genre
+        modelBuilder
+            .Entity<Genre>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Device
+        modelBuilder
+            .Entity<Device>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Activity
+        modelBuilder
+            .Entity<Activity>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
     }
 }

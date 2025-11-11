@@ -562,7 +562,7 @@ public class UserService
     public async Task<bool> SetUserSkillsAsync(
         int userId,
         List<int>? skillIds,
-        byte[]? userRowVersion = null,
+        uint? userRowVersion = null,
         int? updatedByUserId = null
     )
     {
@@ -579,7 +579,7 @@ public class UserService
             }
 
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
-            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
+            if (userRowVersion != null && user.RowVersion != userRowVersion)
             {
                 await RaiseConflictException(userId);
             }
@@ -707,7 +707,7 @@ public class UserService
     public async Task<bool> SetUserRolesAsync(
         int userId,
         List<int>? roleIds,
-        byte[]? userRowVersion = null,
+        uint? userRowVersion = null,
         int? updatedByUserId = null
     )
     {
@@ -726,7 +726,7 @@ public class UserService
             }
 
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
-            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
+            if (userRowVersion != null && user.RowVersion != userRowVersion)
             {
                 await RaiseConflictException(userId);
             }

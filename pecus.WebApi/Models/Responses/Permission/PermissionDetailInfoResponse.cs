@@ -29,3 +29,4 @@ public class PermissionDetailInfoResponse
     /// </summary>
     public string? Category { get; set; }
 }
+

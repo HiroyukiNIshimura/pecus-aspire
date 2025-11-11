@@ -18,5 +18,6 @@ public class SetTagsToItemRequest
     /// アイテムの楽観的ロック用RowVersion。
     /// 競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。
     /// </summary>
-    public byte[]? ItemRowVersion { get; set; }
+    public uint? ItemRowVersion { get; set; }
 }
+

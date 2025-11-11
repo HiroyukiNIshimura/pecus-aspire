@@ -19,3 +19,4 @@ public class RoleInfoResponse
     [Required]
     public required string Name { get; set; }
 }
+

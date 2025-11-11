@@ -14,3 +14,4 @@ public class RefreshRequest
     [MaxLength(512, ErrorMessage = "リフレッシュトークンは512文字以内で指定してください。")]
     public required string RefreshToken { get; set; }
 }
+

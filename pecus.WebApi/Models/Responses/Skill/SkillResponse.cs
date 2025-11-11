@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Skill;
 
@@ -63,7 +63,7 @@ public class SkillDetailResponse : IConflictModel
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -139,3 +139,4 @@ public class SkillResponse
     /// </summary>
     public SkillDetailResponse? Skill { get; set; }
 }
+

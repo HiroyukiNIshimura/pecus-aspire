@@ -29,3 +29,4 @@ public class WorkspaceInfoResponse
     /// </summary>
     public bool IsActive { get; set; }
 }
+

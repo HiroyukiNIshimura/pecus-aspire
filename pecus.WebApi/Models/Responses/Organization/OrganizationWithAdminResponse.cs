@@ -20,3 +20,4 @@ public class OrganizationWithAdminResponse
     [Required]
     public required UserResponse AdminUser { get; set; }
 }
+

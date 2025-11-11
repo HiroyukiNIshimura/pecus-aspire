@@ -219,5 +219,5 @@ public class SetOwnSkillsRequest
     /// ユーザーの楽観的ロック用RowVersion。
     /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
     /// </summary>
-    public byte[]? UserRowVersion { get; set; }
+    public uint? UserRowVersion { get; set; }
 }

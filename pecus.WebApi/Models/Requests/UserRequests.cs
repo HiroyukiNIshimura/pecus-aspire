@@ -188,7 +188,7 @@ public class UpdateProfileRequest
     /// ユーザーの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -291,7 +291,7 @@ public class SetUserRolesRequest
     /// ユーザーの楽観的ロック用RowVersion。
     /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
     /// </summary>
-    public byte[]? UserRowVersion { get; set; }
+    public uint? UserRowVersion { get; set; }
 }
 
 /// <summary>
@@ -345,5 +345,6 @@ public class SetUserSkillsRequest
     /// ユーザーの楽観的ロック用RowVersion。
     /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
     /// </summary>
-    public byte[]? UserRowVersion { get; set; }
+    public uint? UserRowVersion { get; set; }
 }
+

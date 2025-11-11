@@ -57,3 +57,4 @@ public class PagedResponse<T, TSummary> : PagedResponse<T>
     /// </summary>
     public TSummary? Summary { get; set; }
 }
+

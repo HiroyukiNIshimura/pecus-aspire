@@ -27,3 +27,4 @@ public class FileUploadRequest
     [Required(ErrorMessage = "ファイルは必須です。")]
     public required IFormFile File { get; set; }
 }
+

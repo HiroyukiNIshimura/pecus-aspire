@@ -59,3 +59,4 @@ public class CreateWorkspaceItemRequest
     [Validation.StringListItems(50)]
     public List<string>? TagNames { get; set; }
 }
+

@@ -13,5 +13,6 @@ public class RoleItemRequest
     /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+
