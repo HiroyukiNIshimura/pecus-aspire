@@ -101,7 +101,7 @@ export async function updateWorkspace(
     description?: string;
     genreId?: number;
     isActive?: boolean;
-    rowVersion: string; // 楽観的ロック用
+    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
   },
 ): Promise<ApiResponse<WorkspaceResponse | WorkspaceDetailResponse>> {
   try {

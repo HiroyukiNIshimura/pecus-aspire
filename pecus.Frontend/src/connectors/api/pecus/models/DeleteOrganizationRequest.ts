@@ -9,6 +9,6 @@ export type DeleteOrganizationRequest = {
     /**
      * 組織の楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

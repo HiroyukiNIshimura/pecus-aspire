@@ -6673,9 +6673,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -6739,9 +6739,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -7121,9 +7121,9 @@
         "type": "object",
         "properties": {
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -7469,9 +7469,9 @@
             "description": "有効フラグ"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -7923,9 +7923,9 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -8049,9 +8049,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -8326,9 +8326,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -8475,9 +8475,9 @@
             "description": "有効フラグ"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -8496,9 +8496,9 @@
             "nullable": true
           },
           "userRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8534,9 +8534,9 @@
             "nullable": true
           },
           "itemRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8600,9 +8600,9 @@
             "description": "ロールIDのリスト。既存のすべてのロールを置き換えます。\r\n空のリストまたはnullの場合はすべてのロールを削除します。"
           },
           "userRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8624,9 +8624,9 @@
             "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。"
           },
           "userRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8694,9 +8694,9 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9025,9 +9025,9 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用RowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9316,9 +9316,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ジャンルの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9380,9 +9380,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9412,9 +9412,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "スキルの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9439,9 +9439,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "タグの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9508,9 +9508,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9533,9 +9533,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9579,9 +9579,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ワークスペースの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9719,9 +9719,9 @@
             "format": "date-time"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9982,9 +9982,9 @@
             "description": "アクティブフラグ"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -10211,9 +10211,9 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,

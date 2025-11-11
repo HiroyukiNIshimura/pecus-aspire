@@ -45,6 +45,6 @@ export type TagDetailResponse = {
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

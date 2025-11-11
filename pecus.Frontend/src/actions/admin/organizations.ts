@@ -40,7 +40,7 @@ export async function updateOrganization(request: {
   phoneNumber?: string;
   email?: string;
   isActive?: boolean;
-  rowVersion: string; // 楽観的ロック用
+  rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();

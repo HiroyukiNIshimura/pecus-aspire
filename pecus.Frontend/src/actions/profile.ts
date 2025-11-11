@@ -51,7 +51,7 @@ export async function updateProfile(request: {
   avatarType?: AvatarType;
   avatarUrl?: string;
   skillIds?: number[];
-  rowVersion: string; // 楽観的ロック用
+  rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();

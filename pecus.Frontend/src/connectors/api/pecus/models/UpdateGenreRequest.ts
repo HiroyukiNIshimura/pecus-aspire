@@ -29,6 +29,6 @@ export type UpdateGenreRequest = {
     /**
      * ジャンルの楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

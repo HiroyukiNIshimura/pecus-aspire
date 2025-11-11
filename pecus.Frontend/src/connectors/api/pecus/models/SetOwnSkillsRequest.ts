@@ -15,6 +15,6 @@ export type SetOwnSkillsRequest = {
      * ユーザーの楽観的ロック用RowVersion。
      * 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
      */
-    userRowVersion?: string | null;
+    userRowVersion?: number | null;
 };
 

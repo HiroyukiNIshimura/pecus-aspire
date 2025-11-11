@@ -23,6 +23,6 @@ export type UpdateProfileRequest = {
     /**
      * ユーザーの楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

@@ -49,6 +49,6 @@ export type SkillDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

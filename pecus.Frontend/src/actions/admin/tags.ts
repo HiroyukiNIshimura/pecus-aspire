@@ -87,7 +87,7 @@ export async function updateTag(
   request: {
     name: string;
     isActive?: boolean;
-    rowVersion: string; // 楽観的ロック用
+    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
   },
 ): Promise<ApiResponse<TagResponse | TagDetailResponse>> {
   try {

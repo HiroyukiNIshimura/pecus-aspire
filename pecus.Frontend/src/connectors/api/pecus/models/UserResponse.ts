@@ -53,6 +53,6 @@ export type UserResponse = {
     /**
      * ユーザーの楽観的ロック用RowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

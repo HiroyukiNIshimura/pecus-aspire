@@ -181,7 +181,7 @@ export async function getUserDetail(
 export async function setUserSkills(
   userId: number,
   skillIds: number[],
-  userRowVersion: string,
+  userRowVersion: number,
 ): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
@@ -230,7 +230,7 @@ export async function setUserSkills(
 export async function setUserRoles(
   userId: number,
   roleIds: number[],
-  userRowVersion: string,
+  userRowVersion: number,
 ): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();

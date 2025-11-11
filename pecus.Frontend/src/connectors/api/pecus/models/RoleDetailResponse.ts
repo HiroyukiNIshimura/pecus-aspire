@@ -30,6 +30,6 @@ export type RoleDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 
