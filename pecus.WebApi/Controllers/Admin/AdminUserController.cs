@@ -6,6 +6,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
@@ -28,7 +29,7 @@ public class AdminUserController : BaseAdminController
     private readonly ILogger<AdminUserController> _logger;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly OrganizationAccessHelper _accessHelper;
 
     public AdminUserController(
@@ -38,7 +39,7 @@ public class AdminUserController : BaseAdminController
         ILogger<AdminUserController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        IHttpContextAccessor httpContextAccessor,
+        FrontendUrlResolver frontendUrlResolver,
         OrganizationAccessHelper accessHelper,
         ProfileService profileService
     ) : base(profileService, logger)
@@ -49,7 +50,7 @@ public class AdminUserController : BaseAdminController
         _logger = logger;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
-        _httpContextAccessor = httpContextAccessor;
+        _frontendUrlResolver = frontendUrlResolver;
         _accessHelper = accessHelper;
     }
 
@@ -392,14 +393,8 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        // 動的にBaseUrlを取得
-        var requestContext = _httpContextAccessor.HttpContext?.Request;
-        var baseUrl =
-            requestContext != null
-                ? $"{requestContext.Scheme}://{requestContext.Host}"
-                : "https://localhost";
-
-        // パスワード設定URLを生成
+        // Origin ヘッダーからフロントエンドURLを検証・取得
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
         var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
 
         // パスワード設定メールを送信
@@ -479,13 +474,9 @@ public class AdminUserController : BaseAdminController
         (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
         if (success && user != null)
         {
-            // 動的にBaseUrlを取得
-            var requestContext = _httpContextAccessor.HttpContext?.Request;
-            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
-
-            // パスワードリセットURLを構築
-            var resetUrl =
-                $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
+            // Origin ヘッダーからフロントエンドURLを検証・取得
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
             // パスワードリセットメールを送信
             var emailModel = new PasswordResetEmailModel

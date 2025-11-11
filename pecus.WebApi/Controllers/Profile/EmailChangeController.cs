@@ -6,6 +6,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
@@ -31,7 +32,7 @@ public class EmailChangeController : BaseSecureController
     private readonly EmailChangeService _emailChangeService;
     private readonly ApplicationDbContext _context;
     private readonly IBackgroundJobClient _backgroundJobClient;
-    private readonly IConfiguration _configuration;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<EmailChangeController> _logger;
 
     /// <summary>
@@ -43,7 +44,7 @@ public class EmailChangeController : BaseSecureController
         EmailChangeService emailChangeService,
         ApplicationDbContext context,
         IBackgroundJobClient backgroundJobClient,
-        IConfiguration configuration
+        FrontendUrlResolver frontendUrlResolver
     )
         : base(profileService, logger)
     {
@@ -51,7 +52,7 @@ public class EmailChangeController : BaseSecureController
         _emailChangeService = emailChangeService;
         _context = context;
         _backgroundJobClient = backgroundJobClient;
-        _configuration = configuration;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -90,8 +91,8 @@ public class EmailChangeController : BaseSecureController
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        // 確認メールを非同期送信（Hangfire）
-        var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
+        // Origin ヘッダーからフロントエンドURLを検証・取得
+        var frontendUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
         var confirmationUrl = $"{frontendUrl}/verify-email?token={response.Token}";
 
         var emailModel = new EmailChangeConfirmationEmailModel

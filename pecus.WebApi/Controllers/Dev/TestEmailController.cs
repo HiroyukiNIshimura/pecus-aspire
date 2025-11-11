@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Responses.Common;
 
 namespace Pecus.Controllers.Dev;
@@ -17,14 +18,18 @@ namespace Pecus.Controllers.Dev;
 public class TestEmailController : ControllerBase
 {
     private readonly IEmailService _emailService;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<TestEmailController> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public TestEmailController(IEmailService emailService, ILogger<TestEmailController> logger, IHttpContextAccessor httpContextAccessor)
+    public TestEmailController(
+        IEmailService emailService,
+        FrontendUrlResolver frontendUrlResolver,
+        ILogger<TestEmailController> logger
+    )
     {
         _emailService = emailService;
+        _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -50,9 +55,8 @@ public class TestEmailController : ControllerBase
         template ??= "test-email";
         var to = TestEmailConfig.Recipient;
 
-        // 動的にBaseUrlを取得
-        var request = _httpContextAccessor.HttpContext?.Request;
-        var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "https://localhost";
+        // デフォルトのフロントエンドURLを取得（開発用なのでOriginヘッダー検証なし）
+        var baseUrl = _frontendUrlResolver.GetDefaultFrontendUrl();
 
         switch (template)
         {

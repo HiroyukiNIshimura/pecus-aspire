@@ -10,6 +10,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
 using System.Reflection;
@@ -48,6 +49,9 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 // メール関連サービスの登録
 builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// セキュリティ関連サービスの登録
+builder.Services.AddSingleton<FrontendUrlResolver>();
 
 // Redisキャッシュの登録
 builder.AddRedisClient("redis");
