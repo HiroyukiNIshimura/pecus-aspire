@@ -7,7 +7,7 @@ import type { MessageResponse } from '../models/MessageResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class DeviceService {
+export class ProfileDeviceService {
     /**
      * 自分の有効なデバイス情報の一覧を取得
      * @returns DeviceResponse OK

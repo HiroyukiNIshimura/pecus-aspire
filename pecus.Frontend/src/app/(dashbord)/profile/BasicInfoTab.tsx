@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { updateProfile, uploadAvatarFile } from "@/actions/profile";
+import { updateProfile, uploadAvatarFile, getAvatarBlob } from "@/actions/profile";
 
 interface BasicInfoTabProps {
   user: UserResponse;
@@ -25,34 +25,138 @@ export default function BasicInfoTab({
   >(user.avatarType || "Gravatar");
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarBlobUrl, setAvatarBlobUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Server Action を早期バインド（初期レンダリング時にエンドポイントを確立）
+  const uploadActionRef = useRef(uploadAvatarFile);
+
+  // 既存のアバター画像をData URLとして読み込む
+  useEffect(() => {
+    if (user.identityIconUrl && !avatarPreviewUrl) {
+      getAvatarBlob(user).then((dataUrl) => {
+        if (dataUrl) {
+          setAvatarBlobUrl(dataUrl);
+        }
+      }).catch((error) => {
+        console.error('Failed to fetch avatar:', error);
+      });
+    }
+
+    // Data URLはクリーンアップ不要（メモリリークなし）
+  }, [user.identityIconUrl, avatarPreviewUrl]);
+
+  // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
+
+  const processFile = async (file: File) => {
+    // ファイルサイズチェック（5MB制限）
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      onAlert("error", "ファイルサイズは5MB以下にしてください");
+      return;
+    }
+
+    // ファイル形式チェック
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      onAlert("error", "対応している画像形式: JPEG, PNG, GIF, WebP");
+      return;
+    }
+
+    // プレビュー表示（URL.createObjectURL を使用）
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreviewUrl(previewUrl);
+    } catch (error) {
+      console.error("Preview error:", error);
+      onAlert(
+        "error",
+        error instanceof Error ? error.message : "画像の読み込みに失敗しました"
+      );
+      return;
+    }
+
+    // ファイルアップロード（Server Action使用）
+    setIsLoading(true);
+    try {
+      // FormDataを作成してファイルを追加
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Server Actionを呼び出し（useRef経由で早期バインドされたものを使用）
+      const uploadResult = await uploadActionRef.current(formData);
+
+      if (uploadResult.success) {
+        setUploadedFileUrl(uploadResult.data?.fileUrl || null);
+        onAlert("success", "画像をアップロードしました");
+      } else {
+        onAlert("error", uploadResult.message || "アップロードに失敗しました");
+        setAvatarPreviewUrl(null);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      onAlert(
+        "error",
+        error instanceof Error ? error.message : "アップロードに失敗しました"
+      );
+      setAvatarPreviewUrl(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    // プレビュー表示
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setAvatarPreviewUrl(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // ファイルアップロード
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadResult = await uploadAvatarFile(formData);
-      if (uploadResult.success) {
-        setUploadedFileUrl(uploadResult.data?.fileUrl || null);
-      } else {
-        onAlert("error", uploadResult.message || "アップロードに失敗しました");
-      }
-    } finally {
-      setIsLoading(false);
+    if (!file) {
+      return;
     }
+    await processFile(file);
+    // 同じファイルを再選択できるようにリセット
+    event.target.value = "";
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) {
+      return;
+    }
+    await processFile(file);
+  };
+
+  const handleClickUpload = () => {
+    fileInputRef.current?.click();
   };
 
   const handleBasicInfoSubmit = async () => {
@@ -82,6 +186,10 @@ export default function BasicInfoTab({
   };
 
   const handleFileReset = () => {
+    // オブジェクトURLを解放
+    if (avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreviewUrl);
+    }
     setUploadedFileUrl(null);
     setAvatarPreviewUrl(null);
   };
@@ -111,11 +219,15 @@ export default function BasicInfoTab({
           id="avatarType"
           className="select select-bordered"
           value={selectedAvatarType}
-          onChange={(e) =>
-            setSelectedAvatarType(
-              e.target.value as "Gravatar" | "UserAvatar" | "AutoGenerated"
-            )
-          }
+          onChange={(e) => {
+            const newType = e.target.value as "Gravatar" | "UserAvatar" | "AutoGenerated";
+            setSelectedAvatarType(newType);
+            // アバタータイプ変更時、新規アップロード状態をクリア
+            if (newType !== "UserAvatar") {
+              setUploadedFileUrl(null);
+              setAvatarPreviewUrl(null);
+            }
+          }}
           disabled={isLoading}
         >
           <option value="Gravatar">Gravatar（メールアドレス連動）</option>
@@ -136,33 +248,143 @@ export default function BasicInfoTab({
           <label htmlFor="avatarFile" className="label">
             <span className="label-text font-semibold text-base-content">アバター画像</span>
           </label>
-          <input
-            id="avatarFile"
-            type="file"
-            accept="image/*"
-            className="file-input file-input-bordered"
-            onChange={handleFileUpload}
-            disabled={isLoading}
-          />
-          {avatarPreviewUrl && (
-            <div className="mt-4 flex items-center gap-4">
-              <div>
-                <img
-                  src={avatarPreviewUrl}
-                  alt="プレビュー"
-                  className="w-24 h-24 rounded-lg object-cover"
-                />
+
+          {/* 既存の画像がある場合は表示 */}
+          {user.identityIconUrl && !avatarPreviewUrl && (
+            <div className="mb-4 p-4 bg-base-200 rounded-lg">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {avatarBlobUrl ? (
+                    <>
+                      <img
+                        src={avatarBlobUrl}
+                        alt="現在のアバター"
+                        className="w-20 h-20 rounded-full object-cover shadow-md ring-2 ring-base-300"
+                      />
+                    </>
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-base-300 flex items-center justify-center">
+                      <span className="loading loading-spinner loading-md"></span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-base-content">現在のアバター画像</p>
+                  <p className="text-xs text-base-content/60 mt-1">新しい画像をアップロードすると置き換わります</p>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={handleFileReset}
-                className="btn btn-sm btn-outline"
-                disabled={isLoading}
-              >
-                リセット
-              </button>
             </div>
           )}
+
+          {/* ドラッグ&ドロップエリア */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all
+              ${isDragging
+                ? "border-primary bg-primary/10 scale-[1.02]"
+                : "border-base-300 hover:border-primary/50 hover:bg-base-200/50"
+              }
+              ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
+            `}
+          >
+            <form>
+              <input
+                ref={fileInputRef}
+                id="avatarFile"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isLoading}
+              />
+            </form>
+
+            {avatarPreviewUrl ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={avatarPreviewUrl}
+                    alt="プレビュー"
+                    className="w-32 h-32 rounded-full object-cover shadow-lg ring-4 ring-primary/20"
+                  />
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-base-100/50 rounded-full">
+                      <span className="loading loading-spinner loading-lg text-primary"></span>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {uploadedFileUrl ? (
+                    <div className="flex items-center gap-2 justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <p className="text-sm font-medium text-base-content">
+                        新しい画像をアップロード完了
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 justify-center">
+                      <span className="loading loading-spinner loading-sm"></span>
+                      <p className="text-sm font-medium text-base-content">
+                        アップロード中...
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFileReset();
+                    }}
+                    className="btn btn-sm btn-outline btn-error"
+                    disabled={isLoading}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    削除して再選択
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="flex flex-col items-center gap-4 cursor-pointer"
+                onClick={handleClickUpload}
+              >
+                <div className={`p-4 rounded-full transition-colors ${isDragging ? "bg-primary/20" : "bg-base-200"}`}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-12 w-12 transition-colors ${isDragging ? "text-primary" : "text-base-content/40"}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-base-content">
+                    {isDragging ? "ここにドロップ" : user.identityIconUrl ? "新しい画像をアップロード" : "画像をドラッグ&ドロップ"}
+                  </p>
+                  <p className="text-sm text-base-content/60">
+                    または<span className="text-primary font-medium">クリックして選択</span>
+                  </p>
+                </div>
+                <div className="text-xs text-base-content/50 space-y-1">
+                  <p>対応形式: JPEG, PNG, GIF, WebP</p>
+                  <p>最大サイズ: 5MB</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

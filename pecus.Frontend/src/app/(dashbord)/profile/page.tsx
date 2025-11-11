@@ -31,7 +31,7 @@ export default async function ProfileSettingsPage() {
     // API クライアント経由でマスタスキルを取得
     try {
       const api = createPecusApiClients();
-      masterSkills = await api.masterData.getApiMasterSkills();
+      masterSkills = await api.master.getApiMasterSkills();
     } catch (error: any) {
       console.error("Failed to fetch master skills:", error);
       fetchError = `スキル情報の取得に失敗しました`;

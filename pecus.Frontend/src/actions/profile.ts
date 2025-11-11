@@ -1,6 +1,6 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, createAuthenticatedAxios, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import type {
   AvatarType,
   UserResponse,
@@ -62,6 +62,8 @@ export async function updateProfile(request: {
   rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<UserResponse>> {
   try {
+    console.log("[Server Action] updateProfile called with:", request);
+
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({
       username: request.username,
@@ -89,6 +91,8 @@ export async function updateProfile(request: {
     }
 
     console.error("Failed to update profile:", error);
+    console.error("Error body:", error.body);
+    console.error("Request that failed:", request);
     return {
       success: false,
       error: "server",
@@ -107,7 +111,7 @@ export async function requestEmailChange(
 ): Promise<ApiResponse<EmailChangeRequestResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.emailChange.postApiProfileEmailRequestChange({
+    const response = await api.profileEmail.postApiProfileEmailRequestChange({
       newEmail: input.newEmail,
       currentPassword: input.currentPassword,
     });
@@ -133,7 +137,7 @@ export async function verifyEmailChange(
 ): Promise<ApiResponse<EmailChangeVerifyResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.emailChange.getApiProfileEmailVerify(token);
+    const response = await api.profileEmail.getApiProfileEmailVerify(token);
 
     return { success: true, data: response };
   } catch (error: any) {
@@ -153,7 +157,7 @@ export async function verifyEmailChange(
 export async function getPendingEmailChange(): Promise<ApiResponse<PendingEmailChangeResponse | null>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.emailChange.getApiProfileEmailPending();
+    const response = await api.profileEmail.getApiProfileEmailPending();
 
     return { success: true, data: response };
   } catch (error: any) {
@@ -235,9 +239,14 @@ export async function setUserSkills(
 
 /**
  * Server Action: ファイルアップロード
- * FormData で POST /api/files にアップロード
+ * FormData を受け取り POST /api/files にアップロード
+ *
+ * Note: Next.js Server Actionsでファイルを扱う場合、
+ * FormDataを関数の引数として直接受け取ることができます
  */
-export async function uploadAvatarFile(formData: FormData): Promise<
+export async function uploadAvatarFile(
+  formData: FormData
+): Promise<
   ApiResponse<{
     fileUrl?: string;
     fileSize?: number;
@@ -246,10 +255,28 @@ export async function uploadAvatarFile(formData: FormData): Promise<
   }>
 > {
   try {
+    // FormDataからFileオブジェクトを取得
+    const file = formData.get("file") as File | null;
+
+    if (!file) {
+      return {
+        success: false,
+        error: "validation",
+        message: "ファイルが選択されていません",
+      };
+    }
+
     const api = createPecusApiClients();
 
-    // FormData をそのまま送信
-    const response = await api.fileUpload.postApiFiles(formData as any);
+    // ユーザー情報を取得してResourceIdを設定
+    const userResponse = await api.profile.getApiProfile();
+
+    // API仕様に合わせたformDataを作成
+    const response = await api.file.postApiFiles({
+      FileType: "Avatar",
+      ResourceId: userResponse.id,
+      File: file,
+    });
 
     return {
       success: true,
@@ -261,12 +288,68 @@ export async function uploadAvatarFile(formData: FormData): Promise<
       },
     };
   } catch (error: any) {
-    console.error("Failed to upload avatar:", error);
+    console.error("Failed to upload avatar file:", error);
+
     return {
       success: false,
       error: "server",
       message:
-        error.body?.message || error.message || "Failed to upload avatar",
+        error.body?.message ||
+        error.message ||
+        "アップロードに失敗しました",
     };
   }
 }
+
+/**
+ * Server Action: アバター画像のData URLを取得
+ * 認証トークン付きで画像をダウンロードし、Data URLを返す
+ */
+export async function getAvatarBlob(
+  user: UserResponse | null | undefined
+): Promise<string | null> {
+  if (!user) return null;
+
+  try {
+    // avatarUrlからファイル名のみを抽出
+    // 例: /api/downloads/avatar/3/kll37C7p1oqwHX4WuARcmMWNqbsS4RMq.jpg → kll37C7p1oqwHX4WuARcmMWNqbsS4RMq.jpg
+    const fileName = user.identityIconUrl?.split('/').pop();
+    if (!fileName) {
+      console.error("Invalid avatar URL format:", user.identityIconUrl);
+      return null;
+    }
+
+    // 認証済みAxiosインスタンスを作成
+    const axios = await createAuthenticatedAxios();
+
+    // バイナリデータとしてダウンロード（responseType: 'arraybuffer'）
+    const response = await axios.get('/api/downloads/icons', {
+      params: {
+        FileType: 'Avatar',
+        ResourceId: user.id,
+        FileName: fileName
+      },
+      responseType: 'arraybuffer'  // 🔑 バイナリデータとして取得
+    });
+
+    // ArrayBuffer → Buffer → Base64
+    const buffer = Buffer.from(response.data);
+    const base64 = buffer.toString('base64');
+
+    // Content-Typeを推測（拡張子から）
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const mimeType =
+      ext === 'png' ? 'image/png' :
+      ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+      ext === 'gif' ? 'image/gif' :
+      ext === 'webp' ? 'image/webp' :
+      'image/jpeg'; // デフォルト
+
+    // Data URLを生成
+    return `data:${mimeType};base64,${base64}`;
+  } catch (error) {
+    console.error("Failed to fetch avatar blob:", error);
+    return null;
+  }
+}
+

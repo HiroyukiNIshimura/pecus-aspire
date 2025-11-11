@@ -172,10 +172,9 @@ public class UpdateProfileRequest
     public AvatarType? AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL
+    /// アバターURL（相対パスまたは絶対URLを許可）
     /// </summary>
     [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
-    [Url(ErrorMessage = "有効なURLを指定してください。")]
     public string? AvatarUrl { get; set; }
 
     /// <summary>

@@ -13,7 +13,7 @@ export type UpdateProfileRequest = {
     username?: string | null;
     avatarType?: AvatarType;
     /**
-     * アバターURL
+     * アバターURL（相対パスまたは絶対URLを許可）
      */
     avatarUrl?: string | null;
     /**

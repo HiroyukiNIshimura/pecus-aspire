@@ -25,10 +25,10 @@ public class FileDownloadController : BaseSecureController
     /// アイコンファイルを取得（画像を返す）
     /// </summary>
     /// <param name="request">アイコン取得リクエスト</param>
-    [HttpGet("{fileType}/{resourceId}/{fileName}")]
+    [HttpGet("icons")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<FileContentHttpResult> GetIcon([FromRoute] GetIconRequest request)
+    public async Task<FileContentHttpResult> GetIcon([FromQuery] GetIconRequest request)
     {
         // CurrentUser は基底クラスで有効性チェック済み
         if (CurrentUser?.OrganizationId == null)

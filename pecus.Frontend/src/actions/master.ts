@@ -10,7 +10,7 @@ import type { ApiResponse } from "./types";
 export async function getGenres(): Promise<ApiResponse<MasterGenreResponse[]>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.masterData.getApiMasterGenres();
+    const response = await api.master.getApiMasterGenres();
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to fetch genres:", error);

@@ -106,3 +106,26 @@ export function createPecusApiClients() {
   // API サービスインスタンスを返す
   return createApiClientInstances();
 }
+
+/**
+ * 認証済み Axios インスタンスを作成
+ * バイナリデータのダウンロードなど、OpenAPI クライアントで対応できない場合に使用
+ *
+ * @example
+ * const axios = await createAuthenticatedAxios();
+ * const response = await axios.get('/api/downloads/icons', {
+ *   params: { FileType: 'Avatar', ResourceId: userId, FileName: fileName },
+ *   responseType: 'arraybuffer'
+ * });
+ * const buffer = Buffer.from(response.data);
+ */
+export async function createAuthenticatedAxios() {
+  const token = await getAccessToken();
+  const baseURL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7265";
+
+  return Axios.create({
+    baseURL,
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+}

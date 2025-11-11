@@ -9,7 +9,7 @@ import type { RequestEmailChangeRequest } from '../models/RequestEmailChangeRequ
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class EmailChangeService {
+export class ProfileEmailService {
     /**
      * メールアドレス変更をリクエスト
      * 新しいメールアドレスとパスワード（本人確認用）を送信します。
