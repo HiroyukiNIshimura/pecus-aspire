@@ -61,37 +61,41 @@ export default function SkillsTab({
   );
 
   return (
-    <div className="space-y-4 bg-base-100">
+    <div className="space-y-6 bg-base-100">
       {/* スキル選択ドロップダウン */}
-      <div className="dropdown w-full">
-        <button
-          type="button"
-          className="btn btn-outline w-full justify-start"
-          onClick={() => setIsOpen(!isOpen)}
-          disabled={isLoading}
-        >
-          <span className="flex-1 text-left">
-            {selectedSkillIds.size > 0
-              ? `${selectedSkillIds.size}個のスキルを選択`
-              : "スキルを選択"}
-          </span>
-          <svg
-            className={`w-5 h-5 transition-transform ${
-              isOpen ? "rotate-180" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text font-semibold text-base-content">スキル選択</span>
+        </label>
+        <div className="dropdown w-full">
+          <button
+            type="button"
+            className="btn btn-outline w-full justify-start"
+            onClick={() => setIsOpen(!isOpen)}
+            disabled={isLoading}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
-        </button>
-        {isOpen && (
+            <span className="flex-1 text-left">
+              {selectedSkillIds.size > 0
+                ? `${selectedSkillIds.size}個のスキルを選択`
+                : "スキルを選択"}
+            </span>
+            <svg
+              className={`w-5 h-5 transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              />
+            </svg>
+          </button>
+          {isOpen && (
           <div className="dropdown-content bg-base-100 border border-base-300 rounded-lg shadow-lg w-full z-50 max-h-80 overflow-y-auto">
             <div className="p-4 space-y-2">
               {masterSkills.map((skill) => (
@@ -112,6 +116,7 @@ export default function SkillsTab({
             </div>
           </div>
         )}
+      </div>
       </div>
 
       {/* 選択されたスキルのバッジ表示 */}
@@ -141,21 +146,23 @@ export default function SkillsTab({
       )}
 
       {/* 保存ボタン */}
-      <button
-        type="button"
-        onClick={handleSkillsSubmit}
-        className="btn btn-primary w-full"
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <span className="loading loading-spinner loading-sm"></span>
-            保存中...
-          </>
-        ) : (
-          "スキルを保存"
-        )}
-      </button>
+      <div className="flex justify-end mt-6">
+        <button
+          type="button"
+          onClick={handleSkillsSubmit}
+          className="btn btn-primary"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <span className="loading loading-spinner loading-sm"></span>
+              保存中...
+            </>
+          ) : (
+            "スキルを保存"
+          )}
+        </button>
+      </div>
     </div>
   );
 }

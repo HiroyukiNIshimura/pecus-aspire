@@ -86,12 +86,14 @@ export default function SecurityTab({
   };
 
   return (
-    <div className="space-y-4 bg-base-100">
+    <div className="space-y-6 bg-base-100">
       {/* 現在のパスワード */}
       <div className="form-control">
         <label htmlFor="currentPassword" className="label">
-          <span className="label-text font-semibold">現在のパスワード</span>
-          <span className="label-text-alt text-error">*</span>
+          <span className="label-text font-semibold text-base-content">
+            現在のパスワード
+            <span className="text-error ml-1">*</span>
+          </span>
         </label>
         <input
           id="currentPassword"
@@ -108,8 +110,10 @@ export default function SecurityTab({
       {/* 新しいパスワード */}
       <div className="form-control">
         <label htmlFor="newPassword" className="label">
-          <span className="label-text font-semibold">新しいパスワード</span>
-          <span className="label-text-alt text-error">*</span>
+          <span className="label-text font-semibold text-base-content">
+            新しいパスワード
+            <span className="text-error ml-1">*</span>
+          </span>
         </label>
         <input
           id="newPassword"
@@ -171,8 +175,10 @@ export default function SecurityTab({
       {/* パスワード確認 */}
       <div className="form-control">
         <label htmlFor="confirmPassword" className="label">
-          <span className="label-text font-semibold">パスワード確認</span>
-          <span className="label-text-alt text-error">*</span>
+          <span className="label-text font-semibold text-base-content">
+            パスワード確認
+            <span className="text-error ml-1">*</span>
+          </span>
         </label>
         <input
           id="confirmPassword"
@@ -219,11 +225,11 @@ export default function SecurityTab({
       )}
 
       {/* ボタングループ */}
-      <div className="flex gap-2 pt-4">
+      <div className="flex justify-end gap-2 pt-4">
         <button
           type="button"
           onClick={handleReset}
-          className="btn btn-outline flex-1"
+          className="btn btn-outline"
           disabled={isLoading}
         >
           クリア
@@ -231,7 +237,7 @@ export default function SecurityTab({
         <button
           type="button"
           onClick={handlePasswordChange}
-          className="btn btn-primary flex-1"
+          className="btn btn-primary"
           disabled={isLoading || !allRequirementsMet}
         >
           {isLoading ? (

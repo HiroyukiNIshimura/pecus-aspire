@@ -94,7 +94,7 @@ export default function ProfileSettingsClient({
             </div>
           </div>
           {/* タブコンテンツ */}
-          <div className="bg-base-100 rounded-lg shadow-md p-6">
+          <div className="bg-base-100 rounded-lg shadow-md p-8">
             {activeTab === "basic" && (
               <BasicInfoTab user={user} onUpdate={setUser} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
