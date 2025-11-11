@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { requestEmailChange, getPendingEmailChange } from "@/actions/profile";
+import { useValidation } from "@/hooks/useValidation";
+import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 
 interface EmailChangeTabProps {
   currentEmail: string;
@@ -18,10 +21,33 @@ export default function EmailChangeTab({
   const [newEmail, setNewEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [pendingExpiresAt, setPendingExpiresAt] = useState<Date | null>(null);
+
+  // バリデーション
+  const validation = useValidation(updateEmailFormSchema);
+
+  // 保留中のメールアドレス変更を取得
+  useEffect(() => {
+    const fetchPending = async () => {
+      const result = await getPendingEmailChange();
+      if (result.success && result.data) {
+        setPendingEmail(result.data.newEmail);
+        setPendingExpiresAt(new Date(result.data.expiresAt));
+      }
+    };
+    fetchPending();
+  }, []);
 
   const handleEmailChange = async () => {
-    if (!newEmail || !password) {
-      onAlert("error", "すべての項目を入力してください");
+    // クライアント側バリデーション
+    const validationResult = await validation.validate({
+      newEmail,
+      currentPassword: password,
+    });
+
+    if (!validationResult.success) {
+      onAlert("error", validationResult.errors[0] || "入力内容を確認してください");
       return;
     }
 
@@ -30,27 +56,26 @@ export default function EmailChangeTab({
       return;
     }
 
-    // メールアドレスの簡易バリデーション
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newEmail)) {
-      onAlert("error", "有効なメールアドレスを入力してください");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // TODO: Server Action を実装
-      // const result = await updateUserEmail({ newEmail, password });
-      
-      // 仮実装
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      onAlert(
-        "info",
-        "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。"
-      );
-      setNewEmail("");
-      setPassword("");
+      const result = await requestEmailChange({
+        newEmail,
+        currentPassword: password,
+      });
+
+      if (result.success) {
+        onAlert(
+          "info",
+          result.data.message || "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。"
+        );
+        setPendingEmail(result.data.newEmail);
+        setPendingExpiresAt(new Date(result.data.expiresAt));
+        setNewEmail("");
+        setPassword("");
+        validation.clearErrors();
+      } else {
+        onAlert("error", result.message || "メールアドレス変更リクエストに失敗しました");
+      }
     } catch (error) {
       console.error("Email change error:", error);
       onAlert("error", "メールアドレス変更に失敗しました");
@@ -62,10 +87,38 @@ export default function EmailChangeTab({
   const handleReset = () => {
     setNewEmail("");
     setPassword("");
+    validation.clearErrors();
   };
 
   return (
     <div className="space-y-6">
+      {/* 保留中のメールアドレス変更 */}
+      {pendingEmail && pendingExpiresAt && (
+        <div className="alert alert-warning">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="stroke-current shrink-0 h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <div>
+            <h3 className="font-bold">確認待ちのメールアドレス変更があります</h3>
+            <div className="text-sm">
+              <p>新しいメールアドレス: <strong>{pendingEmail}</strong></p>
+              <p>有効期限: {pendingExpiresAt.toLocaleString("ja-JP")}</p>
+              <p className="mt-1">メールに記載されたリンクをクリックして変更を完了してください。</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 説明 */}
       <div className="alert alert-info">
         <svg
@@ -115,12 +168,21 @@ export default function EmailChangeTab({
           id="newEmail"
           type="email"
           placeholder="new-email@example.com"
-          className="input input-bordered"
+          className={`input input-bordered ${
+            validation.hasErrors ? "input-error" : ""
+          }`}
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           disabled={isLoading}
           required
         />
+        {validation.error && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {validation.error}
+            </span>
+          </label>
+        )}
       </div>
 
       {/* パスワード確認 */}

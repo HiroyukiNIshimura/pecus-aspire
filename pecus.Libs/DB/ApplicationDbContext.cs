@@ -123,6 +123,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Device> Devices { get; set; }
 
     /// <summary>
+    /// メールアドレス変更トークンテーブル
+    /// </summary>
+    public DbSet<EmailChangeToken> EmailChangeTokens { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -784,6 +789,30 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(d => d.HashedIdentifier);
             entity.HasIndex(d => d.UserId);
             entity.HasIndex(d => d.LastSeenAt);
+        });
+
+        // EmailChangeToken エンティティの設定
+        modelBuilder.Entity<EmailChangeToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.NewEmail).IsRequired().HasMaxLength(254);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.ExpiresAt).IsRequired();
+            entity.Property(e => e.IsUsed).IsRequired().HasDefaultValue(false);
+            entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // EmailChangeToken と User の多対一リレーションシップ
+            entity
+                .HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // インデックス
+            entity.HasIndex(t => t.Token).IsUnique();
+            entity.HasIndex(t => t.UserId);
+            entity.HasIndex(t => new { t.UserId, t.IsUsed });
+            entity.HasIndex(t => t.ExpiresAt);
         });
 
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）

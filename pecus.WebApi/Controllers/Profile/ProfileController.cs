@@ -130,47 +130,6 @@ public class ProfileController : BaseSecureController
     }
 
     /// <summary>
-    /// メールアドレスを変更
-    /// </summary>
-    /// <remarks>
-    /// ユーザーがメールアドレスを変更します。重要なセキュリティ変更です。
-    /// 新しいメールアドレスが既に使用されていないか事前チェックを行います。
-    /// </remarks>
-    /// <param name="request">変更情報</param>
-    /// <returns>結果</returns>
-    [HttpPatch("email")]
-    [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<MessageResponse>> UpdateEmail(UpdateEmailRequest request)
-    {
-        // CurrentUser は基底クラスで有効性チェック済み
-        // 新しいメールアドレスが現在のものと同じかチェック
-        var response = await _profileService.GetOwnProfileAsync(CurrentUserId);
-        if (response == null)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        if (response.Email.Equals(request.NewEmail, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                "新しいメールアドレスは現在のメールアドレスと異なっている必要があります。"
-            );
-        }
-
-        // 新しいメールアドレスが既に使用されていないかチェックとDB更新
-        var updateResult = await _profileService.UpdateEmailAsync(CurrentUserId, request.NewEmail);
-        if (!updateResult)
-        {
-            throw new DuplicateException("このメールアドレスは既に使用されています。");
-        }
-
-        return TypedResults.Ok(new MessageResponse { Message = "メールアドレスを変更しました。" });
-    }
-
-    /// <summary>
     /// パスワードを変更
     /// </summary>
     /// <remarks>

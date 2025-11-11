@@ -58,10 +58,11 @@ export const skillIdsSchema = z
 // ============================================
 
 /**
- * メール変更フォーム
+ * メール変更フォーム（トークンベース認証）
  */
 export const updateEmailFormSchema = z.object({
   newEmail: newEmailSchema,
+  currentPassword: currentPasswordSchema,
 });
 export type UpdateEmailFormInput = z.infer<typeof updateEmailFormSchema>;
 

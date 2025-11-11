@@ -5,7 +5,6 @@
 import type { MessageResponse } from '../models/MessageResponse';
 import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
-import type { UpdateEmailRequest } from '../models/UpdateEmailRequest';
 import type { UpdatePasswordRequest } from '../models/UpdatePasswordRequest';
 import type { UpdateProfileRequest } from '../models/UpdateProfileRequest';
 import type { UserResponse } from '../models/UserResponse';
@@ -73,29 +72,6 @@ export class ProfileService {
                 400: `リクエストが無効です`,
                 404: `ユーザーが見つかりません`,
                 409: `競合: スキル情報が別のユーザーにより更新されています`,
-            },
-        });
-    }
-    /**
-     * メールアドレスを変更
-     * ユーザーがメールアドレスを変更します。重要なセキュリティ変更です。
-     * 新しいメールアドレスが既に使用されていないか事前チェックを行います。
-     * @param requestBody 変更情報
-     * @returns MessageResponse OK
-     * @throws ApiError
-     */
-    public static patchApiProfileEmail(
-        requestBody?: UpdateEmailRequest,
-    ): CancelablePromise<MessageResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/profile/email',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
-                500: `Internal Server Error`,
             },
         });
     }

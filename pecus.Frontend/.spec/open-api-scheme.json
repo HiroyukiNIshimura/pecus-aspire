@@ -4059,6 +4059,221 @@
         }
       }
     },
+    "/api/profile/email/request-change": {
+      "post": {
+        "tags": [
+          "EmailChange"
+        ],
+        "summary": "メールアドレス変更をリクエスト",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
+        "requestBody": {
+          "description": "メールアドレス変更リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "確認メールを送信しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが無効です（パスワード不一致、重複メールアドレスなど）",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/profile/email/verify": {
+      "get": {
+        "tags": [
+          "EmailChange"
+        ],
+        "summary": "メールアドレス変更を確認（トークン検証）",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "確認トークン（GUIDベース、32文字）",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "メールアドレスの変更が完了しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "トークンが無効または期限切れです",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーまたはトークンが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/profile/email/pending": {
+      "get": {
+        "tags": [
+          "EmailChange"
+        ],
+        "summary": "未使用のメールアドレス変更トークン情報を取得",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
+        "responses": {
+          "200": {
+            "description": "トークン情報を取得しました（存在する場合）",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "有効なトークンが存在しません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -4821,100 +5036,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/profile/email": {
-      "patch": {
-        "tags": [
-          "Profile"
-        ],
-        "summary": "メールアドレスを変更",
-        "description": "ユーザーがメールアドレスを変更します。重要なセキュリティ変更です。\r\n新しいメールアドレスが既に使用されていないか事前チェックを行います。",
-        "requestBody": {
-          "description": "変更情報",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -7217,6 +7338,66 @@
         ],
         "type": "string"
       },
+      "EmailChangeRequestResponse": {
+        "required": [
+          "expiresAt",
+          "message",
+          "newEmail",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メッセージ"
+          },
+          "newEmail": {
+            "minLength": 1,
+            "type": "string",
+            "description": "新しいメールアドレス（確認用）"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "トークン有効期限（UTC）",
+            "format": "date-time"
+          },
+          "token": {
+            "minLength": 1,
+            "type": "string",
+            "description": "確認トークン（メール送信用、通常はフロントエンドには返さない）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更リクエスト完了レスポンス"
+      },
+      "EmailChangeVerifyResponse": {
+        "required": [
+          "changedAt",
+          "message",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メッセージ"
+          },
+          "newEmail": {
+            "minLength": 1,
+            "type": "string",
+            "description": "変更後の新しいメールアドレス"
+          },
+          "changedAt": {
+            "type": "string",
+            "description": "変更日時（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更確認レスポンス"
+      },
       "ErrorResponse": {
         "required": [
           "message"
@@ -7976,6 +8157,33 @@
         "additionalProperties": false,
         "description": "組織登録レスポンス（管理者ユーザー情報含む）"
       },
+      "PendingEmailChangeResponse": {
+        "required": [
+          "createdAt",
+          "expiresAt",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string",
+            "description": "変更予定の新しいメールアドレス",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "トークン有効期限（UTC）",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "トークン作成日時（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "未使用メールアドレス変更トークン情報レスポンス"
+      },
       "PermissionDetailInfoResponse": {
         "required": [
           "id",
@@ -8248,6 +8456,30 @@
         },
         "additionalProperties": false,
         "description": "リフレッシュレスポンス"
+      },
+      "RequestEmailChangeRequest": {
+        "required": [
+          "currentPassword",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "maxLength": 254,
+            "minLength": 1,
+            "type": "string",
+            "description": "新しいメールアドレス",
+            "format": "email"
+          },
+          "currentPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "type": "string",
+            "description": "現在のパスワード（本人確認用）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更リクエスト"
       },
       "RequestPasswordResetRequest": {
         "required": [
@@ -9260,23 +9492,6 @@
           "Critical"
         ],
         "type": "string"
-      },
-      "UpdateEmailRequest": {
-        "required": [
-          "newEmail"
-        ],
-        "type": "object",
-        "properties": {
-          "newEmail": {
-            "maxLength": 100,
-            "minLength": 1,
-            "type": "string",
-            "description": "新しいメールアドレス",
-            "format": "email"
-          }
-        },
-        "additionalProperties": false,
-        "description": "メールアドレス変更リクエスト"
       },
       "UpdateGenreRequest": {
         "required": [

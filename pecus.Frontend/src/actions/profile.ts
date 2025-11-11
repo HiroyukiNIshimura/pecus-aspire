@@ -1,7 +1,15 @@
 "use server";
 
 import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type { AvatarType, UserResponse, MessageResponse, SuccessResponse } from "@/connectors/api/pecus";
+import type {
+  AvatarType,
+  UserResponse,
+  MessageResponse,
+  SuccessResponse,
+  EmailChangeRequestResponse,
+  EmailChangeVerifyResponse,
+  PendingEmailChangeResponse
+} from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
 import type { ApiResponse } from "./types";
 import type {
@@ -91,26 +99,75 @@ export async function updateProfile(request: {
 }
 
 /**
- * Server Action: メールアドレスを変更
+ * Server Action: メールアドレス変更をリクエスト
  * @param input クライアント側で Zod 検証済みのデータ
  */
-export async function updateUserEmail(
+export async function requestEmailChange(
   input: UpdateEmailFormInput,
-): Promise<ApiResponse<MessageResponse>> {
+): Promise<ApiResponse<EmailChangeRequestResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profile.patchApiProfileEmail({
+    const response = await api.emailChange.postApiProfileEmailRequestChange({
       newEmail: input.newEmail,
+      currentPassword: input.currentPassword,
     });
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to update email:", error);
+    console.error("Failed to request email change:", error);
     return {
       success: false,
       error: "server",
       message:
-        error.body?.message || error.message || "メール変更に失敗しました",
+        error.body?.message || error.message || "メールアドレス変更リクエストに失敗しました",
+    };
+  }
+}
+
+/**
+ * Server Action: メールアドレス変更を確認（トークン検証）
+ * @param token 確認トークン
+ */
+export async function verifyEmailChange(
+  token: string,
+): Promise<ApiResponse<EmailChangeVerifyResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.emailChange.getApiProfileEmailVerify(token);
+
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error("Failed to verify email change:", error);
+    return {
+      success: false,
+      error: "server",
+      message:
+        error.body?.message || error.message || "メールアドレス変更の確認に失敗しました",
+    };
+  }
+}
+
+/**
+ * Server Action: 未使用のメールアドレス変更トークン情報を取得
+ */
+export async function getPendingEmailChange(): Promise<ApiResponse<PendingEmailChangeResponse | null>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.emailChange.getApiProfileEmailPending();
+
+    return { success: true, data: response };
+  } catch (error: any) {
+    // 204 No Content の場合は null を返す
+    if (error.status === 204) {
+      return { success: true, data: null };
+    }
+
+    console.error("Failed to get pending email change:", error);
+    return {
+      success: false,
+      error: "server",
+      message:
+        error.body?.message || error.message || "保留中のメールアドレス変更情報の取得に失敗しました",
     };
   }
 }

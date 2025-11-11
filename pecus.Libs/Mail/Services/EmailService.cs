@@ -10,6 +10,7 @@ namespace Pecus.Libs.Mail.Services;
 
 /// <summary>
 /// MailKitを使用したメール送信サービス
+/// インターフェースで定義したメソッド以外をこのクラスに追加しないこと
 /// </summary>
 public class EmailService : IEmailService
 {
