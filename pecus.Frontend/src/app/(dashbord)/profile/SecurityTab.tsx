@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import PasswordChangeTab from "./PasswordChangeTab";
 import EmailChangeTab from "./EmailChangeTab";
 
 interface SecurityTabProps {
   currentEmail: string;
+  pendingEmailChange: PendingEmailChangeResponse | null;
   onAlert: (type: "success" | "error" | "info", message: string) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -15,6 +17,7 @@ type SecuritySubTab = "password" | "email";
 
 export default function SecurityTab({
   currentEmail,
+  pendingEmailChange,
   onAlert,
   isLoading,
   setIsLoading,
@@ -58,6 +61,7 @@ export default function SecurityTab({
         {activeSubTab === "email" && (
           <EmailChangeTab
             currentEmail={currentEmail}
+            pendingEmailChange={pendingEmailChange}
             onAlert={onAlert}
             isLoading={isLoading}
             setIsLoading={setIsLoading}

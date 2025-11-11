@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { updateProfile, uploadAvatarFile, getAvatarBlob } from "@/actions/profile";
+import { updateProfile, uploadAvatarFile } from "@/actions/profile";
 
 interface BasicInfoTabProps {
   user: UserResponse;
@@ -32,20 +32,32 @@ export default function BasicInfoTab({
   // Server Action を早期バインド（初期レンダリング時にエンドポイントを確立）
   const uploadActionRef = useRef(uploadAvatarFile);
 
-  // 既存のアバター画像をData URLとして読み込む
+  // 既存のアバター画像をData URLとして読み込む（API Route経由）
   useEffect(() => {
     if (user.identityIconUrl && !avatarPreviewUrl) {
-      getAvatarBlob(user).then((dataUrl) => {
-        if (dataUrl) {
-          setAvatarBlobUrl(dataUrl);
-        }
-      }).catch((error) => {
-        console.error('Failed to fetch avatar:', error);
-      });
+      const fileName = user.identityIconUrl.split("/").pop();
+      if (!fileName) return;
+
+      // API Routeを呼び出してアバター画像を取得
+      fetch(`/api/avatar?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (data.dataUrl) {
+            setAvatarBlobUrl(data.dataUrl);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to fetch avatar:', error);
+        });
     }
 
     // Data URLはクリーンアップ不要（メモリリークなし）
-  }, [user.identityIconUrl, avatarPreviewUrl]);
+  }, [user.identityIconUrl, avatarPreviewUrl, user.id]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {
@@ -93,12 +105,15 @@ export default function BasicInfoTab({
     // ファイルアップロード（Server Action使用）
     setIsLoading(true);
     try {
-      // FormDataを作成してファイルを追加
-      const formData = new FormData();
-      formData.append("file", file);
+      // FileをArrayBufferに変換
+      const arrayBuffer = await file.arrayBuffer();
 
       // Server Actionを呼び出し（useRef経由で早期バインドされたものを使用）
-      const uploadResult = await uploadActionRef.current(formData);
+      const uploadResult = await uploadActionRef.current({
+        fileName: file.name,
+        fileType: file.type,
+        arrayBuffer: arrayBuffer,
+      });
 
       if (uploadResult.success) {
         setUploadedFileUrl(uploadResult.data?.fileUrl || null);

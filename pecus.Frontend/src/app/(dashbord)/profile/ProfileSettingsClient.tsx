@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
-import type { UserResponse, MasterSkillResponse } from "@/connectors/api/pecus";
+import type { UserResponse, MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import BasicInfoTab from "./BasicInfoTab";
 import SkillsTab from "./SkillsTab";
 import SecurityTab from "./SecurityTab";
@@ -10,6 +10,7 @@ import OtherTab from "./OtherTab";
 
 interface ProfileSettingsClientProps {
   initialUser: UserResponse;
+  initialPendingEmailChange: PendingEmailChangeResponse | null;
   masterSkills: MasterSkillResponse[];
   fetchError?: string | null;
 }
@@ -32,11 +33,13 @@ interface AlertMessage {
 
 export default function ProfileSettingsClient({
   initialUser,
+  initialPendingEmailChange,
   masterSkills,
   fetchError,
 }: ProfileSettingsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [user, setUser] = useState<UserResponse>(initialUser);
+  const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(initialPendingEmailChange);
   const [alert, setAlert] = useState<AlertMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,7 +105,13 @@ export default function ProfileSettingsClient({
               <SkillsTab initialSkillIds={user.skills?.map((s) => s.id) || []} masterSkills={masterSkills} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
             {activeTab === "security" && (
-              <SecurityTab currentEmail={user.email || ""} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
+              <SecurityTab
+                currentEmail={user.email || ""}
+                pendingEmailChange={pendingEmailChange}
+                onAlert={handleAlert}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
             )}
             {activeTab === "other" && <OtherTab user={user} />}
           </div>

@@ -20,37 +20,6 @@ import type {
 } from "@/schemas/profileSchemas";
 
 /**
- * Server Action: 現在のユーザー情報を取得
- *
- * Note: Middlewareがトークンの有効性を事前に検証するため、
- * ここではenableRefreshの指定は不要（デフォルト値を使用）
- */
-export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.profile.getApiProfile();
-    return {
-      success: true,
-      data: {
-        id: response.id,
-        name: response.username,
-        email: response.email,
-        roles: response.roles,
-        isAdmin: response.isAdmin ?? false,
-      },
-    };
-  } catch (error: any) {
-    console.error("Failed to fetch current user:", error);
-    return {
-      success: false,
-      error: "server",
-      message:
-        error.body?.message || error.message || "Failed to fetch current user",
-    };
-  }
-}
-
-/**
  * Server Action: プロフィールを更新（ユーザー名、アバター）
  * 楽観的ロックで競合を検出
  */
@@ -152,31 +121,6 @@ export async function verifyEmailChange(
 }
 
 /**
- * Server Action: 未使用のメールアドレス変更トークン情報を取得
- */
-export async function getPendingEmailChange(): Promise<ApiResponse<PendingEmailChangeResponse | null>> {
-  try {
-    const api = createPecusApiClients();
-    const response = await api.profileEmail.getApiProfileEmailPending();
-
-    return { success: true, data: response };
-  } catch (error: any) {
-    // 204 No Content の場合は null を返す
-    if (error.status === 204) {
-      return { success: true, data: null };
-    }
-
-    console.error("Failed to get pending email change:", error);
-    return {
-      success: false,
-      error: "server",
-      message:
-        error.body?.message || error.message || "保留中のメールアドレス変更情報の取得に失敗しました",
-    };
-  }
-}
-
-/**
  * Server Action: パスワードを変更
  * @param input クライアント側で Zod 検証済みのデータ
  */
@@ -238,118 +182,66 @@ export async function setUserSkills(
 }
 
 /**
- * Server Action: ファイルアップロード
- * FormData を受け取り POST /api/files にアップロード
- *
- * Note: Next.js Server Actionsでファイルを扱う場合、
- * FormDataを関数の引数として直接受け取ることができます
+ * Server Action: アバターファイルをアップロード
+ * @param fileData ファイル情報オブジェクト
  */
-export async function uploadAvatarFile(
-  formData: FormData
-): Promise<
-  ApiResponse<{
-    fileUrl?: string;
-    fileSize?: number;
-    contentType?: string;
-    uploadedAt?: string;
-  }>
+export async function uploadAvatarFile(fileData: {
+  fileName: string;
+  fileType: string;
+  arrayBuffer: ArrayBuffer;
+}): Promise<
+  | { success: true; data: { fileUrl?: string; fileSize: number; contentType?: string } }
+  | { success: false; error: string; message: string }
 > {
   try {
-    // FormDataからFileオブジェクトを取得
-    const file = formData.get("file") as File | null;
-
-    if (!file) {
-      return {
-        success: false,
-        error: "validation",
-        message: "ファイルが選択されていません",
-      };
-    }
-
     const api = createPecusApiClients();
 
     // ユーザー情報を取得してResourceIdを設定
     const userResponse = await api.profile.getApiProfile();
 
-    // API仕様に合わせたformDataを作成
-    const response = await api.file.postApiFiles({
-      FileType: "Avatar",
-      ResourceId: userResponse.id,
-      File: file,
+    // 認証済みAxiosインスタンスを作成
+    // Note: OpenAPI自動生成クライアントはNode.js環境でのFormData/Fileオブジェクト処理に非対応のため、
+    //       ファイルアップロードは直接Axiosを使用してFormDataを送信する
+    const axios = await createAuthenticatedAxios();
+
+    // FormDataを作成（Node.js環境でも動作するFormData）
+    const FormData = (await import('form-data')).default;
+    const formData = new FormData();
+
+    // ArrayBufferをBufferに変換してFormDataに追加
+    const buffer = Buffer.from(fileData.arrayBuffer);
+    formData.append('FileType', 'Avatar');
+    formData.append('ResourceId', userResponse.id.toString());
+    formData.append('File', buffer, {
+      filename: fileData.fileName,
+      contentType: fileData.fileType,
+    });
+
+    // Axiosで直接POSTリクエスト
+    const response = await axios.post('/api/files', formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
     });
 
     return {
       success: true,
       data: {
-        fileUrl: response.fileUrl ?? undefined,
-        fileSize: response.fileSize,
-        contentType: response.contentType ?? undefined,
-        uploadedAt: response.uploadedAt,
+        fileUrl: response.data.fileUrl ?? undefined,
+        fileSize: response.data.fileSize ?? 0,
+        contentType: response.data.contentType ?? undefined,
       },
     };
   } catch (error: any) {
     console.error("Failed to upload avatar file:", error);
-
     return {
       success: false,
       error: "server",
       message:
-        error.body?.message ||
+        error.response?.data?.message ||
         error.message ||
         "アップロードに失敗しました",
     };
-  }
-}
-
-/**
- * Server Action: アバター画像のData URLを取得
- * 認証トークン付きで画像をダウンロードし、Data URLを返す
- */
-export async function getAvatarBlob(
-  user: UserResponse | null | undefined
-): Promise<string | null> {
-  if (!user) return null;
-
-  try {
-    // avatarUrlからファイル名のみを抽出
-    // 例: /api/downloads/avatar/3/kll37C7p1oqwHX4WuARcmMWNqbsS4RMq.jpg → kll37C7p1oqwHX4WuARcmMWNqbsS4RMq.jpg
-    const fileName = user.identityIconUrl?.split('/').pop();
-    if (!fileName) {
-      console.error("Invalid avatar URL format:", user.identityIconUrl);
-      return null;
-    }
-
-    // 認証済みAxiosインスタンスを作成
-    const axios = await createAuthenticatedAxios();
-
-    // バイナリデータとしてダウンロード（responseType: 'arraybuffer'）
-    const response = await axios.get('/api/downloads/icons', {
-      params: {
-        FileType: 'Avatar',
-        ResourceId: user.id,
-        FileName: fileName
-      },
-      responseType: 'arraybuffer'  // 🔑 バイナリデータとして取得
-    });
-
-    // ArrayBuffer → Buffer → Base64
-    const buffer = Buffer.from(response.data);
-    const base64 = buffer.toString('base64');
-
-    // Content-Typeを推測（拡張子から）
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    const mimeType =
-      ext === 'png' ? 'image/png' :
-      ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
-      ext === 'gif' ? 'image/gif' :
-      ext === 'webp' ? 'image/webp' :
-      'image/jpeg'; // デフォルト
-
-    // Data URLを生成
-    return `data:${mimeType};base64,${base64}`;
-  } catch (error) {
-    console.error("Failed to fetch avatar blob:", error);
-    return null;
   }
 }
 

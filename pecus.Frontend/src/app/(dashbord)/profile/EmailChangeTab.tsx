@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { requestEmailChange, getPendingEmailChange } from "@/actions/profile";
+import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import { requestEmailChange } from "@/actions/profile";
 import { useValidation } from "@/hooks/useValidation";
 import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 
 interface EmailChangeTabProps {
   currentEmail: string;
+  pendingEmailChange: PendingEmailChangeResponse | null;
   onAlert: (type: "success" | "error" | "info", message: string) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -14,6 +16,7 @@ interface EmailChangeTabProps {
 
 export default function EmailChangeTab({
   currentEmail,
+  pendingEmailChange: initialPendingEmailChange,
   onAlert,
   isLoading,
   setIsLoading,
@@ -21,23 +24,13 @@ export default function EmailChangeTab({
   const [newEmail, setNewEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [pendingExpiresAt, setPendingExpiresAt] = useState<Date | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(initialPendingEmailChange?.newEmail || null);
+  const [pendingExpiresAt, setPendingExpiresAt] = useState<Date | null>(
+    initialPendingEmailChange ? new Date(initialPendingEmailChange.expiresAt) : null
+  );
 
   // バリデーション
   const validation = useValidation(updateEmailFormSchema);
-
-  // 保留中のメールアドレス変更を取得
-  useEffect(() => {
-    const fetchPending = async () => {
-      const result = await getPendingEmailChange();
-      if (result.success && result.data) {
-        setPendingEmail(result.data.newEmail);
-        setPendingExpiresAt(new Date(result.data.expiresAt));
-      }
-    };
-    fetchPending();
-  }, []);
 
   const handleEmailChange = async () => {
     // クライアント側バリデーション

@@ -1,6 +1,5 @@
-import { getCurrentUser } from "@/actions/profile";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse, MasterSkillResponse } from "@/connectors/api/pecus";
+import type { UserResponse, MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
 import ProfileSettingsClient from "./ProfileSettingsClient";
 
@@ -13,32 +12,41 @@ export const dynamic = "force-dynamic";
 export default async function ProfileSettingsPage() {
   let user: UserResponse | null = null;
   let masterSkills: MasterSkillResponse[] = [];
+  let pendingEmailChange: PendingEmailChangeResponse | null = null;
   let fetchError: string | null = null;
 
   try {
-    // Server Action でユーザー情報を取得
-    const userResult = await getCurrentUser();
+    const api = createPecusApiClients();
 
-    if (userResult.success) {
-      // UserInfo から UserResponse への拡張データ取得が必要な場合
-      // 最新のプロフィール情報（rowVersion含む）を取得
-      const api = createPecusApiClients();
-      user = await api.profile.getApiProfile();
-    } else {
-      fetchError = `ユーザー情報の取得に失敗しました: ${userResult.message}`;
-    }
+    // ユーザー情報を取得
+    user = await api.profile.getApiProfile();
 
-    // API クライアント経由でマスタスキルを取得
+    // マスタスキルを取得
     try {
-      const api = createPecusApiClients();
       masterSkills = await api.master.getApiMasterSkills();
     } catch (error: any) {
       console.error("Failed to fetch master skills:", error);
       fetchError = `スキル情報の取得に失敗しました`;
     }
+
+    // 保留中のメールアドレス変更を取得
+    try {
+      pendingEmailChange = await api.profileEmail.getApiProfileEmailPending();
+    } catch (error: any) {
+      // 204 No Content は正常（保留なし）
+      if (error.status !== 204) {
+        console.warn("Failed to fetch pending email change:", error);
+      }
+    }
   } catch (error: any) {
     console.error("Failed to fetch profile data:", error);
-    fetchError = "プロフィール情報の取得に失敗しました";
+
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
+    }
+
+    fetchError = error.body?.message || error.message || "プロフィール情報の取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -49,6 +57,7 @@ export default async function ProfileSettingsPage() {
   return (
     <ProfileSettingsClient
       initialUser={user}
+      initialPendingEmailChange={pendingEmailChange}
       masterSkills={masterSkills}
       fetchError={fetchError}
     />
