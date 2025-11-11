@@ -102,7 +102,7 @@ export default function ProfileSettingsClient({
               <SkillsTab initialSkillIds={user.skills?.map((s) => s.id) || []} masterSkills={masterSkills} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
             {activeTab === "security" && (
-              <SecurityTab onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
+              <SecurityTab currentEmail={user.email || ""} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
             {activeTab === "other" && <OtherTab user={user} />}
           </div>
