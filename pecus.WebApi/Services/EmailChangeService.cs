@@ -192,27 +192,6 @@ public class EmailChangeService
     }
 
     /// <summary>
-    /// 期限切れトークンをクリーンアップ
-    /// </summary>
-    /// <remarks>
-    /// 定期実行ジョブから呼び出されることを想定
-    /// </remarks>
-    public async Task<int> CleanupExpiredTokensAsync()
-    {
-        var expiredTokens = await _context
-            .EmailChangeTokens.Where(t => t.ExpiresAt <= DateTime.UtcNow || t.IsUsed)
-            .ToListAsync();
-
-        if (expiredTokens.Any())
-        {
-            _context.EmailChangeTokens.RemoveRange(expiredTokens);
-            await _context.SaveChangesAsync();
-        }
-
-        return expiredTokens.Count;
-    }
-
-    /// <summary>
     /// メールアドレス変更トークンを生成
     /// </summary>
     private static string GenerateEmailChangeToken()

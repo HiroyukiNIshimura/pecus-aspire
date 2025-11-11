@@ -1,5 +1,4 @@
 using Hangfire;
-using Microsoft.Extensions.Configuration;
 
 namespace Pecus.BackFire.Services;
 
@@ -16,6 +15,7 @@ public static class CleanupJobScheduler
     {
         ConfigureRefreshTokenCleanupJob(configuration);
         ConfigureDeviceCleanupJob(configuration);
+        ConfigureEmailChangeTokenCleanupJob(configuration);
     }
 
     /// <summary>
@@ -54,6 +54,26 @@ public static class CleanupJobScheduler
         RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "DeviceCleanup",
             task => task.CleanupOldDevicesAsync(settings.BatchSize, settings.OlderThanDays, settings.VeryOldDays),
+            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+        );
+    }
+
+    /// <summary>
+    /// メールアドレス変更トークンクリーンアップジョブを設定します
+    /// </summary>
+    /// <param name="configuration">設定</param>
+    private static void ConfigureEmailChangeTokenCleanupJob(IConfiguration configuration)
+    {
+        // 設定をクラスバインド
+        var settings = configuration.GetSection("EmailChangeTokenCleanup").Get<EmailChangeTokenCleanupSettings>() ?? new EmailChangeTokenCleanupSettings();
+
+        // 値の範囲を安全にクリップ
+        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
+        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+
+        RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
+            "EmailChangeTokenCleanup",
+            task => task.CleanupExpiredEmailChangeTokensAsync(settings.BatchSize, settings.OlderThanDays),
             Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
         );
     }
