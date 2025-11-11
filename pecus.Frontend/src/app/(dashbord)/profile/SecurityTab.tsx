@@ -7,21 +7,15 @@ import {
   type UpdatePasswordFormInput,
 } from "@/schemas/profileSchemas";
 import { useValidation } from "@/hooks/useValidation";
+import PasswordRequirementIndicator, {
+  isPasswordValid,
+} from "@/components/common/PasswordRequirementIndicator";
 
 interface SecurityTabProps {
   onAlert: (type: "success" | "error" | "info", message: string) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
-
-// パスワード要件チェック
-const getPasswordRequirements = (password: string) => ({
-  minLength: password.length >= 8,
-  hasUpperCase: /[A-Z]/.test(password),
-  hasLowerCase: /[a-z]/.test(password),
-  hasNumber: /[0-9]/.test(password),
-  hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
-});
 
 export default function SecurityTab({
   onAlert,
@@ -35,12 +29,7 @@ export default function SecurityTab({
 
   const passwordValidation = useValidation(updatePasswordFormSchema);
 
-  const passwordReqs = getPasswordRequirements(newPassword);
-  const allRequirementsMet =
-    passwordReqs.minLength &&
-    passwordReqs.hasUpperCase &&
-    passwordReqs.hasLowerCase &&
-    passwordReqs.hasNumber;
+  const allRequirementsMet = isPasswordValid(newPassword);
 
   const handlePasswordChange = async () => {
     const validationResult = await passwordValidation.validate({
@@ -125,52 +114,9 @@ export default function SecurityTab({
           disabled={isLoading}
           required
         />
+        {/* パスワード要件インジケーター */}
+        <PasswordRequirementIndicator password={newPassword} />
       </div>
-
-      {/* パスワード要件チェックリスト */}
-      {newPassword && (
-        <div className="bg-base-200 p-4 rounded-lg space-y-2">
-          <p className="text-sm font-semibold">パスワード要件:</p>
-          <ul className="text-sm space-y-1">
-            <li className={`flex items-center gap-2 ${passwordReqs.minLength ? "text-success" : "text-error"}`}>
-              <span>{passwordReqs.minLength ? "✔" : "✘"}</span>
-              8文字以上
-            </li>
-            <li
-              className={`flex items-center gap-2 ${
-                passwordReqs.hasUpperCase ? "text-success" : "text-error"
-              }`}
-            >
-              <span>{passwordReqs.hasUpperCase ? "✔" : "✘"}</span>
-              大文字を含む
-            </li>
-            <li
-              className={`flex items-center gap-2 ${
-                passwordReqs.hasLowerCase ? "text-success" : "text-error"
-              }`}
-            >
-              <span>{passwordReqs.hasLowerCase ? "✔" : "✘"}</span>
-              小文字を含む
-            </li>
-            <li
-              className={`flex items-center gap-2 ${
-                passwordReqs.hasNumber ? "text-success" : "text-error"
-              }`}
-            >
-              <span>{passwordReqs.hasNumber ? "✔" : "✘"}</span>
-              数字を含む
-            </li>
-            <li
-              className={`flex items-center gap-2 ${
-                passwordReqs.hasSpecialChar ? "text-success" : "text-warning"
-              }`}
-            >
-              <span>{passwordReqs.hasSpecialChar ? "✔" : "✘"}</span>
-              特殊文字を含む（オプション）
-            </li>
-          </ul>
-        </div>
-      )}
 
       {/* パスワード確認 */}
       <div className="form-control">
