@@ -11,7 +11,7 @@ namespace Pecus.Controllers;
 
 [Route("api/tags")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Tag")]
+[Tags("Tag")]
 public class TagController : BaseSecureController
 {
     private readonly TagService _tagService;

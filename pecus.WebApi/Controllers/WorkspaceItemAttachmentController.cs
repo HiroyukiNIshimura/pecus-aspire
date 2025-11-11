@@ -14,7 +14,7 @@ namespace Pecus.Controllers;
 
 [Route("api/workspaces/{workspaceId}/items/{itemId}/attachments")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "WorkspaceItem")]
+[Tags("WorkspaceItem")]
 public class WorkspaceItemAttachmentController : BaseSecureController
 {
     private readonly WorkspaceItemAttachmentService _attachmentService;

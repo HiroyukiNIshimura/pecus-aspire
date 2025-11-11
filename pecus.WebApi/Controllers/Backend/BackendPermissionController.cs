@@ -15,7 +15,7 @@ namespace Pecus.Controllers.Backend;
 /// </summary>
 [Route("api/backend/permissions")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Backend - Permission")]
+[Tags("Backend - Permission")]
 public class BackendPermissionController : BaseBackendController
 {
     private readonly PermissionService _permissionService;

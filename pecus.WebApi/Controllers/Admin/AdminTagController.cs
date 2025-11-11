@@ -16,7 +16,7 @@ namespace Pecus.Controllers.Admin;
 /// </summary>
 [Route("api/admin/tags")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Admin - Tag")]
+[Tags("Admin - Tag")]
 public class AdminTagController : BaseAdminController
 {
     private readonly TagService _tagService;

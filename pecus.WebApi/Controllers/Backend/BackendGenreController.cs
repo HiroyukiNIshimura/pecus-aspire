@@ -14,7 +14,7 @@ namespace Pecus.Controllers.Backend;
 /// ジャンルコントローラー（バックエンド管理用）
 /// </summary>
 [Route("api/backend/genres")]
-[ApiExplorerSettings(GroupName = "Backend - Genre")]
+[Tags("Backend - Genre")]
 public class BackendGenreController : BaseBackendController
 {
     private readonly GenreService _genreService;

@@ -15,7 +15,7 @@ namespace Pecus.Controllers.Backend;
 /// </summary>
 [Route("api/backend/roles")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Backend - Role")]
+[Tags("Backend - Role")]
 public class BackendRoleController : BaseBackendController
 {
     private readonly RoleService _roleService;

@@ -16,7 +16,7 @@ namespace Pecus.Controllers.Admin;
 /// </summary>
 [Route("api/admin/workspaces")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Admin - Workspace")]
+[Tags("Admin - Workspace")]
 public class AdminWorkspaceController : BaseAdminController
 {
     private readonly WorkspaceService _workspaceService;

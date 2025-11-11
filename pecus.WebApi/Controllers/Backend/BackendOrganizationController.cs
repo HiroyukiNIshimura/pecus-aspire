@@ -17,7 +17,7 @@ namespace Pecus.Controllers.Backend;
 /// </summary>
 [Route("api/backend/organizations")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Backend - Organization")]
+[Tags("Backend - Organization")]
 public class BackendOrganizationController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;

@@ -11,7 +11,7 @@ namespace Pecus.Controllers.Profile;
 /// デバイス管理コントローラー
 /// </summary>
 [Route("api/profile/devices")]
-[ApiExplorerSettings(GroupName = "Profile - Device")]
+[Tags("Profile - Device")]
 public class DeviceController : BaseSecureController
 {
     private readonly ProfileService _profileService;

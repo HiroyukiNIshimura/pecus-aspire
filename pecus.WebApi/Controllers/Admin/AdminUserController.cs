@@ -21,7 +21,7 @@ namespace Pecus.Controllers.Admin;
 /// </summary>
 [Route("api/admin/users")]
 [Produces("application/json")]
-[ApiExplorerSettings(GroupName = "Admin - User")]
+[Tags("Admin - User")]
 public class AdminUserController : BaseAdminController
 {
     private readonly UserService _userService;

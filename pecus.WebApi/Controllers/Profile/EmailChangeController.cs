@@ -27,7 +27,7 @@ namespace Pecus.Controllers.Profile;
 /// </list>
 /// </remarks>
 [Route("api/profile/email")]
-[ApiExplorerSettings(GroupName = "Profile - Email")]
+[Tags("Profile - Email")]
 public class EmailChangeController : BaseSecureController
 {
     private readonly EmailChangeService _emailChangeService;

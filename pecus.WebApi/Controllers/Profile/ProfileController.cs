@@ -18,6 +18,7 @@ namespace Pecus.Controllers.Profile;
 /// すべての操作は ProfileService 経由で実行されます。
 /// </remarks>
 [Route("api/profile")]
+[Tags("Profile")]
 public class ProfileController : BaseSecureController
 {
     private readonly ProfileService _profileService;
