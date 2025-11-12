@@ -1,18 +1,22 @@
-﻿namespace Pecus.Models.Responses.Skill;
+using System.ComponentModel.DataAnnotations;
+
+namespace Pecus.Models.Responses.Skill;
 
 /// <summary>
 /// スキル詳細レスポンス
 /// </summary>
-public class SkillDetailResponse
+public class SkillDetailResponse : IConflictModel
 {
     /// <summary>
     /// スキルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// スキル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -58,7 +62,8 @@ public class SkillDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
-    public required byte[] RowVersion { get; set; }
+    [Required]
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -69,11 +74,13 @@ public class SkillListItemResponse
     /// <summary>
     /// スキルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// スキル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -124,6 +131,7 @@ public class SkillResponse
     /// <summary>
     /// メッセージ
     /// </summary>
+    [Required]
     public required string Message { get; set; }
 
     /// <summary>
@@ -131,3 +139,4 @@ public class SkillResponse
     /// </summary>
     public SkillDetailResponse? Skill { get; set; }
 }
+

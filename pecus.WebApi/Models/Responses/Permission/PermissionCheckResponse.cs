@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Permission;
 
 /// <summary>
@@ -13,6 +15,7 @@ public class PermissionCheckResponse
     /// <summary>
     /// 権限名
     /// </summary>
+    [Required]
     public required string PermissionName { get; set; }
 
     /// <summary>
@@ -20,3 +23,4 @@ public class PermissionCheckResponse
     /// </summary>
     public bool HasPermission { get; set; }
 }
+

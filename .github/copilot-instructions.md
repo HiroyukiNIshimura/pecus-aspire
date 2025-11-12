@@ -1762,6 +1762,13 @@ dotnet run --project pecus.AppHost
 ## アンチパターン（避けるべきこと）
 - サービス間の直接参照、環境に依存した接続文字列のハードコーディング、ワークスペースアクセスチェックをスキップすること、など多数のアンチパターンを列挙しています。詳細は元ドキュメントを参照してください。
 
+- 同じ型宣言を複数箇所に重複して定義すること（例: 同じリクエスト/レスポンスDTOを複数プロジェクトで別々に定義する）はアンチパターンです。
+  - 問題点: 保守性が低下し、型の不整合・シリアライズの差異・API契約のズレを招きやすくなります。
+  - 推奨: 共有型は明確な単一ソースに集約してください。
+    - バックエンドの共有モデルは `pecus.Libs` や `pecus.WebApi/Models` に置き、必要に応じてフロントエンドは自動生成されたクライアント型（`pecus.Frontend/src/connectors/api/pecus/index.ts`）を利用してください。
+    - フロントエンド側で手作業で同一の型をコピーするのではなく、OpenAPI からの自動生成か型の共有戦略を採用してください。
+  - 実践例: 共通のリクエスト/レスポンスは `pecus.WebApi/Models/Requests` と `pecus.WebApi/Models/Responses` に定義し、フロントエンドは `npm run generate:api` 等で型を再生成して使う。
+
 ## 主要ファイル一覧
 - `pecus.AppHost/AppHost.cs`
 - `pecus.Libs/DB/ApplicationDbContext.cs`
@@ -1869,5 +1876,67 @@ dotnet run --project pecus.AppHost
   - サービス層の単体テストで RowVersion 不一致時に `ConcurrencyException` を投げることを検証する
   - 結合テストで並列更新シナリオを再現し、409 が返ることを確認する
   - **重要**: ConcurrencyException に最新 DB データが含まれていることを検証（クライアント側の再試行に必要）
+
+
+## Server Actions と WebAPI のレスポンス型（フロントエンド実装者向け）
+
+Next.js の Server Actions (`src/actions/`) から `pecus.WebApi` を呼び出す際の型およびエラー処理の運用ルールをここに記載します。サーバーアクション実装時は次のファイル群を参照してください。
+
+- WebAPI の戻すレスポンス／エラーの実装（自動生成クライアントのサービス層）:
+  - `pecus.Frontend/src/connectors/api/pecus/services/*`
+- WebAPI が返すレスポンス型のエクスポート（自動生成インデックス）:
+  - `pecus.Frontend/src/connectors/api/pecus/index.ts`
+
+Server Action が Next.js クライアントに返す共通戻り値型は下記 `ApiResponse<T>` を使用します。`T` は WebAPI（自動生成クライアント）が返すレスポンスの型です。
+
+```typescript
+export type ApiResponse<T> =
+  | { success: true; data: T }
+  | ConflictResponse<T>
+  | ErrorResponse;
+```
+
+- `ConflictResponse<T>`: 並行更新（HTTP 409）を表す型。最新のデータを含めて返却することでクライアント側で再取得・マージ処理を行えるようにします（フロントエンドの `detectConcurrencyError` ヘルパーを参照）。
+- `ErrorResponse`: バリデーションやサーバーエラーを表す汎用エラー型。自動生成クライアントの `services/*` の返り値パターンに合わせてください。
+
+実装ガイドライン（要点）:
+
+1. Server Action の戻り型は常に `Promise<ApiResponse<T>>` を採用する（`T` は `pecus.Frontend/src/connectors/api/pecus/index.ts` の型）。
+2. API 呼び出しは `createPecusApiClients()` を使う（直接 `fetch()` を叩かないこと）。
+3. エラー処理:
+   - 409（Concurrency）は `detectConcurrencyError(error)` を使って `ConflictResponse<T>` を返す。
+   - その他の API エラーは `ErrorResponse` を返す（`error.body?.message` 等を利用してメッセージを整形）。
+4. 成功時は `{ success: true, data: response }` を返す。
+
+簡単な Server Action の雛形例:
+
+```typescript
+"use server";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type { ApiResponse } from "@/actions/types";
+
+export async function updateOrganization(request: { name?: string; description?: string; rowVersion: string; }): Promise<ApiResponse<OrganizationResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const res = await api.adminOrganization.putApiAdminOrganization(request);
+    return { success: true, data: res };
+  } catch (error: any) {
+    const concurrency = detectConcurrencyError(error);
+    if (concurrency) {
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrency.message,
+        latest: { type: 'organization', data: concurrency.payload }
+      } as any;
+    }
+    return { success: false, error: 'server', message: error.body?.message || error.message } as any;
+  }
+}
+```
+
+注意点:
+- `ApiResponse<T>` の `T` はフロントエンド側の自動生成型です。Server Action 内で `any` を使うのは簡便ですが、可能な限り厳密な型を指定してください。
+- フロントエンドの `services/*` 実装に合わせてエラー形状を揃えると、UI 側でのハンドリングが一貫します。
 
 

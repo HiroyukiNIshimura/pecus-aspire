@@ -10,7 +10,7 @@ export type WorkspaceUserDetailResponseObjectPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<WorkspaceUserDetailResponse> | null;
+    data: Array<WorkspaceUserDetailResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

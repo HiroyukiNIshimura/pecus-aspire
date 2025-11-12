@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -16,35 +15,36 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// 組織管理コントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/organizations")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendOrganizationController : ControllerBase
+[Tags("Backend - Organization")]
+public class BackendOrganizationController : BaseBackendController
 {
     private readonly OrganizationService _organizationService;
-    private readonly ILogger<BackendOrganizationController> _logger;
     private readonly PecusConfig _config;
+    private readonly ILogger<BackendOrganizationController> _logger;
 
     public BackendOrganizationController(
         OrganizationService organizationService,
         ILogger<BackendOrganizationController> logger,
+        ProfileService profileService,
         PecusConfig config
     )
+        : base(profileService, logger)
     {
         _organizationService = organizationService;
-        _logger = logger;
         _config = config;
+        _logger = logger;
     }
 
     /// <summary>
     /// 組織情報取得
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<OrganizationDetailResponse>> GetOrganization(int id)
+    public async Task<Ok<OrganizationResponse>> GetOrganization(int id)
     {
         var organization = await _organizationService.GetOrganizationByIdAsync(id);
         if (organization == null)
@@ -52,7 +52,7 @@ public class BackendOrganizationController : ControllerBase
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        var response = new OrganizationDetailResponse
+        var response = new OrganizationResponse
         {
             Id = organization.Id,
             Name = organization.Name,
@@ -163,6 +163,10 @@ public class BackendOrganizationController : ControllerBase
             PhoneNumber = organization.PhoneNumber,
             Email = organization.Email,
             CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+            RowVersion = organization.RowVersion!,
         };
         return TypedResults.Ok(response);
     }

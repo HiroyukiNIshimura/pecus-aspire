@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.WorkspaceItem;
 
 /// <summary>
@@ -8,7 +10,8 @@ public class WorkspaceItemAttachmentResponse
     /// <summary>
     /// 添付ファイルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ワークスペースアイテムID
@@ -60,3 +63,4 @@ public class WorkspaceItemAttachmentResponse
     /// </summary>
     public string? UploadedByUsername { get; set; }
 }
+

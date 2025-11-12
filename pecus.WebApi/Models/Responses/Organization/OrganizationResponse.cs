@@ -1,18 +1,22 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Organization;
 
 /// <summary>
 /// 組織情報レスポンス
 /// </summary>
-public class OrganizationResponse
+public class OrganizationResponse : IConflictModel
 {
     /// <summary>
     /// 組織ID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 組織名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -33,6 +37,7 @@ public class OrganizationResponse
     /// <summary>
     /// 電話番号
     /// </summary>
+    [Required]
     public required string PhoneNumber { get; set; }
 
     /// <summary>
@@ -44,4 +49,26 @@ public class OrganizationResponse
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// 更新日時
+    /// </summary>
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 所属ユーザー数
+    /// </summary>
+    public int UserCount { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    [Required]
+    public required uint RowVersion { get; set; }
 }
+

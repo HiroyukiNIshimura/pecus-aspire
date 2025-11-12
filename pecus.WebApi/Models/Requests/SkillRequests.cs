@@ -47,7 +47,7 @@ public class UpdateSkillRequest
     /// スキルの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -78,3 +78,4 @@ public class GetSkillsRequest
     [MaxLength(100, ErrorMessage = "検索名は100文字以内で入力してください。")]
     public string? Name { get; set; }
 }
+

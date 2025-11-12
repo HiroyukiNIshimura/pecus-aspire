@@ -29,6 +29,6 @@ export type UpdateWorkspaceRequest = {
     /**
      * ワークスペースの楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

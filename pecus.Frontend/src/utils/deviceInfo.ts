@@ -1,7 +1,7 @@
+import { getLocationFromCoordinates } from "@/actions/geolocation";
 import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
 import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
-import { getLocationFromCoordinates } from "@/actions/geolocation";
-import { DeviceInfo } from "@/libs/atoms/deviceInfoAtom";
+import type { DeviceInfo } from "@/libs/atoms/deviceInfoAtom";
 
 /**
  * 緯度経度からおおよその地域を推定する（フォールバック用）
@@ -9,27 +9,72 @@ import { DeviceInfo } from "@/libs/atoms/deviceInfoAtom";
  */
 function getApproximateLocation(latitude: number, longitude: number): string {
   // 日本の範囲内かチェック
-  if (latitude >= 20.0 && latitude <= 46.0 && longitude >= 122.0 && longitude <= 154.0) {
+  if (
+    latitude >= 20.0 &&
+    latitude <= 46.0 &&
+    longitude >= 122.0 &&
+    longitude <= 154.0
+  ) {
     // 日本の場合の詳細な地域推定
-    if (latitude >= 35.0 && latitude <= 36.0 && longitude >= 139.0 && longitude <= 141.0) {
+    if (
+      latitude >= 35.0 &&
+      latitude <= 36.0 &&
+      longitude >= 139.0 &&
+      longitude <= 141.0
+    ) {
       return "東京都近郊";
-    } else if (latitude >= 34.0 && latitude <= 35.0 && longitude >= 135.0 && longitude <= 136.0) {
+    } else if (
+      latitude >= 34.0 &&
+      latitude <= 35.0 &&
+      longitude >= 135.0 &&
+      longitude <= 136.0
+    ) {
       return "大阪府近郊";
-    } else if (latitude >= 35.0 && latitude <= 36.0 && longitude >= 136.0 && longitude <= 138.0) {
+    } else if (
+      latitude >= 35.0 &&
+      latitude <= 36.0 &&
+      longitude >= 136.0 &&
+      longitude <= 138.0
+    ) {
       return "名古屋近郊";
     } else if (latitude >= 43.0 && latitude <= 46.0) {
       return "北海道";
     } else if (latitude >= 40.0 && latitude <= 43.0) {
       return "東北地方";
-    } else if (latitude >= 36.0 && latitude <= 40.0 && longitude >= 138.0 && longitude <= 142.0) {
+    } else if (
+      latitude >= 36.0 &&
+      latitude <= 40.0 &&
+      longitude >= 138.0 &&
+      longitude <= 142.0
+    ) {
       return "関東地方";
-    } else if (latitude >= 34.0 && latitude <= 37.0 && longitude >= 132.0 && longitude <= 138.0) {
+    } else if (
+      latitude >= 34.0 &&
+      latitude <= 37.0 &&
+      longitude >= 132.0 &&
+      longitude <= 138.0
+    ) {
       return "中部地方";
-    } else if (latitude >= 33.0 && latitude <= 35.0 && longitude >= 130.0 && longitude <= 136.0) {
+    } else if (
+      latitude >= 33.0 &&
+      latitude <= 35.0 &&
+      longitude >= 130.0 &&
+      longitude <= 136.0
+    ) {
       return "近畿地方";
-    } else if (latitude >= 30.0 && latitude <= 35.0 && longitude >= 126.0 && longitude <= 132.0) {
+    } else if (
+      latitude >= 30.0 &&
+      latitude <= 35.0 &&
+      longitude >= 126.0 &&
+      longitude <= 132.0
+    ) {
       return "中国・四国地方";
-    } else if (latitude >= 24.0 && latitude <= 32.0 && longitude >= 122.0 && longitude <= 132.0) {
+    } else if (
+      latitude >= 24.0 &&
+      latitude <= 32.0 &&
+      longitude >= 122.0 &&
+      longitude <= 132.0
+    ) {
       return "九州・沖縄地方";
     } else {
       return "日本国内";
@@ -37,12 +82,32 @@ function getApproximateLocation(latitude: number, longitude: number): string {
   }
 
   // アジア
-  if (latitude >= -10.0 && latitude <= 80.0 && longitude >= 60.0 && longitude <= 180.0) {
-    if (latitude >= 20.0 && latitude <= 50.0 && longitude >= 100.0 && longitude <= 150.0) {
+  if (
+    latitude >= -10.0 &&
+    latitude <= 80.0 &&
+    longitude >= 60.0 &&
+    longitude <= 180.0
+  ) {
+    if (
+      latitude >= 20.0 &&
+      latitude <= 50.0 &&
+      longitude >= 100.0 &&
+      longitude <= 150.0
+    ) {
       return "東アジア";
-    } else if (latitude >= 0.0 && latitude <= 40.0 && longitude >= 60.0 && longitude <= 100.0) {
+    } else if (
+      latitude >= 0.0 &&
+      latitude <= 40.0 &&
+      longitude >= 60.0 &&
+      longitude <= 100.0
+    ) {
       return "南アジア";
-    } else if (latitude >= 40.0 && latitude <= 80.0 && longitude >= 40.0 && longitude <= 180.0) {
+    } else if (
+      latitude >= 40.0 &&
+      latitude <= 80.0 &&
+      longitude >= 40.0 &&
+      longitude <= 180.0
+    ) {
       return "北アジア";
     } else {
       return "アジア";
@@ -50,12 +115,32 @@ function getApproximateLocation(latitude: number, longitude: number): string {
   }
 
   // 北米
-  if (latitude >= 15.0 && latitude <= 85.0 && longitude >= -170.0 && longitude <= -50.0) {
-    if (latitude >= 40.0 && latitude <= 50.0 && longitude >= -125.0 && longitude <= -110.0) {
+  if (
+    latitude >= 15.0 &&
+    latitude <= 85.0 &&
+    longitude >= -170.0 &&
+    longitude <= -50.0
+  ) {
+    if (
+      latitude >= 40.0 &&
+      latitude <= 50.0 &&
+      longitude >= -125.0 &&
+      longitude <= -110.0
+    ) {
       return "北米西部";
-    } else if (latitude >= 35.0 && latitude <= 45.0 && longitude >= -95.0 && longitude <= -75.0) {
+    } else if (
+      latitude >= 35.0 &&
+      latitude <= 45.0 &&
+      longitude >= -95.0 &&
+      longitude <= -75.0
+    ) {
       return "北米中部";
-    } else if (latitude >= 25.0 && latitude <= 50.0 && longitude >= -85.0 && longitude <= -65.0) {
+    } else if (
+      latitude >= 25.0 &&
+      latitude <= 50.0 &&
+      longitude >= -85.0 &&
+      longitude <= -65.0
+    ) {
       return "北米東部";
     } else {
       return "北米";
@@ -63,12 +148,32 @@ function getApproximateLocation(latitude: number, longitude: number): string {
   }
 
   // ヨーロッパ
-  if (latitude >= 35.0 && latitude <= 75.0 && longitude >= -15.0 && longitude <= 70.0) {
-    if (latitude >= 50.0 && latitude <= 60.0 && longitude >= 0.0 && longitude <= 20.0) {
+  if (
+    latitude >= 35.0 &&
+    latitude <= 75.0 &&
+    longitude >= -15.0 &&
+    longitude <= 70.0
+  ) {
+    if (
+      latitude >= 50.0 &&
+      latitude <= 60.0 &&
+      longitude >= 0.0 &&
+      longitude <= 20.0
+    ) {
       return "西ヨーロッパ";
-    } else if (latitude >= 45.0 && latitude <= 55.0 && longitude >= 5.0 && longitude <= 25.0) {
+    } else if (
+      latitude >= 45.0 &&
+      latitude <= 55.0 &&
+      longitude >= 5.0 &&
+      longitude <= 25.0
+    ) {
       return "中欧";
-    } else if (latitude >= 40.0 && latitude <= 50.0 && longitude >= 10.0 && longitude <= 30.0) {
+    } else if (
+      latitude >= 40.0 &&
+      latitude <= 50.0 &&
+      longitude >= 10.0 &&
+      longitude <= 30.0
+    ) {
       return "南ヨーロッパ";
     } else {
       return "ヨーロッパ";
@@ -76,12 +181,22 @@ function getApproximateLocation(latitude: number, longitude: number): string {
   }
 
   // 南米
-  if (latitude >= -60.0 && latitude <= 15.0 && longitude >= -90.0 && longitude <= -30.0) {
+  if (
+    latitude >= -60.0 &&
+    latitude <= 15.0 &&
+    longitude >= -90.0 &&
+    longitude <= -30.0
+  ) {
     return "南米";
   }
 
   // アフリカ
-  if (latitude >= -40.0 && latitude <= 40.0 && longitude >= -20.0 && longitude <= 55.0) {
+  if (
+    latitude >= -40.0 &&
+    latitude <= 40.0 &&
+    longitude >= -20.0 &&
+    longitude <= 55.0
+  ) {
     if (latitude >= 0.0 && latitude <= 20.0) {
       return "アフリカ北部";
     } else if (latitude >= -10.0 && latitude <= 10.0) {
@@ -92,7 +207,12 @@ function getApproximateLocation(latitude: number, longitude: number): string {
   }
 
   // オセアニア
-  if (latitude >= -50.0 && latitude <= 20.0 && longitude >= 110.0 && longitude <= 180.0) {
+  if (
+    latitude >= -50.0 &&
+    latitude <= 20.0 &&
+    longitude >= 110.0 &&
+    longitude <= 180.0
+  ) {
     return "オセアニア";
   }
 
@@ -113,31 +233,43 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
 
   // OS判定 (navigator.userAgentから判定 - navigator.platformは非推奨)
   let os: OSPlatform;
-  if (userAgent.includes('Windows')) {
-    os = OSPlatform._1; // Windows
-  } else if (userAgent.includes('Mac')) {
-    os = OSPlatform._2; // MacOS
-  } else if (userAgent.includes('Linux')) {
-    os = OSPlatform._3; // Linux
-  } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
-    os = OSPlatform._4; // iOS
-  } else if (userAgent.includes('Android')) {
-    os = OSPlatform._5; // Android
+  if (userAgent.includes("Windows")) {
+    os = "Windows";
+  } else if (userAgent.includes("Mac")) {
+    os = "MacOS";
+  } else if (userAgent.includes("Linux")) {
+    os = "Linux";
+  } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
+    os = "iOS";
+  } else if (userAgent.includes("Android")) {
+    os = "Android";
   } else {
-    os = OSPlatform._0; // Unknown
+    os = "Unknown";
   }
 
   // デバイス名生成（ブラウザ名 + OS名）
-  const browserName = userAgent.includes('Chrome') ? 'Chrome' :
-                     userAgent.includes('Firefox') ? 'Firefox' :
-                     userAgent.includes('Safari') ? 'Safari' :
-                     userAgent.includes('Edge') ? 'Edge' : 'Browser';
+  const browserName = userAgent.includes("Chrome")
+    ? "Chrome"
+    : userAgent.includes("Firefox")
+      ? "Firefox"
+      : userAgent.includes("Safari")
+        ? "Safari"
+        : userAgent.includes("Edge")
+          ? "Edge"
+          : "Browser";
 
-  const osName = os === OSPlatform._1 ? 'Windows' :
-                 os === OSPlatform._2 ? 'macOS' :
-                 os === OSPlatform._3 ? 'Linux' :
-                 os === OSPlatform._4 ? 'iOS' :
-                 os === OSPlatform._5 ? 'Android' : 'Unknown';
+  const osName =
+    os === "Windows"
+      ? "Windows"
+      : os === "MacOS"
+        ? "macOS"
+        : os === "Linux"
+          ? "Linux"
+          : os === "iOS"
+            ? "iOS"
+            : os === "Android"
+              ? "Android"
+              : "Unknown";
 
   const deviceName = `${browserName} on ${osName}`;
 
@@ -147,13 +279,15 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
   let longitude: number | null = null;
   if (navigator.geolocation) {
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 3000,
-          maximumAge: 180000, // 3分以内のキャッシュを使用
-        });
-      });
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 3000,
+            maximumAge: 180000, // 3分以内のキャッシュを使用
+          });
+        },
+      );
 
       latitude = position.coords.latitude;
       longitude = position.coords.longitude;
@@ -161,32 +295,33 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
       // 【優先】Server Action で Nominatim API を呼び出し
       const result = await getLocationFromCoordinates(latitude, longitude);
 
-      if ('data' in result && result.data) {
+      if ("data" in result && result.data) {
         // Nominatim APIから取得した詳細な地域情報を使用
         const parts = [
-          result.data.country && `${result.data.country}(${result.data.countryCode})`,
+          result.data.country &&
+            `${result.data.country}(${result.data.countryCode})`,
           result.data.province,
           result.data.county,
         ].filter(Boolean);
-        location = parts.join(' ');
+        location = parts.join(" ");
       } else {
         // Nominatim API が失敗した場合のフォールバック
-        console.warn('Nominatim APIからの位置情報取得に失敗しました');
+        console.warn("Nominatim APIからの位置情報取得に失敗しました");
         location = getApproximateLocation(latitude, longitude);
       }
     } catch (error) {
-      console.warn('位置情報の取得に失敗しました:', error);
+      console.warn("位置情報の取得に失敗しました:", error);
       // 位置情報が取得できない場合はnullのまま
     }
   }
 
   return {
-    deviceType: DeviceType._1, // Browser
+    deviceType: "Browser", // Browser
     os,
     userAgent,
     deviceName,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    appVersion: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+    appVersion: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
     location,
     latitude,
     longitude,

@@ -1,7 +1,15 @@
 "use server";
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { ApiResponse } from "../types";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
+import type {
+  SuccessResponse,
+  UserResponse,
+  UserResponseUserStatisticsPagedResponse,
+} from "@/connectors/api/pecus";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: ユーザー一覧を取得
@@ -13,7 +21,7 @@ export async function getUsers(
   username?: string,
   skillIds?: number[],
   skillFilterMode: string = "and",
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<UserResponseUserStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers1(
@@ -29,7 +37,8 @@ export async function getUsers(
     console.error("Failed to fetch users:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to fetch users",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to fetch users",
     };
   }
 }
@@ -40,8 +49,8 @@ export async function getUsers(
 export async function createUserWithoutPassword(request: {
   email: string;
   username: string;
-  roleIds: number[];
-}): Promise<ApiResponse<any>> {
+  roles: number[];
+}): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -51,7 +60,8 @@ export async function createUserWithoutPassword(request: {
     console.error("Failed to create user:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to create user",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to create user",
     };
   }
 }
@@ -59,7 +69,9 @@ export async function createUserWithoutPassword(request: {
 /**
  * Server Action: ユーザーを削除
  */
-export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
+export async function deleteUser(
+  userId: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.deleteApiAdminUsers(userId);
@@ -68,18 +80,20 @@ export async function deleteUser(userId: number): Promise<ApiResponse<any>> {
     console.error("Failed to delete user:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to delete user",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to delete user",
     };
   }
 }
 
 /**
  * Server Action: ユーザーのアクティブ状態を設定
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function setUserActiveStatus(
   userId: number,
   isActive: boolean,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, {
@@ -87,10 +101,25 @@ export async function setUserActiveStatus(
     });
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "user",
+          data: current as UserResponse,
+        },
+      };
+    }
     console.error("Failed to set user active status:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "Failed to set user active status",
@@ -103,7 +132,7 @@ export async function setUserActiveStatus(
  */
 export async function requestPasswordReset(
   userId: number,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response =
@@ -113,7 +142,8 @@ export async function requestPasswordReset(
     console.error("Failed to request password reset:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "Failed to request password reset",
@@ -124,7 +154,9 @@ export async function requestPasswordReset(
 /**
  * Server Action: ユーザー情報を取得
  */
-export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
+export async function getUserDetail(
+  userId: number,
+): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers(userId);
@@ -133,7 +165,8 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
     console.error("Failed to fetch user detail:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "ユーザー情報の取得に失敗しました",
@@ -142,47 +175,14 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<any>> {
 }
 
 /**
- * Server Action: ユーザー情報を更新（基本情報）
- * 注意: バックエンドで PUT /api/admin/users/{id} エンドポイントが実装されている必要があります
- */
-export async function updateUser(
-  userId: number,
-  request: {
-    username: string;
-    email: string;
-  },
-): Promise<ApiResponse<any>> {
-  try {
-    const api = createPecusApiClients();
-    // 現在のバックエンドにはユーザー基本情報の更新エンドポイントがないため、
-    // 以下は将来の実装を想定しています
-    // const response = await api.adminUser.putApiAdminUsers(userId, request);
-    // 代わりにアクティブ状態の更新のみ対応
-    console.warn(
-      "updateUser: ユーザー基本情報の更新エンドポイントは未実装です",
-    );
-    return {
-      success: false,
-      error: "ユーザー基本情報の更新機能は現在利用できません",
-    };
-  } catch (error: any) {
-    console.error("Failed to update user:", error);
-    return {
-      success: false,
-      error:
-        error.body?.message || error.message || "ユーザーの更新に失敗しました",
-    };
-  }
-}
-
-/**
  * Server Action: ユーザーのスキルを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function setUserSkills(
   userId: number,
   skillIds: number[],
-  userRowVersion: string,
-): Promise<ApiResponse<any>> {
+  userRowVersion: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersSkills(userId, {
@@ -191,17 +191,37 @@ export async function setUserSkills(
     });
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "user",
+          data: current as UserResponse,
+        },
+      };
+    }
+
     console.error("Failed to set user skills:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "ユーザースキルの更新に失敗しました",
     };
   }
-}/**
+}
+
+/**
  * Server Action: ユーザーのロールを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  *
  * Note: userRowVersion は楽観的ロック用で、バックエンド側で検証されます。
  * 現在のバックエンドで UserResponse に rowVersion が含まれていないため、
@@ -210,8 +230,8 @@ export async function setUserSkills(
 export async function setUserRoles(
   userId: number,
   roleIds: number[],
-  userRowVersion: string,
-): Promise<ApiResponse<any>> {
+  userRowVersion: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersRoles(userId, {
@@ -220,10 +240,27 @@ export async function setUserRoles(
     });
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "user",
+          data: current as UserResponse,
+        },
+      };
+    }
+
     console.error("Failed to set user roles:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "ユーザーロールの更新に失敗しました",

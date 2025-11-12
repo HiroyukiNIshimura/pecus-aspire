@@ -191,3 +191,4 @@ namespace Pecus.Models.Config
         public int ThumbnailSmallSize { get; set; } = 200;
     }
 }
+

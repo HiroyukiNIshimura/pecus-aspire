@@ -1,18 +1,12 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/actions/profile";
-import { getUserDetail } from "@/actions/admin/user";
-import { getAllSkills } from "@/actions/admin/skills";
 import { getAllRoles } from "@/actions/admin/role";
+import { getAllSkills } from "@/actions/admin/skills";
+import { getUserDetail } from "@/actions/admin/user";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
 import EditUserClient from "./EditUserClient";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditUserPage({
   params,
@@ -28,9 +22,9 @@ export default async function EditUserPage({
 
   let user: UserInfo | null = null;
   let userDetail = null;
-  let skills = [];
-  let roles = [];
-  let fetchError = null;
+  let skills: any[] = [];
+  let roles: any[] = [];
+  let fetchError: string | null = null;
 
   try {
     const userResult = await getCurrentUser();

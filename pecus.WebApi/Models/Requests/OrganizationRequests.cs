@@ -61,17 +61,6 @@ public class CreateOrganizationRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string AdminEmail { get; set; }
-
-    /// <summary>
-    /// 管理者パスワード
-    /// </summary>
-    [Required(ErrorMessage = "管理者パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 8,
-        ErrorMessage = "パスワードは8文字以上100文字以内で入力してください。"
-    )]
-    public required string AdminPassword { get; set; }
 }
 
 /// <summary>
@@ -115,7 +104,7 @@ public class AdminUpdateOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -171,7 +160,7 @@ public class BackendUpdateOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -183,7 +172,7 @@ public class DeleteOrganizationRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
 
 /// <summary>
@@ -201,5 +190,6 @@ public class SetOrganizationActiveStatusRequest
     /// 組織の楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 }
+

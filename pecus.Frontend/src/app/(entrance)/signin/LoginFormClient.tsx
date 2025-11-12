@@ -1,14 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { login } from "@/actions/auth";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { loginSchema } from "@/schemas/signInSchemas";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { getDeviceInfo } from "@/utils/deviceInfo";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { deviceInfoAtom } from "@/libs/atoms/deviceInfoAtom";
+import { loginSchema } from "@/schemas/signInSchemas";
+import { getDeviceInfo } from "@/utils/deviceInfo";
 
 /**
  * ログインフォーム (Client Component)
@@ -116,15 +116,20 @@ export default function LoginFormClient() {
         <div className="card-body">
           <h1 className="card-title text-center">ログイン</h1>
 
-        {/* === API エラー表示エリア（ログイン失敗など） === */}
-        {apiError && (
-          <div className="alert alert-error" role="alert">
-            {apiError}
-          </div>
-        )}
+          {/* === API エラー表示エリア（ログイン失敗など） === */}
+          {apiError && (
+            <div className="alert alert-error" role="alert">
+              {apiError}
+            </div>
+          )}
 
-        {/* === ログインフォーム === */}
-        <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
+          {/* === ログインフォーム === */}
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="w-full"
+            noValidate
+          >
             <div className="form-control w-full mb-4">
               <label htmlFor="loginIdentifier" className="label">
                 <span className="label-text font-semibold">

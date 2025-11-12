@@ -36,17 +36,7 @@ public class RoleService
 
         _context.Roles.Add(role);
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConcurrencyException<Role>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                role
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return role;
     }
@@ -81,21 +71,7 @@ public class RoleService
             role.UpdatedAt = DateTime.UtcNow;
             role.UpdatedByUserId = updatedByUserId;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                // 最新データを取得
-                var latestRole = await _context
-                    .Roles.Include(r => r.Permissions)
-                    .FirstOrDefaultAsync(r => r.Id == roleId);
-                throw new ConcurrencyException<Role>(
-                    "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                    latestRole
-                );
-            }
+            await _context.SaveChangesAsync();
         }
 
         return true;
@@ -129,21 +105,7 @@ public class RoleService
         role.UpdatedAt = DateTime.UtcNow;
         role.UpdatedByUserId = updatedByUserId;
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 最新データを取得
-            var latestRole = await _context
-                .Roles.Include(r => r.Permissions)
-                .FirstOrDefaultAsync(r => r.Id == roleId);
-            throw new ConcurrencyException<Role>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestRole
-            );
-        }
+        await _context.SaveChangesAsync();
 
         return true;
     }

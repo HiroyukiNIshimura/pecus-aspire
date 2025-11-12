@@ -1,21 +1,23 @@
 "use server";
 
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { ApiResponse } from "./types";
+import type { MasterGenreResponse } from "@/connectors/api/pecus";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: マスタージャンル一覧を取得
  */
-export async function getGenres(): Promise<ApiResponse<any>> {
+export async function getGenres(): Promise<ApiResponse<MasterGenreResponse[]>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.masterData.getApiMasterGenres();
+    const response = await api.master.getApiMasterGenres();
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to fetch genres:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to fetch genres",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to fetch genres",
     };
   }
 }

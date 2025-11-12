@@ -9,11 +9,11 @@ export type OrganizationResponse = {
     /**
      * 組織ID
      */
-    id?: number;
+    id: number;
     /**
      * 組織名
      */
-    name: string | null;
+    name: string;
     /**
      * 組織コード
      */
@@ -29,7 +29,7 @@ export type OrganizationResponse = {
     /**
      * 電話番号
      */
-    phoneNumber: string | null;
+    phoneNumber: string;
     /**
      * メールアドレス
      */
@@ -38,5 +38,21 @@ export type OrganizationResponse = {
      * 作成日時
      */
     createdAt?: string;
+    /**
+     * 更新日時
+     */
+    updatedAt?: string | null;
+    /**
+     * アクティブフラグ
+     */
+    isActive?: boolean;
+    /**
+     * 所属ユーザー数
+     */
+    userCount?: number;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion: number;
 };
 

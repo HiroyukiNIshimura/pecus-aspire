@@ -1,7 +1,17 @@
 "use server";
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { ApiResponse } from "../types";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
+import type {
+  SkillDetailResponse,
+  SkillListItemResponse,
+  SkillListItemResponseSkillStatisticsPagedResponse,
+  SkillResponse,
+  SuccessResponse,
+} from "@/connectors/api/pecus";
+import type { ApiResponse } from "../types";
 
 /**
  * Server Action: スキル一覧を取得（ページネーション対応）
@@ -9,7 +19,7 @@ import { ApiResponse } from "../types";
 export async function getSkills(
   page: number = 1,
   isActive: boolean = true,
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SkillListItemResponseSkillStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.getApiAdminSkills(page, isActive);
@@ -18,7 +28,8 @@ export async function getSkills(
     console.error("Failed to fetch skills:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "スキル一覧の取得に失敗しました",
@@ -32,7 +43,7 @@ export async function getSkills(
  */
 export async function getAllSkills(
   isActive: boolean = true,
-): Promise<ApiResponse<any[]>> {
+): Promise<ApiResponse<SkillListItemResponse[]>> {
   try {
     const api = createPecusApiClients();
     const allSkills: any[] = [];
@@ -66,7 +77,8 @@ export async function getAllSkills(
     console.error("Failed to fetch all skills:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "全スキルの取得に失敗しました",
     };
   }
@@ -75,7 +87,9 @@ export async function getAllSkills(
 /**
  * Server Action: スキル情報を取得
  */
-export async function getSkillDetail(id: number): Promise<ApiResponse<any>> {
+export async function getSkillDetail(
+  id: number,
+): Promise<ApiResponse<SkillDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.getApiAdminSkills1(id);
@@ -84,7 +98,8 @@ export async function getSkillDetail(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to fetch skill detail:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message ||
         error.message ||
         "スキル情報の取得に失敗しました",
@@ -98,7 +113,7 @@ export async function getSkillDetail(id: number): Promise<ApiResponse<any>> {
 export async function createSkill(request: {
   name: string;
   description?: string;
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<SkillResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.postApiAdminSkills(request);
@@ -107,7 +122,8 @@ export async function createSkill(request: {
     console.error("Failed to create skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの作成に失敗しました",
     };
   }
@@ -115,6 +131,7 @@ export async function createSkill(request: {
 
 /**
  * Server Action: スキルを更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
 export async function updateSkill(
   id: number,
@@ -122,12 +139,12 @@ export async function updateSkill(
     name: string;
     description?: string;
     isActive?: boolean;
-    rowVersion: string; // 楽観的ロック用
+    rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
   },
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<SkillResponse | SkillDetailResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminSkill.putApiAdminSkills(id, {
+    let response = await api.adminSkill.putApiAdminSkills(id, {
       name: request.name,
       description: request.description,
       rowVersion: request.rowVersion,
@@ -136,18 +153,35 @@ export async function updateSkill(
     // isActive が指定されている場合、activate/deactivate を呼び出す
     if (request.isActive !== undefined) {
       if (request.isActive) {
-        await api.adminSkill.patchApiAdminSkillsActivate(id);
+        response = await api.adminSkill.patchApiAdminSkillsActivate(id);
       } else {
-        await api.adminSkill.patchApiAdminSkillsDeactivate(id);
+        response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
       }
     }
 
     return { success: true, data: response };
   } catch (error: any) {
+    // 409 Conflict: 並行更新による競合を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as SkillDetailResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "skill",
+          data: current as SkillDetailResponse,
+        },
+      };
+    }
+
     console.error("Failed to update skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの更新に失敗しました",
     };
   }
@@ -156,7 +190,9 @@ export async function updateSkill(
 /**
  * Server Action: スキルを削除
  */
-export async function deleteSkill(id: number): Promise<ApiResponse<any>> {
+export async function deleteSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.deleteApiAdminSkills(id);
@@ -165,7 +201,8 @@ export async function deleteSkill(id: number): Promise<ApiResponse<any>> {
     console.error("Failed to delete skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの削除に失敗しました",
     };
   }
@@ -174,16 +211,33 @@ export async function deleteSkill(id: number): Promise<ApiResponse<any>> {
 /**
  * Server Action: スキルを有効化
  */
-export async function activateSkill(id: number): Promise<ApiResponse<any>> {
+export async function activateSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsActivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as SkillDetailResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "skill",
+          data: current as SkillDetailResponse,
+        },
+      };
+    }
     console.error("Failed to activate skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの有効化に失敗しました",
     };
   }
@@ -192,16 +246,33 @@ export async function activateSkill(id: number): Promise<ApiResponse<any>> {
 /**
  * Server Action: スキルを無効化
  */
-export async function deactivateSkill(id: number): Promise<ApiResponse<any>> {
+export async function deactivateSkill(
+  id: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
     return { success: true, data: response };
   } catch (error: any) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as SkillDetailResponse | undefined;
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrencyError.message,
+        latest: {
+          type: "skill",
+          data: current as SkillDetailResponse,
+        },
+      };
+    }
     console.error("Failed to deactivate skill:", error);
     return {
       success: false,
-      error:
+      error: "server",
+      message:
         error.body?.message || error.message || "スキルの無効化に失敗しました",
     };
   }

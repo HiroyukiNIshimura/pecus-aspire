@@ -9,7 +9,7 @@
     "/api/admin/organization": {
       "get": {
         "tags": [
-          "AdminOrganization"
+          "Admin - Organization"
         ],
         "summary": "自組織の情報を取得",
         "description": "ログイン中のユーザーが属する組織の詳細情報を取得します。",
@@ -19,7 +19,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                  "$ref": "#/components/schemas/OrganizationResponse"
                 }
               }
             }
@@ -41,7 +41,7 @@
       },
       "put": {
         "tags": [
-          "AdminOrganization"
+          "Admin - Organization"
         ],
         "summary": "自組織の情報を更新",
         "description": "ログイン中のユーザーが属する組織の情報を更新します。",
@@ -100,7 +100,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/OrganizationResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -114,7 +114,7 @@
     "/api/admin/skills": {
       "post": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル登録",
         "requestBody": {
@@ -167,16 +167,6 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -184,7 +174,7 @@
       },
       "get": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル一覧取得（ページネーション）",
         "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
@@ -246,7 +236,7 @@
     "/api/admin/skills/{id}": {
       "get": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル情報取得",
         "parameters": [
@@ -288,7 +278,7 @@
       },
       "put": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル更新",
         "parameters": [
@@ -357,7 +347,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -369,7 +359,7 @@
       },
       "delete": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル削除",
         "parameters": [
@@ -404,16 +394,6 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -423,7 +403,7 @@
     "/api/admin/skills/{id}/deactivate": {
       "patch": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル無効化",
         "parameters": [
@@ -463,7 +443,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -477,7 +457,7 @@
     "/api/admin/skills/{id}/activate": {
       "patch": {
         "tags": [
-          "AdminSkill"
+          "Admin - Skill"
         ],
         "summary": "スキル有効化",
         "parameters": [
@@ -517,7 +497,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/SkillDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -531,7 +511,7 @@
     "/api/admin/tags": {
       "post": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ登録",
         "requestBody": {
@@ -584,16 +564,6 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -601,7 +571,7 @@
       },
       "get": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ一覧取得（ページネーション）",
         "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
@@ -663,7 +633,7 @@
     "/api/admin/tags/{id}": {
       "get": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ情報取得",
         "parameters": [
@@ -705,7 +675,7 @@
       },
       "put": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ更新",
         "parameters": [
@@ -774,7 +744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -786,7 +756,7 @@
       },
       "delete": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ削除",
         "parameters": [
@@ -821,16 +791,6 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -840,7 +800,7 @@
     "/api/admin/tags/{id}/deactivate": {
       "patch": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ無効化",
         "parameters": [
@@ -880,7 +840,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -894,7 +854,7 @@
     "/api/admin/tags/{id}/activate": {
       "patch": {
         "tags": [
-          "AdminTag"
+          "Admin - Tag"
         ],
         "summary": "タグ有効化",
         "parameters": [
@@ -934,7 +894,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/TagDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -948,7 +908,7 @@
     "/api/admin/users/{id}": {
       "get": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "個別ユーザー情報を取得",
         "description": "指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。",
@@ -999,7 +959,7 @@
       },
       "delete": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "ユーザーを削除",
         "description": "指定したユーザーを削除します。組織内のユーザーのみ操作可能です。",
@@ -1052,7 +1012,7 @@
     "/api/admin/users": {
       "get": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "組織内のユーザー一覧を取得（ページング）",
         "description": "ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。",
@@ -1145,7 +1105,7 @@
     "/api/admin/users/{id}/active-status": {
       "put": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "ユーザーのアクティブ状態を設定",
         "description": "指定したユーザーのアクティブ状態を設定します。組織内のユーザーのみ操作可能です。",
@@ -1217,7 +1177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1228,15 +1188,15 @@
     "/api/admin/users/{id}/skills": {
       "put": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
-        "summary": "ユーザーのスキルを設定",
-        "description": "指定したユーザーのスキルを設定します（洗い替え）。組織内のユーザーのみ操作可能です。",
+        "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
+        "description": "\r\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n            指定されたスキル以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\r\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ユーザーID",
+            "description": "対象ユーザーID",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1300,7 +1260,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1311,7 +1271,7 @@
     "/api/admin/users/create-without-password": {
       "post": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "パスワードなしでユーザーを作成",
         "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\r\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
@@ -1372,7 +1332,7 @@
     "/api/admin/users/{id}/request-password-reset": {
       "post": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "ユーザーのパスワードリセットをリクエスト",
         "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\r\nパスワードリセット用のメールがユーザーに送信されます。",
@@ -1425,15 +1385,15 @@
     "/api/admin/users/{id}/roles": {
       "put": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
-        "summary": "ユーザーのロールを設定",
-        "description": "指定したユーザーのロールを設定します（洗い替え）。組織内のユーザーのみ操作可能です。",
+        "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
+        "description": "\r\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n            指定されたロール以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\r\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ユーザーID",
+            "description": "対象ユーザーID",
             "required": true,
             "schema": {
               "type": "integer",
@@ -1442,7 +1402,7 @@
           }
         ],
         "requestBody": {
-          "description": "ロール情報のリスト",
+          "description": "ロールIDのリスト",
           "content": {
             "application/json": {
               "schema": {
@@ -1497,7 +1457,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1508,7 +1468,7 @@
     "/api/admin/users/roles": {
       "get": {
         "tags": [
-          "AdminUser"
+          "Admin - User"
         ],
         "summary": "全ロール一覧を取得",
         "description": "システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。",
@@ -1532,7 +1492,7 @@
     "/api/admin/workspaces": {
       "post": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース登録",
         "requestBody": {
@@ -1592,7 +1552,7 @@
       },
       "get": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース一覧取得（ページネーション）",
         "parameters": [
@@ -1653,7 +1613,7 @@
     "/api/admin/workspaces/{id}": {
       "get": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース情報取得",
         "parameters": [
@@ -1695,7 +1655,7 @@
       },
       "put": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース更新",
         "parameters": [
@@ -1764,7 +1724,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1776,7 +1736,7 @@
       },
       "delete": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース削除",
         "parameters": [
@@ -1820,7 +1780,7 @@
     "/api/admin/workspaces/{id}/deactivate": {
       "patch": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース無効化",
         "parameters": [
@@ -1860,7 +1820,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1874,7 +1834,7 @@
     "/api/admin/workspaces/{id}/activate": {
       "patch": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペース有効化",
         "parameters": [
@@ -1914,7 +1874,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1928,7 +1888,7 @@
     "/api/admin/workspaces/{id}/users": {
       "post": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペースにユーザーを参加させる",
         "parameters": [
@@ -1999,7 +1959,7 @@
       },
       "get": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペースのメンバー一覧取得（ページネーション）",
         "parameters": [
@@ -2051,7 +2011,7 @@
     "/api/admin/workspaces/{id}/users/{userId}": {
       "delete": {
         "tags": [
-          "AdminWorkspace"
+          "Admin - Workspace"
         ],
         "summary": "ワークスペースからユーザーを削除",
         "parameters": [
@@ -2104,7 +2064,7 @@
     "/api/backend/genres": {
       "get": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンル一覧を取得",
         "parameters": [
@@ -2191,7 +2151,7 @@
       },
       "post": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンルを作成",
         "requestBody": {
@@ -2281,7 +2241,7 @@
     "/api/backend/genres/{id}": {
       "get": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンル詳細を取得",
         "parameters": [
@@ -2302,17 +2262,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenreDetailResponse"
+                  "$ref": "#/components/schemas/GenreResponse"
                 }
               }
             }
@@ -2361,7 +2321,7 @@
       },
       "put": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンルを更新",
         "parameters": [
@@ -2481,7 +2441,7 @@
       },
       "delete": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンルを削除",
         "parameters": [
@@ -2583,7 +2543,7 @@
     "/api/backend/genres/{id}/active-status": {
       "put": {
         "tags": [
-          "BackendGenre"
+          "Backend - Genre"
         ],
         "summary": "ジャンルのアクティブ状態を設定",
         "parameters": [
@@ -2702,329 +2662,10 @@
         }
       }
     },
-    "/api/backend/hangfire-test/fire-and-forget": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "Fire-and-forget ジョブのテスト",
-        "parameters": [
-          {
-            "name": "message",
-            "in": "query",
-            "description": "ログに出力するメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Hello from Hangfire!"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/delayed": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "遅延ジョブのテスト",
-        "parameters": [
-          {
-            "name": "message",
-            "in": "query",
-            "description": "ログに出力するメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Delayed job executed!"
-            }
-          },
-          {
-            "name": "delaySeconds",
-            "in": "query",
-            "description": "遅延秒数（デフォルト: 10秒）",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 10
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/continuation": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "継続ジョブのテスト",
-        "parameters": [
-          {
-            "name": "parentMessage",
-            "in": "query",
-            "description": "親ジョブのメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Parent job"
-            }
-          },
-          {
-            "name": "childMessage",
-            "in": "query",
-            "description": "子ジョブのメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Child job"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContinuationResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/recurring": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "繰り返しジョブのテスト（Cron式）",
-        "parameters": [
-          {
-            "name": "message",
-            "in": "query",
-            "description": "ログに出力するメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Recurring job executed!"
-            }
-          },
-          {
-            "name": "cronExpression",
-            "in": "query",
-            "description": "Cron式（デフォルト: 毎分実行）",
-            "schema": {
-              "type": "string",
-              "default": "* * * * *"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecurringResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/recurring/{recurringJobId}": {
-      "delete": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "繰り返しジョブの削除",
-        "parameters": [
-          {
-            "name": "recurringJobId",
-            "in": "path",
-            "description": "削除する繰り返しジョブID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/failed/{jobId}": {
-      "delete": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "失敗したジョブを削除",
-        "parameters": [
-          {
-            "name": "jobId",
-            "in": "path",
-            "description": "削除するジョブID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/long-running": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "長時間実行ジョブのテスト",
-        "parameters": [
-          {
-            "name": "durationSeconds",
-            "in": "query",
-            "description": "実行時間（秒）",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 30
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/error": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "エラーを発生させるジョブのテスト",
-        "parameters": [
-          {
-            "name": "errorMessage",
-            "in": "query",
-            "description": "エラーメッセージ",
-            "schema": {
-              "type": "string",
-              "default": "Test error"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/hangfire-test/batch": {
-      "post": {
-        "tags": [
-          "BackendHangfireTest"
-        ],
-        "summary": "バッチジョブのテスト",
-        "parameters": [
-          {
-            "name": "count",
-            "in": "query",
-            "description": "ジョブ数",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 5
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BatchResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/backend/organizations/{id}": {
       "get": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織情報取得",
         "parameters": [
@@ -3044,7 +2685,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrganizationDetailResponse"
+                  "$ref": "#/components/schemas/OrganizationResponse"
                 }
               }
             }
@@ -3066,7 +2707,7 @@
       },
       "put": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織更新",
         "parameters": [
@@ -3137,7 +2778,7 @@
       },
       "delete": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織削除",
         "parameters": [
@@ -3151,6 +2792,25 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteOrganizationRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3191,7 +2851,7 @@
     "/api/backend/organizations": {
       "get": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織一覧取得（ページネーション対応）",
         "parameters": [
@@ -3233,7 +2893,7 @@
     "/api/backend/organizations/{id}/users": {
       "get": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織の所属ユーザー取得",
         "parameters": [
@@ -3270,7 +2930,7 @@
     "/api/backend/organizations/{id}/active-status": {
       "put": {
         "tags": [
-          "BackendOrganization"
+          "Backend - Organization"
         ],
         "summary": "組織のアクティブ状態を設定",
         "parameters": [
@@ -3290,17 +2950,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
+                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
               }
             }
           }
@@ -3335,7 +2995,7 @@
     "/api/backend/permissions": {
       "post": {
         "tags": [
-          "BackendPermission"
+          "Backend - Permission"
         ],
         "summary": "権限作成",
         "requestBody": {
@@ -3385,7 +3045,7 @@
       },
       "get": {
         "tags": [
-          "BackendPermission"
+          "Backend - Permission"
         ],
         "summary": "全権限取得",
         "responses": {
@@ -3411,7 +3071,7 @@
     "/api/backend/permissions/{id}": {
       "get": {
         "tags": [
-          "BackendPermission"
+          "Backend - Permission"
         ],
         "summary": "権限取得",
         "parameters": [
@@ -3453,7 +3113,7 @@
       },
       "delete": {
         "tags": [
-          "BackendPermission"
+          "Backend - Permission"
         ],
         "summary": "権限削除",
         "parameters": [
@@ -3497,7 +3157,7 @@
     "/api/backend/permissions/category/{category}": {
       "get": {
         "tags": [
-          "BackendPermission"
+          "Backend - Permission"
         ],
         "summary": "カテゴリで権限取得",
         "parameters": [
@@ -3533,7 +3193,7 @@
     "/api/backend/roles": {
       "post": {
         "tags": [
-          "BackendRole"
+          "Backend - Role"
         ],
         "summary": "ロール作成",
         "requestBody": {
@@ -3583,7 +3243,7 @@
       },
       "get": {
         "tags": [
-          "BackendRole"
+          "Backend - Role"
         ],
         "summary": "全ロール取得",
         "responses": {
@@ -3609,7 +3269,7 @@
     "/api/backend/roles/{id}": {
       "get": {
         "tags": [
-          "BackendRole"
+          "Backend - Role"
         ],
         "summary": "ロール取得",
         "parameters": [
@@ -3651,7 +3311,7 @@
       },
       "delete": {
         "tags": [
-          "BackendRole"
+          "Backend - Role"
         ],
         "summary": "ロール削除",
         "parameters": [
@@ -3695,7 +3355,7 @@
     "/api/backend/roles/{roleId}/permissions": {
       "put": {
         "tags": [
-          "BackendRole"
+          "Backend - Role"
         ],
         "summary": "ロールに権限を設定（既存の権限を置き換える）",
         "parameters": [
@@ -3768,7 +3428,7 @@
     "/api/backend/specs/openapi": {
       "get": {
         "tags": [
-          "BackendSpecs"
+          "Backend - Specs"
         ],
         "summary": "OpenAPIスキーマ取得",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
@@ -3809,7 +3469,7 @@
     "/api/backend/specs/openapi/{documentName}": {
       "get": {
         "tags": [
-          "BackendSpecs"
+          "Backend - Specs"
         ],
         "summary": "OpenAPIスキーマ取得",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
@@ -3862,7 +3522,7 @@
     "/api/backend/specs/openapi.yaml": {
       "get": {
         "tags": [
-          "BackendSpecs"
+          "Backend - Specs"
         ],
         "summary": "OpenAPIスキーマ取得（YAML形式）",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
@@ -3903,7 +3563,7 @@
     "/api/backend/specs/openapi/{documentName}.yaml": {
       "get": {
         "tags": [
-          "BackendSpecs"
+          "Backend - Specs"
         ],
         "summary": "OpenAPIスキーマ取得（YAML形式）",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
@@ -3953,10 +3613,961 @@
         }
       }
     },
+    "/api/entrance/auth/login": {
+      "post": {
+        "tags": [
+          "Entrance - Auth"
+        ],
+        "summary": "ログイン",
+        "description": "EmailまたはLoginIdとパスワードでログインします",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/entrance/refresh": {
+      "post": {
+        "tags": [
+          "Entrance - Auth"
+        ],
+        "summary": "リフレッシュトークンによるアクセストークン再発行",
+        "description": "有効なリフレッシュトークンを使用して、新しいアクセストークンとリフレッシュトークンを取得します。",
+        "requestBody": {
+          "description": "リフレッシュトークン情報",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/entrance/logout": {
+      "post": {
+        "tags": [
+          "Entrance - Auth"
+        ],
+        "summary": "ログアウト（トークン無効化）",
+        "description": "現在のアクセストークンとリフレッシュトークンを無効化します。",
+        "requestBody": {
+          "description": "リフレッシュトークン情報",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/entrance/organizations": {
+      "post": {
+        "tags": [
+          "Entrance - Organization"
+        ],
+        "summary": "組織登録（管理者ユーザーも同時作成）",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationWithAdminResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/entrance/password/set": {
+      "post": {
+        "tags": [
+          "Entrance - Password"
+        ],
+        "summary": "/// パスワードを設定",
+        "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
+        "requestBody": {
+          "description": "パスワード設定リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserPasswordRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserPasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "パスワードが設定されました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "トークンが無効または期限切れです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entrance/password/request-reset": {
+      "post": {
+        "tags": [
+          "Entrance - Password"
+        ],
+        "summary": "パスワードリセットをリクエスト",
+        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
+        "requestBody": {
+          "description": "パスワードリセットリクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "パスワードリセットメールが送信されました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entrance/password/reset": {
+      "post": {
+        "tags": [
+          "Entrance - Password"
+        ],
+        "summary": "パスワードをリセット",
+        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
+        "requestBody": {
+          "description": "パスワードリセットリクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "パスワードがリセットされました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "トークンが無効または期限切れです",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/downloads/icons": {
+      "get": {
+        "tags": [
+          "File"
+        ],
+        "summary": "アイコンファイルを取得（画像を返す）",
+        "parameters": [
+          {
+            "name": "FileType",
+            "in": "query",
+            "description": "ファイルの種類（avatar, genre）",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FileType"
+            }
+          },
+          {
+            "name": "ResourceId",
+            "in": "query",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FileName",
+            "in": "query",
+            "description": "ファイル名",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/files": {
+      "post": {
+        "tags": [
+          "File"
+        ],
+        "summary": "ファイルをアップロード",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "File",
+                  "FileType",
+                  "ResourceId"
+                ],
+                "type": "object",
+                "properties": {
+                  "FileType": {
+                    "$ref": "#/components/schemas/FileType"
+                  },
+                  "ResourceId": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
+                    "type": "integer",
+                    "description": "リソースID（ユーザーIDまたはジャンルID）",
+                    "format": "int32"
+                  },
+                  "File": {
+                    "type": "string",
+                    "description": "アップロードするファイル",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "FileType": {
+                  "style": "form"
+                },
+                "ResourceId": {
+                  "style": "form"
+                },
+                "File": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/master/genres": {
+      "get": {
+        "tags": [
+          "Master"
+        ],
+        "summary": "アクティブなジャンル一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterGenreResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/master/skills": {
+      "get": {
+        "tags": [
+          "Master"
+        ],
+        "summary": "ログインユーザーの属する組織のアクティブなスキル一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterSkillResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/master/roles": {
+      "get": {
+        "tags": [
+          "Master"
+        ],
+        "summary": "ロール一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のプロフィール情報を取得",
+        "description": "ユーザーの基本情報（ユーザー名、アバター、スキル、ロール等）を取得します。",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のプロフィール情報を更新",
+        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
+        "requestBody": {
+          "description": "更新情報",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/skills": {
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のスキルを設定",
+        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "requestBody": {
+          "description": "スキルIDのリスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetOwnSkillsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "スキルを設定しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが無効です",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: スキル情報が別のユーザーにより更新されています",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/password": {
+      "patch": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "パスワードを変更",
+        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
+        "requestBody": {
+          "description": "変更情報",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/profile/devices": {
       "get": {
         "tags": [
-          "Device"
+          "Profile - Device"
         ],
         "summary": "自分の有効なデバイス情報の一覧を取得",
         "responses": {
@@ -4018,7 +4629,7 @@
     "/api/profile/devices/{deviceId}": {
       "delete": {
         "tags": [
-          "Device"
+          "Profile - Device"
         ],
         "summary": "自分のデバイスを削除",
         "parameters": [
@@ -4080,100 +4691,88 @@
         }
       }
     },
-    "/api/entrance/auth/login": {
+    "/api/profile/email/request-change": {
       "post": {
         "tags": [
-          "EntranceAuth"
+          "Profile - Email"
         ],
-        "summary": "ログイン",
-        "description": "EmailまたはLoginIdとパスワードでログインします",
+        "summary": "メールアドレス変更をリクエスト",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
         "requestBody": {
+          "description": "メールアドレス変更リクエスト",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "確認メールを送信しました",
             "content": {
-              "application/json": {
+              "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/LoginResponse"
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
                 }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
+              },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
                 }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/entrance/organizations": {
-      "post": {
-        "tags": [
-          "EntranceOrganization"
-        ],
-        "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
+              },
+              "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrganizationWithAdminResponse"
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "リクエストが無効です（パスワード不一致、重複メールアドレスなど）",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -4181,45 +4780,45 @@
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "サーバーエラー"
           }
         }
       }
     },
-    "/api/entrance/password/set": {
-      "post": {
+    "/api/profile/email/verify": {
+      "get": {
         "tags": [
-          "EntrancePassword"
+          "Profile - Email"
         ],
-        "summary": "/// パスワードを設定",
-        "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
-        "requestBody": {
-          "description": "パスワード設定リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserPasswordRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserPasswordRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetUserPasswordRequest"
-              }
+        "summary": "メールアドレス変更を確認（トークン検証）",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "確認トークン（GUIDベース、32文字）",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "パスワードが設定されました",
+            "description": "メールアドレスの変更が完了しました",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
                 }
               }
             }
@@ -4227,428 +4826,6 @@
           "400": {
             "description": "トークンが無効または期限切れです",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/entrance/password/request-reset": {
-      "post": {
-        "tags": [
-          "EntrancePassword"
-        ],
-        "summary": "パスワードリセットをリクエスト",
-        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
-        "requestBody": {
-          "description": "パスワードリセットリクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestPasswordResetRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestPasswordResetRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestPasswordResetRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "パスワードリセットメールが送信されました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/entrance/password/reset": {
-      "post": {
-        "tags": [
-          "EntrancePassword"
-        ],
-        "summary": "パスワードをリセット",
-        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
-        "requestBody": {
-          "description": "パスワードリセットリクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "パスワードがリセットされました",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "トークンが無効または期限切れです",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/downloads/{fileType}/{resourceId}/{fileName}": {
-      "get": {
-        "tags": [
-          "FileDownload"
-        ],
-        "summary": "アイコンファイルを取得（画像を返す）",
-        "parameters": [
-          {
-            "name": "fileType",
-            "in": "path",
-            "description": "ファイルの種類（avatar, genre）",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "resourceId",
-            "in": "path",
-            "description": "リソースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "fileName",
-            "in": "path",
-            "description": "ファイル名",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/files/{fileType}/{resourceId}": {
-      "post": {
-        "tags": [
-          "FileUpload"
-        ],
-        "summary": "ファイルをアップロード",
-        "parameters": [
-          {
-            "name": "fileType",
-            "in": "path",
-            "description": "ファイルの種類（avatar, genre）",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "resourceId",
-            "in": "path",
-            "description": "リソースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "description": "アップロードするファイル",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "file": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileUploadResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/master/genres": {
-      "get": {
-        "tags": [
-          "MasterData"
-        ],
-        "summary": "アクティブなジャンル一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MasterGenreResponse"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/master/skills": {
-      "get": {
-        "tags": [
-          "MasterData"
-        ],
-        "summary": "ログインユーザーの属する組織のアクティブなスキル一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MasterSkillResponse"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/master/roles": {
-      "get": {
-        "tags": [
-          "MasterData"
-        ],
-        "summary": "ロール一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RoleResponse"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/profile": {
-      "get": {
-        "tags": [
-          "Profile"
-        ],
-        "summary": "自分のプロフィール情報を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Profile"
-        ],
-        "summary": "自分のプロフィール情報を更新",
-        "requestBody": {
-          "description": "更新情報",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
               "text/plain": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -4667,211 +4844,64 @@
             }
           },
           "404": {
-            "description": "Not Found",
+            "description": "ユーザーまたはトークンが見つかりません",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "サーバーエラー"
           }
         }
       }
     },
-    "/api/profile/email": {
-      "patch": {
+    "/api/profile/email/pending": {
+      "get": {
         "tags": [
-          "Profile"
+          "Profile - Email"
         ],
-        "summary": "メールアドレスを変更",
-        "requestBody": {
-          "description": "変更情報",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateEmailRequest"
-              }
-            }
-          }
-        },
+        "summary": "未使用のメールアドレス変更トークン情報を取得",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "トークン情報を取得しました（存在する場合）",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/entrance/refresh": {
-      "post": {
-        "tags": [
-          "Refresh"
-        ],
-        "summary": "リフレッシュトークンによるアクセストークン再発行",
-        "description": "有効なリフレッシュトークンを使用して、新しいアクセストークンとリフレッシュトークンを取得します。",
-        "requestBody": {
-          "description": "リフレッシュトークン情報",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RefreshResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/entrance/logout": {
-      "post": {
-        "tags": [
-          "Refresh"
-        ],
-        "summary": "ログアウト（トークン無効化）",
-        "description": "現在のアクセストークンとリフレッシュトークンを無効化します。",
-        "requestBody": {
-          "description": "リフレッシュトークン情報",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
-              }
-            }
-          }
-        },
-        "responses": {
           "204": {
-            "description": "No Content"
+            "description": "有効なトークンが存在しません"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "サーバーエラー"
           }
         }
       }
@@ -5136,6 +5166,293 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
+      "post": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "ワークスペースアイテムに添付ファイルをアップロード",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "アイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "アップロードするファイル",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceItemAttachmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "ワークスペースアイテムの添付ファイル一覧を取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "アイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceItemAttachmentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/attachments/{attachmentId}": {
+      "delete": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "添付ファイルを削除",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "アイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "description": "添付ファイルID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{fileName}": {
+      "get": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "添付ファイルをダウンロード",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "アイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "fileName",
+            "in": "path",
+            "description": "ファイル名（一意なファイル名）",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -5425,7 +5742,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -5578,294 +5895,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
-      "post": {
-        "tags": [
-          "WorkspaceItemAttachment"
-        ],
-        "summary": "ワークスペースアイテムに添付ファイルをアップロード",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "description": "ワークスペースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "description": "アイテムID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "description": "アップロードするファイル",
-                    "format": "binary"
-                  }
-                }
-              },
-              "encoding": {
-                "file": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceItemAttachmentResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "WorkspaceItemAttachment"
-        ],
-        "summary": "ワークスペースアイテムの添付ファイル一覧を取得",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "description": "ワークスペースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "description": "アイテムID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WorkspaceItemAttachmentResponse"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/workspaces/{workspaceId}/items/{itemId}/attachments/{attachmentId}": {
-      "delete": {
-        "tags": [
-          "WorkspaceItemAttachment"
-        ],
-        "summary": "添付ファイルを削除",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "description": "ワークスペースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "description": "アイテムID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "attachmentId",
-            "in": "path",
-            "description": "添付ファイルID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{fileName}": {
-      "get": {
-        "tags": [
-          "WorkspaceItemAttachment"
-        ],
-        "summary": "添付ファイルをダウンロード",
-        "parameters": [
-          {
-            "name": "workspaceId",
-            "in": "path",
-            "description": "ワークスペースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "description": "アイテムID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "fileName",
-            "in": "path",
-            "description": "ファイル名（一意なファイル名）",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -5879,7 +5909,7 @@
     "/api/workspaces/{workspaceId}/items/{itemId}/pin": {
       "post": {
         "tags": [
-          "WorkspaceItemPin"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムにPINを追加",
         "parameters": [
@@ -5942,7 +5972,7 @@
       },
       "delete": {
         "tags": [
-          "WorkspaceItemPin"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムからPINを削除",
         "parameters": [
@@ -6007,7 +6037,7 @@
     "/api/users/me/pinned-items": {
       "get": {
         "tags": [
-          "WorkspaceItemPin"
+          "WorkspaceItem"
         ],
         "summary": "ログインユーザーがPINしたアイテム一覧を取得",
         "parameters": [
@@ -6053,7 +6083,7 @@
     "/api/workspaces/{workspaceId}/items/{itemId}/relations": {
       "post": {
         "tags": [
-          "WorkspaceItemRelation"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムに関連を追加",
         "parameters": [
@@ -6133,7 +6163,7 @@
       },
       "get": {
         "tags": [
-          "WorkspaceItemRelation"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムの関連一覧を取得",
         "parameters": [
@@ -6186,7 +6216,7 @@
     "/api/workspaces/{workspaceId}/items/{itemId}/relations/{relationId}": {
       "delete": {
         "tags": [
-          "WorkspaceItemRelation"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムの関連を削除",
         "parameters": [
@@ -6248,7 +6278,7 @@
     "/api/workspaces/{workspaceId}/items/{itemId}/tags": {
       "put": {
         "tags": [
-          "WorkspaceItemTag"
+          "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテムのタグを一括設定",
         "parameters": [
@@ -6329,7 +6359,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -6445,13 +6475,21 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
+      },
+      "AvatarType": {
+        "enum": [
+          "Gravatar",
+          "UserAvatar",
+          "AutoGenerated"
+        ],
+        "type": "string"
       },
       "BackendUpdateOrganizationRequest": {
         "required": [
@@ -6503,64 +6541,13 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "組織の楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（バックエンドサービス用）"
-      },
-      "BatchResponse": {
-        "required": [
-          "jobIds",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "メッセージ",
-            "nullable": true
-          },
-          "jobIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "ジョブIDのリスト",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "バッチジョブレスポンス"
-      },
-      "ContinuationResponse": {
-        "required": [
-          "childJobId",
-          "message",
-          "parentJobId"
-        ],
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "メッセージ",
-            "nullable": true
-          },
-          "parentJobId": {
-            "type": "string",
-            "description": "親ジョブID",
-            "nullable": true
-          },
-          "childJobId": {
-            "type": "string",
-            "description": "子ジョブID",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "継続ジョブレスポンス"
       },
       "CreateGenreRequest": {
         "required": [
@@ -6600,7 +6587,6 @@
       "CreateOrganizationRequest": {
         "required": [
           "adminEmail",
-          "adminPassword",
           "adminUsername",
           "name",
           "phoneNumber"
@@ -6657,12 +6643,6 @@
             "type": "string",
             "description": "管理者メールアドレス",
             "format": "email"
-          },
-          "adminPassword": {
-            "maxLength": 100,
-            "minLength": 8,
-            "type": "string",
-            "description": "管理者パスワード"
           }
         },
         "additionalProperties": false,
@@ -6759,6 +6739,7 @@
       "CreateUserWithoutPasswordRequest": {
         "required": [
           "email",
+          "roles",
           "username"
         ],
         "type": "object",
@@ -6775,6 +6756,14 @@
             "type": "string",
             "description": "メールアドレス",
             "format": "email"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "ロールIDのリスト。既存のすべてのロールを置き換えます。\r\n空のリストまたはnullの場合はすべてのロールを削除します。"
           }
         },
         "additionalProperties": false,
@@ -6877,7 +6866,25 @@
         "additionalProperties": false,
         "description": "ワークスペース登録リクエスト"
       },
+      "DeleteOrganizationRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "rowVersion": {
+            "type": "integer",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織削除リクエスト"
+      },
       "DeviceResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -6955,13 +6962,72 @@
       },
       "DeviceType": {
         "enum": [
-          1,
-          2,
-          3,
-          99
+          "Browser",
+          "MobileApp",
+          "DesktopApp",
+          "Other"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
+      },
+      "EmailChangeRequestResponse": {
+        "required": [
+          "expiresAt",
+          "message",
+          "newEmail",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メッセージ"
+          },
+          "newEmail": {
+            "minLength": 1,
+            "type": "string",
+            "description": "新しいメールアドレス（確認用）"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "トークン有効期限（UTC）",
+            "format": "date-time"
+          },
+          "token": {
+            "minLength": 1,
+            "type": "string",
+            "description": "確認トークン（メール送信用、通常はフロントエンドには返さない）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更リクエスト完了レスポンス"
+      },
+      "EmailChangeVerifyResponse": {
+        "required": [
+          "changedAt",
+          "message",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メッセージ"
+          },
+          "newEmail": {
+            "minLength": 1,
+            "type": "string",
+            "description": "変更後の新しいメールアドレス"
+          },
+          "changedAt": {
+            "type": "string",
+            "description": "変更日時（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更確認レスポンス"
       },
       "ErrorResponse": {
         "required": [
@@ -6975,9 +7041,9 @@
             "format": "int32"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "エラーメッセージ",
-            "nullable": true
+            "description": "エラーメッセージ"
           },
           "details": {
             "type": "string",
@@ -6987,6 +7053,14 @@
         },
         "additionalProperties": false,
         "description": "エラーレスポンス"
+      },
+      "FileType": {
+        "enum": [
+          "Avatar",
+          "Genre"
+        ],
+        "type": "string",
+        "description": "ファイル種別"
       },
       "FileUploadResponse": {
         "type": "object",
@@ -7025,18 +7099,22 @@
         "description": "ファイルアップロードレスポンス"
       },
       "GenreCount": {
+        "required": [
+          "count",
+          "genreId",
+          "genreName"
+        ],
         "type": "object",
         "properties": {
           "genreId": {
             "type": "integer",
             "description": "ジャンルID",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "genreName": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "count": {
             "type": "integer",
@@ -7047,8 +7125,99 @@
         "additionalProperties": false,
         "description": "ジャンルごとのワークスペース数"
       },
-      "GenreDetailResponse": {
+      "GenreListItemResponse": {
         "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ジャンル名"
+          },
+          "description": {
+            "type": "string",
+            "description": "ジャンルの説明",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "description": "表示順",
+            "format": "int32"
+          },
+          "workspaceCount": {
+            "type": "integer",
+            "description": "このジャンルを使用しているワークスペース数",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "有効フラグ"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ジャンル一覧用レスポンス"
+      },
+      "GenreListItemResponsePagedResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GenreListItemResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ページネーション付きレスポンス"
+      },
+      "GenreResponse": {
+        "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -7060,9 +7229,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7112,175 +7281,13 @@
             "description": "有効フラグ"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル詳細レスポンス"
-      },
-      "GenreListItemResponse": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ジャンルID",
             "format": "int32"
-          },
-          "name": {
-            "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          },
-          "workspaceCount": {
-            "type": "integer",
-            "description": "このジャンルを使用しているワークスペース数",
-            "format": "int32"
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "有効フラグ"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル一覧用レスポンス"
-      },
-      "GenreListItemResponsePagedResponse": {
-        "required": [
-          "data"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GenreListItemResponse"
-            },
-            "description": "データのリスト",
-            "nullable": true
-          },
-          "currentPage": {
-            "type": "integer",
-            "description": "現在のページ番号（1から始まる）",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "description": "1ページあたりのアイテム数",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "description": "総アイテム数",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "description": "総ページ数",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean",
-            "description": "前のページが存在するか"
-          },
-          "hasNextPage": {
-            "type": "boolean",
-            "description": "次のページが存在するか"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
-      },
-      "GenreResponse": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ジャンルID",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "更新日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "有効フラグ"
           }
         },
         "additionalProperties": false,
         "description": "ジャンル基本レスポンス"
-      },
-      "JobResponse": {
-        "required": [
-          "jobId",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "メッセージ",
-            "nullable": true
-          },
-          "jobId": {
-            "type": "string",
-            "description": "ジョブID",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジョブレスポンス"
       },
       "LoginRequest": {
         "required": [
@@ -7357,9 +7364,9 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "JWTアクセストークン",
-            "nullable": true
+            "description": "JWTアクセストークン"
           },
           "tokenType": {
             "type": "string",
@@ -7382,24 +7389,22 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
+            "$ref": "#/components/schemas/AvatarType"
           },
           "identityIconUrl": {
             "type": "string",
@@ -7431,6 +7436,7 @@
       },
       "MasterGenreResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7441,9 +7447,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
+            "description": "ジャンル名"
           },
           "description": {
             "type": "string",
@@ -7466,6 +7472,7 @@
       },
       "MasterSkillResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7476,9 +7483,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -7496,9 +7503,9 @@
         "type": "object",
         "properties": {
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           }
         },
         "additionalProperties": false,
@@ -7506,91 +7513,18 @@
       },
       "OSPlatform": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5
+          "Unknown",
+          "Windows",
+          "MacOS",
+          "Linux",
+          "iOS",
+          "Android"
         ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "OrganizationDetailResponse": {
-        "required": [
-          "name",
-          "phoneNumber",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "組織ID",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string",
-            "description": "組織名",
-            "nullable": true
-          },
-          "code": {
-            "type": "string",
-            "description": "組織コード",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "description": "組織の説明",
-            "nullable": true
-          },
-          "representativeName": {
-            "type": "string",
-            "description": "代表者名",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "type": "string",
-            "description": "電話番号",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "更新日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          },
-          "userCount": {
-            "type": "integer",
-            "description": "所属ユーザー数",
-            "format": "int32"
-          },
-          "rowVersion": {
-            "type": "string",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織詳細レスポンス"
+        "type": "string"
       },
       "OrganizationInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7601,9 +7535,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7616,6 +7550,7 @@
       },
       "OrganizationListItemResponse": {
         "required": [
+          "id",
           "name",
           "phoneNumber"
         ],
@@ -7627,9 +7562,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7642,9 +7577,9 @@
             "nullable": true
           },
           "phoneNumber": {
+            "minLength": 1,
             "type": "string",
-            "description": "電話番号",
-            "nullable": true
+            "description": "電話番号"
           },
           "email": {
             "type": "string",
@@ -7680,8 +7615,7 @@
             "items": {
               "$ref": "#/components/schemas/OrganizationListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -7717,8 +7651,10 @@
       },
       "OrganizationResponse": {
         "required": [
+          "id",
           "name",
-          "phoneNumber"
+          "phoneNumber",
+          "rowVersion"
         ],
         "type": "object",
         "properties": {
@@ -7728,9 +7664,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "組織名",
-            "nullable": true
+            "description": "組織名"
           },
           "code": {
             "type": "string",
@@ -7748,9 +7684,9 @@
             "nullable": true
           },
           "phoneNumber": {
+            "minLength": 1,
             "type": "string",
-            "description": "電話番号",
-            "nullable": true
+            "description": "電話番号"
           },
           "email": {
             "type": "string",
@@ -7761,10 +7697,58 @@
             "type": "string",
             "description": "作成日時",
             "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
+          },
+          "userCount": {
+            "type": "integer",
+            "description": "所属ユーザー数",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "組織情報レスポンス"
+      },
+      "OrganizationResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/OrganizationResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "OrganizationWithAdminResponse": {
         "required": [
@@ -7783,8 +7767,36 @@
         "additionalProperties": false,
         "description": "組織登録レスポンス（管理者ユーザー情報含む）"
       },
+      "PendingEmailChangeResponse": {
+        "required": [
+          "createdAt",
+          "expiresAt",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string",
+            "description": "変更予定の新しいメールアドレス",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "トークン有効期限（UTC）",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "トークン作成日時（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "未使用メールアドレス変更トークン情報レスポンス"
+      },
       "PermissionDetailInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7795,9 +7807,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7815,6 +7827,7 @@
       },
       "PermissionDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -7826,9 +7839,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7854,10 +7867,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -7865,6 +7877,7 @@
       },
       "PermissionListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7875,9 +7888,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7905,6 +7918,7 @@
       },
       "PermissionResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -7915,9 +7929,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "権限名",
-            "nullable": true
+            "description": "権限名"
           },
           "description": {
             "type": "string",
@@ -7975,27 +7989,6 @@
         },
         "additionalProperties": false
       },
-      "RecurringResponse": {
-        "required": [
-          "message",
-          "recurringJobId"
-        ],
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "メッセージ",
-            "nullable": true
-          },
-          "recurringJobId": {
-            "type": "string",
-            "description": "繰り返しジョブID",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "繰り返しジョブレスポンス"
-      },
       "RefreshRequest": {
         "required": [
           "refreshToken"
@@ -8020,9 +8013,9 @@
         "type": "object",
         "properties": {
           "accessToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "JWTアクセストークン",
-            "nullable": true
+            "description": "JWTアクセストークン"
           },
           "tokenType": {
             "type": "string",
@@ -8040,9 +8033,9 @@
             "format": "int32"
           },
           "refreshToken": {
+            "minLength": 1,
             "type": "string",
-            "description": "リフレッシュトークン",
-            "nullable": true
+            "description": "リフレッシュトークン"
           },
           "refreshExpiresAt": {
             "type": "string",
@@ -8052,6 +8045,30 @@
         },
         "additionalProperties": false,
         "description": "リフレッシュレスポンス"
+      },
+      "RequestEmailChangeRequest": {
+        "required": [
+          "currentPassword",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "maxLength": 254,
+            "minLength": 1,
+            "type": "string",
+            "description": "新しいメールアドレス",
+            "format": "email"
+          },
+          "currentPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "type": "string",
+            "description": "現在のパスワード（本人確認用）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "メールアドレス変更リクエスト"
       },
       "RequestPasswordResetRequest": {
         "required": [
@@ -8084,7 +8101,8 @@
           },
           "password": {
             "maxLength": 100,
-            "minLength": 6,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
             "type": "string",
             "description": "新しいパスワード"
           }
@@ -8094,6 +8112,7 @@
       },
       "RoleDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -8105,9 +8124,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8128,10 +8147,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -8139,6 +8157,7 @@
       },
       "RoleInfoResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8149,9 +8168,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           }
         },
         "additionalProperties": false,
@@ -8159,6 +8178,7 @@
       },
       "RoleListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8169,9 +8189,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8194,6 +8214,7 @@
       },
       "RoleResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8204,9 +8225,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "description": {
             "type": "string",
@@ -8224,6 +8245,8 @@
       },
       "RoleUserCountResponse": {
         "required": [
+          "count",
+          "id",
           "name"
         ],
         "type": "object",
@@ -8234,9 +8257,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           },
           "count": {
             "type": "integer",
@@ -8259,7 +8282,49 @@
           }
         },
         "additionalProperties": false,
-        "description": "アクティブ状態設定リクエスト"
+        "description": "アクティブ状態設定リクエスト（レガシー用）"
+      },
+      "SetOrganizationActiveStatusRequest": {
+        "required": [
+          "isActive",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "有効フラグ"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "組織の楽観的ロック用のRowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織のアクティブ状態変更リクエスト"
+      },
+      "SetOwnSkillsRequest": {
+        "type": "object",
+        "properties": {
+          "skillIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
+          },
+          "userRowVersion": {
+            "type": "integer",
+            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "自ユーザースキル設定リクエスト"
       },
       "SetPermissionsToRoleRequest": {
         "type": "object",
@@ -8290,9 +8355,9 @@
             "nullable": true
           },
           "itemRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8311,7 +8376,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "アクティブ状態設定リクエスト"
+        "description": "ユーザーのアクティブ状態設定リクエスト"
       },
       "SetUserPasswordRequest": {
         "required": [
@@ -8327,7 +8392,8 @@
           },
           "password": {
             "maxLength": 100,
-            "minLength": 6,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
             "type": "string",
             "description": "新しいパスワード"
           },
@@ -8355,9 +8421,9 @@
             "description": "ロールIDのリスト。既存のすべてのロールを置き換えます。\r\n空のリストまたはnullの場合はすべてのロールを削除します。"
           },
           "userRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8376,21 +8442,21 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
-            "nullable": true
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。"
           },
           "userRowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "byte",
+            "format": "int32",
             "nullable": true
           }
         },
         "additionalProperties": false,
-        "description": "スキル設定リクエスト"
+        "description": "ユーザーのスキル設定リクエスト"
       },
       "SkillDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -8402,9 +8468,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -8449,17 +8515,45 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "スキル詳細レスポンス"
       },
+      "SkillDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/SkillDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "SkillListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8470,9 +8564,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "description": {
             "type": "string",
@@ -8528,8 +8622,7 @@
             "items": {
               "$ref": "#/components/schemas/SkillListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -8577,9 +8670,9 @@
             "description": "成功フラグ"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
-            "nullable": true
+            "description": "メッセージ"
           },
           "skill": {
             "$ref": "#/components/schemas/SkillDetailResponse"
@@ -8589,6 +8682,13 @@
         "description": "スキルレスポンス"
       },
       "SkillStatistics": {
+        "required": [
+          "activeSkills",
+          "inactiveSkills",
+          "topUsedSkills",
+          "totalSkills",
+          "unusedSkills"
+        ],
         "type": "object",
         "properties": {
           "totalSkills": {
@@ -8611,16 +8711,14 @@
             "items": {
               "$ref": "#/components/schemas/SkillUsageItem"
             },
-            "description": "利用されているスキルのトップ５",
-            "nullable": true
+            "description": "利用されているスキルのトップ５"
           },
           "unusedSkills": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SkillUsageItem"
             },
-            "description": "利用されていないスキルのリスト",
-            "nullable": true
+            "description": "利用されていないスキルのリスト"
           }
         },
         "additionalProperties": false,
@@ -8628,6 +8726,7 @@
       },
       "SkillUsageItem": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8638,9 +8737,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           }
         },
         "additionalProperties": false,
@@ -8648,6 +8747,8 @@
       },
       "SkillUserCountResponse": {
         "required": [
+          "count",
+          "id",
           "name"
         ],
         "type": "object",
@@ -8658,9 +8759,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           },
           "count": {
             "type": "integer",
@@ -8683,9 +8784,9 @@
             "format": "int32"
           },
           "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "成功メッセージ",
-            "nullable": true
+            "description": "成功メッセージ"
           }
         },
         "additionalProperties": false,
@@ -8693,6 +8794,7 @@
       },
       "TagDetailResponse": {
         "required": [
+          "id",
           "rowVersion"
         ],
         "type": "object",
@@ -8744,16 +8846,46 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用RowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "タグ詳細レスポンス"
       },
+      "TagDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/TagDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "TagInfoResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8771,6 +8903,9 @@
         "description": "タグ情報レスポンス"
       },
       "TagListItemResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8818,8 +8953,7 @@
             "items": {
               "$ref": "#/components/schemas/TagListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -8876,6 +9010,13 @@
         "description": "タグレスポンス"
       },
       "TagStatistics": {
+        "required": [
+          "activeTags",
+          "inactiveTags",
+          "topUsedTags",
+          "totalTags",
+          "unusedTags"
+        ],
         "type": "object",
         "properties": {
           "totalTags": {
@@ -8898,16 +9039,14 @@
             "items": {
               "$ref": "#/components/schemas/TagUsageItem"
             },
-            "description": "利用されているタグのトップ５",
-            "nullable": true
+            "description": "利用されているタグのトップ５"
           },
           "unusedTags": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TagUsageItem"
             },
-            "description": "利用されていないタグのリスト",
-            "nullable": true
+            "description": "利用されていないタグのリスト"
           }
         },
         "additionalProperties": false,
@@ -8915,6 +9054,7 @@
       },
       "TagUsageItem": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -8925,9 +9065,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "タグ名",
-            "nullable": true
+            "description": "タグ名"
           }
         },
         "additionalProperties": false,
@@ -8935,30 +9075,12 @@
       },
       "TaskPriority": {
         "enum": [
-          1,
-          2,
-          3,
-          4
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
         ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "UpdateEmailRequest": {
-        "required": [
-          "newEmail"
-        ],
-        "type": "object",
-        "properties": {
-          "newEmail": {
-            "maxLength": 100,
-            "minLength": 1,
-            "type": "string",
-            "description": "新しいメールアドレス",
-            "format": "email"
-          }
-        },
-        "additionalProperties": false,
-        "description": "メールアドレス変更リクエスト"
+        "type": "string"
       },
       "UpdateGenreRequest": {
         "required": [
@@ -8998,13 +9120,37 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ジャンルの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "ジャンル更新リクエスト"
+      },
+      "UpdatePasswordRequest": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "type": "string",
+            "description": "現在のパスワード（確認用）"
+          },
+          "newPassword": {
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*?&]{8,}$",
+            "type": "string",
+            "description": "新しいパスワード"
+          }
+        },
+        "additionalProperties": false,
+        "description": "パスワード変更リクエスト"
       },
       "UpdateProfileRequest": {
         "required": [
@@ -9019,15 +9165,12 @@
             "nullable": true
           },
           "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
+            "$ref": "#/components/schemas/AvatarType"
           },
           "avatarUrl": {
             "maxLength": 200,
             "type": "string",
-            "description": "アバターURL",
-            "format": "uri",
+            "description": "アバターURL（相対パスまたは絶対URLを許可）",
             "nullable": true
           },
           "skillIds": {
@@ -9040,9 +9183,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9072,9 +9215,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "スキルの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9099,9 +9242,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "タグの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9168,9 +9311,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9193,9 +9336,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9239,9 +9382,9 @@
             "nullable": true
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ワークスペースの楽観的ロック用のRowVersion",
-            "format": "byte"
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -9250,6 +9393,7 @@
       "UserListItemResponse": {
         "required": [
           "email",
+          "id",
           "loginId",
           "username"
         ],
@@ -9261,19 +9405,19 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
             "type": "string",
@@ -9312,7 +9456,10 @@
       "UserResponse": {
         "required": [
           "email",
+          "id",
+          "isAdmin",
           "loginId",
+          "roles",
           "rowVersion",
           "username"
         ],
@@ -9324,24 +9471,22 @@
             "format": "int32"
           },
           "loginId": {
+            "minLength": 1,
             "type": "string",
-            "description": "ログインID",
-            "nullable": true
+            "description": "ログインID"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
           },
           "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
+            "$ref": "#/components/schemas/AvatarType"
           },
           "identityIconUrl": {
             "type": "string",
@@ -9353,8 +9498,7 @@
             "items": {
               "$ref": "#/components/schemas/UserRoleResponse"
             },
-            "description": "ユーザーのロール一覧",
-            "nullable": true
+            "description": "ユーザーのロール一覧"
           },
           "skills": {
             "type": "array",
@@ -9378,14 +9522,41 @@
             "format": "date-time"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "ユーザー情報レスポンス"
+      },
+      "UserResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "UserResponseUserStatisticsPagedResponse": {
         "required": [
@@ -9398,8 +9569,7 @@
             "items": {
               "$ref": "#/components/schemas/UserResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -9438,6 +9608,7 @@
       },
       "UserRoleResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -9448,9 +9619,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ロール名",
-            "nullable": true
+            "description": "ロール名"
           }
         },
         "additionalProperties": false,
@@ -9458,6 +9629,7 @@
       },
       "UserSkillResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -9468,15 +9640,23 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "スキル名",
-            "nullable": true
+            "description": "スキル名"
           }
         },
         "additionalProperties": false,
         "description": "ユーザースキル情報レスポンス"
       },
       "UserStatistics": {
+        "required": [
+          "activeUserCount",
+          "inactiveUserCount",
+          "noWorkspaceParticipationCount",
+          "roleCounts",
+          "skillCounts",
+          "workspaceParticipationCount"
+        ],
         "type": "object",
         "properties": {
           "skillCounts": {
@@ -9484,16 +9664,14 @@
             "items": {
               "$ref": "#/components/schemas/SkillUserCountResponse"
             },
-            "description": "スキルごとのユーザー数サマリ",
-            "nullable": true
+            "description": "スキルごとのユーザー数サマリ"
           },
           "roleCounts": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RoleUserCountResponse"
             },
-            "description": "ロールごとのユーザー数サマリ",
-            "nullable": true
+            "description": "ロールごとのユーザー数サマリ"
           },
           "activeUserCount": {
             "type": "integer",
@@ -9521,6 +9699,7 @@
       },
       "WorkspaceDetailResponse": {
         "required": [
+          "id",
           "name",
           "rowVersion"
         ],
@@ -9532,9 +9711,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ワークスペース名",
-            "nullable": true
+            "description": "ワークスペース名"
           },
           "code": {
             "type": "string",
@@ -9606,16 +9785,46 @@
             "description": "アクティブフラグ"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "ワークスペース詳細情報レスポンス"
       },
+      "WorkspaceDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/WorkspaceDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
       "WorkspaceItemAttachmentResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9679,6 +9888,7 @@
       },
       "WorkspaceItemDetailResponse": {
         "required": [
+          "id",
           "rowVersion"
         ],
         "type": "object",
@@ -9804,14 +10014,41 @@
             "format": "int32"
           },
           "rowVersion": {
-            "type": "string",
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
-            "format": "byte",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "ワークスペースアイテム詳細レスポンス"
+      },
+      "WorkspaceItemDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "WorkspaceItemDetailResponsePagedResponse": {
         "required": [
@@ -9824,8 +10061,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -9860,6 +10096,9 @@
         "description": "ページネーション付きレスポンス"
       },
       "WorkspaceItemRelationResponse": {
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9970,6 +10209,7 @@
       },
       "WorkspaceListItemResponse": {
         "required": [
+          "id",
           "name"
         ],
         "type": "object",
@@ -9980,9 +10220,9 @@
             "format": "int32"
           },
           "name": {
+            "minLength": 1,
             "type": "string",
-            "description": "ワークスペース名",
-            "nullable": true
+            "description": "ワークスペース名"
           },
           "code": {
             "type": "string",
@@ -10068,8 +10308,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceListItemResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",
@@ -10126,6 +10365,15 @@
         "description": "ワークスペース操作レスポンス"
       },
       "WorkspaceStatistics": {
+        "required": [
+          "activeWorkspaceCount",
+          "averageMembersPerWorkspace",
+          "inactiveWorkspaceCount",
+          "recentWorkspaceCount",
+          "totalWorkspaceCount",
+          "uniqueMemberCount",
+          "workspaceCountByGenre"
+        ],
         "type": "object",
         "properties": {
           "activeWorkspaceCount": {
@@ -10165,8 +10413,7 @@
             "items": {
               "$ref": "#/components/schemas/GenreCount"
             },
-            "description": "ワークスペースのジャンルごとのワークスペース数",
-            "nullable": true
+            "description": "ワークスペースのジャンルごとのワークスペース数"
           }
         },
         "additionalProperties": false,
@@ -10230,8 +10477,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
             },
-            "description": "データのリスト",
-            "nullable": true
+            "description": "データのリスト"
           },
           "currentPage": {
             "type": "integer",

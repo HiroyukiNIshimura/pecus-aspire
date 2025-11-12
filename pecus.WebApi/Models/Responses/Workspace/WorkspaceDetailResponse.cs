@@ -1,20 +1,23 @@
 using Pecus.Models.Responses.Organization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
 /// ワークスペース詳細情報レスポンス
 /// </summary>
-public class WorkspaceDetailResponse
+public class WorkspaceDetailResponse : IConflictModel
 {
     /// <summary>
     /// ワークスペースID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ワークスペース名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -85,5 +88,7 @@ public class WorkspaceDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
-    public required byte[] RowVersion { get; set; }
+    [Required]
+    public required uint RowVersion { get; set; }
 }
+

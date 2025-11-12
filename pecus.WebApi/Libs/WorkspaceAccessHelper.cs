@@ -25,7 +25,7 @@ public class OrganizationAccessHelper
     public async Task<int?> GetUserOrganizationIdAsync(int userId)
     {
         var user = await _context
-            .Users.Where(u => u.Id == userId)
+            .Users.Where(u => u.Id == userId && u.IsActive)
             .Select(u => new { u.OrganizationId })
             .FirstOrDefaultAsync();
 
@@ -150,6 +150,6 @@ public class OrganizationAccessHelper
     /// <returns>存在する場合はtrue、存在しない場合はfalse</returns>
     private async Task<bool> UserExistsAsync(int userId)
     {
-        return await _context.Users.AnyAsync(u => u.Id == userId);
+        return await _context.Users.AnyAsync(u => u.Id == userId && u.IsActive);
     }
 }

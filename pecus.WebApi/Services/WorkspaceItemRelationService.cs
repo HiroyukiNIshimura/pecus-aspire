@@ -177,19 +177,7 @@ public class WorkspaceItemRelationService
 
         _context.WorkspaceItemRelations.Remove(relation);
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 削除時はIDで最新の状態を取得して返す
-            var latestRelation = await _context.WorkspaceItemRelations.FirstOrDefaultAsync(r => r.Id == relationId);
-            throw new ConcurrencyException<WorkspaceItemRelation>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestRelation
-            );
-        }
+        await _context.SaveChangesAsync();
 
         _logger.LogInformation(
             "ワークスペースアイテム関連を削除しました。RelationId: {RelationId}, FromItemId: {FromItemId}, ToItemId: {ToItemId}",

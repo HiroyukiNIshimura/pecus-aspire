@@ -73,8 +73,7 @@ public class Skill
     public bool IsActive { get; set; } = true;
 
     /// <summary>
-    /// 楽観的ロック用タイムスタンプ
+    /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
     /// </summary>
-    [Timestamp]
-    public byte[]? RowVersion { get; set; }
+    public uint RowVersion { get; set; }
 }

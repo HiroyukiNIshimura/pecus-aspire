@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.DB.Models.Enums;
 
 /// <summary>
 /// クライアント OS の簡易列挙
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<OSPlatform>))]
 public enum OSPlatform
 {
     /// <summary>

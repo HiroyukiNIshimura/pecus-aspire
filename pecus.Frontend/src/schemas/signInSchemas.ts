@@ -9,7 +9,10 @@ export const loginSchema = z.object({
   loginIdentifier: z
     .string()
     .min(1, "ログインIDまたはメールアドレスは必須です。")
-    .max(255, "ログインIDまたはメールアドレスは255文字以内で入力してください。"),
+    .max(
+      255,
+      "ログインIDまたはメールアドレスは255文字以内で入力してください。",
+    ),
   password: z
     .string()
     .min(1, "パスワードは必須です。")

@@ -53,8 +53,7 @@ public class Permission
     public ICollection<Role> Roles { get; set; } = new List<Role>();
 
     /// <summary>
-    /// 楽観的ロック用タイムスタンプ
+    /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
     /// </summary>
-    [Timestamp]
-    public byte[]? RowVersion { get; set; }
+    public uint RowVersion { get; set; }
 }

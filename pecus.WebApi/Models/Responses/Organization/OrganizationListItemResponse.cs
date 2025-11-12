@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Organization;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class OrganizationListItemResponse
     /// <summary>
     /// 組織ID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 組織名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -28,6 +32,7 @@ public class OrganizationListItemResponse
     /// <summary>
     /// 電話番号
     /// </summary>
+    [Required]
     public required string PhoneNumber { get; set; }
 
     /// <summary>
@@ -50,3 +55,4 @@ public class OrganizationListItemResponse
     /// </summary>
     public int UserCount { get; set; }
 }
+

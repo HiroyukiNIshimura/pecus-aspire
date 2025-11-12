@@ -67,7 +67,7 @@ public class GenreService
     /// <summary>
     /// ジャンル詳細を取得
     /// </summary>
-    public async Task<GenreDetailResponse> GetGenreByIdAsync(int id)
+    public async Task<GenreResponse> GetGenreByIdAsync(int id)
     {
         var genre = await _context
             .Genres.Include(g => g.Workspaces)
@@ -78,7 +78,7 @@ public class GenreService
             throw new NotFoundException("ジャンルが見つかりません。");
         }
 
-        return new GenreDetailResponse
+        return new GenreResponse
         {
             Id = genre.Id,
             Name = genre.Name,
@@ -133,6 +133,7 @@ public class GenreService
             CreatedAt = genre.CreatedAt,
             UpdatedAt = genre.UpdatedAt,
             IsActive = genre.IsActive,
+            RowVersion = genre.RowVersion!,
         };
     }
 
@@ -185,12 +186,7 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestGenre = await _context.Genres.FindAsync(id);
-            throw new ConcurrencyException<Genre>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestGenre
-            );
+            await RaiseConflictException(id);
         }
 
         return new GenreResponse
@@ -203,6 +199,7 @@ public class GenreService
             CreatedAt = genre.CreatedAt,
             UpdatedAt = genre.UpdatedAt,
             IsActive = genre.IsActive,
+            RowVersion = genre.RowVersion!,
         };
     }
 
@@ -257,12 +254,7 @@ public class GenreService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestGenre = await _context.Genres.FindAsync(id);
-            throw new ConcurrencyException<Genre>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestGenre
-            );
+            await RaiseConflictException(id);
         }
     }
 
@@ -282,5 +274,30 @@ public class GenreService
         genre.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+    }
+
+    private async Task RaiseConflictException(int id)
+    {
+        // 最新データを取得
+        var latestGenre = await _context.Genres.FindAsync(id);
+        if (latestGenre == null)
+        {
+            throw new NotFoundException("ジャンルが見つかりません。");
+        }
+        throw new ConcurrencyException<GenreResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new GenreResponse
+            {
+                Id = latestGenre.Id,
+                Name = latestGenre.Name,
+                Description = latestGenre.Description,
+                Icon = latestGenre.Icon,
+                DisplayOrder = latestGenre.DisplayOrder,
+                CreatedAt = latestGenre.CreatedAt,
+                UpdatedAt = latestGenre.UpdatedAt,
+                IsActive = latestGenre.IsActive,
+                RowVersion = latestGenre.RowVersion!,
+            }
+        );
     }
 }

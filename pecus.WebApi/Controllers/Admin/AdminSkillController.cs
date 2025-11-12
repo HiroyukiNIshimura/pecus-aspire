@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -15,11 +14,10 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// スキル管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/skills")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminSkillController : ControllerBase
+[Tags("Admin - Skill")]
+public class AdminSkillController : BaseAdminController
 {
     private readonly SkillService _skillService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -30,8 +28,9 @@ public class AdminSkillController : ControllerBase
         SkillService skillService,
         OrganizationAccessHelper accessHelper,
         ILogger<AdminSkillController> logger,
-        PecusConfig config
-    )
+        PecusConfig config,
+        ProfileService profileService
+    ) : base(profileService, logger)
     {
         _skillService = skillService;
         _accessHelper = accessHelper;
@@ -46,15 +45,11 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SkillResponse>> CreateSkill([FromBody] CreateSkillRequest request)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ログインユーザーの情報を取得して組織IDを取得
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             throw new InvalidOperationException("ユーザーが組織に所属していません。");
@@ -71,7 +66,7 @@ public class AdminSkillController : ControllerBase
             );
         }
 
-        var skill = await _skillService.CreateSkillAsync(request, organizationId.Value, me);
+        var skill = await _skillService.CreateSkillAsync(request, organizationId.Value, CurrentUserId);
 
         var response = new SkillResponse
         {
@@ -151,7 +146,7 @@ public class AdminSkillController : ControllerBase
         [FromQuery] GetSkillsRequest request
     )
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             // 認証済みユーザーが組織に所属していない場合、空のリストを返す
@@ -219,7 +214,7 @@ public class AdminSkillController : ControllerBase
     [ProducesResponseType(typeof(SkillResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SkillDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SkillResponse>> UpdateSkill(
         int id,
@@ -238,10 +233,7 @@ public class AdminSkillController : ControllerBase
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var updatedSkill = await _skillService.UpdateSkillAsync(id, request, me);
+        var updatedSkill = await _skillService.UpdateSkillAsync(id, request, CurrentUserId);
 
         var response = new SkillResponse
         {
@@ -271,7 +263,6 @@ public class AdminSkillController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteSkill(int id)
     {
@@ -308,7 +299,7 @@ public class AdminSkillController : ControllerBase
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SkillDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeactivateSkill(int id)
     {
@@ -324,10 +315,7 @@ public class AdminSkillController : ControllerBase
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _skillService.DeactivateSkillAsync(id, me);
+        var result = await _skillService.DeactivateSkillAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("スキルが見つかりません。");
@@ -348,7 +336,7 @@ public class AdminSkillController : ControllerBase
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<SkillDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> ActivateSkill(int id)
     {
@@ -364,10 +352,7 @@ public class AdminSkillController : ControllerBase
             throw new NotFoundException("スキルが見つかりません。");
         }
 
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _skillService.ActivateSkillAsync(id, me);
+        var result = await _skillService.ActivateSkillAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("スキルが見つかりません。");
@@ -385,18 +370,12 @@ public class AdminSkillController : ControllerBase
     /// <summary>
     /// ログインユーザーの組織IDを取得（組織に所属していない場合はnullを返す）
     /// </summary>
-    private async Task<int?> GetUserOrganizationIdAsync()
-    {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.GetUserOrganizationIdAsync(me);
-    }
-
     /// <summary>
     /// ログインユーザーが指定したスキルにアクセス可能かチェック
     /// </summary>
     private async Task<bool> CanAccessSkillAsync(Skill skill)
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         return organizationId.HasValue && organizationId.Value == skill.OrganizationId;
     }
 }

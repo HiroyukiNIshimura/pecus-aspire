@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Common;
 
 /// <summary>
@@ -13,5 +15,7 @@ public class SuccessResponse
     /// <summary>
     /// 成功メッセージ
     /// </summary>
+    [Required]
     public required string Message { get; set; }
 }
+

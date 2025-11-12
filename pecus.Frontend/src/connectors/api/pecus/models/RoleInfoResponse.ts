@@ -9,10 +9,10 @@ export type RoleInfoResponse = {
     /**
      * ロールID
      */
-    id?: number;
+    id: number;
     /**
      * ロール名
      */
-    name: string | null;
+    name: string;
 };
 

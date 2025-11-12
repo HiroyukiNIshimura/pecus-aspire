@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Genre;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class GenreListItemResponse
     /// <summary>
     /// ジャンルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ジャンル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -40,3 +44,4 @@ public class GenreListItemResponse
     /// </summary>
     public bool IsActive { get; set; }
 }
+

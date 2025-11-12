@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.User;
@@ -13,6 +14,40 @@ namespace Pecus.Services;
 /// <summary>
 /// ユーザー管理サービス
 /// </summary>
+/// <remarks>
+/// <para>
+/// <strong>責務</strong>：ユーザーの基本情報・属性の取得・管理を担当
+/// </para>
+/// <list type="bullet">
+/// <item>
+///   <description>
+///     ユーザー基本情報：ユーザーID、ログインID、ユーザー名、メール、アバター等の属性
+///   </description>
+/// </item>
+/// <item>
+///   <description>
+///     ユーザー属性：スキル、ロール、権限、組織、ワークスペース等の関連情報
+///   </description>
+/// </item>
+/// </list>
+/// <para>
+/// <strong>対比：ProfileService との使い分け</strong>
+/// </para>
+/// <list type="bullet">
+/// <item>
+///   <description>
+///     <strong>UserService</strong>：ユーザーの基本情報・属性
+///     <br/>ユーザー名、アバター、スキル、ロール、属性管理
+///   </description>
+/// </item>
+/// <item>
+///   <description>
+///     <strong>ProfileService</strong>：ユーザー設定・セキュリティ関連
+///     <br/>メール変更（セキュリティ）、デバイス管理（セッション）
+///   </description>
+/// </item>
+/// </list>
+/// </remarks>
 public class UserService
 {
     private readonly ApplicationDbContext _context;
@@ -25,43 +60,6 @@ public class UserService
     {
         _context = context;
         _refreshTokenService = refreshTokenService;
-    }
-
-    /// <summary>
-    /// ユーザーを作成
-    /// </summary>
-    public async Task<User> CreateUserAsync(CreateUserRequest request, int? createdByUserId = null)
-    {
-        // 既存ユーザーチェック
-        if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-        {
-            throw new DuplicateException("ユーザー名は既に使用されています。");
-        }
-
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-        {
-            throw new DuplicateException("メールアドレスは既に使用されています。");
-        }
-
-        // ユニークなLoginIdを生成
-        var loginId = await GenerateUniqueLoginIdAsync(_context);
-
-        var user = new User
-        {
-            LoginId = loginId,
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = HashPassword(request.Password),
-            OrganizationId = request.OrganizationId,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUserId = createdByUserId,
-            IsActive = true,
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        return user;
     }
 
     /// <summary>
@@ -116,25 +114,7 @@ public class UserService
        .Users.Include(u => u.Roles)
             .ThenInclude(r => r.Permissions)
        .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-       .FirstOrDefaultAsync(u => u.Id == userId);
-
-    /// <summary>
-    /// ユーザー名で取得(ロールと権限を含む)
-    /// </summary>
-    public async Task<User?> GetUserByUsernameAsync(string username) =>
-        await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.Username == username);
-
-    /// <summary>
-    /// LoginIdで取得(ロールと権限を含む)
-    /// </summary>
-    public async Task<User?> GetUserByLoginIdAsync(string loginId) =>
-        await _context
-            .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-            .FirstOrDefaultAsync(u => u.LoginId == loginId);
+       .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
@@ -244,7 +224,7 @@ public class UserService
         if (request.AvatarType != null)
         {
             // AvatarType="user-avatar"の場合、AvatarUrlが必須
-            if (request.AvatarType == "user-avatar" && string.IsNullOrWhiteSpace(request.AvatarUrl))
+            if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
             {
                 throw new InvalidOperationException(
                     "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
@@ -269,11 +249,7 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            throw new ConcurrencyException<User>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestUser
-            );
+            await RaiseConflictException(userId);
         }
 
         return user;
@@ -284,7 +260,7 @@ public class UserService
     /// </summary>
     public async Task<User> UpdateUserAvatarAsync(
         int userId,
-        string avatarType,
+        AvatarType avatarType,
         string avatarUrl,
         int updatedByUserId
     )
@@ -306,11 +282,7 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            throw new ConcurrencyException<User>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestUser
-            );
+            await RaiseConflictException(userId);
         }
 
         return user;
@@ -337,11 +309,7 @@ public class UserService
         }
         catch (DbUpdateConcurrencyException)
         {
-            var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            throw new ConcurrencyException<User>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestUser
-            );
+            await RaiseConflictException(userId);
         }
 
         return true;
@@ -365,42 +333,75 @@ public class UserService
 
     /// <summary>
     /// パスワードなしでユーザーを作成（管理者用）
+    /// ロール情報も同時に登録します
     /// </summary>
     public async Task<User> CreateUserWithoutPasswordAsync(
         CreateUserWithoutPasswordRequest request,
         int? createdByUserId = null
     )
     {
-        // メールアドレスの重複チェックのみ
+        // メールアドレスの重複チェック
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
         {
             throw new DuplicateException("メールアドレスは既に使用されています。");
         }
 
-        // ユニークなLoginIdを生成
-        var loginId = await GenerateUniqueLoginIdAsync(_context);
-
-        // パスワード設定トークンを生成（24時間有効）
-        var token = GeneratePasswordResetToken();
-        var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
-
-        var user = new User
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            LoginId = loginId,
-            Username = request.Username,
-            Email = request.Email,
-            PasswordHash = "", // パスワードは未設定
-            PasswordResetToken = token,
-            PasswordResetTokenExpiresAt = tokenExpiresAt,
-            CreatedAt = DateTime.UtcNow,
-            CreatedByUserId = createdByUserId,
-            IsActive = true,
-        };
+            // ユニークなLoginIdを生成
+            var loginId = await GenerateUniqueLoginIdAsync(_context);
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+            // パスワード設定トークンを生成（24時間有効）
+            var token = GeneratePasswordResetToken();
+            var tokenExpiresAt = DateTime.UtcNow.AddHours(24);
 
-        return user;
+            var user = new User
+            {
+                LoginId = loginId,
+                Username = request.Username,
+                Email = request.Email,
+                PasswordHash = "", // パスワードは未設定
+                PasswordResetToken = token,
+                PasswordResetTokenExpiresAt = tokenExpiresAt,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = createdByUserId,
+                IsActive = true,
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // ロールを設定（指定されている場合）
+            if (request.Roles != null && request.Roles.Any())
+            {
+                // 指定されたロールIDが実際に存在するか確認
+                var roles = await _context.Roles
+                    .Where(r => request.Roles.Contains(r.Id))
+                    .ToListAsync();
+
+                if (roles.Count != request.Roles.Count)
+                {
+                    throw new InvalidOperationException("指定されたロールIDの一部が無効です。");
+                }
+
+                // ロールを追加
+                foreach (var role in roles)
+                {
+                    user.Roles.Add(role);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return user;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>
@@ -561,7 +562,7 @@ public class UserService
     public async Task<bool> SetUserSkillsAsync(
         int userId,
         List<int>? skillIds,
-        byte[]? userRowVersion = null,
+        uint? userRowVersion = null,
         int? updatedByUserId = null
     )
     {
@@ -578,13 +579,9 @@ public class UserService
             }
 
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
-            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
+            if (userRowVersion != null && user.RowVersion != userRowVersion)
             {
-                var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                throw new ConcurrencyException<User>(
-                    "スキルは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
-                    latestUser
-                );
+                await RaiseConflictException(userId);
             }
 
             // 既存のスキルをすべて削除
@@ -623,76 +620,19 @@ public class UserService
     }
 
     /// <summary>
-    /// ユーザープロフィールを更新（基本情報 + スキル）
-    /// </summary>
-    public async Task<User?> UpdateProfileAsync(int userId, UpdateProfileRequest request, int updatedByUserId)
-    {
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            // ユーザーを取得して RowVersion をチェック
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new NotFoundException("ユーザーが見つかりません。");
-            }
-
-            // 基本プロフィール情報の更新
-            var updateUserRequest = new UpdateUserRequest
-            {
-                Username = request.Username,
-                AvatarType = request.AvatarType,
-                AvatarUrl = request.AvatarUrl
-            };
-
-            var updatedUser = await UpdateUserAsync(userId, updateUserRequest, updatedByUserId);
-            if (updatedUser == null)
-            {
-                return null;
-            }
-
-            // スキルの更新（指定されている場合のみ）
-            if (request.SkillIds != null)
-            {
-                // 既存のスキルをすべて削除
-                var existingUserSkills = await _context.UserSkills
-                    .Where(us => us.UserId == userId)
-                    .ToListAsync();
-                _context.UserSkills.RemoveRange(existingUserSkills);
-                await _context.SaveChangesAsync();
-
-                // 新しいスキルを追加
-                foreach (var skillId in request.SkillIds)
-                {
-                    var userSkill = new UserSkill
-                    {
-                        UserId = userId,
-                        SkillId = skillId,
-                        AddedAt = DateTime.UtcNow,
-                        AddedByUserId = updatedByUserId,
-                    };
-                    _context.UserSkills.Add(userSkill);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-
-            await transaction.CommitAsync();
-            return updatedUser;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    /// <summary>
     /// 組織のユーザー統計情報を取得
     /// </summary>
     public async Task<UserStatistics> GetUserStatisticsByOrganizationAsync(int organizationId)
     {
-        var statistics = new UserStatistics();
+        var statistics = new UserStatistics
+        {
+            ActiveUserCount = 0,
+            InactiveUserCount = 0,
+            SkillCounts = new List<SkillUserCountResponse>(),
+            RoleCounts = new List<RoleUserCountResponse>(),
+            WorkspaceParticipationCount = 0,
+            NoWorkspaceParticipationCount = 0
+        };
 
         // DbContextは並列実行に対応していないため、逐次実行に変更
         // アクティブなユーザー数
@@ -767,7 +707,7 @@ public class UserService
     public async Task<bool> SetUserRolesAsync(
         int userId,
         List<int>? roleIds,
-        byte[]? userRowVersion = null,
+        uint? userRowVersion = null,
         int? updatedByUserId = null
     )
     {
@@ -786,13 +726,9 @@ public class UserService
             }
 
             // 楽観的ロック：UserRowVersionが指定されている場合は競合チェック
-            if (userRowVersion != null && (user.RowVersion == null || !user.RowVersion.SequenceEqual(userRowVersion)))
+            if (userRowVersion != null && user.RowVersion != userRowVersion)
             {
-                var latestUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                throw new ConcurrencyException<User>(
-                    "ロールは別のユーザーにより更新されています。ページをリロードして再度お試しください。",
-                    latestUser
-                );
+                await RaiseConflictException(userId);
             }
 
             // 現在のロールをクリア
@@ -831,5 +767,32 @@ public class UserService
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    private async Task RaiseConflictException(int userId)
+    {
+        var latestUser = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == userId);
+        if (latestUser == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+        throw new ConcurrencyException<UserResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new UserResponse
+            {
+                Id = latestUser.Id,
+                LoginId = latestUser.LoginId,
+                Username = latestUser.Username,
+                Email = latestUser.Email,
+                Roles = latestUser.Roles.Select(r => new UserRoleResponse
+                {
+                    Id = r.Id,
+                    Name = r.Name
+                }).ToList(),
+                IsAdmin = latestUser.Roles.Any(r => r.Name == "Admin"),
+                CreatedAt = latestUser.CreatedAt,
+                RowVersion = latestUser.RowVersion!
+            }
+        );
     }
 }

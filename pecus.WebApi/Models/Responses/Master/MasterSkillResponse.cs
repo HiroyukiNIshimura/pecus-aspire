@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Master;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class MasterSkillResponse
     /// <summary>
     /// スキルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// スキル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>

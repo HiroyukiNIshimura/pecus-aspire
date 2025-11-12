@@ -9,29 +9,24 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/tags")]
 [Produces("application/json")]
-public class TagController : ControllerBase
+[Tags("Tag")]
+public class TagController : BaseSecureController
 {
     private readonly TagService _tagService;
-    private readonly UserService _userService;
     private readonly ILogger<TagController> _logger;
 
     /// <summary>
     /// コンストラクタ
     /// </summary>
-    /// <param name="tagService"></param>
-    /// <param name="userService"></param>
-    /// <param name="logger"></param>
     public TagController(
         TagService tagService,
-        UserService userService,
+        ProfileService profileService,
         ILogger<TagController> logger
-    )
+    ) : base(profileService, logger)
     {
         _tagService = tagService;
-        _userService = userService;
         _logger = logger;
     }
 
@@ -45,16 +40,13 @@ public class TagController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        // ログイン中のユーザーIDと組織IDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user?.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("組織に所属していません。");
         }
 
-        var tag = await _tagService.CreateTagAsync(request, user.OrganizationId.Value, me);
+        var tag = await _tagService.CreateTagAsync(request, CurrentUser.OrganizationId.Value, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -85,16 +77,13 @@ public class TagController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<TagDetailResponse>>> GetTags()
     {
-        // ログイン中のユーザーの組織IDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user?.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("組織に所属していません。");
         }
 
-        var tags = await _tagService.GetTagsByOrganizationAsync(user.OrganizationId.Value);
+        var tags = await _tagService.GetTagsByOrganizationAsync(CurrentUser.OrganizationId.Value);
 
         var response = tags
             .Select(tag => new TagDetailResponse

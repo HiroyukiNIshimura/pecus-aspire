@@ -9,7 +9,7 @@ export type TagInfoResponse = {
     /**
      * タグID
      */
-    id?: number;
+    id: number;
     /**
      * タグ名
      */

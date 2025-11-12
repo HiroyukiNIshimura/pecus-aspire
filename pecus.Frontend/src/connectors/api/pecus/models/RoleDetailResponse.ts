@@ -10,11 +10,11 @@ export type RoleDetailResponse = {
     /**
      * ロールID
      */
-    id?: number;
+    id: number;
     /**
      * ロール名
      */
-    name: string | null;
+    name: string;
     /**
      * ロールの説明
      */
@@ -30,6 +30,6 @@ export type RoleDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: number;
 };
 

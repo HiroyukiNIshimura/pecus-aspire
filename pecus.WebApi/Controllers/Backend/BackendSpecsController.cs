@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
 using Pecus.Models.Responses.Common;
+using Pecus.Services;
 using Swashbuckle.AspNetCore.Swagger;
 using System.Text.Json;
 
@@ -11,22 +11,21 @@ namespace Pecus.Controllers.Backend;
 /// <summary>
 /// OpenAPI仕様書管理コントローラー（バックエンド管理用）
 /// </summary>
-[ApiController]
 [Route("api/backend/specs")]
 [Produces("application/json")]
-[Authorize(Roles = "Backend")]
-public class BackendSpecsController : ControllerBase
+[Tags("Backend - Specs")]
+public class BackendSpecsController : BaseBackendController
 {
     private readonly ISwaggerProvider _swaggerProvider;
-    private readonly ILogger<BackendSpecsController> _logger;
 
     public BackendSpecsController(
         ISwaggerProvider swaggerProvider,
+        ProfileService profileService,
         ILogger<BackendSpecsController> logger
     )
+        : base(profileService, logger)
     {
         _swaggerProvider = swaggerProvider;
-        _logger = logger;
     }
 
     /// <summary>

@@ -9,11 +9,11 @@ export type OrganizationInfoResponse = {
     /**
      * 組織ID
      */
-    id?: number;
+    id: number;
     /**
      * 組織名
      */
-    name: string | null;
+    name: string;
     /**
      * 組織コード
      */

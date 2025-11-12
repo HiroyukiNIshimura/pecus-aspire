@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { z } from "zod";
-import { $ZodIssueBase } from "zod/v4/core";
+import type { $ZodIssueBase } from "zod/v4/core";
 
 interface FieldError {
   [fieldName: string]: string[];
@@ -49,7 +49,9 @@ export function useFormValidation<T extends Record<string, unknown>>({
           });
           return { isValid: true, errors: [] };
         } else {
-          const errors = result.error.issues.map((issue: $ZodIssueBase) => issue.message);
+          const errors = result.error.issues.map(
+            (issue: $ZodIssueBase) => issue.message,
+          );
           setFieldErrors((prev) => ({
             ...prev,
             [fieldName]: errors,
@@ -95,7 +97,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
             // boolean 型フィールドの場合、未設定なら false を設定
             if (
               fieldSchema instanceof z.ZodBoolean ||
-              (fieldSchema._def?.innerType instanceof z.ZodBoolean)
+              fieldSchema._def?.innerType instanceof z.ZodBoolean
             ) {
               if (!(key in data)) {
                 data[key] = false;

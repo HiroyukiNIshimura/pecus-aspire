@@ -1,12 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GridIcon from "@mui/icons-material/GridView";
-import TaskIcon from "@mui/icons-material/Task";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import HistoryIcon from "@mui/icons-material/History";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import TaskIcon from "@mui/icons-material/Task";
+import { usePathname } from "next/navigation";
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;

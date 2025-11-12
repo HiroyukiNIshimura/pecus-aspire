@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.DB.Models.Enums;
 
 /// <summary>
 /// タスクの優先度を表す列挙型
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TaskPriority>))]
 public enum TaskPriority
 {
     /// <summary>

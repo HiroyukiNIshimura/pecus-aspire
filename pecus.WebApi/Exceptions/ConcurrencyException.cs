@@ -4,7 +4,7 @@ namespace Pecus.Exceptions;
 /// DB競合エラー（楽観的ロック）
 /// </summary>
 public class ConcurrencyException<T> : Exception, IConcurrencyException
-    where T : class
+    where T : IConflictModel
 {
     /// <summary>
     /// 競合したモデル（最新のDBの値）

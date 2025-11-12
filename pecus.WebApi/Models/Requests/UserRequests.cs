@@ -25,17 +25,6 @@ public class CreateUserRequest
     public required string Email { get; set; }
 
     /// <summary>
-    /// パスワード
-    /// </summary>
-    [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
-    )]
-    public required string Password { get; set; }
-
-    /// <summary>
     /// 組織ID
     /// </summary>
     public int? OrganizationId { get; set; }
@@ -60,6 +49,13 @@ public class CreateUserWithoutPasswordRequest
     [EmailAddress(ErrorMessage = "有効なメールアドレス形式で入力してください。")]
     [MaxLength(100, ErrorMessage = "メールアドレスは100文字以内で入力してください。")]
     public required string Email { get; set; }
+
+    /// <summary>
+    /// ロールIDのリスト。既存のすべてのロールを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのロールを削除します。
+    /// </summary>
+    [Required(ErrorMessage = "ロールIDリストは必須です。")]
+    public required List<int> Roles { get; set; }
 }
 
 /// <summary>
@@ -77,10 +73,10 @@ public class SetUserPasswordRequest
     /// 新しいパスワード
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
     )]
     public required string Password { get; set; }
 
@@ -119,10 +115,10 @@ public class ResetPasswordRequest
     /// 新しいパスワード
     /// </summary>
     [Required(ErrorMessage = "パスワードは必須です。")]
-    [StringLength(
-        100,
-        MinimumLength = 6,
-        ErrorMessage = "パスワードは6文字以上100文字以内で入力してください。"
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
     )]
     public required string Password { get; set; }
 }
@@ -141,8 +137,9 @@ public class UpdateUserRequest
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    [AvatarType]
-    public string? AvatarType { get; set; }
+
+    [EnumDataType(typeof(AvatarType), ErrorMessage = "有効なアバタータイプを指定してください。")]
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL
@@ -171,14 +168,13 @@ public class UpdateProfileRequest
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    [AvatarType]
-    public string? AvatarType { get; set; }
+    [EnumDataType(typeof(AvatarType), ErrorMessage = "有効なアバタータイプを指定してください。")]
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL
+    /// アバターURL（相対パスまたは絶対URLを許可）
     /// </summary>
     [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
-    [Url(ErrorMessage = "有効なURLを指定してください。")]
     public string? AvatarUrl { get; set; }
 
     /// <summary>
@@ -191,7 +187,7 @@ public class UpdateProfileRequest
     /// ユーザーの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]
-    public required byte[] RowVersion { get; set; }
+    public required uint RowVersion { get; set; }
 
 }
 
@@ -287,11 +283,67 @@ public class SetUserRolesRequest
     /// 空のリストまたはnullの場合はすべてのロールを削除します。
     /// </summary>
     [Required(ErrorMessage = "ロールIDリストは必須です。")]
+    [IntListRange(1, 5)]
     public required List<int> Roles { get; set; }
 
     /// <summary>
     /// ユーザーの楽観的ロック用RowVersion。
     /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
     /// </summary>
-    public byte[]? UserRowVersion { get; set; }
+    public uint? UserRowVersion { get; set; }
 }
+
+/// <summary>
+/// パスワード変更リクエスト
+/// </summary>
+public class UpdatePasswordRequest
+{
+    /// <summary>
+    /// 現在のパスワード（確認用）
+    /// </summary>
+    [Required(ErrorMessage = "現在のパスワードは必須です。")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    public required string CurrentPassword { get; set; }
+
+    /// <summary>
+    /// 新しいパスワード
+    /// </summary>
+    [Required(ErrorMessage = "新しいパスワードは必須です。")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "パスワードは8〜100文字で入力してください。")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$",
+        ErrorMessage = "パスワードは大文字・小文字・数字を含む8文字以上で設定してください。"
+    )]
+    public required string NewPassword { get; set; }
+}
+
+/// <summary>
+/// ユーザーのアクティブ状態設定リクエスト
+/// </summary>
+public class SetUserActiveStatusRequest
+{
+    /// <summary>
+    /// アクティブ状態（true: 有効, false: 無効）
+    /// </summary>
+    public required bool IsActive { get; set; }
+}
+
+/// <summary>
+/// ユーザーのスキル設定リクエスト
+/// </summary>
+public class SetUserSkillsRequest
+{
+    /// <summary>
+    /// スキルIDのリスト。既存のすべてのスキルを置き換えます。
+    /// 空のリストまたはnullの場合はすべてのスキルを削除します。
+    /// </summary>
+    [Required(ErrorMessage = "スキルIDのリストは必須です。")]
+    public required List<int> SkillIds { get; set; }
+
+    /// <summary>
+    /// ユーザーの楽観的ロック用RowVersion。
+    /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
+    /// </summary>
+    public uint? UserRowVersion { get; set; }
+}
+

@@ -2,9 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export enum TaskPriority {
-    '_1' = 1,
-    '_2' = 2,
-    '_3' = 3,
-    '_4' = 4,
-}
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';

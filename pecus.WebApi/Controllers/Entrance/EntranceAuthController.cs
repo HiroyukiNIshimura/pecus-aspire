@@ -20,6 +20,7 @@ namespace Pecus.Controllers.Entrance;
 [Route("api/entrance/auth")]
 [Produces("application/json")]
 [AllowAnonymous]
+[Tags("Entrance - Auth")]
 public class EntranceAuthController : ControllerBase
 {
     private readonly UserService _userService;

@@ -13,7 +13,7 @@ export type ErrorResponse = {
     /**
      * エラーメッセージ
      */
-    message: string | null;
+    message: string;
     /**
      * エラー詳細（オプション）
      */

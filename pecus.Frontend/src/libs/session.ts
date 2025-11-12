@@ -20,9 +20,13 @@ export class SessionManager {
   static async getSession(): Promise<SessionData | null> {
     try {
       const cookieStore = await cookies();
-      const accessToken = cookieStore.get(this.ACCESS_TOKEN_KEY)?.value;
-      const refreshToken = cookieStore.get(this.REFRESH_TOKEN_KEY)?.value;
-      const userStr = cookieStore.get(this.USER_KEY)?.value;
+      const accessToken = cookieStore.get(
+        SessionManager.ACCESS_TOKEN_KEY,
+      )?.value;
+      const refreshToken = cookieStore.get(
+        SessionManager.REFRESH_TOKEN_KEY,
+      )?.value;
+      const userStr = cookieStore.get(SessionManager.USER_KEY)?.value;
 
       if (!accessToken || !refreshToken || !userStr) {
         console.log("Server  Session incomplete:", {
@@ -64,9 +68,17 @@ export class SessionManager {
         secure: process.env.NODE_ENV === "production",
       };
 
-      cookieStore.set(this.ACCESS_TOKEN_KEY, data.accessToken, cookieOptions);
-      cookieStore.set(this.REFRESH_TOKEN_KEY, data.refreshToken, cookieOptions);
-      cookieStore.set(this.USER_KEY, userString, cookieOptions);
+      cookieStore.set(
+        SessionManager.ACCESS_TOKEN_KEY,
+        data.accessToken,
+        cookieOptions,
+      );
+      cookieStore.set(
+        SessionManager.REFRESH_TOKEN_KEY,
+        data.refreshToken,
+        cookieOptions,
+      );
+      cookieStore.set(SessionManager.USER_KEY, userString, cookieOptions);
 
       console.log("Server  Session saved successfully");
     } catch (error) {
@@ -79,9 +91,9 @@ export class SessionManager {
   static async clearSession(): Promise<void> {
     try {
       const cookieStore = await cookies();
-      cookieStore.delete(this.ACCESS_TOKEN_KEY);
-      cookieStore.delete(this.REFRESH_TOKEN_KEY);
-      cookieStore.delete(this.USER_KEY);
+      cookieStore.delete(SessionManager.ACCESS_TOKEN_KEY);
+      cookieStore.delete(SessionManager.REFRESH_TOKEN_KEY);
+      cookieStore.delete(SessionManager.USER_KEY);
       console.log("Server  Session cleared");
     } catch (error) {
       console.error("Server  Failed to clear session:", error);
@@ -91,13 +103,13 @@ export class SessionManager {
 
   // アクセストークン取得（SSR専用）
   static async getAccessToken(): Promise<string | null> {
-    const session = await this.getSession();
+    const session = await SessionManager.getSession();
     return session?.accessToken ?? null;
   }
 
   // リフレッシュトークン取得（SSR専用）
   static async getRefreshToken(): Promise<string | null> {
-    const session = await this.getSession();
+    const session = await SessionManager.getSession();
     return session?.refreshToken ?? null;
   }
 }

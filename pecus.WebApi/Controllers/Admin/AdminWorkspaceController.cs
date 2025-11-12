@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -15,11 +14,10 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// ワークスペース管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/workspaces")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminWorkspaceController : ControllerBase
+[Tags("Admin - Workspace")]
+public class AdminWorkspaceController : BaseAdminController
 {
     private readonly WorkspaceService _workspaceService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -30,8 +28,9 @@ public class AdminWorkspaceController : ControllerBase
         WorkspaceService workspaceService,
         OrganizationAccessHelper accessHelper,
         ILogger<AdminWorkspaceController> logger,
-        PecusConfig config
-    )
+        PecusConfig config,
+        ProfileService profileService
+    ) : base(profileService, logger)
     {
         _workspaceService = workspaceService;
         _accessHelper = accessHelper;
@@ -51,11 +50,8 @@ public class AdminWorkspaceController : ControllerBase
         [FromBody] CreateWorkspaceRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ログインユーザーの情報を取得して組織IDを取得
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             throw new InvalidOperationException("ユーザーが組織に所属していません。");
@@ -64,7 +60,7 @@ public class AdminWorkspaceController : ControllerBase
         var workspace = await _workspaceService.CreateWorkspaceAsync(
             request,
             organizationId.Value,
-            me
+            CurrentUserId
         );
 
         var response = new WorkspaceResponse
@@ -101,7 +97,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceDetailResponse>> GetWorkspace(int id)
     {
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -165,7 +161,7 @@ public class AdminWorkspaceController : ControllerBase
         [FromQuery] GetWorkspacesRequest request
     )
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             // 認証済みユーザーが組織に所属していない場合、空のリストを返す
@@ -175,7 +171,14 @@ public class AdminWorkspaceController : ControllerBase
                     totalCount: 0,
                     page: 1,
                     pageSize: _config.Pagination.DefaultPageSize,
-                    summary: new WorkspaceStatistics()
+                    summary: new WorkspaceStatistics
+                    {
+                        ActiveWorkspaceCount = 0,
+                        InactiveWorkspaceCount = 0,
+                        UniqueMemberCount = 0,
+                        RecentWorkspaceCount = 0,
+                        WorkspaceCountByGenre = new List<GenreCount>()
+                    }
                 )
             );
         }
@@ -247,7 +250,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceResponse>> UpdateWorkspace(
         int id,
@@ -255,15 +258,13 @@ public class AdminWorkspaceController : ControllerBase
     )
     {
         // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var (hasAccess, existingWorkspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, existingWorkspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || existingWorkspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, me);
+        var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, CurrentUserId);
 
         var response = new WorkspaceResponse
         {
@@ -299,7 +300,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteWorkspace(int id)
     {
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -326,20 +327,17 @@ public class AdminWorkspaceController : ControllerBase
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeactivateWorkspace(int id)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var result = await _workspaceService.DeactivateWorkspaceAsync(id, me);
+        var result = await _workspaceService.DeactivateWorkspaceAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -360,20 +358,17 @@ public class AdminWorkspaceController : ControllerBase
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> ActivateWorkspace(int id)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var result = await _workspaceService.ActivateWorkspaceAsync(id, me);
+        var result = await _workspaceService.ActivateWorkspaceAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -401,10 +396,7 @@ public class AdminWorkspaceController : ControllerBase
         [FromBody] AddUserToWorkspaceRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -413,7 +405,7 @@ public class AdminWorkspaceController : ControllerBase
         var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
             id,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new WorkspaceUserResponse
@@ -444,7 +436,7 @@ public class AdminWorkspaceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> RemoveUserFromWorkspace(int id, int userId)
     {
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -481,7 +473,7 @@ public class AdminWorkspaceController : ControllerBase
         [FromQuery] GetWorkspaceMembersRequest request
     )
     {
-        var (hasAccess, workspace) = await CheckWorkspaceAccessAsync(id);
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
         {
             // 空のリストを返す（ワークスペースが存在しない or アクセス権がない）
@@ -528,25 +520,5 @@ public class AdminWorkspaceController : ControllerBase
             summary: null
         );
         return TypedResults.Ok(response);
-    }
-
-    /// <summary>
-    /// ログインユーザーの組織IDを取得（組織に所属していない場合はnullを返す）
-    /// </summary>
-    private async Task<int?> GetUserOrganizationIdAsync()
-    {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.GetUserOrganizationIdAsync(me);
-    }
-
-    /// <summary>
-    /// ログインユーザーが指定したワークスペースにアクセス可能かチェック
-    /// </summary>
-    private async Task<(bool hasAccess, Workspace? workspace)> CheckWorkspaceAccessAsync(
-        int workspaceId
-    )
-    {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.CheckWorkspaceAccessAsync(me, workspaceId);
     }
 }

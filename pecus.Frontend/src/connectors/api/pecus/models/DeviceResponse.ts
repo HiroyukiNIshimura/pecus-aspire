@@ -9,7 +9,7 @@ export type DeviceResponse = {
     /**
      * 端末ID
      */
-    id?: number;
+    id: number;
     /**
      * 表示用短ID
      */

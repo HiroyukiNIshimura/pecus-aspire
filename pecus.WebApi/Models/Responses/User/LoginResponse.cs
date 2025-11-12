@@ -1,4 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Responses.Role;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.User;
 
@@ -10,6 +12,7 @@ public class LoginResponse
     /// <summary>
     /// JWTアクセストークン
     /// </summary>
+    [Required]
     public required string AccessToken { get; set; }
 
     /// <summary>
@@ -35,22 +38,25 @@ public class LoginResponse
     /// <summary>
     /// ログインID
     /// </summary>
+    [Required]
     public required string LoginId { get; set; }
 
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [Required]
     public required string Username { get; set; }
 
     /// <summary>
     /// メールアドレス
     /// </summary>
+    [Required]
     public required string Email { get; set; }
 
     /// <summary>
     /// アバタータイプ
     /// </summary>
-    public string AvatarType { get; set; } = "auto-generated";
+    public AvatarType? AvatarType { get; set; }
 
     /// <summary>
     /// アイデンティティアイコンURL
@@ -72,3 +78,4 @@ public class LoginResponse
     /// </summary>
     public DateTime? RefreshExpiresAt { get; set; }
 }
+

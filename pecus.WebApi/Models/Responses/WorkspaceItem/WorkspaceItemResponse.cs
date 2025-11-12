@@ -20,3 +20,4 @@ public class WorkspaceItemResponse
     /// </summary>
     public WorkspaceItemDetailResponse? WorkspaceItem { get; set; }
 }
+

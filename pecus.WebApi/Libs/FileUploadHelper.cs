@@ -1,3 +1,4 @@
+using Pecus.Models.Requests;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -92,12 +93,4 @@ public static class FileUploadHelper
         }
     }
 
-    /// <summary>
-    /// ファイルの種類が有効かチェック
-    /// </summary>
-    public static bool IsValidFileType(string fileType)
-    {
-        var validTypes = new[] { "avatar", "genre" };
-        return validTypes.Contains(fileType.ToLowerInvariant());
-    }
 }

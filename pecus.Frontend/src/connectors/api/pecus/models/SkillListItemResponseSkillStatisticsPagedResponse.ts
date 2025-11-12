@@ -11,7 +11,7 @@ export type SkillListItemResponseSkillStatisticsPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<SkillListItemResponse> | null;
+    data: Array<SkillListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

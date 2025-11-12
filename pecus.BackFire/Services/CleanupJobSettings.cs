@@ -56,3 +56,29 @@ public class DeviceCleanupSettings
     /// </summary>
     public int Minute { get; set; } = 30;
 }
+
+/// <summary>
+/// メールアドレス変更トークンクリーンアップの設定
+/// </summary>
+public class EmailChangeTokenCleanupSettings
+{
+    /// <summary>
+    /// バッチサイズ
+    /// </summary>
+    public int BatchSize { get; set; } = 1000;
+
+    /// <summary>
+    /// 使用後に残す日数
+    /// </summary>
+    public int OlderThanDays { get; set; } = 7;
+
+    /// <summary>
+    /// 実行時刻の時（0-23）
+    /// </summary>
+    public int Hour { get; set; } = 3;
+
+    /// <summary>
+    /// 実行時刻の分（0-59）
+    /// </summary>
+    public int Minute { get; set; } = 0;
+}

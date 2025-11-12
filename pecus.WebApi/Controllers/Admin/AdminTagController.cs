@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -15,11 +14,10 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// タグ管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/tags")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminTagController : ControllerBase
+[Tags("Admin - Tag")]
+public class AdminTagController : BaseAdminController
 {
     private readonly TagService _tagService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -33,12 +31,14 @@ public class AdminTagController : ControllerBase
     /// <param name="accessHelper"></param>
     /// <param name="logger"></param>
     /// <param name="config"></param>
+    /// <param name="profileService"></param>
     public AdminTagController(
         TagService tagService,
         OrganizationAccessHelper accessHelper,
         ILogger<AdminTagController> logger,
-        PecusConfig config
-    )
+        PecusConfig config,
+        ProfileService profileService
+    ) : base(profileService, logger)
     {
         _tagService = tagService;
         _accessHelper = accessHelper;
@@ -53,13 +53,10 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(TagResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> CreateTag([FromBody] CreateTagRequest request)
     {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(me);
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         if (!organizationId.HasValue)
         {
             throw new InvalidOperationException("ユーザーが組織に所属していません。");
@@ -74,7 +71,7 @@ public class AdminTagController : ControllerBase
             );
         }
 
-        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, me);
+        var tag = await _tagService.CreateTagAsync(request, organizationId.Value, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -145,7 +142,7 @@ public class AdminTagController : ControllerBase
         [FromQuery] GetTagsRequest request
     )
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
 
         // 組織IDが取得できない場合は空のリストを返す（GraphQL的なnull-safety）
         if (!organizationId.HasValue)
@@ -205,7 +202,7 @@ public class AdminTagController : ControllerBase
     [ProducesResponseType(typeof(TagResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<TagDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<TagResponse>> UpdateTag(int id, [FromBody] UpdateTagRequest request)
     {
@@ -215,9 +212,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var updatedTag = await _tagService.UpdateTagAsync(id, request, me);
+        var updatedTag = await _tagService.UpdateTagAsync(id, request, CurrentUserId);
 
         var response = new TagResponse
         {
@@ -246,7 +241,6 @@ public class AdminTagController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteTag(int id)
     {
@@ -277,7 +271,7 @@ public class AdminTagController : ControllerBase
     [HttpPatch("{id}/deactivate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<TagDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeactivateTag(int id)
     {
@@ -287,9 +281,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _tagService.DeactivateTagAsync(id, me);
+        var result = await _tagService.DeactivateTagAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -310,7 +302,7 @@ public class AdminTagController : ControllerBase
     [HttpPatch("{id}/activate")]
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<TagDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> ActivateTag(int id)
     {
@@ -320,9 +312,7 @@ public class AdminTagController : ControllerBase
             throw new NotFoundException("タグが見つかりません。");
         }
 
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        var result = await _tagService.ActivateTagAsync(id, me);
+        var result = await _tagService.ActivateTagAsync(id, CurrentUserId);
         if (!result)
         {
             throw new NotFoundException("タグが見つかりません。");
@@ -340,18 +330,12 @@ public class AdminTagController : ControllerBase
     /// <summary>
     /// ログインユーザーの組織IDを取得
     /// </summary>
-    private async Task<int?> GetUserOrganizationIdAsync()
-    {
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        return await _accessHelper.GetUserOrganizationIdAsync(me);
-    }
-
     /// <summary>
     /// ログインユーザーが指定したタグにアクセス可能かチェック
     /// </summary>
     private async Task<bool> CanAccessTagAsync(Tag tag)
     {
-        var organizationId = await GetUserOrganizationIdAsync();
+        var organizationId = await _accessHelper.GetUserOrganizationIdAsync(CurrentUserId);
         return organizationId.HasValue && organizationId.Value == tag.OrganizationId;
     }
 }

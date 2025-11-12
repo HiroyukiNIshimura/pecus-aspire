@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.WorkspaceItem;
 
 /// <summary>
@@ -8,10 +10,12 @@ public class TagInfoResponse
     /// <summary>
     /// タグID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// タグ名
     /// </summary>
     public string Name { get; set; } = string.Empty;
 }
+

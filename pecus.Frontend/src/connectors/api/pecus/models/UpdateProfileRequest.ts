@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AvatarType } from './AvatarType';
 /**
  * プロフィール更新リクエスト
  */
@@ -10,12 +11,9 @@ export type UpdateProfileRequest = {
      * ユーザー名
      */
     username?: string | null;
+    avatarType?: AvatarType;
     /**
-     * アバタータイプ
-     */
-    avatarType?: string | null;
-    /**
-     * アバターURL
+     * アバターURL（相対パスまたは絶対URLを許可）
      */
     avatarUrl?: string | null;
     /**
@@ -25,6 +23,6 @@ export type UpdateProfileRequest = {
     /**
      * ユーザーの楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

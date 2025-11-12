@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { requestPasswordResetAction } from "@/actions/password";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { requestPasswordResetSchema } from "@/schemas/signInSchemas";
-import { requestPasswordResetAction } from "@/actions/password";
-import Link from "next/link";
 
 export default function ForgotPasswordFormClient() {
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -62,7 +62,12 @@ export default function ForgotPasswordFormClient() {
           </div>
         )}
 
-        <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="w-full"
+          noValidate
+        >
           {/* メールアドレス入力フィールド */}
           <div className="form-control w-full mb-4">
             <label htmlFor="email" className="label">

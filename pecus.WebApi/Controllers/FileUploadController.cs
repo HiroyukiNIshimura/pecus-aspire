@@ -1,85 +1,73 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/files")]
 [Produces("application/json")]
-public class FileUploadController : ControllerBase
+[Tags("File")]
+public class FileUploadController : BaseSecureController
 {
     private readonly FileUploadService _fileUploadService;
-    private readonly UserService _userService;
     private readonly GenreService _genreService;
-    private readonly ILogger<FileUploadController> _logger;
+    private readonly UserService _userService;
 
     public FileUploadController(
         FileUploadService fileUploadService,
-        UserService userService,
         GenreService genreService,
+        UserService userService,
+        ProfileService profileService,
         ILogger<FileUploadController> logger
-    )
+    ) : base(profileService, logger)
     {
         _fileUploadService = fileUploadService;
-        _userService = userService;
         _genreService = genreService;
-        _logger = logger;
+        _userService = userService;
     }
 
     /// <summary>
     /// ファイルをアップロード
     /// </summary>
-    /// <param name="fileType">ファイルの種類（avatar, genre）</param>
-    /// <param name="resourceId">リソースID</param>
-    /// <param name="file">アップロードするファイル</param>
-    [HttpPost("{fileType}/{resourceId}")]
+    /// <param name="request">ファイルアップロードリクエスト</param>
+    [HttpPost]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(FileUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<FileUploadResponse>> UploadFile(
-        string fileType,
-        int resourceId,
-        IFormFile file
-    )
+    public async Task<Ok<FileUploadResponse>> UploadFile([FromForm] FileUploadRequest request)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user == null)
-        {
-            throw new InvalidOperationException("ユーザーが見つかりません。");
-        }
-
-        if (user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new InvalidOperationException("組織に所属していません。");
         }
 
         // ファイルの種類に応じたバリデーション
-        if (fileType.ToLowerInvariant() == "avatar")
+        if (request.FileType == FileType.Avatar)
         {
             // アバターの場合、リソースIDはユーザーIDであることを確認
             if (
                 !await _fileUploadService.ValidateUserResourceAsync(
-                    resourceId,
-                    user.OrganizationId.Value
+                    request.ResourceId,
+                    CurrentUser.OrganizationId.Value
                 )
             )
             {
                 throw new InvalidOperationException("指定されたリソースへのアクセス権限がありません。");
             }
         }
-        else if (fileType.ToLowerInvariant() == "genre")
+        else if (request.FileType == FileType.Genre)
         {
             // ジャンルの場合、リソースIDはジャンルIDであることを確認
-            if (!await _fileUploadService.ValidateGenreResourceAsync(resourceId))
+            if (!await _fileUploadService.ValidateGenreResourceAsync(request.ResourceId))
             {
                 throw new InvalidOperationException("指定されたジャンルが見つかりません。");
             }
@@ -87,30 +75,30 @@ public class FileUploadController : ControllerBase
 
         // ファイルをアップロード
         var filePath = await _fileUploadService.UploadFileAsync(
-            file,
-            fileType,
-            resourceId,
-            user.OrganizationId.Value
+            request.File,
+            request.FileType.ToString().ToLowerInvariant(),
+            request.ResourceId,
+            CurrentUser.OrganizationId.Value
         );
 
         // アバターの場合、ユーザー情報を更新
-        if (fileType.ToLowerInvariant() == "avatar" && resourceId == me)
+        if (request.FileType == FileType.Avatar && request.ResourceId == CurrentUserId)
         {
-            await UpdateUserAvatarAsync(me, filePath);
+            await UpdateUserAvatarAsync(CurrentUserId, filePath);
         }
 
         // ジャンルの場合、ジャンル情報を更新
-        if (fileType.ToLowerInvariant() == "genre")
+        if (request.FileType == FileType.Genre)
         {
-            await UpdateGenreIconAsync(resourceId, filePath, me);
+            await _genreService.UpdateGenreIconAsync(request.ResourceId, filePath, CurrentUserId);
         }
 
         var response = new FileUploadResponse
         {
             Success = true,
-            FileUrl = $"/api/downloads/{fileType}/{resourceId}/{Path.GetFileName(filePath)}",
-            FileSize = file.Length,
-            ContentType = file.ContentType,
+            FileUrl = $"/api/downloads/{request.FileType.GetDisplayName().ToLowerInvariant()}/{request.ResourceId}/{Path.GetFileName(filePath)}",
+            FileSize = request.File.Length,
+            ContentType = request.File.ContentType,
             UploadedAt = DateTime.UtcNow,
             Message = "ファイルのアップロードに成功しました。",
         };
@@ -123,16 +111,19 @@ public class FileUploadController : ControllerBase
     /// </summary>
     private async Task UpdateUserAvatarAsync(int userId, string filePath)
     {
-        // FileDownloadController.GetIconメソッドのURLパターンに合わせてAvatarUrlを設定
+        // ファイル名を取得
         var fileName = Path.GetFileName(filePath);
+
+        // FileDownloadController.GetIcon メソッドのURLパターンに合わせてAvatarUrlを設定
         var avatarUrl = $"/api/downloads/avatar/{userId}/{fileName}";
 
-        await _userService.UpdateUserAvatarAsync(userId, "user-avatar", avatarUrl, userId);
+        // ユーザーのアバター情報をデータベースに更新
+        // AvatarType は "UserAvatar" で固定
+        await _userService.UpdateUserAvatarAsync(
+            userId,
+            avatarType: AvatarType.UserAvatar,
+            avatarUrl: avatarUrl,
+            updatedByUserId: CurrentUserId
+        );
     }
-
-    /// <summary>
-    /// ジャンルのアイコン情報を更新
-    /// </summary>
-    private async Task UpdateGenreIconAsync(int genreId, string filePath, int updatedByUserId) =>
-        await _genreService.UpdateGenreIconAsync(genreId, filePath, updatedByUserId);
 }

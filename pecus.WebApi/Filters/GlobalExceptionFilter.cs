@@ -55,11 +55,11 @@ public class GlobalExceptionFilter : IExceptionFilter
             ex.ConflictedModel
         );
 
-        var response = new ConcurrencyErrorResponse<object>
+        var response = new ConcurrencyErrorResponse<IConflictModel>
         {
             StatusCode = StatusCodes.Status409Conflict,
             Message = ex.Message,
-            Current = ex.ConflictedModel,
+            Current = ex.ConflictedModel as IConflictModel,
         };
 
         return new ObjectResult(response)

@@ -1,15 +1,9 @@
-import AdminTagsClient from "./AdminTagsClient";
-import { getCurrentUser } from "@/actions/profile";
 import { getTags } from "@/actions/admin/tags";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
+import AdminTagsClient from "./AdminTagsClient";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminTags() {
@@ -44,7 +38,7 @@ export default async function AdminTags() {
       const userData = userResult.data;
       user = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;

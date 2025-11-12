@@ -9,11 +9,11 @@ export type RoleResponse = {
     /**
      * ロールID
      */
-    id?: number;
+    id: number;
     /**
      * ロール名
      */
-    name: string | null;
+    name: string;
     /**
      * ロールの説明
      */

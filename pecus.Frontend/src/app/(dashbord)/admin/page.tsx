@@ -1,7 +1,8 @@
-import AdminClient from "./AdminClient";
-import { getOrganization } from "@/actions/admin/organization";
+import { getOrganization } from "@/actions/admin/organizations";
 import { getCurrentUser } from "@/actions/profile";
 import type { ApiErrorResponse } from "@/types/errors";
+import type { UserInfo } from "@/types/userInfo";
+import AdminClient from "./AdminClient";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,6 @@ type OrganizationData = {
   updatedAt?: string | null;
   isActive?: boolean;
   userCount?: number | null;
-};
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
 };
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
@@ -58,7 +52,7 @@ export default async function AdminPage() {
       const userData = userResult.data;
       user = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;

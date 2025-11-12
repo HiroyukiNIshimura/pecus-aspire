@@ -1,16 +1,10 @@
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/actions/profile";
 import { getTagDetail } from "@/actions/admin/tags";
+import { getCurrentUser } from "@/actions/profile";
+import type { UserInfo } from "@/types/userInfo";
 import EditTagClient from "./EditTagClient";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 export default async function EditTagPage({
   params,

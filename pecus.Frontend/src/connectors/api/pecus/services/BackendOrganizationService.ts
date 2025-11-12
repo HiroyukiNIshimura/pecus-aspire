@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { BackendUpdateOrganizationRequest } from '../models/BackendUpdateOrganizationRequest';
-import type { OrganizationDetailResponse } from '../models/OrganizationDetailResponse';
+import type { DeleteOrganizationRequest } from '../models/DeleteOrganizationRequest';
 import type { OrganizationListItemResponsePagedResponse } from '../models/OrganizationListItemResponsePagedResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
-import type { SetActiveStatusRequest } from '../models/SetActiveStatusRequest';
+import type { SetOrganizationActiveStatusRequest } from '../models/SetOrganizationActiveStatusRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UserListItemResponse } from '../models/UserListItemResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -16,12 +16,12 @@ export class BackendOrganizationService {
     /**
      * 組織情報取得
      * @param id
-     * @returns OrganizationDetailResponse OK
+     * @returns OrganizationResponse OK
      * @throws ApiError
      */
     public static getApiBackendOrganizations(
         id: number,
-    ): CancelablePromise<OrganizationDetailResponse> {
+    ): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/backend/organizations/{id}',
@@ -63,11 +63,13 @@ export class BackendOrganizationService {
     /**
      * 組織削除
      * @param id
+     * @param requestBody
      * @returns SuccessResponse OK
      * @throws ApiError
      */
     public static deleteApiBackendOrganizations(
         id: number,
+        requestBody?: DeleteOrganizationRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -75,6 +77,8 @@ export class BackendOrganizationService {
             path: {
                 'id': id,
             },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
@@ -134,7 +138,7 @@ export class BackendOrganizationService {
      */
     public static putApiBackendOrganizationsActiveStatus(
         id: number,
-        requestBody?: SetActiveStatusRequest,
+        requestBody?: SetOrganizationActiveStatusRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

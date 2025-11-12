@@ -9,7 +9,7 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * 添付ファイルID
      */
-    id?: number;
+    id: number;
     /**
      * ワークスペースアイテムID
      */

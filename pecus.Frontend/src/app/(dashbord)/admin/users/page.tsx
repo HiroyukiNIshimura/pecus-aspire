@@ -1,17 +1,11 @@
-import AdminUsersClient from "./AdminUsersClient";
+import { getAllSkills } from "@/actions/admin/skills";
 import { getUsers } from "@/actions/admin/user";
 import { getCurrentUser } from "@/actions/profile";
-import { getAllSkills } from "@/actions/admin/skills";
 import type { ApiErrorResponse } from "@/types/errors";
+import type { UserInfo } from "@/types/userInfo";
+import AdminUsersClient from "./AdminUsersClient";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 interface Skill {
   id: number;
@@ -85,7 +79,7 @@ export default async function AdminUsers() {
       const userData = userResult.data;
       userInfo = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;

@@ -10,11 +10,11 @@ export type PermissionDetailResponse = {
     /**
      * 権限ID
      */
-    id?: number;
+    id: number;
     /**
      * 権限名
      */
-    name: string | null;
+    name: string;
     /**
      * 権限の説明
      */
@@ -34,6 +34,6 @@ export type PermissionDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: number;
 };
 

@@ -9,6 +9,6 @@ export type MessageResponse = {
     /**
      * メッセージ
      */
-    message: string | null;
+    message: string;
 };
 

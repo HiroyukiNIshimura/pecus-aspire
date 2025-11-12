@@ -10,10 +10,10 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/workspaces/{workspaceId}/items")]
 [Produces("application/json")]
-public class WorkspaceItemController : ControllerBase
+[Tags("WorkspaceItem")]
+public class WorkspaceItemController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly OrganizationAccessHelper _accessHelper;
@@ -23,9 +23,10 @@ public class WorkspaceItemController : ControllerBase
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
         OrganizationAccessHelper accessHelper,
+        ProfileService profileService,
         ILogger<WorkspaceItemController> logger,
         PecusConfig config
-    )
+    ) : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
         _accessHelper = accessHelper;
@@ -46,8 +47,8 @@ public class WorkspaceItemController : ControllerBase
         [FromBody] CreateWorkspaceItemRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得（CurrentUserId を使用）
+        var me = CurrentUserId;
 
         // ワークスペースへのアクセス権限をチェック
         var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
@@ -93,11 +94,8 @@ public class WorkspaceItemController : ControllerBase
         int itemId
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
@@ -105,7 +103,7 @@ public class WorkspaceItemController : ControllerBase
 
         var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
 
-        var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me);
+        var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId);
 
         return TypedResults.Ok(response);
     }
@@ -124,8 +122,8 @@ public class WorkspaceItemController : ControllerBase
         [FromQuery] GetWorkspaceItemsRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+        // ログイン中のユーザーIDを取得（CurrentUserId を使用）
+        var me = CurrentUserId;
 
         // ワークスペースへのアクセス権限をチェック
         var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
@@ -181,7 +179,7 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceItemDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItem(
         int workspaceId,
@@ -189,18 +187,15 @@ public class WorkspaceItemController : ControllerBase
         [FromBody] UpdateWorkspaceItemRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -212,14 +207,14 @@ public class WorkspaceItemController : ControllerBase
             workspaceId,
             itemId,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new WorkspaceItemResponse
         {
             Success = true,
             Message = "ワークスペースアイテムを更新しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);
@@ -232,7 +227,7 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceItemDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItemStatus(
         int workspaceId,
@@ -240,18 +235,15 @@ public class WorkspaceItemController : ControllerBase
         [FromBody] UpdateWorkspaceItemStatusRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -263,14 +255,14 @@ public class WorkspaceItemController : ControllerBase
             workspaceId,
             itemId,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new WorkspaceItemResponse
         {
             Success = true,
             Message = "ワークスペースアイテムのステータスを更新しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);
@@ -286,18 +278,15 @@ public class WorkspaceItemController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<SuccessResponse>> DeleteWorkspaceItem(int workspaceId, int itemId)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -305,7 +294,7 @@ public class WorkspaceItemController : ControllerBase
             );
         }
 
-        await _workspaceItemService.DeleteWorkspaceItemAsync(workspaceId, itemId, me);
+        await _workspaceItemService.DeleteWorkspaceItemAsync(workspaceId, itemId, CurrentUserId);
 
         var response = new SuccessResponse
         {
@@ -316,3 +305,4 @@ public class WorkspaceItemController : ControllerBase
         return TypedResults.Ok(response);
     }
 }
+

@@ -9,11 +9,11 @@ export type SkillDetailResponse = {
     /**
      * スキルID
      */
-    id?: number;
+    id: number;
     /**
      * スキル名
      */
-    name: string | null;
+    name: string;
     /**
      * スキルの説明
      */
@@ -49,6 +49,6 @@ export type SkillDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: string | null;
+    rowVersion: number;
 };
 

@@ -1,47 +1,37 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Models.Requests;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Route("api/downloads")]
 [Produces("application/json")]
-public class FileDownloadController : ControllerBase
+[Tags("File")]
+public class FileDownloadController : BaseSecureController
 {
-    private readonly UserService _userService;
     private readonly ILogger<FileDownloadController> _logger;
 
-    public FileDownloadController(UserService userService, ILogger<FileDownloadController> logger)
+    public FileDownloadController(ProfileService profileService, ILogger<FileDownloadController> logger)
+        : base(profileService, logger)
     {
-        _userService = userService;
         _logger = logger;
     }
 
     /// <summary>
     /// アイコンファイルを取得（画像を返す）
     /// </summary>
-    /// <param name="fileType">ファイルの種類（avatar, genre）</param>
-    /// <param name="resourceId">リソースID</param>
-    /// <param name="fileName">ファイル名</param>
-    [HttpGet("{fileType}/{resourceId}/{fileName}")]
+    /// <param name="request">アイコン取得リクエスト</param>
+    [HttpGet("icons")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<FileContentHttpResult> GetIcon(string fileType, int resourceId, string fileName)
+    public async Task<FileContentHttpResult> GetIcon([FromQuery] GetIconRequest request)
     {
-        // ファイルタイプの検証
-        if (!FileUploadHelper.IsValidFileType(fileType))
-        {
-            throw new NotFoundException("ファイルが見つかりません。");
-        }
-
-        // ログインユーザーの組織IDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-        var user = await _userService.GetUserByIdAsync(me);
-
-        if (user?.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ファイルが見つかりません。");
         }
@@ -50,10 +40,10 @@ public class FileDownloadController : ControllerBase
         var uploadsPath = "uploads";
         var filePath = Path.Combine(
             uploadsPath,
-            user.OrganizationId.Value.ToString(),
-            fileType,
-            resourceId.ToString(),
-            fileName
+            CurrentUser.OrganizationId.Value.ToString(),
+            request.FileType.GetDisplayName().ToLowerInvariant(),
+            request.ResourceId.ToString(),
+            request.FileName
         );
 
         if (!System.IO.File.Exists(filePath))
@@ -61,7 +51,7 @@ public class FileDownloadController : ControllerBase
             throw new NotFoundException("ファイルが見つかりません。");
         }
 
-        var contentType = GetContentType(fileName);
+        var contentType = GetContentType(request.FileName);
         var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
 
         return TypedResults.File(fileBytes, contentType);

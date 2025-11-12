@@ -231,12 +231,7 @@ public class WorkspaceService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestWorkspace = await _context.Workspaces.FindAsync(workspaceId) ?? workspace;
-            throw new ConcurrencyException<Workspace>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestWorkspace
-            );
+            await RaiseConflictException(workspaceId);
         }
 
         return workspace;
@@ -279,12 +274,7 @@ public class WorkspaceService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestWorkspace = await _context.Workspaces.FindAsync(workspaceId);
-            throw new ConcurrencyException<Workspace>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestWorkspace
-            );
+            await RaiseConflictException(workspaceId);
         }
 
         return true;
@@ -311,12 +301,7 @@ public class WorkspaceService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // 最新データを取得
-            var latestWorkspace = await _context.Workspaces.FindAsync(workspaceId);
-            throw new ConcurrencyException<Workspace>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestWorkspace
-            );
+            await RaiseConflictException(workspaceId);
         }
 
         return true;
@@ -445,7 +430,14 @@ public class WorkspaceService
     /// </summary>
     public async Task<WorkspaceStatistics> GetWorkspaceStatisticsAsync(int organizationId)
     {
-        var statistics = new WorkspaceStatistics();
+        var statistics = new WorkspaceStatistics
+        {
+            ActiveWorkspaceCount = 0,
+            InactiveWorkspaceCount = 0,
+            UniqueMemberCount = 0,
+            RecentWorkspaceCount = 0,
+            WorkspaceCountByGenre = new List<GenreCount>()
+        };
 
         // アクティブ/非アクティブのワークスペース数を取得
         var workspaceCounts = await _context.Workspaces
@@ -470,7 +462,7 @@ public class WorkspaceService
             .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
             .Select(g => new GenreCount
             {
-                GenreId = g.Key.GenreId,
+                GenreId = g.Key.GenreId!.Value,
                 GenreName = g.Key.GenreName,
                 Count = g.Count()
             })
@@ -482,5 +474,31 @@ public class WorkspaceService
             .CountAsync();
 
         return statistics;
+    }
+
+    private async Task RaiseConflictException(int workspaceId)
+    {
+        // 最新データを取得
+        var latestWorkspace = await _context.Workspaces.FindAsync(workspaceId);
+        if (latestWorkspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+        throw new ConcurrencyException<WorkspaceDetailResponse>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            new WorkspaceDetailResponse
+            {
+                Id = latestWorkspace.Id,
+                Name = latestWorkspace.Name,
+                Code = latestWorkspace.Code,
+                Description = latestWorkspace.Description,
+                OrganizationId = latestWorkspace.OrganizationId,
+                GenreId = latestWorkspace.GenreId,
+                CreatedAt = latestWorkspace.CreatedAt,
+                UpdatedAt = latestWorkspace.UpdatedAt,
+                IsActive = latestWorkspace.IsActive,
+                RowVersion = latestWorkspace.RowVersion!,
+            }
+        );
     }
 }

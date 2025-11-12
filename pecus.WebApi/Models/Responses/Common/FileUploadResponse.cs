@@ -35,3 +35,4 @@ public class FileUploadResponse
     /// </summary>
     public string? Message { get; set; }
 }
+

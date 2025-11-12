@@ -1,21 +1,15 @@
-import AdminWorkspacesClient from "./AdminWorkspacesClient";
 import { getWorkspaces } from "@/actions/admin/workspace";
-import { getCurrentUser } from "@/actions/profile";
 import { getGenres } from "@/actions/master";
-import {
+import { getCurrentUser } from "@/actions/profile";
+import type {
+  MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
-  MasterGenreResponse,
 } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
+import AdminWorkspacesClient from "./AdminWorkspacesClient";
 
 export const dynamic = "force-dynamic";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminWorkspaces() {
@@ -52,7 +46,7 @@ export default async function AdminWorkspaces() {
       const userData = userResult.data;
       user = {
         id: userData.id,
-        name: userData.username ?? null,
+        name: userData.name ?? null,
         email: userData.email ?? null,
         isAdmin: userData.isAdmin ?? false,
       } as UserInfo;

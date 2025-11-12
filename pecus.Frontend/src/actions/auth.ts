@@ -1,11 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { ApiResponse } from "./types";
-import { SessionData, SessionManager } from "@/libs/session";
-import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
-import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
-import { headers } from 'next/headers';
+import type { LoginResponse, SuccessResponse } from "@/connectors/api/pecus";
+import type { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
+import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
+import { type SessionData, SessionManager } from "@/libs/session";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: ログイン
@@ -20,14 +21,15 @@ export async function login(request: {
   appVersion?: string;
   timezone?: string;
   location?: string;
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<LoginResponse>> {
   try {
     // Next.js のヘッダーからクライアントIPを取得
     const headersList = await headers();
-    const clientIp = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-                     headersList.get('x-real-ip') ||
-                     headersList.get('cf-connecting-ip') ||  // Cloudflare 対応
-                     undefined;
+    const clientIp =
+      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headersList.get("x-real-ip") ||
+      headersList.get("cf-connecting-ip") || // Cloudflare 対応
+      undefined;
 
     const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
     const response = await api.entranceAuth.postApiEntranceAuthLogin({
@@ -50,7 +52,8 @@ export async function login(request: {
     if (!accessToken) {
       return {
         success: false,
-        error: "Invalid response from server",
+        error: "server",
+        message: "Invalid response from server",
       };
     }
 
@@ -75,7 +78,8 @@ export async function login(request: {
     console.error("Failed to login:", error);
     return {
       success: false,
-      error: error.body?.message || error.message || "Failed to login",
+      error: "server",
+      message: error.body?.message || error.message || "Failed to login",
     };
   }
 }
@@ -87,7 +91,9 @@ export async function login(request: {
  * - ログイン済みならユーザー情報を返す
  * - 未認証なら null を返す
  */
-export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] | null>> {
+export async function getCurrentUser(): Promise<
+  ApiResponse<SessionData["user"] | null>
+> {
   try {
     const session = await SessionManager.getSession();
 
@@ -100,7 +106,8 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] 
     console.error("Failed to get current user:", error);
     return {
       success: false,
-      error: error.message || "Failed to get current user",
+      error: "server",
+      message: error.message || "Failed to get current user",
     };
   }
 }
@@ -108,7 +115,7 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] 
 /**
  * Server Action: ログアウト
  */
-export async function logout(): Promise<ApiResponse<any>> {
+export async function logout(): Promise<ApiResponse<null>> {
   try {
     // セッション情報をクリア（WebAPI呼び出しなし）
     await SessionManager.clearSession();
@@ -118,7 +125,8 @@ export async function logout(): Promise<ApiResponse<any>> {
     console.error("Failed to logout:", error);
     return {
       success: false,
-      error: error.message || "Failed to logout",
+      error: "server",
+      message: error.message || "Failed to logout",
     };
   }
 }

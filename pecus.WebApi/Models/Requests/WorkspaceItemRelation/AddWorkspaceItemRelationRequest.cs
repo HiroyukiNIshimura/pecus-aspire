@@ -20,3 +20,4 @@ public class AddWorkspaceItemRelationRequest
     [MaxLength(50, ErrorMessage = "関連タイプは50文字以内で入力してください。")]
     public string? RelationType { get; set; }
 }
+

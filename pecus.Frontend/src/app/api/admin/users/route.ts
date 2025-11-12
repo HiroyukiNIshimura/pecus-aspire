@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getUsers } from "@/actions/admin/user";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // フィルタパラメータの処理
     const isActiveParam = searchParams.get("IsActive");
-    let isActive: boolean | undefined = undefined;
+    let isActive: boolean | undefined;
     if (isActiveParam !== null) {
       isActive =
         isActiveParam === "true"

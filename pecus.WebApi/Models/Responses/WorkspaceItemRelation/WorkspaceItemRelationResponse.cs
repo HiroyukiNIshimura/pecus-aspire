@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.WorkspaceItemRelation;
 
 /// <summary>
@@ -8,7 +10,8 @@ public class WorkspaceItemRelationResponse
     /// <summary>
     /// 関連ID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// 関連元アイテムID
@@ -102,3 +105,4 @@ public class WorkspaceItemRelationsResponse
     /// </summary>
     public int TotalCount { get; set; }
 }
+

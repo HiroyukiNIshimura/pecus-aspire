@@ -1,6 +1,12 @@
 "use client";
 
-import { HSAccordion, HSDropdown, HSOverlay, HSStaticMethods } from "flyonui/flyonui";
+import type {
+  HSAccordion,
+  HSDropdown,
+  HSOverlay,
+  HSStaticMethods,
+  HSTooltip,
+} from "flyonui/flyonui";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -29,7 +35,11 @@ export default function FlyonuiScript() {
         window.HSStaticMethods.autoInit();
         window.HSDropdown.autoInit();
         window.HSAccordion.autoInit();
-        window.HSOverlay.autoInit(); // HSOverlayの初期化を追加
+        window.HSOverlay.autoInit();
+        // HSTooltipの初期化を追加
+        if (window.HSTooltip && typeof window.HSTooltip.autoInit === "function") {
+          window.HSTooltip.autoInit();
+        }
       }
     }, 100);
   }, [path]);
@@ -43,5 +53,6 @@ declare global {
     HSDropdown: typeof HSDropdown;
     HSAccordion: typeof HSAccordion;
     HSOverlay: typeof HSOverlay;
+    HSTooltip: typeof HSTooltip;
   }
 }

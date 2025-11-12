@@ -97,18 +97,6 @@ public class WorkspaceItemPinService
 
         _context.WorkspaceItemPins.Remove(pin);
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // 削除時はワークスペースアイテムID+ユーザーIDで最新のPINを取得して返す
-            var latestPin = await _context.WorkspaceItemPins.FirstOrDefaultAsync(p => p.WorkspaceItemId == itemId && p.UserId == userId);
-            throw new ConcurrencyException<WorkspaceItemPin>(
-                "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestPin
-            );
-        }
+        await _context.SaveChangesAsync();
     }
 }

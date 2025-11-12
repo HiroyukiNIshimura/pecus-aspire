@@ -1,23 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateTag } from "@/actions/admin/tags";
+import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminFooter from "@/components/admin/AdminFooter";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import type { TagDetailResponse } from "@/connectors/api/pecus";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { useNotify } from "@/hooks/useNotify";
-import { updateTag } from "@/actions/admin/tags";
 import { editTagSchema } from "@/schemas/editSchemas";
-import type { TagDetailResponse } from "@/connectors/api/pecus";
-
-type UserInfo = {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  isAdmin: boolean;
-};
+import type { UserInfo } from "@/types/userInfo";
 
 interface EditTagClientProps {
   initialUser: UserInfo | null;
@@ -55,7 +49,9 @@ export default function EditTagClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!tagDetail.rowVersion) {
-          notify.error("タグ情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error(
+            "タグ情報の更新に必要なバージョン情報が取得できませんでした。",
+          );
           return;
         }
 
@@ -177,7 +173,9 @@ export default function EditTagClient({
                         shouldShowError("name") ? "input-error" : ""
                       }`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("name", e.target.value)
+                      }
                       placeholder="タグ名を入力"
                       disabled={isSubmitting}
                       required
@@ -244,12 +242,16 @@ export default function EditTagClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">タグID</p>
-                    <p className="text-lg font-semibold">{tagDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">
+                      {tagDetail.id || "-"}
+                    </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">参照アイテム</p>
-                    <p className="text-lg font-semibold">{tagDetail.itemCount || 0} 件</p>
+                    <p className="text-lg font-semibold">
+                      {tagDetail.itemCount || 0} 件
+                    </p>
                   </div>
 
                   <div>
@@ -266,7 +268,9 @@ export default function EditTagClient({
                       <p className="text-sm text-base-content/60">更新日時</p>
                       <p className="text-lg font-semibold">
                         {tagDetail.updatedAt
-                          ? new Date(tagDetail.updatedAt).toLocaleString("ja-JP")
+                          ? new Date(tagDetail.updatedAt).toLocaleString(
+                              "ja-JP",
+                            )
                           : "-"}
                       </p>
                     </div>

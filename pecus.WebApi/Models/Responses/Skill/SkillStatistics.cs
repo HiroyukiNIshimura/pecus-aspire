@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Skill;
 
 /// <summary>
@@ -8,27 +10,32 @@ public class SkillStatistics
     /// <summary>
     /// スキルのトータル件数
     /// </summary>
-    public int TotalSkills { get; set; }
+    [Required]
+    public required int TotalSkills { get; set; } = 0;
 
     /// <summary>
     /// アクティブなスキルの件数
     /// </summary>
-    public int ActiveSkills { get; set; }
+    [Required]
+    public required int ActiveSkills { get; set; } = 0;
 
     /// <summary>
     /// 非アクティブなスキルの件数
     /// </summary>
-    public int InactiveSkills { get; set; }
+    [Required]
+    public required int InactiveSkills { get; set; } = 0;
 
     /// <summary>
     /// 利用されているスキルのトップ５
     /// </summary>
-    public List<SkillUsageItem> TopUsedSkills { get; set; } = new();
+    [Required]
+    public required List<SkillUsageItem> TopUsedSkills { get; set; } = new();
 
     /// <summary>
     /// 利用されていないスキルのリスト
     /// </summary>
-    public List<SkillUsageItem> UnusedSkills { get; set; } = new();
+    [Required]
+    public required List<SkillUsageItem> UnusedSkills { get; set; } = new();
 }
 
 /// <summary>
@@ -39,10 +46,13 @@ public class SkillUsageItem
     /// <summary>
     /// スキルID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// スキル名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 }
+

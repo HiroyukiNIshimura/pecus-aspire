@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
+import { useCallback, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import type {
+  TagListItemResponse,
+  TagStatistics,
+} from "@/connectors/api/pecus";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { tagNameFilterSchema } from "@/schemas/filterSchemas";
-import { TagListItemResponse, TagStatistics } from "@/connectors/api/pecus";
 
 interface UserInfo {
   id: number;

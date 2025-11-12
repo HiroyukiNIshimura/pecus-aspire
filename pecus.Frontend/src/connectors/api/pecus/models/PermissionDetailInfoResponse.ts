@@ -9,11 +9,11 @@ export type PermissionDetailInfoResponse = {
     /**
      * 権限ID
      */
-    id?: number;
+    id: number;
     /**
      * 権限名
      */
-    name: string | null;
+    name: string;
     /**
      * 権限の説明
      */

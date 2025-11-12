@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
@@ -13,11 +12,10 @@ namespace Pecus.Controllers.Admin;
 /// <summary>
 /// 組織管理コントローラー（組織管理者用）
 /// </summary>
-[ApiController]
 [Route("api/admin/organization")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
-public class AdminOrganizationController : ControllerBase
+[Tags("Admin - Organization")]
+public class AdminOrganizationController : BaseAdminController
 {
     private readonly OrganizationService _organizationService;
     private readonly UserService _userService;
@@ -26,8 +24,9 @@ public class AdminOrganizationController : ControllerBase
     public AdminOrganizationController(
         OrganizationService organizationService,
         UserService userService,
+        ProfileService profileService,
         ILogger<AdminOrganizationController> logger
-    )
+    ) : base(profileService, logger)
     {
         _organizationService = organizationService;
         _userService = userService;
@@ -41,30 +40,26 @@ public class AdminOrganizationController : ControllerBase
     /// ログイン中のユーザーが属する組織の詳細情報を取得します。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(OrganizationDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<OrganizationDetailResponse>> GetMyOrganization()
+    public async Task<Ok<OrganizationResponse>> GetMyOrganization()
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        // ユーザー情報を取得して組織IDを取得
-        var user = await _userService.GetUserByIdAsync(me);
-        if (user == null || user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ユーザーが組織に所属していません。");
         }
 
         var organization = await _organizationService.GetOrganizationByIdAsync(
-            user.OrganizationId.Value
+            CurrentUser.OrganizationId.Value
         );
         if (organization == null)
         {
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        var response = new OrganizationDetailResponse
+        var response = new OrganizationResponse
         {
             Id = organization.Id,
             Name = organization.Name,
@@ -93,26 +88,22 @@ public class AdminOrganizationController : ControllerBase
     [ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<OrganizationResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationResponse>> UpdateMyOrganization(
         [FromBody] AdminUpdateOrganizationRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
-        // ユーザー情報を取得して組織IDを取得
-        var user = await _userService.GetUserByIdAsync(me);
-        if (user == null || user.OrganizationId == null)
+        // CurrentUser は基底クラスで有効性チェック済み
+        if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("ユーザーが組織に所属していません。");
         }
 
         var organization = await _organizationService.AdminUpdateOrganizationAsync(
-            user.OrganizationId.Value,
+            CurrentUser.OrganizationId.Value,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new OrganizationResponse
@@ -125,6 +116,10 @@ public class AdminOrganizationController : ControllerBase
             PhoneNumber = organization.PhoneNumber,
             Email = organization.Email,
             CreatedAt = organization.CreatedAt,
+            UpdatedAt = organization.UpdatedAt,
+            IsActive = organization.IsActive,
+            UserCount = organization.Users.Count,
+            RowVersion = organization.RowVersion!,
         };
 
         return TypedResults.Ok(response);

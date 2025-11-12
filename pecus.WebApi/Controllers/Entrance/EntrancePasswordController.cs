@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
@@ -19,30 +20,31 @@ namespace Pecus.Controllers.Entrance;
 [Route("api/entrance/password")]
 [Produces("application/json")]
 [AllowAnonymous]
+[Tags("Entrance - Password")]
 public class EntrancePasswordController : ControllerBase
 {
     private readonly UserService _userService;
     private readonly EmailTasks _emailTasks;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
     private readonly ILogger<EntrancePasswordController> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public EntrancePasswordController(
         UserService userService,
         EmailTasks emailTasks,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        ILogger<EntrancePasswordController> logger,
-        IHttpContextAccessor httpContextAccessor
+        FrontendUrlResolver frontendUrlResolver,
+        ILogger<EntrancePasswordController> logger
     )
     {
         _userService = userService;
         _emailTasks = emailTasks;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
         _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -94,11 +96,8 @@ public class EntrancePasswordController : ControllerBase
         var (success, user) = await _userService.RequestPasswordResetAsync(request);
         if (success && user != null)
         {
-            // 動的にBaseUrlを取得
-            var requestContext = _httpContextAccessor.HttpContext?.Request;
-            var baseUrl = requestContext != null ? $"{requestContext.Scheme}://{requestContext.Host}" : "https://localhost";
-
-            // パスワードリセットURLを構築
+            // Origin ヘッダーからフロントエンドURLを検証・取得
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
             var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
             // パスワードリセットメールを送信

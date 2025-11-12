@@ -21,6 +21,6 @@ export type UpdateSkillRequest = {
     /**
      * スキルの楽観的ロック用のRowVersion
      */
-    rowVersion: string;
+    rowVersion: number;
 };
 

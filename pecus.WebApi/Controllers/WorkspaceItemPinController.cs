@@ -10,14 +10,13 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[ApiController]
 [Produces("application/json")]
-public class WorkspaceItemPinController : ControllerBase
+[Tags("WorkspaceItem")]
+public class WorkspaceItemPinController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;
     private readonly WorkspaceItemPinService _pinService;
     private readonly OrganizationAccessHelper _accessHelper;
-    private readonly ILogger<WorkspaceItemPinController> _logger;
     private readonly PecusConfig _config;
 
     public WorkspaceItemPinController(
@@ -25,13 +24,14 @@ public class WorkspaceItemPinController : ControllerBase
         WorkspaceItemPinService pinService,
         OrganizationAccessHelper accessHelper,
         ILogger<WorkspaceItemPinController> logger,
-        PecusConfig config
+        PecusConfig config,
+        ProfileService profileService
     )
+        : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
         _pinService = pinService;
         _accessHelper = accessHelper;
-        _logger = logger;
         _config = config;
     }
 
@@ -48,24 +48,21 @@ public class WorkspaceItemPinController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemResponse>> AddPinToItem(int workspaceId, int itemId)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException("ワークスペースのメンバーのみがアイテムをPINできます。");
         }
 
-        var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, me);
+        var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, CurrentUserId);
 
         // 更新後のアイテムを取得
         var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -74,7 +71,7 @@ public class WorkspaceItemPinController : ControllerBase
         {
             Success = true,
             Message = "PINを追加しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);
@@ -93,18 +90,15 @@ public class WorkspaceItemPinController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemResponse>> RemovePinFromItem(int workspaceId, int itemId)
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -112,7 +106,7 @@ public class WorkspaceItemPinController : ControllerBase
             );
         }
 
-        await _pinService.RemovePinFromItemAsync(workspaceId, itemId, me);
+        await _pinService.RemovePinFromItemAsync(workspaceId, itemId, CurrentUserId);
 
         // 更新後のアイテムを取得
         var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);
@@ -121,7 +115,7 @@ public class WorkspaceItemPinController : ControllerBase
         {
             Success = true,
             Message = "PINを削除しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);
@@ -141,18 +135,15 @@ public class WorkspaceItemPinController : ControllerBase
         [FromQuery] GetMyPinnedItemsRequest request
     )
     {
-        // ログイン中のユーザーIDを取得
-        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
-
         var pageSize = _config.Pagination.DefaultPageSize;
         var (items, totalCount) = await _workspaceItemService.GetPinnedWorkspaceItemsAsync(
-            me,
+            CurrentUserId,
             request.Page,
             pageSize
         );
 
         var itemResponses = items
-            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
+            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId))
             .ToList();
 
         var response = PaginationHelper.CreatePagedResponse(

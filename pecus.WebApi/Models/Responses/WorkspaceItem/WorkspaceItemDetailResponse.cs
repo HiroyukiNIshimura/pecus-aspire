@@ -1,16 +1,18 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.WorkspaceItem;
 
 /// <summary>
 /// ワークスペースアイテム詳細レスポンス
 /// </summary>
-public class WorkspaceItemDetailResponse
+public class WorkspaceItemDetailResponse : IConflictModel
 {
     /// <summary>
     /// アイテムID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ワークスペースID
@@ -130,5 +132,7 @@ public class WorkspaceItemDetailResponse
     /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
-    public required byte[] RowVersion { get; set; }
+    [Required]
+    public required uint RowVersion { get; set; }
 }
+

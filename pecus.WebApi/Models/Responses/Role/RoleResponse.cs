@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Role;
 
 /// <summary>
@@ -8,11 +10,13 @@ public class RoleResponse
     /// <summary>
     /// ロールID
     /// </summary>
-    public int Id { get; set; }
+    [Required]
+    public required int Id { get; set; }
 
     /// <summary>
     /// ロール名
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
@@ -25,3 +29,4 @@ public class RoleResponse
     /// </summary>
     public DateTime CreatedAt { get; set; }
 }
+

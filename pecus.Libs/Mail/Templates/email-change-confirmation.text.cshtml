@@ -1,0 +1,23 @@
+@model Pecus.Libs.Mail.Templates.Models.EmailChangeConfirmationEmailModel
+@Model.UserName 様
+
+メールアドレス変更のリクエストを受け付けました。
+
+新しいメールアドレスへの変更を完了するには、下記のURLにアクセスして確認してください。
+
+@Model.ConfirmationUrl
+
+【重要】
+- このリンクは @Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm") まで有効です。
+- 現在のメールアドレス: @Model.CurrentEmail
+- 新しいメールアドレス: @Model.NewEmail
+
+このリクエストに心当たりがない場合は、このメールを無視してください。
+
+メールアドレスは自動的には変更されません。セキュリティのため、第三者がアクセスできる可能性がある場合は、パスワードを変更することをお勧めします。
+
+リクエスト日時: @Model.RequestedAt.ToString("yyyy年MM月dd日 HH:mm:ss")
+
+---
+このメールは Pecus から送信されました。
+お問い合わせ: support@pecus.example.com

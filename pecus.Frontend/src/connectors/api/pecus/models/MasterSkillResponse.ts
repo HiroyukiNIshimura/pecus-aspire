@@ -9,11 +9,11 @@ export type MasterSkillResponse = {
     /**
      * スキルID
      */
-    id?: number;
+    id: number;
     /**
      * スキル名
      */
-    name: string | null;
+    name: string;
     /**
      * 説明
      */

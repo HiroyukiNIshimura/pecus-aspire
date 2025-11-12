@@ -1,0 +1,31 @@
+@model Pecus.Libs.Mail.Templates.Models.OrganizationCreatedEmailModel
+@{
+    Layout = null;
+}
+
+@Model.RepresentativeName さん、組織の登録が完了しました
+
+お疲れ様です。
+
+「@Model.OrganizationName」の登録が完了いたしました。
+
+システムへのアクセスを開始するには、管理者アカウントのパスワード設定を行う必要があります。以下のURLからお進みください。
+
+@Model.PasswordSetupUrl
+
+【重要】このリンクは @Model.TokenExpiresAt.ToString("yyyy年MM月dd日 HH:mm") まで有効です。期限内にパスワードを設定してください。
+
+【登録された情報】
+- 組織名: @Model.OrganizationName
+- 組織メールアドレス: @Model.OrganizationEmail
+- 代表者名: @Model.RepresentativeName
+- 管理者ユーザー名: @Model.AdminUserName
+- 管理者メールアドレス: @Model.AdminEmail
+- 登録日時: @Model.CreatedAt.ToString("yyyy年MM月dd日 HH:mm")
+
+【パスワード設定について】
+- パスワードは8文字以上100文字以内で設定してください
+- パスワードは大文字・小文字・数字をすべて含む必要があります
+- 設定後、管理者アカウントでシステムにログインできます
+
+このメールに心当たりがない場合は、このメールを無視してください。

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AvatarType } from './AvatarType';
 import type { RoleInfoResponse } from './RoleInfoResponse';
 /**
  * ログインレスポンス
@@ -10,7 +11,7 @@ export type LoginResponse = {
     /**
      * JWTアクセストークン
      */
-    accessToken: string | null;
+    accessToken: string;
     /**
      * トークンタイプ（常に "Bearer"）
      */
@@ -30,19 +31,16 @@ export type LoginResponse = {
     /**
      * ログインID
      */
-    loginId: string | null;
+    loginId: string;
     /**
      * ユーザー名
      */
-    username: string | null;
+    username: string;
     /**
      * メールアドレス
      */
-    email: string | null;
-    /**
-     * アバタータイプ
-     */
-    avatarType?: string | null;
+    email: string;
+    avatarType?: AvatarType;
     /**
      * アイデンティティアイコンURL
      */
