@@ -9,7 +9,12 @@ import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 interface EmailChangeTabProps {
   currentEmail: string;
   pendingEmailChange: PendingEmailChangeResponse | null;
-  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  notify: {
+    success: (message: string) => void;
+    error: (message: string) => void;
+    warning: (message: string) => void;
+    info: (message: string) => void;
+  };
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
@@ -17,7 +22,7 @@ interface EmailChangeTabProps {
 export default function EmailChangeTab({
   currentEmail,
   pendingEmailChange: initialPendingEmailChange,
-  onAlert,
+  notify,
   isLoading,
   setIsLoading,
 }: EmailChangeTabProps) {
@@ -40,12 +45,12 @@ export default function EmailChangeTab({
     });
 
     if (!validationResult.success) {
-      onAlert("error", validationResult.errors[0] || "入力内容を確認してください");
+      notify.error(validationResult.errors[0] || "入力内容を確認してください");
       return;
     }
 
     if (newEmail === currentEmail) {
-      onAlert("error", "新しいメールアドレスが現在と同じです");
+      notify.error("新しいメールアドレスが現在と同じです");
       return;
     }
 
@@ -57,8 +62,7 @@ export default function EmailChangeTab({
       });
 
       if (result.success) {
-        onAlert(
-          "info",
+        notify.info(
           result.data.message || "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。"
         );
         setPendingEmail(result.data.newEmail);
@@ -67,11 +71,11 @@ export default function EmailChangeTab({
         setPassword("");
         validation.clearErrors();
       } else {
-        onAlert("error", result.message || "メールアドレス変更リクエストに失敗しました");
+        notify.error(result.message || "メールアドレス変更リクエストに失敗しました");
       }
     } catch (error) {
       console.error("Email change error:", error);
-      onAlert("error", "メールアドレス変更に失敗しました");
+      notify.error("メールアドレス変更に失敗しました");
     } finally {
       setIsLoading(false);
     }

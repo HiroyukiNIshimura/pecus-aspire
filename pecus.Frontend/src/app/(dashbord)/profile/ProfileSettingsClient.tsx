@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
 import type { MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import { useNotify } from "@/hooks/useNotify";
 import type { UserInfo } from "@/types/userInfo";
 import BasicInfoTab from "./BasicInfoTab";
 import SkillsTab from "./SkillsTab";
@@ -17,12 +18,6 @@ interface ProfileSettingsClientProps {
 }
 
 type TabType = "basic" | "skills" | "security" | "other";
-type AlertType = "success" | "error" | "info";
-
-interface AlertMessage {
-  type: AlertType;
-  message: string;
-}
 
 export default function ProfileSettingsClient({
   initialUser,
@@ -30,16 +25,11 @@ export default function ProfileSettingsClient({
   masterSkills,
   fetchError,
 }: ProfileSettingsClientProps) {
+  const notify = useNotify();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [user, setUser] = useState<UserInfo>(initialUser);
   const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(initialPendingEmailChange);
-  const [alert, setAlert] = useState<AlertMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleAlert = (type: AlertType, message: string) => {
-    setAlert({ type, message });
-    setTimeout(() => setAlert(null), 3000);
-  };
 
   const tabs: { id: TabType; label: string }[] = [
     { id: "basic", label: "基本情報" },
@@ -57,13 +47,6 @@ export default function ProfileSettingsClient({
             <h1 className="text-3xl font-bold">プロフィール設定</h1>
             <p className="text-base-content/70">アカウント情報とセキュリティ設定を管理してください</p>
           </div>
-          {fetchError && <div className="alert alert-error mb-4"><span>{fetchError}</span></div>}
-          {alert && (
-            <div className={`alert alert-${alert.type} mb-4`}>
-              <span>{alert.message}</span>
-              <button type="button" onClick={() => setAlert(null)} className="btn btn-sm btn-ghost">✕</button>
-            </div>
-          )}
           <div className="mb-6">
             <div className="flex border-b border-base-300">
               {tabs.map((tab) => (
@@ -85,16 +68,16 @@ export default function ProfileSettingsClient({
           {/* タブコンテンツ */}
           <div className="bg-base-100 rounded-lg shadow-md p-8">
             {activeTab === "basic" && (
-              <BasicInfoTab user={user} onUpdate={setUser} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
+              <BasicInfoTab user={user} onUpdate={setUser} notify={notify} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
             {activeTab === "skills" && (
-              <SkillsTab initialSkillIds={user.skills?.map((s) => s.id) || []} masterSkills={masterSkills} onAlert={handleAlert} isLoading={isLoading} setIsLoading={setIsLoading} />
+              <SkillsTab initialSkillIds={user.skills?.map((s) => s.id) || []} masterSkills={masterSkills} notify={notify} isLoading={isLoading} setIsLoading={setIsLoading} />
             )}
             {activeTab === "security" && (
               <SecurityTab
                 currentEmail={user.email || ""}
                 pendingEmailChange={pendingEmailChange}
-                onAlert={handleAlert}
+                notify={notify}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
               />

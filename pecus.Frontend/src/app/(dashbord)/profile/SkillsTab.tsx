@@ -7,7 +7,12 @@ import { setUserSkills } from "@/actions/profile";
 interface SkillsTabProps {
   initialSkillIds: number[];
   masterSkills: MasterSkillResponse[];
-  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  notify: {
+    success: (message: string) => void;
+    error: (message: string) => void;
+    warning: (message: string) => void;
+    info: (message: string) => void;
+  };
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
@@ -15,7 +20,7 @@ interface SkillsTabProps {
 export default function SkillsTab({
   initialSkillIds,
   masterSkills,
-  onAlert,
+  notify,
   isLoading,
   setIsLoading,
 }: SkillsTabProps) {
@@ -44,13 +49,13 @@ export default function SkillsTab({
       });
 
       if (result.success) {
-        onAlert("success", "スキルが更新されました");
+        notify.success("スキルが更新されました");
       } else {
-        onAlert("error", result.message || "スキル更新に失敗しました");
+        notify.error(result.message || "スキル更新に失敗しました");
       }
     } catch (error) {
-      console.error("Skills update error:", error);
-      onAlert("error", "予期しないエラーが発生しました");
+      console.error("Skill update error:", error);
+      notify.error("予期しないエラーが発生しました");
     } finally {
       setIsLoading(false);
     }

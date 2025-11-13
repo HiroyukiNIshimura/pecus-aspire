@@ -8,7 +8,12 @@ import EmailChangeTab from "./EmailChangeTab";
 interface SecurityTabProps {
   currentEmail: string;
   pendingEmailChange: PendingEmailChangeResponse | null;
-  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  notify: {
+    success: (message: string) => void;
+    error: (message: string) => void;
+    warning: (message: string) => void;
+    info: (message: string) => void;
+  };
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
@@ -18,7 +23,7 @@ type SecuritySubTab = "password" | "email";
 export default function SecurityTab({
   currentEmail,
   pendingEmailChange,
-  onAlert,
+  notify,
   isLoading,
   setIsLoading,
 }: SecurityTabProps) {
@@ -53,7 +58,7 @@ export default function SecurityTab({
       <div className="pt-4">
         {activeSubTab === "password" && (
           <PasswordChangeTab
-            onAlert={onAlert}
+            notify={notify}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
           />
@@ -62,7 +67,7 @@ export default function SecurityTab({
           <EmailChangeTab
             currentEmail={currentEmail}
             pendingEmailChange={pendingEmailChange}
-            onAlert={onAlert}
+            notify={notify}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
           />

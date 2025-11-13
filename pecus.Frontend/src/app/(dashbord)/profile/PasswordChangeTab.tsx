@@ -9,13 +9,18 @@ import PasswordRequirementIndicator, {
 } from "@/components/common/PasswordRequirementIndicator";
 
 interface PasswordChangeTabProps {
-  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  notify: {
+    success: (message: string) => void;
+    error: (message: string) => void;
+    warning: (message: string) => void;
+    info: (message: string) => void;
+  };
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
 
 export default function PasswordChangeTab({
-  onAlert,
+  notify,
   isLoading,
   setIsLoading,
 }: PasswordChangeTabProps) {
@@ -36,7 +41,7 @@ export default function PasswordChangeTab({
     });
 
     if (!validationResult.success) {
-      onAlert("error", passwordValidation.error || "パスワードが無効です");
+      notify.error(passwordValidation.error || "パスワードが無効です");
       return;
     }
 

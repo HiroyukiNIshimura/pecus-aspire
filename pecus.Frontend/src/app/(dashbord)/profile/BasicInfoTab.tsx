@@ -7,7 +7,12 @@ import { updateProfile, uploadAvatarFile } from "@/actions/profile";
 interface BasicInfoTabProps {
   user: UserInfo;
   onUpdate: (updatedUser: UserInfo) => void;
-  onAlert: (type: "success" | "error" | "info", message: string) => void;
+  notify: {
+    success: (message: string) => void;
+    error: (message: string) => void;
+    warning: (message: string) => void;
+    info: (message: string) => void;
+  };
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
@@ -15,7 +20,7 @@ interface BasicInfoTabProps {
 export default function BasicInfoTab({
   user,
   onUpdate,
-  onAlert,
+  notify,
   isLoading,
   setIsLoading,
 }: BasicInfoTabProps) {
@@ -72,7 +77,7 @@ export default function BasicInfoTab({
     // ファイルサイズチェック（5MB制限）
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      onAlert("error", "ファイルサイズは5MB以下にしてください");
+      notify.error("ファイルサイズは5MB以下にしてください");
       return;
     }
 
@@ -85,7 +90,7 @@ export default function BasicInfoTab({
       "image/webp",
     ];
     if (!allowedTypes.includes(file.type)) {
-      onAlert("error", "対応している画像形式: JPEG, PNG, GIF, WebP");
+      notify.error("対応している画像形式: JPEG, PNG, GIF, WebP");
       return;
     }
 
@@ -95,8 +100,7 @@ export default function BasicInfoTab({
       setAvatarPreviewUrl(previewUrl);
     } catch (error) {
       console.error("Preview error:", error);
-      onAlert(
-        "error",
+      notify.error(
         error instanceof Error ? error.message : "画像の読み込みに失敗しました"
       );
       return;
@@ -117,15 +121,14 @@ export default function BasicInfoTab({
 
       if (uploadResult.success) {
         setUploadedFileUrl(uploadResult.data?.fileUrl || null);
-        onAlert("success", "画像をアップロードしました");
+        notify.success("画像をアップロードしました");
       } else {
-        onAlert("error", uploadResult.message || "アップロードに失敗しました");
+        notify.error(uploadResult.message || "アップロードに失敗しました");
         setAvatarPreviewUrl(null);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      onAlert(
-        "error",
+      notify.error(
         error instanceof Error ? error.message : "アップロードに失敗しました"
       );
       setAvatarPreviewUrl(null);
@@ -196,13 +199,13 @@ export default function BasicInfoTab({
         onUpdate(updatedUserInfo);
         setUploadedFileUrl(null);
         setAvatarPreviewUrl(null);
-        onAlert("success", "基本情報が更新されました");
+        notify.success("基本情報が更新されました");
       } else {
-        onAlert("error", result.message || "更新に失敗しました");
+        notify.error(result.message || "更新に失敗しました");
       }
     } catch (error) {
       console.error("Profile update error:", error);
-      onAlert("error", "予期しないエラーが発生しました");
+      notify.error("予期しないエラーが発生しました");
     } finally {
       setIsLoading(false);
     }
