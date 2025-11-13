@@ -476,6 +476,120 @@ public class WorkspaceService
         return statistics;
     }
 
+    /// <summary>
+    /// ユーザーがアクセス可能なワークスペースをページネーション付きで取得
+    /// </summary>
+    public async Task<(
+        List<Workspace> workspaces,
+        int totalCount
+    )> GetAccessibleWorkspacesByUserPagedAsync(
+        int userId,
+        int page,
+        int pageSize,
+        bool? isActive = null,
+        int? genreId = null,
+        string? name = null
+    )
+    {
+        // ユーザーが参加しているワークスペースのIDリストを取得
+        var accessibleWorkspaceIds = await _context
+            .WorkspaceUsers
+            .Where(wu => wu.UserId == userId)
+            .Select(wu => wu.WorkspaceId)
+            .ToListAsync();
+
+        var query = _context
+            .Workspaces
+            .Include(w => w.Organization)
+            .Include(w => w.Genre)
+            .Include(w => w.WorkspaceUsers.Where(wu => wu.User.IsActive))
+                .ThenInclude(wu => wu.User)
+            .Include(w => w.WorkspaceItems)
+            .Where(w => accessibleWorkspaceIds.Contains(w.Id))
+            .AsSplitQuery() // デカルト爆発防止
+            .AsQueryable();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(w => w.IsActive == isActive.Value);
+        }
+
+        if (genreId.HasValue)
+        {
+            query = query.Where(w => w.GenreId == genreId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(w => w.Name.StartsWith(name));
+        }
+
+        query = query.OrderBy(w => w.Id);
+
+        var totalCount = await query.CountAsync();
+        var workspaces = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return (workspaces, totalCount);
+    }
+
+    /// <summary>
+    /// ユーザーがアクセス可能なワークスペースの統計情報を取得
+    /// </summary>
+    public async Task<WorkspaceStatistics> GetAccessibleWorkspaceStatisticsAsync(int userId)
+    {
+        var statistics = new WorkspaceStatistics
+        {
+            ActiveWorkspaceCount = 0,
+            InactiveWorkspaceCount = 0,
+            UniqueMemberCount = 0,
+            RecentWorkspaceCount = 0,
+            WorkspaceCountByGenre = new List<GenreCount>()
+        };
+
+        // ユーザーが参加しているワークスペースのIDリストを取得
+        var accessibleWorkspaceIds = await _context
+            .WorkspaceUsers
+            .Where(wu => wu.UserId == userId)
+            .Select(wu => wu.WorkspaceId)
+            .ToListAsync();
+
+        // アクティブ/非アクティブのワークスペース数を取得
+        var workspaceCounts = await _context.Workspaces
+            .Where(w => accessibleWorkspaceIds.Contains(w.Id))
+            .GroupBy(w => w.IsActive)
+            .Select(g => new { IsActive = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        statistics.ActiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
+        statistics.InactiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+
+        // アクセス可能なワークスペース全体のユニークなメンバー数を取得
+        statistics.UniqueMemberCount = await _context.WorkspaceUsers
+            .Where(wu => accessibleWorkspaceIds.Contains(wu.WorkspaceId) && wu.User != null && wu.User.IsActive)
+            .Select(wu => wu.UserId)
+            .Distinct()
+            .CountAsync();
+
+        // ジャンルごとのワークスペース数を取得
+        statistics.WorkspaceCountByGenre = await _context.Workspaces
+            .Where(w => accessibleWorkspaceIds.Contains(w.Id))
+            .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
+            .Select(g => new GenreCount
+            {
+                GenreId = g.Key.GenreId!.Value,
+                GenreName = g.Key.GenreName,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
+        // 最近作成されたワークスペース数（過去30日）
+        statistics.RecentWorkspaceCount = await _context.Workspaces
+            .Where(w => accessibleWorkspaceIds.Contains(w.Id) && w.CreatedAt >= DateTime.UtcNow.AddDays(-30))
+            .CountAsync();
+
+        return statistics;
+    }
+
     private async Task RaiseConflictException(int workspaceId)
     {
         // 最新データを取得

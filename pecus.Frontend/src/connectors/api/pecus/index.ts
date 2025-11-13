@@ -142,4 +142,5 @@ export { ProfileDeviceService } from './services/ProfileDeviceService';
 export { ProfileEmailService } from './services/ProfileEmailService';
 export { TagService } from './services/TagService';
 export { TestEmailService } from './services/TestEmailService';
+export { WorkspaceService } from './services/WorkspaceService';
 export { WorkspaceItemService } from './services/WorkspaceItemService';

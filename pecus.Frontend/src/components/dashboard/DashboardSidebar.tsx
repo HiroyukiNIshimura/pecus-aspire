@@ -15,7 +15,7 @@ interface DashboardSidebarProps {
 }
 
 const menuItems = [
-  { href: "/dashboard", label: "概要", icon: DashboardIcon },
+  { href: "/", label: "概要", icon: DashboardIcon },
   { href: "/workspaces", label: "ワークスペース", icon: GridIcon },
   { href: "/my-items", label: "マイアイテム", icon: AssignmentIcon },
   { href: "/tasks", label: "タスク", icon: TaskIcon },

@@ -23,7 +23,8 @@ import {
   ProfileService,
   TagService,
   TestEmailService,
-  WorkspaceItemService
+  WorkspaceItemService,
+  WorkspaceService
 } from "./pecus";
 
 /**
@@ -73,6 +74,7 @@ export function createApiClientInstances() {
     profile: ProfileService,
     tag: TagService,
     testEmail: TestEmailService,
-    workspaceItem: WorkspaceItemService
+    workspaceItem: WorkspaceItemService,
+    workspace: WorkspaceService
   };
 }

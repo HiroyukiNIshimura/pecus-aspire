@@ -5240,6 +5240,67 @@
         }
       }
     },
+    "/api/workspaces": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ログインユーザーがアクセス可能なワークスペース一覧取得（ページネーション）",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IsActive",
+            "in": "query",
+            "description": "アクティブなワークスペースのみ取得するか",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "GenreId",
+            "in": "query",
+            "description": "ジャンルIDでフィルター（オプション）",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "ワークスペース名で前方一致検索（オプション）",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
         "tags": [
