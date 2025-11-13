@@ -13,9 +13,9 @@ export type UpdateProfileRequest = {
     username?: string | null;
     avatarType?: AvatarType;
     /**
-     * アバターURL（相対パスまたは絶対URLを許可）
+     * ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
      */
-    avatarUrl?: string | null;
+    userAvatarPath?: string | null;
     /**
      * スキルIDリスト
      */

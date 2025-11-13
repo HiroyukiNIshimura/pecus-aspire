@@ -15,14 +15,7 @@ import type {
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { skillNameFilterSchema } from "@/schemas/filterSchemas";
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
+import type { UserInfo } from "@/types/userInfo";
 
 interface AdminSkillsClientProps {
   initialUser?: UserInfo | null;

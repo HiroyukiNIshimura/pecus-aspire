@@ -26,7 +26,7 @@ import type {
 export async function updateProfile(request: {
   username?: string;
   avatarType?: AvatarType;
-  avatarUrl?: string;
+  userAvatarPath?: string;
   skillIds?: number[];
   rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<UserResponse>> {
@@ -36,7 +36,7 @@ export async function updateProfile(request: {
     const response = await api.profile.putApiProfile({
       username: request.username,
       avatarType: request.avatarType,
-      avatarUrl: request.avatarUrl,
+      userAvatarPath: request.userAvatarPath,
       skillIds: request.skillIds,
       rowVersion: request.rowVersion,
     });

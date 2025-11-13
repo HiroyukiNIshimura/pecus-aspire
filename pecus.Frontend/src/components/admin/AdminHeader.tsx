@@ -1,14 +1,7 @@
 "use client";
 
 import AppHeader from "@/components/common/AppHeader";
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
+import type { UserInfo } from "@/types/userInfo";
 
 interface AdminHeaderProps {
   userInfo: UserInfo | null;

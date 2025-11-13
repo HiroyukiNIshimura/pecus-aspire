@@ -29,7 +29,8 @@ export function mapUserResponseToUserInfo(userResponse: UserResponse): UserInfo 
     username: userResponse.username,
     rowVersion: userResponse.rowVersion,
     avatarType: userResponse.avatarType,
-    identityIconUrl: userResponse.identityIconUrl ?? undefined,
+    userAvatarPath: userResponse.userAvatarPath,
+    identityIconUrl: userResponse.identityIconUrl,
     createdAt: userResponse.createdAt,
   };
 }

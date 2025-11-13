@@ -15,14 +15,7 @@ import type {
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { tagNameFilterSchema } from "@/schemas/filterSchemas";
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
+import type { UserInfo } from "@/types/userInfo";
 
 interface AdminTagsClientProps {
   initialUser?: UserInfo | null;

@@ -8,6 +8,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { type ApiErrorResponse, isAuthenticationError } from "@/types/errors";
+import type { UserInfo } from "@/types/userInfo";
 
 interface OrganizationData {
   id?: number | string;
@@ -21,14 +22,6 @@ interface OrganizationData {
   updatedAt?: string | null;
   isActive?: boolean;
   userCount?: number | null;
-}
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
 }
 
 export default function AdminClient({

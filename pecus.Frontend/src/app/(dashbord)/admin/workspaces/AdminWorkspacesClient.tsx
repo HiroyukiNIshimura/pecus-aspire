@@ -20,6 +20,7 @@ import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
+import type { UserInfo } from "@/types/userInfo";
 
 /**
  * ワークスペース管理画面のクライアントコンポーネント
@@ -36,14 +37,6 @@ import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
  * 6. nameValidation.isValid でボタンの有効/無効を制御
  * 7. nameValidation.clearErrors でエラーのクリア
  */
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
 
 interface AdminWorkspacesClientProps {
   initialWorkspaces?: WorkspaceListItemResponse[];

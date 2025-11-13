@@ -3,14 +3,7 @@
 import { useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
+import type { UserInfo } from "@/types/userInfo";
 
 interface DashboardClientProps {
   initialUser?: UserInfo | null;

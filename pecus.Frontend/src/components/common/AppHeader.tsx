@@ -3,15 +3,7 @@
 import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth";
 import { useTheme } from "@/hooks/useTheme";
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  identityIconUrl?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
-}
+import type { UserInfo } from "@/types/userInfo";
 
 interface AppHeaderProps {
   userInfo: UserInfo | null;
