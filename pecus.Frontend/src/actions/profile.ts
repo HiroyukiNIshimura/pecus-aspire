@@ -31,7 +31,6 @@ export async function updateProfile(request: {
   rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<UserResponse>> {
   try {
-    console.log("[Server Action] updateProfile called with:", request);
 
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({

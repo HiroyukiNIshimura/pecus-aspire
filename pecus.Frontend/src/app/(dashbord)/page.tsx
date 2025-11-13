@@ -1,4 +1,6 @@
-import { getCurrentUser } from "@/actions/profile";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { UserResponse } from "@/connectors/api/pecus";
+import { redirect } from "next/navigation";
 import type { UserInfo } from "@/types/userInfo";
 import DashboardClient from "./DashboardClient";
 
@@ -6,31 +8,38 @@ export const dynamic = "force-dynamic";
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function Dashboard() {
-  let user: UserInfo | null = null;
+  let userResponse: UserResponse | null = null;
   let fetchError: string | null = null;
 
   try {
-    const userResult = await getCurrentUser();
+    const api = createPecusApiClients();
 
-    if (userResult.success) {
-      const userData = userResult.data;
-      const roles = userData.roles ?? [];
-      user = {
-        id: userData.id,
-        name: userData.name ?? null,
-        email: userData.email ?? null,
-        roles,
-        isAdmin: roles.some((r: any) =>
-          typeof r === "string" ? r === "Admin" : r?.name === "Admin",
-        ),
-      } as UserInfo;
-    } else {
-      fetchError = `ユーザー情報の取得に失敗しました (${userResult.error})`;
+    // ユーザー情報を取得
+    userResponse = await api.profile.getApiProfile();
+  } catch (error: any) {
+    console.error("Dashboard: failed to fetch user", error);
+
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
     }
-  } catch (err: any) {
-    console.error("Dashboard: failed to fetch user", err);
-    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
+
+    fetchError = error.body?.message || error.message || "ユーザー情報の取得に失敗しました";
   }
+
+  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  if (!userResponse) {
+    redirect("/signin");
+  }
+
+  // UserResponse から UserInfo に変換
+  const user: UserInfo = {
+    id: userResponse.id,
+    name: userResponse.username ?? null,
+    email: userResponse.email ?? null,
+    roles: userResponse.roles ?? [],
+    isAdmin: userResponse.isAdmin ?? false,
+  };
 
   return <DashboardClient initialUser={user} fetchError={fetchError} />;
 }

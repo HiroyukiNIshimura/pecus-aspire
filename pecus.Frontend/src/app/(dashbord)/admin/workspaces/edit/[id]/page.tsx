@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getWorkspaceDetail } from "@/actions/admin/workspace";
-import { getCurrentUser } from "@/actions/profile";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { MasterGenreResponse } from "@/connectors/api/pecus";
+import type { MasterGenreResponse, UserResponse } from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
 import EditWorkspaceClient from "./EditWorkspaceClient";
 
@@ -20,17 +19,16 @@ export default async function EditWorkspacePage({
     notFound();
   }
 
-  let user: UserInfo | null = null;
+  let userResponse: UserResponse | null = null;
   let workspaceDetail = null;
   let genres: MasterGenreResponse[] = [];
   let fetchError = null;
 
   try {
+    const api = createPecusApiClients();
+
     // ユーザー情報を取得
-    const userResult = await getCurrentUser();
-    if (userResult.success && userResult.data) {
-      user = userResult.data;
-    }
+    userResponse = await api.profile.getApiProfile();
 
     // ワークスペース詳細を取得
     const workspaceResult = await getWorkspaceDetail(workspaceId);
@@ -42,17 +40,31 @@ export default async function EditWorkspacePage({
 
     // ジャンル一覧を取得
     if (!fetchError) {
-      const api = createPecusApiClients();
-      const genresResponse = await api.masterData.getApiMasterGenres();
+      const genresResponse = await api.master.getApiMasterGenres();
       genres = genresResponse || [];
     }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      fetchError = err.message;
-    } else {
-      fetchError = "データの取得中にエラーが発生しました。";
+  } catch (error: any) {
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
     }
+
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
+
+  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  if (!userResponse) {
+    redirect("/signin");
+  }
+
+  // UserResponse から UserInfo に変換
+  const user: UserInfo = {
+    id: userResponse.id,
+    name: userResponse.username ?? null,
+    email: userResponse.email ?? null,
+    roles: userResponse.roles ?? [],
+    isAdmin: userResponse.isAdmin ?? false,
+  };
 
   if (!workspaceDetail) {
     notFound();

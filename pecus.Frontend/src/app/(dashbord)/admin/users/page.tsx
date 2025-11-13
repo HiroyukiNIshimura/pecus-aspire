@@ -1,7 +1,8 @@
 import { getAllSkills } from "@/actions/admin/skills";
 import { getUsers } from "@/actions/admin/user";
-import { getCurrentUser } from "@/actions/profile";
-import type { ApiErrorResponse } from "@/types/errors";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { UserResponse } from "@/connectors/api/pecus";
+import { redirect } from "next/navigation";
 import type { UserInfo } from "@/types/userInfo";
 import AdminUsersClient from "./AdminUsersClient";
 
@@ -36,19 +37,18 @@ export default async function AdminUsers() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: UserStatistics | null = null;
-  let userInfo: UserInfo | null = null;
+  let userResponse: UserResponse | null = null;
   let skills: Skill[] = [];
   let fetchError: string | null = null;
 
   try {
-    // Server Actions を使用してデータ取得
-    const [usersResult, userResult, skillsResult] = await Promise.all([
-      getUsers(1, undefined, true), // 全ユーザー取得（アクティブ・非アクティブ両方）
-      getCurrentUser(),
-      getAllSkills(true), // 全スキルを取得（フィルター用）
-    ]);
+    const api = createPecusApiClients();
 
-    // ユーザー一覧の処理
+    // ユーザー情報を取得
+    userResponse = await api.profile.getApiProfile();
+
+    // ユーザー一覧を取得
+    const usersResult = await getUsers(1, undefined, true); // 全ユーザー取得（アクティブ・非アクティブ両方）
     if (usersResult.success) {
       const responseData = usersResult.data;
       if (responseData && responseData.data) {
@@ -65,47 +65,41 @@ export default async function AdminUsers() {
         statistics = responseData.summary ?? null;
       }
     } else {
-      // エラーコード方式で返す
-      const error: ApiErrorResponse = {
-        code: "FETCH_ERROR",
-        message: `ユーザー情報の取得に失敗しました: ${usersResult.error}`,
-        statusCode: 500,
-      };
-      fetchError = JSON.stringify(error);
+      fetchError = `ユーザー情報の取得に失敗しました: ${usersResult.error}`;
     }
 
-    // 現在のユーザー情報の処理
-    if (userResult.success) {
-      const userData = userResult.data;
-      userInfo = {
-        id: userData.id,
-        name: userData.name ?? null,
-        email: userData.email ?? null,
-        isAdmin: userData.isAdmin ?? false,
-      } as UserInfo;
-    }
-
-    // スキル一覧の処理
+    // スキル一覧を取得
+    const skillsResult = await getAllSkills(true);
     if (skillsResult.success && skillsResult.data) {
-      // getAllSkills は配列を直接返す
       skills = skillsResult.data.map((skill: any) => ({
         id: skill.id,
         name: skill.name,
       }));
     }
-  } catch (err: any) {
-    console.error(
-      "AdminUsers: failed to fetch users, user info, or skills",
-      err,
-    );
-    // エラーコード方式で返す
-    const error: ApiErrorResponse = {
-      code: "UNKNOWN_ERROR",
-      message: `データの取得に失敗しました: ${err.message ?? String(err)}`,
-      statusCode: 500,
-    };
-    fetchError = JSON.stringify(error);
+  } catch (error: any) {
+    console.error("AdminUsers: failed to fetch users, user info, or skills", error);
+
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
+    }
+
+    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
   }
+
+  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  if (!userResponse) {
+    redirect("/signin");
+  }
+
+  // UserResponse から UserInfo に変換
+  const userInfo: UserInfo = {
+    id: userResponse.id,
+    name: userResponse.username ?? null,
+    email: userResponse.email ?? null,
+    roles: userResponse.roles ?? [],
+    isAdmin: userResponse.isAdmin ?? false,
+  };
 
   return (
     <AdminUsersClient

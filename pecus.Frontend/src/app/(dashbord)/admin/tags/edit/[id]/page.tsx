@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTagDetail } from "@/actions/admin/tags";
-import { getCurrentUser } from "@/actions/profile";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { UserResponse } from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
 import EditTagClient from "./EditTagClient";
 
@@ -18,15 +19,15 @@ export default async function EditTagPage({
     notFound();
   }
 
-  let user: UserInfo | null = null;
+  let userResponse: UserResponse | null = null;
   let tagDetail = null;
   let fetchError = null;
 
   try {
-    const userResult = await getCurrentUser();
-    if (userResult.success && userResult.data) {
-      user = userResult.data;
-    }
+    const api = createPecusApiClients();
+
+    // ユーザー情報を取得
+    userResponse = await api.profile.getApiProfile();
 
     const tagResult = await getTagDetail(tagId);
     if (tagResult.success) {
@@ -34,13 +35,28 @@ export default async function EditTagPage({
     } else {
       fetchError = tagResult.error;
     }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      fetchError = err.message;
-    } else {
-      fetchError = "データの取得中にエラーが発生しました。";
+  } catch (error: any) {
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
     }
+
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
+
+  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  if (!userResponse) {
+    redirect("/signin");
+  }
+
+  // UserResponse から UserInfo に変換
+  const user: UserInfo = {
+    id: userResponse.id,
+    name: userResponse.username ?? null,
+    email: userResponse.email ?? null,
+    roles: userResponse.roles ?? [],
+    isAdmin: userResponse.isAdmin ?? false,
+  };
 
   if (!tagDetail) {
     notFound();

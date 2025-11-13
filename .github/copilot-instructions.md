@@ -1699,6 +1699,12 @@ _logger.LogInformation("User {UserId} logged in from {IpAddress}", me, ipAddress
 ## 開発ワークフロー
 ビルド確認は必須です。変更後はソリューション全体をビルドしてエラーを早期に検出してください。
 
+**必須**
+型確認（フロントエンド）:
+```bash
+npx tsc --noEmit
+```
+
 コードフォーマット例（バックエンド：.editorconfigに基づく自動整形）:
 ```bash
 dotnet format pecus.sln

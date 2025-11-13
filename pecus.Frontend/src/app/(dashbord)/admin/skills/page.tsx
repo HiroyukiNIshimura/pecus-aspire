@@ -1,5 +1,7 @@
 import { getSkills } from "@/actions/admin/skills";
-import { getCurrentUser } from "@/actions/profile";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { UserResponse } from "@/connectors/api/pecus";
+import { redirect } from "next/navigation";
 import type { UserInfo } from "@/types/userInfo";
 import AdminSkillsClient from "./AdminSkillsClient";
 
@@ -11,18 +13,17 @@ export default async function AdminSkills() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: any = null;
-  let user: UserInfo | null = null;
+  let userResponse: UserResponse | null = null;
   let fetchError: string | null = null;
 
   try {
-    // Server Actions を使用してデータ取得
-    // Middlewareが事前に認証チェックを行うため、ここでは401エラーは発生しない
-    const [skillsResult, userResult] = await Promise.all([
-      getSkills(1, true),
-      getCurrentUser(),
-    ]);
+    const api = createPecusApiClients();
 
-    // スキル情報の処理
+    // ユーザー情報を取得
+    userResponse = await api.profile.getApiProfile();
+
+    // スキル情報を取得
+    const skillsResult = await getSkills(1, true);
     if (skillsResult.success) {
       const responseData = skillsResult.data;
       skills = responseData?.data ?? [];
@@ -32,21 +33,30 @@ export default async function AdminSkills() {
     } else {
       fetchError = `スキル情報の取得に失敗しました (${skillsResult.error})`;
     }
+  } catch (error: any) {
+    console.error("AdminSkills: failed to fetch data", error);
 
-    // ユーザー情報の処理
-    if (userResult.success) {
-      const userData = userResult.data;
-      user = {
-        id: userData.id,
-        name: userData.name ?? null,
-        email: userData.email ?? null,
-        isAdmin: userData.isAdmin ?? false,
-      } as UserInfo;
+    // 認証エラーの場合はサインインページへリダイレクト
+    if (error.status === 401) {
+      redirect("/signin");
     }
-  } catch (err: any) {
-    console.error("AdminSkills: failed to fetch data", err);
-    fetchError = `データの取得に失敗しました (${err.message ?? String(err)})`;
+
+    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
   }
+
+  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  if (!userResponse) {
+    redirect("/signin");
+  }
+
+  // UserResponse から UserInfo に変換
+  const user: UserInfo = {
+    id: userResponse.id,
+    name: userResponse.username ?? null,
+    email: userResponse.email ?? null,
+    roles: userResponse.roles ?? [],
+    isAdmin: userResponse.isAdmin ?? false,
+  };
 
   return (
     <AdminSkillsClient
