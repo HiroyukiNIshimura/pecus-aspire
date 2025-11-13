@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import { requestEmailChange } from "@/actions/profile";
-import { useValidation } from "@/hooks/useValidation";
+import { useFormValidation } from "@/hooks/useFormValidation";
 import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 
 interface EmailChangeTabProps {
@@ -26,69 +26,72 @@ export default function EmailChangeTab({
   isLoading,
   setIsLoading,
 }: EmailChangeTabProps) {
-  const [newEmail, setNewEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(initialPendingEmailChange?.newEmail || null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(
+    initialPendingEmailChange?.newEmail || null,
+  );
   const [pendingExpiresAt, setPendingExpiresAt] = useState<Date | null>(
-    initialPendingEmailChange ? new Date(initialPendingEmailChange.expiresAt) : null
+    initialPendingEmailChange
+      ? new Date(initialPendingEmailChange.expiresAt)
+      : null,
   );
 
-  // バリデーション
-  const validation = useValidation(updateEmailFormSchema);
-
-  const handleEmailChange = async () => {
-    // クライアント側バリデーション
-    const validationResult = await validation.validate({
-      newEmail,
-      currentPassword: password,
-    });
-
-    if (!validationResult.success) {
-      notify.error(validationResult.errors[0] || "入力内容を確認してください");
-      return;
-    }
-
-    if (newEmail === currentEmail) {
-      notify.error("新しいメールアドレスが現在と同じです");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await requestEmailChange({
-        newEmail,
-        currentPassword: password,
-      });
-
-      if (result.success) {
-        notify.info(
-          result.data.message || "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。"
-        );
-        setPendingEmail(result.data.newEmail);
-        setPendingExpiresAt(new Date(result.data.expiresAt));
-        setNewEmail("");
-        setPassword("");
-        validation.clearErrors();
-      } else {
-        notify.error(result.message || "メールアドレス変更リクエストに失敗しました");
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidation({
+    schema: updateEmailFormSchema,
+    onSubmit: async (data) => {
+      if (data.newEmail === currentEmail) {
+        notify.error("新しいメールアドレスが現在と同じです");
+        return;
       }
-    } catch (error) {
-      console.error("Email change error:", error);
-      notify.error("メールアドレス変更に失敗しました");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      setIsLoading(true);
+      try {
+        const result = await requestEmailChange({
+          newEmail: data.newEmail,
+          currentPassword: data.currentPassword,
+        });
+
+        if (result.success) {
+          notify.info(
+            result.data.message ||
+              "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。",
+          );
+          setPendingEmail(result.data.newEmail);
+          setPendingExpiresAt(new Date(result.data.expiresAt));
+          formRef.current?.reset();
+        } else {
+          notify.error(
+            result.message || "メールアドレス変更リクエストに失敗しました",
+          );
+        }
+      } catch (error) {
+        console.error("Email change error:", error);
+        notify.error("メールアドレス変更に失敗しました");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+  });
 
   const handleReset = () => {
-    setNewEmail("");
-    setPassword("");
-    validation.clearErrors();
+    formRef.current?.reset();
+  };
+
+  const handleFieldChange = async (fieldName: string, value: string) => {
+    // フィールド検証を実行
+    await validateField(fieldName, value);
   };
 
   return (
-    <div className="space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       {/* 保留中のメールアドレス変更 */}
       {pendingEmail && pendingExpiresAt && (
         <div className="alert alert-warning">
@@ -108,9 +111,13 @@ export default function EmailChangeTab({
           <div>
             <h3 className="font-bold">確認待ちのメールアドレス変更があります</h3>
             <div className="text-sm">
-              <p>新しいメールアドレス: <strong>{pendingEmail}</strong></p>
+              <p>
+                新しいメールアドレス: <strong>{pendingEmail}</strong>
+              </p>
               <p>有効期限: {pendingExpiresAt.toLocaleString("ja-JP")}</p>
-              <p className="mt-1">メールに記載されたリンクをクリックして変更を完了してください。</p>
+              <p className="mt-1">
+                メールに記載されたリンクをクリックして変更を完了してください。
+              </p>
             </div>
           </div>
         </div>
@@ -163,20 +170,20 @@ export default function EmailChangeTab({
         </label>
         <input
           id="newEmail"
+          name="newEmail"
           type="email"
           placeholder="new-email@example.com"
           className={`input input-bordered ${
-            validation.hasErrors ? "input-error" : ""
+            shouldShowError("newEmail") ? "input-error" : ""
           }`}
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          disabled={isLoading}
+          onChange={(e) => handleFieldChange("newEmail", e.target.value)}
+          disabled={isLoading || isSubmitting}
           required
         />
-        {validation.error && (
+        {shouldShowError("newEmail") && (
           <label className="label">
             <span className="label-text-alt text-error">
-              {validation.error}
+              {getFieldError("newEmail")}
             </span>
           </label>
         )}
@@ -184,35 +191,47 @@ export default function EmailChangeTab({
 
       {/* パスワード確認 */}
       <div className="form-control">
-        <label htmlFor="password" className="label">
+        <label htmlFor="currentPassword" className="label">
           <span className="label-text font-semibold text-base-content">
             現在のパスワード（確認用）
             <span className="text-error ml-1">*</span>
           </span>
         </label>
         <input
-          id="password"
+          id="currentPassword"
+          name="currentPassword"
           type={showPassword ? "text" : "password"}
           placeholder="現在のパスワードを入力"
-          className="input input-bordered"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
+          className={`input input-bordered ${
+            shouldShowError("currentPassword") ? "input-error" : ""
+          }`}
+          onChange={(e) => handleFieldChange("currentPassword", e.target.value)}
+          disabled={isLoading || isSubmitting}
           required
         />
+        {shouldShowError("currentPassword") && (
+          <label className="label">
+            <span className="label-text-alt text-error">
+              {getFieldError("currentPassword")}
+            </span>
+          </label>
+        )}
       </div>
 
       {/* パスワード表示/非表示トグル */}
-      <label className="label cursor-pointer">
-        <span className="label-text">パスワードを表示</span>
+      <div className="flex items-center gap-2">
         <input
           type="checkbox"
+          id="showPassword"
           className="checkbox"
           checked={showPassword}
           onChange={() => setShowPassword(!showPassword)}
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
         />
-      </label>
+        <label htmlFor="showPassword" className="cursor-pointer">
+          パスワードを表示
+        </label>
+      </div>
 
       {/* ボタングループ */}
       <div className="flex justify-end gap-2 pt-4">
@@ -220,17 +239,16 @@ export default function EmailChangeTab({
           type="button"
           onClick={handleReset}
           className="btn btn-outline"
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
         >
           クリア
         </button>
         <button
-          type="button"
-          onClick={handleEmailChange}
+          type="submit"
           className="btn btn-primary"
-          disabled={isLoading || !newEmail || !password}
+          disabled={isLoading || isSubmitting}
         >
-          {isLoading ? (
+          {isSubmitting ? (
             <>
               <span className="loading loading-spinner loading-sm"></span>
               送信中...
@@ -240,6 +258,6 @@ export default function EmailChangeTab({
           )}
         </button>
       </div>
-    </div>
+    </form>
   );
 }

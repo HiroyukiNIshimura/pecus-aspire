@@ -8,7 +8,6 @@ import type { UserInfo } from "@/types/userInfo";
 import BasicInfoTab from "./BasicInfoTab";
 import SkillsTab from "./SkillsTab";
 import SecurityTab from "./SecurityTab";
-import OtherTab from "./OtherTab";
 
 interface ProfileSettingsClientProps {
   initialUser: UserInfo;
@@ -17,7 +16,7 @@ interface ProfileSettingsClientProps {
   fetchError?: string | null;
 }
 
-type TabType = "basic" | "skills" | "security" | "other";
+type TabType = "basic" | "skills" | "security";
 
 export default function ProfileSettingsClient({
   initialUser,
@@ -35,7 +34,6 @@ export default function ProfileSettingsClient({
     { id: "basic", label: "基本情報" },
     { id: "skills", label: "スキル" },
     { id: "security", label: "セキュリティ" },
-    { id: "other", label: "その他" },
   ];
 
   return (
@@ -82,7 +80,6 @@ export default function ProfileSettingsClient({
                 setIsLoading={setIsLoading}
               />
             )}
-            {activeTab === "other" && <OtherTab user={user} />}
           </div>
         </div>
       </main>
