@@ -344,7 +344,7 @@ export default function BasicInfoTab({
             <div className="mb-4 p-4 bg-base-200 rounded-lg">
               <div className="flex items-center gap-4">
                 <div className="avatar">
-                  <div className="w-20 h-20 rounded-full ring-2 ring-base-300">
+                  <div className="size-24 rounded-full">
                     <img
                       src={avatarBlobUrl}
                       alt="現在のアバター"

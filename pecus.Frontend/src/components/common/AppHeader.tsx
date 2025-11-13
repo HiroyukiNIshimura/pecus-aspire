@@ -149,20 +149,21 @@ export default function AppHeader({
           <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
             <button
               type="button"
-              className="dropdown-toggle btn btn-ghost btn-circle avatar"
+              className="dropdown-toggle p-0 bg-transparent hover:bg-transparent border-none"
             >
-              <div className="w-8 rounded-full overflow-hidden ring-2 ring-base-300">
-                {userInfo?.identityIconUrl ? (
-                  <img
-                    src={userInfo.identityIconUrl}
-                    alt={userInfo.name || "User Avatar"}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
-                    {userInfo?.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                )}
+              <div className="avatar">
+                <div className="size-12 rounded-full ring-0 hover:ring-2 hover:ring-base-300 transition-all">
+                  {userInfo?.identityIconUrl ? (
+                    <img
+                      src={userInfo.identityIconUrl}
+                      alt={userInfo.name || "User Avatar"}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
+                      {userInfo?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
               </div>
             </button>
             <ul className="dropdown-menu dropdown-open:opacity-100 hidden">
