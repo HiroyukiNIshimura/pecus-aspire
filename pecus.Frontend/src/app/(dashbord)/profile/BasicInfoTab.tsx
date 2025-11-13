@@ -87,32 +87,14 @@ export default function BasicInfoTab({
     },
   });
 
-  // 既存のアバター画像をData URLとして読み込む（API Route経由）
+  // 既存のアバター画像の表示（identityIconUrlは既にDataURL形式）
   useEffect(() => {
-    if (user.identityIconUrl && !avatarPreviewUrl) {
-      const fileName = user.identityIconUrl.split("/").pop();
-      if (!fileName) return;
-
-      // API Routeを呼び出してアバター画像を取得
-      fetch(`/api/avatar?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}`)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data.dataUrl) {
-            setAvatarBlobUrl(data.dataUrl);
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to fetch avatar:', error);
-        });
+    // AvatarType が UserAvatar で identityIconUrl が存在する場合、
+    // 既に DataURL 形式なのでそのまま使用
+    if (user.identityIconUrl && user.avatarType === "UserAvatar" && !avatarPreviewUrl) {
+      setAvatarBlobUrl(user.identityIconUrl);
     }
-
-    // Data URLはクリーンアップ不要（メモリリークなし）
-  }, [user.identityIconUrl, avatarPreviewUrl, user.id]);
+  }, [user.identityIconUrl, user.avatarType, avatarPreviewUrl]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {
@@ -332,63 +314,21 @@ export default function BasicInfoTab({
           </label>
 
           {/* 既存の画像がある場合は表示 */}
-          {user.identityIconUrl && !avatarPreviewUrl && (
+          {avatarBlobUrl && !avatarPreviewUrl && (
             <div className="mb-4 p-4 bg-base-200 rounded-lg">
               <div className="flex items-center gap-4">
-                <div className="relative group">
-                  {avatarBlobUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // 元画像をダウンロード
-                        const fileName = user.identityIconUrl?.split("/").pop();
-                        if (fileName) {
-                          const downloadUrl = `/api/avatar/download?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}&useOriginal=true`;
-                          const link = document.createElement('a');
-                          link.href = downloadUrl;
-                          link.download = fileName;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }
-                      }}
-                      className="relative block cursor-pointer"
-                      title="クリックして元画像をダウンロード"
-                    >
-                      <img
-                        src={avatarBlobUrl}
-                        alt="現在のアバター"
-                        className="w-20 h-20 rounded-full object-cover shadow-md ring-2 ring-base-300 transition-opacity group-hover:opacity-75"
-                      />
-                      {/* ダウンロードアイコン */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-8 w-8 text-white drop-shadow-lg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
-                      </div>
-                    </button>
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-base-300 flex items-center justify-center">
-                      <span className="loading loading-spinner loading-md"></span>
-                    </div>
-                  )}
+                <div className="avatar">
+                  <div className="w-20 h-20 rounded-full ring-2 ring-base-300">
+                    <img
+                      src={avatarBlobUrl}
+                      alt="現在のアバター"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-base-content">現在のアバター画像</p>
                   <p className="text-xs text-base-content/60 mt-1">
-                    クリックして元画像をダウンロード
-                    <br />
                     新しい画像をアップロードすると置き換わります
                   </p>
                 </div>
@@ -409,17 +349,15 @@ export default function BasicInfoTab({
               ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
             `}
           >
-            <form>
-              <input
-                ref={fileInputRef}
-                id="avatarFile"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={isSubmitting || isLoading}
-              />
-            </form>
+            <input
+              ref={fileInputRef}
+              id="avatarFile"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={handleFileUpload}
+              disabled={isSubmitting || isLoading}
+            />
 
             {avatarPreviewUrl ? (
               <div className="flex flex-col items-center gap-4">

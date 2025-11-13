@@ -52,11 +52,24 @@ public static class IdentityIconHelper
     /// <summary>
     /// ユーザーアップロードアイコンのURLを取得（Base64 DataURL形式）
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// avatarPath は以下の形式に対応しています：
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>ファイル名のみ: "filename.png"</description></item>
+    /// <item><description>API パス: "/api/downloads/avatar/3/filename.png"</description></item>
+    /// <item><description>相対パス: "avatar/3/filename.png"</description></item>
+    /// </list>
+    /// <para>
+    /// いずれの形式でも、ファイル名部分を抽出して物理ファイルパスを構築します。
+    /// </para>
+    /// </remarks>
     /// <param name="organizationId">組織ID</param>
     /// <param name="userId">ユーザーID</param>
-    /// <param name="avatarPath">アバターの仮想パス（ファイル名）</param>
+    /// <param name="avatarPath">アバターパス（ファイル名 or API パス or 相対パス）</param>
     /// <param name="uploadsPath">アップロードファイルのルートパス（デフォルト: "uploads"）</param>
-    /// <returns>Base64 DataURL形式のアイコンURL、失敗時は空文字列</returns>
+    /// <returns>Base64 DataURL形式のアイコンURL（例: "data:image/png;base64,..."）、失敗時は空文字列</returns>
     public static string GetUserAvatarUrl(
         int? organizationId,
         int userId,
@@ -64,6 +77,7 @@ public static class IdentityIconHelper
         string uploadsPath = "uploads"
     )
     {
+        // 入力検証
         if (string.IsNullOrWhiteSpace(avatarPath) || !organizationId.HasValue)
         {
             return string.Empty;
@@ -71,42 +85,104 @@ public static class IdentityIconHelper
 
         try
         {
-            // ファイルパスを構築（FileDownloadControllerと同じロジック）
-            var filePath = Path.Combine(
-                uploadsPath,
-                organizationId.Value.ToString(),
-                "avatar",
-                userId.ToString(),
-                avatarPath
+            // ステップ1: avatarPath からファイル名を抽出
+            // "/api/downloads/avatar/3/file.png" → "file.png"
+            // "file.png" → "file.png"
+            var fileName = ExtractFileName(avatarPath);
+
+            // ステップ2: 物理ファイルパスを構築
+            // uploads/{organizationId}/avatar/{userId}/{fileName}
+            var physicalFilePath = BuildAvatarFilePath(
+                uploadsPath: uploadsPath,
+                organizationId: organizationId.Value,
+                userId: userId,
+                fileName: fileName
             );
 
-            if (!File.Exists(filePath))
+            // ステップ3: ファイル存在チェック
+            if (!File.Exists(physicalFilePath))
             {
                 return string.Empty;
             }
 
-            // ファイルを読み込んでBase64変換
-            var fileBytes = File.ReadAllBytes(filePath);
-            var base64 = Convert.ToBase64String(fileBytes);
+            // ステップ4: ファイルを読み込んでBase64エンコード
+            var fileBytes = File.ReadAllBytes(physicalFilePath);
+            var base64String = Convert.ToBase64String(fileBytes);
 
-            // Content-Typeを推測（拡張子から）
-            var extension = Path.GetExtension(avatarPath).ToLowerInvariant();
-            var mimeType = extension switch
-            {
-                ".png" => "image/png",
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".gif" => "image/gif",
-                ".webp" => "image/webp",
-                _ => "image/jpeg"
-            };
+            // ステップ5: MIME タイプを推定
+            var mimeType = GetMimeTypeFromExtension(fileName);
 
-            return $"data:{mimeType};base64,{base64}";
+            // ステップ6: DataURL形式で返却
+            return $"data:{mimeType};base64,{base64String}";
         }
         catch
         {
             // ファイル読み込み失敗時は空文字列を返す
+            // （権限エラー、I/Oエラー等）
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// パス文字列からファイル名を抽出
+    /// </summary>
+    /// <param name="path">ファイルパスまたはファイル名</param>
+    /// <returns>ファイル名部分</returns>
+    private static string ExtractFileName(string path)
+    {
+        // パス区切り文字が含まれている場合はファイル名のみを抽出
+        // 例: "/api/downloads/avatar/3/file.png" → "file.png"
+        //     "file.png" → "file.png"
+        return path.Contains('/') || path.Contains('\\')
+            ? Path.GetFileName(path)
+            : path;
+    }
+
+    /// <summary>
+    /// アバターファイルの物理パスを構築
+    /// </summary>
+    /// <param name="uploadsPath">アップロードルートパス</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="fileName">ファイル名</param>
+    /// <returns>物理ファイルパス</returns>
+    private static string BuildAvatarFilePath(
+        string uploadsPath,
+        int organizationId,
+        int userId,
+        string fileName
+    )
+    {
+        // 標準的なアバターファイル配置パターン
+        // {uploadsPath}/{organizationId}/avatar/{userId}/{fileName}
+        return Path.Combine(
+            uploadsPath,
+            organizationId.ToString(),
+            "avatar",
+            userId.ToString(),
+            fileName
+        );
+    }
+
+    /// <summary>
+    /// ファイル拡張子からMIMEタイプを推定
+    /// </summary>
+    /// <param name="fileName">ファイル名</param>
+    /// <returns>MIMEタイプ（例: "image/png"）</returns>
+    private static string GetMimeTypeFromExtension(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension switch
+        {
+            ".png" => "image/png",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".svg" => "image/svg+xml",
+            ".bmp" => "image/bmp",
+            ".ico" => "image/x-icon",
+            _ => "image/jpeg" // デフォルトはJPEG
+        };
     }
 
     /// <summary>

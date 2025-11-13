@@ -54,6 +54,7 @@ public class ProfileService
     private readonly RefreshTokenService _refreshTokenService;
     private readonly UserService _userService;
     private readonly FileUploadService _fileUploadService;
+    private readonly IWebHostEnvironment _environment;
 
     /// <summary>
     /// コンストラクタ
@@ -63,7 +64,8 @@ public class ProfileService
         ILogger<ProfileService> logger,
         RefreshTokenService refreshTokenService,
         UserService userService,
-        FileUploadService fileUploadService
+        FileUploadService fileUploadService,
+        IWebHostEnvironment environment
     )
     {
         _context = context;
@@ -71,6 +73,7 @@ public class ProfileService
         _refreshTokenService = refreshTokenService;
         _userService = userService;
         _fileUploadService = fileUploadService;
+        _environment = environment;
     }
 
     /// <summary>
@@ -206,6 +209,8 @@ public class ProfileService
             return null;
         }
 
+        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
+
         var response = new UserResponse
         {
             Id = user.Id,
@@ -219,7 +224,8 @@ public class ProfileService
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
-                avatarPath: user.AvatarUrl
+                avatarPath: user.AvatarUrl,
+                uploadsPath: uploadsPath
             ),
             CreatedAt = user.CreatedAt,
             Roles = user.Roles?
