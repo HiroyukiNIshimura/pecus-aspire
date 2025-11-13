@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { UserInfo } from "@/types/userInfo";
-import { updateProfile, uploadAvatarFile } from "@/actions/profile";
+import { updateProfile, uploadAvatarFile, deleteAvatarFile } from "@/actions/profile";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { usernameSchema } from "@/schemas/profileSchemas";
 import { z } from "zod";
@@ -227,7 +227,34 @@ export default function BasicInfoTab({
     fileInputRef.current?.click();
   };
 
-  const handleFileReset = () => {
+  const handleFileReset = async () => {
+    // アップロード済みのファイルを削除
+    if (uploadedFileUrl && user.id) {
+      const fileName = uploadedFileUrl.split("/").pop();
+      if (fileName) {
+        setIsLoading(true);
+        try {
+          const result = await deleteAvatarFile({
+            fileName: fileName,
+            resourceId: user.id,
+          });
+
+          if (result.success) {
+            notify.success("アップロード済みファイルを削除しました");
+          } else {
+            notify.error(result.message || "削除に失敗しました");
+          }
+        } catch (error) {
+          console.error("Delete error:", error);
+          notify.error(
+            error instanceof Error ? error.message : "削除に失敗しました"
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    }
+
     // オブジェクトURLを解放
     if (avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(avatarPreviewUrl);

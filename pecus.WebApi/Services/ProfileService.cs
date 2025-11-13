@@ -53,6 +53,7 @@ public class ProfileService
     private readonly ILogger<ProfileService> _logger;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly UserService _userService;
+    private readonly FileUploadService _fileUploadService;
 
     /// <summary>
     /// コンストラクタ
@@ -61,13 +62,15 @@ public class ProfileService
         ApplicationDbContext context,
         ILogger<ProfileService> logger,
         RefreshTokenService refreshTokenService,
-        UserService userService
+        UserService userService,
+        FileUploadService fileUploadService
     )
     {
         _context = context;
         _logger = logger;
         _refreshTokenService = refreshTokenService;
         _userService = userService;
+        _fileUploadService = fileUploadService;
     }
 
     /// <summary>
@@ -258,6 +261,9 @@ public class ProfileService
                 return false;
             }
 
+            // 古いAvatarUrlを保存（削除用）
+            var oldAvatarUrl = user.AvatarUrl;
+
             // ユーザー名の更新
             if (!string.IsNullOrWhiteSpace(request.Username))
             {
@@ -290,6 +296,69 @@ public class ProfileService
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            // AvatarUrlが変更された場合、古いファイルを削除
+            if (request.AvatarType == AvatarType.UserAvatar &&
+                !string.IsNullOrWhiteSpace(user.AvatarUrl) &&
+                user.OrganizationId.HasValue)
+            {
+                try
+                {
+                    // 新しいファイル名を取得（URLから抽出）
+                    var newUrlParts = user.AvatarUrl.Split('/');
+                    var newFileName = newUrlParts[^1]; // 最後の要素がファイル名
+
+                    // ユーザーのアバターディレクトリパスを構築
+                    var avatarDirectory = Path.Combine(
+                        "uploads",
+                        user.OrganizationId.Value.ToString(),
+                        "avatar",
+                        userId.ToString()
+                    );
+
+                    // ディレクトリが存在する場合、新しいファイル以外を削除
+                    if (Directory.Exists(avatarDirectory))
+                    {
+                        var allFiles = Directory.GetFiles(avatarDirectory);
+                        var deletedFiles = new List<string>();
+
+                        foreach (var filePath in allFiles)
+                        {
+                            var fileName = Path.GetFileName(filePath);
+
+                            // 新しいファイル名とそれに対応する_org付きファイル以外を削除
+                            var newFileNameWithoutExt = Path.GetFileNameWithoutExtension(newFileName);
+                            var newFileExt = Path.GetExtension(newFileName);
+                            var newOriginalFileName = $"{newFileNameWithoutExt}_org{newFileExt}";
+
+                            if (fileName != newFileName && fileName != newOriginalFileName)
+                            {
+                                File.Delete(filePath);
+                                deletedFiles.Add(fileName);
+                            }
+                        }
+
+                        if (deletedFiles.Count > 0)
+                        {
+                            _logger.LogInformation(
+                                "古いアバターファイルを削除しました。UserId: {UserId}, DeletedFiles: {DeletedFiles}",
+                                userId,
+                                string.Join(", ", deletedFiles)
+                            );
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // ファイル削除失敗はログのみ（トランザクションは成功扱い）
+                    _logger.LogWarning(
+                        ex,
+                        "古いアバターファイルの削除に失敗しました。UserId: {UserId}, AvatarUrl: {AvatarUrl}",
+                        userId,
+                        user.AvatarUrl
+                    );
+                }
+            }
 
             _logger.LogInformation(
                 "プロフィール情報を更新しました。UserId: {UserId}, UpdatedFields: {UpdatedFields}",

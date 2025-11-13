@@ -244,3 +244,30 @@ export async function uploadAvatarFile(fileData: {
   }
 }
 
+/**
+ * Server Action: アップロード済みアバター画像を削除
+ * @param fileData ファイル情報（ファイル名、リソースID）
+ */
+export async function deleteAvatarFile(fileData: {
+  fileName: string;
+  resourceId: number;
+}): Promise<ApiResponse<MessageResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.file.deleteApiDownloadsIcons(
+      'Avatar',
+      fileData.resourceId,
+      fileData.fileName
+    );
+
+    return { success: true, data: response };
+  } catch (error: any) {
+    console.error("Failed to delete avatar file:", error);
+    return {
+      success: false,
+      error: "server",
+      message:
+        error.body?.message || error.message || "削除に失敗しました",
+    };
+  }
+}

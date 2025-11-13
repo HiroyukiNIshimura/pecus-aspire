@@ -4008,6 +4008,68 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "File"
+        ],
+        "summary": "アイコンファイルを削除",
+        "parameters": [
+          {
+            "name": "FileType",
+            "in": "query",
+            "description": "ファイルの種類（avatar, genre）",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FileType"
+            }
+          },
+          {
+            "name": "ResourceId",
+            "in": "query",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FileName",
+            "in": "query",
+            "description": "ファイル名",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/files": {

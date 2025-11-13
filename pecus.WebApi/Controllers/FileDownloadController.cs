@@ -47,6 +47,12 @@ public class FileDownloadController : BaseSecureController
             request.FileName
         );
 
+        // UseOriginal が true の場合、元画像（_orgサフィックス付き）を取得
+        if (request.UseOriginal)
+        {
+            filePath = ImageHelper.GenerateOriginalFilePath(filePath);
+        }
+
         if (!System.IO.File.Exists(filePath))
         {
             throw new NotFoundException("ファイルが見つかりません。");
@@ -66,7 +72,7 @@ public class FileDownloadController : BaseSecureController
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status404NotFound)]
     public Results<Ok<MessageResponse>, NotFound<MessageResponse>> DeleteIcon(
-        [FromQuery] GetIconRequest request
+        [FromQuery] DeleteIconRequest request
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
@@ -85,17 +91,34 @@ public class FileDownloadController : BaseSecureController
             request.FileName
         );
 
-        // ファイルが存在する場合のみ削除（存在しない場合も成功扱い）
+        // リサイズ前の元画像ファイルパス（_orgサフィックス付き）も構築
+        var originalFilePath = ImageHelper.GenerateOriginalFilePath(filePath);
+
+        var deletedFiles = new List<string>();
+
+        // リサイズ済みファイルを削除
         if (System.IO.File.Exists(filePath))
         {
             System.IO.File.Delete(filePath);
+            deletedFiles.Add(filePath);
+        }
 
+        // 元画像（_orgサフィックス付き）を削除
+        if (System.IO.File.Exists(originalFilePath))
+        {
+            System.IO.File.Delete(originalFilePath);
+            deletedFiles.Add(originalFilePath);
+        }
+
+        if (deletedFiles.Count > 0)
+        {
             _logger.LogInformation(
-                "アイコンファイルを削除しました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}",
+                "アイコンファイルを削除しました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}, DeletedFiles: {DeletedFiles}",
                 CurrentUser.OrganizationId.Value,
                 request.FileType,
                 request.ResourceId,
-                request.FileName
+                request.FileName,
+                string.Join(", ", deletedFiles)
             );
         }
         else
