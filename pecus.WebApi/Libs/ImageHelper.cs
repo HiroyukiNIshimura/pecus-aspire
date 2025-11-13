@@ -1,5 +1,6 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 using SixLaborsImage = SixLabors.ImageSharp.Image;
 
@@ -11,14 +12,15 @@ namespace Pecus.Libs;
 public static class ImageHelper
 {
     /// <summary>
-    /// 画像を指定されたサイズにリサイズ
+    /// 画像を指定されたサイズにリサイズし、WebP形式で保存
     /// </summary>
     /// <param name="inputFilePath">入力ファイルパス</param>
-    /// <param name="outputFilePath">出力ファイルパス</param>
+    /// <param name="outputFilePath">出力ファイルパス（拡張子は自動的に.webpに変更されます）</param>
     /// <param name="width">幅（デフォルト: 48）</param>
     /// <param name="height">高さ（デフォルト: 48）</param>
-    /// <param name="quality">JPEG品質（デフォルト: 85）</param>
-    public static async Task ResizeImageAsync(
+    /// <param name="quality">WebP品質（デフォルト: 85）</param>
+    /// <returns>実際に保存されたファイルパス（.webp拡張子）</returns>
+    public static async Task<string> ResizeImageAsync(
         string inputFilePath,
         string outputFilePath,
         int width = 48,
@@ -40,23 +42,15 @@ public static class ImageHelper
             )
         );
 
-        // 出力形式を決定
-        var extension = Path.GetExtension(outputFilePath).ToLowerInvariant();
+        // 出力ファイルパスを .webp に変更
+        var directory = Path.GetDirectoryName(outputFilePath);
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputFilePath);
+        var webpFilePath = Path.Combine(directory ?? string.Empty, $"{fileNameWithoutExtension}.webp");
 
-        switch (extension)
-        {
-            case ".jpg":
-            case ".jpeg":
-                await image.SaveAsJpegAsync(outputFilePath, new JpegEncoder { Quality = quality });
-                break;
-            case ".png":
-                await image.SaveAsPngAsync(outputFilePath);
-                break;
-            default:
-                // デフォルトはJPEG
-                await image.SaveAsJpegAsync(outputFilePath, new JpegEncoder { Quality = quality });
-                break;
-        }
+        // WebP形式で保存
+        await image.SaveAsWebpAsync(webpFilePath, new WebpEncoder { Quality = quality });
+
+        return webpFilePath;
     }
 
     /// <summary>
