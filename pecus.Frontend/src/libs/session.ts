@@ -61,11 +61,13 @@ export class SessionManager {
       // ブラウザのトップレベルナビゲーションや内部の RSC リクエストで
       // より安定して送信されるようにする。
       // セキュリティのため HttpOnly を true に変更（クライアントJSからの参照は不可）。
+      // maxAge: 7日間（秒単位）- ブラウザを閉じても Cookie を保持
       const cookieOptions = {
         path: "/",
         httpOnly: true,
         sameSite: "lax" as const,
         secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 7, // 7日間
       };
 
       cookieStore.set(
