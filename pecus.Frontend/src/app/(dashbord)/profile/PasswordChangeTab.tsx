@@ -54,16 +54,16 @@ export default function PasswordChangeTab({
       });
 
       if (result.success) {
-        onAlert("success", "パスワードが変更されました");
+        notify.success("パスワードが変更されました");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        onAlert("error", result.message || "パスワード変更に失敗しました");
+        notify.error(result.message || "パスワード変更に失敗しました");
       }
     } catch (error) {
       console.error("Password change error:", error);
-      onAlert("error", "予期しないエラーが発生しました");
+      notify.error("予期しないエラーが発生しました");
     } finally {
       setIsLoading(false);
     }
