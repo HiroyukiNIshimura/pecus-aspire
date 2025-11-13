@@ -5,7 +5,6 @@ using Pecus.Libs;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.User;
-using Pecus.Models.Validation;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;
@@ -161,23 +160,4 @@ public class ProfileController : BaseSecureController
 
         return TypedResults.Ok(new MessageResponse { Message = "パスワードを変更しました。" });
     }
-}
-
-/// <summary>
-/// 自ユーザースキル設定リクエスト
-/// </summary>
-public class SetOwnSkillsRequest
-{
-    /// <summary>
-    /// スキルIDのリスト。既存のすべてのスキルを置き換えます。
-    /// 空のリストまたはnullの場合はすべてのスキルを削除します。
-    /// </summary>
-    [IntListRange(1, 50)]
-    public List<int>? SkillIds { get; set; }
-
-    /// <summary>
-    /// ユーザーの楽観的ロック用RowVersion。
-    /// 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
-    /// </summary>
-    public uint? UserRowVersion { get; set; }
 }
