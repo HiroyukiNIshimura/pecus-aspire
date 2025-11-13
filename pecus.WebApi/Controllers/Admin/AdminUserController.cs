@@ -93,7 +93,14 @@ public class AdminUserController : BaseAdminController
             Username = targetUser.Username,
             Email = targetUser.Email,
             AvatarType = targetUser.AvatarType,
-            IdentityIconUrl = targetUser.AvatarUrl,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: targetUser.AvatarType,
+                organizationId: targetUser.OrganizationId,
+                userId: targetUser.Id,
+                username: targetUser.Username,
+                email: targetUser.Email,
+                avatarPath: targetUser.AvatarUrl
+            ),
             CreatedAt = targetUser.CreatedAt,
             RowVersion = targetUser.RowVersion!,
             Roles = targetUser.Roles?
@@ -160,7 +167,14 @@ public class AdminUserController : BaseAdminController
             Username = u.Username,
             Email = u.Email,
             AvatarType = u.AvatarType,
-            IdentityIconUrl = u.AvatarUrl,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: u.AvatarType,
+                organizationId: u.OrganizationId,
+                userId: u.Id,
+                username: u.Username,
+                email: u.Email,
+                avatarPath: u.AvatarUrl
+            ),
             CreatedAt = u.CreatedAt,
             Roles = u.Roles?
                 .Select(r => new UserRoleResponse
@@ -428,7 +442,14 @@ public class AdminUserController : BaseAdminController
             Username = user.Username,
             Email = user.Email,
             AvatarType = user.AvatarType,
-            IdentityIconUrl = user.AvatarUrl,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: user.AvatarType,
+                organizationId: user.OrganizationId,
+                userId: user.Id,
+                username: user.Username,
+                email: user.Email,
+                avatarPath: user.AvatarUrl
+            ),
             CreatedAt = user.CreatedAt,
             IsActive = user.IsActive,
             Roles = user.Roles?

@@ -213,7 +213,14 @@ public class ProfileService
             Username = user.Username,
             Email = user.Email,
             AvatarType = user.AvatarType,
-            IdentityIconUrl = user.AvatarUrl,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: user.AvatarType,
+                organizationId: user.OrganizationId,
+                userId: user.Id,
+                username: user.Username,
+                email: user.Email,
+                avatarPath: user.AvatarUrl
+            ),
             CreatedAt = user.CreatedAt,
             Roles = user.Roles?
                 .Select(r => new UserRoleResponse

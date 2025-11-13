@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
@@ -120,6 +121,15 @@ public class EntranceOrganizationController : ControllerBase
                 LoginId = adminUser.LoginId,
                 Username = adminUser.Username,
                 Email = adminUser.Email,
+                AvatarType = adminUser.AvatarType,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: adminUser.AvatarType,
+                    organizationId: adminUser.OrganizationId,
+                    userId: adminUser.Id,
+                    username: adminUser.Username,
+                    email: adminUser.Email,
+                    avatarPath: adminUser.AvatarUrl
+                ),
                 Roles = adminUser.Roles?
                     .Select(r => new UserRoleResponse
                     {

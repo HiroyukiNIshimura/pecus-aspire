@@ -129,6 +129,14 @@ public class BackendOrganizationController : BaseBackendController
             LoginId = u.LoginId,
             Username = u.Username,
             Email = u.Email,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: u.AvatarType,
+                organizationId: u.OrganizationId,
+                userId: u.Id,
+                username: u.Username,
+                email: u.Email,
+                avatarPath: u.AvatarUrl
+            ),
             IsActive = u.IsActive,
             CreatedAt = u.CreatedAt,
             LastLoginAt = u.LastLoginAt,

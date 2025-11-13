@@ -117,11 +117,12 @@ public class EntranceAuthController : ControllerBase
             Email = user.Email,
             AvatarType = user.AvatarType,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
-                user.AvatarType,
-                user.Id,
-                user.Username,
-                user.Email,
-                user.AvatarUrl
+                iconType: user.AvatarType,
+                organizationId: user.OrganizationId,
+                userId: user.Id,
+                username: user.Username,
+                email: user.Email,
+                avatarPath: user.AvatarUrl
             ),
             Roles = user
                 .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })

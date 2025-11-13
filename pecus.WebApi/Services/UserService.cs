@@ -778,6 +778,15 @@ public class UserService
                 LoginId = latestUser.LoginId,
                 Username = latestUser.Username,
                 Email = latestUser.Email,
+                AvatarType = latestUser.AvatarType,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: latestUser.AvatarType,
+                    organizationId: latestUser.OrganizationId,
+                    userId: latestUser.Id,
+                    username: latestUser.Username,
+                    email: latestUser.Email,
+                    avatarPath: latestUser.AvatarUrl
+                ),
                 Roles = latestUser.Roles.Select(r => new UserRoleResponse
                 {
                     Id = r.Id,

@@ -31,11 +31,12 @@ public static class WorkspaceItemResponseHelper
             OwnerAvatarUrl =
                 item.Owner != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
-                        item.Owner.AvatarType,
-                        item.Owner.Id,
-                        item.Owner.Username,
-                        item.Owner.Email,
-                        item.Owner.AvatarUrl
+                        iconType: item.Owner.AvatarType,
+                        organizationId: item.Owner.OrganizationId,
+                        userId: item.Owner.Id,
+                        username: item.Owner.Username,
+                        email: item.Owner.Email,
+                        avatarPath: item.Owner.AvatarUrl
                     )
                     : null,
             AssigneeId = item.AssigneeId,
@@ -43,11 +44,12 @@ public static class WorkspaceItemResponseHelper
             AssigneeAvatarUrl =
                 item.Assignee != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
-                        item.Assignee.AvatarType,
-                        item.Assignee.Id,
-                        item.Assignee.Username,
-                        item.Assignee.Email,
-                        item.Assignee.AvatarUrl
+                        iconType: item.Assignee.AvatarType,
+                        organizationId: item.Assignee.OrganizationId,
+                        userId: item.Assignee.Id,
+                        username: item.Assignee.Username,
+                        email: item.Assignee.Email,
+                        avatarPath: item.Assignee.AvatarUrl
                     )
                     : null,
             Priority = item.Priority,
@@ -59,11 +61,12 @@ public static class WorkspaceItemResponseHelper
             CommitterAvatarUrl =
                 item.Committer != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
-                        item.Committer.AvatarType,
-                        item.Committer.Id,
-                        item.Committer.Username,
-                        item.Committer.Email,
-                        item.Committer.AvatarUrl
+                        iconType: item.Committer.AvatarType,
+                        organizationId: item.Committer.OrganizationId,
+                        userId: item.Committer.Id,
+                        username: item.Committer.Username,
+                        email: item.Committer.Email,
+                        avatarPath: item.Committer.AvatarUrl
                     )
                     : null,
             CreatedAt = item.CreatedAt,
