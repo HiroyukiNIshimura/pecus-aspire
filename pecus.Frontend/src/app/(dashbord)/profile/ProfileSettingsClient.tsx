@@ -2,25 +2,18 @@
 
 import { useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
-import type { UserResponse, MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import type { MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
 import BasicInfoTab from "./BasicInfoTab";
 import SkillsTab from "./SkillsTab";
 import SecurityTab from "./SecurityTab";
 import OtherTab from "./OtherTab";
 
 interface ProfileSettingsClientProps {
-  initialUser: UserResponse;
+  initialUser: UserInfo;
   initialPendingEmailChange: PendingEmailChangeResponse | null;
   masterSkills: MasterSkillResponse[];
   fetchError?: string | null;
-}
-
-interface UserInfo {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  roles?: any[];
-  isAdmin: boolean;
 }
 
 type TabType = "basic" | "skills" | "security" | "other";
@@ -38,17 +31,10 @@ export default function ProfileSettingsClient({
   fetchError,
 }: ProfileSettingsClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("basic");
-  const [user, setUser] = useState<UserResponse>(initialUser);
+  const [user, setUser] = useState<UserInfo>(initialUser);
   const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(initialPendingEmailChange);
   const [alert, setAlert] = useState<AlertMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const userInfo: UserInfo = {
-    id: initialUser.id,
-    name: initialUser.username,
-    email: initialUser.email,
-    isAdmin: initialUser.isAdmin || false,
-  };
 
   const handleAlert = (type: AlertType, message: string) => {
     setAlert({ type, message });
@@ -64,7 +50,7 @@ export default function ProfileSettingsClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader userInfo={userInfo} sidebarOpen={false} setSidebarOpen={() => {}} hideProfileMenu={true} />
+      <AppHeader userInfo={user} sidebarOpen={false} setSidebarOpen={() => {}} hideProfileMenu={true} />
       <main className="flex-1 p-6 bg-base-100">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">

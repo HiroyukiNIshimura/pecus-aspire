@@ -3,7 +3,7 @@ import { getUsers } from "@/actions/admin/user";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
-import type { UserInfo } from "@/types/userInfo";
+import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminUsersClient from "./AdminUsersClient";
 
 export const dynamic = "force-dynamic";
@@ -93,13 +93,7 @@ export default async function AdminUsers() {
   }
 
   // UserResponse から UserInfo に変換
-  const userInfo: UserInfo = {
-    id: userResponse.id,
-    name: userResponse.username ?? null,
-    email: userResponse.email ?? null,
-    roles: userResponse.roles ?? [],
-    isAdmin: userResponse.isAdmin ?? false,
-  };
+  const userInfo = mapUserResponseToUserInfo(userResponse);
 
   return (
     <AdminUsersClient

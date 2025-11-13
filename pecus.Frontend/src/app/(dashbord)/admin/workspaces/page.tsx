@@ -8,7 +8,7 @@ import type {
   WorkspaceStatistics,
 } from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
-import type { UserInfo } from "@/types/userInfo";
+import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
 
 export const dynamic = "force-dynamic";
@@ -63,13 +63,7 @@ export default async function AdminWorkspaces() {
   }
 
   // UserResponse から UserInfo に変換
-  const user: UserInfo = {
-    id: userResponse.id,
-    name: userResponse.username ?? null,
-    email: userResponse.email ?? null,
-    roles: userResponse.roles ?? [],
-    isAdmin: userResponse.isAdmin ?? false,
-  };
+  const user = mapUserResponseToUserInfo(userResponse);
 
   return (
     <AdminWorkspacesClient

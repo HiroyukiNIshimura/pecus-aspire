@@ -1,9 +1,9 @@
 "use client";
 
-import type { UserResponse } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
 
 interface OtherTabProps {
-  user: UserResponse;
+  user: UserInfo;
 }
 
 export default function OtherTab({ user }: OtherTabProps) {

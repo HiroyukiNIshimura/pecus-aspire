@@ -4,7 +4,7 @@ import { getAllSkills } from "@/actions/admin/skills";
 import { getUserDetail } from "@/actions/admin/user";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
+import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import EditUserClient from "./EditUserClient";
 
 export const dynamic = "force-dynamic";
@@ -64,13 +64,7 @@ export default async function EditUserPage({
   }
 
   // UserResponse から UserInfo に変換
-  const user: UserInfo = {
-    id: userResponse.id,
-    name: userResponse.username ?? null,
-    email: userResponse.email ?? null,
-    roles: userResponse.roles ?? [],
-    isAdmin: userResponse.isAdmin ?? false,
-  };
+  const user = mapUserResponseToUserInfo(userResponse);
 
   if (!userDetail) {
     notFound();

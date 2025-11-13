@@ -1699,12 +1699,6 @@ _logger.LogInformation("User {UserId} logged in from {IpAddress}", me, ipAddress
 ## 開発ワークフロー
 ビルド確認は必須です。変更後はソリューション全体をビルドしてエラーを早期に検出してください。
 
-**必須**
-型確認（フロントエンド）:
-```bash
-npx tsc --noEmit
-```
-
 コードフォーマット例（バックエンド：.editorconfigに基づく自動整形）:
 ```bash
 dotnet format pecus.sln
@@ -1736,6 +1730,9 @@ dotnet build pecus.sln
 # 3. アプリ起動
 dotnet run --project pecus.AppHost
 ```
+
+重要: フロントエンドのコードを追加・変更した場合は、必ず `npx tsc --noEmit` を実行して型エラーの確認を行ってください。これは最重要のチェック事項です。
+
 推奨フロー（フロントエンド）:
 ```bash
 # 1. コードフォーマット実行

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSkillDetail } from "@/actions/admin/skills";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
+import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import EditSkillClient from "./EditSkillClient";
 
 export const dynamic = "force-dynamic";
@@ -50,13 +50,7 @@ export default async function EditSkillPage({
   }
 
   // UserResponse から UserInfo に変換
-  const user: UserInfo = {
-    id: userResponse.id,
-    name: userResponse.username ?? null,
-    email: userResponse.email ?? null,
-    roles: userResponse.roles ?? [],
-    isAdmin: userResponse.isAdmin ?? false,
-  };
+  const user = mapUserResponseToUserInfo(userResponse);
 
   if (!skillDetail) {
     notFound();

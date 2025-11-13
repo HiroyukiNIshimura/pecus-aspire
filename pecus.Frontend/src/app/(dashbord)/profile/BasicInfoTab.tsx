@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { UserResponse } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
 import { updateProfile, uploadAvatarFile } from "@/actions/profile";
 
 interface BasicInfoTabProps {
-  user: UserResponse;
-  onUpdate: (updatedUser: UserResponse) => void;
+  user: UserInfo;
+  onUpdate: (updatedUser: UserInfo) => void;
   onAlert: (type: "success" | "error" | "info", message: string) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -181,11 +181,19 @@ export default function BasicInfoTab({
         username: username !== user.username ? username : undefined,
         avatarType: selectedAvatarType,
         avatarUrl: uploadedFileUrl || undefined,
-        rowVersion: user.rowVersion,
+        rowVersion: user.rowVersion!,
       });
 
       if (result.success) {
-        onUpdate(result.data);
+        // UserResponseからUserInfoに変換して更新
+        const updatedUserInfo: UserInfo = {
+          ...user,
+          username: result.data.username,
+          avatarType: result.data.avatarType,
+          identityIconUrl: result.data.identityIconUrl ?? undefined,
+          rowVersion: result.data.rowVersion,
+        };
+        onUpdate(updatedUserInfo);
         setUploadedFileUrl(null);
         setAvatarPreviewUrl(null);
         onAlert("success", "基本情報が更新されました");

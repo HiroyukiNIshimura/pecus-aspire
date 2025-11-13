@@ -2,7 +2,7 @@ import { getTags } from "@/actions/admin/tags";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
-import type { UserInfo } from "@/types/userInfo";
+import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminTagsClient from "./AdminTagsClient";
 
 export const dynamic = "force-dynamic";
@@ -50,13 +50,7 @@ export default async function AdminTags() {
   }
 
   // UserResponse から UserInfo に変換
-  const user: UserInfo = {
-    id: userResponse.id,
-    name: userResponse.username ?? null,
-    email: userResponse.email ?? null,
-    roles: userResponse.roles ?? [],
-    isAdmin: userResponse.isAdmin ?? false,
-  };
+  const user = mapUserResponseToUserInfo(userResponse);
 
   return (
     <AdminTagsClient
