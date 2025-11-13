@@ -5,13 +5,13 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Pecus.Filters;
 
 /// <summary>
-/// Swagger UI ã«ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£è¦ä»¶ã‚’è¿½åŠ ã™ã‚‹ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼
+/// Swagger UI ‚ÉƒZƒLƒ…ƒŠƒeƒB—vŒ‚ğ’Ç‰Á‚·‚éƒtƒBƒ‹ƒ^[
 /// </summary>
 public class SecurityRequirementsOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        // [AllowAnonymous] å±æ€§ãŒã‚ã‚‹å ´åˆã¯ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£è¦ä»¶ã‚’è¿½åŠ ã—ãªã„
+        // [AllowAnonymous] ‘®«‚ª‚ ‚éê‡‚ÍƒZƒLƒ…ƒŠƒeƒB—vŒ‚ğ’Ç‰Á‚µ‚È‚¢
         var hasAllowAnonymous = context.MethodInfo.DeclaringType?
             .GetCustomAttributes(true)
             .OfType<AllowAnonymousAttribute>()
@@ -30,7 +30,7 @@ public class SecurityRequirementsOperationFilter : IOperationFilter
             return;
         }
 
-        // ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£ã‚¹ã‚­ãƒ¼ãƒ ã‚’é©ç”¨
+        // ƒZƒLƒ…ƒŠƒeƒBƒXƒL[ƒ€‚ğ“K—p
         operation.Security =
         [
             new OpenApiSecurityRequirement
