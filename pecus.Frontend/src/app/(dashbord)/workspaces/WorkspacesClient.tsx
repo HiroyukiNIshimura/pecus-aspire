@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
-import Pagination from "@/components/common/Pagination";
 import type {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
@@ -80,34 +80,34 @@ export default function WorkspacesClient({
     fetchInitialData();
   }, []);
 
-  const handlePageChange = withDelayedLoading(
-    async ({ selected }: { selected: number }) => {
-      try {
-        const page = selected + 1;
-        const params = new URLSearchParams();
-        params.append("page", page.toString());
-        if (filterIsActive !== null) {
-          params.append("IsActive", filterIsActive.toString());
-        }
-        if (filterName) {
-          params.append("Name", filterName);
-        }
-
-        const response = await fetch(`/api/workspaces?${params.toString()}`);
-        if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
-            await response.json();
-          setWorkspaces(data.data || []);
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
-          setStatistics(data.summary || null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch workspaces:", error);
+  const loadMoreWorkspaces = async () => {
+    try {
+      const nextPage = currentPage + 1;
+      const params = new URLSearchParams();
+      params.append("page", nextPage.toString());
+      if (filterIsActive !== null) {
+        params.append("IsActive", filterIsActive.toString());
       }
-    },
-  );
+      if (filterName) {
+        params.append("Name", filterName);
+      }
+
+      const response = await fetch(`/api/workspaces?${params.toString()}`);
+      if (response.ok) {
+        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+          await response.json();
+        setWorkspaces((prev) => [...prev, ...(data.data || [])]);
+        setCurrentPage(data.currentPage || nextPage);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+        if (data.summary) {
+          setStatistics(data.summary);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load more workspaces:", error);
+    }
+  };
 
   const handleFilterChange = withDelayedLoading(async () => {
     try {
@@ -167,7 +167,7 @@ export default function WorkspacesClient({
           setSidebarOpen={setSidebarOpen}
           userInfo={userInfo}
         />
-        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6">
+        <main id="scrollableDiv" className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6">
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
           {/* ページヘッダー */}
@@ -368,92 +368,100 @@ export default function WorkspacesClient({
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {workspaces.map((workspace) => (
-                    <div
-                      key={workspace.id}
-                      className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
-                    >
-                      <div className="card-body p-4">
-                        {/* ヘッダー */}
-                        <div className="flex items-start justify-between gap-2 mb-3">
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-bold truncate">
-                              {workspace.name}
-                            </h3>
-                            <code className="text-xs badge badge-ghost badge-sm mt-1 truncate max-w-full block">
-                              {workspace.code}
-                            </code>
-                          </div>
-                          <div className="flex-shrink-0">
-                            {workspace.isActive ? (
-                              <div className="badge badge-success badge-sm">
-                                <PowerSettingsNewIcon className="w-4 h-4" />
-                              </div>
-                            ) : (
-                              <div className="badge badge-neutral badge-sm">
-                                <PowerOffIcon className="w-4 h-4" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 説明 */}
-                        {workspace.description && (
-                          <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
-                            {workspace.description}
-                          </p>
-                        )}
-
-                        {/* メタ情報 */}
-                        <div className="space-y-2 mb-3">
-                          <div className="flex items-center justify-between text-sm gap-2">
-                            <span className="text-base-content/70 flex-shrink-0">
-                              メンバー
-                            </span>
-                            <div className="flex items-center gap-1 font-medium">
-                              <PersonIcon className="w-4 h-4" />
-                              {workspace.memberCount || 0}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-sm gap-2">
-                            <span className="text-base-content/70 flex-shrink-0">
-                              作成日
-                            </span>
-                            <span className="font-medium">
-                              {workspace.createdAt
-                                ? new Date(
-                                    workspace.createdAt,
-                                  ).toLocaleDateString("ja-JP")
-                                : "-"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* フッター（ジャンル） */}
-                        {workspace.genreIcon && workspace.genreName && (
-                          <div className="pt-3 border-t border-base-300">
-                            <div className="flex items-center gap-2 text-sm text-base-content/70">
-                              <span className="text-lg">{workspace.genreIcon}</span>
-                              <span>{workspace.genreName}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                <InfiniteScroll
+                  dataLength={workspaces.length}
+                  next={loadMoreWorkspaces}
+                  hasMore={currentPage < totalPages}
+                  loader={
+                    <div className="text-center py-4">
+                      <span className="loading loading-spinner loading-md"></span>
                     </div>
-                  ))}
-                </div>
-              )}
+                  }
+                  endMessage={
+                    <div className="text-center py-4">
+                      <p className="text-base-content/70">
+                        すべてのワークスペースを表示しました
+                      </p>
+                    </div>
+                  }
+                  scrollableTarget="scrollableDiv"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {workspaces.map((workspace) => (
+                      <div
+                        key={workspace.id}
+                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
+                      >
+                        <div className="card-body p-4">
+                          {/* ヘッダー */}
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-lg font-bold truncate">
+                                {workspace.name}
+                              </h3>
+                              <code className="text-xs badge badge-ghost badge-sm mt-1 truncate max-w-full block">
+                                {workspace.code}
+                              </code>
+                            </div>
+                            <div className="flex-shrink-0">
+                              {workspace.isActive ? (
+                                <div className="badge badge-success badge-sm">
+                                  <PowerSettingsNewIcon className="w-4 h-4" />
+                                </div>
+                              ) : (
+                                <div className="badge badge-neutral badge-sm">
+                                  <PowerOffIcon className="w-4 h-4" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
-              {/* ページネーション */}
-              {totalPages > 1 && (
-                <div className="mt-4 flex justify-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                </div>
+                          {/* 説明 */}
+                          {workspace.description && (
+                            <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
+                              {workspace.description}
+                            </p>
+                          )}
+
+                          {/* メタ情報 */}
+                          <div className="space-y-2 mb-3">
+                            <div className="flex items-center justify-between text-sm gap-2">
+                              <span className="text-base-content/70 flex-shrink-0">
+                                メンバー
+                              </span>
+                              <div className="flex items-center gap-1 font-medium">
+                                <PersonIcon className="w-4 h-4" />
+                                {workspace.memberCount || 0}
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-sm gap-2">
+                              <span className="text-base-content/70 flex-shrink-0">
+                                作成日
+                              </span>
+                              <span className="font-medium">
+                                {workspace.createdAt
+                                  ? new Date(
+                                      workspace.createdAt,
+                                    ).toLocaleDateString("ja-JP")
+                                  : "-"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* フッター（ジャンル） */}
+                          {workspace.genreIcon && workspace.genreName && (
+                            <div className="pt-3 border-t border-base-300">
+                              <div className="flex items-center gap-2 text-sm text-base-content/70">
+                                <span className="text-lg">{workspace.genreIcon}</span>
+                                <span>{workspace.genreName}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </InfiniteScroll>
               )}
             </div>
           </div>

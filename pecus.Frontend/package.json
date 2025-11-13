@@ -52,6 +52,7 @@
     "react": "19.1.0",
     "react-dnd": "^16.0.1",
     "react-dom": "19.1.0",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-paginate": "^8.3.0",
     "zod": "^4.1.12"
   },
@@ -63,6 +64,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-infinite-scroll-component": "^4.2.5",
     "form-data": "^4.0.4",
     "openapi-typescript-codegen": "^0.29.0",
     "rimraf": "^6.0.1",
