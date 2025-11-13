@@ -2,7 +2,10 @@ using Faker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Pecus.Libs.DB.Seed;
 
@@ -64,6 +67,7 @@ public class DatabaseSeeder
         await SeedUsersAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
+        await SeedWorkspaceItemsAsync();
 
         _logger.LogInformation("Development mock data seeding completed");
     }
@@ -726,5 +730,97 @@ public class DatabaseSeeder
 
         await _context.SaveChangesAsync();
         _logger.LogInformation("Added {Count} user skills in total", totalUserSkillsAdded);
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムのシードデータを投入
+    /// </summary>
+    public async Task SeedWorkspaceItemsAsync()
+    {
+        if (!await _context.WorkspaceItems.AnyAsync())
+        {
+            var workspaces = await _context.Workspaces.ToListAsync();
+
+            if (!workspaces.Any())
+            {
+                _logger.LogWarning("No workspaces found for seeding workspace items");
+                return;
+            }
+
+            int totalItemsAdded = 0;
+
+            foreach (var workspace in workspaces)
+            {
+                // このワークスペースのメンバーを取得
+                var workspaceMembers = await _context.WorkspaceUsers
+                    .Where(wu => wu.WorkspaceId == workspace.Id)
+                    .Select(wu => wu.UserId)
+                    .ToListAsync();
+
+                if (!workspaceMembers.Any())
+                {
+                    _logger.LogWarning("No members found for workspace {WorkspaceId}, skipping item seeding", workspace.Id);
+                    continue;
+                }
+
+                // 各ワークスペースに50件のアイテムを作成
+                for (int i = 0; i < 50; i++)
+                {
+                    var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
+
+                    var workspaceItem = new WorkspaceItem
+                    {
+                        WorkspaceId = workspace.Id,
+                        Code = GenerateUniqueCode(),
+                        Subject = Lorem.Sentence(_random.Next(3, 8)), // 3-7単語の文
+                        Body = null, // NULLのまま
+                        OwnerId = ownerId,
+                        AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
+                        Priority = _random.Next(4) switch
+                        {
+                            0 => TaskPriority.Low,
+                            1 => TaskPriority.Medium,
+                            2 => TaskPriority.High,
+                            3 => TaskPriority.Critical,
+                            _ => null
+                        },
+                        DueDate = DateTime.UtcNow.AddDays(_random.Next(1, 365)), // 1日から365日後のランダムな日付
+                        IsArchived = false,
+                        IsDraft = _random.Next(2) == 1,
+                        CommitterId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
+                        Content = _random.Next(2) == 1 ? Lorem.Paragraph() : null,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)), // 過去365日以内のランダムな作成日
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.WorkspaceItems.Add(workspaceItem);
+                    totalItemsAdded++;
+
+                    // 100件ごとに保存してメモリを節約
+                    if (totalItemsAdded % 100 == 0)
+                    {
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Added {Count} workspace items", totalItemsAdded);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} workspace items in total", totalItemsAdded);
+        }
+    }
+
+    /// <summary>
+    /// ユニークなコードを生成
+    /// </summary>
+    private string GenerateUniqueCode()
+    {
+        using var sha256 = SHA256.Create();
+        var input = $"{Guid.NewGuid()}{DateTime.UtcNow.Ticks}";
+        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return Convert.ToBase64String(hashBytes)[..16] // 最初の16文字を使用
+            .Replace("/", "_")
+            .Replace("+", "-");
     }
 }

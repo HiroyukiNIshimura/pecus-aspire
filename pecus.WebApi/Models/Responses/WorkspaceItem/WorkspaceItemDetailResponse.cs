@@ -37,7 +37,7 @@ public class WorkspaceItemDetailResponse : IConflictModel
     /// <summary>
     /// 本文
     /// </summary>
-    public string Body { get; set; } = string.Empty;
+    public string? Body { get; set; }
 
     /// <summary>
     /// オーナーユーザーID

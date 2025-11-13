@@ -285,7 +285,6 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Code).IsRequired().HasMaxLength(64);
             entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Body).IsRequired();
             entity.Property(e => e.IsArchived).HasDefaultValue(false);
             entity.Property(e => e.IsDraft).HasDefaultValue(true);
 

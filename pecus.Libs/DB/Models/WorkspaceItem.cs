@@ -29,9 +29,9 @@ public class WorkspaceItem
     public string Subject { get; set; } = string.Empty;
 
     /// <summary>
-    /// 本文（WYSIWYGのノードデータをJSON形式で保存）
+    /// アイテムの本文（NULL 許容）
     /// </summary>
-    public string Body { get; set; } = string.Empty;
+    public string? Body { get; set; }
 
     /// <summary>
     /// オーナーユーザーID（外部キー）
