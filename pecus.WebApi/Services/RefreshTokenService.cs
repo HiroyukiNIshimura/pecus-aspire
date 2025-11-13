@@ -147,8 +147,7 @@ public class RefreshTokenService
         {
             try
             {
-                // .NET 10: RedisValue を明示的に string にキャスト
-                var info = JsonSerializer.Deserialize<RefreshTokenInfo>((string)payload!);
+                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload!);
                 if (info != null && info.ExpiresAt > DateTime.UtcNow)
                 {
                     return info;
@@ -193,8 +192,7 @@ public class RefreshTokenService
         {
             try
             {
-                // .NET 10: RedisValue を明示的に string にキャスト
-                var info = JsonSerializer.Deserialize<RefreshTokenInfo>((string)payload!);
+                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload!);
                 if (info != null)
                 {
                     var userKey = GetUserKey(info.UserId);

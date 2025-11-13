@@ -3,7 +3,7 @@ using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Pecus.Filters;
 using Pecus.Libs;
 using Pecus.Libs.DB;
@@ -272,9 +272,22 @@ builder.Services.AddSwaggerGen(options =>
             Description = "JWT Authorization header using the Bearer scheme.",
         }
     );
-    // .NET 10対応: AddSecurityRequirementは廃止され、OpenApiOperationFilterで実装する必要がある
-    // グローバルにセキュリティ要件を適用
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "bearerAuth",
+                    },
+                },
+                new string[] { }
+            },
+        }
+    );
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Writers;
 using Pecus.Models.Responses.Common;
 using Pecus.Services;
 using Swashbuckle.AspNetCore.Swagger;
-using System.Text.Json;
 
 namespace Pecus.Controllers.Backend;
 
@@ -45,10 +44,10 @@ public class BackendSpecsController : BaseBackendController
         var swagger = _swaggerProvider.GetSwagger(documentName);
 
         // OpenAPIドキュメントをJSON文字列に変換
-        var json = JsonSerializer.Serialize(swagger, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        using var stringWriter = new StringWriter();
+        var jsonWriter = new OpenApiJsonWriter(stringWriter);
+        swagger.SerializeAsV3(jsonWriter);
+        var json = stringWriter.ToString();
 
         return TypedResults.Ok(json);
     }
@@ -69,10 +68,12 @@ public class BackendSpecsController : BaseBackendController
     {
         var swagger = _swaggerProvider.GetSwagger(documentName);
 
-        // OpenAPIドキュメントをYAML文字列に変換（シンプルな実装）
-        // 注: 本格的なYAML出力が必要な場合は YamlDotNet パッケージを使用してください
-        var json = JsonSerializer.Serialize(swagger);
-        
-        return TypedResults.Ok(json); // 暫定的にJSON形式を返す
+        // OpenAPIドキュメントをYAML文字列に変換
+        using var stringWriter = new StringWriter();
+        var yamlWriter = new OpenApiYamlWriter(stringWriter);
+        swagger.SerializeAsV3(yamlWriter);
+        var yaml = stringWriter.ToString();
+
+        return TypedResults.Ok(yaml);
     }
 }
