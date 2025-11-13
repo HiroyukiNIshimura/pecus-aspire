@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
+using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Common;

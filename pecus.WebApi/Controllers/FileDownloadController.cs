@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Models.Requests;
 using Pecus.Services;
 
