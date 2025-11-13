@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { usernameFilterSchema } from "@/schemas/filterSchemas";
@@ -292,11 +293,14 @@ export default function AdminUsersClient({
                   className="flex items-center justify-between cursor-pointer py-2"
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
-                  <span
-                    className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterSkillIds.length > 0 || filterIsActive !== true || filterUsername ? "text-success" : ""}`}
-                  >
-                    フィルター
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <FilterListIcon />
+                    <span
+                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterUsername || (filterSkillIds && filterSkillIds.length > 0) ? "text-success" : ""}`}
+                    >
+                      フィルター
+                    </span>
+                  </div>
                   <svg
                     className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
                     fill="none"

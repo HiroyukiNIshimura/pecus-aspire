@@ -226,25 +226,47 @@ export default function WorkspacesClient({
           {/* フィルターセクション */}
           <div className="card bg-base-200 shadow-md mb-6">
             <div className="card-body p-4">
-              <div className="flex items-center justify-between mb-4">
+              <div
+                className="flex items-center justify-between cursor-pointer py-2 mb-4"
+                onClick={() => setFilterOpen(!filterOpen)}
+              >
                 <h2 className="card-title text-lg flex items-center gap-2">
                   <FilterListIcon />
-                  フィルター
+                  <span
+                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? "text-success" : ""}`}
+                  >
+                    フィルター
+                  </span>
                 </h2>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm md:hidden"
-                  onClick={() => setFilterOpen(!filterOpen)}
-                  aria-label="フィルターの表示切替"
+                <svg
+                  className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {filterOpen ? "閉じる" : "開く"}
-                </button>
+                  {filterOpen ? (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 12H4"
+                    />
+                  ) : (
+                    <>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </>
+                  )}
+                </svg>
               </div>
 
-              <div
-                className={`${filterOpen ? "block" : "hidden"} md:block space-y-4`}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {filterOpen && (
+                <div className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* 名前検索 */}
                   <div className="form-control">
                     <label htmlFor="filterName" className="label">
@@ -325,6 +347,7 @@ export default function WorkspacesClient({
                   </button>
                 </div>
               </div>
+              )}
             </div>
           </div>
 

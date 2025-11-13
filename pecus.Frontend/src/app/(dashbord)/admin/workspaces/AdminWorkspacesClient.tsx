@@ -9,6 +9,7 @@ import ConfirmDeleteModal, {
 } from "@/components/common/ConfirmDeleteModal";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
@@ -272,11 +273,14 @@ export default function AdminWorkspacesClient({
                   className="flex items-center justify-between cursor-pointer py-2"
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
-                  <span
-                    className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? "text-success" : ""}`}
-                  >
-                    フィルター
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <FilterListIcon />
+                    <span
+                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? "text-success" : ""}`}
+                    >
+                      フィルター
+                    </span>
+                  </div>
                   <svg
                     className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
                     fill="none"
