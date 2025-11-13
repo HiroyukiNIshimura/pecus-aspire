@@ -1,3 +1,53 @@
+## Pecus Aspire — AI エージェント最小指示書（要点）
+
+目的: このファイルは、このリポジトリでAIエージェントが即戦力になるための「最小限で重要な知識」をまとめます。
+読むべき箇所の短い羅列と、実装パターン・開発フロー・禁止事項に限定しています。
+
+- アーキテクチャ概観
+  - .NET Aspire で複数サービスをオーケストレーション（entry: `pecus.AppHost/AppHost.cs`）。主要プロジェクト:
+    - `pecus.WebApi` (REST, Swagger, Hangfire client)
+    - `pecus.BackFire` (Hangfire worker)
+    - `pecus.DbManager` (migrations / seeding)
+    - `pecus.Libs` (共有モデル・Hangfire tasks・メール等)
+    - `pecus.Frontend` (Next.js App Router + TS)
+
+- 重要な実装パターン（コード参照推奨）
+  - RowVersion: PostgreSQL の `xmin` を `uint RowVersion` としてマッピング（`pecus.Libs/DB/ApplicationDbContext.cs` の ConfigureRowVersionForAllEntities を参照）。フロントエンドでは `rowVersion` を数値 (number/integer) として扱います。
+  - コンカレンシー: サービス層で `DbUpdateConcurrencyException` を捕捉し、`FindAsync()` で最新行を取得して `ConcurrencyException<T>` を投げる。グローバルで `IConcurrencyException` を `GlobalExceptionFilter` が 409 に変換する（`pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。
+  - コントローラ戻り型: `Results<T>` / `TypedResults.*` を使用するパターンが多い（例: `pecus.WebApi/Controllers/*`）。
+  - DTO: リクエスト DTO には必ず検証属性を付与（`pecus.WebApi/Models/Requests/*`）。Enum は nullable 推奨。
+  - Hangfire タスク: タスク実装は `pecus.Libs/Hangfire/Tasks` に置き、WebApi と BackFire 両方で DI 登録する。
+
+- フロントエンド特記事項
+  - SSR-first: `page.tsx` (Server Component) で初期データ取得、`XxxClient.tsx` は UI のみ。Server Actions (`src/actions/`) をミューテーション用に使う。
+  - API クライアントは OpenAPI から自動生成 (`pecus.Frontend/scripts/generate-pecus-api-client.js`)。生成物は手動編集しない。
+
+- 開発フロー／コマンド
+  - バックエンド: `dotnet format pecus.sln` → `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`
+  - フロントエンド: `npm run format` → `npx tsc --noEmit` → `npm run build` → `npm run dev`
+  - API クライアント生成: `npm run generate:client`（自動フックあり）
+
+- プロジェクト特有のルール（必ず守る）
+  - 横断変更禁止: 1 変更で複数プロジェクトを触る場合は目的・影響・差分を明記して承認を得る。
+  - フロントエンドから `pecus.WebApi` を直接叩かない（Server Actions / API Routes 経由）。
+  - DTO に検証属性（[Required] / [MaxLength] 等）を必ず付与し、API 互換性に注意する。
+  - Enum は nullable にする。`HasDefaultValue()` を使わない。
+  - トランザクションはサービス層で開始・管理する（コントローラーで開始しない）。
+
+- すぐ参照すべきファイル（ショートリスト）
+  - `pecus.AppHost/AppHost.cs` — サービス起動順/依存
+  - `pecus.Libs/DB/ApplicationDbContext.cs` — RowVersion / DB マッピング
+  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — 例外→HTTP マッピング
+  - `pecus.WebApi/Exceptions/ConcurrencyException.cs` — 競合例外の形
+  - `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例
+  - `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成
+
+- 作業時のチェックリスト（短い）
+  1. 変更が跨プロジェクトか？ → README に承認フローを記載。
+  2. DTO の検証属性は揃っているか？ → `dotnet build` 前に確認。
+  3. 型生成物は手動編集していないか？ → 自動生成ファイルは .gitignore へ。
+
+フィードバックをください: ここに書かれていない「よく行う作業」「よく起きる落とし穴」があれば教えてください。必要ならこのファイルをさらに 1) 行番号つきの実装リンク、2) よく使うレビューチェックリスト、3) Server Action の具体例で拡張します。
 
 
 # Pecus Aspire - AIエージェント指示書（要点整理版）
@@ -17,7 +67,7 @@
 - Next.js（App Router）+ TypeScript + FlyonUI
 - SSRで初期データ取得、CSRはUIのみ（API直叩き禁止）
 - APIアクセスはServer Actions/Next.js API Routes経由
-- 認証・トークン管理はiron-session＋Axiosインターセプター
+ - 認証・トークン管理はサーバーサイドの Cookie ベース SessionManager（`src/libs/session.ts`）を使用し、アクセストークン／リフレッシュトークンは HttpOnly クッキーに保存します。クライアント側のリフレッシュは Server Action / Middleware と連携して行います。
 - バリデーションはZod＋useValidation/useFormValidation
 - UI/HTML生成はアクセシビリティ・属性・className厳守
 - サンプル・実装例は章末参照
@@ -147,7 +197,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
   - クライアント → `Next.js API Routes` → `pecus.WebApi` の流れ
   - `src/app/api/admin/workspaces/route.ts` など
   - API Routes内で `createPecusApiClients()` を使用して `pecus.WebApi` にアクセス
-  - トークンはサーバーサイド（`iron-session`）から自動取得
+    - トークンはサーバーサイドの `SessionManager`（`pecus.Frontend/src/libs/session.ts`、next/headers の cookies() を使用）から自動取得
 
 ##### ✏️ 変更操作（データ変更）
 
@@ -184,8 +234,10 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 #### アクセストークン管理の設計方針
 - **保存場所**:
-  - アクセストークンとリフレッシュトークンは両方とも暗号化されたCookieセッション（`iron-session`）に保存
-  - セキュリティ: `httpOnly`, `secure`, `sameSite: 'lax'` で保護
+#### アクセストークン管理の設計方針
+- **保存場所**:
+  - アクセストークンとリフレッシュトークンは HttpOnly な Cookie に保存します（実装は `pecus.Frontend/src/libs/session.ts` の SessionManager）。Cookie は `httpOnly`, `secure`（本番環境で有効）, `sameSite: 'lax'`, `maxAge` を設定して保存されます
+  - セキュリティ: Cookie は HttpOnly にしてクライアントJSから読めないようにし、送信時は Authorization ヘッダーに付与する形で API 呼び出しを行います
 - **トークン取得**:
   - `getAccessToken()` Server Action を使用（`src/connectors/api/auth.ts`）
   - SSR専用で、`SessionManager.getSession()` からトークンを取得
@@ -204,7 +256,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 実装サンプルは
 - `pecus.Frontend/src/connectors/api/auth.ts`: トークン取得・リフレッシュのServer Actions
-- `pecus.Frontend/src/libs/session.ts`: SessionManager（iron-sessionベース）
+- `pecus.Frontend/src/libs/session.ts`: SessionManager（server-side cookies を利用した実装）
 - `pecus.Frontend/src/middleware.ts`: トークン検証とリフレッシュのMiddleware
 - `pecus.Frontend/src/connectors/api/PecusApiClient.ts`: API クライアント設定（手動編集可能）
 - `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`: API クライアント生成部分（自動生成）

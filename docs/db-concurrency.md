@@ -3,29 +3,30 @@
 このドキュメントは `pecus.WebApi` プロジェクトで採用しているデータベース競合（楽観的ロック）に関する設計方針と実装パターンをまとめたものです。
 
 ### 目的
-- 複数クライアントによる同時更新でデータの上書きや不整合が発生するのを防ぐ
-- クライアント/サーバ双方で競合検出と復旧（再取得・再試行）を容易にする
-
-### 概要（採用方式）
+  - 楽観ロック（RowVersion/xmin）を利用
+  - C# 側: `uint`（アプリ内では unsigned int として扱う）
+  - PostgreSQL 側: システムカラム `xmin` を利用してマッピングしている（ApplicationDbContext で一括設定）
+  - JSON 送受信: 数値（整数）として扱われる（フロントエンドの OpenAPI クライアントでは number / integer）
 - 楽観ロック（RowVersion/Timestamp）を利用
   - C# 側: `byte[]`（EF Core の `[Timestamp]`）
-  - PostgreSQL 側: `bytea` カラム
-  - JSON 送受信: Base64 文字列としてシリアライズされる（System.Text.Json の既定動作）
-- サービス層で競合を検出すると `ConcurrencyException` を投げる
-- コントローラー層で `ConcurrencyException` を受け取り HTTP 409 Conflict を返す
+  - `SetUserRolesRequest` / `SetUserSkillsRequest`：`UserRowVersion: uint?` を含む
+  - `SetTagsToItemRequest`：`ItemRowVersion: uint?` を含む
+- コントローラーは通常この例外を捕捉せず、`GlobalExceptionFilter` が `IConcurrencyException` を検出して HTTP 409 Conflict（`ConcurrencyErrorResponse<T>`）に変換して返す
 
+1. **最新 DB データを常に返す**: ConcurrencyException には必ず `FindAsync()` で取得した最新エンティティを渡す（クライアント側の再試行に必要）
 ### 主要ファイル／箇所（実装例）
 - サービス層
   - `pecus.WebApi/Services/UserService.cs`（`SetUserRolesAsync`、`SetUserSkillsAsync` など）
   - `pecus.WebApi/Services/WorkspaceItemTagService.cs`（`SetTagsToItemAsync`）
 - コントローラー層
-  - `pecus.WebApi/Controllers/Admin/AdminUserController.cs`（`SetUserRoles`, `SetUserSkills`）
+  "userRowVersion": 123456
   - `pecus.WebApi/Controllers/WorkspaceItemTagController.cs`（タグ関連）
 - リクエスト DTO
-  - `SetUserRolesRequest` / `SetUserSkillsRequest`：`UserRowVersion: byte[]?` を含む
+- 更新系リクエストには、最新の `RowVersion`（数値）を必ず含める。フロントエンド側の自動生成クライアントは `number`/`integer` 型で扱うようになっているため、数値で送受信することを想定してください。
   - `SetTagsToItemRequest`：`ItemRowVersion: byte[]?` を含む
 
-### 実装パターン（サービス層）
+ RowVersion は PostgreSQL のシステムカラム `xmin` にマッピングされる形で扱われます。アプリ側では `uint`（C# の unsigned int）で表現します。
+ フロントエンド／API クライアントでは `rowVersion` を数値（number/integer）で扱います。OpenAPI スキーマおよび自動生成クライアントはこの型を前提に生成されています。
 
 #### DbUpdateConcurrencyException の発生条件
 - **発生する**: UPDATE 操作で WHERE RowVersion が不一致（0行更新）の場合 **のみ**
@@ -116,8 +117,8 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 
 ### 実装パターン（コントローラー層）
 1. サービス呼び出しの前にアクセス権や存在チェックを行う（`CanAccessUserAsync` など）
-2. サービスから `ConcurrencyException` が投げられた場合、`TypedResults.Conflict(...)` を返して HTTP 409 をクライアントに通知する
-3. OpenAPI/Swagger の注釈として `ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)` を付与する
+2. コントローラー内で `ConcurrencyException` を個別にキャッチして変換する必要はありません。`GlobalExceptionFilter` が `IConcurrencyException` を検出して 409 を返すため、コントローラーは通常の実装に集中してください。
+3. OpenAPI/Swagger 用に 409 を明示するため、該当アクションに `ProducesResponseType(typeof(ConcurrencyErrorResponse<...>), StatusCodes.Status409Conflict)` を付与してください。
 
 ### クライアント開発者向け注意事項
 - 更新系リクエストには、最新の `RowVersion` を必ず含める（Base64 エンコードされた文字列を `byte[]` として送るAPI設計の場合は、送受信ライブラリが自動で扱います）
@@ -135,7 +136,7 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 ```
 
 ### エラー／例外ハンドリング
-- サービス層は `ConcurrencyException` を投げる。コントローラーはこれをキャッチして 409 を返す。エラーメッセージはユーザー向けにわかりやすくする。
+- サービス層は `ConcurrencyException` を投げる。コントローラー側で個別にキャッチする必要はなく、`GlobalExceptionFilter` が `IConcurrencyException` を検出して 409 を返す（`ConcurrencyErrorResponse<T>`）。エラーメッセージはユーザー向けにわかりやすくする。
 
 ### テストと検証
 
@@ -219,17 +220,20 @@ UPDATE 操作で DbUpdateConcurrencyException を処理するサービスメソ�
 
 各コントローラーでは `ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)` を付与して 409 Conflict レスポンスを Swagger に記載しています。
 
+#### 参照実装（ファイルへのリンク）
+以下はこのドキュメントの設計方針に関係する主要実装ファイルへの直接リンクです（相対パス）。実装の参照や差分確認に便利です。
+
+- `../pecus.Libs/DB/ApplicationDbContext.cs` — `ConfigureRowVersionForAllEntities` により `RowVersion` を PostgreSQL の `xmin` にマッピングしています。
+- `../pecus.WebApi/Filters/GlobalExceptionFilter.cs` — `IConcurrencyException` を検出して HTTP 409 として返すグローバルフィルタの実装。
+- `../pecus.WebApi/Exceptions/ConcurrencyException.cs` — 型付きの `ConcurrencyException<T>` 実装（最新 DB データを保持して投げる）。
+- `../pecus.WebApi/Exceptions/IConcurrencyException.cs` — グローバルフィルタがチェックするインターフェイス。
+- `../pecus.WebApi/Services/UserService.cs` — サービスの競合チェック・再取得パターンの例（`FindAsync` を使う箇所あり）。
+- `../pecus.WebApi/Services/WorkspaceItemTagService.cs` — ItemRowVersion を使った事前チェックと、競合時の再取得パターンの例。
+- `../pecus.WebApi/Models/Requests/UserRequests.cs` — `UserRowVersion` (`uint?`) を定義しているリクエスト DTO。
+- `../pecus.WebApi/Models/Requests/WorkspaceItem/SetTagsToItemRequest.cs` — `ItemRowVersion` (`uint?`) を定義しているリクエスト DTO。
+- `../pecus.Frontend/src/connectors/api/pecus/models/SetUserSkillsRequest.ts` — フロントエンド自動生成モデルの例（`userRowVersion?: number | null`）。
+
+必要なら各ファイルの該当行番号も追加できます。指定があれば該当関数や行の範囲を追記します。
+
 ---
-
-### ドキュメント更新履歴
-
-**2025-11-06 版（最新）**
-- **前置チェック廃止**: DB による確実な検出で十分。シンプルさ・保守性・パフォーマンスを優先
-- DbUpdateConcurrencyException の発生条件を明確化（UPDATE のみ）
-- CREATE/DELETE 操作では try-catch 不要であることを明記
-- 標準実装パターン: 後置チェック（catch）のみ
-- **重要**: 最新 DB データを ConcurrencyException に渡すことの重要性を強調
-- 参照箇所を全サービスメソッドで最新化
-- テスト手法を具体化（手動テストシナリオを追加）
-
 このドキュメントはプロジェクト内での実装方針と現状のコードパターンに基づいて作成しています。実装に変更が必要な場合は、該当サービス／コントローラーの実装を参照し、このドキュメントを更新してください。
