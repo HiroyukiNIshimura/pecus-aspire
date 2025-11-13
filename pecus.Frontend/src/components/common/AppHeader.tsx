@@ -8,6 +8,7 @@ interface UserInfo {
   id: number;
   name?: string | null;
   email?: string | null;
+  identityIconUrl?: string | null;
   roles?: any[];
   isAdmin: boolean;
 }
@@ -158,8 +159,18 @@ export default function AppHeader({
               type="button"
               className="dropdown-toggle btn btn-ghost btn-circle avatar"
             >
-              <div className="w-8 rounded-full bg-primary flex items-center justify-center text-primary-content font-bold">
-                U
+              <div className="w-8 rounded-full overflow-hidden ring-2 ring-base-300">
+                {userInfo?.identityIconUrl ? (
+                  <img
+                    src={userInfo.identityIconUrl}
+                    alt={userInfo.name || "User Avatar"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
+                    {userInfo?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
               </div>
             </button>
             <ul className="dropdown-menu dropdown-open:opacity-100 hidden">

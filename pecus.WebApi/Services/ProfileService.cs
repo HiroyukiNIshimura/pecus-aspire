@@ -286,21 +286,30 @@ public class ProfileService
             // アバタータイプ・アバターURLの更新
             if (request.AvatarType != null)
             {
-                // AvatarType="user-avatar"の場合、AvatarUrlが必須
-                if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
+                // AvatarType="UserAvatar"の場合
+                if (request.AvatarType == AvatarType.UserAvatar)
                 {
-                    throw new InvalidOperationException(
-                        "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
-                    );
+                    // 新しいAvatarUrlが指定されている場合は更新
+                    if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
+                    {
+                        user.AvatarUrl = request.AvatarUrl;
+                    }
+                    // 既存のAvatarUrlもない場合はエラー
+                    else if (string.IsNullOrWhiteSpace(user.AvatarUrl))
+                    {
+                        throw new InvalidOperationException(
+                            "AvatarType が 'UserAvatar' の場合、画像をアップロードするか、既存の画像が必要です。"
+                        );
+                    }
+                    // 既存のAvatarUrlがある場合はそのまま使用（何もしない）
+                }
+                else
+                {
+                    // UserAvatar以外の場合、AvatarUrlは保持する（削除しない）
+                    // これにより、後でUserAvatarに戻したときに画像を再利用できる
                 }
 
                 user.AvatarType = request.AvatarType;
-
-                // AvatarUrlが指定されている場合のみ更新
-                if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
-                {
-                    user.AvatarUrl = request.AvatarUrl;
-                }
             }
 
             // 更新メタデータを設定
