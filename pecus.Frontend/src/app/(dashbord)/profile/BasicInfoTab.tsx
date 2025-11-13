@@ -343,18 +343,54 @@ export default function BasicInfoTab({
           {avatarBlobUrl && !avatarPreviewUrl && (
             <div className="mb-4 p-4 bg-base-200 rounded-lg">
               <div className="flex items-center gap-4">
-                <div className="avatar">
-                  <div className="size-24 rounded-full">
+                <div className="relative group">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // 元画像をダウンロード
+                      const fileName = user.userAvatarPath?.split("/").pop();
+                      if (fileName) {
+                        const downloadUrl = `/api/avatar/download?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}&useOriginal=true`;
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
+                    }}
+                    className="relative block cursor-pointer"
+                    title="クリックして元画像をダウンロード"
+                  >
                     <img
                       src={avatarBlobUrl}
                       alt="現在のアバター"
-                      className="object-cover"
+                      className="w-20 h-20 rounded-full object-cover shadow-md ring-2 ring-base-300 transition-opacity group-hover:opacity-75"
                     />
-                  </div>
+                    {/* ダウンロードアイコン */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-8 w-8 text-white drop-shadow-lg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-base-content">現在のアバター画像</p>
                   <p className="text-xs text-base-content/60 mt-1">
+                    クリックして元画像をダウンロード
+                    <br />
                     新しい画像をアップロードすると置き換わります
                   </p>
                 </div>

@@ -50,7 +50,37 @@ public class FileDownloadController : BaseSecureController
         // UseOriginal が true の場合、元画像（_orgサフィックス付き）を取得
         if (request.UseOriginal)
         {
-            filePath = ImageHelper.GenerateOriginalFilePath(filePath);
+            // WebP変換前の元ファイル名を推測
+            // 例: filename.webp → filename_org.jpg, filename_org.png など
+            var directory = Path.GetDirectoryName(filePath);
+            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(request.FileName);
+
+            // 元画像の拡張子候補（.webpを除く画像形式）
+            var possibleExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            string? originalFilePath = null;
+
+            foreach (var ext in possibleExtensions)
+            {
+                var candidatePath = Path.Combine(directory ?? string.Empty, $"{fileNameWithoutExt}_org{ext}");
+                if (System.IO.File.Exists(candidatePath))
+                {
+                    originalFilePath = candidatePath;
+                    break;
+                }
+            }
+
+            if (originalFilePath != null)
+            {
+                filePath = originalFilePath;
+            }
+            else
+            {
+                // 元画像が見つからない場合は通常のファイルにフォールバック
+                _logger.LogWarning(
+                    "元画像が見つかりません。リサイズ済み画像を返します。FileName: {FileName}",
+                    request.FileName
+                );
+            }
         }
 
         if (!System.IO.File.Exists(filePath))
@@ -58,7 +88,7 @@ public class FileDownloadController : BaseSecureController
             throw new NotFoundException("ファイルが見つかりません。");
         }
 
-        var contentType = GetContentType(request.FileName);
+        var contentType = GetContentType(Path.GetFileName(filePath));
         var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
 
         return TypedResults.File(fileBytes, contentType);

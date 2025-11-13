@@ -36,25 +36,30 @@ export async function GET(request: NextRequest) {
       responseType: "arraybuffer",
     });
 
-    // Content-Typeを推測（拡張子から）
-    const ext = fileName.split(".").pop()?.toLowerCase();
-    const mimeType =
-      ext === "png"
-        ? "image/png"
-        : ext === "jpg" || ext === "jpeg"
-          ? "image/jpeg"
-          : ext === "gif"
-            ? "image/gif"
-            : ext === "webp"
-              ? "image/webp"
-              : "image/jpeg";
+    // バックエンドから返されるContent-Typeを取得
+    const contentType = response.headers["content-type"] || "image/jpeg";
+
+    // Content-Typeから適切な拡張子を判定
+    const extMap: Record<string, string> = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/gif": ".gif",
+      "image/webp": ".webp",
+    };
+    const detectedExt = extMap[contentType] || ".jpg";
+
+    // 元のファイル名から拡張子を除去
+    const baseFileName = fileName.replace(/\.[^/.]+$/, "");
+    
+    // 正しい拡張子でファイル名を生成
+    const downloadFileName = `${baseFileName}${detectedExt}`;
 
     // バイナリデータを直接返す（Content-Dispositionでダウンロードさせる）
     return new NextResponse(response.data, {
       status: 200,
       headers: {
-        "Content-Type": mimeType,
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="${downloadFileName}"`,
       },
     });
   } catch (error: any) {
