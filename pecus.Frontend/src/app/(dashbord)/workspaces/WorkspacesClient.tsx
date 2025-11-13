@@ -17,8 +17,8 @@ import GridViewIcon from "@mui/icons-material/GridView";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import PersonIcon from "@mui/icons-material/Person";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import PowerOffIcon from "@mui/icons-material/PowerOff";
 
 interface UserInfo {
   id: number;
@@ -368,76 +368,80 @@ export default function WorkspacesClient({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="table table-zebra">
-                    <thead>
-                      <tr>
-                        <th>ワークスペース名</th>
-                        <th>コード</th>
-                        <th>組織</th>
-                        <th>メンバー数</th>
-                        <th>ステータス</th>
-                        <th>更新日</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {workspaces.map((workspace) => (
-                        <tr key={workspace.id} className="hover">
-                          <td>
-                            <div className="flex items-center gap-2">
-                              {workspace.genreIcon && (
-                                <span className="text-2xl">
-                                  {workspace.genreIcon}
-                                </span>
-                              )}
-                              <div>
-                                <div className="font-bold">
-                                  {workspace.name}
-                                </div>
-                                {workspace.description && (
-                                  <div className="text-sm text-base-content/70">
-                                    {workspace.description}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <code className="badge badge-ghost">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {workspaces.map((workspace) => (
+                    <div
+                      key={workspace.id}
+                      className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
+                    >
+                      <div className="card-body p-4">
+                        {/* ヘッダー */}
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-lg font-bold truncate">
+                              {workspace.name}
+                            </h3>
+                            <code className="text-xs badge badge-ghost badge-sm mt-1 truncate max-w-full block">
                               {workspace.code}
                             </code>
-                          </td>
-                          <td>{workspace.organizationName || "-"}</td>
-                          <td>
-                            <div className="flex items-center gap-1">
+                          </div>
+                          <div className="flex-shrink-0">
+                            {workspace.isActive ? (
+                              <div className="badge badge-success badge-sm">
+                                <PowerSettingsNewIcon className="w-4 h-4" />
+                              </div>
+                            ) : (
+                              <div className="badge badge-neutral badge-sm">
+                                <PowerOffIcon className="w-4 h-4" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* 説明 */}
+                        {workspace.description && (
+                          <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
+                            {workspace.description}
+                          </p>
+                        )}
+
+                        {/* メタ情報 */}
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <span className="text-base-content/70 flex-shrink-0">
+                              メンバー
+                            </span>
+                            <div className="flex items-center gap-1 font-medium">
                               <PersonIcon className="w-4 h-4" />
                               {workspace.memberCount || 0}
                             </div>
-                          </td>
-                          <td>
-                            {workspace.isActive ? (
-                              <div className="badge badge-success gap-1">
-                                <CheckCircleIcon className="w-3 h-3" />
-                                アクティブ
-                              </div>
-                            ) : (
-                              <div className="badge badge-error gap-1">
-                                <CancelIcon className="w-3 h-3" />
-                                非アクティブ
-                              </div>
-                            )}
-                          </td>
-                          <td>
-                            {workspace.updatedAt
-                              ? new Date(workspace.updatedAt).toLocaleDateString(
-                                  "ja-JP",
-                                )
-                              : "-"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <span className="text-base-content/70 flex-shrink-0">
+                              作成日
+                            </span>
+                            <span className="font-medium">
+                              {workspace.createdAt
+                                ? new Date(
+                                    workspace.createdAt,
+                                  ).toLocaleDateString("ja-JP")
+                                : "-"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* フッター（ジャンル） */}
+                        {workspace.genreIcon && workspace.genreName && (
+                          <div className="pt-3 border-t border-base-300">
+                            <div className="flex items-center gap-2 text-sm text-base-content/70">
+                              <span className="text-lg">{workspace.genreIcon}</span>
+                              <span>{workspace.genreName}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
