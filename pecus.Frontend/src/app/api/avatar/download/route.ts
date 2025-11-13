@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     // 元のファイル名から拡張子を除去
     const baseFileName = fileName.replace(/\.[^/.]+$/, "");
-    
+
     // 正しい拡張子でファイル名を生成
     const downloadFileName = `${baseFileName}${detectedExt}`;
 
