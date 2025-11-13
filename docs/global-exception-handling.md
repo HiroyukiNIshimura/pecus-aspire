@@ -2,6 +2,11 @@
 
 このドキュメントは、`pecus.WebApi` 内で採用しているグローバル例外ハンドリングの方式（`GlobalExceptionFilter`）について説明します。
 
+要点（短縮）
+- `IConcurrencyException` / `ConcurrencyException` はサービス層で投げられ、`GlobalExceptionFilter` により HTTP 409 Conflict に変換されます。
+- 本リポジトリでは RowVersion は PostgreSQL の `xmin` にマッピングされ、アプリ内では `uint`（unsigned int）として扱います（参照: `pecus.Libs/DB/ApplicationDbContext.cs` の ConfigureRowVersionForAllEntities）。
+- コントローラ／サービスは過度な try/catch を避け、意味のあるカスタム例外を投げる方針です。フィルターが HTTP 変換を統一して行います。
+
 対象ファイル
 
 - `pecus.WebApi/Filters/GlobalExceptionFilter.cs`

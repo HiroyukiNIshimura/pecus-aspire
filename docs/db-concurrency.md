@@ -1,32 +1,25 @@
 ## pecus.WebApi における DB 競合（楽観ロック）対応まとめ
 
-このドキュメントは `pecus.WebApi` プロジェクトで採用しているデータベース競合（楽観的ロック）に関する設計方針と実装パターンをまとめたものです。
+このドキュメントは `pecus.WebApi` で採用している楽観的ロック（RowVersion）に関する短い要約と実装参照です。まずは全体の要点を短く示します。
 
-### 目的
-  - 楽観ロック（RowVersion/xmin）を利用
-  - C# 側: `uint`（アプリ内では unsigned int として扱う）
-  - PostgreSQL 側: システムカラム `xmin` を利用してマッピングしている（ApplicationDbContext で一括設定）
-  - JSON 送受信: 数値（整数）として扱われる（フロントエンドの OpenAPI クライアントでは number / integer）
-- 楽観ロック（RowVersion/Timestamp）を利用
-  - C# 側: `byte[]`（EF Core の `[Timestamp]`）
-  - `SetUserRolesRequest` / `SetUserSkillsRequest`：`UserRowVersion: uint?` を含む
-  - `SetTagsToItemRequest`：`ItemRowVersion: uint?` を含む
-- コントローラーは通常この例外を捕捉せず、`GlobalExceptionFilter` が `IConcurrencyException` を検出して HTTP 409 Conflict（`ConcurrencyErrorResponse<T>`）に変換して返す
+要点（短縮版）
+- RowVersion は PostgreSQL のシステムカラム `xmin` を利用し、アプリ側では C# の `uint`（unsigned int）で扱います。
+- JSON の送受信では RowVersion は数値（number / integer）として扱うことを想定しています。フロントエンド自動生成クライアントは `number`/`integer` 型です。
+- 実装パターン：サービス層で `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新データを取得 → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が `IConcurrencyException` を検出して HTTP 409 を返します。
+- クライアント側の振る舞い：更新時に最新の `rowVersion`（数値）を送信し、HTTP 409 を受け取ったら最新データを再取得（GET）→ マージ／再試行する。
 
-1. **最新 DB データを常に返す**: ConcurrencyException には必ず `FindAsync()` で取得した最新エンティティを渡す（クライアント側の再試行に必要）
-### 主要ファイル／箇所（実装例）
-- サービス層
-  - `pecus.WebApi/Services/UserService.cs`（`SetUserRolesAsync`、`SetUserSkillsAsync` など）
-  - `pecus.WebApi/Services/WorkspaceItemTagService.cs`（`SetTagsToItemAsync`）
-- コントローラー層
-  "userRowVersion": 123456
-  - `pecus.WebApi/Controllers/WorkspaceItemTagController.cs`（タグ関連）
-- リクエスト DTO
-- 更新系リクエストには、最新の `RowVersion`（数値）を必ず含める。フロントエンド側の自動生成クライアントは `number`/`integer` 型で扱うようになっているため、数値で送受信することを想定してください。
-  - `SetTagsToItemRequest`：`ItemRowVersion: byte[]?` を含む
+注意（実装上のポイント）
+- サーバー内のモデル／DTO は `uint` または `uint?` を用いて RowVersion を扱います（例：`UserRowVersion: uint?`、`ItemRowVersion: uint?`）。
+- 前置チェックは不要です。後置で `SaveChangesAsync()` が失敗したときのみ競合処理を行う設計です（競合は稀なため追加クエリは許容される）。
 
- RowVersion は PostgreSQL のシステムカラム `xmin` にマッピングされる形で扱われます。アプリ側では `uint`（C# の unsigned int）で表現します。
- フロントエンド／API クライアントでは `rowVersion` を数値（number/integer）で扱います。OpenAPI スキーマおよび自動生成クライアントはこの型を前提に生成されています。
+主要参照箇所（実装例・リンク）
+- `pecus.Libs/DB/ApplicationDbContext.cs` — `ConfigureRowVersionForAllEntities` により `RowVersion` を Postgres の `xmin` にマッピング
+- `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — `IConcurrencyException` を検出して 409 を返却するグローバルフィルタ
+- `pecus.WebApi/Exceptions/ConcurrencyException.cs` — 型付き `ConcurrencyException<T>`（最新 DB データを保持して投げる）
+- サービス実装例: `pecus.WebApi/Services/UserService.cs`, `pecus.WebApi/Services/WorkspaceItemTagService.cs`（`FindAsync()` 再取得パターン）
+- リクエスト DTO 例: `pecus.WebApi/Models/Requests/UserRequests.cs`（`UserRowVersion: uint?`）、`pecus.WebApi/Models/Requests/WorkspaceItem/SetTagsToItemRequest.cs`（`ItemRowVersion: uint?`）
+
+以下、詳細な設計方針と実装パターン（既存内容）を続けます。
 
 #### DbUpdateConcurrencyException の発生条件
 - **発生する**: UPDATE 操作で WHERE RowVersion が不一致（0行更新）の場合 **のみ**
@@ -120,8 +113,8 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 2. コントローラー内で `ConcurrencyException` を個別にキャッチして変換する必要はありません。`GlobalExceptionFilter` が `IConcurrencyException` を検出して 409 を返すため、コントローラーは通常の実装に集中してください。
 3. OpenAPI/Swagger 用に 409 を明示するため、該当アクションに `ProducesResponseType(typeof(ConcurrencyErrorResponse<...>), StatusCodes.Status409Conflict)` を付与してください。
 
-### クライアント開発者向け注意事項
-- 更新系リクエストには、最新の `RowVersion` を必ず含める（Base64 エンコードされた文字列を `byte[]` として送るAPI設計の場合は、送受信ライブラリが自動で扱います）
+-### クライアント開発者向け注意事項
+- 更新系リクエストには、最新の `RowVersion` を必ず含める（このリポジトリでは `rowVersion` を数値（number / integer）として送受信する設計です）。
 - 409 Conflict を受け取ったら:
   1. エンティティの最新データを再取得する（GET）
   2. 必要に応じてマージや再編集を行い、再度更新リクエストを送る
@@ -131,7 +124,7 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 ```json
 {
   "skillIds": [1, 2, 5],
-  "userRowVersion": "q3J5cHRv...Base64...="
+  "userRowVersion": 123456
 }
 ```
 
@@ -157,7 +150,7 @@ await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生し�
 5. タブ B でページをリロード → 最新データで再試行が成功することを確認
 
 ### 実運用上の運用メモ
-- RowVersion は DB 側で `bytea`（Postgres）として保存される。アプリ側で `byte[]` として扱われ、JSON シリアライズは Base64 になる。
+- RowVersion は PostgreSQL のシステムカラム `xmin` にマッピングされます。アプリ側では `uint`（unsigned int）で表現し、フロントエンドとは数値（number/integer）でやり取りします。
 - フロントエンド／API クライアントで RowVersion の扱いを統一しておく（自動シリアライズ／デシリアライズの仕組みを整える）
 
 ### 参照箇所（コードベース内）

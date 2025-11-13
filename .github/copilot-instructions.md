@@ -1,5 +1,20 @@
 ## Pecus Aspire — AI エージェント最小指示書（要点）
 
+短い要約（エージェント向け / 20行以内・必読）
+
+- エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
+- 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
+- RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
+- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）
+- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。クライアント側は 409 を受けたら最新データを再取得してマージ／再試行する（`ConcurrencyErrorResponse<T>` を想定）。
+- フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。フロント UI は Tailwind CSS と `FlyonUI` を利用しています。
+- セッション/トークン: `pecus.Frontend/src/libs/session.ts` の `SessionManager` を使い、アクセストークン／リフレッシュトークンは HttpOnly Cookie に保存する（iron-session は未使用）。
+- 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
+- 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
+- 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
+
+以下は詳細ドキュメント（実装例・ガイドライン）です。
+
 目的: このファイルは、このリポジトリでAIエージェントが即戦力になるための「最小限で重要な知識」をまとめます。
 読むべき箇所の短い羅列と、実装パターン・開発フロー・禁止事項に限定しています。
 
@@ -35,19 +50,19 @@
   - トランザクションはサービス層で開始・管理する（コントローラーで開始しない）。
 
 - すぐ参照すべきファイル（ショートリスト）
-  - `pecus.AppHost/AppHost.cs` — サービス起動順/依存
-  - `pecus.Libs/DB/ApplicationDbContext.cs` — RowVersion / DB マッピング
-  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — 例外→HTTP マッピング
-  - `pecus.WebApi/Exceptions/ConcurrencyException.cs` — 競合例外の形
-  - `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例
-  - `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成
+ - すぐ参照すべきファイル（ショートリスト）
+  - `pecus.AppHost/AppHost.cs` (lines 1–80) — サービス起動順 / 依存解決（Aspire の登録例）
+  - `pecus.Libs/DB/ApplicationDbContext.cs` (lines 825–900) — RowVersion を PostgreSQL xmin にマッピングする `ConfigureRowVersionForAllEntities` の実装
+  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` (lines 50–68) — `HandleConcurrencyException`（IConcurrencyException → HTTP 409 へ変換）
+  - `pecus.WebApi/Exceptions/ConcurrencyException.cs` (lines 1–40) — `ConcurrencyException<T>` の定義（ConflictedModel を含む）
+  - `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例（更新リクエストに `RowVersion` を含める）
+  - `pecus.Frontend/src/libs/session.ts` (lines 14–40) — `SessionManager`（server-side cookies を使ったセッション管理）
+  - `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成スクリプト（生成物は編集禁止）
 
 - 作業時のチェックリスト（短い）
   1. 変更が跨プロジェクトか？ → README に承認フローを記載。
   2. DTO の検証属性は揃っているか？ → `dotnet build` 前に確認。
   3. 型生成物は手動編集していないか？ → 自動生成ファイルは .gitignore へ。
-
-フィードバックをください: ここに書かれていない「よく行う作業」「よく起きる落とし穴」があれば教えてください。必要ならこのファイルをさらに 1) 行番号つきの実装リンク、2) よく使うレビューチェックリスト、3) Server Action の具体例で拡張します。
 
 
 # Pecus Aspire - AIエージェント指示書（要点整理版）
