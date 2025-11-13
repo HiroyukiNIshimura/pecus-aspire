@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 /**
- * アバター画像取得API Route
- * GET /api/avatar?fileType=Avatar&resourceId={userId}&fileName={fileName}
+ * アバター画像ダウンロードAPI Route
+ * GET /api/avatar/download?fileType=Avatar&resourceId={userId}&fileName={fileName}&useOriginal=true
  *
- * Server Actionsでは読み取り操作（GET）を行わない方針に従い、
- * バイナリデータのダウンロードはAPI Routeで実装
+ * バイナリデータを直接ダウンロードさせるためのエンドポイント
  */
 export async function GET(request: NextRequest) {
   try {
@@ -24,8 +23,6 @@ export async function GET(request: NextRequest) {
     }
 
     // 認証済みAxiosインスタンスを作成
-    // Note: OpenAPI自動生成クライアントはバイナリデータ（ArrayBuffer）のダウンロードに非対応のため、
-    //       画像などのバイナリファイル取得は直接Axiosを使用してresponseType: 'arraybuffer'を指定
     const axios = await createAuthenticatedAxios();
 
     // バイナリデータとしてダウンロード（responseType: 'arraybuffer'）
@@ -52,32 +49,29 @@ export async function GET(request: NextRequest) {
               ? "image/webp"
               : "image/jpeg";
 
-    // ArrayBufferをBase64に変換
-    const base64 = Buffer.from(response.data).toString("base64");
-    const dataUrl = `data:${mimeType};base64,${base64}`;
-
-    return NextResponse.json({ dataUrl });
+    // バイナリデータを直接返す（Content-Dispositionでダウンロードさせる）
+    return new NextResponse(response.data, {
+      status: 200,
+      headers: {
+        "Content-Type": mimeType,
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+      },
+    });
   } catch (error: any) {
-    console.error("Failed to fetch avatar:", error);
+    console.error("Failed to download avatar:", error);
 
     // 認証エラーの場合は401を返す
     if (error.response?.status === 401) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 404エラーの場合
     if (error.response?.status === 404) {
-      return NextResponse.json(
-        { error: "File not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     return NextResponse.json(
-      { error: error.message || "Failed to fetch avatar" },
+      { error: error.message || "Failed to download avatar" },
       { status: error.response?.status || 500 }
     );
   }
