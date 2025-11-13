@@ -131,15 +131,17 @@ public class UpdateUserRequest
     /// <summary>
     /// ユーザー名
     /// </summary>
+    [Required(ErrorMessage = "ユーザー名は必須です。")]
     [MaxLength(50, ErrorMessage = "ユーザー名は50文字以内で入力してください。")]
-    public string? Username { get; set; }
+    public required string Username { get; set; }
 
     /// <summary>
     /// アバタータイプ
     /// </summary>
 
+    [Required(ErrorMessage = "アバタータイプは必須です。")]
     [EnumDataType(typeof(AvatarType), ErrorMessage = "有効なアバタータイプを指定してください。")]
-    public AvatarType? AvatarType { get; set; }
+    public required AvatarType AvatarType { get; set; }
 
     /// <summary>
     /// アバターURL

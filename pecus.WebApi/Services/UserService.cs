@@ -216,28 +216,22 @@ public class UserService
         }
 
         // Usernameの更新
-        if (!string.IsNullOrWhiteSpace(request.Username))
+        user.Username = request.Username.Trim();
+
+        // AvatarType="user-avatar"の場合、AvatarUrlが必須
+        if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
         {
-            user.Username = request.Username.Trim();
+            throw new InvalidOperationException(
+                "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
+            );
         }
 
-        if (request.AvatarType != null)
+        user.AvatarType = request.AvatarType;
+
+        // AvatarUrlが指定されている場合のみ更新
+        if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
         {
-            // AvatarType="user-avatar"の場合、AvatarUrlが必須
-            if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
-            {
-                throw new InvalidOperationException(
-                    "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
-                );
-            }
-
-            user.AvatarType = request.AvatarType;
-
-            // AvatarUrlが指定されている場合のみ更新
-            if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
-            {
-                user.AvatarUrl = request.AvatarUrl;
-            }
+            user.AvatarUrl = request.AvatarUrl;
         }
 
         user.UpdatedAt = DateTime.UtcNow;
