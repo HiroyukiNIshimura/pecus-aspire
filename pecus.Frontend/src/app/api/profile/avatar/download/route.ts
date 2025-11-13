@@ -3,7 +3,7 @@ import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 /**
  * アバター画像ダウンロードAPI Route
- * GET /api/avatar/download?fileType=Avatar&resourceId={userId}&fileName={fileName}&useOriginal=true
+ * GET /api/profile/avatar/download?fileType=Avatar&resourceId={userId}&fileName={fileName}&useOriginal=true
  *
  * バイナリデータを直接ダウンロードさせるためのエンドポイント
  */

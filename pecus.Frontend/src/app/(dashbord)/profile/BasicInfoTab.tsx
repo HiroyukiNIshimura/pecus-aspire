@@ -350,7 +350,7 @@ export default function BasicInfoTab({
                       // 元画像をダウンロード
                       const fileName = user.userAvatarPath?.split("/").pop();
                       if (fileName) {
-                        const downloadUrl = `/api/avatar/download?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}&useOriginal=true`;
+                        const downloadUrl = `/api/profile/avatar/download?fileType=Avatar&resourceId=${user.id}&fileName=${encodeURIComponent(fileName)}&useOriginal=true`;
                         const link = document.createElement('a');
                         link.href = downloadUrl;
                         link.download = fileName;
