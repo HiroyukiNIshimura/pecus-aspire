@@ -4634,6 +4634,60 @@
         }
       }
     },
+    "/api/profile/avatar/dataurl": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のアバター画像をDataURLで取得",
+        "description": "ログインユーザーのUserAvatarPathから画像を読み込み、Base64エンコードされたDataURLを返します。\r\nUserAvatarPathがNULLの場合は404を返します。",
+        "responses": {
+          "200": {
+            "description": "DataURL形式の画像データを返します",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "アバター画像が設定されていません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/profile/devices": {
       "get": {
         "tags": [
@@ -6613,6 +6667,21 @@
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
+      },
+      "AvatarDataUrlResponse": {
+        "required": [
+          "dataUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "dataUrl": {
+            "type": "string",
+            "description": "DataURL形式の画像データ（例: data:image/jpeg;base64,/9j/4AAQ...）",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "アバターDataURLレスポンス"
       },
       "AvatarType": {
         "enum": [

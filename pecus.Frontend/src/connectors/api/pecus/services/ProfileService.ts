@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AvatarDataUrlResponse } from '../models/AvatarDataUrlResponse';
 import type { MessageResponse } from '../models/MessageResponse';
 import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
@@ -94,6 +95,23 @@ export class ProfileService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 自分のアバター画像をDataURLで取得
+     * ログインユーザーのUserAvatarPathから画像を読み込み、Base64エンコードされたDataURLを返します。
+     * UserAvatarPathがNULLの場合は404を返します。
+     * @returns AvatarDataUrlResponse DataURL形式の画像データを返します
+     * @throws ApiError
+     */
+    public static getApiProfileAvatarDataurl(): CancelablePromise<AvatarDataUrlResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/profile/avatar/dataurl',
+            errors: {
+                404: `アバター画像が設定されていません`,
                 500: `Internal Server Error`,
             },
         });

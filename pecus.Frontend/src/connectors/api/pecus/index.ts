@@ -11,6 +11,7 @@ export type { AddUserToWorkspaceRequest } from './models/AddUserToWorkspaceReque
 export type { AddWorkspaceItemRelationRequest } from './models/AddWorkspaceItemRelationRequest';
 export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItemRelationResponse';
 export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganizationRequest';
+export type { AvatarDataUrlResponse } from './models/AvatarDataUrlResponse';
 export type { AvatarType } from './models/AvatarType';
 export type { BackendUpdateOrganizationRequest } from './models/BackendUpdateOrganizationRequest';
 export type { CreateGenreRequest } from './models/CreateGenreRequest';

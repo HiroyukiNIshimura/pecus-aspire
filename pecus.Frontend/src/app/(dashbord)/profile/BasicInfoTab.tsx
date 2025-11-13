@@ -88,33 +88,22 @@ export default function BasicInfoTab({
     },
   });
 
-  // 既存のアバター画像の表示（userAvatarPathからDataURLを生成）
+  // 既存のアバター画像の表示（/api/profile/avatar/dataurl エンドポイント経由）
   useEffect(() => {
     const loadExistingAvatar = async () => {
       // カスタム画像タイプが選択されていて、userAvatarPath があれば取得
       if (selectedAvatarType === "UserAvatar" && user.userAvatarPath && !avatarPreviewUrl) {
         try {
-          // userAvatarPathからファイル名部分のみを抽出
-          const fileName = user.userAvatarPath.split('/').pop() || user.userAvatarPath;
-
-          // APIルーター経由でバイナリデータを取得
-          const response = await fetch(
-            `/api/avatar/download?` +
-            `fileType=Avatar&` +
-            `resourceId=${user.id}&` +
-            `fileName=${encodeURIComponent(fileName)}&` +
-            `useOriginal=true`
-          );
+          // 新しいエンドポイント経由でDataURLを取得
+          const response = await fetch('/api/profile/avatar/dataurl');
 
           if (response.ok) {
-            // バイナリデータをBlobに変換
-            const blob = await response.blob();
-            // BlobからDataURLを生成
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setAvatarBlobUrl(reader.result as string);
-            };
-            reader.readAsDataURL(blob);
+            const result = await response.json();
+            setAvatarBlobUrl(result.dataUrl);
+          } else if (response.status === 404) {
+            // アバターが設定されていない場合はデフォルトを使用
+            console.info("Avatar not set, using default");
+            setAvatarBlobUrl(user.identityIconUrl);
           } else {
             console.error("Failed to load existing avatar:", response.statusText);
             // エラー時はデフォルトのidentityIconUrlを使用
@@ -132,7 +121,7 @@ export default function BasicInfoTab({
     };
 
     loadExistingAvatar();
-  }, [selectedAvatarType, user.userAvatarPath, user.id, user.identityIconUrl, avatarPreviewUrl]);
+  }, [selectedAvatarType, user.userAvatarPath, user.identityIconUrl, avatarPreviewUrl]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {

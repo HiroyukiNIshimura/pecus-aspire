@@ -160,4 +160,31 @@ public class ProfileController : BaseSecureController
 
         return TypedResults.Ok(new MessageResponse { Message = "パスワードを変更しました。" });
     }
+
+    /// <summary>
+    /// 自分のアバター画像をDataURLで取得
+    /// </summary>
+    /// <remarks>
+    /// ログインユーザーのUserAvatarPathから画像を読み込み、Base64エンコードされたDataURLを返します。
+    /// UserAvatarPathがNULLの場合は404を返します。
+    /// </remarks>
+    /// <returns>DataURL形式の画像データ</returns>
+    /// <response code="200">DataURL形式の画像データを返します</response>
+    /// <response code="404">アバター画像が設定されていません</response>
+    [HttpGet("avatar/dataurl")]
+    [ProducesResponseType(typeof(AvatarDataUrlResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AvatarDataUrlResponse>> GetAvatarDataUrl()
+    {
+        // CurrentUser は基底クラスで有効性チェック済み
+        var dataUrl = await _profileService.GetUserAvatarDataUrlAsync(CurrentUserId);
+
+        if (string.IsNullOrEmpty(dataUrl))
+        {
+            throw new NotFoundException("アバター画像が設定されていません。");
+        }
+
+        return TypedResults.Ok(new AvatarDataUrlResponse { DataUrl = dataUrl });
+    }
 }
