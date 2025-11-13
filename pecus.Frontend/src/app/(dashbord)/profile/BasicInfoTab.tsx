@@ -89,12 +89,14 @@ export default function BasicInfoTab({
 
   // 既存のアバター画像の表示（identityIconUrlは既にDataURL形式）
   useEffect(() => {
-    // AvatarType が UserAvatar で identityIconUrl が存在する場合、
-    // 既に DataURL 形式なのでそのまま使用
-    if (user.identityIconUrl && user.avatarType === "UserAvatar" && !avatarPreviewUrl) {
+    // カスタム画像タイプが選択されていて、identityIconUrl があれば表示
+    if (selectedAvatarType === "UserAvatar" && user.identityIconUrl && !avatarPreviewUrl) {
       setAvatarBlobUrl(user.identityIconUrl);
+    } else if (selectedAvatarType !== "UserAvatar") {
+      // 他のタイプに切り替えたらクリア
+      setAvatarBlobUrl(null);
     }
-  }, [user.identityIconUrl, user.avatarType, avatarPreviewUrl]);
+  }, [selectedAvatarType, user.identityIconUrl, avatarPreviewUrl]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {
