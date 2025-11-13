@@ -14,6 +14,7 @@ export class FileService {
      * @param fileType ファイルの種類（avatar, genre）
      * @param resourceId リソースID（ユーザーIDまたはジャンルID）
      * @param fileName ファイル名
+     * @param useOriginal 元画像（リサイズ前）を取得するかどうか
      * @returns any OK
      * @throws ApiError
      */
@@ -21,6 +22,7 @@ export class FileService {
         fileType: FileType,
         resourceId: number,
         fileName: string,
+        useOriginal?: boolean,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -29,6 +31,7 @@ export class FileService {
                 'FileType': fileType,
                 'ResourceId': resourceId,
                 'FileName': fileName,
+                'UseOriginal': useOriginal,
             },
             errors: {
                 404: `Not Found`,

@@ -3991,6 +3991,14 @@
               "minLength": 0,
               "type": "string"
             }
+          },
+          {
+            "name": "UseOriginal",
+            "in": "query",
+            "description": "元画像（リサイズ前）を取得するかどうか",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
