@@ -88,16 +88,51 @@ export default function BasicInfoTab({
     },
   });
 
-  // 既存のアバター画像の表示（identityIconUrlは既にDataURL形式）
+  // 既存のアバター画像の表示（userAvatarPathからDataURLを生成）
   useEffect(() => {
-    // カスタム画像タイプが選択されていて、identityIconUrl があれば表示
-    if (selectedAvatarType === "UserAvatar" && user.identityIconUrl && !avatarPreviewUrl) {
-      setAvatarBlobUrl(user.identityIconUrl);
-    } else if (selectedAvatarType !== "UserAvatar") {
-      // 他のタイプに切り替えたらクリア
-      setAvatarBlobUrl(null);
-    }
-  }, [selectedAvatarType, user.identityIconUrl, avatarPreviewUrl]);
+    const loadExistingAvatar = async () => {
+      // カスタム画像タイプが選択されていて、userAvatarPath があれば取得
+      if (selectedAvatarType === "UserAvatar" && user.userAvatarPath && !avatarPreviewUrl) {
+        try {
+          // userAvatarPathからファイル名部分のみを抽出
+          const fileName = user.userAvatarPath.split('/').pop() || user.userAvatarPath;
+
+          // APIルーター経由でバイナリデータを取得
+          const response = await fetch(
+            `/api/avatar/download?` +
+            `fileType=Avatar&` +
+            `resourceId=${user.id}&` +
+            `fileName=${encodeURIComponent(fileName)}&` +
+            `useOriginal=true`
+          );
+
+          if (response.ok) {
+            // バイナリデータをBlobに変換
+            const blob = await response.blob();
+            // BlobからDataURLを生成
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setAvatarBlobUrl(reader.result as string);
+            };
+            reader.readAsDataURL(blob);
+          } else {
+            console.error("Failed to load existing avatar:", response.statusText);
+            // エラー時はデフォルトのidentityIconUrlを使用
+            setAvatarBlobUrl(user.identityIconUrl);
+          }
+        } catch (error) {
+          console.error("Error loading existing avatar:", error);
+          // エラー時はデフォルトのidentityIconUrlを使用
+          setAvatarBlobUrl(user.identityIconUrl);
+        }
+      } else if (selectedAvatarType !== "UserAvatar") {
+        // 他のタイプに切り替えたらクリア
+        setAvatarBlobUrl(null);
+      }
+    };
+
+    loadExistingAvatar();
+  }, [selectedAvatarType, user.userAvatarPath, user.id, user.identityIconUrl, avatarPreviewUrl]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {
