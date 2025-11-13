@@ -114,15 +114,15 @@ public class FileUploadController : BaseSecureController
         // ファイル名を取得
         var fileName = Path.GetFileName(filePath);
 
-        // FileDownloadController.GetIcon メソッドのURLパターンに合わせてAvatarUrlを設定
-        var avatarUrl = $"/api/downloads/avatar/{userId}/{fileName}";
+        // FileDownloadController.GetIcon メソッドのURLパターンに合わせてUserAvatarPathを設定
+        var userAvatarPath = $"/api/downloads/avatar/{userId}/{fileName}";
 
         // ユーザーのアバター情報をデータベースに更新
         // AvatarType は "UserAvatar" で固定
         await _userService.UpdateUserAvatarAsync(
             userId,
             avatarType: AvatarType.UserAvatar,
-            avatarUrl: avatarUrl,
+            userAvatarPath: userAvatarPath,
             updatedByUserId: CurrentUserId
         );
     }

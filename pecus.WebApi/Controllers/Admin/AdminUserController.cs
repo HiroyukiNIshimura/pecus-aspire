@@ -99,7 +99,7 @@ public class AdminUserController : BaseAdminController
                 userId: targetUser.Id,
                 username: targetUser.Username,
                 email: targetUser.Email,
-                avatarPath: targetUser.AvatarUrl
+                avatarPath: targetUser.UserAvatarPath
             ),
             CreatedAt = targetUser.CreatedAt,
             RowVersion = targetUser.RowVersion!,
@@ -167,13 +167,14 @@ public class AdminUserController : BaseAdminController
             Username = u.Username,
             Email = u.Email,
             AvatarType = u.AvatarType,
+            UserAvatarPath = u.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: u.AvatarType,
                 organizationId: u.OrganizationId,
                 userId: u.Id,
                 username: u.Username,
                 email: u.Email,
-                avatarPath: u.AvatarUrl
+                avatarPath: u.UserAvatarPath
             ),
             CreatedAt = u.CreatedAt,
             Roles = u.Roles?
@@ -442,13 +443,14 @@ public class AdminUserController : BaseAdminController
             Username = user.Username,
             Email = user.Email,
             AvatarType = user.AvatarType,
+            UserAvatarPath = user.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: user.AvatarType,
                 organizationId: user.OrganizationId,
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
-                avatarPath: user.AvatarUrl
+                avatarPath: user.UserAvatarPath
             ),
             CreatedAt = user.CreatedAt,
             IsActive = user.IsActive,

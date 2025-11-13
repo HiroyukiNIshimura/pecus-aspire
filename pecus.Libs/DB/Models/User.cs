@@ -39,9 +39,11 @@ public class User
     public AvatarType? AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL(AvatarTypeがuser-avatarの場合、アップロードされたファイルのURLを保持)
+    /// ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
+    /// AvatarTypeがUserAvatarの場合、アップロードされたファイルのパス（例："/api/downloads/avatar/3/abc123.png" または "abc123.png"）を保持
+    /// 他のAvatarTypeに変更しても、このパスは保持され続けるため、再度UserAvatarに戻した際に再利用可能
     /// </summary>
-    public string? AvatarUrl { get; set; }
+    public string? UserAvatarPath { get; set; }
 
     /// <summary>
     /// 組織ID

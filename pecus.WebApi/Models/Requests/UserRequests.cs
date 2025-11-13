@@ -144,11 +144,10 @@ public class UpdateUserRequest
     public required AvatarType AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL
+    /// ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
     /// </summary>
-    [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
-    [Url(ErrorMessage = "有効なURLを指定してください。")]
-    public string? AvatarUrl { get; set; }
+    [MaxLength(200, ErrorMessage = "ユーザーアバターパスは200文字以内で入力してください。")]
+    public string? UserAvatarPath { get; set; }
 
     /// <summary>
     /// アクティブフラグ
@@ -174,10 +173,10 @@ public class UpdateProfileRequest
     public AvatarType? AvatarType { get; set; }
 
     /// <summary>
-    /// アバターURL（相対パスまたは絶対URLを許可）
+    /// ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
     /// </summary>
-    [MaxLength(200, ErrorMessage = "アバターURLは200文字以内で入力してください。")]
-    public string? AvatarUrl { get; set; }
+    [MaxLength(200, ErrorMessage = "ユーザーアバターパスは200文字以内で入力してください。")]
+    public string? UserAvatarPath { get; set; }
 
     /// <summary>
     /// スキルIDリスト

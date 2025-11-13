@@ -135,7 +135,7 @@ public class BackendOrganizationController : BaseBackendController
                 userId: u.Id,
                 username: u.Username,
                 email: u.Email,
-                avatarPath: u.AvatarUrl
+                avatarPath: u.UserAvatarPath
             ),
             IsActive = u.IsActive,
             CreatedAt = u.CreatedAt,

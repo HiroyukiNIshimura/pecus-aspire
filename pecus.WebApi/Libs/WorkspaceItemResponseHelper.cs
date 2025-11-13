@@ -36,7 +36,7 @@ public static class WorkspaceItemResponseHelper
                         userId: item.Owner.Id,
                         username: item.Owner.Username,
                         email: item.Owner.Email,
-                        avatarPath: item.Owner.AvatarUrl
+                        avatarPath: item.Owner.UserAvatarPath
                     )
                     : null,
             AssigneeId = item.AssigneeId,
@@ -49,7 +49,7 @@ public static class WorkspaceItemResponseHelper
                         userId: item.Assignee.Id,
                         username: item.Assignee.Username,
                         email: item.Assignee.Email,
-                        avatarPath: item.Assignee.AvatarUrl
+                        avatarPath: item.Assignee.UserAvatarPath
                     )
                     : null,
             Priority = item.Priority,
@@ -66,7 +66,7 @@ public static class WorkspaceItemResponseHelper
                         userId: item.Committer.Id,
                         username: item.Committer.Username,
                         email: item.Committer.Email,
-                        avatarPath: item.Committer.AvatarUrl
+                        avatarPath: item.Committer.UserAvatarPath
                     )
                     : null,
             CreatedAt = item.CreatedAt,

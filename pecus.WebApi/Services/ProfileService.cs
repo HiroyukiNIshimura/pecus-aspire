@@ -218,13 +218,14 @@ public class ProfileService
             Username = user.Username,
             Email = user.Email,
             AvatarType = user.AvatarType,
+            UserAvatarPath = user.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: user.AvatarType,
                 organizationId: user.OrganizationId,
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
-                avatarPath: user.AvatarUrl,
+                avatarPath: user.UserAvatarPath,
                 uploadsPath: uploadsPath
             ),
             CreatedAt = user.CreatedAt,
@@ -274,8 +275,8 @@ public class ProfileService
                 return false;
             }
 
-            // 古いAvatarUrlを保存（削除用）
-            var oldAvatarUrl = user.AvatarUrl;
+            // 古いUserAvatarPathを保存（削除用）
+            var oldAvatarPath = user.UserAvatarPath;
 
             // ユーザー名の更新
             if (!string.IsNullOrWhiteSpace(request.Username))
@@ -289,23 +290,23 @@ public class ProfileService
                 // AvatarType="UserAvatar"の場合
                 if (request.AvatarType == AvatarType.UserAvatar)
                 {
-                    // 新しいAvatarUrlが指定されている場合は更新
-                    if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
+                    // 新しいUserAvatarPathが指定されている場合は更新
+                    if (!string.IsNullOrWhiteSpace(request.UserAvatarPath))
                     {
-                        user.AvatarUrl = request.AvatarUrl;
+                        user.UserAvatarPath = request.UserAvatarPath;
                     }
-                    // 既存のAvatarUrlもない場合はエラー
-                    else if (string.IsNullOrWhiteSpace(user.AvatarUrl))
+                    // 既存のUserAvatarPathもない場合はエラー
+                    else if (string.IsNullOrWhiteSpace(user.UserAvatarPath))
                     {
                         throw new InvalidOperationException(
                             "AvatarType が 'UserAvatar' の場合、画像をアップロードするか、既存の画像が必要です。"
                         );
                     }
-                    // 既存のAvatarUrlがある場合はそのまま使用（何もしない）
+                    // 既存のUserAvatarPathがある場合はそのまま使用（何もしない）
                 }
                 else
                 {
-                    // UserAvatar以外の場合、AvatarUrlは保持する（削除しない）
+                    // UserAvatar以外の場合、UserAvatarPathは保持する（削除しない）
                     // これにより、後でUserAvatarに戻したときに画像を再利用できる
                 }
 
@@ -319,16 +320,20 @@ public class ProfileService
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            // AvatarUrlが変更された場合、古いファイルを削除
-            if (request.AvatarType == AvatarType.UserAvatar &&
-                !string.IsNullOrWhiteSpace(user.AvatarUrl) &&
-                user.OrganizationId.HasValue)
+            // UserAvatarPathが変更された場合、古いファイルを削除
+            if (
+                request.AvatarType == AvatarType.UserAvatar &&
+                !string.IsNullOrWhiteSpace(oldAvatarPath) &&
+                !string.IsNullOrWhiteSpace(user.UserAvatarPath) &&
+                oldAvatarPath != user.UserAvatarPath &&
+                user.OrganizationId.HasValue
+            )
             {
                 try
                 {
                     // 新しいファイル名を取得（URLから抽出）
-                    var newUrlParts = user.AvatarUrl.Split('/');
-                    var newFileName = newUrlParts[^1]; // 最後の要素がファイル名
+                    var newPathParts = user.UserAvatarPath.Split('/');
+                    var newFileName = newPathParts[^1]; // 最後の要素がファイル名
 
                     // ユーザーのアバターディレクトリパスを構築
                     var avatarDirectory = Path.Combine(
@@ -375,9 +380,9 @@ public class ProfileService
                     // ファイル削除失敗はログのみ（トランザクションは成功扱い）
                     _logger.LogWarning(
                         ex,
-                        "古いアバターファイルの削除に失敗しました。UserId: {UserId}, AvatarUrl: {AvatarUrl}",
+                        "古いアバターファイルの削除に失敗しました。UserId: {UserId}, UserAvatarPath: {UserAvatarPath}",
                         userId,
-                        user.AvatarUrl
+                        user.UserAvatarPath
                     );
                 }
             }

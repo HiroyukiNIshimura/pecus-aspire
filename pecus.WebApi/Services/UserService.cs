@@ -218,20 +218,20 @@ public class UserService
         // Usernameの更新
         user.Username = request.Username.Trim();
 
-        // AvatarType="user-avatar"の場合、AvatarUrlが必須
-        if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.AvatarUrl))
+        // AvatarType="user-avatar"の場合、UserAvatarPathが必須
+        if (request.AvatarType == AvatarType.UserAvatar && string.IsNullOrWhiteSpace(request.UserAvatarPath))
         {
             throw new InvalidOperationException(
-                "AvatarType が 'user-avatar' の場合、AvatarUrl は必須です。"
+                "AvatarType が 'user-avatar' の場合、UserAvatarPath は必須です。"
             );
         }
 
         user.AvatarType = request.AvatarType;
 
-        // AvatarUrlが指定されている場合のみ更新
-        if (!string.IsNullOrWhiteSpace(request.AvatarUrl))
+        // UserAvatarPathが指定されている場合のみ更新
+        if (!string.IsNullOrWhiteSpace(request.UserAvatarPath))
         {
-            user.AvatarUrl = request.AvatarUrl;
+            user.UserAvatarPath = request.UserAvatarPath;
         }
 
         user.UpdatedAt = DateTime.UtcNow;
@@ -255,7 +255,7 @@ public class UserService
     public async Task<User> UpdateUserAvatarAsync(
         int userId,
         AvatarType avatarType,
-        string avatarUrl,
+        string userAvatarPath,
         int updatedByUserId
     )
     {
@@ -266,7 +266,7 @@ public class UserService
         }
 
         user.AvatarType = avatarType;
-        user.AvatarUrl = avatarUrl;
+        user.UserAvatarPath = userAvatarPath;
         user.UpdatedAt = DateTime.UtcNow;
         user.UpdatedByUserId = updatedByUserId;
 
@@ -779,13 +779,14 @@ public class UserService
                 Username = latestUser.Username,
                 Email = latestUser.Email,
                 AvatarType = latestUser.AvatarType,
+                UserAvatarPath = latestUser.UserAvatarPath,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: latestUser.AvatarType,
                     organizationId: latestUser.OrganizationId,
                     userId: latestUser.Id,
                     username: latestUser.Username,
                     email: latestUser.Email,
-                    avatarPath: latestUser.AvatarUrl
+                    avatarPath: latestUser.UserAvatarPath
                 ),
                 Roles = latestUser.Roles.Select(r => new UserRoleResponse
                 {

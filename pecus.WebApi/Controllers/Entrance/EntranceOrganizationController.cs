@@ -128,7 +128,7 @@ public class EntranceOrganizationController : ControllerBase
                     userId: adminUser.Id,
                     username: adminUser.Username,
                     email: adminUser.Email,
-                    avatarPath: adminUser.AvatarUrl
+                    avatarPath: adminUser.UserAvatarPath
                 ),
                 Roles = adminUser.Roles?
                     .Select(r => new UserRoleResponse

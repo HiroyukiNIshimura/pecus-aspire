@@ -122,7 +122,7 @@ public class EntranceAuthController : ControllerBase
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
-                avatarPath: user.AvatarUrl
+                avatarPath: user.UserAvatarPath
             ),
             Roles = user
                 .Roles.Select(r => new RoleInfoResponse { Id = r.Id, Name = r.Name })
