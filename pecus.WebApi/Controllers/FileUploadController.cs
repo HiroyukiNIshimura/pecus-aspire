@@ -73,7 +73,7 @@ public class FileUploadController : BaseSecureController
             }
         }
 
-        // ファイルをアップロード
+        // ファイルをアップロード（WebP変換後のファイルパスが返される）
         var filePath = await _fileUploadService.UploadFileAsync(
             request.File,
             request.FileType.ToString().ToLowerInvariant(),
@@ -81,7 +81,7 @@ public class FileUploadController : BaseSecureController
             CurrentUser.OrganizationId.Value
         );
 
-        // アバターの場合、ユーザー情報を更新
+        // アバターの場合、ユーザー情報を更新（WebP変換後のファイル名を保存）
         if (request.FileType == FileType.Avatar && request.ResourceId == CurrentUserId)
         {
             await UpdateUserAvatarAsync(CurrentUserId, filePath);
@@ -111,18 +111,15 @@ public class FileUploadController : BaseSecureController
     /// </summary>
     private async Task UpdateUserAvatarAsync(int userId, string filePath)
     {
-        // ファイル名を取得
+        // ファイル名を取得（UserAvatarPathにはファイル名のみを保存）
         var fileName = Path.GetFileName(filePath);
-
-        // FileDownloadController.GetIcon メソッドのURLパターンに合わせてUserAvatarPathを設定
-        var userAvatarPath = $"/api/downloads/avatar/{userId}/{fileName}";
 
         // ユーザーのアバター情報をデータベースに更新
         // AvatarType は "UserAvatar" で固定
         await _userService.UpdateUserAvatarAsync(
             userId,
             avatarType: AvatarType.UserAvatar,
-            userAvatarPath: userAvatarPath,
+            userAvatarPath: fileName,
             updatedByUserId: CurrentUserId
         );
     }

@@ -94,25 +94,24 @@ export default function BasicInfoTab({
       // カスタム画像タイプが選択されていて、userAvatarPath があれば取得
       if (selectedAvatarType === "UserAvatar" && user.userAvatarPath && !avatarPreviewUrl) {
         try {
-          // 新しいエンドポイント経由でDataURLを取得
           const response = await fetch('/api/profile/avatar/dataurl');
 
           if (response.ok) {
             const result = await response.json();
             setAvatarBlobUrl(result.dataUrl);
           } else if (response.status === 404) {
-            // アバターが設定されていない場合はデフォルトを使用
-            console.info("Avatar not set, using default");
-            setAvatarBlobUrl(user.identityIconUrl);
+            // アバターが設定されていない場合はクリア（自動生成画像を表示しない）
+            console.info("Avatar not set");
+            setAvatarBlobUrl(null);
           } else {
             console.error("Failed to load existing avatar:", response.statusText);
-            // エラー時はデフォルトのidentityIconUrlを使用
-            setAvatarBlobUrl(user.identityIconUrl);
+            // エラー時もクリア
+            setAvatarBlobUrl(null);
           }
         } catch (error) {
           console.error("Error loading existing avatar:", error);
-          // エラー時はデフォルトのidentityIconUrlを使用
-          setAvatarBlobUrl(user.identityIconUrl);
+          // エラー時もクリア
+          setAvatarBlobUrl(null);
         }
       } else if (selectedAvatarType !== "UserAvatar") {
         // 他のタイプに切り替えたらクリア
@@ -121,7 +120,7 @@ export default function BasicInfoTab({
     };
 
     loadExistingAvatar();
-  }, [selectedAvatarType, user.userAvatarPath, user.identityIconUrl, avatarPreviewUrl]);
+  }, [selectedAvatarType, user.userAvatarPath, avatarPreviewUrl]);
 
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {

@@ -332,12 +332,12 @@ public class ProfileService
             {
                 try
                 {
-                    // 新しいファイル名を取得（URLから抽出）
-                    var newPathParts = user.UserAvatarPath.Split('/');
-                    var newFileName = newPathParts[^1]; // 最後の要素がファイル名
+                    // 新しいファイル名を取得（UserAvatarPathにはファイル名のみが保存されている）
+                    var newFileName = user.UserAvatarPath;
 
                     // ユーザーのアバターディレクトリパスを構築
                     var avatarDirectory = Path.Combine(
+                        _environment.ContentRootPath,
                         "uploads",
                         user.OrganizationId.Value.ToString(),
                         "avatar",
@@ -516,17 +516,40 @@ public class ProfileService
             return null;
         }
 
-        // ファイルパスを解決（相対パスの場合は絶対パスに変換）
-        var filePath = user.UserAvatarPath;
-        if (!Path.IsPathRooted(filePath))
+        // organizationIdが必要
+        if (!user.OrganizationId.HasValue)
         {
-            filePath = Path.Combine(_environment.ContentRootPath, filePath);
+            _logger.LogWarning("組織IDが設定されていません。UserId: {UserId}", userId);
+            return null;
         }
+
+        // UserAvatarPathにはファイル名のみが保存されている
+        // ファイルパスを構築: uploads/{organizationId}/avatar/{userId}/{fileName}
+        var filePath = Path.Combine(
+            _environment.ContentRootPath,
+            "uploads",
+            user.OrganizationId.Value.ToString(),
+            "avatar",
+            userId.ToString(),
+            user.UserAvatarPath
+        );
+
+        _logger.LogDebug(
+            "アバター画像ファイルパスを構築しました。UserId: {UserId}, FileName: {FileName}, FilePath: {FilePath}",
+            userId,
+            user.UserAvatarPath,
+            filePath
+        );
 
         // ファイルが存在するかチェック
         if (!File.Exists(filePath))
         {
-            _logger.LogWarning("アバター画像ファイルが見つかりません。UserId: {UserId}, Path: {Path}", userId, filePath);
+            _logger.LogWarning(
+                "アバター画像ファイルが見つかりません。UserId: {UserId}, FileName: {FileName}, FilePath: {FilePath}",
+                userId,
+                user.UserAvatarPath,
+                filePath
+            );
             return null;
         }
 
