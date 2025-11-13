@@ -355,10 +355,12 @@ export default function WorkspacesClient({
           <div className="card bg-base-100 shadow-md">
             <div className="card-body p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="card-title text-lg">
-                  ワークスペース一覧
+                <div className="flex items-center gap-3">
+                  <h2 className="card-title text-lg">
+                    ワークスペース一覧
+                  </h2>
                   <span className="badge badge-primary">{totalCount}</span>
-                </h2>
+                </div>
               </div>
 
               {workspaces.length === 0 ? (
