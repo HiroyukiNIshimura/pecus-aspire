@@ -57,17 +57,12 @@ export class SessionManager {
       const cookieStore = await cookies();
       const userString = JSON.stringify(data.user);
 
-      // 保存するクッキーはデフォルトで SameSite=Lax にして、
-      // ブラウザのトップレベルナビゲーションや内部の RSC リクエストで
-      // より安定して送信されるようにする。
-      // セキュリティのため HttpOnly を true に変更（クライアントJSからの参照は不可）。
-      // maxAge: 7日間（秒単位）- ブラウザを閉じても Cookie を保持
       const cookieOptions = {
         path: "/",
-        httpOnly: true,
-        sameSite: "lax" as const,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7, // 7日間
+        httpOnly: false,
+        sameSite: "strict" as const,
+        secure: process.env.NODE_ENV === "production", // 本番環境でのみHTTPS必須
+        maxAge: 60 * 60 * 24 * 7, // 7日間保持
       };
 
       cookieStore.set(
