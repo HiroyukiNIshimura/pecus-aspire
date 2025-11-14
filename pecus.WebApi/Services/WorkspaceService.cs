@@ -650,11 +650,11 @@ public class WorkspaceService
         string Code,
         string? Description,
         DateTime CreatedAt,
-        WorkspaceUserInfoResponse CreatedBy,
+        WorkspaceDetailUserResponse CreatedBy,
         DateTime? UpdatedAt,
-        WorkspaceUserInfoResponse UpdatedBy,
+        WorkspaceDetailUserResponse UpdatedBy,
         WorkspaceGenreResponse? Genre,
-        List<WorkspaceUserInfoResponse> Members
+        List<WorkspaceDetailUserResponse> Members
     )> GetWorkspaceDetailAsync(int workspaceId)
     {
         // ワークスペース基本情報を取得
@@ -692,7 +692,7 @@ public class WorkspaceService
 
         // CreatedBy の構築
         var createdBy = createdByUser != null
-            ? new WorkspaceUserInfoResponse
+            ? new WorkspaceDetailUserResponse
             {
                 Id = createdByUser.Id,
                 UserName = createdByUser.Username,
@@ -707,11 +707,11 @@ public class WorkspaceService
                 ),
                 IsActive = createdByUser.IsActive,
             }
-            : new WorkspaceUserInfoResponse { UserName = "Unknown" };
+            : new WorkspaceDetailUserResponse { UserName = "Unknown" };
 
         // UpdatedBy の構築
         var updatedBy = updatedByUser != null
-            ? new WorkspaceUserInfoResponse
+            ? new WorkspaceDetailUserResponse
             {
                 Id = updatedByUser.Id,
                 UserName = updatedByUser.Username,
@@ -726,7 +726,7 @@ public class WorkspaceService
                 ),
                 IsActive = updatedByUser.IsActive,
             }
-            : new WorkspaceUserInfoResponse { UserName = "Unknown" };
+            : new WorkspaceDetailUserResponse { UserName = "Unknown" };
 
         // Genre の構築
         var genre = workspace.Genre != null
@@ -742,7 +742,7 @@ public class WorkspaceService
         // Members の構築
         var members = workspace.WorkspaceUsers
             .Where(wu => wu.User != null && wu.User.IsActive)
-            .Select(wu => new WorkspaceUserInfoResponse
+            .Select(wu => new WorkspaceDetailUserResponse
             {
                 Id = wu.User!.Id,
                 UserName = wu.User.Username,
@@ -785,7 +785,7 @@ public class WorkspaceService
         bool IsArchived,
         DateTime CreatedAt,
         bool IsAssigned,
-        WorkspaceUserInfoResponse Owner
+        WorkspaceDetailUserResponse Owner
     )> items, int totalCount)> GetWorkspaceItemsAsync(int workspaceId, int page, int pageSize)
     {
         var query = _context.WorkspaceItems
@@ -813,7 +813,7 @@ public class WorkspaceService
                 IsArchived: item.IsArchived,
                 CreatedAt: item.CreatedAt,
                 IsAssigned: item.AssigneeId.HasValue,
-                Owner: new WorkspaceUserInfoResponse
+                Owner: new WorkspaceDetailUserResponse
                 {
                     Id = item.Owner!.Id,
                     UserName = item.Owner.Username,

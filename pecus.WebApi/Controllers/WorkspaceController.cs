@@ -137,12 +137,16 @@ public class WorkspaceController : BaseSecureController
             Name = name,
             Code = code,
             Description = description,
+            GenreId = genre?.Id,
+            GenreName = genre?.Name,
+            GenreIcon = genre?.Icon,
             CreatedAt = createdAt,
             CreatedBy = createdBy,
             UpdatedAt = updatedAt,
             UpdatedBy = updatedBy,
-            Genre = genre,
             Members = members,
+            IsActive = true,
+            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
         };
 
         return TypedResults.Ok(response);
