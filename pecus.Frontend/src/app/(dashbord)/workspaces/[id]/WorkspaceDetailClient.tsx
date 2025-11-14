@@ -100,8 +100,8 @@ export default function WorkspaceDetailClient({
           className="hidden lg:block h-full overflow-hidden relative"
           style={{ width: `${sidebarWidth}px` }}
         >
-          <WorkspaceItemsSidebar 
-            workspaceId={parseInt(workspaceId)} 
+          <WorkspaceItemsSidebar
+            workspaceId={parseInt(workspaceId)}
             scrollContainerId="itemsScrollableDiv-desktop"
           />
 
@@ -267,8 +267,8 @@ export default function WorkspaceDetailClient({
 
         {/* アイテム一覧 (スマホ) */}
         <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: '384px' }}>
-          <WorkspaceItemsSidebar 
-            workspaceId={parseInt(workspaceId)} 
+          <WorkspaceItemsSidebar
+            workspaceId={parseInt(workspaceId)}
             scrollContainerId="itemsScrollableDiv-mobile"
           />
         </div>
