@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AppHeader from "@/components/common/AppHeader";
@@ -22,10 +22,63 @@ export default function WorkspaceDetailClient({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(256); // 初期幅 w-64 = 256px
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const handleBack = () => {
     router.back();
   };
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const newWidth = e.clientX;
+      // 最小幅200px、最大幅600px
+      if (newWidth >= 200 && newWidth <= 600) {
+        setSidebarWidth(newWidth);
+      }
+    },
+    [isResizing]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  // マウスイベントリスナーの登録
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  // ワークスペースヘッダー部分を共通コンポーネント化
+  const WorkspaceHeader = () => (
+    <div className="flex items-start justify-between gap-2 mb-4">
+      <div className="min-w-0 flex-1">
+        <h2 className="text-2xl font-bold truncate">
+          {workspaceDetail.name}
+        </h2>
+        {workspaceDetail.code && (
+          <code className="text-sm badge badge-ghost badge-md mt-2 truncate max-w-full block">
+            {workspaceDetail.code}
+          </code>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex h-screen overflow-hidden flex-col">
@@ -34,29 +87,39 @@ export default function WorkspaceDetailClient({
         setSidebarOpen={setSidebarOpen}
         userInfo={userInfo}
       />
-      <div className="flex flex-1 overflow-hidden">
-        {/* 左サイドバー */}
-        <div className="w-64 h-full overflow-hidden">
+
+      {/* スマホ: ヘッダーのみ表示 */}
+      <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">
+        <WorkspaceHeader />
+      </div>
+
+      <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
+        {/* 左サイドバー (PC) */}
+        <div
+          ref={sidebarRef}
+          className="hidden lg:block h-full overflow-hidden relative"
+          style={{ width: `${sidebarWidth}px` }}
+        >
           <WorkspaceItemsSidebar workspaceId={parseInt(workspaceId)} />
+
+          {/* リサイズハンドル */}
+          <div
+            onMouseDown={handleMouseDown}
+            className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors ${
+              isResizing ? "bg-primary" : ""
+            }`}
+            style={{ userSelect: "none" }}
+          />
         </div>
 
         {/* メインコンテンツ */}
-        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
           {/* ワークスペース詳細情報 */}
           <div className="card bg-base-100 shadow-md mb-6">
             <div className="card-body">
-              {/* ヘッダー */}
-              <div className="flex items-start justify-between gap-2 mb-4">
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-2xl font-bold truncate">
-                    {workspaceDetail.name}
-                  </h2>
-                  {workspaceDetail.code && (
-                    <code className="text-sm badge badge-ghost badge-md mt-2 truncate max-w-full block">
-                      {workspaceDetail.code}
-                    </code>
-                  )}
-                </div>
+              {/* ヘッダー (PC) */}
+              <div className="hidden lg:block">
+                <WorkspaceHeader />
               </div>
 
               {/* 説明 */}
@@ -198,6 +261,11 @@ export default function WorkspaceDetailClient({
             </div>
           </div>
         </main>
+
+        {/* アイテム一覧 (スマホ) */}
+        <div className="lg:hidden h-96 overflow-hidden border-t border-base-300">
+          <WorkspaceItemsSidebar workspaceId={parseInt(workspaceId)} />
+        </div>
       </div>
     </div>
   );
