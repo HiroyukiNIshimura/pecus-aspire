@@ -8,10 +8,12 @@ import type { WorkspaceItemListResponse } from "@/connectors/api/pecus";
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
+  scrollContainerId?: string;
 }
 
 export default function WorkspaceItemsSidebar({
   workspaceId,
+  scrollContainerId = "itemsScrollableDiv",
 }: WorkspaceItemsSidebarProps) {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -147,44 +149,42 @@ export default function WorkspaceItemsSidebar({
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden bg-base-200">
-          <div id="itemsScrollableDiv" className="h-full overflow-y-auto">
-            <InfiniteScroll
-              dataLength={filteredItems.length}
-              next={loadMoreItems}
-              hasMore={currentPage < totalPages}
-              loader={
-                <div className="text-center py-4">
-                  <span className="loading loading-spinner loading-sm"></span>
-                </div>
-              }
-              endMessage={
-                <div className="text-center py-2 text-xs text-base-content/70">
-                  <p>すべて表示</p>
-                </div>
-              }
-              scrollableTarget="itemsScrollableDiv"
-            >
-              <ul className="space-y-1 p-2">
-                {filteredItems.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => item.id && setSelectedItemId(item.id)}
-                      className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
-                        selectedItemId === item.id
-                          ? "bg-primary text-primary-content font-semibold"
-                          : "hover:bg-base-300 text-base-content"
-                      }`}
-                      title={item.subject || "（未設定）"}
-                    >
-                      {item.subject || "（未設定）"}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </InfiniteScroll>
-          </div>
+        <div id={scrollContainerId} className="flex-1 overflow-y-auto bg-base-200">
+          <InfiniteScroll
+            dataLength={filteredItems.length}
+            next={loadMoreItems}
+            hasMore={currentPage < totalPages}
+            loader={
+              <div className="text-center py-4">
+                <span className="loading loading-spinner loading-sm"></span>
+              </div>
+            }
+            endMessage={
+              <div className="text-center py-2 text-xs text-base-content/70">
+                <p>すべて表示</p>
+              </div>
+            }
+            scrollableTarget={scrollContainerId}
+          >
+            <ul className="space-y-1 p-2">
+              {filteredItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => item.id && setSelectedItemId(item.id)}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
+                      selectedItemId === item.id
+                        ? "bg-primary text-primary-content font-semibold"
+                        : "hover:bg-base-300 text-base-content"
+                    }`}
+                    title={item.subject || "（未設定）"}
+                  >
+                    {item.subject || "（未設定）"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </InfiniteScroll>
         </div>
       )}
     </aside>
