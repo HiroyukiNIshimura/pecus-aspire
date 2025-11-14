@@ -16,6 +16,7 @@
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
+- C#: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可。
 
 **統一方針（簡潔版）**
 - コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。
@@ -1986,6 +1987,7 @@ dotnet run --project pecus.AppHost
 - エントリポイントは `AppHost.cs` を用いる
 - Aspire のリソース名は小文字（`pecusdb`, `redis` 等）
 - 共有コードは `pecus.Libs` に置く
+- C# コード: 原則「1ファイル=1クラス」。例外として、関連する複数の `enum` や `record`（軽量型）は1ファイルにまとめて可。
 
 ## 実装時の確認事項（質問）
 - 機能の所有サービスはどれか？（WebApi / BackFire / DbManager）
