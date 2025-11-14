@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
@@ -14,8 +15,13 @@ namespace Pecus.Services;
 public class WorkspaceService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _environment;
 
-    public WorkspaceService(ApplicationDbContext context) => _context = context;
+    public WorkspaceService(ApplicationDbContext context, IWebHostEnvironment environment)
+    {
+        _context = context;
+        _environment = environment;
+    }
 
     /// <summary>
     /// ワークスペースを作成
@@ -614,5 +620,216 @@ public class WorkspaceService
                 RowVersion = latestWorkspace.RowVersion!,
             }
         );
+    }
+
+    /// <summary>
+    /// ワークスペースアクセス権限をチェック（ユーザーがワークスペースにアクセス可能か確認）
+    /// </summary>
+    public async Task CheckWorkspaceAccessAsync(int workspaceId, int userId)
+    {
+        var access = await _context.WorkspaceUsers
+            .AsNoTracking()
+            .Include(wu => wu.User)
+            .FirstOrDefaultAsync(wu =>
+                wu.WorkspaceId == workspaceId &&
+                wu.UserId == userId
+            );
+
+        if (access == null || access.User == null || !access.User.IsActive)
+        {
+            throw new NotFoundException("ワークスペースにアクセスできません。");
+        }
+    }
+
+    /// <summary>
+    /// ワークスペース詳細情報を取得（DTO形式で、IdentityIconUrl を含む）
+    /// </summary>
+    public async Task<(
+        int Id,
+        string Name,
+        string Code,
+        string? Description,
+        DateTime CreatedAt,
+        WorkspaceUserInfoResponse CreatedBy,
+        DateTime? UpdatedAt,
+        WorkspaceUserInfoResponse UpdatedBy,
+        WorkspaceGenreResponse? Genre,
+        List<WorkspaceUserInfoResponse> Members
+    )> GetWorkspaceDetailAsync(int workspaceId)
+    {
+        // ワークスペース基本情報を取得
+        var workspace = await _context.Workspaces
+            .AsNoTracking()
+            .Include(w => w.Genre)
+            .Include(w => w.WorkspaceUsers)
+                .ThenInclude(wu => wu.User)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId && w.IsActive);
+
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // CreatedByUser と UpdatedByUser は別途取得
+        User? createdByUser = null;
+        User? updatedByUser = null;
+
+        if (workspace.CreatedByUserId.HasValue)
+        {
+            createdByUser = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == workspace.CreatedByUserId);
+        }
+
+        if (workspace.UpdatedByUserId.HasValue)
+        {
+            updatedByUser = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == workspace.UpdatedByUserId);
+        }
+
+        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
+
+        // CreatedBy の構築
+        var createdBy = createdByUser != null
+            ? new WorkspaceUserInfoResponse
+            {
+                Id = createdByUser.Id,
+                UserName = createdByUser.Username,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: createdByUser.AvatarType,
+                    organizationId: createdByUser.OrganizationId,
+                    userId: createdByUser.Id,
+                    username: createdByUser.Username,
+                    email: createdByUser.Email,
+                    avatarPath: createdByUser.UserAvatarPath,
+                    uploadsPath: uploadsPath
+                ),
+                IsActive = createdByUser.IsActive,
+            }
+            : new WorkspaceUserInfoResponse { UserName = "Unknown" };
+
+        // UpdatedBy の構築
+        var updatedBy = updatedByUser != null
+            ? new WorkspaceUserInfoResponse
+            {
+                Id = updatedByUser.Id,
+                UserName = updatedByUser.Username,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: updatedByUser.AvatarType,
+                    organizationId: updatedByUser.OrganizationId,
+                    userId: updatedByUser.Id,
+                    username: updatedByUser.Username,
+                    email: updatedByUser.Email,
+                    avatarPath: updatedByUser.UserAvatarPath,
+                    uploadsPath: uploadsPath
+                ),
+                IsActive = updatedByUser.IsActive,
+            }
+            : new WorkspaceUserInfoResponse { UserName = "Unknown" };
+
+        // Genre の構築
+        var genre = workspace.Genre != null
+            ? new WorkspaceGenreResponse
+            {
+                Id = workspace.Genre.Id,
+                Name = workspace.Genre.Name,
+                Description = workspace.Genre.Description,
+                Icon = workspace.Genre.Icon,
+            }
+            : null;
+
+        // Members の構築
+        var members = workspace.WorkspaceUsers
+            .Where(wu => wu.User != null && wu.User.IsActive)
+            .Select(wu => new WorkspaceUserInfoResponse
+            {
+                Id = wu.User!.Id,
+                UserName = wu.User.Username,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: wu.User.AvatarType,
+                    organizationId: wu.User.OrganizationId,
+                    userId: wu.User.Id,
+                    username: wu.User.Username,
+                    email: wu.User.Email,
+                    avatarPath: wu.User.UserAvatarPath,
+                    uploadsPath: uploadsPath
+                ),
+                IsActive = wu.User.IsActive,
+            })
+            .ToList();
+
+        return (
+            workspace.Id,
+            workspace.Name,
+            workspace.Code ?? "",
+            workspace.Description,
+            workspace.CreatedAt,
+            createdBy,
+            workspace.UpdatedAt,
+            updatedBy,
+            genre,
+            members
+        );
+    }
+
+    /// <summary>
+    /// ワークスペース内のアイテム一覧を取得（有効なアイテムのみ、ページング対応、DTO形式で返す）
+    /// </summary>
+    public async Task<(List<(
+        int Id,
+        string Code,
+        string Subject,
+        int? Priority,
+        bool IsDraft,
+        bool IsArchived,
+        DateTime CreatedAt,
+        bool IsAssigned,
+        WorkspaceUserInfoResponse Owner
+    )> items, int totalCount)> GetWorkspaceItemsAsync(int workspaceId, int page, int pageSize)
+    {
+        var query = _context.WorkspaceItems
+            .AsNoTracking()
+            .Where(wi => wi.WorkspaceId == workspaceId && wi.IsActive)
+            .Include(wi => wi.Owner)
+            .AsSplitQuery()
+            .OrderByDescending(wi => wi.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
+
+        var result = items
+            .Select(item => (
+                Id: item.Id,
+                Code: item.Code,
+                Subject: item.Subject,
+                Priority: (int?)item.Priority,
+                IsDraft: item.IsDraft,
+                IsArchived: item.IsArchived,
+                CreatedAt: item.CreatedAt,
+                IsAssigned: item.AssigneeId.HasValue,
+                Owner: new WorkspaceUserInfoResponse
+                {
+                    Id = item.Owner!.Id,
+                    UserName = item.Owner.Username,
+                    IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: item.Owner.AvatarType,
+                        organizationId: item.Owner.OrganizationId,
+                        userId: item.Owner.Id,
+                        username: item.Owner.Username,
+                        email: item.Owner.Email,
+                        avatarPath: item.Owner.UserAvatarPath,
+                        uploadsPath: uploadsPath
+                    ),
+                }
+            ))
+            .ToList();
+
+        return (result, totalCount);
     }
 }

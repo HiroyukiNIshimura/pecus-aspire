@@ -152,7 +152,7 @@ export default function AppHeader({
               className="dropdown-toggle p-0 bg-transparent hover:bg-transparent border-none"
             >
               <div className="avatar">
-                <div className="size-12 rounded-full ring-0 hover:ring-2 hover:ring-base-300 transition-all">
+                <div className="size-12 rounded-full ring-0 hover:ring-2 hover:ring-primary transition-all">
                   {userInfo?.identityIconUrl ? (
                     <img
                       src={userInfo.identityIconUrl}

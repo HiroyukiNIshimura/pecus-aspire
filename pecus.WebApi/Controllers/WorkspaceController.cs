@@ -111,4 +111,95 @@ public class WorkspaceController : BaseSecureController
 
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// ワークスペース詳細情報取得（ログインユーザーがアクセス可能なもののみ）
+    /// </summary>
+    /// <param name="id">ワークスペースID</param>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(WorkspaceFullDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceFullDetailResponse>> GetWorkspaceDetail(int id)
+    {
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースアクセス権限チェック
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: me);
+
+        // ワークスペース詳細情報を取得
+        var (wId, name, code, description, createdAt, createdBy, updatedAt, updatedBy, genre, members) =
+            await _workspaceService.GetWorkspaceDetailAsync(id);
+
+        var response = new WorkspaceFullDetailResponse
+        {
+            Id = wId,
+            Name = name,
+            Code = code,
+            Description = description,
+            CreatedAt = createdAt,
+            CreatedBy = createdBy,
+            UpdatedAt = updatedAt,
+            UpdatedBy = updatedBy,
+            Genre = genre,
+            Members = members,
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）
+    /// </summary>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="request">ページネーションリクエスト</param>
+    [HttpGet("{id:int}/items")]
+    [ProducesResponseType(typeof(WorkspaceItemListPagedResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceItemListPagedResponse>> GetWorkspaceItems(
+        int id,
+        [FromQuery] GetWorkspaceItemsRequest request
+    )
+    {
+        var me = JwtBearerUtil.GetUserIdFromPrincipal(User);
+
+        // ワークスペースアクセス権限チェック
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: me);
+
+        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        // ワークスペース内のアイテム一覧を取得
+        (var items, int totalCount) = await _workspaceService.GetWorkspaceItemsAsync(
+            workspaceId: id,
+            page: validatedPage,
+            pageSize: pageSize
+        );
+
+        var data = items
+            .Select(item => new WorkspaceItemListResponse
+            {
+                Id = item.Id,
+                Code = item.Code,
+                Subject = item.Subject,
+                Priority = item.Priority,
+                IsDraft = item.IsDraft,
+                IsArchived = item.IsArchived,
+                CreatedAt = item.CreatedAt,
+                IsAssigned = item.IsAssigned,
+                Owner = item.Owner,
+            })
+            .ToList();
+
+        var response = new WorkspaceItemListPagedResponse
+        {
+            CurrentPage = validatedPage,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+            TotalCount = totalCount,
+            Data = data,
+        };
+
+        return TypedResults.Ok(response);
+    }
 }

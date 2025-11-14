@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import AppHeader from "@/components/common/AppHeader";
@@ -173,48 +174,6 @@ export default function WorkspacesClient({
               アクセス可能なワークスペースの一覧
             </p>
           </div>
-
-          {/* 統計情報カード */}
-          {statistics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">アクティブ</div>
-                  <div className="stat-value text-primary">
-                    {statistics.activeWorkspaceCount || 0}
-                  </div>
-                  <div className="stat-desc">利用中のワークスペース</div>
-                </div>
-              </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">非アクティブ</div>
-                  <div className="stat-value text-secondary">
-                    {statistics.inactiveWorkspaceCount || 0}
-                  </div>
-                  <div className="stat-desc">停止中のワークスペース</div>
-                </div>
-              </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">総メンバー数</div>
-                  <div className="stat-value text-accent">
-                    {statistics.uniqueMemberCount || 0}
-                  </div>
-                  <div className="stat-desc">全ワークスペース合計</div>
-                </div>
-              </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">最近作成</div>
-                  <div className="stat-value text-info">
-                    {statistics.recentWorkspaceCount || 0}
-                  </div>
-                  <div className="stat-desc">過去30日以内</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* フィルターセクション */}
           <div className="card bg-base-200 shadow-md mb-6">
@@ -391,9 +350,11 @@ export default function WorkspacesClient({
                           {/* ヘッダー */}
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-lg font-bold truncate">
-                                {workspace.name}
-                              </h3>
+                              <Link href={`/workspaces/${workspace.id}`}>
+                                <h3 className="text-lg font-bold truncate hover:text-primary transition-colors">
+                                  {workspace.name}
+                                </h3>
+                              </Link>
                               <code className="text-xs badge badge-ghost badge-sm mt-1 truncate max-w-full block">
                                 {workspace.code}
                               </code>
@@ -460,6 +421,48 @@ export default function WorkspacesClient({
               )}
             </div>
           </div>
+
+          {/* 統計情報カード */}
+          {statistics && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">アクティブ</div>
+                  <div className="stat-value text-primary">
+                    {statistics.activeWorkspaceCount || 0}
+                  </div>
+                  <div className="stat-desc">利用中のワークスペース</div>
+                </div>
+              </div>
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">非アクティブ</div>
+                  <div className="stat-value text-secondary">
+                    {statistics.inactiveWorkspaceCount || 0}
+                  </div>
+                  <div className="stat-desc">停止中のワークスペース</div>
+                </div>
+              </div>
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">総メンバー数</div>
+                  <div className="stat-value text-accent">
+                    {statistics.uniqueMemberCount || 0}
+                  </div>
+                  <div className="stat-desc">全ワークスペース合計</div>
+                </div>
+              </div>
+              <div className="stats shadow">
+                <div className="stat">
+                  <div className="stat-title">最近作成</div>
+                  <div className="stat-value text-info">
+                    {statistics.recentWorkspaceCount || 0}
+                  </div>
+                  <div className="stat-desc">過去30日以内</div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
