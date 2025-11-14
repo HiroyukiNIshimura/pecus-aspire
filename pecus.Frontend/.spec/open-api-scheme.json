@@ -5355,6 +5355,107 @@
         }
       }
     },
+    "/api/workspaces/{id}": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペース詳細情報取得（ログインユーザーがアクセス可能なもののみ）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceFullDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/workspaces/{id}/items": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から始まる）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceItemListPagedResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
         "tags": [
@@ -10027,6 +10128,88 @@
         "additionalProperties": false,
         "description": "競合エラーレスポンス（409 Conflict）"
       },
+      "WorkspaceFullDetailResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "ワークスペースの説明",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/WorkspaceUserInfoResponse"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedBy": {
+            "$ref": "#/components/schemas/WorkspaceUserInfoResponse"
+          },
+          "genre": {
+            "$ref": "#/components/schemas/WorkspaceGenreResponse"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceUserInfoResponse"
+            },
+            "description": "このワークスペースに参加しているユーザー（有効ユーザーのみ）",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペース詳細情報"
+      },
+      "WorkspaceGenreResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "ジャンルの説明",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペース詳細取得用ジャンル情報"
+      },
       "WorkspaceItemAttachmentResponse": {
         "required": [
           "id"
@@ -10300,6 +10483,84 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
+      },
+      "WorkspaceItemListPagedResponse": {
+        "type": "object",
+        "properties": {
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceItemListResponse"
+            },
+            "description": "アイテムデータ",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースアイテム一覧ページングレスポンス"
+      },
+      "WorkspaceItemListResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "アイテムコード",
+            "nullable": true
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名",
+            "nullable": true
+          },
+          "priority": {
+            "type": "integer",
+            "description": "重要度（NULL の場合は Medium として扱う）",
+            "format": "int32",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "下書き中フラグ"
+          },
+          "isArchived": {
+            "type": "boolean",
+            "description": "編集不可フラグ（アーカイブ）"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "isAssigned": {
+            "type": "boolean",
+            "description": "作業中かどうか（作業中のユーザーID が存在するかで判定）"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/WorkspaceUserInfoResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースアイテム一覧レスポンス（ページング対応）"
       },
       "WorkspaceItemRelationResponse": {
         "required": [
@@ -10720,6 +10981,32 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "WorkspaceUserInfoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "userName": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコン URL",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペース詳細取得用ユーザー情報"
       },
       "WorkspaceUserResponse": {
         "type": "object",
