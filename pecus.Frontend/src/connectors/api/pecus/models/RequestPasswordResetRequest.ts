@@ -6,9 +6,6 @@
  * パスワードリセットリクエスト
  */
 export type RequestPasswordResetRequest = {
-    /**
-     * メールアドレス
-     */
     email: string;
 };
 

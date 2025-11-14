@@ -5,7 +5,7 @@
 import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
 import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
- * ワークスペース詳細情報レスポンス
+ * ワークスペース詳細情報レスポンス（管理者用）
  */
 export type WorkspaceDetailResponse = {
     /**
@@ -24,11 +24,6 @@ export type WorkspaceDetailResponse = {
      * ワークスペースの説明
      */
     description?: string | null;
-    /**
-     * 組織ID
-     */
-    organizationId?: number;
-    organization?: OrganizationInfoResponse;
     /**
      * ジャンルID
      */
@@ -50,17 +45,9 @@ export type WorkspaceDetailResponse = {
      */
     createdAt?: string;
     /**
-     * 作成者ユーザーID
-     */
-    createdByUserId?: number | null;
-    /**
      * 更新日時
      */
     updatedAt?: string | null;
-    /**
-     * 更新者ユーザーID
-     */
-    updatedByUserId?: number | null;
     /**
      * アクティブフラグ
      */
@@ -69,5 +56,18 @@ export type WorkspaceDetailResponse = {
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;
+    /**
+     * 組織ID
+     */
+    organizationId?: number;
+    organization?: OrganizationInfoResponse;
+    /**
+     * 作成者ユーザーID
+     */
+    createdByUserId?: number | null;
+    /**
+     * 更新者ユーザーID
+     */
+    updatedByUserId?: number | null;
 };
 

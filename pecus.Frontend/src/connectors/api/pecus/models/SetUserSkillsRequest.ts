@@ -6,15 +6,7 @@
  * ユーザーのスキル設定リクエスト
  */
 export type SetUserSkillsRequest = {
-    /**
-     * スキルIDのリスト。既存のすべてのスキルを置き換えます。
-     * 空のリストまたはnullの場合はすべてのスキルを削除します。
-     */
     skillIds: Array<number>;
-    /**
-     * ユーザーの楽観的ロック用RowVersion。
-     * 競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。
-     */
     userRowVersion?: number | null;
 };
 

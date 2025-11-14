@@ -8,39 +8,15 @@ import type { OSPlatform } from './OSPlatform';
  * ログインリクエスト
  */
 export type LoginRequest = {
-    /**
-     * ログイン識別子（EmailまたはLoginId）
-     */
     loginIdentifier: string;
-    /**
-     * パスワード
-     */
     password: string;
-    /**
-     * デバイス名（ユーザーが任意で付ける表示名）
-     */
     deviceName?: string | null;
     deviceType: DeviceType;
     os: OSPlatform;
-    /**
-     * ユーザーエージェント情報
-     */
     userAgent?: string | null;
-    /**
-     * アプリバージョン
-     */
     appVersion?: string | null;
-    /**
-     * タイムゾーン
-     */
     timezone?: string | null;
-    /**
-     * ログイン位置情報更新リクエスト
-     */
     location?: string | null;
-    /**
-     * IPアドレス
-     */
     ipAddress?: string | null;
 };
 

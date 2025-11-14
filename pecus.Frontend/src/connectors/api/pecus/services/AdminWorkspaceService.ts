@@ -39,9 +39,9 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース一覧取得（ページネーション）
      * @param page
-     * @param isActive アクティブなワークスペースのみ取得するか
-     * @param genreId ジャンルIDでフィルター（オプション）
-     * @param name ワークスペース名で前方一致検索（オプション）
+     * @param isActive
+     * @param genreId
+     * @param name
      * @returns WorkspaceListItemResponseWorkspaceStatisticsPagedResponse OK
      * @throws ApiError
      */

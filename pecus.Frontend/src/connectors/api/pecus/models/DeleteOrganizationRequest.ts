@@ -6,9 +6,6 @@
  * 組織削除リクエスト
  */
 export type DeleteOrganizationRequest = {
-    /**
-     * 組織の楽観的ロック用のRowVersion
-     */
     rowVersion: number;
 };
 

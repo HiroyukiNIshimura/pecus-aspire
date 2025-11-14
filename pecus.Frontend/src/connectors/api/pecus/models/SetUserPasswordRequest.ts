@@ -6,17 +6,8 @@
  * ユーザーパスワード設定リクエスト
  */
 export type SetUserPasswordRequest = {
-    /**
-     * パスワード設定トークン（メールで送信されたもの）
-     */
     token: string;
-    /**
-     * 新しいパスワード
-     */
     password: string;
-    /**
-     * すべてのデバイスのログイン状態をリセットするかどうか
-     */
     resetAllDeviceSessions?: boolean | null;
 };
 

@@ -6,17 +6,8 @@
  * 権限作成リクエスト
  */
 export type CreatePermissionRequest = {
-    /**
-     * 権限名
-     */
     name: string;
-    /**
-     * 権限の説明
-     */
     description?: string | null;
-    /**
-     * カテゴリ
-     */
     category?: string | null;
 };
 

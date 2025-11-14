@@ -38,10 +38,10 @@ export class AdminSkillService {
      * スキルの一覧をページネーションで取得します。
      * 統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、
      * 利用されているトップ５スキル、利用されていないスキルのリストを含みます。
-     * @param page ページ番号（1から始まる）
-     * @param isActive アクティブなスキルのみ取得するか
-     * @param unusedOnly 未使用のスキルのみ取得するか（true: 未使用のみ、false または null: すべて）
-     * @param name スキル名で前方一致検索（オプション）
+     * @param page
+     * @param isActive
+     * @param unusedOnly
+     * @param name
      * @returns SkillListItemResponseSkillStatisticsPagedResponse OK
      * @throws ApiError
      */

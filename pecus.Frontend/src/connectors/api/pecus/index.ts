@@ -108,8 +108,8 @@ export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
 export type { WorkspaceDetailResponseConcurrencyErrorResponse } from './models/WorkspaceDetailResponseConcurrencyErrorResponse';
+export type { WorkspaceDetailUserResponse } from './models/WorkspaceDetailUserResponse';
 export type { WorkspaceFullDetailResponse } from './models/WorkspaceFullDetailResponse';
-export type { WorkspaceGenreResponse } from './models/WorkspaceGenreResponse';
 export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAttachmentResponse';
 export type { WorkspaceItemDetailResponse } from './models/WorkspaceItemDetailResponse';
 export type { WorkspaceItemDetailResponseConcurrencyErrorResponse } from './models/WorkspaceItemDetailResponseConcurrencyErrorResponse';
@@ -125,7 +125,6 @@ export type { WorkspaceResponse } from './models/WorkspaceResponse';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';
-export type { WorkspaceUserInfoResponse } from './models/WorkspaceUserInfoResponse';
 export type { WorkspaceUserResponse } from './models/WorkspaceUserResponse';
 
 export { AdminOrganizationService } from './services/AdminOrganizationService';

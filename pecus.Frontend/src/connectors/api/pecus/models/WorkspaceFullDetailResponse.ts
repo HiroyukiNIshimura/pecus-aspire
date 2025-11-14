@@ -2,20 +2,19 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceGenreResponse } from './WorkspaceGenreResponse';
-import type { WorkspaceUserInfoResponse } from './WorkspaceUserInfoResponse';
+import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
 /**
- * ワークスペース詳細情報
+ * ワークスペース詳細情報（一般ユーザー用）
  */
 export type WorkspaceFullDetailResponse = {
     /**
      * ワークスペースID
      */
-    id?: number;
+    id: number;
     /**
      * ワークスペース名
      */
-    name?: string | null;
+    name: string;
     /**
      * ワークスペースコード
      */
@@ -25,19 +24,38 @@ export type WorkspaceFullDetailResponse = {
      */
     description?: string | null;
     /**
+     * ジャンルID
+     */
+    genreId?: number | null;
+    /**
+     * ジャンル名
+     */
+    genreName?: string | null;
+    /**
+     * ジャンルアイコン
+     */
+    genreIcon?: string | null;
+    /**
+     * 作成ユーザー（無効なユーザーでも含む）
+     */
+    members?: Array<WorkspaceDetailUserResponse> | null;
+    /**
      * 作成日時
      */
     createdAt?: string;
-    createdBy?: WorkspaceUserInfoResponse;
     /**
      * 更新日時
      */
     updatedAt?: string | null;
-    updatedBy?: WorkspaceUserInfoResponse;
-    genre?: WorkspaceGenreResponse;
     /**
-     * このワークスペースに参加しているユーザー（有効ユーザーのみ）
+     * アクティブフラグ
      */
-    members?: Array<WorkspaceUserInfoResponse> | null;
+    isActive?: boolean;
+    /**
+     * 楽観的ロック用のRowVersion
+     */
+    rowVersion: number;
+    createdBy?: WorkspaceDetailUserResponse;
+    updatedBy?: WorkspaceDetailUserResponse;
 };
 

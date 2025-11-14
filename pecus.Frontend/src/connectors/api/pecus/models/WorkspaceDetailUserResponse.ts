@@ -5,7 +5,7 @@
 /**
  * ワークスペース詳細取得用ユーザー情報
  */
-export type WorkspaceUserInfoResponse = {
+export type WorkspaceDetailUserResponse = {
     /**
      * ユーザーID
      */
