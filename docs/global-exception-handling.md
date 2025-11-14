@@ -43,7 +43,7 @@
 
 サービス／コントローラでの実装パターン（サンプル）
 
-- サービス側（例）: 競合検出・存在チェック・重複チェックは例外を投げる
+- サービス側（例）: 競合・存在・重複は例外を投げる。楽観ロックは`xmin(uint)`で後置チェック（catch）に集約
 
 ```csharp
 public async Task<GenreResponse> UpdateGenreAsync(int id, UpdateGenreRequest request)
@@ -51,19 +51,32 @@ public async Task<GenreResponse> UpdateGenreAsync(int id, UpdateGenreRequest req
     var genre = await _context.Genres.FindAsync(id);
     if (genre == null) throw new NotFoundException("ジャンルが見つかりません。");
 
-    // 楽観ロックチェック
-    if (!genre.RowVersion?.SequenceEqual(request.RowVersion) ?? true)
-        throw new ConcurrencyException("別のユーザーが同時に変更しました。");
-
     // 重複チェック
-    if (request.Name != null && request.Name != genre.Name)
+    if (!string.IsNullOrWhiteSpace(request.Name) && request.Name != genre.Name)
     {
-        if (await _context.Genres.AnyAsync(g => g.Name == request.Name && g.Id != id))
-            throw new DuplicateException("このジャンル名は既に使用されています。");
-        genre.Name = request.Name;
+        var exists = await _context.Genres.AnyAsync(g => g.Name == request.Name && g.Id != id);
+        if (exists) throw new DuplicateException("このジャンル名は既に使用されています。");
+        genre.Name = request.Name!;
     }
 
-    await _context.SaveChangesAsync();
+    // xmin(uint) による後置チェック用の比較値設定
+    if (request.RowVersion is null)
+        throw new InvalidOperationException("RowVersion が指定されていません。");
+    genre.RowVersion = request.RowVersion.Value;
+
+    try
+    {
+        await _context.SaveChangesAsync();
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+        var latest = await _context.Genres.FindAsync(id);
+        throw new ConcurrencyException<Genre>(
+            "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            latest
+        );
+    }
+
     return MapToResponse(genre);
 }
 ```

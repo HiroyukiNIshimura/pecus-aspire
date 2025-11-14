@@ -35,7 +35,7 @@ Next.js Middlewareを利用した認証システムにより、SSR（サーバ�
 ┌─────────────────────────────────────────────────────────────┐
 │          Axios Interceptor (CSR only)                       │
 │  - 401エラー検出                                              │
-│  - Server Action経由でトークンリフレッシュ                      │
+│  - リフレッシュAPIを fetch 直呼び出し（循環回避）               │
 │  - リクエスト再試行                                            │
 │  - 失敗時はログインページへリダイレクト                          │
 └─────────────────────────────────────────────────────────────┘
@@ -90,7 +90,7 @@ response.cookies.set('refreshToken', data.refreshToken, { ... });
 - **処理内容**:
   1. レスポンスで401エラーを検出
   2. `www-authenticate`ヘッダーで`invalid_token`を確認
-  3. Server Action（`refreshAccessToken()`）を動的インポートして実行
+  3. リフレッシュ API を `fetch` で直呼び出し（インターセプターの循環回避）
   4. 新しいトークンでリクエストを再試行
   5. リフレッシュ失敗時はログインページへリダイレクト
 
@@ -105,9 +105,16 @@ if (enableRefresh && typeof window !== 'undefined') {
       const isTokenExpired = /* 401 + invalid_token チェック */;
 
       if (isTokenExpired && !originalRequest[RETRY_FLAG]) {
-        // Server Actionを動的インポート
-        const { refreshAccessToken: refreshFn } = await import('./auth');
-        const result = await refreshFn();
+        // インターセプター循環を避けるため、fetch でリフレッシュAPIを直呼び出し
+        const res = await fetch('/api/entrance/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: getRefreshToken() })
+        });
+        if (!res.ok) {
+          throw new Error('refresh failed');
+        }
+        const result = await res.json();
 
         // 新しいトークンで再試行
         originalRequest.headers.Authorization = `Bearer ${result.accessToken}`;
@@ -119,6 +126,9 @@ if (enableRefresh && typeof window !== 'undefined') {
   );
 }
 ```
+
+注意:
+- CSR のリフレッシュのみ `fetch` 直呼び出しを許可します。それ以外の API 呼び出しは `createPecusApiClients()` 経由（SSR/SA）または通常の Axios（CSR）を使用し、WebApi 直 `fetch` は禁止です。
 
 ## トークンリフレッシュフロー
 

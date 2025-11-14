@@ -1,17 +1,29 @@
 ## Pecus Aspire — AI エージェント最小指示書（要点）
 
+メタ情報
+- 版: v1.1
+- 更新日: 2025-11-14
+- 文書責任: Pecus Aspire Maintainers
+
 短い要約（エージェント向け / 20行以内・必読）
 
 - エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
 - 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
 - RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
-- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）
-- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。クライアント側は 409 を受けたら最新データを再取得してマージ／再試行する（`ConcurrencyErrorResponse<T>` を想定）。
+- 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。クライアントは 409 受領時に最新データを再取得してマージ／再試行（`ConcurrencyErrorResponse<T>` 想定）。
 - フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。フロント UI は Tailwind CSS と `FlyonUI` を利用しています。
-- セッション/トークン: `pecus.Frontend/src/libs/session.ts` の `SessionManager` を使い、アクセストークン／リフレッシュトークンは HttpOnly Cookie に保存する（iron-session は未使用）。
+- セッション/トークン: ブラウザは Cookie に保存（httpOnly: false）。Middleware が期限前に自動リフレッシュし、必要に応じてサーバー側ユーティリティ（`src/libs/session.ts`）を併用する。
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
+
+**統一方針（簡潔版）**
+- コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。
+- フロント API 呼び出し: 読取は SSR(Server Component)で、変更は Server Actions で、いずれも `createPecusApiClients()` 経由。ブラウザ直 fetch と SA/SSR からの WebApi 直 fetch は禁止（例外: リフレッシュ API のみ循環回避で直 fetch 可）。
+- 競合制御: UPDATE 時の `DbUpdateConcurrencyException` を catch→`FindAsync()` で最新再取得→`ConcurrencyException<T>` 再スローで統一。DTO は `RowVersion: uint` 必須。
+- 生成物/CI: 自動生成物は `.gitignore` 管理・手動編集禁止。CI は生成スクリプト未実行の検知を重視。
+- 認証/トークン: ブラウザは Cookie（`httpOnly:false`, `sameSite:'strict'`）。SSR/SA は `SessionManager` で取得。自動更新は Axios、リフレッシュのみ直 `fetch` 例外。
+- バージョン表記: 「.NET 9」「EF Core 9」「.NET Aspire x.y」を分離して記載。
 
 以下は詳細ドキュメント（実装例・ガイドライン）です。
 
@@ -29,7 +41,7 @@
 - 重要な実装パターン（コード参照推奨）
   - RowVersion: PostgreSQL の `xmin` を `uint RowVersion` としてマッピング（`pecus.Libs/DB/ApplicationDbContext.cs` の ConfigureRowVersionForAllEntities を参照）。フロントエンドでは `rowVersion` を数値 (number/integer) として扱います。
   - コンカレンシー: サービス層で `DbUpdateConcurrencyException` を捕捉し、`FindAsync()` で最新行を取得して `ConcurrencyException<T>` を投げる。グローバルで `IConcurrencyException` を `GlobalExceptionFilter` が 409 に変換する（`pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。
-  - コントローラ戻り型: `Results<T>` / `TypedResults.*` を使用するパターンが多い（例: `pecus.WebApi/Controllers/*`）。
+  - コントローラ戻り型: HttpResults（`TypedResults.*`）を使用。`Results<...>` は成功パス複数時のみ（例: `pecus.WebApi/Controllers/*`）。
   - DTO: リクエスト DTO には必ず検証属性を付与（`pecus.WebApi/Models/Requests/*`）。Enum は nullable 推奨。
   - Hangfire タスク: タスク実装は `pecus.Libs/Hangfire/Tasks` に置き、WebApi と BackFire 両方で DI 登録する。
 
@@ -50,13 +62,12 @@
   - トランザクションはサービス層で開始・管理する（コントローラーで開始しない）。
 
 - すぐ参照すべきファイル（ショートリスト）
- - すぐ参照すべきファイル（ショートリスト）
-  - `pecus.AppHost/AppHost.cs` (lines 1–80) — サービス起動順 / 依存解決（Aspire の登録例）
-  - `pecus.Libs/DB/ApplicationDbContext.cs` (lines 825–900) — RowVersion を PostgreSQL xmin にマッピングする `ConfigureRowVersionForAllEntities` の実装
-  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` (lines 50–68) — `HandleConcurrencyException`（IConcurrencyException → HTTP 409 へ変換）
-  - `pecus.WebApi/Exceptions/ConcurrencyException.cs` (lines 1–40) — `ConcurrencyException<T>` の定義（ConflictedModel を含む）
+  - `pecus.AppHost/AppHost.cs` — サービス起動順 / 依存解決（Aspire の登録例）
+  - `pecus.Libs/DB/ApplicationDbContext.cs` — `ConfigureRowVersionForAllEntities`（PostgreSQL `xmin` のマッピング）
+  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — `HandleConcurrencyException`（IConcurrencyException → HTTP 409 へ変換）
+  - `pecus.WebApi/Exceptions/ConcurrencyException.cs` — `ConcurrencyException<T>` の定義（ConflictedModel を含む）
   - `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例（更新リクエストに `RowVersion` を含める）
-  - `pecus.Frontend/src/libs/session.ts` (lines 14–40) — `SessionManager`（server-side cookies を使ったセッション管理）
+  - `pecus.Frontend/src/libs/session.ts` — `SessionManager`（server-side cookies を使ったセッション管理）
   - `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成スクリプト（生成物は編集禁止）
 
 - 作業時のチェックリスト（短い）
@@ -82,7 +93,7 @@
 - Next.js（App Router）+ TypeScript + FlyonUI
 - SSRで初期データ取得、CSRはUIのみ（API直叩き禁止）
 - APIアクセスはServer Actions/Next.js API Routes経由
- - 認証・トークン管理はサーバーサイドの Cookie ベース SessionManager（`src/libs/session.ts`）を使用し、アクセストークン／リフレッシュトークンは HttpOnly クッキーに保存します。クライアント側のリフレッシュは Server Action / Middleware と連携して行います。
+ - 認証・トークン管理は Cookie ベース。ブラウザではクッキー（httpOnly: false）を利用し、Middleware が自動リフレッシュ。Server Actions/API Routes では `SessionManager` 等でクッキーから取得して利用します。
 - バリデーションはZod＋useValidation/useFormValidation
 - UI/HTML生成はアクセシビリティ・属性・className厳守
 - サンプル・実装例は章末参照
@@ -95,7 +106,7 @@
 - DTOは必ず検証属性・型安全（DB変更時はDTOも更新）
 - サービス登録はAspireリソース名で（接続文字列禁止）
 - トランザクションはサービス層で明示的に
-- Results<T>パターンで型安全なレスポンス
+- HttpResults パターンで型安全なレスポンス
 - Enumはnullable推奨、HasDefaultValue禁止
 - Hangfireタスクはpecus.LibsでDI共有
 - サンプル・実装例は章末参照
@@ -110,6 +121,16 @@
 - テスト推奨事項: スキーマ単体/フック/統合テスト
 
 ---
+
+## CI ガードレール（推奨）
+
+- 生成物管理: 自動生成物（`src/connectors/api/**/*.generated.ts`）は `.gitignore` 管理のため差分ブロック対象外。代わりに「生成スクリプト未実行」の検知（OpenAPI 仕様更新時の再生成漏れ）を行う。
+- Controller でのトランザクション開始検知: `BeginTransaction`/`TransactionScope` の使用を失敗させる
+- WebApi 直叩き検知（禁止）: ブラウザおよび SA/SSR からの `fetch('http://`|`https://` 外部直 URL) を検知・失敗させる（例外: リフレッシュ API のみ許可）。
+- クライアントコンポーネントでの API 呼び出し検知: `"use client"` を含むファイルでの `createPecusApiClients()` 使用や WebApi URL の検出
+- Controllers の非推奨戻り型検知: `IActionResult` / `ActionResult<` の使用を検知
+- DTO 検証属性の不足検知: `Models/Requests/*` に `[Required]`/`[MaxLength]` 等が無いプロパティを警告
+- Enum 非 nullable の検知: `enum` プロパティに `?` が無い場合を警告
 
 
 ## 5. アンチパターン・禁止事項（**必ず遵守**）
@@ -145,7 +166,7 @@
 ### フロントエンド: useValidationパターン
 （詳細サンプルは末尾にまとめて記載。本文は要点のみ）
 
-### バックエンド: Results<T>パターン
+### バックエンド: HttpResults パターン
 （詳細サンプルは末尾にまとめて記載。本文は要点のみ）
 
 ---
@@ -161,7 +182,7 @@
 ## アーキテクチャ概要
 
 ### .NET Aspire による分散マイクロサービス
-このプロジェクトは単一プロセスのアプリケーションではなく、.NET Aspire 9.0 によってオーケストレーションされるマイクロサービス群です。
+このプロジェクトは単一プロセスのアプリケーションではなく、.NET Aspire によってオーケストレーションされるマイクロサービス群です（実行基盤は .NET 9 / EF Core 9）。
 
 
 プロジェクト構成の主な要素:
@@ -187,7 +208,7 @@
 - **状態管理**: jotai
 - **UIライブラリ**: Tailwind CSS + FlyonUI
 - **API通信**: OpenAPI/Swagger定義から自動生成されたAxiosベースの型安全なクライアント（`openapi-typescript-codegen`）
-- **認証**: pecus.WebApiのJWT認証と連携（トークンは localStorage + httpOnly Cookie）
+- **認証**: pecus.WebApiのJWT認証と連携（トークンは Cookie、httpOnly: false）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）
 - **テスト**: Jest, React Testing Library, Playwright など
 - **CI/CD**: GitHub Actions等での自動ビルド・デプロイ
@@ -199,6 +220,14 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 #### APIアクセスルール
 
 **基本方針**: 読み取り操作（Query）と変更操作（Mutation）を分離し、クライアントから `pecus.WebApi` への直接アクセスは禁止
+
+許可/禁止マトリクス（要点）
+- SSR（Server Component）: 許可（`createPecusApiClients()` 経由・`SessionManager`でトークン取得）
+- Server Actions: 許可（`createPecusApiClients()` 経由）。`fetch('http://webapi...')` は禁止
+- Next.js API Routes: 許可（`createPecusApiClients()` 経由・サーバー側で実行）
+- クライアントコンポーネント: 直接呼び出し禁止（Server Actions / API Routes を経由）
+- ブラウザからWebApi直叩き: 禁止（トークン露出防止・監査性確保）
+ - Next.js Middleware: 許可（例外）。`/api/entrance/refresh` への直接 `fetch` によりトークンを更新可（`src/middleware.ts` の実装に従う）
 
 ##### 📖 読み取り操作（データ取得）
 
@@ -231,7 +260,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 ##### ❌ 禁止事項
 
 - クライアントコンポーネント内で直接 `pecus.WebApi` にアクセス（トークン露出のリスク）
-- Server Actions から `fetch()` で直接 `pecus.WebApi` にアクセス（例：`fetch('http://webapi:5000/...')`）
+- Server Actions/SSR から `fetch()` で `pecus.WebApi` を直接呼び出す（例：`fetch('http://webapi:5000/...)`）。例外: トークンリフレッシュ API のみ循環回避のため直 `fetch` を許可。
 - クライアント側での `fetch('/api/admin/workspaces')` の多用（初期データはSSR側で取得）
 
 ##### 🔄 トークン管理
@@ -246,13 +275,13 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **自動実行**: `npm run dev` / `npm run build` の実行前に自動的に生成スクリプトが実行される（`predev` / `prebuild` フック）
 - **手動実行**: 必要に応じて `npm run generate:client` で手動実行可能
 - **Git管理**: 自動生成ファイルは `.gitignore` に登録済み
+ - **編集可/不可のSSoT**: 編集可: `src/connectors/api/PecusApiClient.ts`／編集不可: `src/connectors/api/PecusApiClient.generated.ts`／型の参照: `src/connectors/api/pecus/index.ts`（自動生成エクスポート）
 
 #### アクセストークン管理の設計方針
-- **保存場所**:
-#### アクセストークン管理の設計方針
-- **保存場所**:
-  - アクセストークンとリフレッシュトークンは HttpOnly な Cookie に保存します（実装は `pecus.Frontend/src/libs/session.ts` の SessionManager）。Cookie は `httpOnly`, `secure`（本番環境で有効）, `sameSite: 'lax'`, `maxAge` を設定して保存されます
-  - セキュリティ: Cookie は HttpOnly にしてクライアントJSから読めないようにし、送信時は Authorization ヘッダーに付与する形で API 呼び出しを行います
+ - **保存場所**:
+  - ブラウザでは Cookie（`httpOnly: false`, `sameSite: 'strict'`, `secure: NODE_ENV==='production'`）を使用（`src/middleware.ts` に準拠）。クライアントJSから参照可能で、Axiosインターセプター等で利用します。
+  - Server Actions / API Routes では `next/headers` の `cookies()` または `SessionManager` から取得して付与します。
+  - セキュリティ: XSS 対策（CSP/依存性の最小化/入力サニタイズ）を強化。CSRF は `sameSite: 'strict'` を基本とし、必要に応じて追加対策を併用します。
 - **トークン取得**:
   - `getAccessToken()` Server Action を使用（`src/connectors/api/auth.ts`）
   - SSR専用で、`SessionManager.getSession()` からトークンを取得
@@ -277,7 +306,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`: API クライアント生成部分（自動生成）
 
 #### Next.js 固有の注意事項
-- **動的レンダリング**: Server Actions を使用するページには `export const dynamic = 'force-dynamic'` を設定
+- **動的レンダリング**: キャッシュ戦略に応じて必要な場合のみ `export const dynamic = 'force-dynamic'` を設定（常時必須ではない）
 - **エラーハンドリング**: try-catch で API エラーを適切にハンドリングし、ユーザーにフィードバックを提供
 - **ローディング状態**: データフェッチ中は適切なローディングインジケーターを表示
 - **環境変数**: pecus.WebApiのベース URL は `process.env.API_BASE_URL`で管理
@@ -1423,31 +1452,52 @@ UpdateCounts(
 - 型が異なる引数の組み合わせ（例: `int userId, string userName`）は位置引数でも可
 - LINQ メソッドなど、一般的な慣用句は例外として認める（例: `Take(10)`, `Skip(5)`）
 
-### Results パターン（コントローラーの戻り値）
-コントローラーのアクションメソッドは `IActionResult` ではなく `Results<T>` を使用してください。これにより型安全性を確保し、OpenAPI/Swagger で正確なレスポンス仕様を生成できます。
+### コントローラー戻り値ポリシー（MVC Controller + HttpResults）
+本プロジェクトでは「最小APIより規模が大きくなっても人間が管理しやすい」ことを理由に MVC コントローラーを採用します。そのうえで、戻り値は `Microsoft.AspNetCore.Http.HttpResults` 系（TypedResults）を用いて型安全性を担保します。
 
-戻り値のルール:
-- 成功レスポンス: `TypedResults.Ok<T>(responseModel)` を使用
-- エラーレスポンス: `TypedResults.NotFound<T>(responseModel)`, `TypedResults.BadRequest<T>(responseModel)` などを使用
-- ステータスコード指定: `TypedResults.StatusCode(code)` を使用
+方針（必読）:
+- コントローラーは MVC を採用する。
+- 戻り値は `HttpResults` 系（例: `Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>` は使用しない。
+- 成功パスが単一であれば具体型（例: `Task<Ok<TResponse>>`）を返す。成功パスが複数ある場合のみ `Results<...>` ユニオンを用いる。
+- エラーパスはサービス層で例外を投げ、`GlobalExceptionFilter` が HTTP ステータス（400/404/409/500 等）にマッピングする。コントローラーで try/catch はしない。
+- OpenAPI 生成のために `ProducesResponseType` を必ず付与（成功 200/201 等に加え、例外経由の 400/404/409/500 を明示）。
 
-各メソッドに `ProducesResponseType` 属性を付与:
+サンプル（本プロジェクト準拠）:
 ```csharp
-[ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
-[ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-public Results<Ok<MessageResponse>, BadRequest<MessageResponse>> SomeAction()
+[HttpPut]
+[ProducesResponseType(typeof(OrganizationResponse), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ConcurrencyErrorResponse<OrganizationResponse>), StatusCodes.Status409Conflict)]
+[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+public async Task<Ok<OrganizationResponse>> UpdateMyOrganization([FromBody] AdminUpdateOrganizationRequest request)
 {
-    // 実装
+  var entity = await _organizationService.AdminUpdateOrganizationAsync(
+    CurrentUser!.OrganizationId!.Value,
+    request,
+    CurrentUserId
+  );
+
+  var response = new OrganizationResponse
+  {
+    Id = entity.Id,
+    Name = entity.Name,
+    // ... 省略 ...
+    RowVersion = entity.RowVersion!,
+  };
+
+  return TypedResults.Ok(response);
 }
 ```
 
-共通レスポンスモデル:
-- `MessageResponse`: 汎用メッセージレスポンス（`{ Message: string }`）
-- `JobResponse`: Hangfire ジョブIDを含むレスポンス（`MessageResponse` を継承）
-- `ContinuationResponse`: 親子ジョブIDを含むレスポンス
-- `RecurringResponse`: 繰り返しジョブIDを含むレスポンス
-- `BatchResponse`: ジョブIDリストを含むレスポンス
-- 必要に応じて専用レスポンスモデルを作成（例: `RefreshResponse`）
+補足:
+- 成功ユースケースが複数（例: 新規作成で 201、更新で 200）ある場合のみ `Results<Created<T>, Ok<T>>` を使用する。エラーは例外＋グローバルフィルタに委ねる。
+- ステータスコードの直指定が必要な場合は `TypedResults.StatusCode(code)` を用いる。
+
+共通レスポンスモデル（抜粋）:
+- `MessageResponse`: 汎用メッセージ
+- `JobResponse`/`ContinuationResponse`/`RecurringResponse`/`BatchResponse`: Hangfire 関連
+- `ErrorResponse`/`ConcurrencyErrorResponse<T>`: エラー応答
 
 検証属性（Validation）ルール
  - リクエスト DTO のプロパティには必ず入力検証属性を付与してください。特に DB に保存されるフィールドはスキーマに沿った長さ制限・必須チェックを行ってください。
@@ -1954,9 +2004,8 @@ dotnet run --project pecus.AppHost
   - `DuplicateException` / `InvalidOperationException` → HTTP 400
   - その他未捕捉例外 → HTTP 500
 - 開発時ルール（ポイント）:
-  - 更新 API はリクエストに `RowVersion` を含める（存在しない場合はサービス設計を見直す）
-  - サービスは更新前に `RowVersion` を比較して不一致なら `ConcurrencyException` を投げる
-  - `DbUpdateConcurrencyException` はサービス内で変換して `ConcurrencyException` に再スローする
+  - 更新 API はリクエストに `RowVersion` を含める（必須）
+  - UPDATE 時に `DbUpdateConcurrencyException` を捕捉し、`FindAsync()` で最新を取得して `ConcurrencyException` に変換して再スロー（更新前の手動比較は不要）
   - コントローラーは例外を捕捉せず通常の戻り型（Ok/NoContent 等）を返す
 - ロギング/運用:
   - フィルタ内でエラーを構造化ログ（Serilog）に残す
@@ -1964,66 +2013,56 @@ dotnet run --project pecus.AppHost
 
 ## DB 競合（楽観ロック）簡易ポイント
 
-- **概要**: `RowVersion`（EF Core の `byte[]` / PostgreSQL の `bytea`）を用いた楽観ロックを採用しています。詳細は `docs/db-concurrency.md` を参照してください。
+- 概要: `RowVersion` は PostgreSQL の `xmin` を使用（型は `uint`）。フロントエンドでは数値（number）として扱います。詳細は `docs/db-concurrency.md` を参照してください。
 
-- **DbUpdateConcurrencyException の発生条件**:
-  - **発生する**: UPDATE 操作で WHERE RowVersion が不一致（0行更新）の場合 **のみ**
-  - **発生しない**: INSERT 操作（各レコード固有のため）、DELETE 操作（DELETE SQL に WHERE RowVersion 条件がないため）
-  - **結論**: DbUpdateConcurrencyException は **UPDATE 操作にのみ try-catch で対応** し、CREATE/DELETE には不要
+- DbUpdateConcurrencyException の発生条件:
+  - 発生する: UPDATE 操作で WHERE `xmin` が不一致（0 行更新）の場合のみ
+  - 発生しない: INSERT（新規作成）/ DELETE（WHERE に `xmin` 条件が無い）
+  - 結論: 例外対応は UPDATE のみで十分（CREATE/DELETE では不要）
 
-- **主要事項**:
-  - JSON 送受信では RowVersion は Base64 文字列として扱われる（System.Text.Json の既定動作）
-  - 更新リクエストには最新の `RowVersion` を含める（`UpdateXxxRequest` に `RowVersion: byte[]?` を追加）
-  - UPDATE 時の `SaveChangesAsync()` で DbUpdateConcurrencyException が発生した場合、`FindAsync()` で最新データを再取得して `ConcurrencyException<T>` に渡す（**必ず最新 DB データを含める**）
-  - `ConcurrencyException` は `GlobalExceptionFilter` により HTTP 409 Conflict にマッピングされる
-  - クライアント側: 409 を受けたら最新データを再取得（GET）し、必要に応じてマージ／再試行する
-  - **なぜ FindAsync で再取得するのか**: `DbUpdateConcurrencyException.Entries` のような複雑な API ではなく、シンプルで直感的な `FindAsync()` を選択。競合は稀なため、1 クエリのオーバーヘッドは許容範囲内。ナビゲーションプロパティの取得も容易。
+- 主要事項:
+  - JSON 送受信の `RowVersion` は数値。更新リクエスト DTO には最新の `RowVersion: uint` を必ず含める
+  - 追従更新（Detached 更新）時は、エンティティの `RowVersion` にリクエスト値を設定してから保存する（手動比較は不要。EF が `WHERE xmin` による比較を行う）
+  - UPDATE 時に `DbUpdateConcurrencyException` が発生したら `FindAsync()` で最新データを再取得し、`ConcurrencyException<T>` に添付して再スロー
+  - `GlobalExceptionFilter` が 409 Conflict にマッピング。クライアントは 409 受領時に最新取得→マージ→再試行
 
-- **実装パターン** (UPDATE 操作の標準形):
+- 実装パターン（UPDATE 標準形）:
   ```csharp
-  // 後置チェック（DB レベルの競合検出）のみ
   try
   {
       entity.Property1 = request.Property1;
       entity.Property2 = request.Property2;
-      entity.RowVersion = request.RowVersion; // 比較用に設定
+      entity.RowVersion = request.RowVersion; // xmin (uint) を比較用に設定
 
       await _context.SaveChangesAsync();
   }
   catch (DbUpdateConcurrencyException)
   {
-      // 最新データを再取得（重要: 最新データを必ず含める）
       var latestEntity = await _context.Entity.FindAsync(id);
       throw new ConcurrencyException<Entity>(
           "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-          latestEntity  // 最新 DB データを返す（リクエストデータではなく）
+          latestEntity
       );
   }
   ```
 
-- **パターンの特徴**:
-  - シンプルさ: 前置チェックを削除し、後置チェック（catch）のみで十分
-  - DB による確実な検出: EF Core が自動的に WHERE RowVersion を追加
-  - パフォーマンス最適: 通常時は追加クエリなし
-  - 保守性: チェックロジックが1箇所に集約（DRY 原則）
+- パターンの特徴:
+  - DB による確実な検出（Npgsql が `xmin` を WHERE 句で使用）
+  - 通常時は追加クエリ不要（例外時のみ最新取得）
+  - チェックロジックを catch に集約してシンプル
 
-- **CREATE/DELETE では DbUpdateConcurrencyException を処理しない**:
+- CREATE/DELETE では例外対応不要:
   ```csharp
-  // ✅ 正しい: INSERT は try-catch 不要
   _context.Entity.Add(entity);
-  await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生しない
+  await _context.SaveChangesAsync();
 
-  // ✅ 正しい: DELETE は try-catch 不要
   _context.Entity.Remove(entity);
-  await _context.SaveChangesAsync(); // DbUpdateConcurrencyException は発生しない
-
-  // ❌ 避けるべき: INSERT/DELETE に try-catch をつけない
+  await _context.SaveChangesAsync();
   ```
 
-- **テスト/運用メモ**:
-  - サービス層の単体テストで RowVersion 不一致時に `ConcurrencyException` を投げることを検証する
-  - 結合テストで並列更新シナリオを再現し、409 が返ることを確認する
-  - **重要**: ConcurrencyException に最新 DB データが含まれていることを検証（クライアント側の再試行に必要）
+- テスト/運用メモ:
+  - RowVersion 不一致で `ConcurrencyException` を投げること
+  - 409 応答に最新 DB データが含まれること（再試行に必要）
 
 
 ## Server Actions と WebAPI のレスポンス型（フロントエンド実装者向け）

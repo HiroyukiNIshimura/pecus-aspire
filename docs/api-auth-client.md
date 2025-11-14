@@ -1,5 +1,10 @@
 # API 認証（クライアント向け）
 
+本リポのフロントエンド方針（最重要・要約）
+- ブラウザ向け`pecus.Frontend`では、アクセストークン/リフレッシュトークンはクッキー（httpOnly: false）に保存します（`src/middleware.ts`準拠、LocalStorage/SessionStorageは不使用）。
+- SSR では Middleware が期限前に自動リフレッシュし、CSR では Axios インターセプターが必要時にリフレッシュします。
+- Server Actions/API Routes では `cookies()`/`SessionManager` からクッキーを取得し、`createPecusApiClients()`が Authorization を付与します。
+
 このドキュメントは、本システムの API を利用するクライアント実装者向けに、認証トークン（アクセストークン／リフレッシュトークン）の扱い方、保管方法、リフレッシュの運用、エラーハンドリング、及び実装例を日本語でまとめたものです。
 
 ## 概要
@@ -25,13 +30,13 @@
 
 - セキュリティが最優先です。保存方法はクライアントの種類（ブラウザ SPA / モバイル / サーバーサイド）ごとに異なります。
 
-推奨の優先順（安全 → 利便性の順）
-1. サーバーサイド（会話セッション）や httpOnly セッションクッキーを利用する（ブラウザ）
-   - httpOnly, Secure, SameSite 属性を付与して XSS による盗難リスクを低減する。
-2. モバイルアプリは OS 提供の安全ストレージ（Keychain/Keystore）を利用する。
-3. SPA の場合は、リフレッシュトークンを httpOnly cookie に置き、アクセストークンのみメモリに保持する（LocalStorage への永続保存は XSS に弱いため避ける）。
+ブラウザ（本リポの`pecus.Frontend`）
+- クッキーで保存（`httpOnly: false`, `sameSite: 'strict'`, `secure: 本番のみ true`）。
+- クライアントJS（Axios インターセプター）がクッキーからトークンを参照し、必要時に付与・更新します。
 
-もしクライアント要件でローカルストレージに保存する場合は、XSS 対策（Content Security Policy、ライブラリの最小化、入力サニタイズ等）を強化してください。
+その他クライアントの指針
+- モバイルアプリ: OSのセキュアストレージ（Keychain/Keystore）を使用。
+- サーバー間連携: 環境変数/シークレットマネージャで安全に管理。
 
 ## ログイン（認証）
 
@@ -59,8 +64,9 @@ curl -X POST https://api.example.com/api/entrance/auth/login \
 ## API リクエスト方法
 
 - すべての保護された API は Authorization ヘッダにアクセストークンを付与して呼び出します。
+- SSR/Server Actions/API Routes では `createPecusApiClients()` が付与、CSR では Axios が付与します。
 
-Fetch の例:
+Fetch の例（概念・サーバー側実装時）:
 
 ```js
 const res = await fetch('/api/workspaces', {
@@ -70,7 +76,7 @@ const res = await fetch('/api/workspaces', {
 });
 ```
 
-Axios の例:
+Axios の例（概念・サーバー側実装時）:
 
 ```js
 axios.get('/api/workspaces', {
@@ -90,7 +96,7 @@ axios.get('/api/workspaces', {
 
 ### axios インターセプタの実装例（シングル・リフレッシュ実行）
 
-以下はよくあるパターンの簡易実装例です（概念コード）。
+以下はよくあるパターンの簡易実装例です（概念コード）。本リポのブラウザUIでは CSR 時はクッキーから取得、SSR 時は Middleware による事前リフレッシュを前提に動作します。
 
 ```js
 let isRefreshing = false;
@@ -101,13 +107,11 @@ axios.interceptors.response.use(
   async error => {
     const originalReq = error.config;
     if (error.response && error.response.status === 401 && !originalReq._retry) {
-      if (!isRefreshing) {
-        isRefreshing = true;
-        refreshPromise = axios.post('/api/entrance/auth/refresh', { refreshToken: getRefreshToken() })
+  禁止: ブラウザからの WebApi 直 `fetch`、および SSR/Server Actions からの WebApi 直 `fetch`。例外として「リフレッシュ API 呼び出し」は循環回避のため `fetch` 直呼び出しを許可します。
           .then(res => {
             const { accessToken, refreshToken } = res.data;
-            setAccessToken(accessToken);
-            setRefreshToken(refreshToken);
+  - SSR/Server Actions での WebApi 直 `fetch` は禁止です（`createPecusApiClients()` を使用）。
+  - ブラウザから WebApi を直 `fetch` するのも禁止です（Server Actions または API Routes を経由）。
             return accessToken;
           })
           .finally(() => { isRefreshing = false; });
@@ -123,19 +127,26 @@ axios.interceptors.response.use(
       originalReq._retry = true;
       originalReq.headers['Authorization'] = `Bearer ${getAccessToken()}`;
       return axios(originalReq);
-    }
-
-    return Promise.reject(error);
-  }
-);
-```
-
-このパターンでは、同時に多数のリクエストが 401 を返しても、1 回だけリフレッシュ API を呼び出し、他はその完了を待ちます。
+          // インターセプター循環を避けるため、ここは fetch を使用（例外的に直呼び出し可）
+          refreshPromise = fetch('/api/entrance/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: getRefreshToken() })
+          })
+            .then(async (res) => {
+              if (!res.ok) return null;
+              const data = await res.json();
+              const { accessToken, refreshToken } = data;
+              setAccessToken(accessToken);
+              setRefreshToken(refreshToken);
+              return accessToken;
+            })
+            .finally(() => { isRefreshing = false; });
 
 ## ログアウト（取り消し）
 
-- クライアントはログアウト時にサーバーへリフレッシュトークンの取り消しを依頼し、サーバーは Redis 等で該当トークンを削除・JTI をブラックリスト化する実装になっています。
-- クライアント側でも localStorage/cookie にあるトークンを完全に削除してください。
+- クライアントはログアウト時にサーバーへリフレッシュトークンの取り消しを依頼し、サーバーは Redis 等で該当トークンを削除・JTI をブラックリスト化します。
+- ブラウザUIではサーバー側/ミドルウェアでクッキーを削除します（localStorage は未使用）。
 
 ## トークン取り消し（サーバー側での一括無効化）
 
@@ -152,13 +163,12 @@ axios.interceptors.response.use(
 - CSRF: リフレッシュトークンをクッキー経由で送る設計にする場合は CSRF 対策（SameSite/CSRF トークンなど）を実装する。別案として、リフレッシュはリクエストボディにトークンを入れて行うことで CSRF リスクを軽減できる。
 - トークンはログに出力しない。エラー時もトークンの断片を含めない。
 
-## 実装チェックリスト（クライアント）
-
 - [ ] アクセストークンを Authorization: Bearer ヘッダで送っている
 - [ ] アクセストークンの失効時に自動でリフレッシュして再実行する仕組みがある
 - [ ] リフレッシュ処理は同時並行を考慮し、二重送信を避けている
 - [ ] リフレッシュ失敗時にセッションを破棄してログイン画面へ誘導する
-- [ ] トークンを安全に保管している（httpOnly cookie / Keychain 等）
+- [ ] トークンを安全に保管している（ブラウザは Cookie（httpOnly: false, sameSite: 'strict'）／モバイルはKeychain等）
+- [ ] SSR は Middleware により期限前リフレッシュ、CSR は Axios により401時リフレッシュ
 - [ ] トークンをログに出力していない
 
 ---
