@@ -36,7 +36,7 @@ export type WorkspaceFullDetailResponse = {
      */
     genreIcon?: string | null;
     /**
-     * 作成ユーザー（無効なユーザーでも含む）
+     * メンバー一覧
      */
     members?: Array<WorkspaceDetailUserResponse> | null;
     /**

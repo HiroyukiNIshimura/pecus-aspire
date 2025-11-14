@@ -6,7 +6,7 @@ namespace Pecus.Models.Responses.Workspace;
 public class WorkspaceFullDetailResponse : WorkspaceBaseResponse
 {
     /// <summary>
-    /// 作成ユーザー（無効なユーザーでも含む）
+    /// メンバー一覧
     /// </summary>
     public new List<WorkspaceDetailUserResponse> Members { get; set; } = [];
 

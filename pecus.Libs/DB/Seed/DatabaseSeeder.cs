@@ -649,6 +649,14 @@ public class DatabaseSeeder
 
             // ワークスペースごとに保存
             await _context.SaveChangesAsync();
+
+            // 先頭のメンバーの ID でワークスペースの CreatedByUserId を更新
+            if (organizationUsers.Any())
+            {
+                workspace.CreatedByUserId = organizationUsers.First().Id;
+                _context.Workspaces.Update(workspace);
+                await _context.SaveChangesAsync();
+            }
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
