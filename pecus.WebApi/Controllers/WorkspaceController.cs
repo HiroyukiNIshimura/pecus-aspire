@@ -163,7 +163,7 @@ public class WorkspaceController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<WorkspaceItemListPagedResponse>> GetWorkspaceItems(
         int id,
-        [FromQuery] Pecus.Models.Requests.Workspace.GetWorkspaceItemsRequest request
+        [FromQuery] Models.Requests.Workspace.GetWorkspaceItemsRequest request
     )
     {
         var me = JwtBearerUtil.GetUserIdFromPrincipal(User);

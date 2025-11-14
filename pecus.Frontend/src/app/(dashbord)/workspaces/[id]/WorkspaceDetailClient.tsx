@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import PersonIcon from "@mui/icons-material/Person";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import PowerOffIcon from "@mui/icons-material/PowerOff";
 import AppHeader from "@/components/common/AppHeader";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
 import type { UserInfo } from "@/types/userInfo";
 import type { WorkspaceFullDetailResponse } from "@/connectors/api/pecus";
 
@@ -31,18 +28,19 @@ export default function WorkspaceDetailClient({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <DashboardSidebar
+    <div className="flex h-screen overflow-hidden flex-col">
+      <AppHeader
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        isAdmin={userInfo?.isAdmin || false}
+        userInfo={userInfo}
       />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AppHeader
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          userInfo={userInfo}
-        />
+      <div className="flex flex-1 overflow-hidden">
+        {/* 左サイドバー */}
+        <div className="w-64 h-full overflow-hidden">
+          <WorkspaceItemsSidebar workspaceId={parseInt(workspaceId)} />
+        </div>
+
+        {/* メインコンテンツ */}
         <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6">
           {/* ワークスペース詳細情報 */}
           <div className="card bg-base-100 shadow-md mb-6">
