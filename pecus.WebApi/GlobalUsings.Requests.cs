@@ -1,0 +1,11 @@
+global using Pecus.Models.Requests.Common;
+global using Pecus.Models.Requests.Genre;
+global using Pecus.Models.Requests.Organization;
+global using Pecus.Models.Requests.Permission;
+global using Pecus.Models.Requests.Role;
+global using Pecus.Models.Requests.Skill;
+global using Pecus.Models.Requests.Tag;
+global using Pecus.Models.Requests.User;
+global using Pecus.Models.Requests.Workspace;
+global using Pecus.Models.Requests.WorkspaceItem;
+global using Pecus.Models.Requests.WorkspaceItemRelation;

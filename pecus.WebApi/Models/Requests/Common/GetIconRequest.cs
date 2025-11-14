@@ -1,0 +1,37 @@
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
+namespace Pecus.Models.Requests.Common;
+
+/// <summary>
+/// ファイルダウンロードリクエスト（アイコン取得）
+/// </summary>
+public class GetIconRequest
+{
+    /// <summary>
+    /// ファイルの種類（avatar, genre）
+    /// </summary>
+    [Required(ErrorMessage = "ファイルの種類は必須です。")]
+    [EnumDataType(typeof(FileType), ErrorMessage = "ファイルの種類が無効です。")]
+    public required FileType FileType { get; set; }
+
+    /// <summary>
+    /// リソースID（ユーザーIDまたはジャンルID）
+    /// </summary>
+    [Required(ErrorMessage = "リソースIDは必須です。")]
+    [Range(1, int.MaxValue, ErrorMessage = "リソースIDは1以上である必要があります。")]
+    public required int ResourceId { get; set; }
+
+    /// <summary>
+    /// ファイル名
+    /// </summary>
+    [Required(ErrorMessage = "ファイル名は必須です。")]
+    [StringLength(255, ErrorMessage = "ファイル名は255文字以内で入力してください。")]
+    public required string FileName { get; set; }
+
+    /// <summary>
+    /// 元画像（リサイズ前）を取得するかどうか
+    /// </summary>
+    public bool UseOriginal { get; set; } = false;
+}

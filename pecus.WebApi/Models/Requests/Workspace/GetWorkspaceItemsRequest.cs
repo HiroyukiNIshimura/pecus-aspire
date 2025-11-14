@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Pecus.Models.Requests;
+namespace Pecus.Models.Requests.Workspace;
 
 /// <summary>
 /// ワークスペースアイテム一覧取得リクエスト

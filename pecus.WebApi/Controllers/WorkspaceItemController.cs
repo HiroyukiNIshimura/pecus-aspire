@@ -119,7 +119,7 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse>>> GetWorkspaceItems(
         int workspaceId,
-        [FromQuery] GetWorkspaceItemsRequest request
+        [FromQuery] Pecus.Models.Requests.WorkspaceItem.GetWorkspaceItemsRequest request
     )
     {
         // ログイン中のユーザーIDを取得（CurrentUserId を使用）
