@@ -56,6 +56,7 @@ export type { ProblemDetails } from './models/ProblemDetails';
 export type { RecipientRequest } from './models/RecipientRequest';
 export type { RefreshRequest } from './models/RefreshRequest';
 export type { RefreshResponse } from './models/RefreshResponse';
+export type { RelationType } from './models/RelationType';
 export type { RequestEmailChangeRequest } from './models/RequestEmailChangeRequest';
 export type { RequestPasswordResetRequest } from './models/RequestPasswordResetRequest';
 export type { ResetPasswordRequest } from './models/ResetPasswordRequest';

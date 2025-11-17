@@ -6682,10 +6682,7 @@
             "format": "int32"
           },
           "relationType": {
-            "maxLength": 50,
-            "type": "string",
-            "description": "関連タイプ（オプション）\r\n指定可能な値: \"related\", \"blocks\", \"blocked_by\", \"depends_on\", \"duplicates\", \"subtask_of\", \"parent_of\", \"relates_to\"",
-            "nullable": true
+            "$ref": "#/components/schemas/RelationType"
           }
         },
         "additionalProperties": false,
@@ -8289,6 +8286,19 @@
         },
         "additionalProperties": false,
         "description": "リフレッシュレスポンス"
+      },
+      "RelationType": {
+        "enum": [
+          "Related",
+          "Blocks",
+          "BlockedBy",
+          "DependsOn",
+          "Duplicates",
+          "SubtaskOf",
+          "ParentOf",
+          "RelatesTo"
+        ],
+        "type": "string"
       },
       "RequestEmailChangeRequest": {
         "required": [
@@ -10116,7 +10126,7 @@
             "items": {
               "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
             },
-            "description": "作成ユーザー（無効なユーザーでも含む）",
+            "description": "メンバー一覧",
             "nullable": true
           },
           "createdAt": {
@@ -10531,9 +10541,7 @@
             "nullable": true
           },
           "relationType": {
-            "type": "string",
-            "description": "関連タイプ",
-            "nullable": true
+            "$ref": "#/components/schemas/RelationType"
           },
           "createdAt": {
             "type": "string",

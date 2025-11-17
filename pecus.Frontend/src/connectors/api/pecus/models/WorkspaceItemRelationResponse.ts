@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { RelationType } from './RelationType';
 /**
  * ワークスペースアイテム関連情報レスポンス
  */
@@ -34,10 +35,7 @@ export type WorkspaceItemRelationResponse = {
      * 関連先アイテム件名
      */
     toItemSubject?: string | null;
-    /**
-     * 関連タイプ
-     */
-    relationType?: string | null;
+    relationType?: RelationType;
     /**
      * 作成日時
      */
