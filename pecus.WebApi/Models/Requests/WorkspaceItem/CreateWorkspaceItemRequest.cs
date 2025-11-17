@@ -32,10 +32,9 @@ public class CreateWorkspaceItemRequest
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日
+    /// 期限日（NULL許容）
     /// </summary>
-    [Required(ErrorMessage = "期限日は必須です。")]
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     /// <summary>
     /// 下書き中フラグ
@@ -46,12 +45,6 @@ public class CreateWorkspaceItemRequest
     /// コミッターユーザーID（NULL可）
     /// </summary>
     public int? CommitterId { get; set; }
-
-    /// <summary>
-    /// アイテム内容
-    /// </summary>
-    [MaxLength(10000, ErrorMessage = "アイテム内容は10000文字以内で入力してください。")]
-    public string? Content { get; set; }
 
     /// <summary>
     /// タグ名のリスト（存在しないタグは自動作成）

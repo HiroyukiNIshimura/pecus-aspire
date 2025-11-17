@@ -6,6 +6,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import AppHeader from "@/components/common/AppHeader";
 import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
 import WorkspaceItemDetail from "./WorkspaceItemDetail";
+import CreateWorkspaceItem from "./CreateWorkspaceItem";
 import type { UserInfo } from "@/types/userInfo";
 import type {
   WorkspaceFullDetailResponse,
@@ -32,6 +33,7 @@ export default function WorkspaceDetailClient({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
 
   // ローカルストレージからサイドバー幅を取得（初期値: 256px）
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -50,12 +52,34 @@ export default function WorkspaceDetailClient({
   const handleHomeSelect = useCallback(() => {
     setShowWorkspaceDetail(true);
     setSelectedItemId(null);
+    setIsCreatingNew(false);
   }, []);
 
   // アイテム選択ハンドラ
   const handleItemSelect = useCallback((itemId: number) => {
     setShowWorkspaceDetail(false);
     setSelectedItemId(itemId);
+    setIsCreatingNew(false);
+  }, []);
+
+  // 新規作成ハンドラ
+  const handleCreateNew = useCallback(() => {
+    setShowWorkspaceDetail(false);
+    setSelectedItemId(null);
+    setIsCreatingNew(true);
+  }, []);
+
+  // 新規作成キャンセルハンドラ
+  const handleCancelCreate = useCallback(() => {
+    setIsCreatingNew(false);
+    setShowWorkspaceDetail(true);
+  }, []);
+
+  // 新規作成完了ハンドラ
+  const handleCreateComplete = useCallback((itemId: number) => {
+    setIsCreatingNew(false);
+    setSelectedItemId(itemId);
+    setShowWorkspaceDetail(false);
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -133,6 +157,7 @@ export default function WorkspaceDetailClient({
             workspaces={workspaces}
             onHomeSelect={handleHomeSelect}
             onItemSelect={handleItemSelect}
+            onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-desktop"
           />
 
@@ -313,11 +338,20 @@ export default function WorkspaceDetailClient({
           )}
 
           {/* アイテム詳細情報 */}
-          {!showWorkspaceDetail && selectedItemId && (
+          {!showWorkspaceDetail && !isCreatingNew && selectedItemId && (
             <WorkspaceItemDetail
               workspaceId={parseInt(workspaceId)}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
+            />
+          )}
+
+          {/* 新規アイテム作成 */}
+          {isCreatingNew && (
+            <CreateWorkspaceItem
+              workspaceId={parseInt(workspaceId)}
+              onCancel={handleCancelCreate}
+              onCreate={handleCreateComplete}
             />
           )}
         </main>
@@ -332,6 +366,7 @@ export default function WorkspaceDetailClient({
             workspaces={workspaces}
             onHomeSelect={handleHomeSelect}
             onItemSelect={handleItemSelect}
+            onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-mobile"
           />
         </div>

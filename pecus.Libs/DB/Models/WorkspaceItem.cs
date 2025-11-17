@@ -49,9 +49,9 @@ public class WorkspaceItem
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日
+    /// 期限日（NULL許容）
     /// </summary>
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     /// <summary>
     /// 編集不可フラグ（アーカイブ）
@@ -67,11 +67,6 @@ public class WorkspaceItem
     /// コミッターユーザーID（外部キー、NULL可）
     /// </summary>
     public int? CommitterId { get; set; }
-
-    /// <summary>
-    /// アイテム内容
-    /// </summary>
-    public string? Content { get; set; }
 
     /// <summary>
     /// アクティブフラグ

@@ -51,12 +51,6 @@ public class UpdateWorkspaceItemRequest
     public int? CommitterId { get; set; }
 
     /// <summary>
-    /// アイテム内容
-    /// </summary>
-    [MaxLength(10000, ErrorMessage = "アイテム内容は10000文字以内で入力してください。")]
-    public string? Content { get; set; }
-
-    /// <summary>
     /// アクティブフラグ
     /// </summary>
     public bool? IsActive { get; set; }

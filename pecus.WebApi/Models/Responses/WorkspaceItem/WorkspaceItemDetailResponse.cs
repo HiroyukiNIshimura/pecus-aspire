@@ -77,7 +77,7 @@ public class WorkspaceItemDetailResponse : IConflictModel
     /// <summary>
     /// 期限日
     /// </summary>
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     /// <summary>
     /// アーカイブフラグ

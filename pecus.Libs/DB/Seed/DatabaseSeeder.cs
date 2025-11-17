@@ -793,11 +793,10 @@ public class DatabaseSeeder
                             3 => TaskPriority.Critical,
                             _ => null
                         },
-                        DueDate = DateTime.UtcNow.AddDays(_random.Next(1, 365)), // 1日から365日後のランダムな日付
+                        DueDate = _random.Next(2) == 1 ? DateTime.UtcNow.AddDays(_random.Next(1, 365)) : null, // 50%の確率でNULL、それ以外は1-365日後
                         IsArchived = false,
                         IsDraft = _random.Next(2) == 1,
                         CommitterId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
-                        Content = _random.Next(2) == 1 ? Lorem.Paragraph() : null,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)), // 過去365日以内のランダムな作成日
                         UpdatedAt = DateTime.UtcNow,

@@ -5,6 +5,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import HomeIcon from "@mui/icons-material/Home";
+import AddIcon from "@mui/icons-material/Add";
 import WorkspaceSwitcher from "./WorkspaceSwitcher";
 import type {
   WorkspaceItemListResponse,
@@ -17,6 +18,7 @@ interface WorkspaceItemsSidebarProps {
   scrollContainerId?: string;
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number) => void;
+  onCreateNew?: () => void;
 }
 
 export default function WorkspaceItemsSidebar({
@@ -25,8 +27,9 @@ export default function WorkspaceItemsSidebar({
   scrollContainerId = "itemsScrollableDiv",
   onHomeSelect,
   onItemSelect,
+  onCreateNew,
 }: WorkspaceItemsSidebarProps) {
-  const [selectedItemId, setSelectedItemId] = useState<"home" | number | null>(
+  const [selectedItemId, setSelectedItemId] = useState<"home" | "new" | number | null>(
     "home",
   );
   const [searchQuery, setSearchQuery] = useState("");
@@ -145,7 +148,21 @@ export default function WorkspaceItemsSidebar({
           </button>
         </div>
 
-        <h3 className="text-lg font-bold mb-2">アイテム一覧</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold">アイテム一覧</h3>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedItemId("new");
+              onCreateNew?.();
+            }}
+            className="btn btn-primary btn-sm gap-1"
+            title="アイテムを追加"
+          >
+            <AddIcon className="w-4 h-4" />
+            <span>追加</span>
+          </button>
+        </div>
         <p className="text-xs text-base-content/70 mb-3">
           {searchQuery
             ? `${filteredItems.length} 件（全 ${totalCount} 件中）`
