@@ -304,6 +304,7 @@ export default function WorkspaceDetailClient({
             <WorkspaceItemDetail
               workspaceId={parseInt(workspaceId)}
               itemId={selectedItemId}
+              onItemSelect={handleItemSelect}
             />
           )}
         </main>

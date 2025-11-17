@@ -6,11 +6,13 @@ import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
+  onItemSelect: (itemId: number) => void;
 }
 
 export default function WorkspaceItemDetail({
   workspaceId,
   itemId,
+  onItemSelect,
 }: WorkspaceItemDetailProps) {
   const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -241,9 +243,14 @@ export default function WorkspaceItemDetail({
 
                   {/* アイテム情報 */}
                   <div className="flex-1 min-w-0">
-                    <span className="truncate">
+                    <button
+                      type="button"
+                      onClick={() => related.id && onItemSelect(related.id)}
+                      className="truncate hover:underline cursor-pointer text-left w-full"
+                      disabled={!related.id}
+                    >
                       {related.subject || "（件名未設定）"}
-                    </span>
+                    </button>
                   </div>
                 </div>
               ))}
