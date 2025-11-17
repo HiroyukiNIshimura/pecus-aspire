@@ -151,7 +151,104 @@
 
 ---
 
-## 6. 主要ファイル・慣習・FAQ
+## 6. データ取得における重要原則
+
+### ID による単一レコード取得の設計ルール
+
+**原則**: ID（主キー）で単一レコードを取得する場合、**ID 以外の条件は不要**
+
+#### 理由
+
+1. **ID は一意**: 主キーは必ず1件または0件を返すため、追加条件は無意味
+2. **ビジネスロジックの混入を避ける**: データ取得層に状態判断（`IsActive` 等）を持ち込まない
+3. **再利用性**: 取得後にアプリケーション層で状態を判定することで柔軟性が向上
+
+#### 避けるべきパターン
+
+```csharp
+// ❌ 不要な IsActive フィルタを追加
+public async Task<Workspace?> GetWorkspaceByIdAsync(int id)
+{
+    return await _context.Workspaces
+        .Where(w => w.Id == id && w.IsActive) // IsActive は不要
+        .FirstOrDefaultAsync();
+}
+```
+
+**問題点**:
+- 無効なワークスペースを取得できない（有効化処理で困る）
+- 「存在しない」と「無効」の区別ができない
+- メソッド名から `IsActive` フィルタの存在が推測できない
+
+#### 推奨パターン
+
+```csharp
+// ✅ ID のみで取得
+public async Task<Workspace?> GetWorkspaceByIdAsync(int id)
+{
+    return await _context.Workspaces.FindAsync(id);
+}
+
+// アプリケーション層で状態を判定
+var workspace = await GetWorkspaceByIdAsync(id);
+if (workspace == null)
+{
+    throw new NotFoundException("ワークスペースが見つかりません。");
+}
+
+if (!workspace.IsActive)
+{
+    // 無効な場合の処理（有効化、エラー、警告など）
+}
+```
+
+#### 適用対象
+
+- `FindAsync(id)` - ID による単一取得
+- `GetByIdAsync(id)` - カスタム単一取得メソッド
+- `GetXxxDetailAsync(id)` - 詳細情報取得
+
+#### 例外（IsActive フィルタが必要な場合）
+
+**一覧取得・検索**: 複数レコードを返す場合は `IsActive` フィルタが有効
+
+```csharp
+// ✅ 一覧取得では IsActive フィルタを使用
+public async Task<List<Workspace>> GetWorkspacesAsync(bool activeOnly = true)
+{
+    var query = _context.Workspaces.AsQueryable();
+
+    if (activeOnly)
+    {
+        query = query.Where(w => w.IsActive);
+    }
+
+    return await query.ToListAsync();
+}
+```
+
+#### ベストプラクティス
+
+1. **取得メソッドはシンプルに**: ID 取得は条件なし
+2. **状態判定はビジネスロジック層**: サービス・コントローラーで判定
+3. **メソッド名で意図を明示**: `GetActiveWorkspacesAsync()` のように明示的に命名
+4. **ドキュメント化**: 状態フィルタの有無を XML コメントに記載
+
+```csharp
+/// <summary>
+/// ワークスペースをIDで取得（IsActiveに関わらず取得）
+/// </summary>
+/// <param name="id">ワークスペースID</param>
+/// <returns>ワークスペース、または null</returns>
+public async Task<Workspace?> GetWorkspaceByIdAsync(int id)
+{
+    return await _context.Workspaces.FindAsync(id);
+}
+```
+
+---
+
+## 7. 主要ファイル・慣習・FAQ
 
 - 主要ファイル一覧（AppHost.cs, ApplicationDbContext.cs, HangfireTasks.cs等）
 - エントリポイントはAppHost.cs
@@ -162,7 +259,7 @@
 ---
 
 
-## 7. サンプル・実装例（章末集約）
+## 8. サンプル・実装例（章末集約）
 
 ### フロントエンド: useValidationパターン
 （詳細サンプルは末尾にまとめて記載。本文は要点のみ）
