@@ -55,7 +55,10 @@ export default async function EditUserPage({
       redirect("/signin");
     }
 
-    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
+    fetchError =
+      error.body?.message ||
+      error.message ||
+      "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

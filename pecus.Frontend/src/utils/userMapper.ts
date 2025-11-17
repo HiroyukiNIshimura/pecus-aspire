@@ -17,14 +17,16 @@ import type { UserInfo } from "@/types/userInfo";
  * const user = mapUserResponseToUserInfo(userResponse);
  * ```
  */
-export function mapUserResponseToUserInfo(userResponse: UserResponse): UserInfo {
+export function mapUserResponseToUserInfo(
+  userResponse: UserResponse,
+): UserInfo {
   return {
     id: userResponse.id,
     name: userResponse.username ?? null,
     email: userResponse.email ?? null,
     roles: userResponse.roles ?? [],
     isAdmin: userResponse.isAdmin ?? false,
-    skills: userResponse.skills?.map(s => ({ id: s.id, name: s.name })) ?? [],
+    skills: userResponse.skills?.map((s) => ({ id: s.id, name: s.name })) ?? [],
     loginId: userResponse.loginId,
     username: userResponse.username,
     rowVersion: userResponse.rowVersion,

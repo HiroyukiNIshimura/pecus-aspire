@@ -25,7 +25,7 @@ export default function WorkspaceItemDetail({
         setError(null);
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/items/${itemId}`
+          `/api/workspaces/${workspaceId}/items/${itemId}`,
         );
 
         if (!response.ok) {
@@ -86,17 +86,13 @@ export default function WorkspaceItemDetail({
             )}
           </div>
           {item.priority !== undefined && item.priority !== null && (
-            <div className="badge badge-primary">
-              優先度: {item.priority}
-            </div>
+            <div className="badge badge-primary">優先度: {item.priority}</div>
           )}
         </div>
 
         {/* ステータスバッジ */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {item.isDraft && (
-            <span className="badge badge-warning">下書き</span>
-          )}
+          {item.isDraft && <span className="badge badge-warning">下書き</span>}
           {item.isArchived && (
             <span className="badge badge-neutral">アーカイブ済み</span>
           )}
@@ -139,9 +135,7 @@ export default function WorkspaceItemDetail({
                     className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                   />
                 )}
-                <p className="font-semibold truncate">
-                  {item.ownerUsername}
-                </p>
+                <p className="font-semibold truncate">{item.ownerUsername}</p>
               </div>
             </div>
           )}
@@ -201,10 +195,7 @@ export default function WorkspaceItemDetail({
             <h3 className="text-lg font-bold mb-2">タグ</h3>
             <div className="flex flex-wrap gap-2">
               {item.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="badge badge-outline"
-                >
+                <span key={tag.id} className="badge badge-outline">
                   {tag.name}
                 </span>
               ))}
@@ -225,11 +216,17 @@ export default function WorkspaceItemDetail({
                   {/* 方向インジケーター */}
                   <div className="flex-shrink-0">
                     {related.direction === "from" ? (
-                      <span className="badge badge-sm badge-primary" title="このアイテムから関連">
+                      <span
+                        className="badge badge-sm badge-primary"
+                        title="このアイテムから関連"
+                      >
                         →
                       </span>
                     ) : (
-                      <span className="badge badge-sm badge-secondary" title="このアイテムへの関連">
+                      <span
+                        className="badge badge-sm badge-secondary"
+                        title="このアイテムへの関連"
+                      >
                         ←
                       </span>
                     )}

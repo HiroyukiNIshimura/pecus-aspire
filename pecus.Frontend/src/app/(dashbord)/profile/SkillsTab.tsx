@@ -25,7 +25,7 @@ export default function SkillsTab({
   setIsLoading,
 }: SkillsTabProps) {
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<number>>(
-    new Set(initialSkillIds)
+    new Set(initialSkillIds),
   );
   const [isOpen, setIsOpen] = useState(false);
 
@@ -62,7 +62,7 @@ export default function SkillsTab({
   };
 
   const selectedSkills = masterSkills.filter((skill) =>
-    selectedSkillIds.has(skill.id)
+    selectedSkillIds.has(skill.id),
   );
 
   return (
@@ -70,7 +70,9 @@ export default function SkillsTab({
       {/* スキル選択ドロップダウン */}
       <div className="form-control">
         <label className="label">
-          <span className="label-text font-semibold text-base-content">スキル選択</span>
+          <span className="label-text font-semibold text-base-content">
+            スキル選択
+          </span>
         </label>
         <div className="dropdown w-full">
           <button
@@ -101,27 +103,27 @@ export default function SkillsTab({
             </svg>
           </button>
           {isOpen && (
-          <div className="dropdown-content bg-base-100 border border-base-300 rounded-lg shadow-lg w-full z-50 max-h-80 overflow-y-auto">
-            <div className="p-4 space-y-2">
-              {masterSkills.map((skill) => (
-                <label
-                  key={skill.id}
-                  className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm"
-                    checked={selectedSkillIds.has(skill.id)}
-                    onChange={() => handleSkillToggle(skill.id)}
-                    disabled={isLoading}
-                  />
-                  <span className="text-sm">{skill.name}</span>
-                </label>
-              ))}
+            <div className="dropdown-content bg-base-100 border border-base-300 rounded-lg shadow-lg w-full z-50 max-h-80 overflow-y-auto">
+              <div className="p-4 space-y-2">
+                {masterSkills.map((skill) => (
+                  <label
+                    key={skill.id}
+                    className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm"
+                      checked={selectedSkillIds.has(skill.id)}
+                      onChange={() => handleSkillToggle(skill.id)}
+                      disabled={isLoading}
+                    />
+                    <span className="text-sm">{skill.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       </div>
 
       {/* 選択されたスキルのバッジ表示 */}

@@ -1,5 +1,5 @@
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse } from "@/connectors/api/pecus";
+import type { UserResponse, MasterGenreResponse } from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import WorkspacesClient from "./WorkspacesClient";
@@ -12,15 +12,19 @@ export const dynamic = "force-dynamic";
  */
 export default async function WorkspacesPage() {
   let userResponse: UserResponse | null = null;
+  let genres: MasterGenreResponse[] = [];
   let fetchError: string | null = null;
 
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
-    userResponse = await api.profile.getApiProfile();
+    // ユーザー情報とジャンル一覧を並行取得
+    [userResponse, genres] = await Promise.all([
+      api.profile.getApiProfile(),
+      api.master.getApiMasterGenres(),
+    ]);
   } catch (error: any) {
-    console.error("WorkspacesPage: failed to fetch user", error);
+    console.error("WorkspacesPage: failed to fetch data", error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
@@ -28,9 +32,7 @@ export default async function WorkspacesPage() {
     }
 
     fetchError =
-      error.body?.message ||
-      error.message ||
-      "ユーザー情報の取得に失敗しました";
+      error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -41,5 +43,11 @@ export default async function WorkspacesPage() {
   // UserResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
-  return <WorkspacesClient initialUser={user} fetchError={fetchError} />;
+  return (
+    <WorkspacesClient
+      initialUser={user}
+      fetchError={fetchError}
+      genres={genres}
+    />
+  );
 }

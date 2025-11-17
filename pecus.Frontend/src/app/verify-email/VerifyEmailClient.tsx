@@ -74,9 +74,7 @@ export default function VerifyEmailClient() {
                 />
               </svg>
             </div>
-            <h2 className="card-title text-2xl mt-4 text-success">
-              変更完了
-            </h2>
+            <h2 className="card-title text-2xl mt-4 text-success">変更完了</h2>
             <p className="text-base-content/70 mt-2">{message}</p>
             {newEmail && (
               <p className="text-base-content font-semibold mt-2">
@@ -113,9 +111,7 @@ export default function VerifyEmailClient() {
                 />
               </svg>
             </div>
-            <h2 className="card-title text-2xl mt-4 text-error">
-              確認失敗
-            </h2>
+            <h2 className="card-title text-2xl mt-4 text-error">確認失敗</h2>
             <p className="text-base-content/70 mt-2">{message}</p>
             <div className="card-actions mt-6 flex-col gap-2 w-full">
               <button

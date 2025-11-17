@@ -7,7 +7,6 @@
  */
 export type CreateWorkspaceRequest = {
     name: string;
-    code?: string | null;
     description?: string | null;
     genreId?: number | null;
 };

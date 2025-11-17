@@ -12,22 +12,19 @@ export async function GET(request: NextRequest) {
     const clients = await createPecusApiClients();
     const result = await clients.profile.getApiProfileAvatarDataurl();
 
-    return NextResponse.json(
-      { dataUrl: result.dataUrl },
-      { status: 200 }
-    );
+    return NextResponse.json({ dataUrl: result.dataUrl }, { status: 200 });
   } catch (error: any) {
     if (error.status === 404) {
       return NextResponse.json(
         { message: "アバター画像が設定されていません" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     console.error("Avatar DataURL fetch error:", error);
     return NextResponse.json(
       { message: "アバター画像の取得に失敗しました" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

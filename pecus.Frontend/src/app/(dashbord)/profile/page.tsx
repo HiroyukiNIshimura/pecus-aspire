@@ -1,5 +1,9 @@
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse, MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import type {
+  UserResponse,
+  MasterSkillResponse,
+  PendingEmailChangeResponse,
+} from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import ProfileSettingsClient from "./ProfileSettingsClient";
@@ -47,7 +51,10 @@ export default async function ProfileSettingsPage() {
       redirect("/signin");
     }
 
-    fetchError = error.body?.message || error.message || "プロフィール情報の取得に失敗しました";
+    fetchError =
+      error.body?.message ||
+      error.message ||
+      "プロフィール情報の取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

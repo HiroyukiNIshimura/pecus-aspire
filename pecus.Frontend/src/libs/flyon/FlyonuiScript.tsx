@@ -37,7 +37,10 @@ export default function FlyonuiScript() {
         window.HSAccordion.autoInit();
         window.HSOverlay.autoInit();
         // HSTooltipの初期化を追加
-        if (window.HSTooltip && typeof window.HSTooltip.autoInit === "function") {
+        if (
+          window.HSTooltip &&
+          typeof window.HSTooltip.autoInit === "function"
+        ) {
           window.HSTooltip.autoInit();
         }
       }

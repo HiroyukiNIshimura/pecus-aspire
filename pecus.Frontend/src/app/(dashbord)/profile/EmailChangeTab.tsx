@@ -109,7 +109,9 @@ export default function EmailChangeTab({
             />
           </svg>
           <div>
-            <h3 className="font-bold">確認待ちのメールアドレス変更があります</h3>
+            <h3 className="font-bold">
+              確認待ちのメールアドレス変更があります
+            </h3>
             <div className="text-sm">
               <p>
                 新しいメールアドレス: <strong>{pendingEmail}</strong>

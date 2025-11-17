@@ -7628,11 +7628,6 @@
             "minLength": 1,
             "type": "string"
           },
-          "code": {
-            "maxLength": 50,
-            "type": "string",
-            "nullable": true
-          },
           "description": {
             "maxLength": 500,
             "type": "string",

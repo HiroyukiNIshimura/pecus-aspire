@@ -6,10 +6,12 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import CreateWorkspaceModal from "./CreateWorkspaceModal";
 import type {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
+  MasterGenreResponse,
 } from "@/connectors/api/pecus";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
@@ -20,25 +22,26 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import PersonIcon from "@mui/icons-material/Person";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import PowerOffIcon from "@mui/icons-material/PowerOff";
+import AddIcon from "@mui/icons-material/Add";
 import type { UserInfo } from "@/types/userInfo";
 
 interface WorkspacesClientProps {
   initialUser?: UserInfo | null;
   fetchError?: string | null;
+  genres: MasterGenreResponse[];
 }
 
 export default function WorkspacesClient({
   initialUser,
   fetchError,
+  genres,
 }: WorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(
     initialUser || null,
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(
-    [],
-  );
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -48,6 +51,7 @@ export default function WorkspacesClient({
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>("");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
@@ -148,6 +152,11 @@ export default function WorkspacesClient({
     handleFilterChange();
   };
 
+  const handleCreateSuccess = () => {
+    // ワークスペース作成成功時、一覧を再取得
+    handleFilterChange();
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <DashboardSidebar
@@ -161,18 +170,33 @@ export default function WorkspacesClient({
           setSidebarOpen={setSidebarOpen}
           userInfo={userInfo}
         />
-        <main id="scrollableDiv" className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6">
+        <main
+          id="scrollableDiv"
+          className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6"
+        >
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
           {/* ページヘッダー */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <GridViewIcon />
-              マイワークスペース
-            </h1>
-            <p className="text-base-content/70 mt-1">
-              アクセス可能なワークスペースの一覧
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold flex items-center gap-2">
+                  <GridViewIcon />
+                  マイワークスペース
+                </h1>
+                <p className="text-base-content/70 mt-1">
+                  アクセス可能なワークスペースの一覧
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <AddIcon />
+                新規作成
+              </button>
+            </div>
           </div>
 
           {/* フィルターセクション */}
@@ -219,86 +243,86 @@ export default function WorkspacesClient({
               {filterOpen && (
                 <div className="space-y-4 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* 名前検索 */}
-                  <div className="form-control">
-                    <label htmlFor="filterName" className="label">
-                      <span className="label-text font-semibold">
-                        ワークスペース名
-                      </span>
-                    </label>
-                    <input
-                      id="filterName"
-                      type="text"
-                      placeholder="検索名を入力..."
-                      className={`input input-bordered ${nameValidation.hasErrors ? "input-error" : ""}`}
-                      value={filterName}
-                      onChange={(e) => handleNameChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && nameValidation.isValid) {
-                          handleSearch();
-                        }
-                      }}
-                    />
-                    {nameValidation.error && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {nameValidation.error}
+                    {/* 名前検索 */}
+                    <div className="form-control">
+                      <label htmlFor="filterName" className="label">
+                        <span className="label-text font-semibold">
+                          ワークスペース名
                         </span>
                       </label>
-                    )}
+                      <input
+                        id="filterName"
+                        type="text"
+                        placeholder="検索名を入力..."
+                        className={`input input-bordered ${nameValidation.hasErrors ? "input-error" : ""}`}
+                        value={filterName}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && nameValidation.isValid) {
+                            handleSearch();
+                          }
+                        }}
+                      />
+                      {nameValidation.error && (
+                        <label className="label">
+                          <span className="label-text-alt text-error">
+                            {nameValidation.error}
+                          </span>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* ステータスフィルター */}
+                    <div className="form-control">
+                      <label htmlFor="filterIsActive" className="label">
+                        <span className="label-text font-semibold">
+                          ステータス
+                        </span>
+                      </label>
+                      <select
+                        id="filterIsActive"
+                        className="select select-bordered"
+                        value={
+                          filterIsActive === null
+                            ? ""
+                            : filterIsActive
+                              ? "true"
+                              : "false"
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFilterIsActive(
+                            value === "" ? null : value === "true",
+                          );
+                        }}
+                      >
+                        <option value="">すべて</option>
+                        <option value="true">アクティブ</option>
+                        <option value="false">非アクティブ</option>
+                      </select>
+                    </div>
                   </div>
 
-                  {/* ステータスフィルター */}
-                  <div className="form-control">
-                    <label htmlFor="filterIsActive" className="label">
-                      <span className="label-text font-semibold">
-                        ステータス
-                      </span>
-                    </label>
-                    <select
-                      id="filterIsActive"
-                      className="select select-bordered"
-                      value={
-                        filterIsActive === null
-                          ? ""
-                          : filterIsActive
-                            ? "true"
-                            : "false"
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFilterIsActive(
-                          value === "" ? null : value === "true",
-                        );
-                      }}
+                  {/* ボタングループ */}
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={handleReset}
                     >
-                      <option value="">すべて</option>
-                      <option value="true">アクティブ</option>
-                      <option value="false">非アクティブ</option>
-                    </select>
+                      リセット
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={handleSearch}
+                      disabled={!nameValidation.isValid}
+                    >
+                      <SearchIcon className="w-4 h-4" />
+                      検索
+                    </button>
                   </div>
                 </div>
-
-                {/* ボタングループ */}
-                <div className="flex gap-2 justify-end">
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={handleReset}
-                  >
-                    リセット
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleSearch}
-                    disabled={!nameValidation.isValid}
-                  >
-                    <SearchIcon className="w-4 h-4" />
-                    検索
-                  </button>
-                </div>
-              </div>
               )}
             </div>
           </div>
@@ -308,9 +332,7 @@ export default function WorkspacesClient({
             <div className="card-body p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <h2 className="card-title text-lg">
-                    ワークスペース一覧
-                  </h2>
+                  <h2 className="card-title text-lg">ワークスペース一覧</h2>
                   <span className="badge badge-primary">{totalCount}</span>
                 </div>
               </div>
@@ -408,7 +430,9 @@ export default function WorkspacesClient({
                           {workspace.genreIcon && workspace.genreName && (
                             <div className="pt-3 border-t border-base-300">
                               <div className="flex items-center gap-2 text-sm text-base-content/70">
-                                <span className="text-lg">{workspace.genreIcon}</span>
+                                <span className="text-lg">
+                                  {workspace.genreIcon}
+                                </span>
                                 <span>{workspace.genreName}</span>
                               </div>
                             </div>
@@ -465,6 +489,14 @@ export default function WorkspacesClient({
           )}
         </main>
       </div>
+
+      {/* ワークスペース作成モーダル */}
+      <CreateWorkspaceModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCreateSuccess}
+        genres={genres}
+      />
     </div>
   );
 }

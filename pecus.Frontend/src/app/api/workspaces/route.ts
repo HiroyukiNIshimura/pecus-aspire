@@ -40,10 +40,7 @@ export async function GET(request: NextRequest) {
     console.error("Failed to fetch workspaces:", error);
 
     if (error.status === 401) {
-      return NextResponse.json(
-        { error: "認証が必要です。" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "認証が必要です。" }, { status: 401 });
     }
 
     if (error.status === 403) {

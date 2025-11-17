@@ -1,6 +1,10 @@
 "use server";
 
-import { createPecusApiClients, createAuthenticatedAxios, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import {
+  createPecusApiClients,
+  createAuthenticatedAxios,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
 import type {
   AvatarType,
   UserResponse,
@@ -8,7 +12,7 @@ import type {
   SuccessResponse,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
-  PendingEmailChangeResponse
+  PendingEmailChangeResponse,
 } from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
 import type { ApiResponse } from "./types";
@@ -31,7 +35,6 @@ export async function updateProfile(request: {
   rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
 }): Promise<ApiResponse<UserResponse>> {
   try {
-
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({
       username: request.username,
@@ -91,7 +94,9 @@ export async function requestEmailChange(
       success: false,
       error: "server",
       message:
-        error.body?.message || error.message || "メールアドレス変更リクエストに失敗しました",
+        error.body?.message ||
+        error.message ||
+        "メールアドレス変更リクエストに失敗しました",
     };
   }
 }
@@ -114,7 +119,9 @@ export async function verifyEmailChange(
       success: false,
       error: "server",
       message:
-        error.body?.message || error.message || "メールアドレス変更の確認に失敗しました",
+        error.body?.message ||
+        error.message ||
+        "メールアドレス変更の確認に失敗しました",
     };
   }
 }
@@ -175,7 +182,8 @@ export async function setUserSkills(
     return {
       success: false,
       error: "server",
-      message: error.body?.message || error.message || "スキル設定に失敗しました",
+      message:
+        error.body?.message || error.message || "スキル設定に失敗しました",
     };
   }
 }
@@ -189,7 +197,10 @@ export async function uploadAvatarFile(fileData: {
   fileType: string;
   arrayBuffer: ArrayBuffer;
 }): Promise<
-  | { success: true; data: { fileUrl?: string; fileSize: number; contentType?: string } }
+  | {
+      success: true;
+      data: { fileUrl?: string; fileSize: number; contentType?: string };
+    }
   | { success: false; error: string; message: string }
 > {
   try {
@@ -204,20 +215,20 @@ export async function uploadAvatarFile(fileData: {
     const axios = await createAuthenticatedAxios();
 
     // FormDataを作成（Node.js環境でも動作するFormData）
-    const FormData = (await import('form-data')).default;
+    const FormData = (await import("form-data")).default;
     const formData = new FormData();
 
     // ArrayBufferをBufferに変換してFormDataに追加
     const buffer = Buffer.from(fileData.arrayBuffer);
-    formData.append('FileType', 'Avatar');
-    formData.append('ResourceId', userResponse.id.toString());
-    formData.append('File', buffer, {
+    formData.append("FileType", "Avatar");
+    formData.append("ResourceId", userResponse.id.toString());
+    formData.append("File", buffer, {
       filename: fileData.fileName,
       contentType: fileData.fileType,
     });
 
     // Axiosで直接POSTリクエスト
-    const response = await axios.post('/api/files', formData, {
+    const response = await axios.post("/api/files", formData, {
       headers: {
         ...formData.getHeaders(),
       },
@@ -255,9 +266,9 @@ export async function deleteAvatarFile(fileData: {
   try {
     const api = createPecusApiClients();
     const response = await api.file.deleteApiDownloadsIcons(
-      'Avatar',
+      "Avatar",
       fileData.resourceId,
-      fileData.fileName
+      fileData.fileName,
     );
 
     return { success: true, data: response };
@@ -266,8 +277,7 @@ export async function deleteAvatarFile(fileData: {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "削除に失敗しました",
+      message: error.body?.message || error.message || "削除に失敗しました",
     };
   }
 }

@@ -77,14 +77,18 @@ export default async function AdminUsers() {
       }));
     }
   } catch (error: any) {
-    console.error("AdminUsers: failed to fetch users, user info, or skills", error);
+    console.error(
+      "AdminUsers: failed to fetch users, user info, or skills",
+      error,
+    );
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
       redirect("/signin");
     }
 
-    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError =
+      error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

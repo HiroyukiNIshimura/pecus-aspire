@@ -24,7 +24,10 @@ export default async function Dashboard() {
       redirect("/signin");
     }
 
-    fetchError = error.body?.message || error.message || "ユーザー情報の取得に失敗しました";
+    fetchError =
+      error.body?.message ||
+      error.message ||
+      "ユーザー情報の取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

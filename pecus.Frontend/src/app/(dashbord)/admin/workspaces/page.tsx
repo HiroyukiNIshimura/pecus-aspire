@@ -54,7 +54,8 @@ export default async function AdminWorkspaces() {
       redirect("/signin");
     }
 
-    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError =
+      error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

@@ -25,7 +25,7 @@ export default function WorkspaceSwitcher({
 
   // 現在のワークスペースのインデックスを取得
   const currentIndex = workspaces.findIndex(
-    (ws) => ws.id === currentWorkspaceId
+    (ws) => ws.id === currentWorkspaceId,
   );
 
   // 現在のワークスペース情報
@@ -39,7 +39,7 @@ export default function WorkspaceSwitcher({
       }
       setIsOpen(false);
     },
-    [currentWorkspaceId, router]
+    [currentWorkspaceId, router],
   );
 
   // キーボード操作（Enterとエスケープのみ）
@@ -59,10 +59,8 @@ export default function WorkspaceSwitcher({
           break;
       }
     },
-    [workspaces]
+    [workspaces],
   );
-
-
 
   // ドロップダウン外クリックで閉じる
   useEffect(() => {
@@ -100,7 +98,9 @@ export default function WorkspaceSwitcher({
         title="Enterキーまたはクリックでワークスペースを選択"
       >
         <div className="flex-1 min-w-0">
-          <div className="text-xs text-base-content/70 mb-1">ワークスペース</div>
+          <div className="text-xs text-base-content/70 mb-1">
+            ワークスペース
+          </div>
           <div className="font-semibold text-sm truncate">
             {currentWorkspace?.name || "ワークスペース"}
           </div>
@@ -142,9 +142,7 @@ export default function WorkspaceSwitcher({
                 )}
                 {workspace.genreName && (
                   <div className="text-xs text-base-content/70 mt-1 flex items-center gap-1">
-                    {workspace.genreIcon && (
-                      <span>{workspace.genreIcon}</span>
-                    )}
+                    {workspace.genreIcon && <span>{workspace.genreIcon}</span>}
                     {workspace.genreName}
                   </div>
                 )}

@@ -26,7 +26,9 @@ export default function WorkspaceItemsSidebar({
   onHomeSelect,
   onItemSelect,
 }: WorkspaceItemsSidebarProps) {
-  const [selectedItemId, setSelectedItemId] = useState<'home' | number | null>('home');
+  const [selectedItemId, setSelectedItemId] = useState<"home" | number | null>(
+    "home",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,7 +43,9 @@ export default function WorkspaceItemsSidebar({
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
+        const response = await fetch(
+          `/api/workspaces/${workspaceId}/items?page=1`,
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch items");
@@ -69,7 +73,7 @@ export default function WorkspaceItemsSidebar({
     try {
       const nextPage = currentPage + 1;
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/items?page=${nextPage}`
+        `/api/workspaces/${workspaceId}/items?page=${nextPage}`,
       );
 
       if (!response.ok) {
@@ -83,7 +87,7 @@ export default function WorkspaceItemsSidebar({
       setItems((prev) => {
         const existingIds = new Set(prev.map((item) => item.id));
         const uniqueNewItems = newItems.filter(
-          (item: WorkspaceItemListResponse) => !existingIds.has(item.id)
+          (item: WorkspaceItemListResponse) => !existingIds.has(item.id),
         );
         return [...prev, ...uniqueNewItems];
       });
@@ -91,7 +95,9 @@ export default function WorkspaceItemsSidebar({
       setCurrentPage(data.currentPage || nextPage);
       setTotalPages(data.totalPages || 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load more items");
+      setError(
+        err instanceof Error ? err.message : "Failed to load more items",
+      );
     }
   }, [workspaceId, currentPage]);
 
@@ -102,9 +108,8 @@ export default function WorkspaceItemsSidebar({
     }
     return items.filter(
       (item) =>
-        item.subject
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ?? false
+        item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false,
     );
   }, [items, searchQuery]);
 
@@ -125,11 +130,11 @@ export default function WorkspaceItemsSidebar({
           <button
             type="button"
             onClick={() => {
-              setSelectedItemId('home');
+              setSelectedItemId("home");
               onHomeSelect?.();
             }}
             className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
-              selectedItemId === 'home'
+              selectedItemId === "home"
                 ? "bg-primary text-primary-content font-semibold"
                 : "hover:bg-base-300 text-base-content"
             }`}
@@ -182,11 +187,16 @@ export default function WorkspaceItemsSidebar({
       ) : filteredItems.length === 0 ? (
         <div className="p-4 text-center text-base-content/70">
           <p className="text-sm">
-            {searchQuery ? "該当するアイテムがありません" : "アイテムがありません"}
+            {searchQuery
+              ? "該当するアイテムがありません"
+              : "アイテムがありません"}
           </p>
         </div>
       ) : (
-        <div id={scrollContainerId} className="flex-1 overflow-y-auto bg-base-200">
+        <div
+          id={scrollContainerId}
+          className="flex-1 overflow-y-auto bg-base-200"
+        >
           <InfiniteScroll
             dataLength={filteredItems.length}
             next={loadMoreItems}

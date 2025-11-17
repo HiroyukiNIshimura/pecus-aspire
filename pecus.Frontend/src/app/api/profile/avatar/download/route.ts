@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (!fileType || !resourceId || !fileName) {
       return NextResponse.json(
         { error: "Missing required parameters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { error: error.message || "Failed to download avatar" },
-      { status: error.response?.status || 500 }
+      { status: error.response?.status || 500 },
     );
   }
 }

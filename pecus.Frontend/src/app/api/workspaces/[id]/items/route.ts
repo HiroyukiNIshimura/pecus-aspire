@@ -22,14 +22,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (isNaN(workspaceId)) {
       return NextResponse.json(
         { error: "Invalid workspace ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const api = createPecusApiClients();
     const response = await api.workspace.getApiWorkspacesItems(
       workspaceId,
-      page
+      page,
     );
 
     return NextResponse.json(response);
@@ -40,14 +40,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (error.status === 404) {
       return NextResponse.json(
         { error: "Workspace not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // その他のエラー
     return NextResponse.json(
       { error: error.message || "Failed to fetch workspace items" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
