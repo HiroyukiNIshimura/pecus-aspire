@@ -109,7 +109,20 @@ public static class WorkspaceItemResponseHelper
                         Subject = relation.ToItem.Subject,
                         Code = relation.ToItem.Code,
                         RelationType = relation.RelationType,
-                        Direction = "from"
+                        Direction = "from",
+                        OwnerId = relation.ToItem.OwnerId,
+                        OwnerUsername = relation.ToItem.Owner?.Username,
+                        OwnerAvatarUrl =
+                            relation.ToItem.Owner != null
+                                ? IdentityIconHelper.GetIdentityIconUrl(
+                                    iconType: relation.ToItem.Owner.AvatarType,
+                                    organizationId: relation.ToItem.Owner.OrganizationId,
+                                    userId: relation.ToItem.Owner.Id,
+                                    username: relation.ToItem.Owner.Username,
+                                    email: relation.ToItem.Owner.Email,
+                                    avatarPath: relation.ToItem.Owner.UserAvatarPath
+                                )
+                                : null
                     });
                 }
             }
@@ -128,7 +141,20 @@ public static class WorkspaceItemResponseHelper
                         Subject = relation.FromItem.Subject,
                         Code = relation.FromItem.Code,
                         RelationType = relation.RelationType,
-                        Direction = "to"
+                        Direction = "to",
+                        OwnerId = relation.FromItem.OwnerId,
+                        OwnerUsername = relation.FromItem.Owner?.Username,
+                        OwnerAvatarUrl =
+                            relation.FromItem.Owner != null
+                                ? IdentityIconHelper.GetIdentityIconUrl(
+                                    iconType: relation.FromItem.Owner.AvatarType,
+                                    organizationId: relation.FromItem.Owner.OrganizationId,
+                                    userId: relation.FromItem.Owner.Id,
+                                    username: relation.FromItem.Owner.Username,
+                                    email: relation.FromItem.Owner.Email,
+                                    avatarPath: relation.FromItem.Owner.UserAvatarPath
+                                )
+                                : null
                     });
                 }
             }

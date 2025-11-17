@@ -26,5 +26,17 @@ export type RelatedItemInfo = {
      * "to": このアイテムが関連先
      */
     direction?: string | null;
+    /**
+     * オーナーID
+     */
+    ownerId?: number | null;
+    /**
+     * オーナーユーザー名
+     */
+    ownerUsername?: string | null;
+    /**
+     * オーナーアバターURL
+     */
+    ownerAvatarUrl?: string | null;
 };
 

@@ -33,4 +33,19 @@ public class RelatedItemInfo
     /// "to": このアイテムが関連先
     /// </summary>
     public string Direction { get; set; } = string.Empty;
+
+    /// <summary>
+    /// オーナーID
+    /// </summary>
+    public int? OwnerId { get; set; }
+
+    /// <summary>
+    /// オーナーユーザー名
+    /// </summary>
+    public string? OwnerUsername { get; set; }
+
+    /// <summary>
+    /// オーナーアバターURL
+    /// </summary>
+    public string? OwnerAvatarUrl { get; set; }
 }

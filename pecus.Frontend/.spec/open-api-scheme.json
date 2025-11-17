@@ -8312,6 +8312,22 @@
             "type": "string",
             "description": "関連の方向（このアイテムから見て）\r\n\"from\": このアイテムが関連元\r\n\"to\": このアイテムが関連先",
             "nullable": true
+          },
+          "ownerId": {
+            "type": "integer",
+            "description": "オーナーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "ownerUsername": {
+            "type": "string",
+            "description": "オーナーユーザー名",
+            "nullable": true
+          },
+          "ownerAvatarUrl": {
+            "type": "string",
+            "description": "オーナーアバターURL",
+            "nullable": true
           }
         },
         "additionalProperties": false,
