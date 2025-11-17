@@ -244,21 +244,33 @@ export default function WorkspacesClient({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <DashboardSidebar
+    <div className="flex flex-col min-h-screen">
+      <AppHeader
+        userInfo={userInfo}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        isAdmin={userInfo?.isAdmin || false}
       />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AppHeader
+
+      <div className="flex flex-1">
+        {/* Sidebar Menu */}
+        <DashboardSidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          userInfo={userInfo}
+          isAdmin={userInfo?.isAdmin || false}
         />
+
+        {/* Overlay for mobile */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+
+        {/* Main Content */}
         <main
           id="scrollableDiv"
-          className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6"
+          className="flex-1 p-4 md:p-6 bg-base-100"
           onClick={() => setOpenMenuId(null)}
         >
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
