@@ -669,18 +669,7 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペース詳細情報を取得（DTO形式で、IdentityIconUrl を含む）
     /// </summary>
-    public async Task<(
-        int Id,
-        string Name,
-        string Code,
-        string? Description,
-        DateTime CreatedAt,
-        WorkspaceDetailUserResponse CreatedBy,
-        DateTime? UpdatedAt,
-        WorkspaceDetailUserResponse UpdatedBy,
-        WorkspaceGenreResponse? Genre,
-        List<WorkspaceDetailUserResponse> Members
-    )> GetWorkspaceDetailAsync(int workspaceId)
+    public async Task<WorkspaceDetailFullResponse> GetWorkspaceDetailAsync(int workspaceId)
     {
         // ワークスペース基本情報を取得
         var workspace = await _context.Workspaces
@@ -784,18 +773,20 @@ public class WorkspaceService
             })
             .ToList();
 
-        return (
-            workspace.Id,
-            workspace.Name,
-            workspace.Code ?? "",
-            workspace.Description,
-            workspace.CreatedAt,
-            createdBy,
-            workspace.UpdatedAt,
-            updatedBy,
-            genre,
-            members
-        );
+        return new WorkspaceDetailFullResponse
+        {
+            Id = workspace.Id,
+            Name = workspace.Name,
+            Code = workspace.Code ?? "",
+            Description = workspace.Description,
+            CreatedAt = workspace.CreatedAt,
+            CreatedBy = createdBy,
+            UpdatedAt = workspace.UpdatedAt,
+            UpdatedBy = updatedBy,
+            Genre = genre,
+            Members = members,
+            RowVersion = workspace.RowVersion,
+        };
     }
 
     /// <summary>

@@ -16,6 +16,7 @@ import type {
 } from "@/connectors/api/pecus";
 import { toggleWorkspaceActive } from "@/actions/workspace";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useNotify } from "@/hooks/useNotify";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
 import GridViewIcon from "@mui/icons-material/GridView";
@@ -66,6 +67,7 @@ export default function WorkspacesClient({
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
+  const notify = useNotify();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -195,13 +197,18 @@ export default function WorkspacesClient({
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
+        notify.success(
+          workspace.isActive
+            ? "ワークスペースを無効化しました"
+            : "ワークスペースを有効化しました",
+        );
       } else {
         // エラー表示
-        alert(result.message || "状態の切り替えに失敗しました。");
+        notify.error(result.message || "状態の切り替えに失敗しました。");
       }
     } catch (error) {
       console.error("Toggle active failed:", error);
-      alert("状態の切り替えに失敗しました。");
+      notify.error("状態の切り替えに失敗しました。");
     }
   };
 

@@ -94,4 +94,17 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
             throw;
         }
     }
+
+    /// <summary>
+    /// 現在のユーザーがAdmin権限を持っているか確認します
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Admin権限がない場合</exception>
+    [NonAction]
+    protected void RequireAdminRole()
+    {
+        if (CurrentUser?.Roles == null || !CurrentUser.Roles.Any(r => r.Name == "Admin"))
+        {
+            throw new InvalidOperationException("この操作を実行する権限がありません。Admin権限が必要です。");
+        }
+    }
 }

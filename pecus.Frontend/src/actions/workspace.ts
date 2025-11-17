@@ -158,17 +158,38 @@ export async function toggleWorkspaceActive(
     // 最新のワークスペース情報を取得してrowVersionを取得
     const detailResponse = await api.workspace.getApiWorkspaces1(workspaceId);
 
-    // 有効/無効を切り替えて更新
-    const response = await api.workspace.putApiWorkspaces(workspaceId, {
-      name: detailResponse.name,
-      description: detailResponse.description,
-      genreId: detailResponse.genreId!,
+    console.log("Toggle workspace:", {
+      workspaceId,
+      isActive,
       rowVersion: detailResponse.rowVersion,
+      rowVersionType: typeof detailResponse.rowVersion,
+      currentIsActive: detailResponse.isActive,
     });
+
+    // rowVersionが存在しない、または0の場合はエラー
+    if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
+      console.error("Invalid rowVersion:", detailResponse.rowVersion);
+      return {
+        success: false,
+        error: "validation",
+        message: "ワークスペースのバージョン情報が取得できませんでした。",
+      };
+    }
+
+    // isActiveに応じて適切なエンドポイントを呼び出す
+    const response = isActive
+      ? await api.workspace.postApiWorkspacesActivate(workspaceId, detailResponse.rowVersion)
+      : await api.workspace.postApiWorkspacesDeactivate(workspaceId, detailResponse.rowVersion);
 
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to toggle workspace active status:", error);
+    console.error("Error details:", {
+      status: error.status,
+      statusText: error.statusText,
+      body: error.body,
+      url: error.url,
+    });
 
     // 競合エラー（409 Conflict）
     const concurrency = detectConcurrencyError(error);
@@ -179,6 +200,15 @@ export async function toggleWorkspaceActive(
         message: concurrency.message || "別のユーザーが同時に更新しました。",
         latest: { type: "workspace", data: concurrency.payload as any },
       } as any;
+    }
+
+    // バリデーションエラー（400 Bad Request）
+    if (error.status === 400) {
+      return {
+        success: false,
+        error: "validation",
+        message: error.body?.message || error.body?.title || "入力データが不正です。",
+      };
     }
 
     // 存在しない（404 Not Found）

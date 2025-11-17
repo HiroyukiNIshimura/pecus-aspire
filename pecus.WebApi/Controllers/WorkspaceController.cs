@@ -61,35 +61,31 @@ public class WorkspaceController : BaseSecureController
         );
 
         // 作成されたワークスペースの詳細情報を取得
-        (int id, string name, string code, string? description, DateTime createdAt,
-            WorkspaceDetailUserResponse createdBy, DateTime? updatedAt,
-            WorkspaceDetailUserResponse updatedBy, WorkspaceGenreResponse? genre,
-            List<WorkspaceDetailUserResponse> members) =
-            await _workspaceService.GetWorkspaceDetailAsync(workspace.Id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id);
 
         var response = new WorkspaceFullDetailResponse
         {
-            Id = id,
-            Name = name,
-            Code = code,
-            Description = description,
-            GenreId = genre?.Id,
-            GenreName = genre?.Name,
-            GenreIcon = genre?.Icon,
-            CreatedAt = createdAt,
-            CreatedBy = createdBy,
-            UpdatedAt = updatedAt,
-            UpdatedBy = updatedBy,
-            Members = members,
+            Id = detail.Id,
+            Name = detail.Name,
+            Code = detail.Code,
+            Description = detail.Description,
+            GenreId = detail.Genre?.Id,
+            GenreName = detail.Genre?.Name,
+            GenreIcon = detail.Genre?.Icon,
+            CreatedAt = detail.CreatedAt,
+            CreatedBy = detail.CreatedBy,
+            UpdatedAt = detail.UpdatedAt,
+            UpdatedBy = detail.UpdatedBy,
+            Members = detail.Members,
             IsActive = true,
-            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
+            RowVersion = detail.RowVersion,
         };
 
         return TypedResults.Created($"/api/workspaces/{response.Id}", response);
     }
 
     /// <summary>
-    /// ワークスペース情報を更新（Ownerのみ実行可能）
+    /// ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="request">ワークスペース更新リクエスト</param>
@@ -105,8 +101,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースのオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースアクセス権限チェック
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを更新
         await _workspaceService.UpdateWorkspaceAsync(
@@ -116,28 +112,24 @@ public class WorkspaceController : BaseSecureController
         );
 
         // 更新後のワークスペース詳細情報を取得
-        (int wId, string name, string code, string? description, DateTime createdAt,
-            WorkspaceDetailUserResponse createdBy, DateTime? updatedAt,
-            WorkspaceDetailUserResponse updatedBy, WorkspaceGenreResponse? genre,
-            List<WorkspaceDetailUserResponse> members) =
-            await _workspaceService.GetWorkspaceDetailAsync(id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
-            Id = wId,
-            Name = name,
-            Code = code,
-            Description = description,
-            GenreId = genre?.Id,
-            GenreName = genre?.Name,
-            GenreIcon = genre?.Icon,
-            CreatedAt = createdAt,
-            CreatedBy = createdBy,
-            UpdatedAt = updatedAt,
-            UpdatedBy = updatedBy,
-            Members = members,
+            Id = detail.Id,
+            Name = detail.Name,
+            Code = detail.Code,
+            Description = detail.Description,
+            GenreId = detail.Genre?.Id,
+            GenreName = detail.Genre?.Name,
+            GenreIcon = detail.Genre?.Icon,
+            CreatedAt = detail.CreatedAt,
+            CreatedBy = detail.CreatedBy,
+            UpdatedAt = detail.UpdatedAt,
+            UpdatedBy = detail.UpdatedBy,
+            Members = detail.Members,
             IsActive = true,
-            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
+            RowVersion = detail.RowVersion,
         };
 
         return TypedResults.Ok(response);
@@ -235,25 +227,24 @@ public class WorkspaceController : BaseSecureController
         await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペース詳細情報を取得
-        var (wId, name, code, description, createdAt, createdBy, updatedAt, updatedBy, genre, members) =
-            await _workspaceService.GetWorkspaceDetailAsync(id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
-            Id = wId,
-            Name = name,
-            Code = code,
-            Description = description,
-            GenreId = genre?.Id,
-            GenreName = genre?.Name,
-            GenreIcon = genre?.Icon,
-            CreatedAt = createdAt,
-            CreatedBy = createdBy,
-            UpdatedAt = updatedAt,
-            UpdatedBy = updatedBy,
-            Members = members,
+            Id = detail.Id,
+            Name = detail.Name,
+            Code = detail.Code,
+            Description = detail.Description,
+            GenreId = detail.Genre?.Id,
+            GenreName = detail.Genre?.Name,
+            GenreIcon = detail.Genre?.Icon,
+            CreatedAt = detail.CreatedAt,
+            CreatedBy = detail.CreatedBy,
+            UpdatedAt = detail.UpdatedAt,
+            UpdatedBy = detail.UpdatedBy,
+            Members = detail.Members,
             IsActive = true,
-            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
+            RowVersion = detail.RowVersion,
         };
 
         return TypedResults.Ok(response);
@@ -394,7 +385,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを有効化（Ownerのみ実行可能）
+    /// ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="rowVersion">楽観的ロック用バージョン番号</param>
@@ -410,8 +401,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースのオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースアクセス権限チェック
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを有効化
         var result = await _workspaceService.ActivateWorkspaceAsync(
@@ -426,35 +417,31 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        (int wId, string name, string code, string? description, DateTime createdAt,
-            WorkspaceDetailUserResponse createdBy, DateTime? updatedAt,
-            WorkspaceDetailUserResponse updatedBy, WorkspaceGenreResponse? genre,
-            List<WorkspaceDetailUserResponse> members) =
-            await _workspaceService.GetWorkspaceDetailAsync(id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
-            Id = wId,
-            Name = name,
-            Code = code,
-            Description = description,
-            GenreId = genre?.Id,
-            GenreName = genre?.Name,
-            GenreIcon = genre?.Icon,
-            CreatedAt = createdAt,
-            CreatedBy = createdBy,
-            UpdatedAt = updatedAt,
-            UpdatedBy = updatedBy,
-            Members = members,
+            Id = detail.Id,
+            Name = detail.Name,
+            Code = detail.Code,
+            Description = detail.Description,
+            GenreId = detail.Genre?.Id,
+            GenreName = detail.Genre?.Name,
+            GenreIcon = detail.Genre?.Icon,
+            CreatedAt = detail.CreatedAt,
+            CreatedBy = detail.CreatedBy,
+            UpdatedAt = detail.UpdatedAt,
+            UpdatedBy = detail.UpdatedBy,
+            Members = detail.Members,
             IsActive = true,
-            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
+            RowVersion = detail.RowVersion,
         };
 
         return TypedResults.Ok(response);
     }
 
     /// <summary>
-    /// ワークスペースを無効化（Ownerのみ実行可能）
+    /// ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="rowVersion">楽観的ロック用バージョン番号</param>
@@ -470,8 +457,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースのオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースアクセス権限チェック
+        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを無効化
         var result = await _workspaceService.DeactivateWorkspaceAsync(
@@ -486,35 +473,31 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        (int wId, string name, string code, string? description, DateTime createdAt,
-            WorkspaceDetailUserResponse createdBy, DateTime? updatedAt,
-            WorkspaceDetailUserResponse updatedBy, WorkspaceGenreResponse? genre,
-            List<WorkspaceDetailUserResponse> members) =
-            await _workspaceService.GetWorkspaceDetailAsync(id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
-            Id = wId,
-            Name = name,
-            Code = code,
-            Description = description,
-            GenreId = genre?.Id,
-            GenreName = genre?.Name,
-            GenreIcon = genre?.Icon,
-            CreatedAt = createdAt,
-            CreatedBy = createdBy,
-            UpdatedAt = updatedAt,
-            UpdatedBy = updatedBy,
-            Members = members,
+            Id = detail.Id,
+            Name = detail.Name,
+            Code = detail.Code,
+            Description = detail.Description,
+            GenreId = detail.Genre?.Id,
+            GenreName = detail.Genre?.Name,
+            GenreIcon = detail.Genre?.Icon,
+            CreatedAt = detail.CreatedAt,
+            CreatedBy = detail.CreatedBy,
+            UpdatedAt = detail.UpdatedAt,
+            UpdatedBy = detail.UpdatedBy,
+            Members = detail.Members,
             IsActive = false,
-            RowVersion = 0, // TODO: サービスから RowVersion を取得する必要あり
+            RowVersion = detail.RowVersion,
         };
 
         return TypedResults.Ok(response);
     }
 
     /// <summary>
-    /// ワークスペースを削除（Ownerのみ実行可能）
+    /// ワークスペースを削除（Admin権限が必要）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     [HttpDelete("{id:int}")]
@@ -524,8 +507,8 @@ public class WorkspaceController : BaseSecureController
     public async Task<NoContent> DeleteWorkspace(int id)
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースのオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // Admin権限チェック
+        RequireAdminRole();
 
         // ワークスペースを削除
         var result = await _workspaceService.DeleteWorkspaceAsync(workspaceId: id);
