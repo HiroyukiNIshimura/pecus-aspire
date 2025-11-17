@@ -8,6 +8,7 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import CreateWorkspaceModal from "./CreateWorkspaceModal";
 import EditWorkspaceModal from "./EditWorkspaceModal";
+import DeleteWorkspaceModal from "./DeleteWorkspaceModal";
 import type {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
@@ -15,6 +16,7 @@ import type {
   MasterGenreResponse,
 } from "@/connectors/api/pecus";
 import { toggleWorkspaceActive } from "@/actions/workspace";
+import { deleteWorkspace } from "@/actions/deleteWorkspace";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useNotify } from "@/hooks/useNotify";
 import { useValidation } from "@/hooks/useValidation";
@@ -61,7 +63,10 @@ export default function WorkspacesClient({
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingWorkspace, setEditingWorkspace] =
+    useState<WorkspaceListItemResponse | null>(null);
+  const [deletingWorkspace, setDeletingWorkspace] =
     useState<WorkspaceListItemResponse | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
@@ -213,9 +218,29 @@ export default function WorkspacesClient({
   };
 
   const handleDelete = (workspace: WorkspaceListItemResponse) => {
-    console.log("削除:", workspace);
+    setDeletingWorkspace(workspace);
+    setIsDeleteModalOpen(true);
     setOpenMenuId(null);
-    // TODO: 削除確認モーダルを開く
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingWorkspace) return;
+
+    try {
+      const result = await deleteWorkspace(deletingWorkspace.id);
+
+      if (result.success) {
+        // 一覧を再取得
+        await handleFilterChange();
+        notify.success("ワークスペースを削除しました");
+      } else {
+        // エラー表示
+        notify.error(result.message || "ワークスペースの削除に失敗しました。");
+      }
+    } catch (error) {
+      console.error("Delete workspace failed:", error);
+      notify.error("ワークスペースの削除に失敗しました。");
+    }
   };
 
   return (
@@ -646,6 +671,17 @@ export default function WorkspacesClient({
         onSuccess={handleEditSuccess}
         workspace={editingWorkspace}
         genres={genres}
+      />
+
+      {/* ワークスペース削除モーダル */}
+      <DeleteWorkspaceModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingWorkspace(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        workspace={deletingWorkspace}
       />
     </div>
   );

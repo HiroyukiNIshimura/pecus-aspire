@@ -184,12 +184,15 @@ public class ProfileService
     /// <remarks>
     /// コントローラーでユーザーの有効性チェックを行うための簡潔なメソッドです。
     /// ユーザーが存在し、かつ有効（IsActive = true）な場合のみユーザー情報を返します。
+    /// ロール情報も含めて取得します。
     /// </remarks>
     /// <param name="userId">ユーザーID</param>
-    /// <returns>ユーザー情報、見つからないか無効な場合は null</returns>
+    /// <returns>ユーザー情報（ロール含む）、見つからないか無効な場合は null</returns>
     public async Task<User?> GetUserAsync(int userId)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+        var user = await _context.Users
+            .Include(u => u.Roles)
+            .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
         return user;
     }
 
