@@ -68,6 +68,7 @@ public class DatabaseSeeder
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
         await SeedWorkspaceItemsAsync();
+        await SeedWorkspaceItemRelationsAsync();
 
         _logger.LogInformation("Development mock data seeding completed");
     }
@@ -816,6 +817,107 @@ public class DatabaseSeeder
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} workspace items in total", totalItemsAdded);
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムリレーションのシードデータを投入
+    /// </summary>
+    public async Task SeedWorkspaceItemRelationsAsync()
+    {
+        if (!await _context.WorkspaceItemRelations.AnyAsync())
+        {
+            var workspaces = await _context.Workspaces.ToListAsync();
+
+            if (!workspaces.Any())
+            {
+                _logger.LogWarning("No workspaces found for seeding workspace item relations");
+                return;
+            }
+
+            int totalRelationsAdded = 0;
+            var allCreatedByUsers = await _context.Users.Select(u => u.Id).ToListAsync();
+
+            // メモリ内で追加予定のリレーションを追跡（重複防止用）
+            var addedRelations = new HashSet<(int fromItemId, int toItemId, RelationType? relationType)>();
+
+            foreach (var workspace in workspaces)
+            {
+                // このワークスペースのアイテムを取得
+                var workspaceItems = await _context.WorkspaceItems
+                    .Where(wi => wi.WorkspaceId == workspace.Id)
+                    .Select(wi => wi.Id)
+                    .ToListAsync();
+
+                if (workspaceItems.Count < 2)
+                {
+                    _logger.LogWarning("Not enough items in workspace {WorkspaceId} for creating relations", workspace.Id);
+                    continue;
+                }
+
+                // 各ワークスペースに10-20件のリレーションを作成
+                int relationCount = _random.Next(10, 21);
+                int attempts = 0;
+                int maxAttempts = relationCount * 3; // 重複を考慮して試行回数を増やす
+
+                while (totalRelationsAdded < relationCount && attempts < maxAttempts)
+                {
+                    attempts++;
+
+                    // ランダムに2つの異なるアイテムを選択
+                    var fromItemId = workspaceItems[_random.Next(workspaceItems.Count)];
+                    int toItemId;
+
+                    // 同じアイテムを選ばないようにする
+                    do
+                    {
+                        toItemId = workspaceItems[_random.Next(workspaceItems.Count)];
+                    } while (toItemId == fromItemId);
+
+                    var relationKey = (fromItemId, toItemId, RelationType.Related);
+
+                    // メモリ内の追加予定リストをチェック
+                    if (addedRelations.Contains(relationKey))
+                    {
+                        continue;
+                    }
+
+                    // データベース内の既存データをチェック
+                    var existingRelation = await _context.WorkspaceItemRelations
+                        .AnyAsync(r =>
+                            r.FromItemId == fromItemId &&
+                            r.ToItemId == toItemId &&
+                            r.RelationType == RelationType.Related);
+
+                    if (existingRelation)
+                    {
+                        continue; // 既に存在する場合はスキップ
+                    }
+
+                    var relation = new WorkspaceItemRelation
+                    {
+                        FromItemId = fromItemId,
+                        ToItemId = toItemId,
+                        RelationType = RelationType.Related,
+                        CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
+                        CreatedByUserId = allCreatedByUsers[_random.Next(allCreatedByUsers.Count)],
+                    };
+
+                    _context.WorkspaceItemRelations.Add(relation);
+                    addedRelations.Add(relationKey);
+                    totalRelationsAdded++;
+
+                    // 50件ごとに保存してメモリを節約
+                    if (totalRelationsAdded % 50 == 0)
+                    {
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Added {Count} workspace item relations", totalRelationsAdded);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} workspace item relations in total", totalRelationsAdded);
         }
     }
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Requests.WorkspaceItemRelation;
 
 namespace Pecus.Services;

@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.WorkspaceItemRelation;
@@ -46,7 +47,7 @@ public class WorkspaceItemRelationResponse
     /// <summary>
     /// 関連タイプ
     /// </summary>
-    public string? RelationType { get; set; }
+    public RelationType? RelationType { get; set; }
 
     /// <summary>
     /// 作成日時

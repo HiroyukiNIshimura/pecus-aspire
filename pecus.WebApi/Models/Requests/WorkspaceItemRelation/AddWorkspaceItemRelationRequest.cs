@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceItemRelation;
@@ -14,10 +15,8 @@ public class AddWorkspaceItemRelationRequest
     public int ToItemId { get; set; }
 
     /// <summary>
-    /// 関連タイプ（オプション）
-    /// 指定可能な値: "related", "blocks", "blocked_by", "depends_on", "duplicates", "subtask_of", "parent_of", "relates_to"
+    /// 関連タイプ（NULL の場合は Related として扱う）
     /// </summary>
-    [MaxLength(50, ErrorMessage = "関連タイプは50文字以内で入力してください。")]
-    public string? RelationType { get; set; }
+    public RelationType? RelationType { get; set; }
 }
 
