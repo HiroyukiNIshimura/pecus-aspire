@@ -5,30 +5,58 @@ import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AppHeader from "@/components/common/AppHeader";
 import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
+import WorkspaceItemDetail from "./WorkspaceItemDetail";
 import type { UserInfo } from "@/types/userInfo";
-import type { WorkspaceFullDetailResponse } from "@/connectors/api/pecus";
+import type {
+  WorkspaceFullDetailResponse,
+  WorkspaceListItemResponse,
+} from "@/connectors/api/pecus";
 
 interface WorkspaceDetailClientProps {
   workspaceId: string;
   workspaceDetail: WorkspaceFullDetailResponse;
+  workspaces: WorkspaceListItemResponse[];
   userInfo: UserInfo | null;
 }
 
 export default function WorkspaceDetailClient({
   workspaceId,
   workspaceDetail,
+  workspaces,
   userInfo,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(256); // 初期幅 w-64 = 256px
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+
+  // ローカルストレージからサイドバー幅を取得（初期値: 256px）
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("workspaceSidebarWidth");
+      return saved ? parseInt(saved, 10) : 256;
+    }
+    return 256;
+  });
 
   const handleBack = () => {
     router.back();
   };
+
+  // ワークスペースHome選択ハンドラ
+  const handleHomeSelect = useCallback(() => {
+    setShowWorkspaceDetail(true);
+    setSelectedItemId(null);
+  }, []);
+
+  // アイテム選択ハンドラ
+  const handleItemSelect = useCallback((itemId: number) => {
+    setShowWorkspaceDetail(false);
+    setSelectedItemId(itemId);
+  }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,6 +71,8 @@ export default function WorkspaceDetailClient({
       // 最小幅200px、最大幅600px
       if (newWidth >= 200 && newWidth <= 600) {
         setSidebarWidth(newWidth);
+        // ローカルストレージに保存
+        localStorage.setItem("workspaceSidebarWidth", newWidth.toString());
       }
     },
     [isResizing]
@@ -102,6 +132,9 @@ export default function WorkspaceDetailClient({
         >
           <WorkspaceItemsSidebar
             workspaceId={parseInt(workspaceId)}
+            workspaces={workspaces}
+            onHomeSelect={handleHomeSelect}
+            onItemSelect={handleItemSelect}
             scrollContainerId="itemsScrollableDiv-desktop"
           />
 
@@ -118,7 +151,8 @@ export default function WorkspaceDetailClient({
         {/* メインコンテンツ */}
         <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
           {/* ワークスペース詳細情報 */}
-          <div className="card bg-base-100 shadow-md mb-6">
+          {showWorkspaceDetail && (
+            <div className="card bg-base-100 shadow-md mb-6">
             <div className="card-body">
               {/* ヘッダー (PC) */}
               <div className="hidden lg:block">
@@ -263,12 +297,24 @@ export default function WorkspaceDetailClient({
               )}
             </div>
           </div>
+          )}
+
+          {/* アイテム詳細情報 */}
+          {!showWorkspaceDetail && selectedItemId && (
+            <WorkspaceItemDetail
+              workspaceId={parseInt(workspaceId)}
+              itemId={selectedItemId}
+            />
+          )}
         </main>
 
         {/* アイテム一覧 (スマホ) */}
         <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: '384px' }}>
           <WorkspaceItemsSidebar
             workspaceId={parseInt(workspaceId)}
+            workspaces={workspaces}
+            onHomeSelect={handleHomeSelect}
+            onItemSelect={handleItemSelect}
             scrollContainerId="itemsScrollableDiv-mobile"
           />
         </div>

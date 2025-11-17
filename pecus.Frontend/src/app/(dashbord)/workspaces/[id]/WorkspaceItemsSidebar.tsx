@@ -4,18 +4,29 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
-import type { WorkspaceItemListResponse } from "@/connectors/api/pecus";
+import HomeIcon from "@mui/icons-material/Home";
+import WorkspaceSwitcher from "./WorkspaceSwitcher";
+import type {
+  WorkspaceItemListResponse,
+  WorkspaceListItemResponse,
+} from "@/connectors/api/pecus";
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
+  workspaces: WorkspaceListItemResponse[];
   scrollContainerId?: string;
+  onHomeSelect?: () => void;
+  onItemSelect?: (itemId: number) => void;
 }
 
 export default function WorkspaceItemsSidebar({
   workspaceId,
+  workspaces,
   scrollContainerId = "itemsScrollableDiv",
+  onHomeSelect,
+  onItemSelect,
 }: WorkspaceItemsSidebarProps) {
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<'home' | number | null>('home');
   const [searchQuery, setSearchQuery] = useState("");
   const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,9 +54,7 @@ export default function WorkspaceItemsSidebar({
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.totalCount || 0);
 
-        if (initialItems.length > 0 && initialItems[0].id) {
-          setSelectedItemId(initialItems[0].id);
-        }
+        // 初期状態はHomeを選択
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch items");
       } finally {
@@ -103,6 +112,34 @@ export default function WorkspaceItemsSidebar({
     <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
       {/* ヘッダー */}
       <div className="bg-base-200 border-b border-base-300 p-4 flex-shrink-0">
+        {/* ワークスペース切り替え */}
+        <div className="mb-4">
+          <WorkspaceSwitcher
+            workspaces={workspaces}
+            currentWorkspaceId={workspaceId}
+          />
+        </div>
+
+        {/* ワークスペースHomeボタン */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedItemId('home');
+              onHomeSelect?.();
+            }}
+            className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
+              selectedItemId === 'home'
+                ? "bg-primary text-primary-content font-semibold"
+                : "hover:bg-base-300 text-base-content"
+            }`}
+            title="ワークスペースHome"
+          >
+            <HomeIcon className="w-4 h-4" />
+            <span>ワークスペースHome</span>
+          </button>
+        </div>
+
         <h3 className="text-lg font-bold mb-2">アイテム一覧</h3>
         <p className="text-xs text-base-content/70 mb-3">
           {searchQuery
@@ -171,7 +208,12 @@ export default function WorkspaceItemsSidebar({
                 <li key={item.id}>
                   <button
                     type="button"
-                    onClick={() => item.id && setSelectedItemId(item.id)}
+                    onClick={() => {
+                      if (item.id) {
+                        setSelectedItemId(item.id);
+                        onItemSelect?.(item.id);
+                      }
+                    }}
                     className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
                       selectedItemId === item.id
                         ? "bg-primary text-primary-content font-semibold"

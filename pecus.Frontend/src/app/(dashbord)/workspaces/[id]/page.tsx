@@ -23,6 +23,7 @@ export default async function WorkspaceDetailPage({
   let userInfo: UserInfo | null = null;
   let userResponse: UserResponse | null = null;
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
+  let workspacesList: any = null;
 
   try {
     const api = createPecusApiClients();
@@ -31,6 +32,15 @@ export default async function WorkspaceDetailPage({
 
     // ワークスペース詳細情報取得
     workspaceDetail = await api.workspace.getApiWorkspaces1(workspaceId);
+
+    // ワークスペース一覧取得（切り替え用）
+    try {
+      workspacesList = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
+    } catch (err) {
+      console.warn("Failed to fetch workspaces list:", err);
+      // ワークスペース一覧取得失敗時は空配列を渡す
+      workspacesList = { data: [] };
+    }
   } catch (error: any) {
     console.error("WorkspaceDetailPage: failed to fetch data", error);
 
@@ -59,6 +69,7 @@ export default async function WorkspaceDetailPage({
     <WorkspaceDetailClient
       workspaceId={id}
       workspaceDetail={workspaceDetail}
+      workspaces={workspacesList?.data || []}
       userInfo={userInfo}
     />
   );
