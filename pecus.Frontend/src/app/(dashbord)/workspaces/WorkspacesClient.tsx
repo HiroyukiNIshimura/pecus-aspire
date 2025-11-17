@@ -6,9 +6,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
+import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
 import CreateWorkspaceModal from "./CreateWorkspaceModal";
 import EditWorkspaceModal from "./EditWorkspaceModal";
-import DeleteWorkspaceModal from "./DeleteWorkspaceModal";
 import type {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,

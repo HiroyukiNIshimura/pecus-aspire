@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import ConfirmDeleteModal, {
-  type ConfirmDeleteModalRef,
-} from "@/components/common/ConfirmDeleteModal";
+import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -80,14 +78,14 @@ export default function AdminWorkspacesClient({
   const [filterOpen, setFilterOpen] = useState(false);
 
   // Deletion modal control
-  const deleteModalRef = useRef<ConfirmDeleteModalRef>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] =
     useState<WorkspaceListItemResponse | null>(null);
 
   const handleDeleteClick = useCallback(
     (workspace: WorkspaceListItemResponse) => {
       setWorkspaceToDelete(workspace);
-      deleteModalRef.current?.open();
+      setIsDeleteModalOpen(true);
     },
     [],
   );
@@ -693,15 +691,24 @@ export default function AdminWorkspacesClient({
       <AdminFooter />
 
       {/* 削除確認モーダル（削除処理は未実装） */}
-      <ConfirmDeleteModal
-        ref={deleteModalRef}
-        title="ワークスペースの削除"
-        message={`ワークスペース "${workspaceToDelete?.name}" を削除してもよろしいですか？この操作は取り消すことができません。`}
-        confirmText="削除する"
-        cancelText="キャンセル"
+      <DeleteWorkspaceModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setWorkspaceToDelete(null);
+        }}
         onConfirm={async () => {
           // 現時点では削除処理は未実装
+          // TODO: 削除APIの実装後に以下のコードを追加
+          // const result = await deleteWorkspace(workspaceToDelete!.id);
+          // if (result.success) {
+          //   handleFilterChange();
+          //   notify.success("ワークスペースを削除しました");
+          // } else {
+          //   notify.error(result.message || "ワークスペースの削除に失敗しました。");
+          // }
         }}
+        workspace={workspaceToDelete}
       />
     </div>
   );
