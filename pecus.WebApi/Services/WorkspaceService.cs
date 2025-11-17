@@ -245,6 +245,7 @@ public class WorkspaceService
             return false;
         }
 
+        //カスケードで関連テーブルのレコードも消える
         _context.Workspaces.Remove(workspace);
         await _context.SaveChangesAsync();
         return true;
