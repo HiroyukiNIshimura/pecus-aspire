@@ -50,6 +50,7 @@ public class WorkspaceService
                 Name = request.Name,
                 Code = code,
                 Description = request.Description,
+                GenreId = request.GenreId,
                 OrganizationId = organizationId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = createdByUserId,

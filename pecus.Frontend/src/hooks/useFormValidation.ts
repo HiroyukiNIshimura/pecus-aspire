@@ -155,6 +155,17 @@ export function useFormValidation<T extends Record<string, unknown>>({
     [fieldErrors],
   );
 
+  /**
+   * フォームとバリデーションエラーをリセット
+   */
+  const resetForm = useCallback(() => {
+    setFieldErrors({});
+    setTouchedFields(new Set());
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+  }, []);
+
   return {
     formRef,
     isSubmitting,
@@ -163,5 +174,6 @@ export function useFormValidation<T extends Record<string, unknown>>({
     validateField,
     shouldShowError,
     getFieldError,
+    resetForm,
   };
 }

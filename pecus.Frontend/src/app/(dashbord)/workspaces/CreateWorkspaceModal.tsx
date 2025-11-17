@@ -31,6 +31,7 @@ export default function CreateWorkspaceModal({
     validateField,
     shouldShowError,
     getFieldError,
+    resetForm,
   } = useFormValidation({
     schema: createWorkspaceSchema,
     onSubmit: async (data) => {
@@ -58,12 +59,13 @@ export default function CreateWorkspaceModal({
     },
   });
 
-  // モーダルが閉じられたらエラーをクリア
+  // モーダルが閉じられたらエラーとフォームをクリア
   useEffect(() => {
     if (!isOpen) {
       setServerErrors([]);
+      resetForm();
     }
-  }, [isOpen]);
+  }, [isOpen, resetForm]);
 
   if (!isOpen) return null;
 
@@ -129,14 +131,13 @@ export default function CreateWorkspaceModal({
             )}
 
             {/* フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
               {/* ワークスペース名 */}
               <div className="form-control">
                 <label htmlFor="name" className="label">
                   <span className="label-text font-semibold">
-                    ワークスペース名
+                    ワークスペース名 <span className="text-error">*</span>
                   </span>
-                  <span className="label-text-alt text-error">*</span>
                 </label>
                 <input
                   id="name"
@@ -148,7 +149,6 @@ export default function CreateWorkspaceModal({
                   }`}
                   onBlur={(e) => validateField("name", e.target.value)}
                   disabled={isSubmitting}
-                  required
                 />
                 {shouldShowError("name") && (
                   <label className="label">
@@ -159,41 +159,10 @@ export default function CreateWorkspaceModal({
                 )}
               </div>
 
-              {/* コード */}
-              <div className="form-control">
-                <label htmlFor="code" className="label">
-                  <span className="label-text font-semibold">コード</span>
-                  <span className="label-text-alt text-base-content/70">
-                    任意
-                  </span>
-                </label>
-                <input
-                  id="code"
-                  name="code"
-                  type="text"
-                  placeholder="例：project-a"
-                  className={`input input-bordered ${
-                    shouldShowError("code") ? "input-error" : ""
-                  }`}
-                  onBlur={(e) => validateField("code", e.target.value)}
-                  disabled={isSubmitting}
-                />
-                {shouldShowError("code") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("code")}
-                    </span>
-                  </label>
-                )}
-              </div>
-
               {/* 説明 */}
               <div className="form-control">
                 <label htmlFor="description" className="label">
                   <span className="label-text font-semibold">説明</span>
-                  <span className="label-text-alt text-base-content/70">
-                    任意
-                  </span>
                 </label>
                 <textarea
                   id="description"
@@ -217,9 +186,8 @@ export default function CreateWorkspaceModal({
               {/* ジャンル */}
               <div className="form-control">
                 <label htmlFor="genreId" className="label">
-                  <span className="label-text font-semibold">ジャンル</span>
-                  <span className="label-text-alt text-base-content/70">
-                    任意
+                  <span className="label-text font-semibold">
+                    ジャンル <span className="text-error">*</span>
                   </span>
                 </label>
                 <select

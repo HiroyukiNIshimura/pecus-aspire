@@ -8,14 +8,6 @@ export const createWorkspaceSchema = z.object({
     .string()
     .min(1, "ワークスペース名は必須です。")
     .max(100, "ワークスペース名は100文字以内で入力してください。"),
-  code: z
-    .string()
-    .max(50, "コードは50文字以内で入力してください。")
-    .regex(
-      /^[a-zA-Z0-9_-]*$/,
-      "コードは英数字とハイフン・アンダースコアのみ使用できます。",
-    )
-    .optional(),
   description: z
     .string()
     .max(500, "説明は500文字以内で入力してください。")
@@ -25,10 +17,9 @@ export const createWorkspaceSchema = z.object({
     const num = Number(val);
     return Number.isNaN(num) ? undefined : num;
   }, z
-    .number()
+    .number({ required_error: "ジャンルは必須です。" })
     .int("ジャンルを選択してください。")
-    .positive("ジャンルを選択してください。")
-    .optional()),
+    .positive("ジャンルを選択してください。")),
 });
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
