@@ -8,6 +8,10 @@ import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
+import type {
+  YooptaContentValue,
+  YooptaOnChangeOptions,
+} from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
 
 interface CreateWorkspaceItemProps {
@@ -23,6 +27,7 @@ export default function CreateWorkspaceItem({
 }: CreateWorkspaceItemProps) {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
+  const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>();
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<TaskPriority | "">("Medium");
   const [isDraft, setIsDraft] = useState(true);
@@ -97,6 +102,13 @@ export default function CreateWorkspaceItem({
     }
   };
 
+  const handleEditorChange = (
+    newValue: YooptaContentValue,
+    options: YooptaOnChangeOptions,
+  ) => {
+    setEditorValue(newValue);
+  };
+
   return (
     <div className="card bg-base-100 shadow-md">
       <div className="card-body">
@@ -147,7 +159,7 @@ export default function CreateWorkspaceItem({
               <span className="label-text font-semibold">本文</span>
             </label>
             {/* WYSIWYGエディタコンポーネント */}
-            <NotionEditor />
+            <NotionEditor value={editorValue} onChange={handleEditorChange} />
           </div>
 
           {/* 期限日 */}

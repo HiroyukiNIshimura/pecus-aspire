@@ -144,9 +144,22 @@ const TOOLS = {
 
 const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 
+interface NotionEditorProps {
+  onChange?: (
+    newValue: YooptaContentValue,
+    options: YooptaOnChangeOptions,
+  ) => void;
+  value?: YooptaContentValue;
+}
+
 //https://github.com/yoopta-editor/Yoopta-Editor/tree/master
-export default function NotionEditor() {
-  const [value, setValue] = useState<YooptaContentValue | undefined>(undefined);
+export default function NotionEditor({
+  onChange: onChangeFromProps,
+  value: valueFromProps,
+}: NotionEditorProps) {
+  const [value, setValue] = useState<YooptaContentValue | undefined>(
+    valueFromProps,
+  );
   const editor = useMemo(() => createYooptaEditor(), []);
 
   const [theme, setTheme] = useState("dark");
@@ -156,6 +169,7 @@ export default function NotionEditor() {
     options: YooptaOnChangeOptions,
   ) => {
     setValue(newValue);
+    onChangeFromProps?.(newValue, options);
   };
 
   return (
