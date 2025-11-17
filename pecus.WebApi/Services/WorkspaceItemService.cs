@@ -189,8 +189,11 @@ public class WorkspaceItemService
             .Include(wi => wi.WorkspaceItemPins)
             .Include(wi => wi.RelationsFrom)
             .ThenInclude(r => r.ToItem)
+            .ThenInclude(ti => ti!.Owner)
             .Include(wi => wi.RelationsTo)
             .ThenInclude(r => r.FromItem)
+            .ThenInclude(fi => fi!.Owner)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Id == itemId);
 
         if (item == null)

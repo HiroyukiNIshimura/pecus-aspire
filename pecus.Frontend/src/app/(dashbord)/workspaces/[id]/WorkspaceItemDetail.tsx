@@ -34,6 +34,7 @@ export default function WorkspaceItemDetail({
         }
 
         const data: WorkspaceItemDetailResponse = await response.json();
+        console.log("Fetched item detail:", data);
         setItem(data);
       } catch (err: any) {
         setError(err.message || "アイテムの取得に失敗しました。");
@@ -251,6 +252,21 @@ export default function WorkspaceItemDetail({
                     >
                       {related.subject || "（件名未設定）"}
                     </button>
+                    {/* オーナー情報 */}
+                    {related.ownerId && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
+                        {related.ownerAvatarUrl && (
+                          <img
+                            src={related.ownerAvatarUrl}
+                            alt={related.ownerUsername || "ユーザー"}
+                            className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                          />
+                        )}
+                        <span className="truncate">
+                          {related.ownerUsername}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
