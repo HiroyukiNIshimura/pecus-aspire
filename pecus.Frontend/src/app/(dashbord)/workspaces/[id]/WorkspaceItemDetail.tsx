@@ -208,6 +208,55 @@ export default function WorkspaceItemDetail({
             </div>
           </div>
         )}
+
+        {/* 関連アイテム */}
+        {item.relatedItems && item.relatedItems.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-lg font-bold mb-2">関連アイテム</h3>
+            <div className="space-y-2">
+              {item.relatedItems.map((related, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 p-2 bg-base-200 rounded"
+                >
+                  {/* 方向インジケーター */}
+                  <div className="flex-shrink-0">
+                    {related.direction === "from" ? (
+                      <span className="badge badge-sm badge-primary" title="このアイテムから関連">
+                        →
+                      </span>
+                    ) : (
+                      <span className="badge badge-sm badge-secondary" title="このアイテムへの関連">
+                        ←
+                      </span>
+                    )}
+                  </div>
+
+                  {/* リレーション種別 */}
+                  <div className="flex-shrink-0">
+                    <span className="badge badge-sm badge-outline">
+                      {related.relationType}
+                    </span>
+                  </div>
+
+                  {/* アイテム情報 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      {related.code && (
+                        <code className="text-xs badge badge-ghost badge-sm">
+                          {related.code}
+                        </code>
+                      )}
+                      <span className="truncate">
+                        {related.subject || "（件名未設定）"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
