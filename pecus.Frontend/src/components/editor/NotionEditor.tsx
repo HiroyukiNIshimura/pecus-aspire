@@ -10,6 +10,7 @@ import Code from "@yoopta/code";
 import Divider from "@yoopta/divider";
 import YooptaEditor, {
   createYooptaEditor,
+  YooptaPlugin,
   type YooptaContentValue,
   type YooptaOnChangeOptions,
 } from "@yoopta/editor";
@@ -34,7 +35,7 @@ import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
 import Video from "@yoopta/video";
 import { useMemo, useRef, useState } from "react";
 
-const plugins: any = [
+const plugins: YooptaPlugin<any, any>[] = [
   Paragraph,
   Table,
   Divider.extend({
