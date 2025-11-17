@@ -137,11 +137,13 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース無効化
      * @param id
+     * @param requestBody
      * @returns SuccessResponse OK
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesDeactivate(
         id: number,
+        requestBody?: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -149,6 +151,8 @@ export class AdminWorkspaceService {
             path: {
                 'id': id,
             },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 404: `Not Found`,
                 409: `Conflict`,
@@ -159,11 +163,13 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース有効化
      * @param id
+     * @param requestBody
      * @returns SuccessResponse OK
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesActivate(
         id: number,
+        requestBody?: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -171,6 +177,8 @@ export class AdminWorkspaceService {
             path: {
                 'id': id,
             },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 404: `Not Found`,
                 409: `Conflict`,

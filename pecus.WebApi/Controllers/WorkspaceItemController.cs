@@ -47,18 +47,15 @@ public class WorkspaceItemController : BaseSecureController
         [FromBody] CreateWorkspaceItemRequest request
     )
     {
-        // ログイン中のユーザーIDを取得（CurrentUserId を使用）
-        var me = CurrentUserId;
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
         // ユーザーがワークスペースのメンバーか確認
-        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(me, workspaceId);
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
         if (!isMember)
         {
             throw new InvalidOperationException(
@@ -69,14 +66,14 @@ public class WorkspaceItemController : BaseSecureController
         var item = await _workspaceItemService.CreateWorkspaceItemAsync(
             workspaceId,
             request,
-            me
+            CurrentUserId
         );
 
         var response = new WorkspaceItemResponse
         {
             Success = true,
             Message = "ワークスペースアイテムを作成しました。",
-            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me),
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 
         return TypedResults.Ok(response);
@@ -122,11 +119,8 @@ public class WorkspaceItemController : BaseSecureController
         [FromQuery] Pecus.Models.Requests.WorkspaceItem.GetWorkspaceItemsRequest request
     )
     {
-        // ログイン中のユーザーIDを取得（CurrentUserId を使用）
-        var me = CurrentUserId;
-
         // ワークスペースへのアクセス権限をチェック
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(me, workspaceId);
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
         if (!hasAccess)
         {
             // 空の結果を返す
@@ -143,7 +137,7 @@ public class WorkspaceItemController : BaseSecureController
         int? pinnedByUserId = null;
         if (request.Pinned.HasValue && request.Pinned.Value)
         {
-            pinnedByUserId = me;
+            pinnedByUserId = CurrentUserId;
         }
 
         var pageSize = _config.Pagination.DefaultPageSize;
@@ -159,7 +153,7 @@ public class WorkspaceItemController : BaseSecureController
         );
 
         var itemResponses = items
-            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, me))
+            .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId))
             .ToList();
 
         var response = PaginationHelper.CreatePagedResponse(

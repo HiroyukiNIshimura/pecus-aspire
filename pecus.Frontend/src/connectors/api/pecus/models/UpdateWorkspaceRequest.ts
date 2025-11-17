@@ -7,7 +7,6 @@
  */
 export type UpdateWorkspaceRequest = {
     name?: string | null;
-    code?: string | null;
     description?: string | null;
     genreId?: number | null;
     isActive?: boolean | null;

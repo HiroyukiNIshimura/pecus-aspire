@@ -10,9 +10,6 @@ public class UpdateWorkspaceRequest
     [MaxLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
     public string? Name { get; set; }
 
-    [MaxLength(50, ErrorMessage = "ワークスペースコードは50文字以内で入力してください。")]
-    public string? Code { get; set; }
-
     [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
 

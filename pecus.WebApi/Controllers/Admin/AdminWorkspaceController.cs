@@ -329,7 +329,7 @@ public class AdminWorkspaceController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<SuccessResponse>> DeactivateWorkspace(int id)
+    public async Task<Ok<SuccessResponse>> DeactivateWorkspace(int id, [FromBody] uint rowVersion)
     {
         var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
@@ -337,7 +337,11 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var result = await _workspaceService.DeactivateWorkspaceAsync(id, CurrentUserId);
+        var result = await _workspaceService.DeactivateWorkspaceAsync(
+            workspaceId: id,
+            rowVersion: rowVersion,
+            updatedByUserId: CurrentUserId
+        );
         if (!result)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -360,7 +364,7 @@ public class AdminWorkspaceController : BaseAdminController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<SuccessResponse>> ActivateWorkspace(int id)
+    public async Task<Ok<SuccessResponse>> ActivateWorkspace(int id, [FromBody] uint rowVersion)
     {
         var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
         if (!hasAccess || workspace == null)
@@ -368,7 +372,11 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var result = await _workspaceService.ActivateWorkspaceAsync(id, CurrentUserId);
+        var result = await _workspaceService.ActivateWorkspaceAsync(
+            workspaceId: id,
+            rowVersion: rowVersion,
+            updatedByUserId: CurrentUserId
+        );
         if (!result)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");

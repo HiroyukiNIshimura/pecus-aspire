@@ -230,6 +230,7 @@ public class WorkspaceService
 
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
+        workspace.RowVersion = request.RowVersion;
 
         try
         {
@@ -262,7 +263,11 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースを無効化
     /// </summary>
-    public async Task<bool> DeactivateWorkspaceAsync(int workspaceId, int? updatedByUserId = null)
+    public async Task<bool> DeactivateWorkspaceAsync(
+        int workspaceId,
+        uint rowVersion,
+        int? updatedByUserId = null
+    )
     {
         var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
@@ -273,6 +278,7 @@ public class WorkspaceService
         workspace.IsActive = false;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
+        workspace.RowVersion = rowVersion;
 
         try
         {
@@ -289,7 +295,11 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースを有効化
     /// </summary>
-    public async Task<bool> ActivateWorkspaceAsync(int workspaceId, int? updatedByUserId = null)
+    public async Task<bool> ActivateWorkspaceAsync(
+        int workspaceId,
+        uint rowVersion,
+        int? updatedByUserId = null
+    )
     {
         var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
@@ -300,6 +310,7 @@ public class WorkspaceService
         workspace.IsActive = true;
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;
+        workspace.RowVersion = rowVersion;
 
         try
         {
@@ -638,6 +649,30 @@ public class WorkspaceService
         if (access == null || access.User == null || !access.User.IsActive)
         {
             throw new NotFoundException("ワークスペースにアクセスできません。");
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースのオーナー権限をチェック（ユーザーがワークスペースのOwnerか確認）
+    /// </summary>
+    public async Task CheckWorkspaceOwnerAsync(int workspaceId, int userId)
+    {
+        var workspaceUser = await _context.WorkspaceUsers
+            .AsNoTracking()
+            .Include(wu => wu.User)
+            .FirstOrDefaultAsync(wu =>
+                wu.WorkspaceId == workspaceId &&
+                wu.UserId == userId
+            );
+
+        if (workspaceUser == null || workspaceUser.User == null || !workspaceUser.User.IsActive)
+        {
+            throw new NotFoundException("ワークスペースにアクセスできません。");
+        }
+
+        if (workspaceUser.WorkspaceRole != "Owner")
+        {
+            throw new InvalidOperationException("この操作を実行する権限がありません。Ownerのみが実行できます。");
         }
     }
 
