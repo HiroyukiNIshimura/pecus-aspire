@@ -7619,6 +7619,7 @@
       },
       "CreateWorkspaceRequest": {
         "required": [
+          "genreId",
           "name"
         ],
         "type": "object",
@@ -7637,8 +7638,7 @@
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -10150,14 +10150,16 @@
       },
       "UpdateWorkspaceRequest": {
         "required": [
+          "genreId",
+          "name",
           "rowVersion"
         ],
         "type": "object",
         "properties": {
           "name": {
             "maxLength": 100,
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "description": {
             "maxLength": 500,
@@ -10168,12 +10170,7 @@
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "nullable": true
+            "format": "int32"
           },
           "rowVersion": {
             "type": "integer",

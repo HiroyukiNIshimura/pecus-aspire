@@ -7,16 +7,16 @@ namespace Pecus.Models.Requests.Workspace;
 /// </summary>
 public class UpdateWorkspaceRequest
 {
+    [Required(ErrorMessage = "ワークスペース名は必須です。")]
     [MaxLength(100, ErrorMessage = "ワークスペース名は100文字以内で入力してください。")]
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     [MaxLength(500, ErrorMessage = "説明は500文字以内で入力してください。")]
     public string? Description { get; set; }
 
+    [Required(ErrorMessage = "ジャンルは必須です。")]
     [Range(1, int.MaxValue, ErrorMessage = "有効なジャンルIDを指定してください。")]
-    public int? GenreId { get; set; }
-
-    public bool? IsActive { get; set; }
+    public required int GenreId { get; set; }
 
     [Required(ErrorMessage = "RowVersionは必須です。")]
     public required uint RowVersion { get; set; }

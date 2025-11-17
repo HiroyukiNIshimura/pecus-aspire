@@ -7,12 +7,14 @@ import AppHeader from "@/components/common/AppHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import CreateWorkspaceModal from "./CreateWorkspaceModal";
+import EditWorkspaceModal from "./EditWorkspaceModal";
 import type {
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
   MasterGenreResponse,
 } from "@/connectors/api/pecus";
+import { toggleWorkspaceActive } from "@/actions/workspace";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
@@ -23,6 +25,11 @@ import PersonIcon from "@mui/icons-material/Person";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import PowerOffIcon from "@mui/icons-material/PowerOff";
 import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import type { UserInfo } from "@/types/userInfo";
 
 interface WorkspacesClientProps {
@@ -52,6 +59,10 @@ export default function WorkspacesClient({
   const [filterName, setFilterName] = useState<string>("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingWorkspace, setEditingWorkspace] =
+    useState<WorkspaceListItemResponse | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
@@ -157,6 +168,49 @@ export default function WorkspacesClient({
     handleFilterChange();
   };
 
+  const handleEditSuccess = () => {
+    // ワークスペース更新成功時、一覧を再取得
+    handleFilterChange();
+  };
+
+  const handleMenuToggle = (workspaceId: number) => {
+    setOpenMenuId(openMenuId === workspaceId ? null : workspaceId);
+  };
+
+  const handleEdit = (workspace: WorkspaceListItemResponse) => {
+    setEditingWorkspace(workspace);
+    setIsEditModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  const handleToggleActive = async (workspace: WorkspaceListItemResponse) => {
+    setOpenMenuId(null);
+
+    try {
+      const result = await toggleWorkspaceActive(
+        workspace.id,
+        !workspace.isActive,
+      );
+
+      if (result.success) {
+        // 一覧を再取得
+        await handleFilterChange();
+      } else {
+        // エラー表示
+        alert(result.message || "状態の切り替えに失敗しました。");
+      }
+    } catch (error) {
+      console.error("Toggle active failed:", error);
+      alert("状態の切り替えに失敗しました。");
+    }
+  };
+
+  const handleDelete = (workspace: WorkspaceListItemResponse) => {
+    console.log("削除:", workspace);
+    setOpenMenuId(null);
+    // TODO: 削除確認モーダルを開く
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       <DashboardSidebar
@@ -173,6 +227,7 @@ export default function WorkspacesClient({
         <main
           id="scrollableDiv"
           className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6"
+          onClick={() => setOpenMenuId(null)}
         >
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
@@ -366,31 +421,107 @@ export default function WorkspacesClient({
                     {workspaces.map((workspace) => (
                       <div
                         key={workspace.id}
-                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
+                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
                       >
-                        <div className="card-body p-4">
+                        <div className="card-body p-4 flex flex-col flex-1">
                           {/* ヘッダー */}
-                          <div className="flex items-start justify-between gap-2 mb-3">
-                            <div className="min-w-0 flex-1">
+                          <div className="mb-3">
+                            {/* コード、ステータス、メニュー */}
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <code className="text-xs badge badge-ghost badge-sm">
+                                {workspace.code}
+                              </code>
+                              <div className="flex items-center gap-2">
+                                {workspace.isActive ? (
+                                  <div className="badge badge-success badge-sm">
+                                    <PowerSettingsNewIcon className="w-4 h-4" />
+                                  </div>
+                                ) : (
+                                  <div className="badge badge-neutral badge-sm">
+                                    <PowerOffIcon className="w-4 h-4" />
+                                  </div>
+                                )}
+                                {/* アクションメニュー */}
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-xs btn-circle"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMenuToggle(workspace.id);
+                                    }}
+                                    aria-label="アクション"
+                                  >
+                                    <MoreVertIcon className="w-4 h-4" />
+                                  </button>
+                                  {openMenuId === workspace.id && (
+                                    <ul className="absolute right-0 top-8 menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-xl border border-base-300">
+                                      <li>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEdit(workspace);
+                                          }}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <EditIcon className="w-4 h-4" />
+                                          <span>編集</span>
+                                        </button>
+                                      </li>
+                                      <li>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleActive(workspace);
+                                          }}
+                                          className="flex items-center gap-2"
+                                        >
+                                          {workspace.isActive ? (
+                                            <>
+                                              <ToggleOffIcon className="w-4 h-4" />
+                                              <span>無効化</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ToggleOnIcon className="w-4 h-4" />
+                                              <span>有効化</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      </li>
+                                      {userInfo?.isAdmin && (
+                                        <>
+                                          <div className="divider my-0"></div>
+                                          <li>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(workspace);
+                                              }}
+                                              className="flex items-center gap-2 text-error hover:bg-error hover:text-error-content"
+                                            >
+                                              <DeleteIcon className="w-4 h-4" />
+                                              <span>削除</span>
+                                            </button>
+                                          </li>
+                                        </>
+                                      )}
+                                    </ul>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* ワークスペース名 */}
+                            <div>
                               <Link href={`/workspaces/${workspace.id}`}>
-                                <h3 className="text-lg font-bold truncate hover:text-primary transition-colors">
+                                <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words">
                                   {workspace.name}
                                 </h3>
                               </Link>
-                              <code className="text-xs badge badge-ghost badge-sm mt-1 truncate max-w-full block">
-                                {workspace.code}
-                              </code>
-                            </div>
-                            <div className="flex-shrink-0">
-                              {workspace.isActive ? (
-                                <div className="badge badge-success badge-sm">
-                                  <PowerSettingsNewIcon className="w-4 h-4" />
-                                </div>
-                              ) : (
-                                <div className="badge badge-neutral badge-sm">
-                                  <PowerOffIcon className="w-4 h-4" />
-                                </div>
-                              )}
                             </div>
                           </div>
 
@@ -402,7 +533,7 @@ export default function WorkspacesClient({
                           )}
 
                           {/* メタ情報 */}
-                          <div className="space-y-2 mb-3">
+                          <div className="space-y-2 mb-3 flex-1">
                             <div className="flex items-center justify-between text-sm gap-2">
                               <span className="text-base-content/70 flex-shrink-0">
                                 メンバー
@@ -426,9 +557,9 @@ export default function WorkspacesClient({
                             </div>
                           </div>
 
-                          {/* フッター（ジャンル） */}
+                          {/* フッター（ジャンル） - 下部に固定 */}
                           {workspace.genreIcon && workspace.genreName && (
-                            <div className="pt-3 border-t border-base-300">
+                            <div className="pt-3 border-t border-base-300 mt-auto">
                               <div className="flex items-center gap-2 text-sm text-base-content/70">
                                 <span className="text-lg">
                                   {workspace.genreIcon}
@@ -495,6 +626,18 @@ export default function WorkspacesClient({
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleCreateSuccess}
+        genres={genres}
+      />
+
+      {/* ワークスペース編集モーダル */}
+      <EditWorkspaceModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingWorkspace(null);
+        }}
+        onSuccess={handleEditSuccess}
+        workspace={editingWorkspace}
         genres={genres}
       />
     </div>

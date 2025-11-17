@@ -203,31 +203,20 @@ public class WorkspaceService
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        if (request.Name != null)
-        {
-            workspace.Name = request.Name;
-        }
+        workspace.Name = request.Name;
 
         if (request.Description != null)
         {
             workspace.Description = request.Description;
         }
 
-        if (request.GenreId.HasValue)
+        // ジャンルが存在するかチェック（必須）
+        var genre = await _context.Genres.FindAsync(request.GenreId);
+        if (genre == null)
         {
-            // ジャンルが存在するかチェック
-            var genre = await _context.Genres.FindAsync(request.GenreId.Value);
-            if (genre == null)
-            {
-                throw new NotFoundException("指定されたジャンルが見つかりません。");
-            }
-            workspace.GenreId = request.GenreId.Value;
+            throw new NotFoundException("指定されたジャンルが見つかりません。");
         }
-
-        if (request.IsActive.HasValue)
-        {
-            workspace.IsActive = request.IsActive.Value;
-        }
+        workspace.GenreId = request.GenreId;
 
         workspace.UpdatedAt = DateTime.UtcNow;
         workspace.UpdatedByUserId = updatedByUserId;

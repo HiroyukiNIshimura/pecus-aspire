@@ -6,10 +6,9 @@
  * ワークスペース更新リクエスト
  */
 export type UpdateWorkspaceRequest = {
-    name?: string | null;
+    name: string;
     description?: string | null;
-    genreId?: number | null;
-    isActive?: boolean | null;
+    genreId: number;
     rowVersion: number;
 };
 

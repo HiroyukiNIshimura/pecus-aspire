@@ -13,8 +13,17 @@ export const editWorkspaceSchema = z.object({
     .max(500, "説明は500文字以内で入力してください。")
     .optional()
     .default(""),
-  genreId: z.string().optional().default(""),
-  isActive: z.boolean().default(true),
+  genreId: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      const num = Number(val);
+      return Number.isNaN(num) ? undefined : num;
+    },
+    z
+      .number({ message: "ジャンルは必須です。" })
+      .int("ジャンルを選択してください。")
+      .positive("ジャンルを選択してください。"),
+  ),
 });
 
 export type EditWorkspaceInput = z.infer<typeof editWorkspaceSchema>;

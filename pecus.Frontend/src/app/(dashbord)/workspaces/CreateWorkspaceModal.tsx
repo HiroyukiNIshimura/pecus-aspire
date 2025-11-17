@@ -131,7 +131,12 @@ export default function CreateWorkspaceModal({
             )}
 
             {/* フォーム */}
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              className="space-y-4"
+              noValidate
+            >
               {/* ワークスペース名 */}
               <div className="form-control">
                 <label htmlFor="name" className="label">

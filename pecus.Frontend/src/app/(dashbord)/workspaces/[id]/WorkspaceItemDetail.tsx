@@ -34,7 +34,6 @@ export default function WorkspaceItemDetail({
         }
 
         const data: WorkspaceItemDetailResponse = await response.json();
-        console.log("Fetched item detail:", data);
         setItem(data);
       } catch (err: any) {
         setError(err.message || "アイテムの取得に失敗しました。");

@@ -97,10 +97,9 @@ export async function createWorkspace(request: {
 export async function updateWorkspace(
   workspaceId: number,
   request: {
-    name?: string;
+    name: string;
     description?: string;
-    genreId?: number;
-    isActive?: boolean;
+    genreId: number;
     rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
   },
 ): Promise<ApiResponse<WorkspaceResponse | WorkspaceDetailResponse>> {
