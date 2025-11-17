@@ -241,16 +241,9 @@ export default function WorkspaceItemDetail({
 
                   {/* アイテム情報 */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      {related.code && (
-                        <code className="text-xs badge badge-ghost badge-sm">
-                          {related.code}
-                        </code>
-                      )}
-                      <span className="truncate">
-                        {related.subject || "（件名未設定）"}
-                      </span>
-                    </div>
+                    <span className="truncate">
+                      {related.subject || "（件名未設定）"}
+                    </span>
                   </div>
                 </div>
               ))}
