@@ -7558,7 +7558,6 @@
       },
       "CreateWorkspaceItemRequest": {
         "required": [
-          "dueDate",
           "subject"
         ],
         "type": "object",
@@ -7586,8 +7585,9 @@
           },
           "dueDate": {
             "type": "string",
-            "description": "期限日",
-            "format": "date-time"
+            "description": "期限日（NULL許容）",
+            "format": "date-time",
+            "nullable": true
           },
           "isDraft": {
             "type": "boolean",
@@ -7597,12 +7597,6 @@
             "type": "integer",
             "description": "コミッターユーザーID（NULL可）",
             "format": "int32",
-            "nullable": true
-          },
-          "content": {
-            "maxLength": 10000,
-            "type": "string",
-            "description": "アイテム内容",
             "nullable": true
           },
           "tagNames": {
@@ -10103,12 +10097,6 @@
             "format": "int32",
             "nullable": true
           },
-          "content": {
-            "maxLength": 10000,
-            "type": "string",
-            "description": "アイテム内容",
-            "nullable": true
-          },
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ",
@@ -10864,7 +10852,8 @@
           "dueDate": {
             "type": "string",
             "description": "期限日",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isArchived": {
             "type": "boolean",

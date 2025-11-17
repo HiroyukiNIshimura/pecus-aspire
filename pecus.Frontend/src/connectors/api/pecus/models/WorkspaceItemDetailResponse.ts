@@ -61,7 +61,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * 期限日
      */
-    dueDate?: string;
+    dueDate?: string | null;
     /**
      * アーカイブフラグ
      */

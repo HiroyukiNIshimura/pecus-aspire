@@ -21,9 +21,9 @@ export type CreateWorkspaceItemRequest = {
     assigneeId?: number | null;
     priority?: TaskPriority;
     /**
-     * 期限日
+     * 期限日（NULL許容）
      */
-    dueDate: string;
+    dueDate?: string | null;
     /**
      * 下書き中フラグ
      */
@@ -32,10 +32,6 @@ export type CreateWorkspaceItemRequest = {
      * コミッターユーザーID（NULL可）
      */
     committerId?: number | null;
-    /**
-     * アイテム内容
-     */
-    content?: string | null;
     /**
      * タグ名のリスト（存在しないタグは自動作成）
      */

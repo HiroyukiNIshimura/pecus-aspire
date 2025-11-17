@@ -37,10 +37,6 @@ export type UpdateWorkspaceItemRequest = {
      */
     committerId?: number | null;
     /**
-     * アイテム内容
-     */
-    content?: string | null;
-    /**
      * アクティブフラグ
      */
     isActive?: boolean | null;

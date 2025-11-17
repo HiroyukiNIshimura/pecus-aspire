@@ -4,24 +4,11 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
-import type { OutputData } from "@editorjs/editorjs";
 import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
-
-// Editor.jsを動的インポート（SSR無効化）
-const EditorJSComponent = dynamic(
-  () => import("@/components/editor/EditorJS"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="border border-base-300 rounded-lg p-4 min-h-[200px] bg-base-100 flex items-center justify-center">
-        <span className="loading loading-spinner loading-sm"></span>
-      </div>
-    ),
-  },
-);
+import NotionEditor from "@/components/editor/NotionEditor";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -35,7 +22,6 @@ export default function CreateWorkspaceItem({
   onCreate,
 }: CreateWorkspaceItemProps) {
   const [subject, setSubject] = useState("");
-  const [body, setBody] = useState<OutputData | undefined>(undefined);
   const [content, setContent] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<TaskPriority | "">("Medium");
@@ -69,8 +55,7 @@ export default function CreateWorkspaceItem({
 
       const request: CreateWorkspaceItemRequest = {
         subject: subject.trim(),
-        body: body ? JSON.stringify(body) : null,
-        content: content.trim() || null,
+        body: null,
         dueDate,
         priority: priority || undefined,
         isDraft,
@@ -161,34 +146,15 @@ export default function CreateWorkspaceItem({
             <label className="label">
               <span className="label-text font-semibold">本文</span>
             </label>
-            <EditorJSComponent
-              data={body}
-              onChange={(data) => setBody(data)}
-              placeholder="本文を入力してください..."
-              readOnly={isSubmitting}
-            />
-          </div>
-
-          {/* コンテンツ */}
-          <div className="form-control">
-            <label htmlFor="content" className="label">
-              <span className="label-text font-semibold">コンテンツ</span>
-            </label>
-            <textarea
-              id="content"
-              placeholder="アイテムの内容を入力..."
-              className="textarea textarea-bordered w-full h-32"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              disabled={isSubmitting}
-            />
+            {/* WYSIWYGエディタコンポーネント */}
+            <NotionEditor />
           </div>
 
           {/* 期限日 */}
           <div className="form-control">
             <label htmlFor="dueDate" className="label">
               <span className="label-text font-semibold">
-                期限日 <span className="text-error">*</span>
+                期限日
               </span>
             </label>
             <input
