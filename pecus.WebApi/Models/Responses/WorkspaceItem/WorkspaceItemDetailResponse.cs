@@ -130,6 +130,11 @@ public class WorkspaceItemDetailResponse : IConflictModel
     public int PinCount { get; set; }
 
     /// <summary>
+    /// 関連アイテムのリスト
+    /// </summary>
+    public List<RelatedItemInfo> RelatedItems { get; set; } = new List<RelatedItemInfo>();
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]

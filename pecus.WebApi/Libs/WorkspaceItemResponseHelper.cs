@@ -84,7 +84,56 @@ public static class WorkspaceItemResponseHelper
                 && item.WorkspaceItemPins != null
                 && item.WorkspaceItemPins.Any(wip => wip.UserId == currentUserId.Value),
             PinCount = item.WorkspaceItemPins?.Count ?? 0,
+            RelatedItems = BuildRelatedItemsList(item),
             RowVersion = item.RowVersion!,
         };
+    }
+
+    /// <summary>
+    /// 関連アイテムのリストを構築
+    /// </summary>
+    private static List<RelatedItemInfo> BuildRelatedItemsList(DB.Models.WorkspaceItem item)
+    {
+        var relatedItems = new List<RelatedItemInfo>();
+
+        // このアイテムが関連元のもの（FromItem）
+        if (item.RelationsFrom != null)
+        {
+            foreach (var relation in item.RelationsFrom)
+            {
+                if (relation.ToItem != null)
+                {
+                    relatedItems.Add(new RelatedItemInfo
+                    {
+                        Id = relation.ToItem.Id,
+                        Subject = relation.ToItem.Subject,
+                        Code = relation.ToItem.Code,
+                        RelationType = relation.RelationType,
+                        Direction = "from"
+                    });
+                }
+            }
+        }
+
+        // このアイテムが関連先のもの（ToItem）
+        if (item.RelationsTo != null)
+        {
+            foreach (var relation in item.RelationsTo)
+            {
+                if (relation.FromItem != null)
+                {
+                    relatedItems.Add(new RelatedItemInfo
+                    {
+                        Id = relation.FromItem.Id,
+                        Subject = relation.FromItem.Subject,
+                        Code = relation.FromItem.Code,
+                        RelationType = relation.RelationType,
+                        Direction = "to"
+                    });
+                }
+            }
+        }
+
+        return relatedItems;
     }
 }

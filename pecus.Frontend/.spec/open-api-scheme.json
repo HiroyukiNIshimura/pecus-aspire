@@ -8287,6 +8287,36 @@
         "additionalProperties": false,
         "description": "リフレッシュレスポンス"
       },
+      "RelatedItemInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "コード",
+            "nullable": true
+          },
+          "relationType": {
+            "$ref": "#/components/schemas/RelationType"
+          },
+          "direction": {
+            "type": "string",
+            "description": "関連の方向（このアイテムから見て）\r\n\"from\": このアイテムが関連元\r\n\"to\": このアイテムが関連先",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "関連アイテムの基本情報"
+      },
       "RelationType": {
         "enum": [
           "Related",
@@ -10350,6 +10380,14 @@
             "type": "integer",
             "description": "このアイテムのPIN総数",
             "format": "int32"
+          },
+          "relatedItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedItemInfo"
+            },
+            "description": "関連アイテムのリスト",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",

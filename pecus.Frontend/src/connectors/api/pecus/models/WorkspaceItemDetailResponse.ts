@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { RelatedItemInfo } from './RelatedItemInfo';
 import type { TagInfoResponse } from './TagInfoResponse';
 import type { TaskPriority } from './TaskPriority';
 /**
@@ -101,6 +102,10 @@ export type WorkspaceItemDetailResponse = {
      * このアイテムのPIN総数
      */
     pinCount?: number;
+    /**
+     * 関連アイテムのリスト
+     */
+    relatedItems?: Array<RelatedItemInfo> | null;
     /**
      * 楽観的ロック用のRowVersion
      */
