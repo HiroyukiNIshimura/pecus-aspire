@@ -5455,7 +5455,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース情報を更新（Ownerのみ実行可能）",
+        "summary": "ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5581,7 +5581,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを削除（Ownerのみ実行可能）",
+        "summary": "ワークスペースを削除（Admin権限が必要）",
         "parameters": [
           {
             "name": "id",
@@ -5808,7 +5808,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを有効化（Ownerのみ実行可能）",
+        "summary": "ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5896,7 +5896,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを無効化（Ownerのみ実行可能）",
+        "summary": "ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",

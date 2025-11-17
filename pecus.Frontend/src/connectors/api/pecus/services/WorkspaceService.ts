@@ -64,7 +64,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース情報を更新（Ownerのみ実行可能）
+     * ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
      * @param requestBody ワークスペース更新リクエスト
      * @returns WorkspaceFullDetailResponse OK
@@ -112,7 +112,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを削除（Ownerのみ実行可能）
+     * ワークスペースを削除（Admin権限が必要）
      * @param id ワークスペースID
      * @returns void
      * @throws ApiError
@@ -210,7 +210,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを有効化（Ownerのみ実行可能）
+     * ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
      * @param requestBody 楽観的ロック用バージョン番号
      * @returns WorkspaceFullDetailResponse OK
@@ -237,7 +237,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを無効化（Ownerのみ実行可能）
+     * ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
      * @param requestBody 楽観的ロック用バージョン番号
      * @returns WorkspaceFullDetailResponse OK

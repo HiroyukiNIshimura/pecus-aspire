@@ -416,8 +416,8 @@ public class WorkspaceController : BaseSecureController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        // 更新後のワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
+        // 更新後のワークスペース詳細情報を取得（無効なワークスペースも含む）
+        var detail = await _workspaceService.GetWorkspaceDetailIncludingInactiveAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
@@ -472,8 +472,8 @@ public class WorkspaceController : BaseSecureController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        // 更新後のワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
+        // 更新後のワークスペース詳細情報を取得（無効なワークスペースも含む）
+        var detail = await _workspaceService.GetWorkspaceDetailIncludingInactiveAsync(id);
 
         var response = new WorkspaceFullDetailResponse
         {
