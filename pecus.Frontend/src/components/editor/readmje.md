@@ -1,1 +1,0 @@
-https://novel.sh/docs/introduction

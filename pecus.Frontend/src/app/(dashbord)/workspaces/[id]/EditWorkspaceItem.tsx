@@ -7,12 +7,14 @@ import type {
   WorkspaceItemDetailResponse,
   TaskPriority,
 } from "@/connectors/api/pecus";
+import type {
+  YooptaContentValue,
+  YooptaOnChangeOptions,
+} from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
-import TagInput from "@/components/common/TagInput";
 import {
   updateWorkspaceItem,
   fetchLatestWorkspaceItem,
-  updateWorkspaceItemTags,
 } from "@/actions/workspaceItem";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspaceItemSchema } from "@/schemas/editSchemas";
@@ -49,10 +51,14 @@ export default function EditWorkspaceItem({
     rowVersion: item.rowVersion,
   });
 
-  const [editorValue, setEditorValue] = useState<string | undefined| null>(item.body)
-
-  const [tags, setTags] = useState<string[]>(
-    item.tags?.map((tag) => tag.name).filter((name): name is string => !!name) || []
+  const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>(
+    (() => {
+      try {
+        return item.body ? JSON.parse(item.body) : undefined;
+      } catch {
+        return undefined;
+      }
+    })()
   );
 
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
@@ -115,8 +121,7 @@ export default function EditWorkspaceItem({
           isDraft: formData.isDraft,
           isArchived: formData.isArchived,
           rowVersion: formData.rowVersion,
-        });
-        if (!result.success) {
+        });        if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
           result.error.issues.forEach((issue: any) => {
@@ -150,7 +155,7 @@ export default function EditWorkspaceItem({
           latestItem.id,
           {
             subject: result.data.subject,
-            body: editorValue,
+            body: editorValue ? JSON.stringify(editorValue) : null,
             dueDate: dueDateValue,
             priority: result.data.priority as TaskPriority | undefined,
             isDraft: result.data.isDraft,
@@ -162,48 +167,16 @@ export default function EditWorkspaceItem({
         if (updateResult.success) {
           notify.success("アイテムを更新しました。");
 
-          // 最新のアイテムデータを再取得（body を含む完全な情報を取得、rowVersionも含む）
-          let finalItem = await fetchLatestWorkspaceItem(
+          // 最新のアイテムデータを再取得（body を含む完全な情報を取得）
+          const fetchResult = await fetchLatestWorkspaceItem(
             latestItem.workspaceId || 0,
             latestItem.id,
           );
 
-          console.log("fetchLatestWorkspaceItem result:", finalItem);
-
-          // タグが変更されていたら更新（fetchResultのrowVersionを使用）
-          if ((tags.length > 0 || (latestItem.tags && latestItem.tags.length > 0)) && finalItem.success) {
-            console.log("Updating tags...");
-            await updateWorkspaceItemTags(
-              latestItem.workspaceId || 0,
-              latestItem.id,
-              tags,
-              finalItem.data.rowVersion || 0,
-            );
-
-            // タグ更新後に再度最新データを取得（タグの更新が反映されるようにする）
-            finalItem = await fetchLatestWorkspaceItem(
-              latestItem.workspaceId || 0,
-              latestItem.id,
-            );
-            console.log("fetchLatestWorkspaceItem after tag update:", finalItem);
+          if (fetchResult.success && onSave) {
+            onSave(fetchResult.data);
           }
-
-          // onSave コールバックを先に呼び出して、親コンポーネントの状態を更新
-          if (finalItem.success && onSave) {
-            console.log("Calling onSave with data:", finalItem.data);
-            onSave(finalItem.data);
-            console.log("onSave callback executed");
-            // onSaveが handleEditSave を呼ぶが、その中でsetIsEditModalOpen(false)が呼ばれる
-            // その後でonClose()を呼ぶ（またはonSaveがモーダル閉じるまで待つ）
-          } else if (!finalItem.success) {
-            console.error("finalItem is not success:", finalItem);
-            notify.error("アイテムデータの取得に失敗しました。");
-            // この場合はモーダルを閉じる
-            onClose();
-          } else if (!onSave) {
-            console.error("onSave callback is not defined");
-            onClose();
-          }
+          onClose();
         } else if (updateResult.error === "conflict") {
           // 409 Conflict: 並行更新
           notify.error(
@@ -222,7 +195,7 @@ export default function EditWorkspaceItem({
         setIsSubmitting(false);
       }
     },
-    [formData, editorValue, latestItem, tags, onSave, onClose, notify],
+    [formData, editorValue, latestItem, onSave, onClose, notify],
   );
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -256,14 +229,12 @@ export default function EditWorkspaceItem({
           });
           // エディタ値を更新
           try {
-            setEditorValue(result.data.body);
+            setEditorValue(
+              result.data.body ? JSON.parse(result.data.body) : undefined,
+            );
           } catch {
             setEditorValue(undefined);
           }
-          // タグを更新
-          setTags(
-            result.data.tags?.map((tag) => tag.name).filter((name): name is string => !!name) || []
-          );
         } else {
           setItemLoadError(result.message || "アイテムの取得に失敗しました。");
         }
@@ -298,13 +269,10 @@ export default function EditWorkspaceItem({
 
   // エディタ変更時の処理
   const handleEditorChange = (
-    newValue: any,
+    newValue: YooptaContentValue,
+    _options: YooptaOnChangeOptions,
   ) => {
-      if (newValue === null || newValue === undefined) {
-          setEditorValue(null);
-      } else {
-          setEditorValue(JSON.stringify(newValue));
-      }
+    setEditorValue(newValue);
   };
 
   // モーダルを閉じる際の処理
@@ -429,118 +397,99 @@ export default function EditWorkspaceItem({
                   <NotionEditor
                     value={editorValue}
                     onChange={handleEditorChange}
-                    editable={true}
+                    readOnly={false}
                   />
                 </div>
 
-                {/* 期限日と優先度（2カラムレイアウト） */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 期限日 */}
-                  <div className="form-control">
-                    <label htmlFor="dueDate" className="label">
-                      <span className="label-text font-semibold">期限日</span>
-                    </label>
-                    <input
-                      id="dueDate"
-                      name="dueDate"
-                      type="date"
-                      className={`input input-bordered w-full ${
-                        shouldShowError("dueDate") ? "input-error" : ""
-                      }`}
-                      value={formData.dueDate}
-                      onChange={(e) =>
-                        handleFieldChange("dueDate", e.target.value)
-                      }
-                      disabled={isSubmitting}
-                    />
-                    {shouldShowError("dueDate") && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {getFieldError("dueDate")}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* 優先度 */}
-                  <div className="form-control">
-                    <label htmlFor="priority" className="label">
-                      <span className="label-text font-semibold">優先度</span>
-                    </label>
-                    <select
-                      id="priority"
-                      name="priority"
-                      className={`select select-bordered w-full ${
-                        shouldShowError("priority") ? "select-error" : ""
-                      }`}
-                      value={formData.priority || "Medium"}
-                      onChange={(e) =>
-                        handleFieldChange("priority", e.target.value as TaskPriority)
-                      }
-                      disabled={isSubmitting}
-                    >
-                      <option value="Low">低</option>
-                      <option value="Medium">中</option>
-                      <option value="High">高</option>
-                      <option value="Critical">緊急</option>
-                    </select>
-                    {shouldShowError("priority") && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {getFieldError("priority")}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                {/* タグ */}
+                {/* 期限日 */}
                 <div className="form-control">
-                  <label htmlFor="tags" className="label">
-                    <span className="label-text font-semibold">タグ</span>
-                    <span className="label-text-alt">
-                      Enterキーで追加、ドラッグで並び替え
-                    </span>
+                  <label htmlFor="dueDate" className="label">
+                    <span className="label-text font-semibold">期限日</span>
                   </label>
-                  <TagInput
-                    tags={tags}
-                    onChange={setTags}
-                    placeholder="タグを入力してEnterキーを押す..."
+                  <input
+                    id="dueDate"
+                    name="dueDate"
+                    type="date"
+                    className={`input input-bordered w-full ${
+                      shouldShowError("dueDate") ? "input-error" : ""
+                    }`}
+                    value={formData.dueDate}
+                    onChange={(e) =>
+                      handleFieldChange("dueDate", e.target.value)
+                    }
                     disabled={isSubmitting}
                   />
+                  {shouldShowError("dueDate") && (
+                    <label className="label">
+                      <span className="label-text-alt text-error">
+                        {getFieldError("dueDate")}
+                      </span>
+                    </label>
+                  )}
+                </div>
+
+                {/* 優先度 */}
+                <div className="form-control">
+                  <label htmlFor="priority" className="label">
+                    <span className="label-text font-semibold">優先度</span>
+                  </label>
+                  <select
+                    id="priority"
+                    name="priority"
+                    className={`select select-bordered w-full ${
+                      shouldShowError("priority") ? "select-error" : ""
+                    }`}
+                    value={formData.priority || "Medium"}
+                    onChange={(e) =>
+                      handleFieldChange("priority", e.target.value as TaskPriority)
+                    }
+                    disabled={isSubmitting}
+                  >
+                    <option value="Low">低</option>
+                    <option value="Medium">中</option>
+                    <option value="High">高</option>
+                    <option value="Critical">緊急</option>
+                  </select>
+                  {shouldShowError("priority") && (
+                    <label className="label">
+                      <span className="label-text-alt text-error">
+                        {getFieldError("priority")}
+                      </span>
+                    </label>
+                  )}
                 </div>
 
                 {/* ステータス */}
                 <div className="form-control">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="label cursor-pointer justify-start gap-2">
                     <input
                       type="checkbox"
                       name="isDraft"
-                      className="w-4 h-4"
+                      className="checkbox checkbox-primary"
                       checked={formData.isDraft || false}
                       onChange={(e) =>
                         handleFieldChange("isDraft", e.target.checked)
                       }
                       disabled={isSubmitting}
                     />
-                    <span className="text-sm font-normal">下書き</span>
+                    <span className="label-text">下書き</span>
                   </label>
                 </div>
 
                 {/* アーカイブフラグ */}
                 <div className="form-control">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="label cursor-pointer justify-start gap-2">
                     <input
                       type="checkbox"
                       name="isArchived"
-                      className="w-4 h-4"
+                      className="checkbox checkbox-neutral"
                       checked={formData.isArchived || false}
                       onChange={(e) =>
                         handleFieldChange("isArchived", e.target.checked)
                       }
                       disabled={isSubmitting}
                     />
-                    <span className="text-sm font-normal">アーカイブ</span>
+                    <span className="label-text">アーカイブ</span>
                   </label>
                 </div>
 

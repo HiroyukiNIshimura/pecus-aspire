@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -8,6 +8,10 @@ import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
+import type {
+  YooptaContentValue,
+  YooptaOnChangeOptions,
+} from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
 import TagInput from "@/components/common/TagInput";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
@@ -36,7 +40,7 @@ export default function CreateWorkspaceItem({
     isDraft: true,
   });
 
-  const [editorValue, setEditorValue] = useState<any | undefined>();
+  const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>();
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -60,12 +64,9 @@ export default function CreateWorkspaceItem({
           dueDateValue = date.toISOString(); // ISO 8601 形式（完全な日時）
         }
 
-        // デバッグ: 送信直前の editorValue をログ出力（開発時のみ）
-        console.log("Submitting editorValue:", editorValue);
-
         const request: CreateWorkspaceItemRequest = {
           subject: data.subject.trim(),
-          body: editorValue,
+          body: editorValue ? JSON.stringify(editorValue) : null,
           dueDate: dueDateValue,
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
@@ -107,12 +108,11 @@ export default function CreateWorkspaceItem({
 
   // エディタ変更時の処理
   const handleEditorChange = (
-    newValue: any,
+    newValue: YooptaContentValue,
+    _options: YooptaOnChangeOptions,
   ) => {
     setEditorValue(newValue);
   };
-
-  // NotionEditor will derive theme itself if caller doesn't supply it.
 
   // フォームリセット
   const resetForm = () => {
@@ -239,73 +239,71 @@ export default function CreateWorkspaceItem({
                   <span className="label-text font-semibold">本文</span>
                 </label>
                 <NotionEditor
+                  value={editorValue}
                   onChange={handleEditorChange}
-                  editable={true}
+                  readOnly={false}
                 />
               </div>
 
-              {/* 期限日と優先度（2カラムレイアウト） */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 期限日 */}
-                <div className="form-control">
-                  <label htmlFor="dueDate" className="label">
-                    <span className="label-text font-semibold">
-                      期限日
+              {/* 期限日 */}
+              <div className="form-control">
+                <label htmlFor="dueDate" className="label">
+                  <span className="label-text font-semibold">
+                    期限日
+                  </span>
+                </label>
+                <input
+                  id="dueDate"
+                  name="dueDate"
+                  type="date"
+                  className={`input input-bordered w-full ${
+                    shouldShowError("dueDate") ? "input-error" : ""
+                  }`}
+                  value={formData.dueDate}
+                  onChange={(e) =>
+                    handleFieldChange("dueDate", e.target.value)
+                  }
+                  onBlur={() => validateField("dueDate", formData.dueDate)}
+                  disabled={isSubmitting}
+                />
+                {shouldShowError("dueDate") && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">
+                      {getFieldError("dueDate")}
                     </span>
                   </label>
-                  <input
-                    id="dueDate"
-                    name="dueDate"
-                    type="date"
-                    className={`input input-bordered w-full ${
-                      shouldShowError("dueDate") ? "input-error" : ""
-                    }`}
-                    value={formData.dueDate}
-                    onChange={(e) =>
-                      handleFieldChange("dueDate", e.target.value)
-                    }
-                    onBlur={() => validateField("dueDate", formData.dueDate)}
-                    disabled={isSubmitting}
-                  />
-                  {shouldShowError("dueDate") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("dueDate")}
-                      </span>
-                    </label>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {/* 優先度 */}
-                <div className="form-control">
-                  <label htmlFor="priority" className="label">
-                    <span className="label-text font-semibold">優先度</span>
+              {/* 優先度 */}
+              <div className="form-control">
+                <label htmlFor="priority" className="label">
+                  <span className="label-text font-semibold">優先度</span>
+                </label>
+                <select
+                  id="priority"
+                  name="priority"
+                  className={`select select-bordered w-full ${
+                    shouldShowError("priority") ? "select-error" : ""
+                  }`}
+                  value={formData.priority}
+                  onChange={(e) =>
+                    handleFieldChange("priority", e.target.value as TaskPriority)
+                  }
+                  disabled={isSubmitting}
+                >
+                  <option value="Low">低</option>
+                  <option value="Medium">中</option>
+                  <option value="High">高</option>
+                  <option value="Critical">緊急</option>
+                </select>
+                {shouldShowError("priority") && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">
+                      {getFieldError("priority")}
+                    </span>
                   </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    className={`select select-bordered w-full ${
-                      shouldShowError("priority") ? "select-error" : ""
-                    }`}
-                    value={formData.priority}
-                    onChange={(e) =>
-                      handleFieldChange("priority", e.target.value as TaskPriority)
-                    }
-                    disabled={isSubmitting}
-                  >
-                    <option value="Low">低</option>
-                    <option value="Medium">中</option>
-                    <option value="High">高</option>
-                    <option value="Critical">緊急</option>
-                  </select>
-                  {shouldShowError("priority") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("priority")}
-                      </span>
-                    </label>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* タグ */}
@@ -326,18 +324,18 @@ export default function CreateWorkspaceItem({
 
               {/* 下書きフラグ */}
               <div className="form-control">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="label cursor-pointer justify-start gap-2">
                   <input
                     type="checkbox"
                     name="isDraft"
-                    className="w-4 h-4"
+                    className="checkbox checkbox-primary"
                     checked={formData.isDraft}
                     onChange={(e) =>
                       handleFieldChange("isDraft", e.target.checked)
                     }
                     disabled={isSubmitting}
                   />
-                  <span className="text-sm font-normal">下書きとして保存</span>
+                  <span className="label-text">下書きとして保存</span>
                 </label>
               </div>
 
