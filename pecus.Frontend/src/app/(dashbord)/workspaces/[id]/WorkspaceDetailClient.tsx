@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AppHeader from "@/components/common/AppHeader";
 import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
+import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
 import WorkspaceItemDetail from "./WorkspaceItemDetail";
 import CreateWorkspaceItem from "./CreateWorkspaceItem";
 import type { UserInfo } from "@/types/userInfo";
@@ -31,6 +32,7 @@ export default function WorkspaceDetailClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -75,6 +77,9 @@ export default function WorkspaceDetailClient({
     setIsCreateModalOpen(false);
     setSelectedItemId(itemId);
     setShowWorkspaceDetail(false);
+
+    // サイドバーのアイテムリストをリロード（新規作成されたアイテムを選択状態に設定）
+    sidebarComponentRef.current?.refreshItems(itemId);
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -148,6 +153,7 @@ export default function WorkspaceDetailClient({
           style={{ width: `${sidebarWidth}px` }}
         >
           <WorkspaceItemsSidebar
+            ref={sidebarComponentRef}
             workspaceId={parseInt(workspaceId)}
             workspaces={workspaces}
             onHomeSelect={handleHomeSelect}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, forwardRef, useImperativeHandle } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -21,28 +21,35 @@ interface WorkspaceItemsSidebarProps {
   onCreateNew?: () => void;
 }
 
-export default function WorkspaceItemsSidebar({
-  workspaceId,
-  workspaces,
-  scrollContainerId = "itemsScrollableDiv",
-  onHomeSelect,
-  onItemSelect,
-  onCreateNew,
-}: WorkspaceItemsSidebarProps) {
-  const [selectedItemId, setSelectedItemId] = useState<"home" | "new" | number | null>(
-    "home",
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export interface WorkspaceItemsSidebarHandle {
+  refreshItems: (selectItemId?: number) => Promise<void>;
+}
 
-  // 初期ロード
-  useEffect(() => {
-    const fetchInitialItems = async () => {
+const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceItemsSidebarProps>(
+  (
+    {
+      workspaceId,
+      workspaces,
+      scrollContainerId = "itemsScrollableDiv",
+      onHomeSelect,
+      onItemSelect,
+      onCreateNew,
+    },
+    ref,
+  ) => {
+    const [selectedItemId, setSelectedItemId] = useState<"home" | "new" | number | null>(
+      "home",
+    );
+    const [searchQuery, setSearchQuery] = useState("");
+    const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // アイテムをリロードするメソッド
+    const refreshItems = useCallback(async (selectItemId?: number) => {
       try {
         setIsLoading(true);
         setError(null);
@@ -61,16 +68,26 @@ export default function WorkspaceItemsSidebar({
         setTotalPages(data.totalPages || 1);
         setTotalCount(data.totalCount || 0);
 
-        // 初期状態はHomeを選択
+        // 新規作成されたアイテムを選択状態に設定
+        if (selectItemId !== undefined) {
+          setSelectedItemId(selectItemId);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch items");
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [workspaceId]);
 
-    fetchInitialItems();
-  }, [workspaceId]);
+    // 初期ロード
+    useEffect(() => {
+      refreshItems();
+    }, [workspaceId, refreshItems]);
+
+    // imperative handle で refreshItems を公開
+    useImperativeHandle(ref, () => ({
+      refreshItems,
+    }), [refreshItems]);
 
   const loadMoreItems = useCallback(async () => {
     try {
@@ -258,4 +275,9 @@ export default function WorkspaceItemsSidebar({
       )}
     </aside>
   );
-}
+  },
+);
+
+WorkspaceItemsSidebar.displayName = "WorkspaceItemsSidebar";
+
+export default WorkspaceItemsSidebar;
