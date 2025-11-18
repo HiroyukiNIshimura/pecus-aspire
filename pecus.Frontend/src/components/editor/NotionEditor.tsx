@@ -35,6 +35,7 @@ import Table from "@yoopta/table";
 import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
 import Video from "@yoopta/video";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDebouncedCallback } from 'use-debounce';
 
 const plugins: YooptaPlugin<any, any>[] = [
   Paragraph,
@@ -185,14 +186,10 @@ export default function NotionEditor({
     }
   }, [valueFromProps]);
 
-
-  const onChange = (
-    newValue: YooptaContentValue,
-    options: YooptaOnChangeOptions,
-  ) => {
+  const onChange = useDebouncedCallback((newValue: YooptaContentValue, options: YooptaOnChangeOptions) => {
     setValue(newValue);
     onChangeFromProps?.(newValue, options);
-  };
+  }, 300);
 
   return (
     <div className={`ms-6 ${theme === "dark" ? "dark" : ""}`}>
