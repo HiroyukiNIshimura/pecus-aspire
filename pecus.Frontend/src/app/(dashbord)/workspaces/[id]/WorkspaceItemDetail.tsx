@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import EditIcon from "@mui/icons-material/Edit";
 import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 import NotionEditor from "@/components/editor/NotionEditor";
+import EditWorkspaceItem from "./EditWorkspaceItem";
 import type { YooptaContentValue } from "@yoopta/editor";
 
 interface WorkspaceItemDetailProps {
@@ -19,6 +21,7 @@ export default function WorkspaceItemDetail({
   const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchItemDetail = async () => {
@@ -46,6 +49,10 @@ export default function WorkspaceItemDetail({
 
     fetchItemDetail();
   }, [workspaceId, itemId]);
+
+  const handleEditSave = (updatedItem: WorkspaceItemDetailResponse) => {
+    setItem(updatedItem);
+  };
 
   if (isLoading) {
     return (
@@ -86,9 +93,20 @@ export default function WorkspaceItemDetail({
               </code>
             )}
           </div>
-          {item.priority !== undefined && item.priority !== null && (
-            <div className="badge badge-primary">優先度: {item.priority}</div>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="btn btn-primary btn-sm gap-2"
+              title="アイテムを編集"
+            >
+              <EditIcon fontSize="small" />
+              編集
+            </button>
+            {item.priority !== undefined && item.priority !== null && (
+              <div className="badge badge-primary">優先度: {item.priority}</div>
+            )}
+          </div>
         </div>
 
         {/* ステータスバッジ */}
@@ -283,6 +301,16 @@ export default function WorkspaceItemDetail({
           </div>
         )}
       </div>
+
+      {/* 編集モーダル */}
+      {item && (
+        <EditWorkspaceItem
+          item={item}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleEditSave}
+        />
+      )}
     </div>
   );
 }
