@@ -151,16 +151,20 @@ interface NotionEditorProps {
     options: YooptaOnChangeOptions,
   ) => void;
   value?: YooptaContentValue;
+  readOnly?: boolean;
 }
 
 //https://github.com/yoopta-editor/Yoopta-Editor/tree/master
 export default function NotionEditor({
   onChange: onChangeFromProps,
   value: valueFromProps,
+  readOnly: readOnlyProps = false,
 }: NotionEditorProps) {
   const [value, setValue] = useState<YooptaContentValue | undefined>(
     valueFromProps,
   );
+  const [readOnly, setReadOnly] = useState<boolean>(readOnlyProps);
+
   const editor = useMemo(() => createYooptaEditor(), []);
 
   const [theme, setTheme] = useState("dark");
@@ -182,6 +186,7 @@ export default function NotionEditor({
         marks={MARKS}
         value={value}
         onChange={onChange}
+        readOnly={readOnly}
         autoFocus
         style={{ width: "calc(100% - 30px)" }}
       />

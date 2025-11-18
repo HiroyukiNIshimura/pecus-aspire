@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
+import NotionEditor from "@/components/editor/NotionEditor";
+import type { YooptaContentValue } from "@yoopta/editor";
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
@@ -104,8 +106,19 @@ export default function WorkspaceItemDetail({
         {item.body && (
           <div className="mb-4">
             <h3 className="text-lg font-bold mb-2">内容</h3>
-            <div className="whitespace-pre-wrap break-words bg-base-200 p-4 rounded">
-              {item.body}
+            <div className="p-4 bg-base-200 rounded">
+              <NotionEditor
+                value={
+                  (() => {
+                    try {
+                      return JSON.parse(item.body) as YooptaContentValue;
+                    } catch {
+                      return undefined;
+                    }
+                  })()
+                }
+                readOnly={true}
+              />
             </div>
           </div>
         )}

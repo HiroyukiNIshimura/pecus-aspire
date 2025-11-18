@@ -241,6 +241,7 @@ export default function CreateWorkspaceItem({
                 <NotionEditor
                   value={editorValue}
                   onChange={handleEditorChange}
+                  readOnly={false}
                 />
               </div>
 
