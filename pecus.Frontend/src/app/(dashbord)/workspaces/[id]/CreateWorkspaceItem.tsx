@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
@@ -13,16 +13,19 @@ import type {
   YooptaOnChangeOptions,
 } from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
+import TagInput from "@/components/common/TagInput";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
-  onCancel?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
   onCreate?: (itemId: number) => void;
 }
 
 export default function CreateWorkspaceItem({
   workspaceId,
-  onCancel,
+  isOpen,
+  onClose,
   onCreate,
 }: CreateWorkspaceItemProps) {
   const [subject, setSubject] = useState("");
@@ -31,9 +34,23 @@ export default function CreateWorkspaceItem({
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<TaskPriority | "">("Medium");
   const [isDraft, setIsDraft] = useState(true);
-  const [tagNamesInput, setTagNamesInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // モーダルを閉じる際にフォームをリセット
+  useEffect(() => {
+    if (!isOpen) {
+      setSubject("");
+      setContent("");
+      setEditorValue(undefined);
+      setDueDate("");
+      setPriority("Medium");
+      setIsDraft(true);
+      setTags([]);
+      setError(null);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,19 +69,13 @@ export default function CreateWorkspaceItem({
     setError(null);
 
     try {
-      // タグ名をカンマ区切りで分割
-      const tagNames = tagNamesInput
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
-
       const request: CreateWorkspaceItemRequest = {
         subject: subject.trim(),
         body: null,
         dueDate,
         priority: priority || undefined,
         isDraft,
-        tagNames: tagNames.length > 0 ? tagNames : null,
+        tagNames: tags.length > 0 ? tags : null,
       };
 
       const response = await fetch(
@@ -89,16 +100,13 @@ export default function CreateWorkspaceItem({
       if (onCreate && data.id) {
         onCreate(data.id);
       }
+
+      // フォームをリセットしてモーダルを閉じる
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
     }
   };
 
@@ -109,31 +117,64 @@ export default function CreateWorkspaceItem({
     setEditorValue(newValue);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="card bg-base-100 shadow-md">
-      <div className="card-body">
-        <h2 className="text-2xl font-bold mb-4">新規アイテム作成</h2>
+    <>
+      {/* モーダル背景オーバーレイ */}
+      <div
+        className="fixed inset-0 bg-black/50 z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {error && (
-          <div className="alert alert-error mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 shrink-0 stroke-current"
-              fill="none"
-              viewBox="0 0 24 24"
+      {/* モーダルコンテンツ */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
+        <div
+          className="bg-base-100 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:max-w-6xl sm:w-full sm:h-auto sm:max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* モーダルヘッダー */}
+          <div className="flex items-center justify-between p-6 border-b border-base-300">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <AddIcon />
+              新規アイテム作成
+            </h2>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-circle"
+              onClick={onClose}
+              disabled={isSubmitting}
+              aria-label="閉じる"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{error}</span>
+              <CloseIcon />
+            </button>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* モーダルボディ */}
+          <div className="p-6">
+            {/* エラー表示 */}
+            {error && (
+              <div className="alert alert-error mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* フォーム */}
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* 件名 */}
           <div className="form-control">
             <label htmlFor="subject" className="label">
@@ -206,15 +247,14 @@ export default function CreateWorkspaceItem({
           <div className="form-control">
             <label htmlFor="tags" className="label">
               <span className="label-text font-semibold">タグ</span>
-              <span className="label-text-alt">カンマ区切りで入力</span>
+              <span className="label-text-alt">
+                Enterキーで追加、ドラッグで並び替え
+              </span>
             </label>
-            <input
-              id="tags"
-              type="text"
-              placeholder="例：重要, 緊急, デザイン"
-              className="input input-bordered w-full"
-              value={tagNamesInput}
-              onChange={(e) => setTagNamesInput(e.target.value)}
+            <TagInput
+              tags={tags}
+              onChange={setTags}
+              placeholder="タグを入力してEnterキーを押す..."
               disabled={isSubmitting}
             />
           </div>
@@ -231,39 +271,40 @@ export default function CreateWorkspaceItem({
               />
               <span className="label-text">下書きとして保存</span>
             </label>
-          </div>
+              </div>
 
-          {/* ボタングループ */}
-          <div className="flex gap-2 justify-end mt-6">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="btn btn-outline gap-2"
-              disabled={isSubmitting}
-            >
-              <CancelIcon className="w-4 h-4" />
-              <span>キャンセル</span>
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary gap-2"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  <span>作成中...</span>
-                </>
-              ) : (
-                <>
-                  <SaveIcon className="w-4 h-4" />
-                  <span>作成</span>
-                </>
-              )}
-            </button>
+              {/* ボタングループ */}
+              <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="btn btn-outline"
+                  disabled={isSubmitting}
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      作成中...
+                    </>
+                  ) : (
+                    <>
+                      <SaveIcon className="w-5 h-5" />
+                      作成
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

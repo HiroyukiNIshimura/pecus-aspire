@@ -1,0 +1,146 @@
+/* Styles for TagInput (migrated from inline JSX <style jsx global>) */
+.tag-input-wrapper {
+  position: relative;
+}
+
+.tag-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: var(--rounded-btn, 0.5rem);
+  padding: 0.5rem;
+  background-color: hsl(var(--b1));
+  min-height: 3rem;
+}
+
+.tag-input-field {
+  width: 100%;
+  order: 2;
+}
+
+.tag-input-field input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0 !important;
+  background: transparent !important;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  order: 1;
+  min-height: 0;
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background-color: transparent;
+  color: inherit;
+  border-radius: var(--rounded-badge, 1.9rem);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.12s ease;
+  cursor: move;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tag-item:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.tag-item-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tag-item-disabled:hover {
+  transform: none;
+  background-color: hsl(var(--p));
+}
+
+.tag-item.bg-accent {
+  background-color: var(--flyon-accent, hsl(250 80% 56%));
+  color: var(--flyon-accent-content, #fff);
+  border-color: transparent;
+}
+
+.tag-item.tag-item-disabled {
+  background-color: var(--flyon-base-200, #efefef);
+  color: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0,0,0,0.04);
+}
+
+.tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.25rem;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  padding: 0;
+  color: currentColor;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.tag-remove:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.tag-suggestions {
+  position: absolute;
+  z-index: 10;
+  margin-top: 0.25rem;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: hsl(var(--b1));
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: var(--rounded-box, 1rem);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  list-style: none;
+  padding: 0.25rem;
+}
+
+.tag-suggestions li {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: var(--rounded-btn, 0.5rem);
+  transition: background-color 0.2s ease;
+}
+
+.tag-suggestions li:hover,
+.tag-suggestion-active {
+  background-color: hsl(var(--b2));
+}
+
+/* Inline mode styles */
+.tag-input-container.tag-input-inline {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tag-input-container.tag-input-inline .tag-list {
+  order: 1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tag-input-container.tag-input-inline .tag-input-field {
+  order: 2;
+  flex: 1 1 160px;
+  min-width: 120px;
+}

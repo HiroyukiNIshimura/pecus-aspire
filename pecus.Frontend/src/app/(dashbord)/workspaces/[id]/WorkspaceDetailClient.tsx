@@ -33,7 +33,7 @@ export default function WorkspaceDetailClient({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // ローカルストレージからサイドバー幅を取得（初期値: 256px）
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -52,32 +52,27 @@ export default function WorkspaceDetailClient({
   const handleHomeSelect = useCallback(() => {
     setShowWorkspaceDetail(true);
     setSelectedItemId(null);
-    setIsCreatingNew(false);
   }, []);
 
   // アイテム選択ハンドラ
   const handleItemSelect = useCallback((itemId: number) => {
     setShowWorkspaceDetail(false);
     setSelectedItemId(itemId);
-    setIsCreatingNew(false);
   }, []);
 
-  // 新規作成ハンドラ
+  // 新規作成ハンドラ（モーダルを開く）
   const handleCreateNew = useCallback(() => {
-    setShowWorkspaceDetail(false);
-    setSelectedItemId(null);
-    setIsCreatingNew(true);
+    setIsCreateModalOpen(true);
   }, []);
 
-  // 新規作成キャンセルハンドラ
-  const handleCancelCreate = useCallback(() => {
-    setIsCreatingNew(false);
-    setShowWorkspaceDetail(true);
+  // モーダルを閉じるハンドラ
+  const handleCloseCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
   }, []);
 
   // 新規作成完了ハンドラ
   const handleCreateComplete = useCallback((itemId: number) => {
-    setIsCreatingNew(false);
+    setIsCreateModalOpen(false);
     setSelectedItemId(itemId);
     setShowWorkspaceDetail(false);
   }, []);
@@ -338,23 +333,22 @@ export default function WorkspaceDetailClient({
           )}
 
           {/* アイテム詳細情報 */}
-          {!showWorkspaceDetail && !isCreatingNew && selectedItemId && (
+          {!showWorkspaceDetail && selectedItemId && (
             <WorkspaceItemDetail
               workspaceId={parseInt(workspaceId)}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
             />
           )}
-
-          {/* 新規アイテム作成 */}
-          {isCreatingNew && (
-            <CreateWorkspaceItem
-              workspaceId={parseInt(workspaceId)}
-              onCancel={handleCancelCreate}
-              onCreate={handleCreateComplete}
-            />
-          )}
         </main>
+
+        {/* 新規アイテム作成モーダル */}
+        <CreateWorkspaceItem
+          workspaceId={parseInt(workspaceId)}
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          onCreate={handleCreateComplete}
+        />
 
         {/* アイテム一覧 (スマホ) */}
         <div
