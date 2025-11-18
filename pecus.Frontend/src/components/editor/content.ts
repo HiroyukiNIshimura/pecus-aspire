@@ -15,7 +15,7 @@ export const defaultEditorContent = {
             {
               type: "link",
               attrs: {
-                href: "#",
+                href: "https://github.com/steven-tey/novel",
                 target: "_blank",
               },
             },
@@ -32,7 +32,7 @@ export const defaultEditorContent = {
             {
               type: "link",
               attrs: {
-                href: "#",
+                href: "https://tiptap.dev/",
                 target: "_blank",
               },
             },
@@ -46,7 +46,7 @@ export const defaultEditorContent = {
             {
               type: "link",
               attrs: {
-                href: "#",
+                href: "https://sdk.vercel.ai/docs",
                 target: "_blank",
               },
             },
@@ -144,7 +144,7 @@ export const defaultEditorContent = {
             {
               type: "twitter",
               attrs: {
-                src: "#",
+                src: "https://x.com/elonmusk/status/1800759252224729577",
               },
             },
           ],
@@ -259,7 +259,7 @@ export const defaultEditorContent = {
     {
       type: "image",
       attrs: {
-        src: "#",
+        src: "https://public.blob.vercel-storage.com/pJrjXbdONOnAeZAZ/banner-2wQk82qTwyVgvlhTW21GIkWgqPGD2C.png",
         alt: "banner.png",
         title: "banner.png",
         width: null,
@@ -289,7 +289,7 @@ export const defaultEditorContent = {
                     {
                       type: "link",
                       attrs: {
-                        href: "#",
+                        href: "https://github.com/steven-tey/novel",
                         target: "_blank",
                       },
                     },

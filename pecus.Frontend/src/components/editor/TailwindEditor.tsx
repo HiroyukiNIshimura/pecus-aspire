@@ -1,5 +1,4 @@
 "use client";
-
 import { defaultEditorContent } from "./content";
 import {
   EditorCommand,
@@ -33,7 +32,7 @@ const hljs = require("highlight.js");
 
 const extensions = [...defaultExtensions, slashCommand] as any;
 
-const TailwindEditor = () => {
+const TailwindAdvancedEditor = () => {
   const [initialContent, setInitialContent] = useState<null | JSONContent>(null);
   const [saveStatus, setSaveStatus] = useState("Saved");
   const [charsCount, setCharsCount] = useState();
@@ -142,4 +141,4 @@ const TailwindEditor = () => {
   );
 };
 
-export default TailwindEditor;
+export default TailwindAdvancedEditor;

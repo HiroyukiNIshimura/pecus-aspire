@@ -14,7 +14,6 @@ import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
 import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
-import TailwindEditor from "@/components/editor/TailwindEditor";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -243,10 +242,6 @@ export default function CreateWorkspaceItem({
                   onChange={handleEditorChange}
                   editable={true}
                 />
-              </div>
-
-              <div className="form-control">
-                <TailwindEditor />
               </div>
 
               {/* 期限日と優先度（2カラムレイアウト） */}
