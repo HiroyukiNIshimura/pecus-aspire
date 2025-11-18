@@ -113,6 +113,7 @@ export default function EditWorkspaceItem({
 
       try {
         // 状態管理している値で検証（FormData ではなく）
+        // 注: formData, editorValue は最新の値を直接使用（React のクロージャ内なので安全）
         const result = await updateWorkspaceItemSchema.safeParseAsync({
           subject: formData.subject,
           dueDate: formData.dueDate,
@@ -120,9 +121,7 @@ export default function EditWorkspaceItem({
           isDraft: formData.isDraft,
           isArchived: formData.isArchived,
           rowVersion: formData.rowVersion,
-        });
-
-        if (!result.success) {
+        });        if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
           result.error.issues.forEach((issue: any) => {
@@ -252,16 +251,20 @@ export default function EditWorkspaceItem({
 
   // 入力時の検証とフォーム状態更新
   const handleFieldChange = useCallback(
-    async (fieldName: string, value: unknown) => {
+    (fieldName: string, value: unknown) => {
       setFormData((prev) => ({
         ...prev,
         [fieldName]: value,
       }));
 
-      // フィールド検証を実行
-      await validateField(fieldName, value);
+      // エラーがあればクリア（入力時は検証を行わず、エラーのみクリア）
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[fieldName];
+        return next;
+      });
     },
-    [validateField],
+    [],
   );
 
   // エディタ変更時の処理

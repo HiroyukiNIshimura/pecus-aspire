@@ -369,9 +369,24 @@ public class WorkspaceItemService
             item.Priority = request.Priority.Value;
         }
 
+        if (request.IsDraft.HasValue)
+        {
+            item.IsDraft = request.IsDraft.Value;
+        }
+
+        if (request.IsArchived.HasValue)
+        {
+            item.IsArchived = request.IsArchived.Value;
+        }
+
         if (request.DueDate.HasValue)
         {
             item.DueDate = request.DueDate.Value;
+        }
+
+        if (request.IsActive.HasValue)
+        {
+            item.IsActive = request.IsActive.Value;
         }
 
         item.UpdatedAt = DateTime.UtcNow;
