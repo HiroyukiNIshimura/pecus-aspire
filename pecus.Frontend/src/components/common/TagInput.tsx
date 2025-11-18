@@ -76,18 +76,14 @@ export default function TagInput({
 
   return (
     <div className="tag-input-wrapper">
-      {/** react-tag-input: enable inline mode and reflect it in classes so CSS can layout inline */}
       {(() => {
-        const reactTagsInline = true;
-
         return (
           <ReactTags
-            inline={reactTagsInline}
             tags={tagObjects}
             handleDelete={handleDelete}
             handleAddition={handleAddition}
             classNames={{
-              tags: reactTagsInline ? "tag-input-container tag-input-inline" : "tag-input-container",
+              tags: "tag-input-container tag-input-inline",
               tagInput: "tag-input-field",
               tagInputField: disabled
                 ? "input input-bordered w-full opacity-50 cursor-not-allowed"
