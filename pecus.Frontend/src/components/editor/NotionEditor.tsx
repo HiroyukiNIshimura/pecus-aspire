@@ -174,7 +174,7 @@ export default function NotionEditor({
   };
 
   return (
-    <div className={`max-w-4xl mx-auto ${theme === "dark" ? "dark" : ""}`}>
+    <div className={`ms-6 ${theme === "dark" ? "dark" : ""}`}>
       <YooptaEditor
         editor={editor}
         plugins={plugins}
@@ -183,7 +183,7 @@ export default function NotionEditor({
         value={value}
         onChange={onChange}
         autoFocus
-        width={800}
+        style={{ width: "calc(100% - 30px)" }}
       />
     </div>
   );
