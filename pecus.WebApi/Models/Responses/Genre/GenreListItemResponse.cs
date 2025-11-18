@@ -44,4 +44,3 @@ public class GenreListItemResponse
     /// </summary>
     public bool IsActive { get; set; }
 }
-

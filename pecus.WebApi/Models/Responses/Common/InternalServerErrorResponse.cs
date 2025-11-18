@@ -15,4 +15,3 @@ public class InternalServerErrorResponse
     /// </summary>
     public string Message { get; set; } = "内部サーバーエラーが発生しました。";
 }
-

@@ -31,4 +31,3 @@ namespace Pecus.Models.Config
         public FileUploadSettings FileUpload { get; set; } = new();
     }
 }
-

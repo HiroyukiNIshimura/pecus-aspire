@@ -59,4 +59,3 @@ public class TagDetailResponse : IConflictModel
     [Required]
     public required uint RowVersion { get; set; }
 }
-

@@ -44,5 +44,3 @@ public class PagedResponse<T>
     /// </summary>
     public bool HasNextPage { get; set; }
 }
-
-

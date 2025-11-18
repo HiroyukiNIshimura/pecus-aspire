@@ -24,4 +24,3 @@ public class TagItemRequest
     [StringLength(50, ErrorMessage = "タグ名は50文字以内です。")]
     public string? Name { get; set; }
 }
-

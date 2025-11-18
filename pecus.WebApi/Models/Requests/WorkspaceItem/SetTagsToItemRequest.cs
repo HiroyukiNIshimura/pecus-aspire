@@ -20,4 +20,3 @@ public class SetTagsToItemRequest
     /// </summary>
     public uint? ItemRowVersion { get; set; }
 }
-

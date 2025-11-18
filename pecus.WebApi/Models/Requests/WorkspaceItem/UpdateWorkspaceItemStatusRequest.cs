@@ -24,4 +24,3 @@ public class UpdateWorkspaceItemStatusRequest
     public required uint RowVersion { get; set; }
 
 }
-

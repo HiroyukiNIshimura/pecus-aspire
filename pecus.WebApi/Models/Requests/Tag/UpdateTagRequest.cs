@@ -25,4 +25,3 @@ public class UpdateTagRequest
     [Required(ErrorMessage = "RowVersionは必須です。")]
     public required uint RowVersion { get; set; }
 }
-

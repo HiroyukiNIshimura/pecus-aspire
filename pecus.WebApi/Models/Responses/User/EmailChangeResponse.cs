@@ -35,4 +35,3 @@ public class EmailChangeRequestResponse
     [Required]
     public required string Token { get; set; }
 }
-

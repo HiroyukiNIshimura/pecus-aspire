@@ -23,4 +23,3 @@ public class PermissionCheckResponse
     /// </summary>
     public bool HasPermission { get; set; }
 }
-

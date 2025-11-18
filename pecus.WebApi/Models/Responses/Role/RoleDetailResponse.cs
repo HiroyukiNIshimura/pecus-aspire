@@ -41,4 +41,3 @@ public class RoleDetailResponse
     [Required]
     public required uint RowVersion { get; set; }
 }
-

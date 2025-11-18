@@ -37,5 +37,3 @@ public class SkillStatistics
     [Required]
     public required List<SkillUsageItem> UnusedSkills { get; set; } = new();
 }
-
-

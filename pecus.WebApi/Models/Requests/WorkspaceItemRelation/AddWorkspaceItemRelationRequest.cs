@@ -19,4 +19,3 @@ public class AddWorkspaceItemRelationRequest
     /// </summary>
     public RelationType? RelationType { get; set; }
 }
-

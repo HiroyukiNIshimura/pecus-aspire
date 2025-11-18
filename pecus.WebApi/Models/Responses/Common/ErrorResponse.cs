@@ -23,4 +23,3 @@ public class ErrorResponse
     /// </summary>
     public string? Details { get; set; }
 }
-

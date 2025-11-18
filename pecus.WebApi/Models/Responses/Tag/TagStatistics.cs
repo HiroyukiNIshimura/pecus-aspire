@@ -37,5 +37,3 @@ public class TagStatistics
     [Required]
     public required List<TagUsageItem> UnusedTags { get; set; } = new();
 }
-
-

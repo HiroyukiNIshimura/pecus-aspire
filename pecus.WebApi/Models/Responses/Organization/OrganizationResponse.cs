@@ -71,4 +71,3 @@ public class OrganizationResponse : IConflictModel
     [Required]
     public required uint RowVersion { get; set; }
 }
-

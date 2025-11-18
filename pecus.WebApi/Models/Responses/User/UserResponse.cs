@@ -84,4 +84,3 @@ public class UserResponse : IConflictModel
     [Required]
     public required uint RowVersion { get; set; }
 }
-

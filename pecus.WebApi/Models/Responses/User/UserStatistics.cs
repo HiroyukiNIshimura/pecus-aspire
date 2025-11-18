@@ -43,4 +43,3 @@ public class UserStatistics
     [Required]
     public required int NoWorkspaceParticipationCount { get; set; } = 0;
 }
-

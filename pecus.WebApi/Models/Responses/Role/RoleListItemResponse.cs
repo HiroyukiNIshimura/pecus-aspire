@@ -34,4 +34,3 @@ public class RoleListItemResponse
     /// </summary>
     public int PermissionCount { get; set; }
 }
-

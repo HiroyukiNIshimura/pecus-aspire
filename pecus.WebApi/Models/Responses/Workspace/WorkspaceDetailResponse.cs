@@ -28,4 +28,3 @@ public class WorkspaceDetailResponse : WorkspaceBaseResponse
     /// </summary>
     public int? UpdatedByUserId { get; set; }
 }
-

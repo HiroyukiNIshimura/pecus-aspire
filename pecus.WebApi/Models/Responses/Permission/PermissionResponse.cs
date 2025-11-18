@@ -34,4 +34,3 @@ public class PermissionResponse
     /// </summary>
     public DateTime CreatedAt { get; set; }
 }
-

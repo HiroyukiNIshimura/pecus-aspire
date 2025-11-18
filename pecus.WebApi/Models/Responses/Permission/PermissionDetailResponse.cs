@@ -46,4 +46,3 @@ public class PermissionDetailResponse
     [Required]
     public required uint RowVersion { get; set; }
 }
-

@@ -70,4 +70,3 @@ public class GenreResponse : IConflictModel
     [Required]
     public required uint RowVersion { get; set; }
 }
-

@@ -18,4 +18,3 @@ public class TagInfoResponse
     /// </summary>
     public string Name { get; set; } = string.Empty;
 }
-

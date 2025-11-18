@@ -78,4 +78,3 @@ public class LoginResponse
     /// </summary>
     public DateTime? RefreshExpiresAt { get; set; }
 }
-

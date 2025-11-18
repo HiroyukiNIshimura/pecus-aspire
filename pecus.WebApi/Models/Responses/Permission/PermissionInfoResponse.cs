@@ -19,4 +19,3 @@ public class PermissionInfoResponse
     [Required]
     public required string Name { get; set; }
 }
-

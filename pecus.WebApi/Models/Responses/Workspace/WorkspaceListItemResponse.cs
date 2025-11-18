@@ -84,4 +84,3 @@ public class WorkspaceListItemResponse
     /// </summary>
     public List<WorkspaceUserDetailResponse>? Members { get; set; }
 }
-

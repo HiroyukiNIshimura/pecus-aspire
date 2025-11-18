@@ -14,4 +14,3 @@ public enum FileType
     /// <summary>ジャンル画像</summary>
     Genre
 }
-

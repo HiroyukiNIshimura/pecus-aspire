@@ -140,4 +140,3 @@ public class WorkspaceItemDetailResponse : IConflictModel
     [Required]
     public required uint RowVersion { get; set; }
 }
-

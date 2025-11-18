@@ -23,4 +23,3 @@ public class SkillResponse
     /// </summary>
     public SkillDetailResponse? Skill { get; set; }
 }
-

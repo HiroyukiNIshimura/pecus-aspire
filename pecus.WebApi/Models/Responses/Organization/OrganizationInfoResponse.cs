@@ -24,4 +24,3 @@ public class OrganizationInfoResponse
     /// </summary>
     public string? Code { get; set; }
 }
-

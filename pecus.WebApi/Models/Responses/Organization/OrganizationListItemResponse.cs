@@ -55,4 +55,3 @@ public class OrganizationListItemResponse
     /// </summary>
     public int UserCount { get; set; }
 }
-
