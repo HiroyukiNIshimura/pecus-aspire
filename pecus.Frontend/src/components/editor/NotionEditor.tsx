@@ -1,195 +1,90 @@
 "use client";
 
-import Accordion from "@yoopta/accordion";
-import ActionMenuList, {
-  DefaultActionMenuRender,
-} from "@yoopta/action-menu-list";
-import Blockquote from "@yoopta/blockquote";
-import Callout from "@yoopta/callout";
-import Code from "@yoopta/code";
-import Divider from "@yoopta/divider";
-import YooptaEditor, {
-  createYooptaEditor,
-  YooptaPlugin,
-  type YooptaContentValue,
-  type YooptaOnChangeOptions,
-} from "@yoopta/editor";
-import Embed from "@yoopta/embed";
-import File from "@yoopta/file";
-import { HeadingOne, HeadingThree, HeadingTwo } from "@yoopta/headings";
-import Image from "@yoopta/image";
-import Link from "@yoopta/link";
-import LinkTool, { DefaultLinkToolRender } from "@yoopta/link-tool";
-import { BulletedList, NumberedList, TodoList } from "@yoopta/lists";
-import {
-  Bold,
-  CodeMark,
-  Highlight,
-  Italic,
-  Strike,
-  Underline,
-} from "@yoopta/marks";
-import Paragraph from "@yoopta/paragraph";
-import Table from "@yoopta/table";
-import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
-import Video from "@yoopta/video";
-import { useMemo, useRef, useState } from "react";
+import "@blocknote/core/fonts/inter.css";
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/mantine";
+import "@blocknote/mantine/style.css";
+import { Block, BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { useEffect, useMemo, useState } from "react";
 
-const plugins: YooptaPlugin<any, any>[] = [
-  Paragraph,
-  Table,
-  Divider.extend({
-    elementProps: {
-      divider: (props) => ({
-        ...props,
-        color: "#007aff",
-      }),
-    },
-  }),
-  Accordion,
-  HeadingOne,
-  HeadingTwo,
-  HeadingThree,
-  Blockquote,
-  Callout,
-  NumberedList,
-  BulletedList,
-  TodoList,
-  Code,
-  Link,
-  Embed,
-  Image.extend({
-    options: {
-      async onUpload(file) {
-        const data = {
-          secure_url:
-            "https://res.cloudinary.com/demo/image/upload/w_300,h_200,c_fill/sample.jpg",
-          width: 300,
-          height: 200,
-        };
-
-        return {
-          src: data.secure_url,
-          alt: "cloudinary",
-          sizes: {
-            width: data.width,
-            height: data.height,
-          },
-        };
-      },
-    },
-  }),
-  Video.extend({
-    options: {
-      onUpload: async (file) => {
-        const data = {
-          secure_url:
-            "https://res.cloudinary.com/demo/image/upload/w_300,h_200,c_fill/sample.jpg",
-          width: 300,
-          height: 200,
-        };
-        return {
-          src: data.secure_url,
-          alt: "cloudinary",
-          sizes: {
-            width: data.width,
-            height: data.height,
-          },
-        };
-      },
-      onUploadPoster: async (file) => {
-        const data = {
-          secure_url:
-            "https://res.cloudinary.com/demo/image/upload/w_300,h_200,c_fill/sample.jpg",
-          width: 300,
-          height: 200,
-        };
-        return data.secure_url;
-      },
-    },
-  }),
-  File.extend({
-    options: {
-      onUpload: async (file) => {
-        const response = {
-          secure_url: "https://res.cloudinary.com/demo/image/upload/sample.pdf",
-          format: "pdf",
-          name: "sample",
-          bytes: 12345,
-        };
-        return {
-          src: response.secure_url,
-          format: response.format,
-          name: response.name,
-          size: response.bytes,
-        };
-      },
-    },
-  }),
-];
-
-const TOOLS = {
-  ActionMenu: {
-    render: DefaultActionMenuRender,
-    tool: ActionMenuList,
-  },
-  Toolbar: {
-    render: DefaultToolbarRender,
-    tool: Toolbar,
-  },
-  LinkTool: {
-    render: DefaultLinkToolRender,
-    tool: LinkTool,
-  },
+interface NotionEditorProps  {
+    onChange?: (value: string) => void;
+    theme?: "light" | "dark";
+    editable?: boolean;
+    value?: string | null;
 };
 
-const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 
-interface NotionEditorProps {
-  onChange?: (
-    newValue: YooptaContentValue,
-    options: YooptaOnChangeOptions,
-  ) => void;
-  value?: YooptaContentValue;
-  readOnly?: boolean;
-}
+export default function NotionEditor({ onChange, theme, editable = true, value }: NotionEditorProps) {
 
-//https://github.com/yoopta-editor/Yoopta-Editor/tree/master
-export default function NotionEditor({
-  onChange: onChangeFromProps,
-  value: valueFromProps,
-  readOnly: readOnlyProps = false,
-}: NotionEditorProps) {
-  const [value, setValue] = useState<YooptaContentValue | undefined>(
-    valueFromProps,
-  );
-  const [readOnly, setReadOnly] = useState<boolean>(readOnlyProps);
+    const [blocks, setBlocks] = useState<PartialBlock[] | "loading" | undefined>( "loading");
 
-  const editor = useMemo(() => createYooptaEditor(), []);
+    // If caller doesn't provide a theme prop, derive it from the document
+    // attribute `data-theme` so consumers don't have to implement this logic.
+    const getEffectiveTheme = () => {
+        const dt = document.documentElement.getAttribute("data-theme");
+        return dt === "dark" ? ("dark" as const) : ("light" as const);
+    };
 
-  const [theme, setTheme] = useState("dark");
+    const [internalTheme, setInternalTheme] = useState<"light" | "dark">(() => {
+        // read synchronously on first render (client-only module)
+        try {
+            return getEffectiveTheme();
+        } catch {
+            return "light";
+        }
+    });
 
-  const onChange = (
-    newValue: YooptaContentValue,
-    options: YooptaOnChangeOptions,
-  ) => {
-    setValue(newValue);
-    onChangeFromProps?.(newValue, options);
-  };
+    // keep internalTheme in sync with document's data-theme when theme prop
+    // isn't supplied by the caller
+    useEffect(() => {
+        if (theme) return; // caller controls theme
 
-  return (
-    <div className={`ms-6 ${theme === "dark" ? "dark" : ""}`}>
-      <YooptaEditor
-        editor={editor}
-        plugins={plugins}
-        tools={TOOLS}
-        marks={MARKS}
-        value={value}
-        onChange={onChange}
-        readOnly={readOnly}
-        autoFocus
-        style={{ width: "calc(100% - 30px)" }}
-      />
-    </div>
-  );
+        const root = document.documentElement;
+        // update immediately in case theme changed since mount
+        setInternalTheme(getEffectiveTheme());
+
+        const mo = new MutationObserver((records) => {
+            for (const r of records) {
+                if (r.type === "attributes" && r.attributeName === "data-theme") {
+                    setInternalTheme(getEffectiveTheme());
+                }
+            }
+        });
+        mo.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+        return () => mo.disconnect();
+    }, [theme]);
+
+    useEffect(() => {
+        const initialBlocks = value ? JSON.parse(value) : undefined;
+        setBlocks(initialBlocks);
+    }, []);
+
+    const editor = useMemo(() => {
+        if (blocks === "loading") {
+            return undefined;
+        }
+        return BlockNoteEditor.create({ initialContent: blocks });
+    }, [blocks]);
+    if (editor === undefined) {
+        return "Loading content...";
+    }
+
+    const themeToPass = theme ?? internalTheme;
+
+    return (
+        <div>
+            <BlockNoteView
+                editor={editor}
+                editable={editable}
+                onChange={() => {
+                    setBlocks(editor.document);
+                    if (onChange) {
+                        onChange(JSON.stringify(blocks));
+                    }
+                }}
+                theme={themeToPass} />
+        </div>
+    );
 }

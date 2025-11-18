@@ -5,7 +5,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 import NotionEditor from "@/components/editor/NotionEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
-import type { YooptaContentValue } from "@yoopta/editor";
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
@@ -22,6 +21,20 @@ export default function WorkspaceItemDetail({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editorValue, setEditorValue] = useState<string | undefined| null>(undefined);
+
+  const bindEditorValue = (data: WorkspaceItemDetailResponse) =>
+  {
+    try {
+      if (!data?.body) {
+        return;
+      }
+      setEditorValue(data.body);
+    } catch (error) {
+      console.error("Failed to parse editor value:", error);
+      return;
+    }
+  }
 
   useEffect(() => {
     const fetchItemDetail = async () => {
@@ -40,6 +53,7 @@ export default function WorkspaceItemDetail({
 
         const data: WorkspaceItemDetailResponse = await response.json();
         setItem(data);
+        bindEditorValue(data);
       } catch (err: any) {
         setError(err.message || "アイテムの取得に失敗しました。");
       } finally {
@@ -50,8 +64,39 @@ export default function WorkspaceItemDetail({
     fetchItemDetail();
   }, [workspaceId, itemId]);
 
+  // モーダルが閉じたときにアイテムを再取得
+  useEffect(() => {
+    if (!isEditModalOpen) {
+      // モーダルが閉じられた直後に再度アイテムを取得
+      const refreshItemDetail = async () => {
+        try {
+          const response = await fetch(
+            `/api/workspaces/${workspaceId}/items/${itemId}`,
+          );
+
+          if (!response.ok) {
+            console.error("Failed to refresh item after modal close");
+            return;
+          }
+
+          const data: WorkspaceItemDetailResponse = await response.json();
+
+          // stateを更新
+          setItem(data);
+          bindEditorValue(data);
+        } catch (err) {
+          console.error("Error refreshing item after modal close:", err);
+        }
+      };
+
+      refreshItemDetail();
+    }
+  }, [isEditModalOpen, workspaceId, itemId]);
+
   const handleEditSave = (updatedItem: WorkspaceItemDetailResponse) => {
     setItem(updatedItem);
+    // モーダルを閉じる（再取得useEffectが発動する）
+    setIsEditModalOpen(false);
   };
 
   if (isLoading) {
@@ -126,20 +171,16 @@ export default function WorkspaceItemDetail({
             <h3 className="text-lg font-bold mb-2">内容</h3>
             <div className="p-4 bg-base-200 rounded">
               <NotionEditor
-                value={
-                  (() => {
-                    try {
-                      return JSON.parse(item.body) as YooptaContentValue;
-                    } catch {
-                      return undefined;
-                    }
-                  })()
-                }
-                readOnly={true}
+                value={editorValue}
+                editable={false}
               />
             </div>
           </div>
         )}
+
+        <div><pre>
+          <code>{editorValue}</code>
+        </pre></div>
 
         {/* メタ情報 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4 border-y border-base-300 text-sm">

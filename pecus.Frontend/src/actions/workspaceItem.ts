@@ -163,3 +163,74 @@ export async function updateWorkspaceItem(
     };
   }
 }
+
+/**
+ * Server Action: ワークスペースアイテムのタグを更新
+ */
+export async function updateWorkspaceItemTags(
+  workspaceId: number,
+  itemId: number,
+  tagNames: string[],
+  rowVersion: number,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.putApiWorkspacesItemsTags(
+      workspaceId,
+      itemId,
+      {
+        tags: tagNames,
+        itemRowVersion: rowVersion,
+      },
+    );
+    return { success: true, data: response as any };
+  } catch (error: any) {
+    console.error("Failed to update workspace item tags:", error);
+    console.error("Error body:", error.body);
+    console.error("Error status:", error.status);
+
+    // 409 Conflict: 並行更新による競合
+    const concurrency = detectConcurrencyError(error);
+    if (concurrency) {
+      return {
+        success: false,
+        error: "conflict",
+        message: concurrency.message,
+        latest: concurrency.payload,
+      } as unknown as ConflictResponse<WorkspaceItemDetailResponse>;
+    }
+
+    // バリデーションエラー
+    if (error.status === 400) {
+      const errorMessages = Array.isArray(error.body)
+        ? error.body.map((err: any) => err.message || err).join("、")
+        : error.body?.message || error.message || "入力内容に誤りがあります。";
+
+      return {
+        success: false,
+        error: "validation",
+        message: errorMessages,
+      };
+    }
+
+    // アイテムが見つからない（404 Not Found）
+    if (error.status === 404) {
+      return {
+        success: false,
+        error: "not-found",
+        message: "アイテムが見つかりません。",
+      };
+    }
+
+    // その他のエラー
+    return {
+      success: false,
+      error: "server",
+      message:
+        error.body?.message ||
+        error.message ||
+        "タグの更新に失敗しました。",
+    };
+  }
+}
+
