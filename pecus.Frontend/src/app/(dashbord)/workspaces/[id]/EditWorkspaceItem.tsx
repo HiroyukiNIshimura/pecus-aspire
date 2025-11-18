@@ -394,13 +394,11 @@ export default function EditWorkspaceItem({
                   <label className="label">
                     <span className="label-text font-semibold">本文</span>
                   </label>
-                  <div className="bg-base-200 rounded">
-                    <NotionEditor
-                      value={editorValue}
-                      onChange={handleEditorChange}
-                      readOnly={false}
-                    />
-                  </div>
+                  <NotionEditor
+                    value={editorValue}
+                    onChange={handleEditorChange}
+                    readOnly={false}
+                  />
                 </div>
 
                 {/* 期限日 */}
