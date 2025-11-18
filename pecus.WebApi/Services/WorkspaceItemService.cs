@@ -105,6 +105,7 @@ public class WorkspaceItemService
                 IsDraft = request.IsDraft,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                IsActive = true,
             };
 
             _context.WorkspaceItems.Add(item);

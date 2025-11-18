@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -14,6 +14,10 @@ import type {
 } from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
 import TagInput from "@/components/common/TagInput";
+import { createWorkspaceItem } from "@/actions/workspaceItem";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
+import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -28,93 +32,105 @@ export default function CreateWorkspaceItem({
   onClose,
   onCreate,
 }: CreateWorkspaceItemProps) {
-  const [subject, setSubject] = useState("");
-  const [content, setContent] = useState("");
+  // フォーム状態
+  const [formData, setFormData] = useState<CreateWorkspaceItemInput>({
+    subject: "",
+    dueDate: "",
+    priority: "Medium",
+    isDraft: true,
+  });
+
   const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>();
-  const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState<TaskPriority | "">("Medium");
-  const [isDraft, setIsDraft] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
 
-  // モーダルを閉じる際にフォームをリセット
-  useEffect(() => {
-    if (!isOpen) {
-      setSubject("");
-      setContent("");
-      setEditorValue(undefined);
-      setDueDate("");
-      setPriority("Medium");
-      setIsDraft(true);
-      setTags([]);
-      setError(null);
-    }
-  }, [isOpen]);
+  // フォーム検証フック
+  const {
+    formRef,
+    isSubmitting,
+    fieldErrors,
+    handleSubmit: handleFormSubmit,
+    validateField,
+    shouldShowError,
+    getFieldError,
+  } = useFormValidation({
+    schema: createWorkspaceItemSchema,
+    onSubmit: async (data) => {
+      try {
+        // dueDate を ISO 8601 形式に変換（空の場合は null）
+        let dueDateValue: string | null = null;
+        if (data.dueDate) {
+          const date = new Date(data.dueDate);
+          dueDateValue = date.toISOString(); // ISO 8601 形式（完全な日時）
+        }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+        const request: CreateWorkspaceItemRequest = {
+          subject: data.subject.trim(),
+          body: editorValue ? JSON.stringify(editorValue) : null,
+          dueDate: dueDateValue,
+          priority: data.priority as TaskPriority | undefined,
+          isDraft: data.isDraft,
+          tagNames: tags.length > 0 ? tags : null,
+        };
 
-    if (!subject.trim()) {
-      setError("件名は必須です");
-      return;
-    }
+        const result = await createWorkspaceItem(workspaceId, request);
 
-    if (!dueDate) {
-      setError("期限日は必須です");
-      return;
-    }
+        if (result.success) {
+          // 作成成功時のコールバック
+          if (onCreate && result.data.workspaceItem?.id) {
+            onCreate(result.data.workspaceItem.id);
+          }
 
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const request: CreateWorkspaceItemRequest = {
-        subject: subject.trim(),
-        body: null,
-        dueDate,
-        priority: priority || undefined,
-        isDraft,
-        tagNames: tags.length > 0 ? tags : null,
-      };
-
-      const response = await fetch(
-        `/api/workspaces/${workspaceId}/items/create`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(request),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "アイテムの作成に失敗しました");
+          // フォームをリセットしてモーダルを閉じる
+          resetForm();
+          onClose();
+        } else {
+          setGlobalError(result.message || "アイテムの作成に失敗しました");
+        }
+      } catch (err) {
+        setGlobalError(
+          err instanceof Error ? err.message : "エラーが発生しました"
+        );
       }
+    },
+  });
 
-      const data = await response.json();
+  // フィールド変更時の処理
+  const handleFieldChange = async (fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-      // 作成成功時のコールバック
-      if (onCreate && data.id) {
-        onCreate(data.id);
-      }
-
-      // フォームをリセットしてモーダルを閉じる
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "エラーが発生しました");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // フィールド検証を実行
+    await validateField(fieldName, value);
   };
 
+  // エディタ変更時の処理
   const handleEditorChange = (
     newValue: YooptaContentValue,
-    options: YooptaOnChangeOptions,
+    _options: YooptaOnChangeOptions,
   ) => {
     setEditorValue(newValue);
+  };
+
+  // フォームリセット
+  const resetForm = () => {
+    setFormData({
+      subject: "",
+      dueDate: "",
+      priority: "Medium",
+      isDraft: true,
+    });
+    setEditorValue(undefined);
+    setTags([]);
+    setGlobalError(null);
+  };
+
+  // モーダルを閉じる際の処理
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -124,7 +140,7 @@ export default function CreateWorkspaceItem({
       {/* モーダル背景オーバーレイ */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
@@ -143,7 +159,7 @@ export default function CreateWorkspaceItem({
             <button
               type="button"
               className="btn btn-ghost btn-sm btn-circle"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               aria-label="閉じる"
             >
@@ -153,8 +169,8 @@ export default function CreateWorkspaceItem({
 
           {/* モーダルボディ */}
           <div className="p-6">
-            {/* エラー表示 */}
-            {error && (
+            {/* グローバルエラー表示 */}
+            {globalError && (
               <div className="alert alert-error mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -169,115 +185,164 @@ export default function CreateWorkspaceItem({
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>{error}</span>
+                <span>{globalError}</span>
               </div>
             )}
 
             {/* フォーム */}
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          {/* 件名 */}
-          <div className="form-control">
-            <label htmlFor="subject" className="label">
-              <span className="label-text font-semibold">
-                件名 <span className="text-error">*</span>
-              </span>
-            </label>
-            <input
-              id="subject"
-              type="text"
-              placeholder="例：新しいタスクの件名"
-              className="input input-bordered w-full"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              disabled={isSubmitting}
-              required
-            />
-          </div>
-
-          {/* 本文（WYSIWYGエディタ） */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">本文</span>
-            </label>
-            {/* WYSIWYGエディタコンポーネント */}
-            <NotionEditor value={editorValue} onChange={handleEditorChange} />
-          </div>
-
-          {/* 期限日 */}
-          <div className="form-control">
-            <label htmlFor="dueDate" className="label">
-              <span className="label-text font-semibold">
-                期限日
-              </span>
-            </label>
-            <input
-              id="dueDate"
-              type="date"
-              className="input input-bordered w-full"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              disabled={isSubmitting}
-              required
-            />
-          </div>
-
-          {/* 優先度 */}
-          <div className="form-control">
-            <label htmlFor="priority" className="label">
-              <span className="label-text font-semibold">優先度</span>
-            </label>
-            <select
-              id="priority"
-              className="select select-bordered w-full"
-              value={priority}
-              onChange={(e) =>
-                setPriority(e.target.value as TaskPriority | "")
-              }
-              disabled={isSubmitting}
+            <form
+              ref={formRef}
+              onSubmit={handleFormSubmit}
+              noValidate
+              className="space-y-4"
             >
-              <option value="">未設定</option>
-              <option value="Low">低</option>
-              <option value="Medium">中</option>
-              <option value="High">高</option>
-              <option value="Critical">緊急</option>
-            </select>
-          </div>
+              {/* 件名 */}
+              <div className="form-control">
+                <label htmlFor="subject" className="label">
+                  <span className="label-text font-semibold">
+                    件名 <span className="text-error">*</span>
+                  </span>
+                </label>
+                <input
+                  id="subject"
+                  name="subject"
+                  type="text"
+                  placeholder="例：新しいタスクの件名"
+                  className={`input input-bordered w-full ${
+                    shouldShowError("subject") ? "input-error" : ""
+                  }`}
+                  value={formData.subject}
+                  onChange={(e) =>
+                    handleFieldChange("subject", e.target.value)
+                  }
+                  onBlur={() => validateField("subject", formData.subject)}
+                  disabled={isSubmitting}
+                  maxLength={200}
+                />
+                {shouldShowError("subject") && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">
+                      {getFieldError("subject")}
+                    </span>
+                  </label>
+                )}
+                <label className="label">
+                  <span className="label-text-alt text-xs">
+                    {formData.subject.length}/200 文字
+                  </span>
+                </label>
+              </div>
 
-          {/* タグ */}
-          <div className="form-control">
-            <label htmlFor="tags" className="label">
-              <span className="label-text font-semibold">タグ</span>
-              <span className="label-text-alt">
-                Enterキーで追加、ドラッグで並び替え
-              </span>
-            </label>
-            <TagInput
-              tags={tags}
-              onChange={setTags}
-              placeholder="タグを入力してEnterキーを押す..."
-              disabled={isSubmitting}
-            />
-          </div>
+              {/* 本文（WYSIWYGエディタ） */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold">本文</span>
+                </label>
+                <NotionEditor
+                  value={editorValue}
+                  onChange={handleEditorChange}
+                />
+              </div>
 
-          {/* 下書きフラグ */}
-          <div className="form-control">
-            <label className="label cursor-pointer justify-start gap-2">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-primary"
-                checked={isDraft}
-                onChange={(e) => setIsDraft(e.target.checked)}
-                disabled={isSubmitting}
-              />
-              <span className="label-text">下書きとして保存</span>
-            </label>
+              {/* 期限日 */}
+              <div className="form-control">
+                <label htmlFor="dueDate" className="label">
+                  <span className="label-text font-semibold">
+                    期限日
+                  </span>
+                </label>
+                <input
+                  id="dueDate"
+                  name="dueDate"
+                  type="date"
+                  className={`input input-bordered w-full ${
+                    shouldShowError("dueDate") ? "input-error" : ""
+                  }`}
+                  value={formData.dueDate}
+                  onChange={(e) =>
+                    handleFieldChange("dueDate", e.target.value)
+                  }
+                  onBlur={() => validateField("dueDate", formData.dueDate)}
+                  disabled={isSubmitting}
+                />
+                {shouldShowError("dueDate") && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">
+                      {getFieldError("dueDate")}
+                    </span>
+                  </label>
+                )}
+              </div>
+
+              {/* 優先度 */}
+              <div className="form-control">
+                <label htmlFor="priority" className="label">
+                  <span className="label-text font-semibold">優先度</span>
+                </label>
+                <select
+                  id="priority"
+                  name="priority"
+                  className={`select select-bordered w-full ${
+                    shouldShowError("priority") ? "select-error" : ""
+                  }`}
+                  value={formData.priority}
+                  onChange={(e) =>
+                    handleFieldChange("priority", e.target.value as TaskPriority)
+                  }
+                  disabled={isSubmitting}
+                >
+                  <option value="Low">低</option>
+                  <option value="Medium">中</option>
+                  <option value="High">高</option>
+                  <option value="Critical">緊急</option>
+                </select>
+                {shouldShowError("priority") && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">
+                      {getFieldError("priority")}
+                    </span>
+                  </label>
+                )}
+              </div>
+
+              {/* タグ */}
+              <div className="form-control">
+                <label htmlFor="tags" className="label">
+                  <span className="label-text font-semibold">タグ</span>
+                  <span className="label-text-alt">
+                    Enterキーで追加、ドラッグで並び替え
+                  </span>
+                </label>
+                <TagInput
+                  tags={tags}
+                  onChange={setTags}
+                  placeholder="タグを入力してEnterキーを押す..."
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* 下書きフラグ */}
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-2">
+                  <input
+                    type="checkbox"
+                    name="isDraft"
+                    className="checkbox checkbox-primary"
+                    checked={formData.isDraft}
+                    onChange={(e) =>
+                      handleFieldChange("isDraft", e.target.checked)
+                    }
+                    disabled={isSubmitting}
+                  />
+                  <span className="label-text">下書きとして保存</span>
+                </label>
               </div>
 
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="btn btn-outline"
                   disabled={isSubmitting}
                 >
