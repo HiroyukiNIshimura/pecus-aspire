@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/hooks/useTheme";
 import Accordion from "@yoopta/accordion";
 import ActionMenuList, {
   DefaultActionMenuRender,
@@ -33,7 +34,7 @@ import Paragraph from "@yoopta/paragraph";
 import Table from "@yoopta/table";
 import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
 import Video from "@yoopta/video";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const plugins: YooptaPlugin<any, any>[] = [
   Paragraph,
@@ -152,6 +153,7 @@ interface NotionEditorProps {
   ) => void;
   value?: YooptaContentValue;
   readOnly?: boolean;
+  theme?: "light" | "dark";
 }
 
 //https://github.com/yoopta-editor/Yoopta-Editor/tree/master
@@ -159,15 +161,30 @@ export default function NotionEditor({
   onChange: onChangeFromProps,
   value: valueFromProps,
   readOnly: readOnlyProps = false,
+  theme: themeProps = "dark",
+
 }: NotionEditorProps) {
   const [value, setValue] = useState<YooptaContentValue | undefined>(
     valueFromProps,
   );
   const [readOnly, setReadOnly] = useState<boolean>(readOnlyProps);
 
+  let themeVal = themeProps;
+  if (!themeProps) {
+    const { currentTheme } = useTheme();
+    themeVal = currentTheme();
+  }
+  const [theme, setTheme] = useState<"light" | "dark">(themeVal);
+
   const editor = useMemo(() => createYooptaEditor(), []);
 
-  const [theme, setTheme] = useState("dark");
+  useEffect(() => {
+    if (editor) {
+      setValue(valueFromProps);
+      editor.setEditorValue(valueFromProps || null);
+    }
+  }, [valueFromProps]);
+
 
   const onChange = (
     newValue: YooptaContentValue,
