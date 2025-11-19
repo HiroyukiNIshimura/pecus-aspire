@@ -14,10 +14,11 @@ import { ListNode, ListItemNode } from "@lexical/list";
 import { CodeNode } from "@lexical/code";
 import { LinkNode, AutoLinkNode } from "@lexical/link";
 import type { EditorState } from "lexical";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import styles from "./PecusEditor.module.css";
 import { OnChangePlugin } from "./plugins/OnChangePlugin";
 import ComponentPickerMenuPlugin from "./plugins/SlashCommandPlugin";
+import DraggableBlockPlugin from "./plugins/DraggableBlockPlugin";
 
 interface PecusEditorProps {
   /**
@@ -135,6 +136,15 @@ export function PecusEditor({
   readOnly = false,
   className = "",
 }: PecusEditorProps) {
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
+
+  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
+
   // エディタエラーハンドラー
   const onError = useCallback((error: Error) => {
     console.error("Lexical Editor Error:", error);
@@ -174,7 +184,7 @@ export function PecusEditor({
   return (
     <div className={`${styles.editorContainer} ${className}`}>
       <LexicalComposer initialConfig={initialConfig}>
-        <div className={styles.editorWrapper}>
+        <div className={styles.editorWrapper} ref={onRef}>
           {/* エディタ本体 */}
           <RichTextPlugin
             contentEditable={<ContentEditable className={styles.editor} />}
@@ -192,6 +202,9 @@ export function PecusEditor({
           <ComponentPickerMenuPlugin />
           {!readOnly && <AutoFocusPlugin />}
           {onChange && <OnChangePlugin onChange={handleChange} />}
+          {floatingAnchorElem && !readOnly && (
+            <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+          )}
         </div>
       </LexicalComposer>
     </div>

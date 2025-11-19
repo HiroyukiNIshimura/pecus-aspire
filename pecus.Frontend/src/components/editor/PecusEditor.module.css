@@ -11,6 +11,9 @@
 /* エディタラッパー */
 .editorWrapper {
   position: relative;
+  overflow: auto;
+  resize: vertical;
+  padding-left: 28px; /* ドラッグハンドル用のスペース */
 }
 
 /* スラッシュコマンドメニュー */
@@ -392,4 +395,106 @@
   border-radius: 0.5rem;
   background-color: var(--color-base-100);
   cursor: pointer;
+}
+
+/* Draggable Block Plugin */
+.draggableBlockMenu {
+  border-radius: 4px;
+  padding: 2px 1px;
+  cursor: grab;
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  display: flex;
+  gap: 2px;
+}
+
+.draggableBlockMenu:active {
+  cursor: grabbing;
+}
+
+.iconPlus {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  opacity: 0.3;
+  position: relative;
+  padding: 0;
+}
+
+.iconPlus::before,
+.iconPlus::after {
+  content: '';
+  position: absolute;
+  background-color: var(--color-base-content);
+}
+
+.iconPlus::before {
+  top: 50%;
+  left: 2px;
+  right: 2px;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.iconPlus::after {
+  left: 50%;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  transform: translateX(-50%);
+}
+
+.iconPlus:hover {
+  opacity: 1;
+  background-color: var(--color-base-200);
+  border-radius: 2px;
+}
+
+.iconDrag {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  opacity: 0.3;
+  cursor: grab;
+  position: relative;
+  background-color: transparent;
+  background-image: 
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
+    radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px);
+  background-size: 3px 3px;
+  background-position: 
+    4px 3px,
+    10px 3px,
+    4px 7px,
+    10px 7px,
+    4px 11px,
+    10px 11px;
+  background-repeat: no-repeat;
+}
+
+.iconDrag:hover {
+  opacity: 1;
+  background-color: var(--color-base-200);
+  border-radius: 2px;
+}
+
+.draggableBlockTargetLine {
+  pointer-events: none;
+  background: var(--color-primary);
+  height: 4px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform;
 }
