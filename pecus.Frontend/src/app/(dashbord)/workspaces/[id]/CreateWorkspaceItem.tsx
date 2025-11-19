@@ -8,10 +8,7 @@ import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
-import type {
-  YooptaContentValue,
-  YooptaOnChangeOptions,
-} from "@yoopta/editor";
+import type { YooptaContentValue, YooptaOnChangeOptions } from "@yoopta/editor";
 import NotionEditor from "@/components/editor/NotionEditor";
 import TagInput from "@/components/common/TagInput";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
@@ -40,7 +37,9 @@ export default function CreateWorkspaceItem({
     isDraft: true,
   });
 
-  const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>();
+  const [editorValue, setEditorValue] = useState<
+    YooptaContentValue | undefined
+  >();
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -89,7 +88,7 @@ export default function CreateWorkspaceItem({
         }
       } catch (err) {
         setGlobalError(
-          err instanceof Error ? err.message : "エラーが発生しました"
+          err instanceof Error ? err.message : "エラーが発生しました",
         );
       }
     },
@@ -212,9 +211,7 @@ export default function CreateWorkspaceItem({
                     shouldShowError("subject") ? "input-error" : ""
                   }`}
                   value={formData.subject}
-                  onChange={(e) =>
-                    handleFieldChange("subject", e.target.value)
-                  }
+                  onChange={(e) => handleFieldChange("subject", e.target.value)}
                   onBlur={() => validateField("subject", formData.subject)}
                   disabled={isSubmitting}
                   maxLength={200}
@@ -248,9 +245,7 @@ export default function CreateWorkspaceItem({
               {/* 期限日 */}
               <div className="form-control">
                 <label htmlFor="dueDate" className="label">
-                  <span className="label-text font-semibold">
-                    期限日
-                  </span>
+                  <span className="label-text font-semibold">期限日</span>
                 </label>
                 <input
                   id="dueDate"
@@ -260,9 +255,7 @@ export default function CreateWorkspaceItem({
                     shouldShowError("dueDate") ? "input-error" : ""
                   }`}
                   value={formData.dueDate}
-                  onChange={(e) =>
-                    handleFieldChange("dueDate", e.target.value)
-                  }
+                  onChange={(e) => handleFieldChange("dueDate", e.target.value)}
                   onBlur={() => validateField("dueDate", formData.dueDate)}
                   disabled={isSubmitting}
                 />
@@ -288,7 +281,10 @@ export default function CreateWorkspaceItem({
                   }`}
                   value={formData.priority}
                   onChange={(e) =>
-                    handleFieldChange("priority", e.target.value as TaskPriority)
+                    handleFieldChange(
+                      "priority",
+                      e.target.value as TaskPriority,
+                    )
                   }
                   disabled={isSubmitting}
                 >

@@ -178,8 +178,14 @@ export async function toggleWorkspaceActive(
 
     // isActiveに応じて適切なエンドポイントを呼び出す
     const response = isActive
-      ? await api.workspace.postApiWorkspacesActivate(workspaceId, detailResponse.rowVersion)
-      : await api.workspace.postApiWorkspacesDeactivate(workspaceId, detailResponse.rowVersion);
+      ? await api.workspace.postApiWorkspacesActivate(
+          workspaceId,
+          detailResponse.rowVersion,
+        )
+      : await api.workspace.postApiWorkspacesDeactivate(
+          workspaceId,
+          detailResponse.rowVersion,
+        );
 
     return { success: true, data: response };
   } catch (error: any) {
@@ -207,7 +213,8 @@ export async function toggleWorkspaceActive(
       return {
         success: false,
         error: "validation",
-        message: error.body?.message || error.body?.title || "入力データが不正です。",
+        message:
+          error.body?.message || error.body?.title || "入力データが不正です。",
       };
     }
 

@@ -7,11 +7,7 @@ import type {
   WorkspaceItemDetailResponse,
   TaskPriority,
 } from "@/connectors/api/pecus";
-import type {
-  YooptaContentValue,
-  YooptaOnChangeOptions,
-} from "@yoopta/editor";
-import NotionEditor from "@/components/editor/NotionEditor";
+import { PecusEditor } from "@/components/editor";
 import {
   updateWorkspaceItem,
   fetchLatestWorkspaceItem,
@@ -35,7 +31,8 @@ export default function EditWorkspaceItem({
   const notify = useNotify();
 
   // 最新アイテムデータ
-  const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
+  const [latestItem, setLatestItem] =
+    useState<WorkspaceItemDetailResponse>(item);
   const [isLoadingItem, setIsLoadingItem] = useState(false);
   const [itemLoadError, setItemLoadError] = useState<string | null>(null);
 
@@ -51,15 +48,7 @@ export default function EditWorkspaceItem({
     rowVersion: item.rowVersion,
   });
 
-  const [editorValue, setEditorValue] = useState<YooptaContentValue | undefined>(
-    (() => {
-      try {
-        return item.body ? JSON.parse(item.body) : undefined;
-      } catch {
-        return undefined;
-      }
-    })()
-  );
+  const [editorValue, setEditorValue] = useState<string>(item.body || "");
 
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +57,9 @@ export default function EditWorkspaceItem({
   const validateField = useCallback(
     async (fieldName: string, value: unknown) => {
       try {
-        const fieldSchema = (updateWorkspaceItemSchema as any).shape?.[fieldName];
+        const fieldSchema = (updateWorkspaceItemSchema as any).shape?.[
+          fieldName
+        ];
         if (!fieldSchema) return;
 
         const result = await fieldSchema.safeParseAsync(value);
@@ -121,7 +112,8 @@ export default function EditWorkspaceItem({
           isDraft: formData.isDraft,
           isArchived: formData.isArchived,
           rowVersion: formData.rowVersion,
-        });        if (!result.success) {
+        });
+        if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
           result.error.issues.forEach((issue: any) => {
@@ -155,7 +147,7 @@ export default function EditWorkspaceItem({
           latestItem.id,
           {
             subject: result.data.subject,
-            body: editorValue ? JSON.stringify(editorValue) : null,
+            body: editorValue || null,
             dueDate: dueDateValue,
             priority: result.data.priority as TaskPriority | undefined,
             isDraft: result.data.isDraft,
@@ -228,13 +220,7 @@ export default function EditWorkspaceItem({
             rowVersion: result.data.rowVersion,
           });
           // エディタ値を更新
-          try {
-            setEditorValue(
-              result.data.body ? JSON.parse(result.data.body) : undefined,
-            );
-          } catch {
-            setEditorValue(undefined);
-          }
+          setEditorValue(result.data.body || "");
         } else {
           setItemLoadError(result.message || "アイテムの取得に失敗しました。");
         }
@@ -250,28 +236,22 @@ export default function EditWorkspaceItem({
   }, [isOpen, item.workspaceId, item.id]);
 
   // 入力時の検証とフォーム状態更新
-  const handleFieldChange = useCallback(
-    (fieldName: string, value: unknown) => {
-      setFormData((prev) => ({
-        ...prev,
-        [fieldName]: value,
-      }));
+  const handleFieldChange = useCallback((fieldName: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
 
-      // エラーがあればクリア（入力時は検証を行わず、エラーのみクリア）
-      setFieldErrors((prev) => {
-        const next = { ...prev };
-        delete next[fieldName];
-        return next;
-      });
-    },
-    [],
-  );
+    // エラーがあればクリア（入力時は検証を行わず、エラーのみクリア）
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[fieldName];
+      return next;
+    });
+  }, []);
 
   // エディタ変更時の処理
-  const handleEditorChange = (
-    newValue: YooptaContentValue,
-    _options: YooptaOnChangeOptions,
-  ) => {
+  const handleEditorChange = (newValue: string) => {
     setEditorValue(newValue);
   };
 
@@ -394,8 +374,9 @@ export default function EditWorkspaceItem({
                   <label className="label">
                     <span className="label-text font-semibold">本文</span>
                   </label>
-                  <NotionEditor
-                    value={editorValue}
+                  <PecusEditor
+                    initialContent={editorValue}
+                    placeholder="本文を入力してください..."
                     onChange={handleEditorChange}
                     readOnly={false}
                   />
@@ -441,7 +422,10 @@ export default function EditWorkspaceItem({
                     }`}
                     value={formData.priority || "Medium"}
                     onChange={(e) =>
-                      handleFieldChange("priority", e.target.value as TaskPriority)
+                      handleFieldChange(
+                        "priority",
+                        e.target.value as TaskPriority,
+                      )
                     }
                     disabled={isSubmitting}
                   >

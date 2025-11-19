@@ -1,8 +1,18 @@
 "use server";
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type { WorkspaceItemDetailResponse, WorkspaceItemResponse, UpdateWorkspaceItemAssigneeRequest } from "@/connectors/api/pecus";
-import type { CreateWorkspaceItemRequest, UpdateWorkspaceItemRequest } from "@/connectors/api/pecus";
+import {
+  createPecusApiClients,
+  detectConcurrencyError,
+} from "@/connectors/api/PecusApiClient";
+import type {
+  WorkspaceItemDetailResponse,
+  WorkspaceItemResponse,
+  UpdateWorkspaceItemAssigneeRequest,
+} from "@/connectors/api/pecus";
+import type {
+  CreateWorkspaceItemRequest,
+  UpdateWorkspaceItemRequest,
+} from "@/connectors/api/pecus";
 import type { ApiResponse, ConflictResponse } from "./types";
 
 /**
@@ -129,7 +139,7 @@ export async function updateWorkspaceItem(
         latest: {
           type: "workspaceItem",
           data: concurrency.payload.current as WorkspaceItemDetailResponse,
-        }
+        },
       };
     }
 
@@ -213,7 +223,8 @@ export async function updateWorkspaceItemAssignee(
           typeof concurrency.payload.current === "object"
             ? {
                 type: "workspaceItem",
-                data: concurrency.payload.current as WorkspaceItemDetailResponse,
+                data: concurrency.payload
+                  .current as WorkspaceItemDetailResponse,
               }
             : undefined,
       };
@@ -246,9 +257,7 @@ export async function updateWorkspaceItemAssignee(
       success: false,
       error: "server",
       message:
-        error.body?.message ||
-        error.message ||
-        "作業者の更新に失敗しました。",
+        error.body?.message || error.message || "作業者の更新に失敗しました。",
     };
   }
 }

@@ -67,7 +67,10 @@ export default function EditWorkspaceClient({
         const result = await updateWorkspace(workspaceDetail.id!, {
           name: data.name,
           description: data.description || undefined,
-          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+          genreId:
+            typeof data.genreId === "string"
+              ? parseInt(data.genreId, 10)
+              : data.genreId,
           rowVersion: workspaceDetail.rowVersion,
         });
 

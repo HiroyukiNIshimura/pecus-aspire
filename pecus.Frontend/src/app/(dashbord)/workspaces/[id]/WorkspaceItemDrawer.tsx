@@ -27,7 +27,7 @@ export default function WorkspaceItemDrawer({
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<number | null>(
-    item.assigneeId || null
+    item.assigneeId || null,
   );
 
   if (!isOpen) return null;
@@ -44,7 +44,7 @@ export default function WorkspaceItemDrawer({
         {
           assigneeId: newAssigneeId,
           rowVersion: item.rowVersion,
-        }
+        },
       );
 
       if (result.success) {
@@ -87,7 +87,9 @@ export default function WorkspaceItemDrawer({
         className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
         onClick={onClose}
         style={{
-          animation: isClosing ? "fadeOut 0.25s ease-out" : "fadeIn 0.2s ease-out",
+          animation: isClosing
+            ? "fadeOut 0.25s ease-out"
+            : "fadeIn 0.2s ease-out",
         }}
       />
 
@@ -133,7 +135,9 @@ export default function WorkspaceItemDrawer({
             <select
               value={selectedAssigneeId || ""}
               onChange={(e) =>
-                handleAssigneeChange(e.target.value ? parseInt(e.target.value) : null)
+                handleAssigneeChange(
+                  e.target.value ? parseInt(e.target.value) : null,
+                )
               }
               disabled={isUpdating}
               className="select select-bordered"
@@ -187,8 +191,7 @@ export default function WorkspaceItemDrawer({
         </div>
 
         {/* フッター */}
-        <div className="flex gap-2 p-4 border-t border-base-300 bg-base-100">
-        </div>
+        <div className="flex gap-2 p-4 border-t border-base-300 bg-base-100"></div>
       </div>
     </>
   );

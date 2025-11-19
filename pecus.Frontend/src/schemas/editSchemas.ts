@@ -102,22 +102,19 @@ export const createWorkspaceItemSchema = z.object({
   dueDate: z
     .string()
     .optional()
-    .refine(
-      (val) => {
-        if (!val) return true; // 空の場合は OK
-        const date = new Date(val);
-        return !Number.isNaN(date.getTime());
-      },
-      "有効な日付を入力してください。",
-    )
+    .refine((val) => {
+      if (!val) return true; // 空の場合は OK
+      const date = new Date(val);
+      return !Number.isNaN(date.getTime());
+    }, "有効な日付を入力してください。")
     .optional(),
-  priority: z
-    .enum(["Low", "Medium", "High", "Critical"])
-    .default("Medium"),
+  priority: z.enum(["Low", "Medium", "High", "Critical"]).default("Medium"),
   isDraft: z.boolean().default(true),
 });
 
-export type CreateWorkspaceItemInput = z.infer<typeof createWorkspaceItemSchema>;
+export type CreateWorkspaceItemInput = z.infer<
+  typeof createWorkspaceItemSchema
+>;
 
 /**
  * ワークスペースアイテム更新スキーマ
@@ -130,22 +127,18 @@ export const updateWorkspaceItemSchema = z.object({
   dueDate: z
     .string()
     .optional()
-    .refine(
-      (val) => {
-        if (!val) return true; // 空の場合は OK
-        const date = new Date(val);
-        return !Number.isNaN(date.getTime());
-      },
-      "有効な日付を入力してください。",
-    )
+    .refine((val) => {
+      if (!val) return true; // 空の場合は OK
+      const date = new Date(val);
+      return !Number.isNaN(date.getTime());
+    }, "有効な日付を入力してください。")
     .optional(),
-  priority: z
-    .enum(["Low", "Medium", "High", "Critical"])
-    .optional(),
+  priority: z.enum(["Low", "Medium", "High", "Critical"]).optional(),
   isDraft: z.boolean().optional(),
   isArchived: z.boolean().optional(),
   rowVersion: z.number().int().positive("RowVersionは必須です。"),
 });
 
-export type UpdateWorkspaceItemInput = z.infer<typeof updateWorkspaceItemSchema>;
-
+export type UpdateWorkspaceItemInput = z.infer<
+  typeof updateWorkspaceItemSchema
+>;

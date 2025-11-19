@@ -35,7 +35,7 @@ export default function TagInput({
       const newTags = tags.filter((_, i) => i !== index);
       onChange(newTags);
     },
-    [tags, onChange, disabled]
+    [tags, onChange, disabled],
   );
 
   const handleAddition = useCallback(
@@ -59,7 +59,7 @@ export default function TagInput({
 
       onChange([...tags, newTagText]);
     },
-    [tags, onChange, disabled, allowDuplicates, maxTags]
+    [tags, onChange, disabled, allowDuplicates, maxTags],
   );
 
   const handleDrag = useCallback(
@@ -71,7 +71,7 @@ export default function TagInput({
       newTags.splice(newPos, 0, tag.id);
       onChange(newTags);
     },
-    [tags, onChange, disabled]
+    [tags, onChange, disabled],
   );
 
   return (
@@ -100,7 +100,6 @@ export default function TagInput({
           />
         );
       })()}
-
     </div>
   );
 }

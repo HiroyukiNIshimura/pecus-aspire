@@ -40,7 +40,7 @@ export function useTheme() {
     applyTheme(newTheme);
   };
 
-  const currentTheme = () : "light" | "dark" => {
+  const currentTheme = (): "light" | "dark" => {
     const current = document.documentElement.getAttribute("data-theme");
     if (current === "auto") {
       const prefersDark = window.matchMedia(
@@ -49,7 +49,7 @@ export function useTheme() {
       return prefersDark ? "dark" : "light";
     }
     return current as "light" | "dark";
-  }
+  };
 
   return { theme, changeTheme, mounted, currentTheme };
 }
