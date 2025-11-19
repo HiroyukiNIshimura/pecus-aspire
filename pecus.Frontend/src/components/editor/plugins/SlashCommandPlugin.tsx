@@ -39,7 +39,7 @@ class ComponentPickerOption extends MenuOption {
       icon?: JSX.Element;
       keywords?: string[];
       onSelect: (queryString: string) => void;
-    }
+    },
   ) {
     super(title);
     this.title = title;
@@ -74,7 +74,7 @@ function getBaseOptions(editor: LexicalEditor) {
                 $setBlocksType(selection, () => $createHeadingNode(`h${n}`));
               }
             }),
-        })
+        }),
     ),
     new ComponentPickerOption("箇条書きリスト", {
       icon: <i className="text-lg">•</i>,
@@ -150,7 +150,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
     return baseOptions.filter(
       (option) =>
         regex.test(option.title) ||
-        option.keywords.some((keyword: string) => regex.test(keyword))
+        option.keywords.some((keyword: string) => regex.test(keyword)),
     );
   }, [editor, queryString]);
 
@@ -159,7 +159,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
       selectedOption: ComponentPickerOption,
       nodeToRemove: TextNode | null,
       closeMenu: () => void,
-      matchingString: string
+      matchingString: string,
     ) => {
       editor.update(() => {
         nodeToRemove?.remove();
@@ -167,7 +167,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         closeMenu();
       });
     },
-    [editor]
+    [editor],
   );
 
   return (
@@ -178,7 +178,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
       options={options}
       menuRenderFn={(
         anchorElementRef,
-        { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }
+        { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex },
       ) => {
         if (anchorElementRef.current == null || options.length === 0) {
           return null;
@@ -188,7 +188,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
           <div
             className={styles.typeaheadPopover}
             style={{
-              position: 'absolute',
+              position: "absolute",
               zIndex: 1000,
             }}
           >
@@ -216,7 +216,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
               ))}
             </ul>
           </div>,
-          anchorElementRef.current
+          anchorElementRef.current,
         );
       }}
     />

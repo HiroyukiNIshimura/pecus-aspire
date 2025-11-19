@@ -6,5 +6,4 @@
 @import "flyonui/src/vendor/notyf.css";
 @source "./node_modules/flyonui/dist/index.js";
 @plugin "@iconify/tailwind4";
-@import "../components/editor/NotionEditor.module.css";
 @import "../components/common/TagInput.module.css";

@@ -8,8 +8,7 @@ import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
-import type { YooptaContentValue, YooptaOnChangeOptions } from "@yoopta/editor";
-import NotionEditor from "@/components/editor/NotionEditor";
+import PecusEditor from "@/components/editor/PecusEditor";
 import TagInput from "@/components/common/TagInput";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
@@ -37,9 +36,7 @@ export default function CreateWorkspaceItem({
     isDraft: true,
   });
 
-  const [editorValue, setEditorValue] = useState<
-    YooptaContentValue | undefined
-  >();
+  const [editorValue, setEditorValue] = useState<string | undefined>();
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -65,7 +62,7 @@ export default function CreateWorkspaceItem({
 
         const request: CreateWorkspaceItemRequest = {
           subject: data.subject.trim(),
-          body: editorValue ? JSON.stringify(editorValue) : null,
+          body: editorValue || null,
           dueDate: dueDateValue,
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
@@ -106,11 +103,8 @@ export default function CreateWorkspaceItem({
   };
 
   // エディタ変更時の処理
-  const handleEditorChange = (
-    newValue: YooptaContentValue,
-    _options: YooptaOnChangeOptions,
-  ) => {
-    setEditorValue(newValue);
+  const handleEditorChange = (content: string) => {
+    setEditorValue(content);
   };
 
   // フォームリセット
@@ -235,8 +229,8 @@ export default function CreateWorkspaceItem({
                 <label className="label">
                   <span className="label-text font-semibold">本文</span>
                 </label>
-                <NotionEditor
-                  value={editorValue}
+                <PecusEditor
+                  initialContent={editorValue}
                   onChange={handleEditorChange}
                   readOnly={false}
                 />

@@ -5,18 +5,22 @@ import type { LexicalEditor } from "lexical";
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $insertNodeToNearestRoot } from "@lexical/utils";
-import { COMMAND_PRIORITY_EDITOR, createCommand, LexicalCommand } from "lexical";
+import {
+  COMMAND_PRIORITY_EDITOR,
+  createCommand,
+  LexicalCommand,
+} from "lexical";
 import { useEffect, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { $createYouTubeNode, YouTubeNode } from "../nodes/YouTubeNode";
 
 export const INSERT_YOUTUBE_COMMAND: LexicalCommand<string> = createCommand(
-  "INSERT_YOUTUBE_COMMAND"
+  "INSERT_YOUTUBE_COMMAND",
 );
 
 export const OPEN_YOUTUBE_MODAL_COMMAND: LexicalCommand<void> = createCommand(
-  "OPEN_YOUTUBE_MODAL_COMMAND"
+  "OPEN_YOUTUBE_MODAL_COMMAND",
 );
 
 export function openYouTubeModal(editor: LexicalEditor) {
@@ -29,7 +33,11 @@ interface YouTubeEmbedModalProps {
   onSubmit: (videoID: string) => void;
 }
 
-function YouTubeEmbedModal({ isOpen, onClose, onSubmit }: YouTubeEmbedModalProps) {
+function YouTubeEmbedModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: YouTubeEmbedModalProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
 
@@ -66,28 +74,29 @@ function YouTubeEmbedModal({ isOpen, onClose, onSubmit }: YouTubeEmbedModalProps
   const modalContent = (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         zIndex: 99999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}
       onClick={handleClose}
     >
       <div
         className="modal-box bg-base-100"
         style={{
-          position: 'relative',
-          maxWidth: '500px',
-          width: '90%',
-          padding: '1.5rem',
-          borderRadius: '0.5rem',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          position: "relative",
+          maxWidth: "500px",
+          width: "90%",
+          padding: "1.5rem",
+          borderRadius: "0.5rem",
+          boxShadow:
+            "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -163,7 +172,7 @@ export default function YouTubePlugin(): JSX.Element | null {
     (videoID: string) => {
       editor.dispatchCommand(INSERT_YOUTUBE_COMMAND, videoID);
     },
-    [editor]
+    [editor],
   );
 
   useEffect(() => {
@@ -179,7 +188,7 @@ export default function YouTubePlugin(): JSX.Element | null {
 
         return true;
       },
-      COMMAND_PRIORITY_EDITOR
+      COMMAND_PRIORITY_EDITOR,
     );
   }, [editor]);
 
@@ -190,7 +199,7 @@ export default function YouTubePlugin(): JSX.Element | null {
         setModalOpen(true);
         return true;
       },
-      COMMAND_PRIORITY_EDITOR
+      COMMAND_PRIORITY_EDITOR,
     );
   }, [editor]);
 

@@ -178,7 +178,8 @@ export function PecusEditor({
     theme: editorTheme,
     onError,
     editable: !readOnly,
-    editorState: initialContent && initialContent.trim() ? initialContent : undefined,
+    editorState:
+      initialContent && initialContent.trim() ? initialContent : undefined,
     nodes: [
       HeadingNode,
       QuoteNode,
@@ -218,7 +219,9 @@ export function PecusEditor({
           {floatingAnchorElem && !readOnly && (
             <>
               <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
-              <FloatingTextFormatToolbarPlugin anchorElem={floatingAnchorElem} />
+              <FloatingTextFormatToolbarPlugin
+                anchorElem={floatingAnchorElem}
+              />
               <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
             </>
           )}

@@ -62,7 +62,7 @@ export type SerializedYouTubeNode = Spread<
 >;
 
 function $convertYoutubeElement(
-  domNode: HTMLElement
+  domNode: HTMLElement,
 ): null | DOMConversionOutput {
   const videoID = domNode.getAttribute("data-lexical-youtube");
   if (videoID) {
@@ -85,7 +85,7 @@ export class YouTubeNode extends DecoratorBlockNode {
 
   static importJSON(serializedNode: SerializedYouTubeNode): YouTubeNode {
     return $createYouTubeNode(serializedNode.videoID).updateFromJSON(
-      serializedNode
+      serializedNode,
     );
   }
 
@@ -108,12 +108,12 @@ export class YouTubeNode extends DecoratorBlockNode {
     element.setAttribute("height", "315");
     element.setAttribute(
       "src",
-      `https://www.youtube-nocookie.com/embed/${this.__id}`
+      `https://www.youtube-nocookie.com/embed/${this.__id}`,
     );
     element.setAttribute("frameborder", "0");
     element.setAttribute(
       "allow",
-      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
     );
     element.setAttribute("allowfullscreen", "true");
     element.setAttribute("title", "YouTube video");
@@ -144,7 +144,7 @@ export class YouTubeNode extends DecoratorBlockNode {
 
   getTextContent(
     _includeInert?: boolean | undefined,
-    _includeDirectionless?: false | undefined
+    _includeDirectionless?: false | undefined,
   ): string {
     return `https://www.youtube.com/watch?v=${this.__id}`;
   }
@@ -171,7 +171,7 @@ export function $createYouTubeNode(videoID: string): YouTubeNode {
 }
 
 export function $isYouTubeNode(
-  node: YouTubeNode | LexicalNode | null | undefined
+  node: YouTubeNode | LexicalNode | null | undefined,
 ): node is YouTubeNode {
   return node instanceof YouTubeNode;
 }

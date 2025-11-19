@@ -164,9 +164,7 @@ export function PrettierButton({ editor, getCodeDOMNode }: Props) {
 /**
  * 言語に対応するPrettierパーサーを取得
  */
-async function getPrettierParser(
-  language: string,
-): Promise<unknown | null> {
+async function getPrettierParser(language: string): Promise<unknown | null> {
   const lang = normalizeLanguage(language);
 
   try {

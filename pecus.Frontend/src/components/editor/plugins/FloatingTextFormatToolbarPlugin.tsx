@@ -38,7 +38,7 @@ function getSelectedNode(selection: any) {
 function setFloatingElemPosition(
   targetRect: DOMRect | null,
   floatingElem: HTMLElement,
-  anchorElem: HTMLElement
+  anchorElem: HTMLElement,
 ): void {
   const scrollerElem = anchorElem.parentElement;
 
@@ -53,7 +53,8 @@ function setFloatingElemPosition(
   const editorScrollerRect = scrollerElem.getBoundingClientRect();
 
   let top = targetRect.top - floatingElemRect.height - 8;
-  let left = targetRect.left - floatingElemRect.width / 2 + targetRect.width / 2;
+  let left =
+    targetRect.left - floatingElemRect.width / 2 + targetRect.width / 2;
 
   if (top < editorScrollerRect.top) {
     top = targetRect.bottom + 8;
@@ -76,7 +77,7 @@ function setFloatingElemPosition(
 
 function getDOMRangeRect(
   nativeSelection: Selection,
-  rootElement: HTMLElement
+  rootElement: HTMLElement,
 ): DOMRect | null {
   const range = nativeSelection.getRangeAt(0);
 
@@ -129,7 +130,7 @@ function TextFormatFloatingToolbar({
         }
       });
     },
-    [editor]
+    [editor],
   );
 
   const onTextColorChange = useCallback(
@@ -137,7 +138,7 @@ function TextFormatFloatingToolbar({
       applyStyleText({ color });
       setShowTextColorPicker(false);
     },
-    [applyStyleText]
+    [applyStyleText],
   );
 
   const onBgColorChange = useCallback(
@@ -145,7 +146,7 @@ function TextFormatFloatingToolbar({
       applyStyleText({ "background-color": color });
       setShowBgColorPicker(false);
     },
-    [applyStyleText]
+    [applyStyleText],
   );
 
   const predefinedColors = [
@@ -181,11 +182,7 @@ function TextFormatFloatingToolbar({
     ) {
       const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
 
-      setFloatingElemPosition(
-        rangeRect,
-        popupCharStylesEditorElem,
-        anchorElem
-      );
+      setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem);
     }
   }, [editor, anchorElem]);
 
@@ -228,8 +225,8 @@ function TextFormatFloatingToolbar({
           $updateTextFormatFloatingToolbar();
           return false;
         },
-        COMMAND_PRIORITY_LOW
-      )
+        COMMAND_PRIORITY_LOW,
+      ),
     );
   }, [editor, $updateTextFormatFloatingToolbar]);
 
@@ -247,7 +244,8 @@ function TextFormatFloatingToolbar({
             }}
             className={`${styles.popupItem} ${styles.spaced} ${isBold ? styles.active : ""}`}
             title="太字 (⌘B)"
-            aria-label="太字">
+            aria-label="太字"
+          >
             <i className={styles.iconBold} />
           </button>
           <button
@@ -257,7 +255,8 @@ function TextFormatFloatingToolbar({
             }}
             className={`${styles.popupItem} ${styles.spaced} ${isItalic ? styles.active : ""}`}
             title="斜体 (⌘I)"
-            aria-label="斜体">
+            aria-label="斜体"
+          >
             <i className={styles.iconItalic} />
           </button>
           <button
@@ -267,7 +266,8 @@ function TextFormatFloatingToolbar({
             }}
             className={`${styles.popupItem} ${styles.spaced} ${isUnderline ? styles.active : ""}`}
             title="下線 (⌘U)"
-            aria-label="下線">
+            aria-label="下線"
+          >
             <i className={styles.iconUnderline} />
           </button>
           <button
@@ -277,7 +277,8 @@ function TextFormatFloatingToolbar({
             }}
             className={`${styles.popupItem} ${styles.spaced} ${isStrikethrough ? styles.active : ""}`}
             title="取り消し線"
-            aria-label="取り消し線">
+            aria-label="取り消し線"
+          >
             <i className={styles.iconStrikethrough} />
           </button>
           <div className={styles.divider} />
@@ -288,7 +289,8 @@ function TextFormatFloatingToolbar({
             }}
             className={`${styles.popupItem} ${styles.spaced} ${isCode ? styles.active : ""}`}
             title="コード"
-            aria-label="コード">
+            aria-label="コード"
+          >
             <i className={styles.iconCode} />
           </button>
           <div className={styles.divider} />
@@ -301,7 +303,8 @@ function TextFormatFloatingToolbar({
               }}
               className={`${styles.popupItem} ${styles.spaced}`}
               title="文字色"
-              aria-label="文字色">
+              aria-label="文字色"
+            >
               <i
                 className={styles.iconTextColor}
                 style={{ color: textColor || "currentColor" }}
@@ -337,7 +340,8 @@ function TextFormatFloatingToolbar({
               }}
               className={`${styles.popupItem} ${styles.spaced}`}
               title="背景色"
-              aria-label="背景色">
+              aria-label="背景色"
+            >
               <i
                 className={styles.iconBgColor}
                 style={{ backgroundColor: backgroundColor || "transparent" }}
@@ -372,7 +376,7 @@ function TextFormatFloatingToolbar({
 
 function useFloatingTextFormatToolbar(
   editor: LexicalEditor,
-  anchorElem: HTMLElement
+  anchorElem: HTMLElement,
 ): JSX.Element | null {
   const [isText, setIsText] = useState(false);
   const [isBold, setIsBold] = useState(false);
@@ -454,7 +458,7 @@ function useFloatingTextFormatToolbar(
         if (editor.getRootElement() === null) {
           setIsText(false);
         }
-      })
+      }),
     );
   }, [editor, updatePopup]);
 
@@ -474,7 +478,7 @@ function useFloatingTextFormatToolbar(
       textColor={textColor}
       backgroundColor={backgroundColor}
     />,
-    anchorElem
+    anchorElem,
   );
 }
 

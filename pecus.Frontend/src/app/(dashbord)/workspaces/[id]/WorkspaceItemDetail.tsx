@@ -7,7 +7,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceDetailUserResponse,
 } from "@/connectors/api/pecus";
-import NotionEditor from "@/components/editor/NotionEditor";
+import PecusEditor from "@/components/editor/PecusEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
@@ -160,16 +160,7 @@ export default function WorkspaceItemDetail({
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">内容</h3>
               <div className="p-4 bg-base-200 rounded">
-                <NotionEditor
-                  value={(() => {
-                    try {
-                      return JSON.parse(item.body) as YooptaContentValue;
-                    } catch {
-                      return undefined;
-                    }
-                  })()}
-                  readOnly={true}
-                />
+                <PecusEditor initialContent={item.body} readOnly={true} />
               </div>
             </div>
           )}

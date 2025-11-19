@@ -67,7 +67,9 @@ function debounce<T extends (...args: any[]) => void>(
     lastCallTime = null;
   };
 
-  return debouncedFn as ((...args: Parameters<T>) => void) & { cancel: () => void };
+  return debouncedFn as ((...args: Parameters<T>) => void) & {
+    cancel: () => void;
+  };
 }
 
 function useDebounce<T extends (...args: any[]) => void>(
@@ -249,7 +251,9 @@ function getMouseInfo(event: MouseEvent): {
     }
 
     // CSS Modules で変換されたクラス名を使用
-    const codeDOMNode = target.closest<HTMLElement>(`code.${styles.editorCode}`);
+    const codeDOMNode = target.closest<HTMLElement>(
+      `code.${styles.editorCode}`,
+    );
 
     // エディタのコンテナ内にあるかチェック
     if (codeDOMNode) {

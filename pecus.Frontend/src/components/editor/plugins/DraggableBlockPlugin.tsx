@@ -2,7 +2,12 @@
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin";
-import { $createParagraphNode, $getNearestNodeFromDOMNode, $getSelection, $setSelection } from "lexical";
+import {
+  $createParagraphNode,
+  $getNearestNodeFromDOMNode,
+  $getSelection,
+  $setSelection,
+} from "lexical";
 import { useRef, useState } from "react";
 import type { JSX } from "react";
 import styles from "../PecusEditor.module.css";
@@ -26,7 +31,7 @@ export default function DraggableBlockPlugin({
   const menuRef = useRef<HTMLDivElement>(null);
   const targetLineRef = useRef<HTMLDivElement>(null);
   const [draggableElement, setDraggableElement] = useState<HTMLElement | null>(
-    null
+    null,
   );
 
   function insertBlock(e: React.MouseEvent) {
@@ -62,7 +67,7 @@ export default function DraggableBlockPlugin({
       editor.update(() => {
         const selection = $getSelection();
         if (selection) {
-          selection.insertText('/');
+          selection.insertText("/");
         }
       });
     }, 0);
