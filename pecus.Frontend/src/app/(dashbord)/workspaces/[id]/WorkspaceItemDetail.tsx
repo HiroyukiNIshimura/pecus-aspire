@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
+import MenuIcon from "@mui/icons-material/Menu";
 import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 import NotionEditor from "@/components/editor/NotionEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
@@ -22,6 +23,8 @@ export default function WorkspaceItemDetail({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerClosing, setIsDrawerClosing] = useState(false);
 
   useEffect(() => {
     const fetchItemDetail = async () => {
@@ -49,6 +52,20 @@ export default function WorkspaceItemDetail({
 
     fetchItemDetail();
   }, [workspaceId, itemId]);
+
+  // ドローワーを開く
+  const openDrawer = () => {
+    setIsDrawerOpen(true);
+  };
+
+  // ドローワーを閉じる
+  const closeDrawer = () => {
+    setIsDrawerClosing(true);
+    setTimeout(() => {
+      setIsDrawerOpen(false);
+      setIsDrawerClosing(false);
+    }, 250); // アニメーション時間と合わせる
+  };
 
   const handleEditSave = (updatedItem: WorkspaceItemDetailResponse) => {
     setItem(updatedItem);
@@ -79,7 +96,26 @@ export default function WorkspaceItemDetail({
   }
 
   return (
-    <div className="card bg-base-100 shadow-md">
+    <>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
+        }
+      `}</style>
+      <div className="card bg-base-100 shadow-md">
       <div className="card-body">
         {/* ヘッダー */}
         <div className="flex items-start justify-between gap-2 mb-4">
@@ -87,11 +123,16 @@ export default function WorkspaceItemDetail({
             <h2 className="text-2xl font-bold mb-2">
               {item.subject || "（未設定）"}
             </h2>
-            {item.code && (
-              <code className="text-sm badge badge-ghost badge-md">
-                {item.code}
-              </code>
-            )}
+            <div className="flex items-center gap-2">
+              {item.priority !== undefined && item.priority !== null && (
+                <div className="badge badge-primary">優先度: {item.priority}</div>
+              )}
+              {item.code && (
+                <code className="text-sm badge badge-ghost badge-md">
+                  {item.code}
+                </code>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -103,9 +144,14 @@ export default function WorkspaceItemDetail({
               <EditIcon fontSize="small" />
               編集
             </button>
-            {item.priority !== undefined && item.priority !== null && (
-              <div className="badge badge-primary">優先度: {item.priority}</div>
-            )}
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="btn btn-ghost btn-sm gap-2"
+              title="詳細オプション"
+            >
+              <MenuIcon fontSize="small" />
+            </button>
           </div>
         </div>
 
@@ -311,6 +357,100 @@ export default function WorkspaceItemDetail({
           onSave={handleEditSave}
         />
       )}
+
+      {/* ドローワー */}
+      {isDrawerOpen && (
+        <>
+          {/* 背景オーバーレイ */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
+            onClick={closeDrawer}
+            style={{ animation: isDrawerClosing ? 'fadeOut 0.25s ease-out' : 'fadeIn 0.2s ease-out' }}
+          />
+
+          {/* ドローワー本体 */}
+          <div
+            id="workspace-item-drawer"
+            className="fixed top-0 right-0 h-full w-80 bg-base-100 shadow-xl z-50 overflow-y-auto flex flex-col transition-transform duration-300 ease-out"
+            role="dialog"
+            tabIndex={-1}
+            style={{ animation: isDrawerClosing ? 'slideOutRight 0.25s ease-in' : 'slideInRight 0.3s ease-out' }}
+          >
+            {/* ヘッダー */}
+            <div className="flex items-center justify-between p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10">
+              <h3 className="text-lg font-bold">詳細オプション</h3>
+              <button
+                type="button"
+                className="btn btn-ghost btn-circle btn-sm"
+                aria-label="Close"
+                onClick={closeDrawer}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* ボディ */}
+            <div className="flex-1 p-4 space-y-4">
+              {/* 作業者設定 */}
+              {item && (
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">作業者</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {item.assigneeAvatarUrl ? (
+                      <img
+                        src={item.assigneeAvatarUrl}
+                        alt={item.assigneeUsername || "ユーザー"}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center text-xs">
+                        ？
+                      </div>
+                    )}
+                    <span className="text-sm">{item.assigneeUsername || "未割当"}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* 期限 */}
+              {item?.dueDate && (
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">期限</span>
+                  </label>
+                  <p className="text-sm">
+                    {new Date(item.dueDate).toLocaleDateString("ja-JP")}
+                  </p>
+                </div>
+              )}
+
+              {/* その他のオプション */}
+              <div className="divider my-2"></div>
+              <button type="button" className="btn btn-outline btn-sm w-full">
+                詳細を表示
+              </button>
+            </div>
+
+            {/* フッター */}
+            <div className="flex gap-2 p-4 border-t border-base-300 bg-base-100">
+              <button
+                type="button"
+                className="btn btn-outline flex-1"
+                onClick={closeDrawer}
+              >
+                閉じる
+              </button>
+              <button type="button" className="btn btn-primary flex-1">
+                保存
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
+    </>
   );
 }
