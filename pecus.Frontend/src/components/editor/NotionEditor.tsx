@@ -164,6 +164,8 @@ export default function NotionEditor({
   readOnly: readOnlyProps = false,
   theme: themeProps = "dark",
 }: NotionEditorProps) {
+  const editor = useMemo(() => createYooptaEditor(), []);
+
   const [value, setValue] = useState<YooptaContentValue | undefined>(
     valueFromProps,
   );
@@ -176,14 +178,13 @@ export default function NotionEditor({
   }
   const [theme, setTheme] = useState<"light" | "dark">(themeVal);
 
-  const editor = useMemo(() => createYooptaEditor(), []);
+  const selectionBoxRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (editor) {
+    if (valueFromProps && editor) {
       setValue(valueFromProps);
-      editor.setEditorValue(valueFromProps || null);
     }
-  }, [valueFromProps]);
+  }, [valueFromProps, editor]);
 
   const onChange = useDebouncedCallback(
     (newValue: YooptaContentValue, options: YooptaOnChangeOptions) => {

@@ -25,6 +25,7 @@ import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { JSX } from "react";
 import styles from "../PecusEditor.module.css";
+import { openYouTubeModal } from "./YouTubePlugin";
 
 class ComponentPickerOption extends MenuOption {
   title: string;
@@ -114,6 +115,14 @@ function getBaseOptions(editor: LexicalEditor) {
             $setBlocksType(selection, () => $createCodeNode());
           }
         }),
+    }),
+    new ComponentPickerOption("YouTube", {
+      icon: <i className="text-lg">▶</i>,
+      keywords: ["youtube", "video", "embed"],
+      onSelect: () => {
+        console.log("YouTube option selected, dispatching command");
+        openYouTubeModal(editor);
+      },
     }),
   ];
 }

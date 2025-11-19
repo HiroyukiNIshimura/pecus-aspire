@@ -11,14 +11,19 @@ import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
-import { CodeNode } from "@lexical/code";
+import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode, AutoLinkNode } from "@lexical/link";
+import { YouTubeNode } from "./nodes/YouTubeNode";
 import type { EditorState } from "lexical";
 import { useCallback, useState } from "react";
 import styles from "./PecusEditor.module.css";
 import { OnChangePlugin } from "./plugins/OnChangePlugin";
 import ComponentPickerMenuPlugin from "./plugins/SlashCommandPlugin";
 import DraggableBlockPlugin from "./plugins/DraggableBlockPlugin";
+import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin";
+import YouTubePlugin from "./plugins/YouTubePlugin";
+import CodeHighlightPlugin from "./plugins/CodeHighlightPlugin";
+import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
 
 interface PecusEditorProps {
   /**
@@ -114,6 +119,10 @@ const editorTheme = {
     url: styles.editorTokenOperator,
     variable: styles.editorTokenVariable,
   },
+  embedBlock: {
+    base: styles.embedBlock,
+    focus: styles.embedBlockFocus,
+  },
 };
 
 /**
@@ -176,8 +185,10 @@ export function PecusEditor({
       ListNode,
       ListItemNode,
       CodeNode,
+      CodeHighlightNode,
       LinkNode,
       AutoLinkNode,
+      YouTubeNode,
     ],
   };
 
@@ -199,11 +210,17 @@ export function PecusEditor({
           <ListPlugin />
           <CheckListPlugin />
           <LinkPlugin />
+          <CodeHighlightPlugin />
+          <YouTubePlugin />
           <ComponentPickerMenuPlugin />
           {!readOnly && <AutoFocusPlugin />}
           {onChange && <OnChangePlugin onChange={handleChange} />}
           {floatingAnchorElem && !readOnly && (
-            <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+            <>
+              <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+              <FloatingTextFormatToolbarPlugin anchorElem={floatingAnchorElem} />
+              <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
+            </>
           )}
         </div>
       </LexicalComposer>
