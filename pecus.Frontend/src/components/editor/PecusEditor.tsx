@@ -9,10 +9,12 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import { TablePlugin as LexicalTablePlugin } from "@lexical/react/LexicalTablePlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
 import { LinkNode, AutoLinkNode } from "@lexical/link";
+import { TableNode, TableCellNode, TableRowNode } from "@lexical/table";
 import { YouTubeNode } from "./nodes/YouTubeNode";
 import type { EditorState } from "lexical";
 import { useCallback, useState } from "react";
@@ -21,6 +23,12 @@ import { OnChangePlugin } from "./plugins/OnChangePlugin";
 import ComponentPickerMenuPlugin from "./plugins/SlashCommandPlugin";
 import DraggableBlockPlugin from "./plugins/DraggableBlockPlugin";
 import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin";
+import FloatingLinkEditorPlugin from "./plugins/FloatingLinkEditorPlugin";
+import AutoLinkPlugin from "./plugins/AutoLinkPlugin";
+import ClickableLinkPlugin from "./plugins/ClickableLinkPlugin";
+import TablePlugin, { TableContext } from "./plugins/TablePlugin";
+import TableCellResizerPlugin from "./plugins/TableCellResizerPlugin";
+import TableHoverActionsPlugin from "./plugins/TableHoverActionsPlugin";
 import YouTubePlugin from "./plugins/YouTubePlugin";
 import CodeHighlightPlugin from "./plugins/CodeHighlightPlugin";
 import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
@@ -189,6 +197,9 @@ export function PecusEditor({
       CodeHighlightNode,
       LinkNode,
       AutoLinkNode,
+      TableNode,
+      TableCellNode,
+      TableRowNode,
       YouTubeNode,
     ],
   };
@@ -196,39 +207,61 @@ export function PecusEditor({
   return (
     <div className={`${styles.editorContainer} ${className}`}>
       <LexicalComposer initialConfig={initialConfig}>
-        <div className={styles.editorWrapper} ref={onRef}>
-          {/* エディタ本体 */}
-          <RichTextPlugin
-            contentEditable={<ContentEditable className={styles.editor} />}
-            placeholder={
-              <div className={styles.placeholder}>{placeholder}</div>
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
+        <TableContext>
+          <div className={styles.editorWrapper}>
+            {/* エディタ本体 */}
+            <RichTextPlugin
+              contentEditable={
+                <div className={styles.editorScroller}>
+                  <div className={styles.editor} ref={onRef}>
+                    <ContentEditable />
+                  </div>
+                </div>
+              }
+              placeholder={
+                <div className={styles.placeholder}>{placeholder}</div>
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
 
-          {/* プラグイン */}
-          <HistoryPlugin />
-          <ListPlugin />
-          <CheckListPlugin />
-          <LinkPlugin />
-          <CodeHighlightPlugin />
-          <YouTubePlugin />
-          <ComponentPickerMenuPlugin />
-          {!readOnly && <AutoFocusPlugin />}
-          {onChange && <OnChangePlugin onChange={handleChange} />}
-          {floatingAnchorElem && !readOnly && (
-            <>
-              <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
-              <FloatingTextFormatToolbarPlugin
-                anchorElem={floatingAnchorElem}
-              />
-              <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
-            </>
-          )}
-        </div>
+            {/* プラグイン */}
+            <HistoryPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
+            <LinkPlugin
+              validateUrl={(url) => {
+                // 安全なURLのみ許可（http/https/mailto）
+                return /^(https?:\/\/|mailto:)/.test(url);
+              }}
+            />
+            <AutoLinkPlugin />
+            <ClickableLinkPlugin />
+            <CodeHighlightPlugin />
+            <LexicalTablePlugin hasCellMerge hasCellBackgroundColor />
+            <TablePlugin cellEditorConfig={initialConfig}>
+              <AutoFocusPlugin />
+              <HistoryPlugin />
+            </TablePlugin>
+            <YouTubePlugin />
+            <ComponentPickerMenuPlugin />
+            {!readOnly && <AutoFocusPlugin />}
+            {onChange && <OnChangePlugin onChange={handleChange} />}
+            {floatingAnchorElem && !readOnly && (
+              <>
+                <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+                <FloatingTextFormatToolbarPlugin
+                  anchorElem={floatingAnchorElem}
+                />
+                <FloatingLinkEditorPlugin anchorElem={floatingAnchorElem} />
+                <TableCellResizerPlugin />
+                <TableHoverActionsPlugin anchorElem={floatingAnchorElem} />
+                <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
+              </>
+            )}
+          </div>
+        </TableContext>
       </LexicalComposer>
     </div>
   );
 }
-
 export default PecusEditor;

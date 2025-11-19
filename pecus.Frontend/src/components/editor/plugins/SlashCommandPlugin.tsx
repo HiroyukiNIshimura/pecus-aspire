@@ -20,6 +20,7 @@ import {
   INSERT_CHECK_LIST_COMMAND,
 } from "@lexical/list";
 import { $createCodeNode } from "@lexical/code";
+import { INSERT_TABLE_COMMAND } from "@lexical/table";
 import { $setBlocksType } from "@lexical/selection";
 import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -112,7 +113,7 @@ function getBaseOptions(editor: LexicalEditor) {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createCodeNode());
+            $setBlocksType(selection, () => $createCodeNode("javascript"));
           }
         }),
     }),
@@ -123,6 +124,16 @@ function getBaseOptions(editor: LexicalEditor) {
         console.log("YouTube option selected, dispatching command");
         openYouTubeModal(editor);
       },
+    }),
+    new ComponentPickerOption("テーブル", {
+      icon: <i className="text-lg">⊞</i>,
+      keywords: ["table", "grid", "spreadsheet"],
+      onSelect: () =>
+        editor.dispatchCommand(INSERT_TABLE_COMMAND, {
+          columns: "3",
+          rows: "3",
+          includeHeaders: true,
+        }),
     }),
   ];
 }

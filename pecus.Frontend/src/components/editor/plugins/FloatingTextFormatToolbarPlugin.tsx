@@ -2,6 +2,8 @@
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { mergeRegister } from "@lexical/utils";
+import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $findMatchingParent } from "@lexical/utils";
 import {
   $getSelection,
   $isRangeSelection,
@@ -18,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { JSX } from "react";
 import styles from "../PecusEditor.module.css";
+import { OPEN_LINK_EDITOR_COMMAND } from "./FloatingLinkEditorPlugin";
 
 function getSelectedNode(selection: any) {
   const anchor = selection.anchor;
@@ -104,6 +107,7 @@ function TextFormatFloatingToolbar({
   isUnderline,
   isStrikethrough,
   isCode,
+  isLink,
   textColor,
   backgroundColor,
 }: {
@@ -114,6 +118,7 @@ function TextFormatFloatingToolbar({
   isUnderline: boolean;
   isStrikethrough: boolean;
   isCode: boolean;
+  isLink: boolean;
   textColor: string;
   backgroundColor: string;
 }): JSX.Element {
@@ -294,6 +299,22 @@ function TextFormatFloatingToolbar({
             <i className={styles.iconCode} />
           </button>
           <div className={styles.divider} />
+          <button
+            type="button"
+            onClick={() => {
+              if (isLink) {
+                editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+              } else {
+                editor.dispatchCommand(OPEN_LINK_EDITOR_COMMAND, undefined);
+              }
+            }}
+            className={`${styles.popupItem} ${styles.spaced} ${isLink ? styles.active : ""}`}
+            title="リンク"
+            aria-label="リンク"
+          >
+            <i className={styles.iconLink} />
+          </button>
+          <div className={styles.divider} />
           <div className={styles.colorPickerWrapper}>
             <button
               type="button"
@@ -384,6 +405,7 @@ function useFloatingTextFormatToolbar(
   const [isUnderline, setIsUnderline] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isCode, setIsCode] = useState(false);
+  const [isLink, setIsLink] = useState(false);
   const [textColor, setTextColor] = useState("");
   const [backgroundColor, setBackgroundColor] = useState("");
 
@@ -418,6 +440,10 @@ function useFloatingTextFormatToolbar(
       setIsUnderline(selection.hasFormat("underline"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsCode(selection.hasFormat("code"));
+
+      // Update link state
+      const linkParent = $findMatchingParent(node, $isLinkNode);
+      setIsLink(linkParent !== null);
 
       // Update colors from inline styles
       if ($isTextNode(node)) {
@@ -475,6 +501,7 @@ function useFloatingTextFormatToolbar(
       isUnderline={isUnderline}
       isStrikethrough={isStrikethrough}
       isCode={isCode}
+      isLink={isLink}
       textColor={textColor}
       backgroundColor={backgroundColor}
     />,

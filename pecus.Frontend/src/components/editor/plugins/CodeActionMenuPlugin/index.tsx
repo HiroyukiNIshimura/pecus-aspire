@@ -2,7 +2,7 @@
 
 import type { JSX } from "react";
 
-import { $isCodeNode, CodeNode, getLanguageFriendlyName } from "@lexical/code";
+import { $isCodeNode, CodeNode } from "@lexical/code";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode, isHTMLElement } from "lexical";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 
 import { CopyButton } from "./CopyButton";
 import { PrettierButton } from "./PrettierButton";
+import { LanguageSelector } from "./LanguageSelector";
 import styles from "../../PecusEditor.module.css";
 
 const CODE_PADDING = 8;
@@ -199,7 +200,23 @@ function CodeActionMenuContainer({
     );
   }, [editor]);
 
-  const codeFriendlyName = getLanguageFriendlyName(lang);
+  // 言語変更を検知して表示を更新
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      const codeDOMNode = getCodeDOMNode();
+      if (!codeDOMNode || !isShown) return;
+
+      editorState.read(() => {
+        const maybeCodeNode = $getNearestNodeFromDOMNode(codeDOMNode);
+        if ($isCodeNode(maybeCodeNode)) {
+          const currentLang = maybeCodeNode.getLanguage() || "";
+          if (currentLang !== lang) {
+            setLang(currentLang);
+          }
+        }
+      });
+    });
+  }, [editor, isShown, lang]);
 
   return (
     <>
@@ -223,9 +240,12 @@ function CodeActionMenuContainer({
             zIndex: 10,
           }}
         >
-          <span className="text-xs opacity-70" style={{ marginRight: "4px" }}>
-            {codeFriendlyName}
-          </span>
+          <LanguageSelector
+            editor={editor}
+            currentLanguage={lang}
+            getCodeDOMNode={getCodeDOMNode}
+            onLanguageChange={(newLang) => setLang(newLang)}
+          />
           <div className="flex items-center gap-1">
             <PrettierButton editor={editor} getCodeDOMNode={getCodeDOMNode} />
             <CopyButton editor={editor} getCodeDOMNode={getCodeDOMNode} />

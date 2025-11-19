@@ -7,3 +7,54 @@
 @source "./node_modules/flyonui/dist/index.js";
 @plugin "@iconify/tailwind4";
 @import "../components/common/TagInput.module.css";
+
+/* テーブルホバーボタン用のスペースを確保 */
+body {
+  padding-bottom: 100px;
+}
+
+/* ContentEditable のアウトラインを削除 */
+[contenteditable="true"]:focus {
+  outline: none !important;
+}
+
+[contenteditable="true"] {
+  outline: none !important;
+}
+
+/* Lexical Table のグローバルスタイル */
+/* テーブル要素に直接スタイルを適用（クラスが付与されない場合の対策） */
+.PecusEditor_editorContainer___GKjB table,
+[class*="PecusEditor_editorContainer"] table {
+  border-collapse: collapse;
+  border-width: 2px;
+  border-color: var(--color-base-300);
+  margin: 1rem 0;
+  margin-right: 30px; /* 列追加ボタン用のスペース */
+  margin-bottom: 30px; /* 行追加ボタン用のスペース */
+  table-layout: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.PecusEditor_editorContainer___GKjB table td,
+.PecusEditor_editorContainer___GKjB table th,
+[class*="PecusEditor_editorContainer"] table td,
+[class*="PecusEditor_editorContainer"] table th {
+  border-width: 1px;
+  border-color: var(--color-base-300);
+  padding: 12px;
+  min-width: 120px;
+  position: relative;
+  background-color: var(--color-base-100);
+  vertical-align: top;
+  color: var(--color-base-content);
+}
+
+.PecusEditor_editorContainer___GKjB table th,
+[class*="PecusEditor_editorContainer"] table th {
+  background-color: var(--color-base-200);
+  font-weight: 600;
+  text-align: left;
+  border-bottom-width: 2px;
+}
+
