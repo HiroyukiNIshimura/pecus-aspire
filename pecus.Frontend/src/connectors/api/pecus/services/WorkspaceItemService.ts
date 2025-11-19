@@ -8,6 +8,7 @@ import type { CreateWorkspaceItemRequest } from '../models/CreateWorkspaceItemRe
 import type { SetTagsToItemRequest } from '../models/SetTagsToItemRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { TaskPriority } from '../models/TaskPriority';
+import type { UpdateWorkspaceItemAssigneeRequest } from '../models/UpdateWorkspaceItemAssigneeRequest';
 import type { UpdateWorkspaceItemRequest } from '../models/UpdateWorkspaceItemRequest';
 import type { UpdateWorkspaceItemStatusRequest } from '../models/UpdateWorkspaceItemStatusRequest';
 import type { WorkspaceItemAttachmentResponse } from '../models/WorkspaceItemAttachmentResponse';
@@ -295,6 +296,36 @@ export class WorkspaceItemService {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/workspaces/{workspaceId}/items/{itemId}/status',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースアイテム作業者設定
+     * @param workspaceId
+     * @param itemId
+     * @param requestBody
+     * @returns WorkspaceItemResponse OK
+     * @throws ApiError
+     */
+    public static patchApiWorkspacesItemsAssignee(
+        workspaceId: number,
+        itemId: number,
+        requestBody?: UpdateWorkspaceItemAssigneeRequest,
+    ): CancelablePromise<WorkspaceItemResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/assignee',
             path: {
                 'workspaceId': workspaceId,
                 'itemId': itemId,

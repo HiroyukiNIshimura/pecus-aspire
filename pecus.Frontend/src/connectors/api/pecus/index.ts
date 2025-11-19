@@ -98,6 +98,7 @@ export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';
 export type { UpdateProfileRequest } from './models/UpdateProfileRequest';
 export type { UpdateSkillRequest } from './models/UpdateSkillRequest';
 export type { UpdateTagRequest } from './models/UpdateTagRequest';
+export type { UpdateWorkspaceItemAssigneeRequest } from './models/UpdateWorkspaceItemAssigneeRequest';
 export type { UpdateWorkspaceItemRequest } from './models/UpdateWorkspaceItemRequest';
 export type { UpdateWorkspaceItemStatusRequest } from './models/UpdateWorkspaceItemStatusRequest';
 export type { UpdateWorkspaceRequest } from './models/UpdateWorkspaceRequest';

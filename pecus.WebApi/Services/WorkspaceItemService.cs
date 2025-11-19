@@ -503,6 +503,69 @@ public class WorkspaceItemService
     }
 
     /// <summary>
+    /// ワークスペースアイテムの作業者を更新
+    /// </summary>
+    public async Task<WorkspaceItem> UpdateWorkspaceItemAssigneeAsync(
+        int workspaceId,
+        int itemId,
+        UpdateWorkspaceItemAssigneeRequest request,
+        int userId
+    )
+    {
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId
+        );
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // 作業者が指定されている場合、ワークスペースメンバーであることを確認
+        if (request.AssigneeId.HasValue)
+        {
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
+                request.AssigneeId.Value,
+                workspaceId
+            );
+
+            if (!isMember)
+            {
+                throw new InvalidOperationException(
+                    "指定されたユーザーはワークスペースのメンバーではありません。"
+                );
+            }
+        }
+
+        try
+        {
+            item.AssigneeId = request.AssigneeId;
+            item.RowVersion = request.RowVersion;
+            item.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await RaiseConflictException(itemId);
+        }
+
+        // ナビゲーションプロパティをロード
+        await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
+        await _context.Entry(item).Reference(wi => wi.Owner).LoadAsync();
+        if (item.AssigneeId.HasValue)
+        {
+            await _context.Entry(item).Reference(wi => wi.Assignee).LoadAsync();
+        }
+        if (item.CommitterId.HasValue)
+        {
+            await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
+        }
+
+        return item;
+    }
+
+    /// <summary>
     /// ワークスペースアイテムを削除
     /// </summary>
     public async Task DeleteWorkspaceItemAsync(int workspaceId, int itemId, int userId)

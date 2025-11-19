@@ -263,6 +263,54 @@ public class WorkspaceItemController : BaseSecureController
     }
 
     /// <summary>
+    /// ワークスペースアイテム作業者設定
+    /// </summary>
+    [HttpPatch("{itemId}/assignee")]
+    [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceItemDetailResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItemAssignee(
+        int workspaceId,
+        int itemId,
+        [FromBody] UpdateWorkspaceItemAssigneeRequest request
+    )
+    {
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムの作業者を変更できます。"
+            );
+        }
+
+        var item = await _workspaceItemService.UpdateWorkspaceItemAssigneeAsync(
+            workspaceId,
+            itemId,
+            request,
+            CurrentUserId
+        );
+
+        var response = new WorkspaceItemResponse
+        {
+            Success = true,
+            Message = "ワークスペースアイテムの作業者を更新しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// ワークスペースアイテム削除
     /// </summary>
     [HttpDelete("{itemId}")]
