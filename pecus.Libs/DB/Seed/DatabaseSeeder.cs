@@ -1,3 +1,5 @@
+using Bogus;
+using Bogus.Extensions;
 using Faker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -429,12 +431,12 @@ public class DatabaseSeeder
             {
                 var organization = new Organization
                 {
-                    Name = Company.Name(),
+                    Name = Company.Name().ClampLength(100),
                     Code = $"ORG{(i + 1):D3}",
-                    Description = Lorem.Sentence(5),
-                    RepresentativeName = Name.FullName(),
-                    PhoneNumber = Phone.Number(),
-                    Email = Internet.Email(),
+                    Description = Lorem.Sentence(5).ClampLength(500),
+                    RepresentativeName = Name.FullName().ClampLength(100),
+                    PhoneNumber = Phone.Number().ClampLength(20),
+                    Email = Internet.Email().ClampLength(254),
                     IsActive = _random.Next(2) == 1,
                 };
 
@@ -932,4 +934,6 @@ public class DatabaseSeeder
             .Replace("/", "_")
             .Replace("+", "-");
     }
+
+
 }
