@@ -431,12 +431,12 @@ public class DatabaseSeeder
             {
                 var organization = new Organization
                 {
-                    Name = Company.Name().ClampLength(100),
+                    Name = Company.Name().ClampLength(max: 100),
                     Code = $"ORG{(i + 1):D3}",
-                    Description = Lorem.Sentence(5).ClampLength(500),
-                    RepresentativeName = Name.FullName().ClampLength(100),
-                    PhoneNumber = Phone.Number().ClampLength(20),
-                    Email = Internet.Email().ClampLength(254),
+                    Description = Lorem.Sentence(5).ClampLength(max: 500),
+                    RepresentativeName = Name.FullName().ClampLength(max: 100),
+                    PhoneNumber = Phone.Number().ClampLength(max: 20),
+                    Email = Internet.Email().ClampLength(max: 254),
                     IsActive = _random.Next(2) == 1,
                 };
 
