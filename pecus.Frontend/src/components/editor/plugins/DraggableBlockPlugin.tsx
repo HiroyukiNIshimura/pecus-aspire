@@ -44,14 +44,14 @@ export default function DraggableBlockPlugin({
       }
 
       const pNode = $createParagraphNode();
-      
+
       // Alt/Ctrl+クリックで上に、通常クリックで下に追加
       if (e.altKey || e.ctrlKey) {
         node.insertBefore(pNode);
       } else {
         node.insertAfter(pNode);
       }
-      
+
       // 新しいノードを選択してフォーカス
       pNode.select();
     });

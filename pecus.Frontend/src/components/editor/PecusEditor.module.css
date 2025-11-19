@@ -464,7 +464,7 @@
   cursor: grab;
   position: relative;
   background-color: transparent;
-  background-image: 
+  background-image:
     radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
     radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
     radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
@@ -472,7 +472,7 @@
     radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px),
     radial-gradient(circle, var(--color-base-content) 1.5px, transparent 1.5px);
   background-size: 3px 3px;
-  background-position: 
+  background-position:
     4px 3px,
     10px 3px,
     4px 7px,
