@@ -344,6 +344,7 @@ export default function WorkspaceDetailClient({
               workspaceId={parseInt(workspaceId)}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
+              members={workspaceDetail.members || []}
             />
           )}
         </main>

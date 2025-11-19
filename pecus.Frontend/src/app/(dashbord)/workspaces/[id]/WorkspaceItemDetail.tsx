@@ -3,21 +3,28 @@
 import { useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import MenuIcon from "@mui/icons-material/Menu";
-import type { WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
+import type {
+  WorkspaceItemDetailResponse,
+  WorkspaceDetailUserResponse,
+} from "@/connectors/api/pecus";
 import NotionEditor from "@/components/editor/NotionEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
+import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
+import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
 import type { YooptaContentValue } from "@yoopta/editor";
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
   onItemSelect: (itemId: number) => void;
+  members?: WorkspaceDetailUserResponse[];
 }
 
 export default function WorkspaceItemDetail({
   workspaceId,
   itemId,
   onItemSelect,
+  members = [],
 }: WorkspaceItemDetailProps) {
   const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,17 +39,13 @@ export default function WorkspaceItemDetail({
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/items/${itemId}`,
-        );
+        const result = await fetchLatestWorkspaceItem(workspaceId, itemId);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "アイテムの取得に失敗しました。");
+        if (result.success) {
+          setItem(result.data);
+        } else {
+          setError(result.message || "アイテムの取得に失敗しました。");
         }
-
-        const data: WorkspaceItemDetailResponse = await response.json();
-        setItem(data);
       } catch (err: any) {
         setError(err.message || "アイテムの取得に失敗しました。");
       } finally {
@@ -97,24 +100,6 @@ export default function WorkspaceItemDetail({
 
   return (
     <>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes fadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-        @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-        @keyframes slideOutRight {
-          from { transform: translateX(0); }
-          to { transform: translateX(100%); }
-        }
-      `}</style>
       <div className="card bg-base-100 shadow-md">
       <div className="card-body">
         {/* ヘッダー */}
@@ -359,96 +344,14 @@ export default function WorkspaceItemDetail({
       )}
 
       {/* ドローワー */}
-      {isDrawerOpen && (
-        <>
-          {/* 背景オーバーレイ */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
-            onClick={closeDrawer}
-            style={{ animation: isDrawerClosing ? 'fadeOut 0.25s ease-out' : 'fadeIn 0.2s ease-out' }}
-          />
-
-          {/* ドローワー本体 */}
-          <div
-            id="workspace-item-drawer"
-            className="fixed top-0 right-0 h-full w-80 bg-base-100 shadow-xl z-50 overflow-y-auto flex flex-col transition-transform duration-300 ease-out"
-            role="dialog"
-            tabIndex={-1}
-            style={{ animation: isDrawerClosing ? 'slideOutRight 0.25s ease-in' : 'slideInRight 0.3s ease-out' }}
-          >
-            {/* ヘッダー */}
-            <div className="flex items-center justify-between p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10">
-              <h3 className="text-lg font-bold">詳細オプション</h3>
-              <button
-                type="button"
-                className="btn btn-ghost btn-circle btn-sm"
-                aria-label="Close"
-                onClick={closeDrawer}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* ボディ */}
-            <div className="flex-1 p-4 space-y-4">
-              {/* 作業者設定 */}
-              {item && (
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">作業者</span>
-                  </label>
-                  <div className="flex items-center gap-2">
-                    {item.assigneeAvatarUrl ? (
-                      <img
-                        src={item.assigneeAvatarUrl}
-                        alt={item.assigneeUsername || "ユーザー"}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center text-xs">
-                        ？
-                      </div>
-                    )}
-                    <span className="text-sm">{item.assigneeUsername || "未割当"}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* 期限 */}
-              {item?.dueDate && (
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">期限</span>
-                  </label>
-                  <p className="text-sm">
-                    {new Date(item.dueDate).toLocaleDateString("ja-JP")}
-                  </p>
-                </div>
-              )}
-
-              {/* その他のオプション */}
-              <div className="divider my-2"></div>
-              <button type="button" className="btn btn-outline btn-sm w-full">
-                詳細を表示
-              </button>
-            </div>
-
-            {/* フッター */}
-            <div className="flex gap-2 p-4 border-t border-base-300 bg-base-100">
-              <button
-                type="button"
-                className="btn btn-outline flex-1"
-                onClick={closeDrawer}
-              >
-                閉じる
-              </button>
-              <button type="button" className="btn btn-primary flex-1">
-                保存
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      <WorkspaceItemDrawer
+        item={item}
+        isOpen={isDrawerOpen}
+        isClosing={isDrawerClosing}
+        onClose={closeDrawer}
+        members={members}
+        onAssigneeUpdate={(updatedItem) => setItem(updatedItem)}
+      />
 
     </div>
     </>
