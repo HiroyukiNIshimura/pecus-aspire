@@ -184,7 +184,7 @@ function CodeActionMenuContainer({
       {isShown ? (
         <div className="code-action-menu-container" style={{...position}}>
           <select
-            className="code-highlight-language"
+            className="select select-xs max-w-sm"
             value={lang}
             onChange={handleLanguageChange}
             aria-label="コードブロックの言語を選択"
