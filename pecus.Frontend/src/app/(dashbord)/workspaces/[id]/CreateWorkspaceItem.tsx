@@ -14,6 +14,7 @@ import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
 import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
+import NotionLikeEditor from "@/components/lexical/NotionLikeEditor";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -234,6 +235,11 @@ export default function CreateWorkspaceItem({
                   onChange={handleEditorChange}
                   readOnly={false}
                 />
+              </div>
+
+              {/* 実験用（WYSIWYGエディタ） */}
+              <div>
+                <NotionLikeEditor></NotionLikeEditor>
               </div>
 
               {/* 期限日 */}
