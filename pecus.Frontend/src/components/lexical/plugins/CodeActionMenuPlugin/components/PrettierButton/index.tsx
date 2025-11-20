@@ -117,6 +117,7 @@ export function PrettierButton({lang, editor, getCodeDOMNode}: Props) {
   }
 
   function setError(error: unknown) {
+    console.error('Prettier format error: ', error);
     if (error instanceof Error) {
       setSyntaxError(error.message);
       setTipsVisible(true);

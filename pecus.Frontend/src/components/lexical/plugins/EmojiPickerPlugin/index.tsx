@@ -8,17 +8,13 @@
 
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {
-  LexicalTypeaheadMenuPlugin,
-  MenuOption,
-  useBasicTypeaheadTriggerMatch,
-} from '@lexical/react/LexicalTypeaheadMenuPlugin';
-import {
   $createTextNode,
   $getSelection,
   $isRangeSelection,
   TextNode,
 } from 'lexical';
 import {useCallback, useEffect, useMemo, useState} from 'react';
+import { LexicalTypeaheadMenuPlugin, MenuOption, useBasicTypeaheadTriggerMatch } from '../LexicalTypeaheadMenuPlugin';
 
 class EmojiOption extends MenuOption {
   title: string;
@@ -125,7 +121,6 @@ export default function EmojiPickerPlugin() {
       onSelectOption={onSelectOption}
       triggerFn={checkForTriggerMatch}
       options={options}
-      menuRenderFn={(m) => { return null; }} //TODO ???
     />
   );
 }

@@ -9,16 +9,12 @@
 import type {JSX} from 'react';
 
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {
-  LexicalTypeaheadMenuPlugin,
-  MenuOption,
-  MenuTextMatch,
-  useBasicTypeaheadTriggerMatch,
-} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {TextNode} from 'lexical';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {$createMentionNode} from '../../nodes/MentionNode';
+import { MenuOption, MenuTextMatch } from '../LexicalTypeaheadMenuPlugin/LexicalMenu';
+import { LexicalTypeaheadMenuPlugin, useBasicTypeaheadTriggerMatch } from '../LexicalTypeaheadMenuPlugin';
 
 const PUNCTUATION =
   '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
@@ -634,7 +630,6 @@ export default function NewMentionsPlugin(): JSX.Element | null {
       onSelectOption={onSelectOption}
       triggerFn={checkForMentionMatch}
       options={options}
-      menuRenderFn={(m) => { return null; }} //TODO ??
     />
   );
 }

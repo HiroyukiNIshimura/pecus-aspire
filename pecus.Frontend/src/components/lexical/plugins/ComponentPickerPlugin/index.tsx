@@ -17,11 +17,6 @@ import {
 import {INSERT_EMBED_COMMAND} from '@lexical/react/LexicalAutoEmbedPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {INSERT_HORIZONTAL_RULE_COMMAND} from '@lexical/react/LexicalHorizontalRuleNode';
-import {
-  LexicalTypeaheadMenuPlugin,
-  MenuOption,
-  useBasicTypeaheadTriggerMatch,
-} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {$createHeadingNode, $createQuoteNode} from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
 import {INSERT_TABLE_COMMAND} from '@lexical/table';
@@ -44,8 +39,8 @@ import {InsertEquationDialog} from '../EquationsPlugin';
 import {INSERT_IMAGE_COMMAND, InsertImageDialog} from '../ImagesPlugin';
 import InsertLayoutDialog from '../LayoutPlugin/InsertLayoutDialog';
 import {INSERT_PAGE_BREAK} from '../PageBreakPlugin';
-import {InsertPollDialog} from '../PollPlugin';
 import {InsertTableDialog} from '../TablePlugin';
+import { LexicalTypeaheadMenuPlugin, MenuOption, useBasicTypeaheadTriggerMatch } from '../LexicalTypeaheadMenuPlugin';
 
 class ComponentPickerOption extends MenuOption {
   // What shows up in the editor
@@ -205,23 +200,7 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       keywords: ['page break', 'divider'],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, undefined),
     }),
-    new ComponentPickerOption('Poll', {
-      icon: <i className="icon poll" />,
-      keywords: ['poll', 'vote'],
-      onSelect: () =>
-        showModal('Insert Poll', (onClose) => (
-          <InsertPollDialog activeEditor={editor} onClose={onClose} />
-        )),
-    }),
-    ...EmbedConfigs.map(
-      (embedConfig) =>
-        new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
-          icon: embedConfig.icon,
-          keywords: [...embedConfig.keywords, 'embed'],
-          onSelect: () =>
-            editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
-        }),
-    ),
+
     new ComponentPickerOption('Date', {
       icon: <i className="icon calendar" />,
       keywords: ['date', 'calendar', 'time'],
@@ -239,8 +218,7 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
         dateTime.setHours(0, 0, 0, 0); // Set time to midnight
         editor.dispatchCommand(INSERT_DATETIME_COMMAND, {dateTime});
       },
-    }),
-    new ComponentPickerOption('Tomorrow', {
+    }),    new ComponentPickerOption('Tomorrow', {
       icon: <i className="icon calendar" />,
       keywords: ['date', 'calendar', 'time', 'tomorrow'],
       onSelect: () => {
@@ -364,7 +342,6 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         onSelectOption={onSelectOption}
         triggerFn={checkForTriggerMatch}
         options={options}
-        menuRenderFn={(m) => { return null; }} //TODO ???
       />
     </>
   );

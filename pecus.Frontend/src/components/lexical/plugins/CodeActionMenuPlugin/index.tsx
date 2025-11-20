@@ -28,6 +28,30 @@ import {useDebounce} from './utils';
 
 const CODE_PADDING = 8;
 
+// サポートする言語リスト（Lexical Code Pluginでサポートされている言語）
+const SUPPORTED_LANGUAGES = [
+  { value: '', label: 'Plain Text' },
+  { value: 'c', label: 'C' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'css', label: 'CSS' },
+  { value: 'html', label: 'HTML' },
+  { value: 'java', label: 'Java' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'js', label: 'JS' },
+  { value: 'json', label: 'JSON' },
+  { value: 'markdown', label: 'Markdown' },
+  { value: 'objc', label: 'Objective-C' },
+  { value: 'php', label: 'PHP' },
+  { value: 'powershell', label: 'PowerShell' },
+  { value: 'python', label: 'Python' },
+  { value: 'py', label: 'Python' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'swift', label: 'Swift' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'xml', label: 'XML' },
+];
+
 interface Position {
   top: string;
   right: string;
@@ -140,11 +164,37 @@ function CodeActionMenuContainer({
   const normalizedLang = normalizeCodeLang(lang);
   const codeFriendlyName = getLanguageFriendlyName(lang);
 
+  const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLang = event.target.value;
+    const codeDOMNode = getCodeDOMNode();
+    if (!codeDOMNode) {
+      return;
+    }
+
+    editor.update(() => {
+      const codeNode = $getNearestNodeFromDOMNode(codeDOMNode);
+      if ($isCodeNode(codeNode)) {
+        codeNode.setLanguage(newLang);
+      }
+    });
+  };
+
   return (
     <>
       {isShown ? (
         <div className="code-action-menu-container" style={{...position}}>
-          <div className="code-highlight-language">{codeFriendlyName}</div>
+          <select
+            className="code-highlight-language"
+            value={lang}
+            onChange={handleLanguageChange}
+            aria-label="コードブロックの言語を選択"
+          >
+            {SUPPORTED_LANGUAGES.map((language) => (
+              <option key={language.value} value={language.value}>
+                {language.label}
+              </option>
+            ))}
+          </select>
           <CopyButton editor={editor} getCodeDOMNode={getCodeDOMNode} />
           {canBePrettier(normalizedLang) ? (
             <PrettierButton
