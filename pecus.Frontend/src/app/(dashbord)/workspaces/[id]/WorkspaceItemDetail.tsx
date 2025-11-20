@@ -11,7 +11,6 @@ import PecusEditor from "@/components/editor/PecusEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
-import type { YooptaContentValue } from "@yoopta/editor";
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
