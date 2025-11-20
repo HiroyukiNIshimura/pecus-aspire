@@ -8,18 +8,22 @@
 
 @import 'https://fonts.googleapis.com/css?family=Reenie+Beanie';
 
+.notion-like-editor .editor-placeholder {
+  color: var(--color-primary-content);
+  padding-left: 1rem;
+}
 .notion-like-editor .editor-shell {
   margin: 20px auto;
   border-radius: 2px;
   max-width: 1100px;
-  color: var(--color-neutral-content);
+  color: var(--color-base-content);
   position: relative;
   line-height: 1.7;
   font-weight: 400;
 }
 
 .notion-like-editor .editor-shell .editor-container {
-  background: var(--color-base-100);
+  background: var(--color-base-200);
   position: relative;
   display: block;
   border-bottom-left-radius: 10px;
@@ -222,14 +226,14 @@
   background-image: url(images/icons/download.svg);
 }
 
-.notion-like-editor .typeahead-popover {
+.typeahead-popover {
   background: var(--color-base-100);
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   position: relative;
 }
 
-.notion-like-editor .typeahead-popover ul {
+.typeahead-popover ul {
   padding: 0;
   list-style: none;
   margin: 0;
@@ -238,16 +242,16 @@
   overflow-y: scroll;
 }
 
-.notion-like-editor .typeahead-popover ul::-webkit-scrollbar {
+.typeahead-popover ul::-webkit-scrollbar {
   display: none;
 }
 
-.notion-like-editor .typeahead-popover ul {
+.typeahead-popover ul {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.notion-like-editor .typeahead-popover ul li {
+.typeahead-popover ul li {
   margin: 0;
   min-width: 180px;
   font-size: 14px;
@@ -256,11 +260,11 @@
   border-radius: 8px;
 }
 
-.notion-like-editor .typeahead-popover ul li.selected {
+.typeahead-popover ul li.selected {
   background: var(--color-base-200);
 }
 
-.notion-like-editor .typeahead-popover li {
+.typeahead-popover li {
   margin: 0 8px 0 8px;
   padding: 8px;
   color: var(--color-base-content);
@@ -276,33 +280,33 @@
   border: 0;
 }
 
-.notion-like-editor .typeahead-popover li.active {
+.typeahead-popover li.active {
   display: flex;
   width: 20px;
   height: 20px;
   background-size: contain;
 }
 
-.notion-like-editor .typeahead-popover li:first-child {
+.typeahead-popover li:first-child {
   border-radius: 8px 8px 0px 0px;
 }
 
-.notion-like-editor .typeahead-popover li:last-child {
+.typeahead-popover li:last-child {
   border-radius: 0px 0px 8px 8px;
 }
 
-.notion-like-editor .typeahead-popover li:hover {
+.typeahead-popover li:hover {
   background-color: var(--color-base-200);
 }
 
-.notion-like-editor .typeahead-popover li .text {
+.typeahead-popover li .text {
   display: flex;
   line-height: 20px;
   flex-grow: 1;
   min-width: 150px;
 }
 
-.notion-like-editor .typeahead-popover li .icon {
+.typeahead-popover li .icon {
   display: flex;
   width: 20px;
   height: 20px;
@@ -314,7 +318,7 @@
   background-position: center;
 }
 
-.notion-like-editor .mentions-menu {
+.mentions-menu {
   width: 250px;
 }
 

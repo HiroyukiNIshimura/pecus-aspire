@@ -15,6 +15,7 @@
   width: 16px;
   height: 16px;
   opacity: 0.3;
+  background-color: transparent;
   background-image: url(../../images/icons/draggable-block-menu.svg);
 }
 
@@ -22,7 +23,6 @@
   display: inline-block;
   border: none;
   cursor: pointer;
-  background-color: transparent;
   background-image: url(../../images/icons/plus.svg);
 }
 

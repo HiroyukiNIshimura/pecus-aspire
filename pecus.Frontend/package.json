@@ -47,6 +47,7 @@
     "jotai": "^2.15.1",
     "jwt-decode": "^4.0.0",
     "lexical": "^0.38.2",
+    "lodash-es": "^4.17.21",
     "next": "15.5.4",
     "notyf": "^3.10.0",
     "pristinejs": "^1.1.0",
@@ -60,6 +61,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "styled-components": "^6.1.19",
     "use-debounce": "^10.0.6",
+    "yjs": "^13.6.27",
     "zod": "^4.1.12"
   },
   "devDependencies": {

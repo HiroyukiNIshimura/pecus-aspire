@@ -85,7 +85,6 @@ import {EmbedConfigs} from '../AutoEmbedPlugin';
 import {INSERT_COLLAPSIBLE_COMMAND} from '../CollapsiblePlugin';
 import {INSERT_DATETIME_COMMAND} from '../DateTimePlugin';
 import {InsertEquationDialog} from '../EquationsPlugin';
-import {INSERT_EXCALIDRAW_COMMAND} from '../ExcalidrawPlugin';
 import {
   INSERT_IMAGE_COMMAND,
   InsertImageDialog,
@@ -1304,14 +1303,6 @@ export default function ToolbarPlugin({
                   className="item">
                   <i className="icon gif" />
                   <span className="text">GIF</span>
-                </DropDownItem>
-                <DropDownItem
-                  onClick={() =>
-                    dispatchToolbarCommand(INSERT_EXCALIDRAW_COMMAND)
-                  }
-                  className="item">
-                  <i className="icon diagram-2" />
-                  <span className="text">Excalidraw</span>
                 </DropDownItem>
                 <DropDownItem
                   onClick={() => {
