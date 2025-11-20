@@ -85,6 +85,7 @@ export default function Editor() {
       isCharLimitUtf8,
       isRichText,
       showTableOfContents,
+      showToolbar,
       shouldUseLexicalContextMenu,
       tableCellMerge,
       tableCellBackgroundColor,
@@ -129,7 +130,7 @@ export default function Editor() {
 
   return (
     <>
-      {isRichText && (
+      {isRichText && showToolbar && (
         <ToolbarPlugin
           editor={editor}
           activeEditor={activeEditor}
@@ -137,7 +138,7 @@ export default function Editor() {
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      {isRichText && (
+      {isRichText && showToolbar && (
         <ShortcutsPlugin
           editor={activeEditor}
           setIsLinkEditMode={setIsLinkEditMode}

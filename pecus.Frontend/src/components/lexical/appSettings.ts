@@ -32,6 +32,7 @@ export const DEFAULT_SETTINGS = {
   showNestedEditorTreeView: false,
   showTableOfContents: false,
   showTreeView: true,
+  showToolbar: true,
   tableCellBackgroundColor: true,
   tableCellMerge: true,
   tableHorizontalScroll: true,

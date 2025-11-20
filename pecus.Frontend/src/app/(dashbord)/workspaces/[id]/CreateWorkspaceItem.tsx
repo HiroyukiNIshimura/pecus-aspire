@@ -238,7 +238,7 @@ export default function CreateWorkspaceItem({
               </div>
 
               {/* 実験用（WYSIWYGエディタ） */}
-              <div>
+              <div className="form-control">
                 <NotionLikeEditor></NotionLikeEditor>
               </div>
 

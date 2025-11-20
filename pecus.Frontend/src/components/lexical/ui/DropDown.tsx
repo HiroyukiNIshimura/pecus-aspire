@@ -150,7 +150,7 @@ function DropDownItems({
 
   return (
     <DropDownContext.Provider value={contextValue}>
-      <div className="dropdown" ref={dropDownRef} onKeyDown={handleKeyDown}>
+      <div className="notion-like-editor dropdown" ref={dropDownRef} onKeyDown={handleKeyDown}>
         {children}
       </div>
     </DropDownContext.Provider>
@@ -191,12 +191,16 @@ export default function DropDown({
     const dropDown = dropDownRef.current;
 
     if (showDropDown && button !== null && dropDown !== null) {
-      const {top, left} = button.getBoundingClientRect();
+      const { top, left } = button.getBoundingClientRect();
+      console.log('Button position:', top, left);
+      console.log('dropDown.offsetWidth:', dropDown.offsetWidth);
       dropDown.style.top = `${top + button.offsetHeight + dropDownPadding}px`;
       dropDown.style.left = `${Math.min(
         left,
         window.innerWidth - dropDown.offsetWidth - 20,
       )}px`;
+
+      console.log('DropDown positioned at:', dropDown.style.top, dropDown.style.left);
     }
   }, [dropDownRef, buttonRef, showDropDown]);
 

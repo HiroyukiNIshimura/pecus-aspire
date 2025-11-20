@@ -7,6 +7,7 @@
  */
 'use client';
 
+import './Editor.css';
 import {LexicalExtensionComposer} from '@lexical/react/LexicalExtensionComposer';
 import {
   defineExtension,
@@ -43,6 +44,7 @@ export default function NotionLikeEditor() {
   );
 
     return (
+    <div className="notion-like-editor">
       <FlashMessageContext>
         <LexicalExtensionComposer extension={app} contentEditable={null}>
             <SharedHistoryContext>
@@ -57,6 +59,7 @@ export default function NotionLikeEditor() {
             </SharedHistoryContext>
         </LexicalExtensionComposer>
       </FlashMessageContext>
+    </div>
   );
 }
 
