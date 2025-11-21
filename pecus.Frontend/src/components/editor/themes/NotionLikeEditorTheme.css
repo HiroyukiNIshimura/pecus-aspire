@@ -15,8 +15,8 @@
   margin-left: 20px;
   margin-bottom: 10px;
   font-size: 15px;
-  color: var(--color-neutral-content);
-  border-left-color: var(--color-base-300);
+  color: var(--color-base-content);
+  border-left-color: var(--color-gray-400);
   border-left-width: 4px;
   border-left-style: solid;
   padding-left: 16px;
