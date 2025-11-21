@@ -13,7 +13,7 @@ import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
 import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
-import NotionLikeEditor from "@/components/lexical/NotionLikeEditor";
+import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
