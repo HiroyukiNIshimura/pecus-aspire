@@ -17,6 +17,11 @@ import {
 import {INSERT_EMBED_COMMAND} from '@lexical/react/LexicalAutoEmbedPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {INSERT_HORIZONTAL_RULE_COMMAND} from '@lexical/react/LexicalHorizontalRuleNode';
+import {
+  LexicalTypeaheadMenuPlugin,
+  MenuOption,
+  useBasicTypeaheadTriggerMatch,
+} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {$createHeadingNode, $createQuoteNode} from '@lexical/rich-text';
 import {$setBlocksType} from '@lexical/selection';
 import {INSERT_TABLE_COMMAND} from '@lexical/table';
@@ -29,6 +34,7 @@ import {
   TextNode,
 } from 'lexical';
 import {useCallback, useMemo, useState} from 'react';
+import * as ReactDOM from 'react-dom';
 
 import useModal from '../../hooks/useModal';
 import catTypingGif from '../../images/cat-typing.gif';
@@ -40,7 +46,6 @@ import {INSERT_IMAGE_COMMAND, InsertImageDialog} from '../ImagesPlugin';
 import InsertLayoutDialog from '../LayoutPlugin/InsertLayoutDialog';
 import {INSERT_PAGE_BREAK} from '../PageBreakPlugin';
 import {InsertTableDialog} from '../TablePlugin';
-import { LexicalTypeaheadMenuPlugin, MenuOption, useBasicTypeaheadTriggerMatch } from '../LexicalTypeaheadMenuPlugin';
 
 class ComponentPickerOption extends MenuOption {
   // What shows up in the editor
@@ -70,6 +75,40 @@ class ComponentPickerOption extends MenuOption {
     this.keyboardShortcut = options.keyboardShortcut;
     this.onSelect = options.onSelect.bind(this);
   }
+}
+
+function ComponentPickerMenuItem({
+  index,
+  isSelected,
+  onClick,
+  onMouseEnter,
+  option,
+}: {
+  index: number;
+  isSelected: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+  option: ComponentPickerOption;
+}) {
+  let className = 'item';
+  if (isSelected) {
+    className += ' selected';
+  }
+  return (
+    <li
+      key={option.key}
+      tabIndex={-1}
+      className={className}
+      ref={option.setRefElement}
+      role="option"
+      aria-selected={isSelected}
+      id={'typeahead-item-' + index}
+      onMouseEnter={onMouseEnter}
+      onClick={onClick}>
+      {option.icon}
+      <span className="text">{option.title}</span>
+    </li>
+  );
 }
 
 function getDynamicOptions(editor: LexicalEditor, queryString: string) {
@@ -200,7 +239,6 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       keywords: ['page break', 'divider'],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, undefined),
     }),
-
     new ComponentPickerOption('Date', {
       icon: <i className="icon calendar" />,
       keywords: ['date', 'calendar', 'time'],
@@ -218,7 +256,8 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
         dateTime.setHours(0, 0, 0, 0); // Set time to midnight
         editor.dispatchCommand(INSERT_DATETIME_COMMAND, {dateTime});
       },
-    }),    new ComponentPickerOption('Tomorrow', {
+    }),
+    new ComponentPickerOption('Tomorrow', {
       icon: <i className="icon calendar" />,
       keywords: ['date', 'calendar', 'time', 'tomorrow'],
       onSelect: () => {
@@ -342,6 +381,35 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         onSelectOption={onSelectOption}
         triggerFn={checkForTriggerMatch}
         options={options}
+        menuRenderFn={(
+          anchorElementRef,
+          {selectedIndex, selectOptionAndCleanUp, setHighlightedIndex},
+        ) =>
+          anchorElementRef.current && options.length
+            ? ReactDOM.createPortal(
+                <div className="typeahead-popover component-picker-menu">
+                  <ul>
+                    {options.map((option, i: number) => (
+                      <ComponentPickerMenuItem
+                        index={i}
+                        isSelected={selectedIndex === i}
+                        onClick={() => {
+                          setHighlightedIndex(i);
+                          selectOptionAndCleanUp(option);
+                        }}
+                        onMouseEnter={() => {
+                          setHighlightedIndex(i);
+                        }}
+                        key={option.key}
+                        option={option}
+                      />
+                    ))}
+                  </ul>
+                </div>,
+                anchorElementRef.current,
+              )
+            : null
+        }
       />
     </>
   );
