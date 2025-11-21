@@ -116,14 +116,15 @@ export default function NotionLikeEditor({
   debounceMs = 300,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
+  // readonly=true の場合は showToolbar を強制的に false にする
   const settings = useMemo(
     () => ({
       ...INITIAL_SETTINGS,
-      showToolbar,
+      showToolbar: readonly ? false : showToolbar,
       isRichText,
       measureTypingPerf,
     }),
-    [showToolbar, isRichText, measureTypingPerf]
+    [readonly, showToolbar, isRichText, measureTypingPerf]
   );
 
   const app = useMemo(

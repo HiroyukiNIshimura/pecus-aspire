@@ -13,6 +13,7 @@ import {
 } from "@/actions/workspaceItem";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspaceItemSchema } from "@/schemas/editSchemas";
+import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
 
 interface EditWorkspaceItemProps {
   item: WorkspaceItemDetailResponse;
@@ -373,6 +374,13 @@ export default function EditWorkspaceItem({
                   <label className="label">
                     <span className="label-text font-semibold">本文</span>
                   </label>
+                  <div className="border border-base-300 rounded-lg overflow-hidden">
+                    <NotionLikeEditor
+                      initialEditorState={editorValue}
+                      onChange={handleEditorChange}
+                      debounceMs={500}
+                    />
+                  </div>
                 </div>
 
                 {/* 期限日 */}
