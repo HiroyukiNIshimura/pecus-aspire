@@ -38,7 +38,7 @@ import { TweetNode } from "./TweetNode";
 import { YouTubeNode } from "./YouTubeNode";
 import { HorizontalRuleNode } from "@lexical/extension";
 
-const PlaygroundNodes: Array<Klass<LexicalNode>> = [
+const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   HeadingNode,
   ListNode,
   ListItemNode,
@@ -75,4 +75,4 @@ const PlaygroundNodes: Array<Klass<LexicalNode>> = [
   DateTimeNode,
 ];
 
-export default PlaygroundNodes;
+export default NotionLikeEditorNodes;

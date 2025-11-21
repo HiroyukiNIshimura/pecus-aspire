@@ -17,7 +17,7 @@ import { useSettings } from "./context/SettingsContext";
 import { SharedHistoryContext } from "./context/SharedHistoryContext";
 import { ToolbarContext } from "./context/ToolbarContext";
 import Editor from "./Editor";
-import PlaygroundNodes from "./nodes/PlaygroundNodes";
+import NotionLikeEditorNodes from "./nodes/NotionLikeEditorNodes";
 import { TableContext } from "./plugins/TablePlugin";
 import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
@@ -35,7 +35,7 @@ export default function NotionLikeEditor() {
         html: buildHTMLConfig(),
         name: "pecus/NotionLikeEditor",
         namespace: "NotionLikeEditor",
-        nodes: PlaygroundNodes,
+        nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
       }),
     [emptyEditor],
