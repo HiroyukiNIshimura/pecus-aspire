@@ -10,8 +10,7 @@ import type {
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
-
+import "./WorkspaceItemDetail.css";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
@@ -155,9 +154,12 @@ export default function WorkspaceItemDetail({
           </div>
 
           {/* 本文  */}
-          {item.body && (
+          {item.htmlBody && (
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">本文</h3>
+              <div
+                dangerouslySetInnerHTML={{ __html: item.htmlBody }}
+              />
             </div>
           )}
 
