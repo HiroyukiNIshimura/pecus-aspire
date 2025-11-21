@@ -256,7 +256,8 @@ const WorkspaceItemsSidebar = forwardRef<
         ) : (
           <div
             id={scrollContainerId}
-            className="overflow-y-scroll bg-base-200 flex-1"
+            className="overflow-y-auto bg-base-200 flex-1"
+            style={{maxHeight:"750px"}}
           >
             <InfiniteScroll
               dataLength={filteredItems.length}
@@ -273,7 +274,6 @@ const WorkspaceItemsSidebar = forwardRef<
                 </div>
               }
               scrollableTarget={scrollContainerId}
-              style={{ height: "auto" }}
             >
               <ul className="space-y-1 p-2">
                 {filteredItems.map((item) => (
