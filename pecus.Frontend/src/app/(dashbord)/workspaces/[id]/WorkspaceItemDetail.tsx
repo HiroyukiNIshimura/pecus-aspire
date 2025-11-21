@@ -10,7 +10,7 @@ import type {
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
-import "./WorkspaceItemDetail.css";
+import "@/components/editor/themes/NotionLikeEditorTheme.css";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
