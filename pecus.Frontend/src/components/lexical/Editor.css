@@ -1329,6 +1329,9 @@ i.page-break,
   width: 8px;
   background-image: url(images/icons/chevron-down.svg);
 }
+.table-cell-action-button.chevron-down i.chevron-down {
+  background-color: var(--color-secondary-content);
+}
 
 @keyframes mic-pulsate-color {
   0% {

@@ -7,7 +7,7 @@
  */
 
 .code-action-menu-container {
-  min-height: 35.8px;
+  height: 30px;
   font-size: 10px;
   color: var(--color--base-content);
   position: absolute;
@@ -17,6 +17,7 @@
   user-select: none;
   background: var(--color--base-200, rgba(255, 255, 255, 0.95));
   padding: 6px 10px;
+  margin-top: 3px;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   gap: 6px;
