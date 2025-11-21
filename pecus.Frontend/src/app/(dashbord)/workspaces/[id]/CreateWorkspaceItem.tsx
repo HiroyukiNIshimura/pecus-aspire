@@ -229,10 +229,6 @@ export default function CreateWorkspaceItem({
                 <label className="label">
                   <span className="label-text font-semibold">本文</span>
                 </label>
-              </div>
-
-              {/* 実験用（WYSIWYGエディタ） */}
-              <div className="form-control">
                 <NotionLikeEditor></NotionLikeEditor>
               </div>
 

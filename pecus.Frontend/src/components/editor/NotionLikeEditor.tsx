@@ -30,6 +30,7 @@ import { useEffect } from "react";
 import { $getRoot } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
+import { useDebouncedCallback } from "use-debounce";
 
 function ReadonlyPlugin({ readonly }: { readonly: boolean }) {
   const [editor] = useLexicalComposerContext();
@@ -39,31 +40,6 @@ function ReadonlyPlugin({ readonly }: { readonly: boolean }) {
   }, [editor, readonly]);
 
   return null;
-}
-
-/**
- * エディタ内容の変更データ
- */
-export interface EditorChangeData {
-  /**
-   * エディタの完全な状態（JSON文字列）
-   */
-  editorState: string;
-
-  /**
-   * プレーンテキストのみ（フォーマット情報なし）
-   */
-  plainText: string;
-
-  /**
-   * HTML形式のコンテンツ
-   */
-  html: string;
-
-  /**
-   * Markdown形式のコンテンツ
-   */
-  markdown: string;
 }
 
 export interface NotionLikeEditorProps {
@@ -97,17 +73,34 @@ export interface NotionLikeEditorProps {
   initialEditorState?: string;
 
   /**
-   * エディタ内容変更時のコールバック
+   * エディタ内容変更時のコールバック（EditorState JSON）
    * @param editorState - シリアライズされたEditorState（JSON文字列）
    */
   onChange?: (editorState: string) => void;
 
   /**
-   * エディタ内容変更時のコールバック（拡張版）
-   * プレーンテキスト、HTML、Markdownも含む詳細データを受け取る
-   * @param data - エディタの変更データ
+   * プレーンテキスト変更時のコールバック
+   * @param plainText - フォーマット情報を除いた純粋なテキスト
    */
-  onChangeExtended?: (data: EditorChangeData) => void;
+  onChangePlainText?: (plainText: string) => void;
+
+  /**
+   * HTML変更時のコールバック
+   * @param html - HTML形式のコンテンツ
+   */
+  onChangeHtml?: (html: string) => void;
+
+  /**
+   * Markdown変更時のコールバック
+   * @param markdown - Markdown形式のコンテンツ
+   */
+  onChangeMarkdown?: (markdown: string) => void;
+
+  /**
+   * 各コールバックのデバウンス時間（ミリ秒）
+   * @default 300
+   */
+  debounceMs?: number;
 }
 
 export default function NotionLikeEditor({
@@ -117,7 +110,10 @@ export default function NotionLikeEditor({
   measureTypingPerf = false,
   initialEditorState,
   onChange,
-  onChangeExtended,
+  onChangePlainText,
+  onChangeHtml,
+  onChangeMarkdown,
+  debounceMs = 300,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -143,37 +139,61 @@ export default function NotionLikeEditor({
     [initialEditorState]
   );
 
-  const handleChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
+  const debouncedOnChange = useDebouncedCallback(
+    (editorState: EditorState) => {
       if (onChange) {
         const json = JSON.stringify(editorState.toJSON());
         onChange(json);
       }
     },
-    [onChange]
+    debounceMs
   );
 
-  const handleChangeExtended = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
-      if (onChangeExtended) {
+  const debouncedOnChangePlainText = useDebouncedCallback(
+    (editorState: EditorState) => {
+      if (onChangePlainText) {
         editorState.read(() => {
           const root = $getRoot();
           const plainText = root.getTextContent();
-          const html = $generateHtmlFromNodes(editor);
-          const markdown = $convertToMarkdownString(TRANSFORMERS);
-
-          const data: EditorChangeData = {
-            editorState: JSON.stringify(editorState.toJSON()),
-            plainText,
-            html,
-            markdown,
-          };
-
-          onChangeExtended(data);
+          onChangePlainText(plainText);
         });
       }
     },
-    [onChangeExtended]
+    debounceMs
+  );
+
+  const debouncedOnChangeHtml = useDebouncedCallback(
+    (editorState: EditorState, editor: LexicalEditor) => {
+      if (onChangeHtml) {
+        editorState.read(() => {
+          const html = $generateHtmlFromNodes(editor);
+          onChangeHtml(html);
+        });
+      }
+    },
+    debounceMs
+  );
+
+  const debouncedOnChangeMarkdown = useDebouncedCallback(
+    (editorState: EditorState) => {
+      if (onChangeMarkdown) {
+        editorState.read(() => {
+          const markdown = $convertToMarkdownString(TRANSFORMERS);
+          onChangeMarkdown(markdown);
+        });
+      }
+    },
+    debounceMs
+  );
+
+  const handleChange = useCallback(
+    (editorState: EditorState, editor: LexicalEditor) => {
+      debouncedOnChange(editorState);
+      debouncedOnChangePlainText(editorState);
+      debouncedOnChangeHtml(editorState, editor);
+      debouncedOnChangeMarkdown(editorState);
+    },
+    [debouncedOnChange, debouncedOnChangePlainText, debouncedOnChangeHtml, debouncedOnChangeMarkdown]
   );
 
   return (
@@ -191,9 +211,8 @@ export default function NotionLikeEditor({
                     <Editor />
                   </div>
                   <ReadonlyPlugin readonly={readonly} />
-                  {onChange && <OnChangePlugin onChange={handleChange} />}
-                  {onChangeExtended && (
-                    <OnChangePlugin onChange={handleChangeExtended} />
+                  {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
+                    <OnChangePlugin onChange={handleChange} />
                   )}
                   {measureTypingPerf && <TypingPerfPlugin />}
                 </ToolbarContext>
