@@ -35,10 +35,15 @@ const Context: React.Context<SettingsContextShape> = createContext({
 
 export const SettingsContext = ({
   children,
+  initialSettings,
 }: {
   children: ReactNode;
+  initialSettings?: Partial<Record<SettingName, boolean>>;
 }): JSX.Element => {
-  const [settings, setSettings] = useState(INITIAL_SETTINGS);
+  const [settings, setSettings] = useState(() => ({
+    ...INITIAL_SETTINGS,
+    ...initialSettings,
+  }));
 
   const setOption = useCallback((setting: SettingName, value: boolean) => {
     setSettings((options) => ({
