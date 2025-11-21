@@ -117,7 +117,8 @@
   vertical-align: super;
 }
 .NotionLikeEditorTheme__textCode {
-  background-color: var(--color-base-200);
+  background-color: var(--color-yellow-100);
+  color: var(--color-red-400);
   padding: 1px 0.25rem;
   font-family: Menlo, Consolas, Monaco, monospace;
   font-size: 94%;
