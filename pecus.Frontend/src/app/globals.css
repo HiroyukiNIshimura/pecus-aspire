@@ -8,6 +8,7 @@
 @plugin "@iconify/tailwind4";
 @import "../components/common/TagInput.module.css";
 @import "react-day-picker/style.css";
+
 /* テーブルホバーボタン用のスペースを確保 */
 body {
   padding-bottom: 100px;

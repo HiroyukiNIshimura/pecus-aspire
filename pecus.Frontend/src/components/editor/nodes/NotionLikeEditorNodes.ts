@@ -31,7 +31,6 @@ import { LayoutContainerNode } from "./LayoutContainerNode";
 import { LayoutItemNode } from "./LayoutItemNode";
 import { MentionNode } from "./MentionNode";
 import { PageBreakNode } from "./PageBreakNode";
-import { PollNode } from "./PollNode";
 import { SpecialTextNode } from "./SpecialTextNode";
 import { StickyNode } from "./StickyNode";
 import { TweetNode } from "./TweetNode";
@@ -52,7 +51,6 @@ const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   AutoLinkNode,
   LinkNode,
   OverflowNode,
-  PollNode,
   StickyNode,
   ImageNode,
   MentionNode,

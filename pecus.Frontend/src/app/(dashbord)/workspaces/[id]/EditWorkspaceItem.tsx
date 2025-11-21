@@ -48,7 +48,10 @@ export default function EditWorkspaceItem({
     rowVersion: item.rowVersion,
   });
 
+  // エディタ初期値（item.body）とユーザー入力値は分離して管理
+  const [initialEditorState, setInitialEditorState] = useState<string>(item.body || "");
   const [editorValue, setEditorValue] = useState<string>(item.body || "");
+  const [editorInitKey, setEditorInitKey] = useState<number>(0);
 
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -192,7 +195,7 @@ export default function EditWorkspaceItem({
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  // モーダルが開かれたときに最新のアイテムデータを取得
+  // モーダルが開かれたときに最新のアイテムデータを取得し、エディタ値も初期化
   useEffect(() => {
     if (!isOpen) return;
 
@@ -219,8 +222,10 @@ export default function EditWorkspaceItem({
             isArchived: result.data.isArchived ?? false,
             rowVersion: result.data.rowVersion,
           });
-          // エディタ値を更新
+          // エディタ初期値とユーザー入力値を両方初期化
+          setInitialEditorState(result.data.body || "");
           setEditorValue(result.data.body || "");
+          setEditorInitKey((k) => k + 1); // 強制再マウント
         } else {
           setItemLoadError(result.message || "アイテムの取得に失敗しました。");
         }
@@ -269,7 +274,10 @@ export default function EditWorkspaceItem({
       {/* モーダル背景オーバーレイ */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
+        onClick={(e) => {
+          if (e.target !== e.currentTarget) return;
+          handleClose();
+        }}
         aria-hidden="true"
       />
 
@@ -375,8 +383,10 @@ export default function EditWorkspaceItem({
                     <span className="label-text font-semibold">本文</span>
                   </label>
                   <div className="border border-base-300 rounded-lg overflow-hidden">
+                    {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
                     <NotionLikeEditor
-                      initialEditorState={editorValue}
+                      key={editorInitKey}
+                      initialEditorState={initialEditorState}
                       onChange={handleEditorChange}
                       debounceMs={500}
                     />

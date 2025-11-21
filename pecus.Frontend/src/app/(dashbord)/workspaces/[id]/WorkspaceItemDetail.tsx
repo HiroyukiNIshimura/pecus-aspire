@@ -10,8 +10,7 @@ import type {
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
-
+import "@/components/editor/themes/NotionLikeEditorTheme.css";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
@@ -154,16 +153,13 @@ export default function WorkspaceItemDetail({
             )}
           </div>
 
-          {/* 本文 エディタReadonly */}
-          {item.body && (
+          {/* 本文  */}
+          {item.htmlBody && (
             <div className="mb-4">
-              <h3 className="text-lg font-bold mb-2">内容</h3>
-              <div className="border border-base-300 rounded-lg overflow-hidden">
-                <NotionLikeEditor
-                  initialEditorState={item.body}
-                  readonly={true}
-                />
-              </div>
+              <h3 className="text-lg font-bold mb-2">本文</h3>
+              <div
+                dangerouslySetInnerHTML={{ __html: item.htmlBody }}
+              />
             </div>
           )}
 

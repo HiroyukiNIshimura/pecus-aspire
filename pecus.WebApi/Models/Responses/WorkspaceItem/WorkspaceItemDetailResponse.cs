@@ -40,6 +40,16 @@ public class WorkspaceItemDetailResponse : IConflictModel
     public string? Body { get; set; }
 
     /// <summary>
+    /// HTML形式の本文
+    /// </summary>
+    public string? HtmlBody { get; set; }
+
+    /// <summary>
+    /// プレーンテキスト形式の本文
+    /// </summary>
+    public string? RawBody { get; set; }
+
+    /// <summary>
     /// オーナーユーザーID
     /// </summary>
     public int OwnerId { get; set; }

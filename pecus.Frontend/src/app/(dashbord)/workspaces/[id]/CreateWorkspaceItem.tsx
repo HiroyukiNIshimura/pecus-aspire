@@ -37,6 +37,7 @@ export default function CreateWorkspaceItem({
   });
 
   const [editorState, setEditorState] = useState<string>("");
+  const [htmlContent, setHtmlContent] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -64,6 +65,7 @@ export default function CreateWorkspaceItem({
         const request: CreateWorkspaceItemRequest = {
           subject: data.subject.trim(),
           body: editorState || null,
+          htmlBody: htmlContent || null,
           dueDate: dueDateValue,
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
@@ -103,9 +105,14 @@ export default function CreateWorkspaceItem({
     await validateField(fieldName, value);
   };
 
-  // エディタ変更時の処理
-  const handleEditorChange = (content: string) => {
-    setEditorState(content);
+  // エディタ変更時の処理（JSON形式）
+  const handleEditorChange = (json: string) => {
+    setEditorState(json);
+  };
+
+  // エディタ変更時の処理（HTML形式）
+  const handleHtmlChange = (html: string) => {
+    setHtmlContent(html);
   };
 
   // フォームリセット
@@ -121,6 +128,7 @@ export default function CreateWorkspaceItem({
       isDraft: true,
     });
     setEditorState("");
+    setHtmlContent("");
     setTags([]);
     setGlobalError(null);
   };
@@ -237,6 +245,7 @@ export default function CreateWorkspaceItem({
                 <div className="border border-base-300 rounded-lg overflow-hidden">
                   <NotionLikeEditor
                     onChange={handleEditorChange}
+                    onChangeHtml={handleHtmlChange}
                     debounceMs={500}
                   />
                 </div>

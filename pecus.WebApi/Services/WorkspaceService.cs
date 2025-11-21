@@ -158,7 +158,7 @@ public class WorkspaceService
         var query = _context
             .Workspaces.Include(w => w.Organization)
             .Include(w => w.Genre)
-            .Include(w => w.WorkspaceUsers.Where(wu => wu.User.IsActive))
+            .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
             .Where(w => w.OrganizationId == organizationId)
@@ -510,7 +510,7 @@ public class WorkspaceService
             .Workspaces
             .Include(w => w.Organization)
             .Include(w => w.Genre)
-            .Include(w => w.WorkspaceUsers.Where(wu => wu.User.IsActive))
+            .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
             .Where(w => accessibleWorkspaceIds.Contains(w.Id))
