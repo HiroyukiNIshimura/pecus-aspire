@@ -158,6 +158,7 @@ export default function Editor() {
         <DateTimePlugin />
         {isRichText ? (
           <>
+            <HistoryPlugin externalHistoryState={historyState} />
             <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
