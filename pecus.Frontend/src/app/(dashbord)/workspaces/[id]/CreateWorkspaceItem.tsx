@@ -36,7 +36,7 @@ export default function CreateWorkspaceItem({
     isDraft: true,
   });
 
-  const [editorValue, setEditorValue] = useState<string | undefined>();
+  const [editorState, setEditorState] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -49,6 +49,7 @@ export default function CreateWorkspaceItem({
     validateField,
     shouldShowError,
     getFieldError,
+    resetForm: resetFormValidation,
   } = useFormValidation({
     schema: createWorkspaceItemSchema,
     onSubmit: async (data) => {
@@ -62,7 +63,7 @@ export default function CreateWorkspaceItem({
 
         const request: CreateWorkspaceItemRequest = {
           subject: data.subject.trim(),
-          body: editorValue || null,
+          body: editorState || null,
           dueDate: dueDateValue,
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
@@ -104,18 +105,22 @@ export default function CreateWorkspaceItem({
 
   // エディタ変更時の処理
   const handleEditorChange = (content: string) => {
-    setEditorValue(content);
+    setEditorState(content);
   };
 
   // フォームリセット
   const resetForm = () => {
+    // フォームバリデーションフックのリセット（fieldErrors、touchedFields、フォーム要素をリセット）
+    resetFormValidation();
+
+    // コンポーネント独自の状態をリセット
     setFormData({
       subject: "",
       dueDate: "",
       priority: "Medium",
       isDraft: true,
     });
-    setEditorValue(undefined);
+    setEditorState("");
     setTags([]);
     setGlobalError(null);
   };
@@ -229,7 +234,12 @@ export default function CreateWorkspaceItem({
                 <label className="label">
                   <span className="label-text font-semibold">本文</span>
                 </label>
-                <NotionLikeEditor></NotionLikeEditor>
+                <div className="border border-base-300 rounded-lg overflow-hidden">
+                  <NotionLikeEditor
+                    onChange={handleEditorChange}
+                    debounceMs={500}
+                  />
+                </div>
               </div>
 
               {/* 期限日 */}

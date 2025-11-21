@@ -5,6 +5,7 @@ import {
   useMemo,
   useCallback,
   useEffect,
+  useRef,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -58,6 +59,12 @@ const WorkspaceItemsSidebar = forwardRef<
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // currentPageの最新値を参照するためのref
+    const currentPageRef = useRef(currentPage);
+    useEffect(() => {
+      currentPageRef.current = currentPage;
+    }, [currentPage]);
+
     // アイテムをリロードするメソッド
     const refreshItems = useCallback(
       async (selectItemId?: number) => {
@@ -109,8 +116,9 @@ const WorkspaceItemsSidebar = forwardRef<
     );
 
     const loadMoreItems = useCallback(async () => {
+      const nextPage = currentPageRef.current + 1;
+
       try {
-        const nextPage = currentPage + 1;
         const response = await fetch(
           `/api/workspaces/${workspaceId}/items?page=${nextPage}`,
         );
@@ -131,14 +139,14 @@ const WorkspaceItemsSidebar = forwardRef<
           return [...prev, ...uniqueNewItems];
         });
 
-        setCurrentPage(data.currentPage || nextPage);
+        setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load more items",
         );
       }
-    }, [workspaceId, currentPage]);
+    }, [workspaceId]);
 
     // 検索フィルター
     const filteredItems = useMemo(() => {
@@ -248,12 +256,12 @@ const WorkspaceItemsSidebar = forwardRef<
         ) : (
           <div
             id={scrollContainerId}
-            className="flex-1 overflow-y-auto bg-base-200"
+            className="overflow-y-scroll bg-base-200 flex-1"
           >
             <InfiniteScroll
               dataLength={filteredItems.length}
               next={loadMoreItems}
-              hasMore={currentPage < totalPages}
+              hasMore={!searchQuery && currentPage < totalPages}
               loader={
                 <div className="text-center py-4">
                   <span className="loading loading-spinner loading-sm"></span>
@@ -265,6 +273,7 @@ const WorkspaceItemsSidebar = forwardRef<
                 </div>
               }
               scrollableTarget={scrollContainerId}
+              style={{ height: "auto" }}
             >
               <ul className="space-y-1 p-2">
                 {filteredItems.map((item) => (
