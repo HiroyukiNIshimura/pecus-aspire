@@ -190,53 +190,54 @@ export default function DateTimeComponent({
         'Invalid Date'}
       {isOpen && (
         <FloatingPortal>
-          <FloatingOverlay lockScroll={true}>
+          <FloatingOverlay
+            lockScroll={true}
+            style={{
+              zIndex: 2000,
+            }}
+          >
             <FloatingFocusManager context={context} initialFocus={-1}>
               <div
-                className={'dateTimePicker'}
+                className={'notion-like-editor dateTimePicker'}
                 ref={refs.setFloating}
-                style={floatingStyles}
+                style={{
+                  ...floatingStyles,
+                  zIndex: 2000,
+                }}
                 {...getFloatingProps()}>
                 <DayPicker
-                  captionLayout="dropdown"
-                  navLayout="after"
-                  fixedWeeks={false}
-                  showOutsideDays={false}
                   mode="single"
                   selected={selected}
-                  required={true}
-                  // timeZone="BST" TODO: Support time zone selection
                   onSelect={handleDaySelect}
-                  startMonth={new Date(1925, 0)}
-                  endMonth={new Date(2042, 7)}
                 />
-                <form style={{marginBlockEnd: '1em'}}>
-                  <div
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      width: '300px',
-                    }}>
+                <div className="includeTime">
+                  <label htmlFor="includeTime">
                     <input
+                      id="includeTime"
                       type="checkbox"
-                      id="option1"
-                      name="option1"
-                      value="value1"
                       checked={includeTime}
                       onChange={handleCheckboxChange}
                     />
-                    <label>
-                      <input
-                        type="time"
-                        value={timeValue}
-                        onChange={handleTimeChange}
-                        disabled={!includeTime}
-                      />
-                    </label>
-                    <span> {userTimeZone}</span>
-                  </div>
-                </form>
+                    Include time
+                  </label>
+                </div>
+                {includeTime && (
+                  <input
+                    id="time"
+                    type="time"
+                    value={timeValue}
+                    onChange={handleTimeChange}
+                    style={{
+                      marginTop: '8px',
+                      padding: '4px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                    }}
+                  />
+                )}
+                <p style={{fontSize: '12px', color: '#666', marginTop: '8px'}}>
+                  {userTimeZone}
+                </p>
               </div>
             </FloatingFocusManager>
           </FloatingOverlay>

@@ -7,10 +7,19 @@
 @source "./node_modules/flyonui/dist/index.js";
 @plugin "@iconify/tailwind4";
 @import "../components/common/TagInput.module.css";
-
+@import "react-day-picker/style.css";
 /* テーブルホバーボタン用のスペースを確保 */
 body {
   padding-bottom: 100px;
+}
+
+/* Editor の DayPicker 用カスタムプロパティ
+https://daypicker.dev/docs/styling#css-variables */
+.rdp-root {
+  --rdp-accent-color: var(--color-accent)
+}
+[data-theme="dark"] .rdp-root {
+  --rdp-accent-color: var(--color-accent)
 }
 
 /* ContentEditable のアウトラインを削除 */

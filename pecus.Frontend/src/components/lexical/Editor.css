@@ -436,6 +436,7 @@
 .notion-like-editor i.table,
 .typeahead-popover.component-picker-menu i.icon.table {
   background-image: url(images/icons/table.svg);
+  border-radius:0;
 }
 
 .notion-like-editor i.close,
@@ -1710,3 +1711,11 @@ button.toolbar-item:disabled i.format,
   display: inline-block;
 }
 
+.notion-like-editor.dateTimePicker {
+  background: var(--color-base-100);
+
+  border: 1px solid #ddd;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 0px 6px 0px 10px;
+}
