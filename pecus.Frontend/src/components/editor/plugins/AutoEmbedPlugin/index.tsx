@@ -216,6 +216,7 @@ export function AutoEmbedDialog({
       </div>
       <DialogActions>
         <Button
+          className="btn btn-soft btn-primary"
           disabled={!embedResult}
           onClick={onClick}
           data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}

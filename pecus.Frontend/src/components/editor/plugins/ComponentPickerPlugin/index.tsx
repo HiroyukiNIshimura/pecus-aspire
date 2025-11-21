@@ -240,6 +240,15 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       keywords: ["page break", "divider"],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, undefined),
     }),
+    ...EmbedConfigs.map(
+      (embedConfig) =>
+        new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
+          icon: embedConfig.icon,
+          keywords: [...embedConfig.keywords, 'embed'],
+          onSelect: () =>
+            editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
+        }),
+    ),
     new ComponentPickerOption("Date", {
       icon: <i className="icon calendar" />,
       keywords: ["date", "calendar", "time"],

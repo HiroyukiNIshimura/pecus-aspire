@@ -931,9 +931,6 @@ export default function ToolbarPlugin({
     },
     [activeEditor, selectedElementKey],
   );
-  const insertGifOnClick = (payload: InsertImagePayload) => {
-    activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
-  };
 
   const canViewerSeeInsertDropdown = !toolbarState.isImageCaption;
   const canViewerSeeInsertCodeButton = !toolbarState.isImageCaption;
@@ -1340,18 +1337,6 @@ export default function ToolbarPlugin({
                   <span className="text">Image</span>
                 </DropDownItem>
                 <DropDownItem
-                  onClick={() =>
-                    insertGifOnClick({
-                      altText: "Cat typing on a laptop",
-                      src: catTypingGif.src,
-                    })
-                  }
-                  className="item"
-                >
-                  <i className="icon gif" />
-                  <span className="text">GIF</span>
-                </DropDownItem>
-                <DropDownItem
                   onClick={() => {
                     showModal("Insert Table", (onClose) => (
                       <InsertTableDialog
@@ -1379,7 +1364,6 @@ export default function ToolbarPlugin({
                   <i className="icon columns" />
                   <span className="text">Columns Layout</span>
                 </DropDownItem>
-
                 <DropDownItem
                   onClick={() => {
                     showModal("Insert Equation", (onClose) => (

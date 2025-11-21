@@ -89,6 +89,7 @@ export function InsertImageUriDialogBody({
       />
       <DialogActions>
         <Button
+          className="btn btn-soft btn-primary"
           data-test-id="image-modal-confirm-btn"
           disabled={isDisabled}
           onClick={() => onClick({ altText, src })}
@@ -140,6 +141,7 @@ export function InsertImageUploadedDialogBody({
       />
       <DialogActions>
         <Button
+          className="btn btn-soft btn-primary"
           data-test-id="image-modal-file-upload-btn"
           disabled={isDisabled}
           onClick={() => onClick({ altText, src })}
@@ -181,25 +183,6 @@ export function InsertImageDialog({
     <>
       {!mode && (
         <DialogButtonsList>
-          <Button
-            data-test-id="image-modal-option-sample"
-            onClick={() =>
-              onClick(
-                hasModifier.current
-                  ? {
-                      altText:
-                        "Daylight fir trees forest glacier green high ice landscape",
-                      src: landscapeImage.src,
-                    }
-                  : {
-                      altText: "Yellow flower in tilt shift lens",
-                      src: yellowFlowerImage.src,
-                    },
-              )
-            }
-          >
-            Sample
-          </Button>
           <Button
             data-test-id="image-modal-option-url"
             onClick={() => setMode("url")}
