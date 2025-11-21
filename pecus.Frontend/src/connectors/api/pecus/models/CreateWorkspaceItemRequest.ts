@@ -16,6 +16,14 @@ export type CreateWorkspaceItemRequest = {
      */
     body?: string | null;
     /**
+     * HTML形式の本文
+     */
+    htmlBody?: string | null;
+    /**
+     * プレーンテキスト形式の本文
+     */
+    rawBody?: string | null;
+    /**
      * 作業中のユーザーID（NULL可）
      */
     assigneeId?: number | null;

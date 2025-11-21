@@ -7666,6 +7666,18 @@
             "description": "本文（WYSIWYGのノードデータをJSON形式で保存）",
             "nullable": true
           },
+          "htmlBody": {
+            "maxLength": 5000000,
+            "type": "string",
+            "description": "HTML形式の本文",
+            "nullable": true
+          },
+          "rawBody": {
+            "maxLength": 5000000,
+            "type": "string",
+            "description": "プレーンテキスト形式の本文",
+            "nullable": true
+          },
           "assigneeId": {
             "type": "integer",
             "description": "作業中のユーザーID（NULL可）",
@@ -10179,6 +10191,18 @@
             "description": "本文（WYSIWYGのノードデータをJSON形式で保存）",
             "nullable": true
           },
+          "htmlBody": {
+            "maxLength": 5000000,
+            "type": "string",
+            "description": "HTML形式の本文",
+            "nullable": true
+          },
+          "rawBody": {
+            "maxLength": 5000000,
+            "type": "string",
+            "description": "プレーンテキスト形式の本文",
+            "nullable": true
+          },
           "assigneeId": {
             "type": "integer",
             "description": "作業中のユーザーID（NULL可）",
@@ -10926,6 +10950,16 @@
           "body": {
             "type": "string",
             "description": "本文",
+            "nullable": true
+          },
+          "htmlBody": {
+            "type": "string",
+            "description": "HTML形式の本文",
+            "nullable": true
+          },
+          "rawBody": {
+            "type": "string",
+            "description": "プレーンテキスト形式の本文",
             "nullable": true
           },
           "ownerId": {
