@@ -267,6 +267,7 @@ function TableHoverActionsContainer({
     <>
       {isShownRow && (
         <button
+          type="button"
           className={`${getTheme()?.tableAddRows}`}
           style={{ ...position }}
           onClick={() => insertAction(true)}
@@ -274,6 +275,7 @@ function TableHoverActionsContainer({
       )}
       {isShownColumn && (
         <button
+          type="button"
           className={`${getTheme()?.tableAddColumns}`}
           style={{ ...position }}
           onClick={() => insertAction(false)}
