@@ -19,7 +19,6 @@ import { HashtagPlugin } from "@lexical/react/LexicalHashtagPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { SelectionAlwaysOnDisplay } from "@lexical/react/LexicalSelectionAlwaysOnDisplay";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
@@ -127,7 +126,7 @@ export default function Editor() {
 
   return (
     <>
-      {isRichText && showToolbar && (
+      {showToolbar && (
         <ToolbarPlugin
           editor={editor}
           activeEditor={activeEditor}
@@ -135,13 +134,13 @@ export default function Editor() {
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      {isRichText && showToolbar && (
+      {showToolbar && (
         <ShortcutsPlugin
           editor={activeEditor}
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      <div className={`editor-container ${!isRichText ? "plain-text" : ""}`}>
+      <div className="editor-container">
         {isMaxLength && <MaxLengthPlugin maxLength={30} />}
         <DragDropPaste />
         <AutoFocusPlugin />
@@ -156,10 +155,8 @@ export default function Editor() {
         <KeywordsPlugin />
         <AutoLinkPlugin />
         <DateTimePlugin />
-        {isRichText ? (
-          <>
-            <HistoryPlugin externalHistoryState={historyState} />
-            <RichTextPlugin
+        <HistoryPlugin externalHistoryState={historyState} />
+        <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
                   <div className="editor" ref={onRef}>
@@ -225,16 +222,6 @@ export default function Editor() {
                 />
               </>
             )}
-          </>
-        ) : (
-          <>
-            <PlainTextPlugin
-              contentEditable={<ContentEditable placeholder={placeholder} />}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <HistoryPlugin externalHistoryState={historyState} />
-          </>
-        )}
         {(isCharLimit || isCharLimitUtf8) && (
           <CharacterLimitPlugin
             charset={isCharLimit ? "UTF-16" : "UTF-8"}

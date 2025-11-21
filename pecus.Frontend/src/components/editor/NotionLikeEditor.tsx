@@ -11,7 +11,6 @@ import "./Editor.css";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import type { EditorState, LexicalEditor } from "lexical";
 import { defineExtension } from "lexical";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useCallback, useMemo } from "react";
 
 import { buildHTMLConfig } from "./buildHTMLConfig";
@@ -26,40 +25,17 @@ import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
 import { FlashMessageContext } from "./context/FlashMessageContext";
 import { INITIAL_SETTINGS } from "./appSettings";
-import { useEffect } from "react";
 import { $getRoot } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useDebouncedCallback } from "use-debounce";
 
-function ReadonlyPlugin({ readonly }: { readonly: boolean }) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    editor.setEditable(!readonly);
-  }, [editor, readonly]);
-
-  return null;
-}
-
 export interface NotionLikeEditorProps {
-  /**
-   * 読み取り専用モード
-   * @default false
-   */
-  readonly?: boolean;
-
   /**
    * ツールバーの表示
    * @default true
    */
   showToolbar?: boolean;
-
-  /**
-   * リッチテキストモード
-   * @default true
-   */
-  isRichText?: boolean;
 
   /**
    * タイピング性能測定（開発/デバッグ用）
@@ -104,9 +80,7 @@ export interface NotionLikeEditorProps {
 }
 
 export default function NotionLikeEditor({
-  readonly = false,
   showToolbar = true,
-  isRichText = true,
   measureTypingPerf = false,
   initialEditorState,
   onChange,
@@ -116,15 +90,14 @@ export default function NotionLikeEditor({
   debounceMs = 300,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
-  // readonly=true の場合は showToolbar を強制的に false にする
   const settings = useMemo(
     () => ({
       ...INITIAL_SETTINGS,
-      showToolbar: readonly ? false : showToolbar,
-      isRichText,
+      showToolbar,
+      isRichText: true,
       measureTypingPerf,
     }),
-    [readonly, showToolbar, isRichText, measureTypingPerf]
+    [showToolbar, measureTypingPerf]
   );
 
   const app = useMemo(
@@ -211,7 +184,6 @@ export default function NotionLikeEditor({
                   <div className="editor-shell">
                     <Editor />
                   </div>
-                  <ReadonlyPlugin readonly={readonly} />
                   {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
                     <OnChangePlugin onChange={handleChange} />
                   )}
