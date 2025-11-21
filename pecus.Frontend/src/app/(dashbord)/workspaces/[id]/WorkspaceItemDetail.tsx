@@ -7,7 +7,6 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceDetailUserResponse,
 } from "@/connectors/api/pecus";
-import PecusEditor from "@/components/editor/PecusEditor";
 import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
@@ -154,13 +153,10 @@ export default function WorkspaceItemDetail({
             )}
           </div>
 
-          {/* 本文 */}
+          {/* 本文 エディタReadonly */}
           {item.body && (
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">内容</h3>
-              <div className="p-4 bg-base-200 rounded">
-                <PecusEditor initialContent={item.body} readOnly={true} />
-              </div>
             </div>
           )}
 

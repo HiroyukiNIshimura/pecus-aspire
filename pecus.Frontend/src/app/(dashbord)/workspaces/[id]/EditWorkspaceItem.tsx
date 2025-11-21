@@ -7,7 +7,6 @@ import type {
   WorkspaceItemDetailResponse,
   TaskPriority,
 } from "@/connectors/api/pecus";
-import { PecusEditor } from "@/components/editor";
 import {
   updateWorkspaceItem,
   fetchLatestWorkspaceItem,
@@ -374,12 +373,6 @@ export default function EditWorkspaceItem({
                   <label className="label">
                     <span className="label-text font-semibold">本文</span>
                   </label>
-                  <PecusEditor
-                    initialContent={editorValue}
-                    placeholder="本文を入力してください..."
-                    onChange={handleEditorChange}
-                    readOnly={false}
-                  />
                 </div>
 
                 {/* 期限日 */}

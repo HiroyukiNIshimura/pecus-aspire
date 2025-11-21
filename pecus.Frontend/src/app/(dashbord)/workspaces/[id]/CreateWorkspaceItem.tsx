@@ -8,7 +8,6 @@ import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
-import PecusEditor from "@/components/editor/PecusEditor";
 import TagInput from "@/components/common/TagInput";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
@@ -230,11 +229,6 @@ export default function CreateWorkspaceItem({
                 <label className="label">
                   <span className="label-text font-semibold">本文</span>
                 </label>
-                <PecusEditor
-                  initialContent={editorValue}
-                  onChange={handleEditorChange}
-                  readOnly={false}
-                />
               </div>
 
               {/* 実験用（WYSIWYGエディタ） */}
