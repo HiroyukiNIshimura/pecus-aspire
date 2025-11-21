@@ -17,7 +17,6 @@ export const DEFAULT_SETTINGS = {
   isCodeHighlighted: true,
   isCodeShiki: false,
   isMaxLength: false,
-  isRichText: true,
   listStrictIndent: false,
   measureTypingPerf: true,
   selectionAlwaysOnDisplay: false,

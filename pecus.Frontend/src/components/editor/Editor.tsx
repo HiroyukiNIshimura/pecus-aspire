@@ -79,7 +79,6 @@ export default function Editor() {
       hasLinkAttributes,
       hasNestedTables: hasTabHandler,
       isCharLimitUtf8,
-      isRichText,
       showTableOfContents,
       showToolbar,
       shouldUseLexicalContextMenu,
