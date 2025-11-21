@@ -1365,7 +1365,7 @@ i.page-break,
 .notion-like-editor .toolbar {
   display: flex;
   margin-bottom: 1px;
-  background: var(--color-secondary);
+  background: var(--color-gray-300);
   padding: 4px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -1429,7 +1429,7 @@ button.toolbar-item:disabled i.format,
 }
 
 .notion-like-editor .toolbar-item:hover:not([disabled]) {
-  background-color: var(--color-accent);
+  background-color: var(--color-accent-content);
 }
 
 .notion-like-editor .toolbar-item.font-family .text {
@@ -1444,7 +1444,7 @@ button.toolbar-item:disabled i.format,
 .notion-like-editor .toolbar-item.font-size-input {
     font-weight: bold;
     font-size: 14px;
-    color: var(--color-neutral-content);
+    color: var(--color-gray-900);
     border-radius: 5px;
     border-color: grey;
     height: 15px;
@@ -1458,12 +1458,12 @@ button.toolbar-item:disabled i.format,
   line-height: 20px;
   vertical-align: middle;
   font-size: 14px;
-  color: var(--color-neutral-content);
   text-overflow: ellipsis;
   overflow: hidden;
   height: 20px;
   text-align: left;
   padding-right: 10px;
+  color: var(--color-gray-900);
 }
 
 .notion-like-editor .toolbar .toolbar-item .icon {

@@ -5,16 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import './index.css';
+import "./index.css";
 
-import {useCollaborationContext} from '@lexical/react/LexicalCollaborationContext';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {mergeRegister} from '@lexical/utils';
+import { useCollaborationContext } from "@lexical/react/LexicalCollaborationContext";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { mergeRegister } from "@lexical/utils";
 import {
   $getYChangeState,
   CLEAR_DIFF_VERSIONS_COMMAND__EXPERIMENTAL,
   DIFF_VERSIONS_COMMAND__EXPERIMENTAL,
-} from '@lexical/yjs';
+} from "@lexical/yjs";
 import {
   $getNodeByKeyOrThrow,
   COMMAND_PRIORITY_CRITICAL,
@@ -22,18 +22,18 @@ import {
   createCommand,
   LexicalCommand,
   TextNode,
-} from 'lexical';
-import _ from 'lodash';
-import {useCallback, useEffect, useState} from 'react';
+} from "lexical";
+import _ from "lodash";
+import { useCallback, useEffect, useState } from "react";
 import {
   PermanentUserData,
   Snapshot,
   snapshot as createSnapshot,
   XmlElement,
-} from 'yjs';
+} from "yjs";
 
-import Button from '../../ui/Button';
-import Modal from '../../ui/Modal';
+import Button from "../../ui/Button";
+import Modal from "../../ui/Modal";
 
 interface Version {
   name: string;
@@ -42,23 +42,23 @@ interface Version {
 }
 
 const COLORS = [
-  '#4a90e288',
-  '#bd10e088',
-  '#d0021b88',
-  '#8b572a88',
-  '#41750588',
-  '#f5a62388',
+  "#4a90e288",
+  "#bd10e088",
+  "#d0021b88",
+  "#8b572a88",
+  "#41750588",
+  "#f5a62388",
 ];
 
 type User = string; // username
 
 export const SHOW_VERSIONS_COMMAND: LexicalCommand<void> = createCommand(
-  'SHOW_VERSIONS_COMMAND',
+  "SHOW_VERSIONS_COMMAND",
 );
 
-export function VersionsPlugin({id}: {id: string}) {
+export function VersionsPlugin({ id }: { id: string }) {
   const [editor] = useLexicalComposerContext();
-  const {name: username, yjsDocMap} = useCollaborationContext();
+  const { name: username, yjsDocMap } = useCollaborationContext();
   const yDoc = yjsDocMap.get(id);
 
   const [isDiffMode, setIsDiffMode] = useState(false);
@@ -113,7 +113,7 @@ export function VersionsPlugin({id}: {id: string}) {
       return;
     }
 
-    const root = yDoc.get('root-v2', XmlElement);
+    const root = yDoc.get("root-v2", XmlElement);
     const handleChange: Parameters<typeof root.observeDeep>[0] = (
       _events,
       transaction,
@@ -148,7 +148,7 @@ export function VersionsPlugin({id}: {id: string}) {
         };
         editor.getEditorState().read(() => {
           for (const [nodeKey, mutation] of nodes.entries()) {
-            if (mutation === 'destroyed') {
+            if (mutation === "destroyed") {
               continue;
             }
             const node = $getNodeByKeyOrThrow<TextNode>(nodeKey);
@@ -157,17 +157,17 @@ export function VersionsPlugin({id}: {id: string}) {
             if (!ychange || !element) {
               continue;
             }
-            const {type, user: changeUser} = ychange;
+            const { type, user: changeUser } = ychange;
             if (!changeUser) {
               continue;
             }
             const color = getUserColor(changeUser);
             switch (type) {
-              case 'removed':
+              case "removed":
                 element.style.color = color;
-                element.style.textDecoration = 'line-through';
+                element.style.textDecoration = "line-through";
                 break;
-              case 'added':
+              case "added":
                 element.style.backgroundColor = color;
                 break;
               default:
@@ -176,7 +176,7 @@ export function VersionsPlugin({id}: {id: string}) {
           }
         });
       },
-      {skipInitialization: true},
+      { skipInitialization: true },
     );
   }, [editor, isDiffMode]);
 
@@ -237,7 +237,8 @@ function VersionsModal({
                   undefined,
                 );
                 onClose();
-              }}>
+              }}
+            >
               Exit compare view
             </Button>
           )}
@@ -258,8 +259,9 @@ function VersionsModal({
                   key={version.name}
                   onClick={() => setSelectedVersion(idx)}
                   className={`VersionsPlugin_VersionItem ${
-                    isSelected ? 'VersionsPlugin_VersionItem--selected' : ''
-                  }`}>
+                    isSelected ? "VersionsPlugin_VersionItem--selected" : ""
+                  }`}
+                >
                   Snapshot at {new Date(version.timestamp).toLocaleString()}
                 </button>
               );
@@ -274,7 +276,8 @@ function VersionsModal({
             onClose();
           }}
           disabled={selectedVersion === null}
-          className="VersionsPlugin_CompareButton">
+          className="VersionsPlugin_CompareButton"
+        >
           Show changes since selected version
         </Button>
       </div>
