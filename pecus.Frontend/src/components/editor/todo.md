@@ -4,3 +4,4 @@
 * コンポーネントのProps
 * 日本語化
 * editor.dispatchCommandは異なるインスタンス間で同じイベントが起きてしまう。
+    * https://github.com/facebook/lexical/issues/4853
