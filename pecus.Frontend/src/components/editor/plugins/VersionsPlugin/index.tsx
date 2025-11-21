@@ -247,7 +247,7 @@ function VersionsModal({
         {/* Version list */}
         <div className="VersionsPlugin_VersionList">
           {versions.length === 0 ? (
-            <button className="VersionsPlugin_VersionItem" disabled={true}>
+            <button type="button" className="VersionsPlugin_VersionItem" disabled={true}>
               Add a snapshot to get started
             </button>
           ) : (
@@ -256,6 +256,7 @@ function VersionsModal({
 
               return (
                 <button
+                  type="button"
                   key={version.name}
                   onClick={() => setSelectedVersion(idx)}
                   className={`VersionsPlugin_VersionItem ${

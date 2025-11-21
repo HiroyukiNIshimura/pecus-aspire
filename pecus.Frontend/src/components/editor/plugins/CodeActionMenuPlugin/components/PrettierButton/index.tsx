@@ -141,6 +141,7 @@ export function PrettierButton({ lang, editor, getCodeDOMNode }: Props) {
   return (
     <div className="prettier-wrapper">
       <button
+        type="button"
         className="menu-item"
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
