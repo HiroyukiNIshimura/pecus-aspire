@@ -6,11 +6,11 @@
  *
  *
  */
-.PlaygroundEditorTheme__paragraph {
+.NotionLikeEditorTheme__paragraph {
   margin: 0;
   position: relative;
 }
-.PlaygroundEditorTheme__quote {
+.NotionLikeEditorTheme__quote {
   margin: 0;
   margin-left: 20px;
   margin-bottom: 10px;
@@ -21,58 +21,58 @@
   border-left-style: solid;
   padding-left: 16px;
 }
-.PlaygroundEditorTheme__h1 {
+.NotionLikeEditorTheme__h1 {
   font-size: 24px;
   color: var(--color-base-content);
   font-weight: 400;
   margin: 0;
 }
-.PlaygroundEditorTheme__h2 {
+.NotionLikeEditorTheme__h2 {
   font-size: 15px;
   color: var(--color-base-content);
   font-weight: 700;
   margin: 0;
   text-transform: uppercase;
 }
-.PlaygroundEditorTheme__h3 {
+.NotionLikeEditorTheme__h3 {
   font-size: 12px;
   margin: 0;
   text-transform: uppercase;
 }
-.PlaygroundEditorTheme__indent {
+.NotionLikeEditorTheme__indent {
   --lexical-indent-base-value: 40px;
 }
-.PlaygroundEditorTheme__textBold {
+.NotionLikeEditorTheme__textBold {
   font-weight: bold;
 }
-.PlaygroundEditorTheme__paragraph mark {
+.NotionLikeEditorTheme__paragraph mark {
   background-color: unset;
 }
-.PlaygroundEditorTheme__textHighlight {
+.NotionLikeEditorTheme__textHighlight {
   background: color-mix(in oklab, var(--color-warning) 14%, transparent);
   border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 30%, transparent);
 }
-.PlaygroundEditorTheme__textItalic {
+.NotionLikeEditorTheme__textItalic {
   font-style: italic;
 }
-.PlaygroundEditorTheme__textUnderline {
+.NotionLikeEditorTheme__textUnderline {
   text-decoration: underline;
 }
 
-.PlaygroundEditorTheme__textStrikethrough {
+.NotionLikeEditorTheme__textStrikethrough {
   text-decoration: line-through;
 }
 
-.PlaygroundEditorTheme__textUnderlineStrikethrough {
+.NotionLikeEditorTheme__textUnderlineStrikethrough {
   text-decoration: underline line-through;
 }
 
-.PlaygroundEditorTheme__tabNode {
+.NotionLikeEditorTheme__tabNode {
   position: relative;
   text-decoration: none;
 }
 
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textUnderline::after {
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderline::after {
   content: '';
   position: absolute;
   left: 0;
@@ -81,7 +81,7 @@
   border-bottom: 0.1em solid currentColor;
 }
 
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textStrikethrough::before {
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textStrikethrough::before {
   content: '';
   position: absolute;
   left: 0;
@@ -90,65 +90,65 @@
   border-top: 0.1em solid currentColor;
 }
 
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textUnderlineStrikethrough::before,
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textUnderlineStrikethrough::after {
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::before,
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
 }
 
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textUnderlineStrikethrough::before {
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::before {
   top: 0.69em;
   border-top: 0.1em solid currentColor;
 }
 
-.PlaygroundEditorTheme__tabNode.PlaygroundEditorTheme__textUnderlineStrikethrough::after {
+.NotionLikeEditorTheme__tabNode.NotionLikeEditorTheme__textUnderlineStrikethrough::after {
   bottom: 0.05em;
   border-bottom: 0.1em solid currentColor;
 }
 
-.PlaygroundEditorTheme__textSubscript {
+.NotionLikeEditorTheme__textSubscript {
   font-size: 0.8em;
   vertical-align: sub !important;
 }
-.PlaygroundEditorTheme__textSuperscript {
+.NotionLikeEditorTheme__textSuperscript {
   font-size: 0.8em;
   vertical-align: super;
 }
-.PlaygroundEditorTheme__textCode {
+.NotionLikeEditorTheme__textCode {
   background-color: var(--color-base-200);
   padding: 1px 0.25rem;
   font-family: Menlo, Consolas, Monaco, monospace;
   font-size: 94%;
 }
-.PlaygroundEditorTheme__textLowercase {
+.NotionLikeEditorTheme__textLowercase {
   text-transform: lowercase;
 }
-.PlaygroundEditorTheme__textUppercase {
+.NotionLikeEditorTheme__textUppercase {
   text-transform: uppercase;
 }
-.PlaygroundEditorTheme__textCapitalize {
+.NotionLikeEditorTheme__textCapitalize {
   text-transform: capitalize;
 }
-.PlaygroundEditorTheme__hashtag {
+.NotionLikeEditorTheme__hashtag {
   background-color: color-mix(in oklab, var(--color-primary) 15%, transparent);
   border-bottom: 1px solid color-mix(in oklab, var(--color-primary) 30%, transparent);
 }
-.PlaygroundEditorTheme__link {
+.NotionLikeEditorTheme__link {
   color: var(--color-primary);
   text-decoration: none;
 }
-.PlaygroundEditorTheme__link:hover {
+.NotionLikeEditorTheme__link:hover {
   text-decoration: underline;
   cursor: pointer;
 }
-.PlaygroundEditorTheme__blockCursor {
+.NotionLikeEditorTheme__blockCursor {
   display: block;
   pointer-events: none;
   position: absolute;
 }
-.PlaygroundEditorTheme__blockCursor:after {
+.NotionLikeEditorTheme__blockCursor:after {
   content: '';
   display: block;
   position: absolute;
@@ -162,7 +162,7 @@
     visibility: hidden;
   }
 }
-.PlaygroundEditorTheme__code {
+.NotionLikeEditorTheme__code {
   background-color: var(--color-base-100);
   font-family: Menlo, Consolas, Monaco, monospace;
   display: block;
@@ -176,7 +176,7 @@
   position: relative;
   tab-size: 2;
 }
-.PlaygroundEditorTheme__code:before {
+.NotionLikeEditorTheme__code:before {
   content: attr(data-gutter);
   position: absolute;
   background-color: var(--color-base-100);
@@ -189,23 +189,23 @@
   text-align: right;
   min-width: 25px;
 }
-.PlaygroundEditorTheme__tableScrollableWrapper {
+.NotionLikeEditorTheme__tableScrollableWrapper {
   overflow-x: auto;
   margin: 0px 25px 30px 0px;
 }
-.PlaygroundEditorTheme__tableScrollableWrapper > .PlaygroundEditorTheme__table {
+.NotionLikeEditorTheme__tableScrollableWrapper > .NotionLikeEditorTheme__table {
   /* Remove the table's vertical margin and put it on the wrapper */
   margin-top: 0;
   margin-bottom: 0;
 }
-.PlaygroundEditorTheme__tableAlignmentCenter {
+.NotionLikeEditorTheme__tableAlignmentCenter {
   margin-left: auto;
   margin-right: auto;
 }
-.PlaygroundEditorTheme__tableAlignmentRight {
+.NotionLikeEditorTheme__tableAlignmentRight {
   margin-left: auto;
 }
-.PlaygroundEditorTheme__table {
+.NotionLikeEditorTheme__table {
   border-collapse: collapse;
   border-spacing: 0;
   overflow-y: scroll;
@@ -215,27 +215,27 @@
   margin-top: 25px;
   margin-bottom: 30px;
 }
-.PlaygroundEditorTheme__tableScrollableWrapper.PlaygroundEditorTheme__tableFrozenRow {
+.NotionLikeEditorTheme__tableScrollableWrapper.NotionLikeEditorTheme__tableFrozenRow {
   /* position:sticky needs overflow:clip or visible
      https://github.com/w3c/csswg-drafts/issues/865#issuecomment-350585274 */
   overflow-x: clip;
 }
-.PlaygroundEditorTheme__tableFrozenRow tr:nth-of-type(1) > td {
+.NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > td {
   overflow: clip;
   background-color: var(--color-base-100);
   position: sticky;
   z-index: 2;
   top: 44px;
 }
-.PlaygroundEditorTheme__tableFrozenRow tr:nth-of-type(1) > th {
+.NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > th {
   overflow: clip;
   background-color: var(--color-base-100);
   position: sticky;
   z-index: 2;
   top: 44px;
 }
-.PlaygroundEditorTheme__tableFrozenRow tr:nth-of-type(1) > th:after,
-.PlaygroundEditorTheme__tableFrozenRow tr:nth-of-type(1) > td:after {
+.NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > th:after,
+.NotionLikeEditorTheme__tableFrozenRow tr:nth-of-type(1) > td:after {
   content: '';
   position: absolute;
   left: 0;
@@ -243,19 +243,19 @@
   width: 100%;
   border-bottom: 1px solid var(--color-base-300);
 }
-.PlaygroundEditorTheme__tableFrozenColumn tr > td:first-child {
+.NotionLikeEditorTheme__tableFrozenColumn tr > td:first-child {
   background-color: var(--color-base-100);
   position: sticky;
   z-index: 2;
   left: 0;
 }
-.PlaygroundEditorTheme__tableFrozenColumn tr > th:first-child {
+.NotionLikeEditorTheme__tableFrozenColumn tr > th:first-child {
   background-color: var(--color-base-100);
   position: sticky;
   z-index: 2;
   left: 0;
 }
-.PlaygroundEditorTheme__tableFrozenColumn tr > :first-child::after {
+.NotionLikeEditorTheme__tableFrozenColumn tr > :first-child::after {
   content: '';
   position: absolute;
   left: 0;
@@ -264,20 +264,20 @@
   height: 100%;
   border-right: 1px solid var(--color-base-300);
 }
-.PlaygroundEditorTheme__tableRowStriping tr:nth-child(even),
-.PlaygroundEditorTheme__tableFrozenColumn
-  .PlaygroundEditorTheme__table.PlaygroundEditorTheme__tableRowStriping
+.NotionLikeEditorTheme__tableRowStriping tr:nth-child(even),
+.NotionLikeEditorTheme__tableFrozenColumn
+  .NotionLikeEditorTheme__table.NotionLikeEditorTheme__tableRowStriping
   tr:nth-child(even)
   > td:first-child {
   background-color: var(--color-base-100);
 }
-.PlaygroundEditorTheme__tableSelection *::selection {
+.NotionLikeEditorTheme__tableSelection *::selection {
   background-color: transparent;
 }
-.PlaygroundEditorTheme__tableSelected {
+.NotionLikeEditorTheme__tableSelected {
   outline: 2px solid var(--color-primary);
 }
-.PlaygroundEditorTheme__tableCell {
+.NotionLikeEditorTheme__tableCell {
   border: 1px solid var(--color-neutral);
   background-color: var(--color-base-100);
   width: 75px;
@@ -292,10 +292,10 @@
   A firefox workaround to allow scrolling of overflowing table cell
   ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1904159
 */
-.PlaygroundEditorTheme__tableCell > * {
+.NotionLikeEditorTheme__tableCell > * {
   overflow: inherit;
 }
-.PlaygroundEditorTheme__tableCellResizer {
+.NotionLikeEditorTheme__tableCellResizer {
   position: absolute;
   right: -4px;
   height: 100%;
@@ -304,14 +304,14 @@
   z-index: 10;
   top: 0;
 }
-.PlaygroundEditorTheme__tableCellHeader {
+.NotionLikeEditorTheme__tableCellHeader {
   background-color: var(--color-base-200);
   text-align: start;
 }
-.PlaygroundEditorTheme__tableCellSelected {
+.NotionLikeEditorTheme__tableCellSelected {
   caret-color: transparent;
 }
-.PlaygroundEditorTheme__tableCellSelected::after {
+.NotionLikeEditorTheme__tableCellSelected::after {
   position: absolute;
   left: 0;
   right: 0;
@@ -322,7 +322,7 @@
   content: '';
   pointer-events: none;
 }
-.PlaygroundEditorTheme__tableAddColumns {
+.NotionLikeEditorTheme__tableAddColumns {
   position: absolute;
   background-color: var(--color-accent-content);
   height: 100%;
@@ -330,7 +330,7 @@
   border: 0;
   cursor: pointer;
 }
-.PlaygroundEditorTheme__tableAddColumns:after {
+.NotionLikeEditorTheme__tableAddColumns:after {
   background-image: url(../images/icons/plus.svg);
   background-size: contain;
   background-position: center;
@@ -344,11 +344,11 @@
   height: 100%;
   opacity: 0.4;
 }
-.PlaygroundEditorTheme__tableAddColumns:hover,
-.PlaygroundEditorTheme__tableAddRows:hover {
+.NotionLikeEditorTheme__tableAddColumns:hover,
+.NotionLikeEditorTheme__tableAddRows:hover {
   background-color: color-mix(in oklab, var(--color-accent) 50%, transparent);
 }
-.PlaygroundEditorTheme__tableAddRows {
+.NotionLikeEditorTheme__tableAddRows {
   position: absolute;
   width: calc(100% - 25px);
   background-color: var(--color-accent-content);
@@ -356,7 +356,7 @@
   border: 0;
   cursor: pointer;
 }
-.PlaygroundEditorTheme__tableAddRows:after {
+.NotionLikeEditorTheme__tableAddRows:after {
   background-image: url(../images/icons/plus.svg);
   background-size: contain;
   background-position: center;
@@ -378,7 +378,7 @@
     opacity: 1;
   }
 }
-.PlaygroundEditorTheme__tableCellResizeRuler {
+.NotionLikeEditorTheme__tableCellResizeRuler {
   display: block;
   position: absolute;
   width: 1px;
@@ -386,7 +386,7 @@
   height: 100%;
   top: 0;
 }
-.PlaygroundEditorTheme__tableCellActionButtonContainer {
+.NotionLikeEditorTheme__tableCellActionButtonContainer {
   display: block;
   right: 5px;
   top: 6px;
@@ -395,7 +395,7 @@
   width: 20px;
   height: 20px;
 }
-.PlaygroundEditorTheme__tableCellActionButton {
+.NotionLikeEditorTheme__tableCellActionButton {
   background-color: var(--color-base-200);
   display: block;
   border: 0;
@@ -405,61 +405,68 @@
   color: var(--color-base-content);
   cursor: pointer;
 }
-.PlaygroundEditorTheme__tableCellActionButton:hover {
+.NotionLikeEditorTheme__tableCellActionButton:hover {
   background-color: var(--color-base-300);
 }
-.PlaygroundEditorTheme__characterLimit {
+.NotionLikeEditorTheme__characterLimit {
   display: inline;
   background-color: var(--color-error) !important;
 }
-.PlaygroundEditorTheme__ol1 {
+.NotionLikeEditorTheme__ul {
+  padding: 0;
+  margin: 0;
+  list-style-position: outside;
+  list-style: disc;
+}
+.NotionLikeEditorTheme__ol {
+  padding: 0;
+  margin: 0;
+  list-style-position: outside;
+  list-style: decimal;
+}
+.NotionLikeEditorTheme__ol1 {
   padding: 0;
   margin: 0;
   list-style-position: outside;
 }
-.PlaygroundEditorTheme__ol2 {
+.NotionLikeEditorTheme__ol2 {
   padding: 0;
   margin: 0;
   list-style-type: upper-alpha;
   list-style-position: outside;
 }
-.PlaygroundEditorTheme__ol3 {
+.NotionLikeEditorTheme__ol3 {
   padding: 0;
   margin: 0;
   list-style-type: lower-alpha;
   list-style-position: outside;
 }
-.PlaygroundEditorTheme__ol4 {
+.NotionLikeEditorTheme__ol4 {
   padding: 0;
   margin: 0;
   list-style-type: upper-roman;
   list-style-position: outside;
 }
-.PlaygroundEditorTheme__ol5 {
+.NotionLikeEditorTheme__ol5 {
   padding: 0;
   margin: 0;
   list-style-type: lower-roman;
   list-style-position: outside;
 }
-.PlaygroundEditorTheme__ul {
-  padding: 0;
-  margin: 0;
-  list-style-position: outside;
-}
-.PlaygroundEditorTheme__listItem {
+.NotionLikeEditorTheme__listItem {
   margin: 0 32px;
   font-family: var(--listitem-marker-font-family);
   font-size: var(--listitem-marker-font-size);
   background-color: var(--listitem-marker-background-color);
 }
-.PlaygroundEditorTheme__listItem::marker {
+.NotionLikeEditorTheme__listItem::marker {
   color: var(--listitem-marker-color);
   background-color: var(--listitem-marker-background-color);
   font-family: var(--listitem-marker-font-family);
   font-size: var(--listitem-marker-font-size);
 }
-.PlaygroundEditorTheme__listItemChecked,
-.PlaygroundEditorTheme__listItemUnchecked {
+.NotionLikeEditorTheme__listItemChecked,
+.NotionLikeEditorTheme__listItemUnchecked {
   position: relative;
   margin-left: 0.5em;
   margin-right: 0.5em;
@@ -470,12 +477,12 @@
   display: block;
   min-height: 1.5em;
 }
-.PlaygroundEditorTheme__listItemChecked > *,
-.PlaygroundEditorTheme__listItemUnchecked > * {
+.NotionLikeEditorTheme__listItemChecked > *,
+.NotionLikeEditorTheme__listItemUnchecked > * {
   margin-left: 0.01em;
 }
-.PlaygroundEditorTheme__listItemUnchecked:before,
-.PlaygroundEditorTheme__listItemChecked:before {
+.NotionLikeEditorTheme__listItemUnchecked:before,
+.NotionLikeEditorTheme__listItemChecked:before {
   content: '\200B';
   width: 0.9em;
   height: 0.9em;
@@ -487,25 +494,25 @@
   position: absolute;
   transform: translateY(-50%);
 }
-.PlaygroundEditorTheme__listItemChecked {
+.NotionLikeEditorTheme__listItemChecked {
   text-decoration: line-through;
 }
-.PlaygroundEditorTheme__listItemUnchecked:focus:before,
-.PlaygroundEditorTheme__listItemChecked:focus:before {
+.NotionLikeEditorTheme__listItemUnchecked:focus:before,
+.NotionLikeEditorTheme__listItemChecked:focus:before {
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary) 50%, transparent);
   border-radius: 2px;
 }
-.PlaygroundEditorTheme__listItemUnchecked:before {
+.NotionLikeEditorTheme__listItemUnchecked:before {
   border: 1px solid var(--color-neutral);
   border-radius: 2px;
 }
-.PlaygroundEditorTheme__listItemChecked:before {
+.NotionLikeEditorTheme__listItemChecked:before {
   border: 1px solid var(--color-primary);
   border-radius: 2px;
   background-color: var(--color-primary);
   background-repeat: no-repeat;
 }
-.PlaygroundEditorTheme__listItemChecked:after {
+.NotionLikeEditorTheme__listItemChecked:after {
   content: '';
   cursor: pointer;
   border-color: var(--color-primary-content);
@@ -519,127 +526,127 @@
   transform: translateY(-50%) rotate(45deg);
   border-width: 0 0.1em 0.1em 0;
 }
-.PlaygroundEditorTheme__nestedListItem {
+.NotionLikeEditorTheme__nestedListItem {
   list-style-type: none;
 }
-.PlaygroundEditorTheme__nestedListItem:before,
-.PlaygroundEditorTheme__nestedListItem:after {
+.NotionLikeEditorTheme__nestedListItem:before,
+.NotionLikeEditorTheme__nestedListItem:after {
   display: none;
 }
-.PlaygroundEditorTheme__tokenComment {
+.NotionLikeEditorTheme__tokenComment {
   color: var(--color-neutral-content);
 }
-.PlaygroundEditorTheme__tokenDeleted {
+.NotionLikeEditorTheme__tokenDeleted {
   border-image: linear-gradient(to right, var(--color-error) 50%, color-mix(in oklab, var(--color-error) 80%, transparent) 50%) fill 0/0/0
     100vw;
 }
-.PlaygroundEditorTheme__tokenInserted {
+.NotionLikeEditorTheme__tokenInserted {
   border-image: linear-gradient(to right, var(--color-success) 50%, color-mix(in oklab, var(--color-success) 80%, transparent) 50%) fill 0/0/0
     100vw;
 }
-.PlaygroundEditorTheme__tokenUnchanged {
+.NotionLikeEditorTheme__tokenUnchanged {
   border-image: linear-gradient(to right, var(--color-base-300) 50%, var(--color-base-200) 50%) fill 0/0/0
     100vw;
 }
-.PlaygroundEditorTheme__tokenPunctuation {
+.NotionLikeEditorTheme__tokenPunctuation {
   color: var(--color-neutral);
 }
-.PlaygroundEditorTheme__tokenProperty {
+.NotionLikeEditorTheme__tokenProperty {
   color: var(--color-accent);
 }
-.PlaygroundEditorTheme__tokenSelector {
+.NotionLikeEditorTheme__tokenSelector {
   color: var(--color-success);
 }
-.PlaygroundEditorTheme__tokenOperator {
+.NotionLikeEditorTheme__tokenOperator {
   color: var(--color-warning);
 }
-.PlaygroundEditorTheme__tokenAttr {
+.NotionLikeEditorTheme__tokenAttr {
   color: var(--color-info);
 }
-.PlaygroundEditorTheme__tokenVariable {
+.NotionLikeEditorTheme__tokenVariable {
   color: var(--color-warning);
 }
-.PlaygroundEditorTheme__tokenFunction {
+.NotionLikeEditorTheme__tokenFunction {
   color: var(--color-error);
 }
-.PlaygroundEditorTheme__mark {
+.NotionLikeEditorTheme__mark {
   background: color-mix(in oklab, var(--color-warning) 14%, transparent);
   border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 30%, transparent);
   padding-bottom: 2px;
 }
-.PlaygroundEditorTheme__markOverlap {
+.NotionLikeEditorTheme__markOverlap {
   background: color-mix(in oklab, var(--color-warning) 30%, transparent);
   border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 70%, transparent);
 }
-.PlaygroundEditorTheme__mark.selected {
+.NotionLikeEditorTheme__mark.selected {
   background: color-mix(in oklab, var(--color-warning) 50%, transparent);
   border-bottom: 2px solid var(--color-warning);
 }
-.PlaygroundEditorTheme__markOverlap.selected {
+.NotionLikeEditorTheme__markOverlap.selected {
   background: color-mix(in oklab, var(--color-warning) 70%, transparent);
   border-bottom: 2px solid color-mix(in oklab, var(--color-warning) 70%, transparent);
 }
-.PlaygroundEditorTheme__embedBlock {
+.NotionLikeEditorTheme__embedBlock {
   user-select: none;
 }
-.PlaygroundEditorTheme__embedBlockFocus {
+.NotionLikeEditorTheme__embedBlockFocus {
   outline: 2px solid var(--color-primary);
 }
-.PlaygroundEditorTheme__layoutContainer {
+.NotionLikeEditorTheme__layoutContainer {
   display: grid;
   gap: 10px;
   margin: 10px 0;
 }
-.PlaygroundEditorTheme__layoutItem {
+.NotionLikeEditorTheme__layoutItem {
   border: 1px dashed var(--color-base-300);
   padding: 8px 16px;
   min-width: 0;
   max-width: 100%;
 }
-.PlaygroundEditorTheme__autocomplete {
+.NotionLikeEditorTheme__autocomplete {
   color: var(--color-neutral);
 }
-.PlaygroundEditorTheme__hr {
+.NotionLikeEditorTheme__hr {
   padding: 2px 2px;
   border: none;
   margin: 1em 0;
   cursor: pointer;
 }
-.PlaygroundEditorTheme__hr:after {
+.NotionLikeEditorTheme__hr:after {
   content: '';
   display: block;
   height: 2px;
   background-color: var(--color-neutral);
   line-height: 2px;
 }
-.PlaygroundEditorTheme__hr.PlaygroundEditorTheme__hrSelected {
+.NotionLikeEditorTheme__hr.NotionLikeEditorTheme__hrSelected {
   outline: 2px solid var(--color-primary);
   user-select: none;
 }
 
-.PlaygroundEditorTheme__specialText {
+.NotionLikeEditorTheme__specialText {
   background-color: var(--color-warning);
   font-weight: bold;
 }
 
-.PlaygroundEditorTheme__contextMenu {
+.NotionLikeEditorTheme__contextMenu {
   outline: 0;
   background: var(--color-base-100);
   border: 1px solid var(--color-base-300);
   box-shadow: 0px 5px 10px color-mix(in oklab, var(--color-base-content) 30%, transparent);
   border-radius: 8px;
 }
-.PlaygroundEditorTheme__contextMenu button:first-child {
+.NotionLikeEditorTheme__contextMenu button:first-child {
   border-radius: 8px 8px 0px 0px;
 }
-.PlaygroundEditorTheme__contextMenu button:last-child {
+.NotionLikeEditorTheme__contextMenu button:last-child {
   border-radius: 0px 0px 8px 8px;
 }
-.PlaygroundEditorTheme__contextMenuItem {
+.NotionLikeEditorTheme__contextMenuItem {
   width: 100%;
   display: block;
 }
-.PlaygroundEditorTheme__contextMenuItem {
+.NotionLikeEditorTheme__contextMenuItem {
   display: flex;
   justify-content: left;
   width: 100%;
@@ -655,19 +662,19 @@
   outline: 0;
   cursor: pointer;
 }
-.PlaygroundEditorTheme__contextMenuItem.open {
+.NotionLikeEditorTheme__contextMenuItem.open {
   background: var(--color-base-300);
 }
-.PlaygroundEditorTheme__contextMenuItem:focus,
-.PlaygroundEditorTheme__contextMenuItem:not([disabled]):active {
+.NotionLikeEditorTheme__contextMenuItem:focus,
+.NotionLikeEditorTheme__contextMenuItem:not([disabled]):active {
   background: var(--color-base-200);
 }
-.PlaygroundEditorTheme__contextMenuItem:disabled {
+.NotionLikeEditorTheme__contextMenuItem:disabled {
   background: var(--color-base-100);
   color: var(--color-neutral);
   cursor: not-allowed;
 }
-.PlaygroundEditorTheme__contextMenuItemIcon {
+.NotionLikeEditorTheme__contextMenuItemIcon {
   width: 20px;
   margin-right: 8px;
   background-repeat: no-repeat;

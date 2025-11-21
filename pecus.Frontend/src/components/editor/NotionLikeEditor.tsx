@@ -22,7 +22,7 @@ import Editor from './Editor';
 import PlaygroundNodes from './nodes/PlaygroundNodes';
 import {TableContext} from './plugins/TablePlugin';
 import TypingPerfPlugin from './plugins/TypingPerfPlugin';
-import PlaygroundEditorTheme from './themes/PlaygroundEditorTheme';
+import NotionLikeEditorTheme from './themes/NotionLikeEditorTheme';
 import { FlashMessageContext } from './context/FlashMessageContext';
 
 export default function NotionLikeEditor() {
@@ -35,10 +35,10 @@ export default function NotionLikeEditor() {
       defineExtension({
         $initialEditorState: undefined,
         html: buildHTMLConfig(),
-        name: '@lexical/playground',
-        namespace: 'Playground',
+        name: 'pecus/NotionLikeEditor',
+        namespace: 'NotionLikeEditor',
         nodes: PlaygroundNodes,
-        theme: PlaygroundEditorTheme,
+        theme: NotionLikeEditorTheme,
       }),
     [emptyEditor],
   );
