@@ -35,6 +35,7 @@ import TableCellResizer from "./plugins/TableCellResizer";
 import TableOfContentsPlugin from "./plugins/TableOfContentsPlugin";
 import TwitterPlugin from "./plugins/TwitterPlugin";
 import YouTubePlugin from "./plugins/YouTubePlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 
 export default function Viewer() {
   const {
@@ -73,22 +74,17 @@ export default function Viewer() {
 
   return (
     <>
-      <div className="viewer-container">
+      <div className="editor-container">
         <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
                   <div className="editor">
+                    <ContentEditable />
                   </div>
                 </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
-            {isCodeHighlighted &&
-              (isCodeShiki ? (
-                <CodeHighlightShikiPlugin />
-              ) : (
-                <CodeHighlightPrismPlugin />
-              ))}
             <ListPlugin hasStrictIndent={listStrictIndent} />
             <CheckListPlugin />
             <TablePlugin
@@ -103,7 +99,7 @@ export default function Viewer() {
             <TwitterPlugin />
             <YouTubePlugin />
             <FigmaPlugin />
-            <ClickableLinkPlugin />
+            <ClickableLinkPlugin disabled={false} />
             <HorizontalRulePlugin />
             <EquationsPlugin />
             <TabFocusPlugin />

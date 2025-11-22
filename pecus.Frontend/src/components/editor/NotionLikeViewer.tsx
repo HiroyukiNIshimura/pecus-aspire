@@ -48,6 +48,7 @@ export default function NotionLikeViewer({
         namespace: "NotionLikeViewer",
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
+        editable: false
       }),
     [initialViewerState]
   );
