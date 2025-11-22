@@ -26,8 +26,6 @@ public static class WorkspaceItemResponseHelper
             Code = item.Code,
             Subject = item.Subject,
             Body = item.Body,
-            HtmlBody = item.HtmlBody,
-            RawBody = item.RawBody,
             OwnerId = item.OwnerId,
             OwnerUsername = item.Owner?.Username,
             OwnerAvatarUrl =

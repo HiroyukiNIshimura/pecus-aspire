@@ -98,8 +98,6 @@ public class WorkspaceItemService
                 Code = code,
                 Subject = request.Subject,
                 Body = request.Body,
-                HtmlBody = request.HtmlBody,
-                RawBody = request.RawBody,
                 OwnerId = ownerId,
                 AssigneeId = request.AssigneeId,
                 Priority = request.Priority,
@@ -348,16 +346,6 @@ public class WorkspaceItemService
         if (request.Body != null)
         {
             item.Body = request.Body;
-        }
-
-        if (request.HtmlBody != null)
-        {
-            item.HtmlBody = request.HtmlBody;
-        }
-
-        if (request.RawBody != null)
-        {
-            item.RawBody = request.RawBody;
         }
 
         if (request.AssigneeId.HasValue)

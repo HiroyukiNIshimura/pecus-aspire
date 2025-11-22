@@ -21,18 +21,6 @@ public class UpdateWorkspaceItemRequest
     public string? Body { get; set; }
 
     /// <summary>
-    /// HTML形式の本文
-    /// </summary>
-    [MaxLength(5000000, ErrorMessage = "HTML本文のデータが許容範囲を超えています。")]
-    public string? HtmlBody { get; set; }
-
-    /// <summary>
-    /// プレーンテキスト形式の本文
-    /// </summary>
-    [MaxLength(5000000, ErrorMessage = "プレーンテキスト本文のデータが許容範囲を超えています。")]
-    public string? RawBody { get; set; }
-
-    /// <summary>
     /// 作業中のユーザーID（NULL可）
     /// </summary>
     public int? AssigneeId { get; set; }
