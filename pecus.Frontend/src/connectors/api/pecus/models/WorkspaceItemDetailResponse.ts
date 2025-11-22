@@ -34,14 +34,6 @@ export type WorkspaceItemDetailResponse = {
      */
     body?: string | null;
     /**
-     * HTML形式の本文
-     */
-    htmlBody?: string | null;
-    /**
-     * プレーンテキスト形式の本文
-     */
-    rawBody?: string | null;
-    /**
      * オーナーユーザーID
      */
     ownerId?: number;

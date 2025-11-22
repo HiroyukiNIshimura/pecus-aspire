@@ -24,11 +24,11 @@ export interface NotionLikeViewerProps {
   /**
    * エディタの初期値（EditorState JSON文字列）
    */
-  initialEditorState?: string;
+  initialViewerState?: string;
 }
 
 export default function NotionLikeViewer({
-  initialEditorState,
+  initialViewerState: initialViewerState,
 }: NotionLikeViewerProps) {
 
     // Props から settings を構築
@@ -42,14 +42,14 @@ export default function NotionLikeViewer({
   const app = useMemo(
     () =>
       defineExtension({
-        $initialEditorState: initialEditorState,
+        $initialEditorState: initialViewerState,
         html: buildHTMLConfig(),
         name: "pecus/NotionLikeViewer",
         namespace: "NotionLikeViewer",
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
       }),
-    [initialEditorState]
+    [initialViewerState]
   );
 
   return (

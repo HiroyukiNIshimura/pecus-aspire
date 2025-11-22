@@ -11,6 +11,7 @@ import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
 import "@/components/editor/themes/NotionLikeEditorTheme.css";
+import NotionLikeViewer from "@/components/editor/NotionLikeViewer";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
@@ -154,12 +155,10 @@ export default function WorkspaceItemDetail({
           </div>
 
           {/* 本文  */}
-          {item.htmlBody && (
+          {item.body && (
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">本文</h3>
-              <div
-                dangerouslySetInnerHTML={{ __html: item.htmlBody }}
-              />
+              <NotionLikeViewer initialViewerState={item.body} />
             </div>
           )}
 
