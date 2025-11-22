@@ -29,7 +29,7 @@ import { $getRoot } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useDebouncedCallback } from "use-debounce";
-
+import { TailwindExtension } from "@lexical/tailwind";
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -109,6 +109,9 @@ export default function NotionLikeEditor({
         namespace: "NotionLikeEditor",
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
+        // dependencies: [
+        //   TailwindExtension
+        // ],
       }),
     [initialEditorState]
   );

@@ -20,8 +20,6 @@ import { CAN_USE_DOM } from "@lexical/utils";
 import { useEffect, useMemo, useState } from "react";
 
 import { useSettings } from "./context/SettingsContext";
-import CodeHighlightPrismPlugin from "./plugins/CodeHighlightPrismPlugin";
-import CodeHighlightShikiPlugin from "./plugins/CodeHighlightShikiPlugin";
 import CollapsiblePlugin from "./plugins/CollapsiblePlugin";
 import EquationsPlugin from "./plugins/EquationsPlugin";
 import FigmaPlugin from "./plugins/FigmaPlugin";
@@ -40,8 +38,6 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 export default function Viewer() {
   const {
     settings: {
-      isCodeHighlighted,
-      isCodeShiki,
       hasLinkAttributes,
       hasNestedTables: hasTabHandler,
       showTableOfContents,
