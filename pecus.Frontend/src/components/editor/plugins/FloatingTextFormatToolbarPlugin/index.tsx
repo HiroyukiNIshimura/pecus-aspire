@@ -37,7 +37,6 @@ import DropdownColorPicker from "../../ui/DropdownColorPicker";
 import { getDOMRangeRect } from "../../utils/getDOMRangeRect";
 import { getSelectedNode } from "../../utils/getSelectedNode";
 import { setFloatingElemPosition } from "../../utils/setFloatingElemPosition";
-import { INSERT_INLINE_COMMAND } from "../CommentPlugin";
 
 function TextFormatFloatingToolbar({
   editor,
@@ -85,10 +84,6 @@ function TextFormatFloatingToolbar({
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
     }
   }, [editor, isLink, setIsLinkEditMode]);
-
-  const insertComment = () => {
-    editor.dispatchCommand(INSERT_INLINE_COMMAND, undefined);
-  };
 
   const applyStyleText = useCallback(
     (styles: Record<string, string>) => {

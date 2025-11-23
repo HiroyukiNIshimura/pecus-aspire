@@ -197,19 +197,11 @@ export default function DropDown({
 
     if (showDropDown && button !== null && dropDown !== null) {
       const { top, left } = button.getBoundingClientRect();
-      console.log("Button position:", top, left);
-      console.log("dropDown.offsetWidth:", dropDown.offsetWidth);
       dropDown.style.top = `${top + button.offsetHeight + dropDownPadding}px`;
       dropDown.style.left = `${Math.min(
         left,
         window.innerWidth - dropDown.offsetWidth - 20,
       )}px`;
-
-      console.log(
-        "DropDown positioned at:",
-        dropDown.style.top,
-        dropDown.style.left,
-      );
     }
   }, [dropDownRef, buttonRef, showDropDown]);
 
