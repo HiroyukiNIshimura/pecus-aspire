@@ -50,7 +50,6 @@ import { useSettings } from "../context/SettingsContext";
 import { useSharedHistoryContext } from "../context/SharedHistoryContext";
 import brokenImage from "../images/image-broken.svg";
 import EmojisPlugin from "../plugins/EmojisPlugin";
-import KeywordsPlugin from "../plugins/KeywordsPlugin";
 import LinkPlugin from "../plugins/LinkPlugin";
 import MentionsPlugin from "../plugins/MentionsPlugin";
 import ContentEditable from "../ui/ContentEditable";
@@ -483,7 +482,6 @@ export default function ImageComponent({
               <LinkPlugin />
               <EmojisPlugin />
               <HashtagPlugin />
-              <KeywordsPlugin />
               <RichTextPlugin
                 contentEditable={
                   <ContentEditable

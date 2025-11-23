@@ -7,13 +7,28 @@
   max-width: 400px;
   width: 100%;
   opacity: 0;
-  background-color: #fff;
+  background-color: var(--color-gray-300);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   border-radius: 0 0 8px 8px;
   transition: opacity 0.5s;
   will-change: transform;
 }
 
+.link-editor .link-input {
+  display: block;
+  width: calc(100% - 75px);
+  box-sizing: border-box;
+  margin: 12px 12px;
+  padding: 8px 12px;
+  border-radius: 15px;
+  background-color: var(--color-base-100);
+  font-size: 15px;
+  color: var(--color-base-content);
+  border: 0;
+  outline: 0;
+  position: relative;
+  font-family: inherit;
+}
 .link-editor .button {
   width: 20px;
   height: 20px;

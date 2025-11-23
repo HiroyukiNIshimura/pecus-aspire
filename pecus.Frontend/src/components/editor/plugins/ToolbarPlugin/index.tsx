@@ -74,7 +74,6 @@ import {
   useToolbarState,
 } from "../../context/ToolbarContext";
 import useModal from "../../hooks/useModal";
-import catTypingGif from "../../images/cat-typing.gif";
 import { $createStickyNode } from "../../nodes/StickyNode";
 import DropDown, { DropDownItem } from "../../ui/DropDown";
 import DropdownColorPicker from "../../ui/DropdownColorPicker";
@@ -86,9 +85,7 @@ import { INSERT_COLLAPSIBLE_COMMAND } from "../CollapsiblePlugin";
 import { INSERT_DATETIME_COMMAND } from "../DateTimePlugin";
 import { InsertEquationDialog } from "../EquationsPlugin";
 import {
-  INSERT_IMAGE_COMMAND,
   InsertImageDialog,
-  InsertImagePayload,
 } from "../ImagesPlugin";
 import InsertLayoutDialog from "../LayoutPlugin/InsertLayoutDialog";
 import { INSERT_PAGE_BREAK } from "../PageBreakPlugin";
