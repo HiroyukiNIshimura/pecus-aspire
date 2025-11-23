@@ -89,7 +89,6 @@ export function InsertImageUriDialogBody({
       />
       <DialogActions>
         <Button
-          className="btn btn-soft btn-primary"
           data-test-id="image-modal-confirm-btn"
           disabled={isDisabled}
           onClick={() => onClick({ altText, src })}
@@ -141,7 +140,6 @@ export function InsertImageUploadedDialogBody({
       />
       <DialogActions>
         <Button
-          className="btn btn-soft btn-primary"
           data-test-id="image-modal-file-upload-btn"
           disabled={isDisabled}
           onClick={() => onClick({ altText, src })}

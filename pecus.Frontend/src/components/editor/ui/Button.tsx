@@ -8,8 +8,6 @@
 
 import type { JSX } from "react";
 
-import "./Button.css";
-
 import * as React from "react";
 import { ReactNode } from "react";
 
@@ -37,9 +35,8 @@ export default function Button({
       type="button"
       disabled={disabled}
       className={joinClasses(
-        "Button__root",
-        disabled && "Button__disabled",
-        small && "Button__small",
+        "btn btn-primary",
+        small && "btn-sm",
         className,
       )}
       onClick={onClick}

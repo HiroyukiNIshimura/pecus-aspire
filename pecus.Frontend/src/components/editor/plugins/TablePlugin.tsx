@@ -129,7 +129,6 @@ export function InsertTableDialog({
       />
       <DialogActions data-test-id="table-model-confirm-insert">
         <Button
-          className="btn btn-soft btn-primary"
           disabled={isDisabled}
           onClick={onClick}
         >

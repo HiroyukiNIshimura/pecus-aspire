@@ -274,10 +274,7 @@ export default function EditWorkspaceItem({
       {/* モーダル背景オーバーレイ */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
-        onClick={(e) => {
-          if (e.target !== e.currentTarget) return;
-          handleClose();
-        }}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
@@ -285,7 +282,6 @@ export default function EditWorkspaceItem({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
         <div
           className="bg-base-100 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:max-w-6xl sm:w-full sm:h-auto sm:max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300 sticky top-0 bg-base-100 z-10">
