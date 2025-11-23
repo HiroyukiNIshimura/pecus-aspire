@@ -1108,54 +1108,72 @@ i.page-break,
   height: 16px;
   position: absolute;
   background-color: var(--color-primary);
-  border: 1px solid var(--color-base-100);
+  border: 2px solid var(--color-base-100);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-n {
-  top: -6px;
-  left: 48%;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
   cursor: n-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-ne {
-  top: -6px;
-  right: -6px;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  transform: translate(50%, -50%);
   cursor: ne-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-e {
-  bottom: 48%;
-  right: -6px;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
   cursor: e-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-se {
-  bottom: -2px;
-  right: -6px;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  transform: translate(50%, 50%);
   cursor: nwse-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-s {
-  bottom: -2px;
-  left: 48%;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
   cursor: s-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-sw {
-  bottom: -2px;
-  left: -6px;
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, 50%);
   cursor: sw-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-w {
-  bottom: 48%;
-  left: -6px;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
   cursor: w-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-nw {
-  top: -6px;
-  left: -6px;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
   cursor: nw-resize;
 }
 
