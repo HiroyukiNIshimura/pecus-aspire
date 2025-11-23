@@ -81,6 +81,11 @@ export interface NotionLikeEditorProps {
    * 自動フォーカス
    */
   autoFocus?: boolean;
+
+  /**
+   * Shikiによるコードハイライトを有効化するかどうか
+   */
+  isCodeShiki?: boolean;
 }
 
 export default function NotionLikeEditor({
@@ -93,6 +98,7 @@ export default function NotionLikeEditor({
   onChangeHtml,
   onChangeMarkdown,
   debounceMs = 300,
+  isCodeShiki = false,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -100,10 +106,10 @@ export default function NotionLikeEditor({
       ...INITIAL_SETTINGS,
       showToolbar,
       autoFocus,
-      isRichText: true,
       measureTypingPerf,
+      isCodeShiki,
     }),
-    [showToolbar, measureTypingPerf, autoFocus]
+    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki]
   );
 
   const app = useMemo(

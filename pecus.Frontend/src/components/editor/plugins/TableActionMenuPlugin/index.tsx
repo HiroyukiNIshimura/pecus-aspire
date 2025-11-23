@@ -720,7 +720,7 @@ function TableCellActionMenuContainer({
   const checkTableCellOverflow = useCallback(
     (tableCellParentNodeDOM: HTMLElement): boolean => {
       const scrollableContainer = tableCellParentNodeDOM.closest(
-        ".PlaygroundEditorTheme__tableScrollableWrapper",
+        ".NotionLikeEditorTheme__tableScrollableWrapper",
       );
       if (scrollableContainer) {
         const containerRect = (

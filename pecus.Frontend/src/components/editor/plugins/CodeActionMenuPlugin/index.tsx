@@ -59,8 +59,10 @@ interface Position {
 
 function CodeActionMenuContainer({
   anchorElem,
+  showOnlyCopy = false,
 }: {
   anchorElem: HTMLElement;
+  showOnlyCopy?: boolean;
 }): JSX.Element {
   const [editor] = useLexicalComposerContext();
 
@@ -86,7 +88,6 @@ function CodeActionMenuContainer({
         setShown(false);
         return;
       }
-
       if (!codeDOMNode) {
         return;
       }
@@ -162,7 +163,6 @@ function CodeActionMenuContainer({
   }, [editor]);
 
   const normalizedLang = normalizeCodeLang(lang);
-  const codeFriendlyName = getLanguageFriendlyName(lang);
 
   const handleLanguageChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
@@ -185,20 +185,22 @@ function CodeActionMenuContainer({
     <>
       {isShown ? (
         <div className="code-action-menu-container" style={{ ...position }}>
-          <select
-            className="select select-xs max-w-sm"
-            value={lang}
-            onChange={handleLanguageChange}
-            aria-label="コードブロックの言語を選択"
-          >
-            {SUPPORTED_LANGUAGES.map((language) => (
-              <option key={language.value} value={language.value}>
-                {language.label}
-              </option>
-            ))}
-          </select>
+          {!showOnlyCopy && (
+            <select
+              className="select select-xs max-w-sm"
+              value={lang}
+              onChange={handleLanguageChange}
+              aria-label="コードブロックの言語を選択"
+            >
+              {SUPPORTED_LANGUAGES.map((language) => (
+                <option key={language.value} value={language.value}>
+                  {language.label}
+                </option>
+              ))}
+            </select>
+          )}
           <CopyButton editor={editor} getCodeDOMNode={getCodeDOMNode} />
-          {canBePrettier(normalizedLang) ? (
+          {!showOnlyCopy && canBePrettier(normalizedLang) ? (
             <PrettierButton
               editor={editor}
               getCodeDOMNode={getCodeDOMNode}
@@ -219,7 +221,7 @@ function getMouseInfo(event: MouseEvent): {
 
   if (isHTMLElement(target)) {
     const codeDOMNode = target.closest<HTMLElement>(
-      "code.PlaygroundEditorTheme__code",
+      "code.NotionLikeEditorTheme__code",
     );
     const isOutside = !(
       codeDOMNode ||
@@ -234,11 +236,13 @@ function getMouseInfo(event: MouseEvent): {
 
 export default function CodeActionMenuPlugin({
   anchorElem = document.body,
+  showOnlyCopy = false,
 }: {
   anchorElem?: HTMLElement;
+  showOnlyCopy?: boolean;
 }): React.ReactPortal | null {
   return createPortal(
-    <CodeActionMenuContainer anchorElem={anchorElem} />,
+    <CodeActionMenuContainer anchorElem={anchorElem} showOnlyCopy={showOnlyCopy} />,
     anchorElem,
   );
 }

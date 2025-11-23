@@ -586,27 +586,27 @@
   background-image: url(images/icons/filetype-gif.svg);
 }
 
-.notion-like-editor i.copy,
+.code-action-menu-container i.copy,
 .typeahead-popover.component-picker-menu i.icon.copy {
   background-image: url(images/icons/copy.svg);
 }
 
-.notion-like-editor i.paste,
+.code-action-menu-container i.paste,
 .typeahead-popover.component-picker-menu i.icon.paste {
   background-image: url(images/icons/clipboard.svg);
 }
 
-.notion-like-editor i.success,
+.code-action-menu-container i.success,
 .typeahead-popover.component-picker-menu i.icon.success {
   background-image: url(images/icons/success.svg);
 }
 
-.notion-like-editor i.prettier,
+.code-action-menu-container i.prettier,
 .typeahead-popover.component-picker-menu i.icon.prettier {
   background-image: url(images/icons/prettier.svg);
 }
 
-.notion-like-editor i.prettier-error,
+.code-action-menu-container i.prettier-error,
 .typeahead-popover.component-picker-menu i.icon.prettier-error {
   background-image: url(images/icons/prettier-error.svg);
 }

@@ -34,10 +34,15 @@ import TableOfContentsPlugin from "./plugins/TableOfContentsPlugin";
 import TwitterPlugin from "./plugins/TwitterPlugin";
 import YouTubePlugin from "./plugins/YouTubePlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import CodeHighlightShikiPlugin from "./plugins/CodeHighlightShikiPlugin";
+import CodeHighlightPrismPlugin from "./plugins/CodeHighlightPrismPlugin";
+import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
 
 export default function Viewer() {
   const {
     settings: {
+      isCodeHighlighted,
+      isCodeShiki,
       hasLinkAttributes,
       hasNestedTables: hasTabHandler,
       showTableOfContents,
@@ -50,6 +55,14 @@ export default function Viewer() {
   } = useSettings();
   const [isSmallWidthViewport, setIsSmallWidthViewport] =
     useState<boolean>(false);
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
+
+  const onRef = (_floatingAnchorElem: HTMLDivElement) => {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
 
   useEffect(() => {
     const updateViewPortWidth = () => {
@@ -74,13 +87,19 @@ export default function Viewer() {
         <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
-                  <div className="editor">
+                  <div className="editor" ref={onRef}>
                     <ContentEditable />
                   </div>
                 </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
-            />
+        />
+        {isCodeHighlighted &&
+            (isCodeShiki ? (
+              <CodeHighlightShikiPlugin />
+            ) : (
+              <CodeHighlightPrismPlugin />
+            ))}
             <ListPlugin hasStrictIndent={listStrictIndent} />
             <CheckListPlugin />
             <TablePlugin
@@ -103,6 +122,7 @@ export default function Viewer() {
             <CollapsiblePlugin />
             <PageBreakPlugin />
             <LayoutPlugin />
+        {floatingAnchorElem && <CodeActionMenuPlugin anchorElem={floatingAnchorElem} showOnlyCopy={true} />}
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
       </div>

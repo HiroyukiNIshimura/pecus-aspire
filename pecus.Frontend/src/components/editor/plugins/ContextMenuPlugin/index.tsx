@@ -38,7 +38,7 @@ export default function ContextMenuPlugin(): JSX.Element {
         },
         $showOn: (node: LexicalNode) => $isLinkNode(node.getParent()),
         disabled: false,
-        icon: <i className="PlaygroundEditorTheme__contextMenuItemIcon" />,
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon" />,
       }),
       new NodeContextMenuSeparator({
         $showOn: (node: LexicalNode) => $isLinkNode(node.getParent()),
@@ -49,7 +49,7 @@ export default function ContextMenuPlugin(): JSX.Element {
         },
         disabled: false,
         icon: (
-          <i className="PlaygroundEditorTheme__contextMenuItemIcon page-break" />
+          <i className="NotionLikeEditorTheme__contextMenuItemIcon page-break" />
         ),
       }),
       new NodeContextMenuOption(`Copy`, {
@@ -57,7 +57,7 @@ export default function ContextMenuPlugin(): JSX.Element {
           editor.dispatchCommand(COPY_COMMAND, null);
         },
         disabled: false,
-        icon: <i className="PlaygroundEditorTheme__contextMenuItemIcon copy" />,
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon copy" />,
       }),
       new NodeContextMenuOption(`Paste`, {
         $onSelect: () => {
@@ -90,7 +90,7 @@ export default function ContextMenuPlugin(): JSX.Element {
         },
         disabled: false,
         icon: (
-          <i className="PlaygroundEditorTheme__contextMenuItemIcon paste" />
+          <i className="NotionLikeEditorTheme__contextMenuItemIcon paste" />
         ),
       }),
       new NodeContextMenuOption(`Paste as Plain Text`, {
@@ -117,7 +117,7 @@ export default function ContextMenuPlugin(): JSX.Element {
           });
         },
         disabled: false,
-        icon: <i className="PlaygroundEditorTheme__contextMenuItemIcon" />,
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon" />,
       }),
       new NodeContextMenuSeparator(),
       new NodeContextMenuOption(`Delete Node`, {
@@ -141,7 +141,7 @@ export default function ContextMenuPlugin(): JSX.Element {
         },
         disabled: false,
         icon: (
-          <i className="PlaygroundEditorTheme__contextMenuItemIcon clear" />
+          <i className="NotionLikeEditorTheme__contextMenuItemIcon clear" />
         ),
       }),
     ];
@@ -149,9 +149,9 @@ export default function ContextMenuPlugin(): JSX.Element {
 
   return (
     <NodeContextMenuPlugin
-      className="PlaygroundEditorTheme__contextMenu"
-      itemClassName="PlaygroundEditorTheme__contextMenuItem"
-      separatorClassName="PlaygroundEditorTheme__contextMenuSeparator"
+      className="NotionLikeEditorTheme__contextMenu"
+      itemClassName="NotionLikeEditorTheme__contextMenuItem"
+      separatorClassName="NotionLikeEditorTheme__contextMenuSeparator"
       items={items}
     />
   );

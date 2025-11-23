@@ -25,18 +25,25 @@ export interface NotionLikeViewerProps {
    * エディタの初期値（EditorState JSON文字列）
    */
   initialViewerState?: string;
+
+  /**
+   * Shikiによるコードハイライトを有効化するかどうか
+   */
+  isCodeShiki?: boolean;
 }
 
 export default function NotionLikeViewer({
   initialViewerState: initialViewerState,
+  isCodeShiki = false,
 }: NotionLikeViewerProps) {
 
     // Props から settings を構築
   const settings = useMemo(
     () => ({
       ...INITIAL_SETTINGS,
+      isCodeShiki,
     }),
-    []
+    [isCodeShiki]
   );
 
   const app = useMemo(
