@@ -11,6 +11,14 @@
   flex-direction: row;
   justify-content: right;
   margin-top: 20px;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .DialogActions {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .DialogButtonsList {
@@ -22,4 +30,10 @@
 
 .DialogButtonsList button {
   margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .DialogButtonsList button {
+    margin-bottom: 12px;
+  }
 }

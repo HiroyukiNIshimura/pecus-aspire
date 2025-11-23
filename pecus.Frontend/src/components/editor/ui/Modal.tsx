@@ -84,7 +84,7 @@ function PortalImpl({
             </h2>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-ghost btn-sm btn-circle ms-2"
               onClick={onClose}
               aria-label="閉じる"
             >

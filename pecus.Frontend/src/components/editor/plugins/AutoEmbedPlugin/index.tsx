@@ -199,7 +199,7 @@ export function AutoEmbedDialog({
   };
 
   return (
-    <div style={{ width: "600px" }}>
+    <div style={{ width: "100%", maxWidth: "600px" }}>
       <div className="Input__wrapper">
         <input
           type="text"

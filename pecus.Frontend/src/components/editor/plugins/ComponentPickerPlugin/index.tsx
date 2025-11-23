@@ -37,12 +37,11 @@ import { useCallback, useMemo, useState } from "react";
 import * as ReactDOM from "react-dom";
 
 import useModal from "../../hooks/useModal";
-import catTypingGif from "../../images/cat-typing.gif";
 import { EmbedConfigs } from "../AutoEmbedPlugin";
 import { INSERT_COLLAPSIBLE_COMMAND } from "../CollapsiblePlugin";
 import { INSERT_DATETIME_COMMAND } from "../DateTimePlugin";
 import { InsertEquationDialog } from "../EquationsPlugin";
-import { INSERT_IMAGE_COMMAND, InsertImageDialog } from "../ImagesPlugin";
+import { InsertImageDialog } from "../ImagesPlugin";
 import InsertLayoutDialog from "../LayoutPlugin/InsertLayoutDialog";
 import { INSERT_PAGE_BREAK } from "../PageBreakPlugin";
 import { InsertTableDialog } from "../TablePlugin";
@@ -294,15 +293,6 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
         showModal("Insert Equation", (onClose) => (
           <InsertEquationDialog activeEditor={editor} onClose={onClose} />
         )),
-    }),
-    new ComponentPickerOption("GIF", {
-      icon: <i className="icon gif" />,
-      keywords: ["gif", "animate", "image", "file"],
-      onSelect: () =>
-        editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-          altText: "Cat typing on a laptop",
-          src: catTypingGif.src,
-        }),
     }),
     new ComponentPickerOption("Image", {
       icon: <i className="icon image" />,
