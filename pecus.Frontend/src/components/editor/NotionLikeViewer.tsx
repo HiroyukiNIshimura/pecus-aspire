@@ -36,14 +36,13 @@ export default function NotionLikeViewer({
   initialViewerState: initialViewerState,
   isCodeShiki = false,
 }: NotionLikeViewerProps) {
-
-    // Props から settings を構築
+  // Props から settings を構築
   const settings = useMemo(
     () => ({
       ...INITIAL_SETTINGS,
       isCodeShiki,
     }),
-    [isCodeShiki]
+    [isCodeShiki],
   );
 
   const app = useMemo(
@@ -59,16 +58,13 @@ export default function NotionLikeViewer({
         // dependencies: [
         // ],
       }),
-    [initialViewerState]
+    [initialViewerState],
   );
 
   return (
     <div className="notion-like-editor">
       <SettingsContext initialSettings={settings}>
-        <LexicalExtensionComposer
-          extension={app}
-          contentEditable={null}
-        >
+        <LexicalExtensionComposer extension={app} contentEditable={null}>
           <TableContext>
             <div className="viewer-shell">
               <Viewer />

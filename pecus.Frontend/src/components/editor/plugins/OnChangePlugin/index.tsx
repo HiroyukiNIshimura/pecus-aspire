@@ -35,7 +35,7 @@ export default function OnChangePlugin({
         }
 
         onChange(editorState, editor);
-      }
+      },
     );
   }, [editor, ignoreHistoryMergeTagChange, ignoreSelectionChange, onChange]);
 

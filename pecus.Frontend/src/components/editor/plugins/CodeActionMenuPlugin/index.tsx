@@ -242,7 +242,10 @@ export default function CodeActionMenuPlugin({
   showOnlyCopy?: boolean;
 }): React.ReactPortal | null {
   return createPortal(
-    <CodeActionMenuContainer anchorElem={anchorElem} showOnlyCopy={showOnlyCopy} />,
+    <CodeActionMenuContainer
+      anchorElem={anchorElem}
+      showOnlyCopy={showOnlyCopy}
+    />,
     anchorElem,
   );
 }

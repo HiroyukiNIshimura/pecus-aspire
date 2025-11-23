@@ -243,7 +243,7 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       (embedConfig) =>
         new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
           icon: embedConfig.icon,
-          keywords: [...embedConfig.keywords, 'embed'],
+          keywords: [...embedConfig.keywords, "embed"],
           onSelect: () =>
             editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
         }),

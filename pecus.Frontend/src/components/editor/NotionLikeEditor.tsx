@@ -109,7 +109,7 @@ export default function NotionLikeEditor({
       measureTypingPerf,
       isCodeShiki,
     }),
-    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki]
+    [showToolbar, measureTypingPerf, autoFocus, isCodeShiki],
   );
 
   const app = useMemo(
@@ -124,18 +124,15 @@ export default function NotionLikeEditor({
         // dependencies: [
         // ],
       }),
-    [initialEditorState]
+    [initialEditorState],
   );
 
-  const debouncedOnChange = useDebouncedCallback(
-    (editorState: EditorState) => {
-      if (onChange) {
-        const json = JSON.stringify(editorState.toJSON());
-        onChange(json);
-      }
-    },
-    debounceMs
-  );
+  const debouncedOnChange = useDebouncedCallback((editorState: EditorState) => {
+    if (onChange) {
+      const json = JSON.stringify(editorState.toJSON());
+      onChange(json);
+    }
+  }, debounceMs);
 
   const debouncedOnChangePlainText = useDebouncedCallback(
     (editorState: EditorState) => {
@@ -147,7 +144,7 @@ export default function NotionLikeEditor({
         });
       }
     },
-    debounceMs
+    debounceMs,
   );
 
   const debouncedOnChangeHtml = useDebouncedCallback(
@@ -159,7 +156,7 @@ export default function NotionLikeEditor({
         });
       }
     },
-    debounceMs
+    debounceMs,
   );
 
   const debouncedOnChangeMarkdown = useDebouncedCallback(
@@ -171,7 +168,7 @@ export default function NotionLikeEditor({
         });
       }
     },
-    debounceMs
+    debounceMs,
   );
 
   const handleChange = useCallback(
@@ -181,24 +178,29 @@ export default function NotionLikeEditor({
       debouncedOnChangeHtml(editorState, editor);
       debouncedOnChangeMarkdown(editorState);
     },
-    [debouncedOnChange, debouncedOnChangePlainText, debouncedOnChangeHtml, debouncedOnChangeMarkdown]
+    [
+      debouncedOnChange,
+      debouncedOnChangePlainText,
+      debouncedOnChangeHtml,
+      debouncedOnChangeMarkdown,
+    ],
   );
 
   return (
     <div className="notion-like-editor">
       <FlashMessageContext>
         <SettingsContext initialSettings={settings}>
-          <LexicalExtensionComposer
-            extension={app}
-            contentEditable={null}
-          >
+          <LexicalExtensionComposer extension={app} contentEditable={null}>
             <SharedHistoryContext>
               <TableContext>
                 <ToolbarContext>
                   <div className="editor-shell">
                     <Editor />
                   </div>
-                  {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
+                  {(onChange ||
+                    onChangePlainText ||
+                    onChangeHtml ||
+                    onChangeMarkdown) && (
                     <OnChangePlugin onChange={handleChange} />
                   )}
                   {measureTypingPerf && <TypingPerfPlugin />}

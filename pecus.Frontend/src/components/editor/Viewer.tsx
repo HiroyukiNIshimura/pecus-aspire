@@ -85,44 +85,49 @@ export default function Viewer() {
     <>
       <div className="editor-container">
         <RichTextPlugin
-              contentEditable={
-                <div className="editor-scroller">
-                  <div className="editor" ref={onRef}>
-                    <ContentEditable />
-                  </div>
-                </div>
-              }
-              ErrorBoundary={LexicalErrorBoundary}
+          contentEditable={
+            <div className="editor-scroller">
+              <div className="editor" ref={onRef}>
+                <ContentEditable />
+              </div>
+            </div>
+          }
+          ErrorBoundary={LexicalErrorBoundary}
         />
         {isCodeHighlighted &&
-            (isCodeShiki ? (
-              <CodeHighlightShikiPlugin />
-            ) : (
-              <CodeHighlightPrismPlugin />
-            ))}
-            <ListPlugin hasStrictIndent={listStrictIndent} />
-            <CheckListPlugin />
-            <TablePlugin
-              hasCellMerge={tableCellMerge}
-              hasCellBackgroundColor={tableCellBackgroundColor}
-              hasHorizontalScroll={tableHorizontalScroll}
-              hasTabHandler={hasTabHandler}
-            />
-            <TableCellResizer />
-            <ImagesPlugin />
-            <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
-            <TwitterPlugin />
-            <YouTubePlugin />
-            <FigmaPlugin />
-            <ClickableLinkPlugin disabled={false} />
-            <HorizontalRulePlugin />
-            <EquationsPlugin />
-            <TabFocusPlugin />
-            <TabIndentationPlugin maxIndent={7} />
-            <CollapsiblePlugin />
-            <PageBreakPlugin />
-            <LayoutPlugin />
-        {floatingAnchorElem && <CodeActionMenuPlugin anchorElem={floatingAnchorElem} showOnlyCopy={true} />}
+          (isCodeShiki ? (
+            <CodeHighlightShikiPlugin />
+          ) : (
+            <CodeHighlightPrismPlugin />
+          ))}
+        <ListPlugin hasStrictIndent={listStrictIndent} />
+        <CheckListPlugin />
+        <TablePlugin
+          hasCellMerge={tableCellMerge}
+          hasCellBackgroundColor={tableCellBackgroundColor}
+          hasHorizontalScroll={tableHorizontalScroll}
+          hasTabHandler={hasTabHandler}
+        />
+        <TableCellResizer />
+        <ImagesPlugin />
+        <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
+        <TwitterPlugin />
+        <YouTubePlugin />
+        <FigmaPlugin />
+        <ClickableLinkPlugin disabled={false} />
+        <HorizontalRulePlugin />
+        <EquationsPlugin />
+        <TabFocusPlugin />
+        <TabIndentationPlugin maxIndent={7} />
+        <CollapsiblePlugin />
+        <PageBreakPlugin />
+        <LayoutPlugin />
+        {floatingAnchorElem && (
+          <CodeActionMenuPlugin
+            anchorElem={floatingAnchorElem}
+            showOnlyCopy={true}
+          />
+        )}
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
       </div>

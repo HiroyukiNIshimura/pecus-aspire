@@ -155,71 +155,71 @@ export default function Editor() {
         <DateTimePlugin />
         <HistoryPlugin externalHistoryState={historyState} />
         <RichTextPlugin
-              contentEditable={
-                <div className="editor-scroller">
-                  <div className="editor" ref={onRef}>
-                    <ContentEditable
-                      placeholder={placeholder}
-                      placeholderClassName="editor-placeholder"
-                    />
-                  </div>
-                </div>
-              }
-              ErrorBoundary={LexicalErrorBoundary}
+          contentEditable={
+            <div className="editor-scroller">
+              <div className="editor" ref={onRef}>
+                <ContentEditable
+                  placeholder={placeholder}
+                  placeholderClassName="editor-placeholder"
+                />
+              </div>
+            </div>
+          }
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <MarkdownShortcutPlugin />
+        {isCodeHighlighted &&
+          (isCodeShiki ? (
+            <CodeHighlightShikiPlugin />
+          ) : (
+            <CodeHighlightPrismPlugin />
+          ))}
+        <ListPlugin hasStrictIndent={listStrictIndent} />
+        <CheckListPlugin />
+        <TablePlugin
+          hasCellMerge={tableCellMerge}
+          hasCellBackgroundColor={tableCellBackgroundColor}
+          hasHorizontalScroll={tableHorizontalScroll}
+          hasTabHandler={hasTabHandler}
+        />
+        <TableCellResizer />
+        <ImagesPlugin />
+        <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
+        <TwitterPlugin />
+        <YouTubePlugin />
+        <FigmaPlugin />
+        <ClickableLinkPlugin disabled={isEditable} />
+        <HorizontalRulePlugin />
+        <EquationsPlugin />
+        <TabFocusPlugin />
+        <TabIndentationPlugin maxIndent={7} />
+        <CollapsiblePlugin />
+        <PageBreakPlugin />
+        <LayoutPlugin />
+        {floatingAnchorElem && (
+          <>
+            <FloatingLinkEditorPlugin
+              anchorElem={floatingAnchorElem}
+              isLinkEditMode={isLinkEditMode}
+              setIsLinkEditMode={setIsLinkEditMode}
             />
-            <MarkdownShortcutPlugin />
-            {isCodeHighlighted &&
-              (isCodeShiki ? (
-                <CodeHighlightShikiPlugin />
-              ) : (
-                <CodeHighlightPrismPlugin />
-              ))}
-            <ListPlugin hasStrictIndent={listStrictIndent} />
-            <CheckListPlugin />
-            <TablePlugin
-              hasCellMerge={tableCellMerge}
-              hasCellBackgroundColor={tableCellBackgroundColor}
-              hasHorizontalScroll={tableHorizontalScroll}
-              hasTabHandler={hasTabHandler}
+            <TableCellActionMenuPlugin
+              anchorElem={floatingAnchorElem}
+              cellMerge={true}
             />
-            <TableCellResizer />
-            <ImagesPlugin />
-            <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
-            <TwitterPlugin />
-            <YouTubePlugin />
-            <FigmaPlugin />
-            <ClickableLinkPlugin disabled={isEditable} />
-            <HorizontalRulePlugin />
-            <EquationsPlugin />
-            <TabFocusPlugin />
-            <TabIndentationPlugin maxIndent={7} />
-            <CollapsiblePlugin />
-            <PageBreakPlugin />
-            <LayoutPlugin />
-            {floatingAnchorElem && (
-              <>
-                <FloatingLinkEditorPlugin
-                  anchorElem={floatingAnchorElem}
-                  isLinkEditMode={isLinkEditMode}
-                  setIsLinkEditMode={setIsLinkEditMode}
-                />
-                <TableCellActionMenuPlugin
-                  anchorElem={floatingAnchorElem}
-                  cellMerge={true}
-                />
-              </>
-            )}
-            {floatingAnchorElem && !isSmallWidthViewport && (
-              <>
-                <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
-                <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
-                <TableHoverActionsPlugin anchorElem={floatingAnchorElem} />
-                <FloatingTextFormatToolbarPlugin
-                  anchorElem={floatingAnchorElem}
-                  setIsLinkEditMode={setIsLinkEditMode}
-                />
-              </>
-            )}
+          </>
+        )}
+        {floatingAnchorElem && !isSmallWidthViewport && (
+          <>
+            <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+            <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
+            <TableHoverActionsPlugin anchorElem={floatingAnchorElem} />
+            <FloatingTextFormatToolbarPlugin
+              anchorElem={floatingAnchorElem}
+              setIsLinkEditMode={setIsLinkEditMode}
+            />
+          </>
+        )}
         {(isCharLimit || isCharLimitUtf8) && (
           <CharacterLimitPlugin
             charset={isCharLimit ? "UTF-16" : "UTF-8"}

@@ -34,11 +34,7 @@ export default function Button({
     <button
       type="button"
       disabled={disabled}
-      className={joinClasses(
-        "btn btn-primary",
-        small && "btn-sm",
-        className,
-      )}
+      className={joinClasses("btn btn-primary", small && "btn-sm", className)}
       onClick={onClick}
       title={title}
       aria-label={title}
