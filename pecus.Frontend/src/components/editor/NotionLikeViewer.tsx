@@ -19,7 +19,6 @@ import { TableContext } from "./plugins/TablePlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
 import { INITIAL_SETTINGS } from "./appSettings";
 import Viewer from "./Viewer";
-import { TailwindExtension } from "@lexical/tailwind";
 
 export interface NotionLikeViewerProps {
   /**
@@ -51,7 +50,6 @@ export default function NotionLikeViewer({
         theme: NotionLikeEditorTheme,
         editable: false,
         // dependencies: [
-        //   TailwindExtension
         // ],
       }),
     [initialViewerState]

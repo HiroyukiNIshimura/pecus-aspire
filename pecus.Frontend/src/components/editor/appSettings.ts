@@ -7,11 +7,12 @@
  */
 
 export const DEFAULT_SETTINGS = {
+  autoFocus: true,
   disableBeforeInput: false,
   emptyEditor: false,
   hasLinkAttributes: false,
   hasNestedTables: false,
-  isAutocomplete: false,
+  isAutocomplete: true,
   isCharLimit: false,
   isCharLimitUtf8: false,
   isCodeHighlighted: true,

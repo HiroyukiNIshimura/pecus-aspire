@@ -29,7 +29,6 @@ import { $getRoot } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { useDebouncedCallback } from "use-debounce";
-import { TailwindExtension } from "@lexical/tailwind";
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -77,10 +76,16 @@ export interface NotionLikeEditorProps {
    * @default 300
    */
   debounceMs?: number;
+
+  /**
+   * 自動フォーカス
+   */
+  autoFocus?: boolean;
 }
 
 export default function NotionLikeEditor({
   showToolbar = true,
+  autoFocus = true,
   measureTypingPerf = false,
   initialEditorState,
   onChange,
@@ -94,10 +99,11 @@ export default function NotionLikeEditor({
     () => ({
       ...INITIAL_SETTINGS,
       showToolbar,
+      autoFocus,
       isRichText: true,
       measureTypingPerf,
     }),
-    [showToolbar, measureTypingPerf]
+    [showToolbar, measureTypingPerf, autoFocus]
   );
 
   const app = useMemo(
@@ -110,7 +116,6 @@ export default function NotionLikeEditor({
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
         // dependencies: [
-        //   TailwindExtension
         // ],
       }),
     [initialEditorState]

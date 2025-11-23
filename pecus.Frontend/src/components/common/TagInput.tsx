@@ -79,6 +79,7 @@ export default function TagInput({
       {(() => {
         return (
           <ReactTags
+            autofocus={false}
             tags={tagObjects}
             handleDelete={handleDelete}
             handleAddition={handleAddition}

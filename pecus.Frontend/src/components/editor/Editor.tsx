@@ -76,6 +76,7 @@ export default function Editor() {
       isAutocomplete,
       isMaxLength,
       isCharLimit,
+      autoFocus,
       hasLinkAttributes,
       hasNestedTables: hasTabHandler,
       isCharLimitUtf8,
@@ -142,7 +143,7 @@ export default function Editor() {
       <div className="editor-container">
         {isMaxLength && <MaxLengthPlugin maxLength={30} />}
         <DragDropPaste />
-        <AutoFocusPlugin />
+        {autoFocus && <AutoFocusPlugin />}
         {selectionAlwaysOnDisplay && <SelectionAlwaysOnDisplay />}
         <ClearEditorPlugin />
         <ComponentPickerPlugin />

@@ -378,13 +378,14 @@ export default function EditWorkspaceItem({
                   <label className="label">
                     <span className="label-text font-semibold">本文</span>
                   </label>
-                  <div className="border border-base-300 rounded-lg overflow-hidden">
+                  <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
                     <NotionLikeEditor
                       key={editorInitKey}
                       initialEditorState={initialEditorState}
                       onChange={handleEditorChange}
                       debounceMs={500}
+                      autoFocus={false}
                     />
                   </div>
                 </div>

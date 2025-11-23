@@ -233,10 +233,11 @@ export default function CreateWorkspaceItem({
                 <label className="label">
                   <span className="label-text font-semibold">本文</span>
                 </label>
-                <div className="border border-base-300 rounded-lg overflow-hidden">
+                <div>
                   <NotionLikeEditor
                     onChange={handleEditorChange}
                     debounceMs={500}
+                    autoFocus={false}
                   />
                 </div>
               </div>
