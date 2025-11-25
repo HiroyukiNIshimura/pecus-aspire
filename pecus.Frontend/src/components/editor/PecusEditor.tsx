@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  NotionLikeEditor,
   type ImageUploader,
+  NotionLikeEditor,
   type NotionLikeEditorProps,
 } from "@pecus/notion-like-editor";
 import { useCallback, useMemo } from "react";
