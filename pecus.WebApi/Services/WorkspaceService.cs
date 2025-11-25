@@ -750,8 +750,6 @@ public class WorkspaceService
                 .FirstOrDefaultAsync(u => u.Id == workspace.UpdatedByUserId);
         }
 
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
-
         // CreatedBy の構築
         var createdBy = createdByUser != null
             ? new WorkspaceDetailUserResponse
@@ -760,12 +758,10 @@ public class WorkspaceService
                 UserName = createdByUser.Username,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: createdByUser.AvatarType,
-                    organizationId: createdByUser.OrganizationId,
                     userId: createdByUser.Id,
                     username: createdByUser.Username,
                     email: createdByUser.Email,
-                    avatarPath: createdByUser.UserAvatarPath,
-                    uploadsPath: uploadsPath
+                    avatarPath: createdByUser.UserAvatarPath
                 ),
                 IsActive = createdByUser.IsActive,
             }
@@ -779,12 +775,10 @@ public class WorkspaceService
                 UserName = updatedByUser.Username,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: updatedByUser.AvatarType,
-                    organizationId: updatedByUser.OrganizationId,
                     userId: updatedByUser.Id,
                     username: updatedByUser.Username,
                     email: updatedByUser.Email,
-                    avatarPath: updatedByUser.UserAvatarPath,
-                    uploadsPath: uploadsPath
+                    avatarPath: updatedByUser.UserAvatarPath
                 ),
                 IsActive = updatedByUser.IsActive,
             }
@@ -810,12 +804,10 @@ public class WorkspaceService
                 UserName = wu.User.Username,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: wu.User.AvatarType,
-                    organizationId: wu.User.OrganizationId,
                     userId: wu.User.Id,
                     username: wu.User.Username,
                     email: wu.User.Email,
-                    avatarPath: wu.User.UserAvatarPath,
-                    uploadsPath: uploadsPath
+                    avatarPath: wu.User.UserAvatarPath
                 ),
                 IsActive = wu.User.IsActive,
             })
@@ -865,8 +857,6 @@ public class WorkspaceService
             .Take(pageSize)
             .ToListAsync();
 
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
-
         var result = items
             .Select(item => (
                 Id: item.Id,
@@ -883,12 +873,10 @@ public class WorkspaceService
                     UserName = item.Owner.Username,
                     IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                         iconType: item.Owner.AvatarType,
-                        organizationId: item.Owner.OrganizationId,
                         userId: item.Owner.Id,
                         username: item.Owner.Username,
                         email: item.Owner.Email,
-                        avatarPath: item.Owner.UserAvatarPath,
-                        uploadsPath: uploadsPath
+                        avatarPath: item.Owner.UserAvatarPath
                     ),
                 }
             ))

@@ -213,8 +213,6 @@ public class ProfileService
             return null;
         }
 
-        var uploadsPath = Path.Combine(_environment.ContentRootPath, "uploads");
-
         var response = new UserResponse
         {
             Id = user.Id,
@@ -225,12 +223,10 @@ public class ProfileService
             UserAvatarPath = user.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: user.AvatarType,
-                organizationId: user.OrganizationId,
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
-                avatarPath: user.UserAvatarPath,
-                uploadsPath: uploadsPath
+                avatarPath: user.UserAvatarPath
             ),
             CreatedAt = user.CreatedAt,
             Roles = user.Roles?

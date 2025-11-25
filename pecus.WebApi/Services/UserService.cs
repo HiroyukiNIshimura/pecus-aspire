@@ -783,7 +783,6 @@ public class UserService
                 UserAvatarPath = latestUser.UserAvatarPath,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: latestUser.AvatarType,
-                    organizationId: latestUser.OrganizationId,
                     userId: latestUser.Id,
                     username: latestUser.Username,
                     email: latestUser.Email,

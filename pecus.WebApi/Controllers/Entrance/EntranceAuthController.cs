@@ -118,7 +118,6 @@ public class EntranceAuthController : ControllerBase
             AvatarType = user.AvatarType,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: user.AvatarType,
-                organizationId: user.OrganizationId,
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,

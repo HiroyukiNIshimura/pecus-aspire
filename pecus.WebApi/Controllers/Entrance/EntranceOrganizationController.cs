@@ -124,7 +124,6 @@ public class EntranceOrganizationController : ControllerBase
                 AvatarType = adminUser.AvatarType,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: adminUser.AvatarType,
-                    organizationId: adminUser.OrganizationId,
                     userId: adminUser.Id,
                     username: adminUser.Username,
                     email: adminUser.Email,

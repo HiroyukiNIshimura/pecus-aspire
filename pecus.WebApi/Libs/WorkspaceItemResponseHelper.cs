@@ -32,7 +32,6 @@ public static class WorkspaceItemResponseHelper
                 item.Owner != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
                         iconType: item.Owner.AvatarType,
-                        organizationId: item.Owner.OrganizationId,
                         userId: item.Owner.Id,
                         username: item.Owner.Username,
                         email: item.Owner.Email,
@@ -45,7 +44,6 @@ public static class WorkspaceItemResponseHelper
                 item.Assignee != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
                         iconType: item.Assignee.AvatarType,
-                        organizationId: item.Assignee.OrganizationId,
                         userId: item.Assignee.Id,
                         username: item.Assignee.Username,
                         email: item.Assignee.Email,
@@ -62,7 +60,6 @@ public static class WorkspaceItemResponseHelper
                 item.Committer != null
                     ? IdentityIconHelper.GetIdentityIconUrl(
                         iconType: item.Committer.AvatarType,
-                        organizationId: item.Committer.OrganizationId,
                         userId: item.Committer.Id,
                         username: item.Committer.Username,
                         email: item.Committer.Email,
@@ -116,7 +113,6 @@ public static class WorkspaceItemResponseHelper
                             relation.ToItem.Owner != null
                                 ? IdentityIconHelper.GetIdentityIconUrl(
                                     iconType: relation.ToItem.Owner.AvatarType,
-                                    organizationId: relation.ToItem.Owner.OrganizationId,
                                     userId: relation.ToItem.Owner.Id,
                                     username: relation.ToItem.Owner.Username,
                                     email: relation.ToItem.Owner.Email,
@@ -148,7 +144,6 @@ public static class WorkspaceItemResponseHelper
                             relation.FromItem.Owner != null
                                 ? IdentityIconHelper.GetIdentityIconUrl(
                                     iconType: relation.FromItem.Owner.AvatarType,
-                                    organizationId: relation.FromItem.Owner.OrganizationId,
                                     userId: relation.FromItem.Owner.Id,
                                     username: relation.FromItem.Owner.Username,
                                     email: relation.FromItem.Owner.Email,

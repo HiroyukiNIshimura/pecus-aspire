@@ -131,7 +131,6 @@ public class BackendOrganizationController : BaseBackendController
             Email = u.Email,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: u.AvatarType,
-                organizationId: u.OrganizationId,
                 userId: u.Id,
                 username: u.Username,
                 email: u.Email,

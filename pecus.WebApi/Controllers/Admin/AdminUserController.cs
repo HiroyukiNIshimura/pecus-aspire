@@ -95,7 +95,6 @@ public class AdminUserController : BaseAdminController
             AvatarType = targetUser.AvatarType,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: targetUser.AvatarType,
-                organizationId: targetUser.OrganizationId,
                 userId: targetUser.Id,
                 username: targetUser.Username,
                 email: targetUser.Email,
@@ -170,7 +169,6 @@ public class AdminUserController : BaseAdminController
             UserAvatarPath = u.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: u.AvatarType,
-                organizationId: u.OrganizationId,
                 userId: u.Id,
                 username: u.Username,
                 email: u.Email,
@@ -446,7 +444,6 @@ public class AdminUserController : BaseAdminController
             UserAvatarPath = user.UserAvatarPath,
             IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                 iconType: user.AvatarType,
-                organizationId: user.OrganizationId,
                 userId: user.Id,
                 username: user.Username,
                 email: user.Email,
