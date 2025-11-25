@@ -70,6 +70,7 @@ builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<WorkspaceService>();
 builder.Services.AddScoped<WorkspaceItemService>();
 builder.Services.AddScoped<WorkspaceItemAttachmentService>();
+builder.Services.AddScoped<WorkspaceItemTempAttachmentService>();
 builder.Services.AddScoped<WorkspaceItemPinService>();
 builder.Services.AddScoped<WorkspaceItemTagService>();
 builder.Services.AddScoped<WorkspaceItemRelationService>();

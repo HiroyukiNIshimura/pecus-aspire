@@ -50,4 +50,15 @@ public class CreateWorkspaceItemRequest
     /// </summary>
     [Validation.StringListItems(50)]
     public List<string>? TagNames { get; set; }
+
+    /// <summary>
+    /// 一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "セッションIDは50文字以内で入力してください。")]
+    public string? TempSessionId { get; set; }
+
+    /// <summary>
+    /// 一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）
+    /// </summary>
+    public List<string>? TempAttachmentIds { get; set; }
 }

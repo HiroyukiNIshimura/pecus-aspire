@@ -20,18 +20,21 @@ public class WorkspaceItemService
     private readonly ILogger<WorkspaceItemService> _logger;
     private readonly PecusConfig _config;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly WorkspaceItemTempAttachmentService _tempAttachmentService;
 
     public WorkspaceItemService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemService> logger,
         PecusConfig config,
-        OrganizationAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper,
+        WorkspaceItemTempAttachmentService tempAttachmentService
     )
     {
         _context = context;
         _logger = logger;
         _config = config;
         _accessHelper = accessHelper;
+        _tempAttachmentService = tempAttachmentService;
     }
 
     /// <summary>
@@ -155,6 +158,92 @@ public class WorkspaceItemService
                 }
 
                 await _context.SaveChangesAsync();
+            }
+
+            // 一時添付ファイルの正式化処理
+            if (
+                !string.IsNullOrEmpty(request.TempSessionId)
+                && request.TempAttachmentIds != null
+                && request.TempAttachmentIds.Count != 0
+            )
+            {
+                var urlReplacements = new Dictionary<string, string>();
+
+                foreach (var tempFileId in request.TempAttachmentIds)
+                {
+                    try
+                    {
+                        // 一時ファイルを正式な場所に移動
+                        var promotedInfo = await _tempAttachmentService.PromoteTempFileAsync(
+                            workspaceId: workspaceId,
+                            sessionId: request.TempSessionId,
+                            tempFileId: tempFileId,
+                            workspaceItemId: item.Id
+                        );
+
+                        // 一時ファイル情報を取得してMIMEタイプを判定
+                        var extension = Path.GetExtension(promotedInfo.NewFilePath).ToLowerInvariant();
+                        var mimeType = GetMimeTypeFromExtension(extension);
+
+                        // WorkspaceItemAttachmentレコードを作成
+                        var attachment = new WorkspaceItemAttachment
+                        {
+                            WorkspaceItemId = item.Id,
+                            FileName = Path.GetFileName(promotedInfo.NewFilePath),
+                            FileSize = promotedInfo.FileSize,
+                            MimeType = mimeType,
+                            FilePath = promotedInfo.NewFilePath,
+                            DownloadUrl = promotedInfo.DownloadUrl,
+                            ThumbnailMediumPath = promotedInfo.ThumbnailMediumPath,
+                            ThumbnailSmallPath = promotedInfo.ThumbnailSmallPath,
+                            UploadedAt = DateTime.UtcNow,
+                            UploadedByUserId = ownerId,
+                        };
+                        _context.WorkspaceItemAttachments.Add(attachment);
+
+                        // 一時URLから正式URLへの置換マップを作成
+                        // 一時URL形式: /api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{tempFileId}.ext
+                        var tempUrlPattern = $"/api/workspaces/{workspaceId}/temp-attachments/{request.TempSessionId}/{tempFileId}";
+                        urlReplacements[tempUrlPattern] = promotedInfo.DownloadUrl;
+
+                        _logger.LogInformation(
+                            "Promoted temp file {TempFileId} to attachment for item {ItemId}",
+                            tempFileId,
+                            item.Id
+                        );
+                    }
+                    catch (FileNotFoundException ex)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "Temp file not found during promotion: {TempFileId}",
+                            tempFileId
+                        );
+                        // 一時ファイルが見つからない場合は無視して続行
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                // コンテンツ内のURLを置換
+                if (urlReplacements.Count != 0 && !string.IsNullOrEmpty(item.Body))
+                {
+                    var updatedBody = item.Body;
+                    foreach (var (tempUrl, permanentUrl) in urlReplacements)
+                    {
+                        // 部分一致で置換（拡張子付きのURLも置換対象）
+                        updatedBody = ReplaceUrlInContent(updatedBody, tempUrl, permanentUrl);
+                    }
+
+                    if (updatedBody != item.Body)
+                    {
+                        item.Body = updatedBody;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                // 一時ファイルセッションをクリーンアップ
+                _tempAttachmentService.CleanupSessionFiles(workspaceId, request.TempSessionId);
             }
 
             // ナビゲーションプロパティをロード
@@ -656,5 +745,39 @@ public class WorkspaceItemService
                 RowVersion = latestItem.RowVersion!,
             }
         );
+    }
+
+    /// <summary>
+    /// 拡張子からMIMEタイプを取得
+    /// </summary>
+    private static string GetMimeTypeFromExtension(string extension)
+    {
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".pdf" => "application/pdf",
+            ".doc" => "application/msword",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".xls" => "application/vnd.ms-excel",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            _ => "application/octet-stream"
+        };
+    }
+
+    /// <summary>
+    /// コンテンツ内のURLを置換（部分一致で拡張子付きURLも対応）
+    /// </summary>
+    private static string ReplaceUrlInContent(string content, string tempUrlPrefix, string permanentUrl)
+    {
+        // JSONコンテンツ内のURLを置換
+        // 一時URLは "/api/workspaces/{id}/temp-attachments/{session}/{fileId}" の形式
+        // 実際のURLは拡張子が付いている: "/api/workspaces/{id}/temp-attachments/{session}/{fileId}.jpg"
+
+        // 正規表現で一時URLプレフィックスにマッチするすべてのURLを置換
+        var pattern = System.Text.RegularExpressions.Regex.Escape(tempUrlPrefix) + @"[^""'\s]*";
+        return System.Text.RegularExpressions.Regex.Replace(content, pattern, permanentUrl);
     }
 }
