@@ -26,3 +26,5 @@ export { default as NotionLikeViewer } from "./NotionLikeViewer";
 export { default as NotionLikeEditorNodes } from "./nodes/NotionLikeEditorNodes";
 // テーマ
 export { default as NotionLikeEditorTheme } from "./themes/NotionLikeEditorTheme";
+// 型定義
+export type { ImageUploader, ImageUploadResult } from "./types";

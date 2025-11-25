@@ -2,12 +2,12 @@
 
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
-import { NotionLikeEditor } from "@pecus/notion-like-editor";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchLatestWorkspaceItem,
   updateWorkspaceItem,
 } from "@/actions/workspaceItem";
+import { PecusEditor } from "@/components/editor/PecusEditor";
 import type {
   TaskPriority,
   WorkspaceItemDetailResponse,
@@ -352,13 +352,13 @@ export default function EditWorkspaceItem({
                   </div>
                   <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
-                    <NotionLikeEditor
+                    <PecusEditor
                       key={editorInitKey}
                       initialEditorState={initialEditorState}
                       onChange={handleEditorChange}
                       debounceMs={500}
                       autoFocus={false}
-                      workspaceId={latestItem.workspaceId}
+                      workspaceId={latestItem.workspaceId || 0}
                       itemId={latestItem.id}
                     />
                   </div>

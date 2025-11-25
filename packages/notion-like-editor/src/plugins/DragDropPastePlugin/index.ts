@@ -16,76 +16,9 @@ import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
 
 const ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 
-/**
- * 画像ファイルをバックエンドにアップロードしてプロキシURLを取得（既存アイテム用）
- * @param file アップロードするファイル
- * @param workspaceId ワークスペースID
- * @param itemId アイテムID
- * @returns アップロード結果（成功時はURL、失敗時はnull）
- */
-async function uploadImageFile(file: File, workspaceId: number, itemId: number): Promise<string | null> {
-	try {
-		const formData = new FormData();
-		formData.append("file", file);
-
-		const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
-			method: "POST",
-			body: formData,
-		});
-
-		if (response.ok) {
-			const result = await response.json();
-			return result.url;
-		} else {
-			console.error("Failed to upload image:", await response.text());
-			return null;
-		}
-	} catch (error) {
-		console.error("Error uploading image:", error);
-		return null;
-	}
-}
-
-/**
- * 画像ファイルを一時領域にアップロード（新規アイテム作成用）
- * @param file アップロードするファイル
- * @param workspaceId ワークスペースID
- * @param sessionId セッションID
- * @returns アップロード結果（成功時は{tempFileId, previewUrl}、失敗時はnull）
- */
-async function uploadTempImageFile(
-	file: File,
-	workspaceId: number,
-	sessionId: string,
-): Promise<{ tempFileId: string; previewUrl: string } | null> {
-	try {
-		const formData = new FormData();
-		formData.append("file", file);
-
-		const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
-			method: "POST",
-			body: formData,
-		});
-
-		if (response.ok) {
-			const result = await response.json();
-			return {
-				tempFileId: result.tempFileId,
-				previewUrl: result.previewUrl,
-			};
-		} else {
-			console.error("Failed to upload temp image:", await response.text());
-			return null;
-		}
-	} catch (error) {
-		console.error("Error uploading temp image:", error);
-		return null;
-	}
-}
-
 export default function DragDropPaste(): null {
 	const [editor] = useLexicalComposerContext();
-	const { workspaceId, itemId, sessionId, onTempFileUploaded } = useEditorContext();
+	const { imageUploader } = useEditorContext();
 
 	useEffect(() => {
 		return editor.registerCommand(
@@ -96,16 +29,16 @@ export default function DragDropPaste(): null {
 
 					for (const { file, result } of filesResult) {
 						if (isMimeType(file, ACCEPTABLE_IMAGE_TYPES)) {
-							// 既存アイテム編集時: workspaceId/itemId が設定されている場合
-							if (workspaceId !== undefined && itemId !== undefined) {
-								const uploadedUrl = await uploadImageFile(file, workspaceId, itemId);
-
-								if (uploadedUrl) {
+							// imageUploader が設定されている場合はそちらを使用
+							if (imageUploader !== undefined) {
+								try {
+									const uploadResult = await imageUploader(file);
 									editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
 										altText: file.name,
-										src: uploadedUrl,
+										src: uploadResult.url,
 									});
-								} else {
+								} catch (error) {
+									console.error("Failed to upload image:", error);
 									// アップロード失敗時はローカルプレビュー（フォールバック）
 									editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
 										altText: file.name,
@@ -113,27 +46,7 @@ export default function DragDropPaste(): null {
 									});
 								}
 							}
-							// 新規アイテム作成時: workspaceId/sessionId が設定されている場合
-							else if (workspaceId !== undefined && sessionId !== undefined) {
-								const uploadResult = await uploadTempImageFile(file, workspaceId, sessionId);
-
-								if (uploadResult) {
-									// コールバックで一時ファイルIDを通知
-									onTempFileUploaded?.(uploadResult.tempFileId, uploadResult.previewUrl);
-
-									editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-										altText: file.name,
-										src: uploadResult.previewUrl,
-									});
-								} else {
-									// アップロード失敗時はローカルプレビュー（フォールバック）
-									editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-										altText: file.name,
-										src: result,
-									});
-								}
-							}
-							// workspaceId が未設定の場合はローカルプレビュー（既存動作）
+							// imageUploader が未設定の場合はローカルプレビュー（既存動作）
 							else {
 								editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
 									altText: file.name,
@@ -147,7 +60,7 @@ export default function DragDropPaste(): null {
 			},
 			COMMAND_PRIORITY_LOW,
 		);
-	}, [editor, workspaceId, itemId, sessionId, onTempFileUploaded]);
+	}, [editor, imageUploader]);
 
 	return null;
 }

@@ -27,6 +27,7 @@ import OnChangePlugin from "./plugins/OnChangePlugin";
 import { TableContext } from "./plugins/TablePlugin";
 import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
+import type { ImageUploader } from "./types";
 export interface NotionLikeEditorProps {
 	/**
 	 * ツールバーの表示
@@ -86,26 +87,23 @@ export interface NotionLikeEditorProps {
 	isCodeShiki?: boolean;
 
 	/**
-	 * ワークスペースID（画像アップロード用）
+	 * 画像アップロード関数
+	 *
+	 * エディタ内で画像を挿入する際に呼び出されます。
+	 * 実装側で適切なAPIエンドポイントにアップロードし、結果を返してください。
+	 *
+	 * @example
+	 * ```typescript
+	 * const imageUploader: ImageUploader = async (file) => {
+	 *   const formData = new FormData();
+	 *   formData.append('file', file);
+	 *   const response = await fetch('/api/upload', { method: 'POST', body: formData });
+	 *   const data = await response.json();
+	 *   return { url: data.url, id: data.id };
+	 * };
+	 * ```
 	 */
-	workspaceId?: number;
-
-	/**
-	 * アイテムID（画像アップロード用、既存アイテム編集時に設定）
-	 */
-	itemId?: number;
-
-	/**
-	 * セッションID（新規アイテム作成時の一時ファイルアップロード用）
-	 */
-	sessionId?: string;
-
-	/**
-	 * 一時ファイルアップロード完了時のコールバック
-	 * @param tempFileId - 一時ファイルID
-	 * @param previewUrl - プレビューURL
-	 */
-	onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
+	imageUploader?: ImageUploader;
 }
 
 export default function NotionLikeEditor({
@@ -119,10 +117,7 @@ export default function NotionLikeEditor({
 	onChangeMarkdown,
 	debounceMs = 300,
 	isCodeShiki = false,
-	workspaceId,
-	itemId,
-	sessionId,
-	onTempFileUploaded,
+	imageUploader,
 }: NotionLikeEditorProps) {
 	// Props から settings を構築
 	const settings = useMemo(
@@ -139,12 +134,9 @@ export default function NotionLikeEditor({
 	// エディタコンテキスト設定（画像アップロード用）
 	const editorContext = useMemo(
 		() => ({
-			workspaceId,
-			itemId,
-			sessionId,
-			onTempFileUploaded,
+			imageUploader,
 		}),
-		[workspaceId, itemId, sessionId, onTempFileUploaded],
+		[imageUploader],
 	);
 
 	const app = useMemo(
@@ -152,7 +144,7 @@ export default function NotionLikeEditor({
 			defineExtension({
 				$initialEditorState: initialEditorState,
 				html: buildHTMLConfig(),
-				name: "pecus/NotionLikeEditor",
+				name: "notion-like-editor/Editor",
 				namespace: "NotionLikeEditor",
 				nodes: NotionLikeEditorNodes,
 				theme: NotionLikeEditorTheme,
