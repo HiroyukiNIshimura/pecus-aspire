@@ -96,33 +96,23 @@ export async function POST(
       },
     );
 
-    // アップロード成功後、画像をDataURL形式で取得
-    // 認証が必要なエンドポイントのため、サーバー側でDataURLに変換して返す
-    let dataUrl = "";
+    // バックエンドの downloadUrl からファイル名を抽出してプロキシURLを生成
+    // downloadUrl 形式: /api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{fileName}
     const downloadUrl = response.data.downloadUrl as string | undefined;
+    let proxyUrl = "";
 
     if (downloadUrl) {
-      try {
-        // 認証済みAxiosで画像をダウンロード
-        const imageResponse = await axios.get(downloadUrl, {
-          responseType: "arraybuffer",
-        });
+      // downloadUrl からファイル名部分を抽出
+      const urlParts = downloadUrl.split("/");
+      const fileName = urlParts[urlParts.length - 1];
 
-        // MIMEタイプを取得（レスポンスヘッダーまたはアップロード時のタイプを使用）
-        const contentType =
-          imageResponse.headers["content-type"] || file.type || "image/png";
-
-        // ArrayBufferをBase64に変換してDataURLを生成
-        const base64 = Buffer.from(imageResponse.data).toString("base64");
-        dataUrl = `data:${contentType};base64,${base64}`;
-      } catch (imageError) {
-        console.error("Failed to fetch image for DataURL:", imageError);
-        // DataURL取得に失敗しても、アップロード自体は成功しているのでエラーにしない
-      }
+      // Next.js API Route のプロキシURLを生成
+      // /api/workspaces/{id}/items/{itemId}/attachments/{fileName}
+      proxyUrl = `/api/workspaces/${workspaceId}/items/${workspaceItemId}/attachments/${fileName}`;
     }
 
     return NextResponse.json({
-      url: dataUrl || downloadUrl || "",
+      url: proxyUrl,
       fileName: response.data.fileName || "",
       id: response.data.id,
     });
