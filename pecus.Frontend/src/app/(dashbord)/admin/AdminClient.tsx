@@ -35,11 +35,11 @@ export default function AdminClient({
 }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser);
-  const [organization, setOrganization] = useState<OrganizationData | null>(
+  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser);
+  const [organization, _setOrganization] = useState<OrganizationData | null>(
     initialOrganization,
   );
-  const [clientError, setClientError] = useState<ApiErrorResponse | null>(
+  const [clientError, _setClientError] = useState<ApiErrorResponse | null>(
     fetchError ? JSON.parse(fetchError) : null,
   );
 

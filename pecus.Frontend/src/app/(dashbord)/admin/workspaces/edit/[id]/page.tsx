@@ -15,7 +15,7 @@ export default async function EditWorkspacePage({
   const { id } = await params;
   const workspaceId = parseInt(id, 10);
 
-  if (isNaN(workspaceId) || workspaceId <= 0) {
+  if (Number.isNaN(workspaceId) || workspaceId <= 0) {
     notFound();
   }
 

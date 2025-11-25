@@ -15,7 +15,7 @@ export default async function EditTagPage({
   const { id } = await params;
   const tagId = parseInt(id, 10);
 
-  if (isNaN(tagId) || tagId <= 0) {
+  if (Number.isNaN(tagId) || tagId <= 0) {
     notFound();
   }
 

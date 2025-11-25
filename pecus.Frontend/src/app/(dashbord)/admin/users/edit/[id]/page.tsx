@@ -17,7 +17,7 @@ export default async function EditUserPage({
   const { id } = await params;
   const userId = parseInt(id, 10);
 
-  if (isNaN(userId) || userId <= 0) {
+  if (Number.isNaN(userId) || userId <= 0) {
     notFound();
   }
 

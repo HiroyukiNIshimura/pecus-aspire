@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { updateUserPassword } from "@/actions/profile";
-import { updatePasswordFormSchema } from "@/schemas/profileSchemas";
-import { useFormValidation } from "@/hooks/useFormValidation";
 import PasswordRequirementIndicator, {
   isPasswordValid,
 } from "@/components/common/PasswordRequirementIndicator";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { updatePasswordFormSchema } from "@/schemas/profileSchemas";
 
 interface PasswordChangeTabProps {
   notify: {

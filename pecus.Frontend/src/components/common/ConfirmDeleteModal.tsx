@@ -42,7 +42,7 @@ const ConfirmDeleteModal = forwardRef<
     const [modalId] = useState(
       () => `modal-${Math.random().toString(36).substr(2, 9)}`,
     );
-    const [isOpen, setIsOpen] = useState(false);
+    const [_isOpen, setIsOpen] = useState(false);
     const [generatedCode, setGeneratedCode] = useState<string>("");
     const [inputValue, setInputValue] = useState<string>("");
     const [mismatch, setMismatch] = useState<boolean>(false);

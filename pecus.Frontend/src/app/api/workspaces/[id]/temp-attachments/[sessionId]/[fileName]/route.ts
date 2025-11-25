@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(
     const { id, sessionId, fileName } = await params;
     const workspaceId = parseInt(id, 10);
 
-    if (isNaN(workspaceId)) {
+    if (Number.isNaN(workspaceId)) {
       return NextResponse.json(
         { error: "無効なワークスペースIDです。" },
         { status: 400 },

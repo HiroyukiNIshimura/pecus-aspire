@@ -1,39 +1,39 @@
 "use client";
 
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import GridViewIcon from "@mui/icons-material/GridView";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PersonIcon from "@mui/icons-material/Person";
+import PowerOffIcon from "@mui/icons-material/PowerOff";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import SearchIcon from "@mui/icons-material/Search";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { deleteWorkspace } from "@/actions/deleteWorkspace";
+import { toggleWorkspaceActive } from "@/actions/workspace";
 import AppHeader from "@/components/common/AppHeader";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
 import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
-import CreateWorkspaceModal from "./CreateWorkspaceModal";
-import EditWorkspaceModal from "./EditWorkspaceModal";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import type {
+  MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
-  MasterGenreResponse,
 } from "@/connectors/api/pecus";
-import { toggleWorkspaceActive } from "@/actions/workspace";
-import { deleteWorkspace } from "@/actions/deleteWorkspace";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useNotify } from "@/hooks/useNotify";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
-import GridViewIcon from "@mui/icons-material/GridView";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import PersonIcon from "@mui/icons-material/Person";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import PowerOffIcon from "@mui/icons-material/PowerOff";
-import AddIcon from "@mui/icons-material/Add";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import type { UserInfo } from "@/types/userInfo";
+import CreateWorkspaceModal from "./CreateWorkspaceModal";
+import EditWorkspaceModal from "./EditWorkspaceModal";
 
 interface WorkspacesClientProps {
   initialUser?: UserInfo | null;
@@ -47,10 +47,10 @@ export default function WorkspacesClient({
   genres,
 }: WorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(
+  const [userInfo, _setUserInfo] = useState<UserInfo | null>(
     initialUser || null,
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -327,14 +327,12 @@ export default function WorkspacesClient({
                       d="M20 12H4"
                     />
                   ) : (
-                    <>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
                   )}
                 </svg>
               </div>

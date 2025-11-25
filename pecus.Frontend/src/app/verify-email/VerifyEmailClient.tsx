@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { verifyEmailChange } from "@/actions/profile";
 
 type VerificationState = "verifying" | "success" | "error";

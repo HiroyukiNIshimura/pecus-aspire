@@ -1,13 +1,13 @@
 "use client";
 
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import type {
   SkillListItemResponse,
   SkillStatistics,
@@ -241,14 +241,12 @@ export default function AdminSkillsClient({
                         d="M20 12H4"
                       />
                     ) : (
-                      <>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     )}
                   </svg>
                 </div>

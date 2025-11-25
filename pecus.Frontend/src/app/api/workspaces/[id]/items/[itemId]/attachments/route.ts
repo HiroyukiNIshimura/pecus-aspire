@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export async function POST(
     const workspaceId = parseInt(id, 10);
     const workspaceItemId = parseInt(itemId, 10);
 
-    if (isNaN(workspaceId) || isNaN(workspaceItemId)) {
+    if (Number.isNaN(workspaceId) || Number.isNaN(workspaceItemId)) {
       return NextResponse.json(
         { error: "無効なワークスペースIDまたはアイテムIDです。" },
         { status: 400 },

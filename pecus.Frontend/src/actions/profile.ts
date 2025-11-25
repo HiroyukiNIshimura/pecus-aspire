@@ -1,27 +1,24 @@
 "use server";
 
 import {
-  createPecusApiClients,
   createAuthenticatedAxios,
+  createPecusApiClients,
   detectConcurrencyError,
 } from "@/connectors/api/PecusApiClient";
 import type {
   AvatarType,
-  UserResponse,
-  MessageResponse,
-  SuccessResponse,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
-  PendingEmailChangeResponse,
+  MessageResponse,
+  SuccessResponse,
+  UserResponse,
 } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
-import type { ApiResponse } from "./types";
 import type {
   UpdateEmailFormInput,
   UpdatePasswordFormInput,
-  UpdateProfileFormInput,
   UpdateSkillsFormInput,
 } from "@/schemas/profileSchemas";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: プロフィールを更新（ユーザー名、アバター）

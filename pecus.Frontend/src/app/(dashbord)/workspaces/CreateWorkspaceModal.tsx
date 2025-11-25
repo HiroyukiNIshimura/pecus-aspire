@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import { useEffect, useState } from "react";
 import { createWorkspace } from "@/actions/workspace";
 import type { MasterGenreResponse } from "@/connectors/api/pecus";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;

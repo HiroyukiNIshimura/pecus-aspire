@@ -1,9 +1,9 @@
+import { redirect } from "next/navigation";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type {
   OrganizationResponse,
   UserResponse,
 } from "@/connectors/api/pecus";
-import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminClient from "./AdminClient";
 

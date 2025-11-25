@@ -1,8 +1,8 @@
+import { redirect } from "next/navigation";
 import { getAllSkills } from "@/actions/admin/skills";
 import { getUsers } from "@/actions/admin/user";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminUsersClient from "./AdminUsersClient";
 
@@ -51,7 +51,7 @@ export default async function AdminUsers() {
     const usersResult = await getUsers(1, undefined, true); // 全ユーザー取得（アクティブ・非アクティブ両方）
     if (usersResult.success) {
       const responseData = usersResult.data;
-      if (responseData && responseData.data) {
+      if (responseData?.data) {
         users = responseData.data.map((user: any) => ({
           id: user.id ?? 0,
           username: user.username ?? "",

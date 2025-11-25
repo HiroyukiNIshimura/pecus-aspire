@@ -26,7 +26,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldError>({});
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [_touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   /**
    * フィールド単位のZod検証（入力時用）
@@ -69,7 +69,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
   /**
    * フィールド接触時のマーク
    */
-  const markFieldAsTouched = useCallback((fieldName: string) => {
+  const _markFieldAsTouched = useCallback((fieldName: string) => {
     setTouchedFields((prev) => new Set([...prev, fieldName]));
   }, []);
 

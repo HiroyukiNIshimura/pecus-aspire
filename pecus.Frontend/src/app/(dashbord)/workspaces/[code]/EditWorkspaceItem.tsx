@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-import type {
-  WorkspaceItemDetailResponse,
-  TaskPriority,
-} from "@/connectors/api/pecus";
+import EditIcon from "@mui/icons-material/Edit";
+import { NotionLikeEditor } from "@pecus/notion-like-editor";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  updateWorkspaceItem,
   fetchLatestWorkspaceItem,
+  updateWorkspaceItem,
 } from "@/actions/workspaceItem";
+import type {
+  TaskPriority,
+  WorkspaceItemDetailResponse,
+} from "@/connectors/api/pecus";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspaceItemSchema } from "@/schemas/editSchemas";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
 
 interface EditWorkspaceItemProps {
   item: WorkspaceItemDetailResponse;
@@ -92,7 +92,7 @@ export default function EditWorkspaceItem({
         if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
-          result.error.issues.forEach((issue: any) => {
+          result.error.issues.forEach((issue) => {
             const path = issue.path.join(".");
             if (!errors[path]) errors[path] = [];
             errors[path].push(issue.message);
@@ -163,7 +163,7 @@ export default function EditWorkspaceItem({
         setIsSubmitting(false);
       }
     },
-    [formData, editorValue, latestItem, onSave, onClose, notify],
+    [formData, editorValue, latestItem, onSave, onClose, notify, isSubmitting],
   );
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -281,6 +281,7 @@ export default function EditWorkspaceItem({
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -331,24 +332,24 @@ export default function EditWorkspaceItem({
                     maxLength={200}
                   />
                   {shouldShowError("subject") && (
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text-alt text-error">
                         {getFieldError("subject")}
                       </span>
-                    </label>
+                    </div>
                   )}
-                  <label className="label">
+                  <div className="label">
                     <span className="label-text-alt text-xs">
                       {formData.subject.length}/200 文字
                     </span>
-                  </label>
+                  </div>
                 </div>
 
                 {/* 本文（WYSIWYGエディタ） */}
                 <div className="form-control">
-                  <label className="label">
+                  <div className="label">
                     <span className="label-text font-semibold">本文</span>
-                  </label>
+                  </div>
                   <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
                     <NotionLikeEditor
@@ -382,11 +383,11 @@ export default function EditWorkspaceItem({
                     disabled={isSubmitting}
                   />
                   {shouldShowError("dueDate") && (
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text-alt text-error">
                         {getFieldError("dueDate")}
                       </span>
-                    </label>
+                    </div>
                   )}
                 </div>
 
@@ -416,11 +417,11 @@ export default function EditWorkspaceItem({
                     <option value="Critical">緊急</option>
                   </select>
                   {shouldShowError("priority") && (
-                    <label className="label">
+                    <div className="label">
                       <span className="label-text-alt text-error">
                         {getFieldError("priority")}
                       </span>
-                    </label>
+                    </div>
                   )}
                 </div>
 

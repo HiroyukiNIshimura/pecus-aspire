@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { MasterSkillResponse } from "@/connectors/api/pecus";
 import { setUserSkills } from "@/actions/profile";
+import type { MasterSkillResponse } from "@/connectors/api/pecus";
 
 interface SkillsTabProps {
   initialSkillIds: number[];

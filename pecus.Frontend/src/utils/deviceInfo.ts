@@ -1,6 +1,5 @@
 import { getLocationFromCoordinates } from "@/actions/geolocation";
-import { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
-import { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
+import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
 import type { DeviceInfo } from "@/libs/atoms/deviceInfoAtom";
 
 /**

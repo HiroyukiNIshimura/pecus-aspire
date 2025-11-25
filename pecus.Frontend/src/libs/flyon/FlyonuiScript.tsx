@@ -25,7 +25,7 @@ export default function FlyonuiScript() {
     initFlyonUI();
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: path変更時にFlyonUIを再初期化する必要があるため
   useEffect(() => {
     setTimeout(() => {
       if (

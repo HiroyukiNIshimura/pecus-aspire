@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { LoginResponse, SuccessResponse } from "@/connectors/api/pecus";
+import type { LoginResponse } from "@/connectors/api/pecus";
 import type { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
 import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
 import { type SessionData, SessionManager } from "@/libs/session";

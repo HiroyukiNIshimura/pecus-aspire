@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
-import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
-import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
-import WorkspaceItemDetail from "./WorkspaceItemDetail";
-import CreateWorkspaceItem from "./CreateWorkspaceItem";
-import type { UserInfo } from "@/types/userInfo";
 import type {
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
 } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
 import { getDisplayIconUrl } from "@/utils/imageUrl";
+import CreateWorkspaceItem from "./CreateWorkspaceItem";
+import WorkspaceItemDetail from "./WorkspaceItemDetail";
+import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
+import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
@@ -28,9 +28,7 @@ export default function WorkspaceDetailClient({
   workspaces,
   userInfo,
 }: WorkspaceDetailClientProps) {
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
@@ -46,10 +44,6 @@ export default function WorkspaceDetailClient({
     }
     return 256;
   });
-
-  const handleBack = () => {
-    router.back();
-  };
 
   // ワークスペースHome選択ハンドラ
   const handleHomeSelect = useCallback(() => {
@@ -175,7 +169,7 @@ export default function WorkspaceDetailClient({
         </div>
 
         {/* メインコンテンツ */}
-        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
+        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-0">
           {/* ワークスペース詳細情報 */}
           {showWorkspaceDetail && (
             <div className="card bg-base-100 shadow-md mb-6">
@@ -187,7 +181,7 @@ export default function WorkspaceDetailClient({
 
                 {/* 説明 */}
                 {workspaceDetail.description && (
-                  <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap break-words">
+                  <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap wrap-break-word">
                     {workspaceDetail.description}
                   </p>
                 )}
@@ -226,10 +220,14 @@ export default function WorkspaceDetailClient({
                       </span>
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.createdBy.identityIconUrl && (
-                          <img
-                            src={getDisplayIconUrl(workspaceDetail.createdBy.identityIconUrl)}
+                          <Image
+                            src={getDisplayIconUrl(
+                              workspaceDetail.createdBy.identityIconUrl,
+                            )}
                             alt={workspaceDetail.createdBy.userName}
-                            className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                            width={20}
+                            height={20}
+                            className="rounded-full object-cover flex-shrink-0"
                           />
                         )}
                         <p className="font-semibold truncate">
@@ -289,10 +287,14 @@ export default function WorkspaceDetailClient({
                       </span>
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.updatedBy.identityIconUrl && (
-                          <img
-                            src={getDisplayIconUrl(workspaceDetail.updatedBy.identityIconUrl)}
+                          <Image
+                            src={getDisplayIconUrl(
+                              workspaceDetail.updatedBy.identityIconUrl,
+                            )}
                             alt={workspaceDetail.updatedBy.userName}
-                            className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                            width={20}
+                            height={20}
+                            className="rounded-full object-cover flex-shrink-0"
                           />
                         )}
                         <p className="font-semibold truncate">
@@ -315,10 +317,12 @@ export default function WorkspaceDetailClient({
                             className="flex items-center gap-2 p-2 bg-base-200 rounded"
                           >
                             {member.identityIconUrl && (
-                              <img
+                              <Image
                                 src={getDisplayIconUrl(member.identityIconUrl)}
                                 alt={member.userName || "ユーザー"}
-                                className="w-6 h-6 rounded-full object-cover"
+                                width={24}
+                                height={24}
+                                className="rounded-full object-cover"
                               />
                             )}
                             <div className="min-w-0 flex-1">
