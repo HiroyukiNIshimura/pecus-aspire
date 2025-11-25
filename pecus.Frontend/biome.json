@@ -3,7 +3,7 @@
   "extends": "//",
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!src/connectors"]
+    "includes": ["**", "!src/connectors", "!public/scripts"]
   },
   "css": {
     "linter": {
