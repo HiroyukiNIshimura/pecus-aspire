@@ -1507,9 +1507,9 @@ button.toolbar-item:disabled i.format,
 
 .sticky-note-container {
   position: absolute;
-  z-index: 2020;
   width: 120px;
   display: inline-block;
+  z-index: 50;
 }
 
 .sticky-note-container .sticky-note {
@@ -1541,7 +1541,7 @@ button.toolbar-item:disabled i.format,
 }
 
 .sticky-note-container .sticky-note.yellow {
-border-top: 1px solid var(--color-yellow-300);
+  border-top: 1px solid var(--color-yellow-300);
   background: oklch(95% 0.08 90);
 }
 
