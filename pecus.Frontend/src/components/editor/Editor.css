@@ -328,7 +328,8 @@
 
 }
 
-.notion-like-editor i.bucket {
+.notion-like-editor i.bucket,
+.sticky-note-container i.bucket {
   background-image: url(images/icons/paint-bucket.svg);
 }
 
@@ -1504,14 +1505,14 @@ button.toolbar-item:disabled i.format,
   background-image: url(images/icons/vertical-middle.svg);
 }
 
-.notion-like-editor .sticky-note-container {
+.sticky-note-container {
   position: absolute;
-  z-index: 9;
+  z-index: 2020;
   width: 120px;
   display: inline-block;
 }
 
-.notion-like-editor .sticky-note {
+.sticky-note-container .sticky-note {
   line-height: 1;
   text-align: left;
   width: 120px;
@@ -1526,7 +1527,7 @@ button.toolbar-item:disabled i.format,
   cursor: move;
 }
 
-.notion-like-editor .sticky-note:after {
+.sticky-note-container .sticky-note:after {
   content: '';
   position: absolute;
   z-index: -1;
@@ -1539,37 +1540,26 @@ button.toolbar-item:disabled i.format,
   transform: matrix(-1, -0.1, 0, 1, 0, 0);
 }
 
-.notion-like-editor .sticky-note.yellow {
-  border-top: 1px solid var(--color-warning);
-  background: linear-gradient(
-    135deg,
-    var(--color-warning) 81%,
-    var(--color-warning) 82%,
-    var(--color-warning) 82%,
-    var(--color-warning-content) 100%
-  );
+.sticky-note-container .sticky-note.yellow {
+border-top: 1px solid var(--color-yellow-300);
+  background: oklch(95% 0.08 90);
 }
 
-.notion-like-editor .sticky-note.pink {
-  border-top: 1px solid var(--color-secondary);
-  background: linear-gradient(
-    135deg,
-    var(--color-secondary) 81%,
-    var(--color-secondary) 82%,
-    var(--color-secondary) 82%,
-    var(--color-secondary-content) 100%
-  );
+.sticky-note-container .sticky-note.pink {
+  border-top: 1px solid var(--color-red-300);
+  background: oklch(95% 0.08 0);
 }
 
-.notion-like-editor .sticky-note-container.dragging {
+.sticky-note-container.dragging {
   transition: none !important;
 }
 
-.notion-like-editor .sticky-note div {
+.sticky-note-container .sticky-note div {
   cursor: text;
+  font-size: medium;
 }
 
-.notion-like-editor .sticky-note .delete {
+.sticky-note-container .sticky-note .delete {
   border: 0;
   background: none;
   position: absolute;
@@ -1580,12 +1570,12 @@ button.toolbar-item:disabled i.format,
   opacity: 0.5;
 }
 
-.notion-like-editor .sticky-note .delete:hover {
+.sticky-note-container .sticky-note .delete:hover {
   font-weight: bold;
   opacity: 1;
 }
 
-.notion-like-editor .sticky-note .color {
+.sticky-note-container .sticky-note .color {
   border: 0;
   background: none;
   position: absolute;
@@ -1595,11 +1585,11 @@ button.toolbar-item:disabled i.format,
   opacity: 0.5;
 }
 
-.notion-like-editor .sticky-note .color:hover {
+.sticky-note-container .sticky-note .color:hover {
   opacity: 1;
 }
 
-.notion-like-editor .sticky-note .color i {
+.sticky-note-container .sticky-note .color i {
   display: block;
   width: 12px;
   height: 12px;

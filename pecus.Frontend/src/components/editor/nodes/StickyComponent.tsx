@@ -73,6 +73,26 @@ export default function StickyComponent({
     y: 0,
   });
 
+  // FlyonUI との競合を防ぐため、バブリングフェーズでのイベント伝播を止める
+  useEffect(() => {
+    const stickyContainer = stickyContainerRef.current;
+    if (!stickyContainer) return;
+
+    const stopFlyonuiEvents = (e: Event) => {
+      // FlyonUI の dropdown/popover が反応しないようにする
+      e.stopPropagation();
+    };
+
+    // FlyonUI が監視するイベントをキャプチャ
+    stickyContainer.addEventListener("focusin", stopFlyonuiEvents);
+    stickyContainer.addEventListener("focusout", stopFlyonuiEvents);
+
+    return () => {
+      stickyContainer.removeEventListener("focusin", stopFlyonuiEvents);
+      stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
+    };
+  }, []);
+
   useEffect(() => {
     const position = positioningRef.current;
     position.x = x;
