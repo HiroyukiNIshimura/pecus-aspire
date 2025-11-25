@@ -198,7 +198,7 @@ export function InsertImageDialog({
 	);
 }
 
-export default function ImagesPlugin({ captionsEnabled }: { captionsEnabled?: boolean }): JSX.Element | null {
+export default function ImagesPlugin(): JSX.Element | null {
 	const [editor] = useLexicalComposerContext();
 
 	useEffect(() => {
@@ -374,7 +374,7 @@ function canDropImage(event: DragEvent): boolean {
 }
 
 function getDragSelection(event: DragEvent): Range | null | undefined {
-	let range;
+	let range: Range | null | undefined;
 	const domSelection = getDOMSelectionFromTarget(event.target);
 	if (document.caretRangeFromPoint) {
 		range = document.caretRangeFromPoint(event.clientX, event.clientY);
