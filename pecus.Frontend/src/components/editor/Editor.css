@@ -1104,76 +1104,71 @@ i.page-break,
 
 .notion-like-editor .editor-shell .editor-image .image-resizer {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
   position: absolute;
   background-color: var(--color-primary);
-  border: 2px solid var(--color-base-100);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-base-100);
+  border-radius: 0;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-n {
   top: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   cursor: n-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-ne {
   top: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
-  transform: translate(50%, -50%);
+  width: 10px;
+  height: 10px;
   cursor: ne-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-e {
   top: 50%;
   right: 0;
-  transform: translate(50%, -50%);
+  transform: translateY(-50%);
   cursor: e-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-se {
   bottom: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
-  transform: translate(50%, 50%);
+  width: 10px;
+  height: 10px;
   cursor: nwse-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-s {
   bottom: 0;
   left: 50%;
-  transform: translate(-50%, 50%);
+  transform: translateX(-50%);
   cursor: s-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-sw {
   bottom: 0;
   left: 0;
-  width: 20px;
-  height: 20px;
-  transform: translate(-50%, 50%);
+  width: 10px;
+  height: 10px;
   cursor: sw-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-w {
   top: 50%;
   left: 0;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   cursor: w-resize;
 }
 
 .notion-like-editor .editor-shell .editor-image .image-resizer.image-resizer-nw {
   top: 0;
   left: 0;
-  width: 20px;
-  height: 20px;
-  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
   cursor: nw-resize;
 }
 
