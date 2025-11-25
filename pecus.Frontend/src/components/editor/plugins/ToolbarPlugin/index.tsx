@@ -571,6 +571,31 @@ function $findTopLevelElement(node: LexicalNode) {
   return topLevelElement;
 }
 
+/**
+ * スクロール可能な親要素を自動検出する
+ * @param element 起点となる要素
+ * @returns スクロール可能な親要素、または null
+ */
+function findScrollableParent(element: HTMLElement): HTMLElement | null {
+  let parent = element.parentElement;
+
+  while (parent) {
+    const style = getComputedStyle(parent);
+    const overflowY = style.overflowY;
+
+    if (overflowY === "auto" || overflowY === "scroll") {
+      // 実際にスクロール可能かどうかをチェック
+      if (parent.scrollHeight > parent.clientHeight) {
+        return parent;
+      }
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return null;
+}
+
 export default function ToolbarPlugin({
   editor,
   activeEditor,
@@ -1378,7 +1403,38 @@ export default function ToolbarPlugin({
                     editor.update(() => {
                       $addUpdateTag(SKIP_SELECTION_FOCUS_TAG);
                       const root = $getRoot();
-                      const stickyNode = $createStickyNode(0, 0);
+
+                      // 現在見えている領域内に付箋を配置
+                      let xOffset = 20;
+                      let yOffset = 20;
+
+                      const rootElement = editor.getRootElement();
+                      if (rootElement) {
+                        // スクロール可能な親要素を自動検出
+                        const scrollableParent =
+                          findScrollableParent(rootElement);
+
+                        if (scrollableParent) {
+                          const scrollerRect =
+                            scrollableParent.getBoundingClientRect();
+                          const editorRect = rootElement.getBoundingClientRect();
+
+                          // スクロールコンテナの上端からエディタの上端までのオフセット
+                          const editorOffsetFromScroller =
+                            editorRect.top - scrollerRect.top;
+
+                          // エディタが見えている領域の開始位置（エディタ座標系）
+                          const visibleTop = Math.max(
+                            0,
+                            -editorOffsetFromScroller,
+                          );
+
+                          yOffset = visibleTop + 20;
+                          xOffset = scrollableParent.scrollLeft + 20;
+                        }
+                      }
+
+                      const stickyNode = $createStickyNode(xOffset, yOffset);
                       root.append(stickyNode);
                     });
                   }}
