@@ -23,7 +23,7 @@ const ACCEPTABLE_IMAGE_TYPES = [
 ];
 
 /**
- * 画像ファイルをバックエンドにアップロードしてプロキシURLを取得
+ * 画像ファイルをバックエンドにアップロードしてプロキシURLを取得（既存アイテム用）
  * @param file アップロードするファイル
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
@@ -59,9 +59,50 @@ async function uploadImageFile(
   }
 }
 
+/**
+ * 画像ファイルを一時領域にアップロード（新規アイテム作成用）
+ * @param file アップロードするファイル
+ * @param workspaceId ワークスペースID
+ * @param sessionId セッションID
+ * @returns アップロード結果（成功時は{tempFileId, previewUrl}、失敗時はnull）
+ */
+async function uploadTempImageFile(
+  file: File,
+  workspaceId: number,
+  sessionId: string,
+): Promise<{ tempFileId: string; previewUrl: string } | null> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+      `/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    if (response.ok) {
+      const result = await response.json();
+      return {
+        tempFileId: result.tempFileId,
+        previewUrl: result.previewUrl,
+      };
+    } else {
+      console.error("Failed to upload temp image:", await response.text());
+      return null;
+    }
+  } catch (error) {
+    console.error("Error uploading temp image:", error);
+    return null;
+  }
+}
+
 export default function DragDropPaste(): null {
   const [editor] = useLexicalComposerContext();
-  const { workspaceId, itemId } = useEditorContext();
+  const { workspaceId, itemId, sessionId, onTempFileUploaded } =
+    useEditorContext();
 
   useEffect(() => {
     return editor.registerCommand(
@@ -75,7 +116,7 @@ export default function DragDropPaste(): null {
 
           for (const { file, result } of filesResult) {
             if (isMimeType(file, ACCEPTABLE_IMAGE_TYPES)) {
-              // workspaceId/itemId が設定されている場合はアップロード
+              // 既存アイテム編集時: workspaceId/itemId が設定されている場合
               if (workspaceId !== undefined && itemId !== undefined) {
                 const uploadedUrl = await uploadImageFile(
                   file,
@@ -84,7 +125,6 @@ export default function DragDropPaste(): null {
                 );
 
                 if (uploadedUrl) {
-                  // アップロード成功時はプロキシURLを使用
                   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                     altText: file.name,
                     src: uploadedUrl,
@@ -96,8 +136,36 @@ export default function DragDropPaste(): null {
                     src: result,
                   });
                 }
-              } else {
-                // workspaceId/itemId が未設定の場合はローカルプレビュー（既存動作）
+              }
+              // 新規アイテム作成時: workspaceId/sessionId が設定されている場合
+              else if (workspaceId !== undefined && sessionId !== undefined) {
+                const uploadResult = await uploadTempImageFile(
+                  file,
+                  workspaceId,
+                  sessionId,
+                );
+
+                if (uploadResult) {
+                  // コールバックで一時ファイルIDを通知
+                  onTempFileUploaded?.(
+                    uploadResult.tempFileId,
+                    uploadResult.previewUrl,
+                  );
+
+                  editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+                    altText: file.name,
+                    src: uploadResult.previewUrl,
+                  });
+                } else {
+                  // アップロード失敗時はローカルプレビュー（フォールバック）
+                  editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+                    altText: file.name,
+                    src: result,
+                  });
+                }
+              }
+              // workspaceId が未設定の場合はローカルプレビュー（既存動作）
+              else {
                 editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                   altText: file.name,
                   src: result,
@@ -110,7 +178,7 @@ export default function DragDropPaste(): null {
       },
       COMMAND_PRIORITY_LOW,
     );
-  }, [editor, workspaceId, itemId]);
+  }, [editor, workspaceId, itemId, sessionId, onTempFileUploaded]);
 
   return null;
 }

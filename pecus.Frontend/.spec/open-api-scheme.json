@@ -3996,6 +3996,7 @@
           "File"
         ],
         "summary": "ファイルを取得（ルートベース）",
+        "description": "ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して\r\nルート末尾のすべての文字（ドットを含む）をキャプチャします。\r\nこれにより image.jpg のようなファイル名も正しく処理されます。",
         "parameters": [
           {
             "name": "fileType",
@@ -7374,6 +7375,233 @@
           }
         }
       }
+    },
+    "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}": {
+      "post": {
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
+        "summary": "一時添付ファイルをアップロード（アイテム作成前用）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "セッション識別子（フロントで生成したUUID等）",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "アップロードするファイル",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TempAttachmentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TempAttachmentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TempAttachmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
+        "summary": "セッションの一時ファイルをすべて削除",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "セッション識別子",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{fileName}": {
+      "get": {
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
+        "summary": "一時添付ファイルを取得（プレビュー用）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "description": "セッション識別子",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileName",
+            "in": "path",
+            "description": "ファイル名",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7785,6 +8013,20 @@
               "type": "string"
             },
             "description": "タグ名のリスト（存在しないタグは自動作成）",
+            "nullable": true
+          },
+          "tempSessionId": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）",
+            "nullable": true
+          },
+          "tempAttachmentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）",
             "nullable": true
           }
         },
@@ -10069,6 +10311,51 @@
           "Critical"
         ],
         "type": "string"
+      },
+      "TempAttachmentResponse": {
+        "required": [
+          "fileName",
+          "fileSize",
+          "mimeType",
+          "previewUrl",
+          "sessionId",
+          "tempFileId"
+        ],
+        "type": "object",
+        "properties": {
+          "tempFileId": {
+            "type": "string",
+            "description": "一時ファイルID（UUID形式）",
+            "nullable": true
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "セッションID",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "description": "元のファイル名",
+            "nullable": true
+          },
+          "fileSize": {
+            "type": "integer",
+            "description": "ファイルサイズ（バイト）",
+            "format": "int64"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIMEタイプ",
+            "nullable": true
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "一時ファイルのプレビューURL",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "一時添付ファイルのレスポンス"
       },
       "UpdateGenreRequest": {
         "required": [

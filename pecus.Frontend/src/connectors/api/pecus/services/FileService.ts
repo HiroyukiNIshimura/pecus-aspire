@@ -11,6 +11,9 @@ import { request as __request } from '../core/request';
 export class FileService {
     /**
      * ファイルを取得（ルートベース）
+     * ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して
+     * ルート末尾のすべての文字（ドットを含む）をキャプチャします。
+     * これにより image.jpg のようなファイル名も正しく処理されます。
      * @param fileType ファイル種別（avatar, genre）
      * @param resourceId リソースID（ユーザーIDまたはジャンルID）
      * @param fileName ファイル名

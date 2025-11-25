@@ -24,6 +24,7 @@ import {
   TagService,
   TestEmailService,
   WorkspaceItemService,
+  WorkspaceItemTempAttachmentService,
   WorkspaceService
 } from "./pecus";
 
@@ -75,6 +76,7 @@ export function createApiClientInstances() {
     tag: TagService,
     testEmail: TestEmailService,
     workspaceItem: WorkspaceItemService,
+    workspaceItemTempAttachment: WorkspaceItemTempAttachmentService,
     workspace: WorkspaceService
   };
 }

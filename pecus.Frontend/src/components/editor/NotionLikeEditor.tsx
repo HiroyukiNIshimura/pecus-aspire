@@ -93,9 +93,21 @@ export interface NotionLikeEditorProps {
   workspaceId?: number;
 
   /**
-   * アイテムID（画像アップロード用）
+   * アイテムID（画像アップロード用、既存アイテム編集時に設定）
    */
   itemId?: number;
+
+  /**
+   * セッションID（新規アイテム作成時の一時ファイルアップロード用）
+   */
+  sessionId?: string;
+
+  /**
+   * 一時ファイルアップロード完了時のコールバック
+   * @param tempFileId - 一時ファイルID
+   * @param previewUrl - プレビューURL
+   */
+  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
 }
 
 export default function NotionLikeEditor({
@@ -111,6 +123,8 @@ export default function NotionLikeEditor({
   isCodeShiki = false,
   workspaceId,
   itemId,
+  sessionId,
+  onTempFileUploaded,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -129,8 +143,10 @@ export default function NotionLikeEditor({
     () => ({
       workspaceId,
       itemId,
+      sessionId,
+      onTempFileUploaded,
     }),
-    [workspaceId, itemId],
+    [workspaceId, itemId, sessionId, onTempFileUploaded],
   );
 
   const app = useMemo(

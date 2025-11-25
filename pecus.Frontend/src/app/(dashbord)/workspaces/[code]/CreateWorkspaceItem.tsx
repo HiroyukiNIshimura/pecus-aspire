@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
@@ -14,6 +14,7 @@ import { useFormValidation } from "@/hooks/useFormValidation";
 import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
 import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
 import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
+import type { EditorContextSettings } from "@/components/editor/appSettings";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -28,6 +29,12 @@ export default function CreateWorkspaceItem({
   onClose,
   onCreate,
 }: CreateWorkspaceItemProps) {
+  // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
+  const sessionId = useMemo(() => crypto.randomUUID(), []);
+
+  // アップロードされた一時ファイルIDのリスト
+  const [tempFileIds, setTempFileIds] = useState<string[]>([]);
+
   // フォーム状態
   const [formData, setFormData] = useState<CreateWorkspaceItemInput>({
     subject: "",
@@ -39,6 +46,29 @@ export default function CreateWorkspaceItem({
   const [editorState, setEditorState] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  // 一時ファイルアップロード完了時のコールバック
+  const handleTempFileUploaded = useCallback(
+    (tempFileId: string, _previewUrl: string) => {
+      setTempFileIds((prev) => {
+        if (!prev.includes(tempFileId)) {
+          return [...prev, tempFileId];
+        }
+        return prev;
+      });
+    },
+    [],
+  );
+
+  // エディタに渡す設定（新規作成時はsessionIdを使用）
+  const editorSettings: EditorContextSettings = useMemo(
+    () => ({
+      workspaceId,
+      sessionId,
+      onTempFileUploaded: handleTempFileUploaded,
+    }),
+    [workspaceId, sessionId, handleTempFileUploaded],
+  );
 
   // フォーム検証フック
   const {
@@ -68,6 +98,9 @@ export default function CreateWorkspaceItem({
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
           tagNames: tags.length > 0 ? tags : null,
+          // 一時ファイル情報を追加
+          tempSessionId: tempFileIds.length > 0 ? sessionId : null,
+          tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : null,
         };
 
         const result = await createWorkspaceItem(workspaceId, request);
@@ -123,6 +156,8 @@ export default function CreateWorkspaceItem({
     setEditorState("");
     setTags([]);
     setGlobalError(null);
+    // 一時ファイルIDリストをリセット（次のモーダル表示時に新しいsessionIdが使われる）
+    setTempFileIds([]);
   };
 
   // モーダルを閉じる際の処理
@@ -236,6 +271,9 @@ export default function CreateWorkspaceItem({
                     onChange={handleEditorChange}
                     debounceMs={500}
                     autoFocus={false}
+                    workspaceId={editorSettings.workspaceId}
+                    sessionId={editorSettings.sessionId}
+                    onTempFileUploaded={editorSettings.onTempFileUploaded}
                   />
                 </div>
               </div>

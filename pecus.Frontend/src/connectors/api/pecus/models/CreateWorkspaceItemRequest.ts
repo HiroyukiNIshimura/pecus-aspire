@@ -36,5 +36,13 @@ export type CreateWorkspaceItemRequest = {
      * タグ名のリスト（存在しないタグは自動作成）
      */
     tagNames?: Array<string> | null;
+    /**
+     * 一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）
+     */
+    tempSessionId?: string | null;
+    /**
+     * 一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）
+     */
+    tempAttachmentIds?: Array<string> | null;
 };
 
