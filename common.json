@@ -1,8 +1,10 @@
 {
   "files": {
     "includes": [
-      "src/**/*.ts",
-      "src/**/*.tsx"
+      "packages/notion-like-editor/src/**/*.ts",
+      "packages/notion-like-editor/src/**/*.tsx",
+      "pecus.Frontend/src/**/*.ts",
+      "pecus.Frontend/src/**/*.tsx"
     ]
   },
   "linter": {
