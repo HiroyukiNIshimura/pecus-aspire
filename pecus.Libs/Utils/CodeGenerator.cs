@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Pecus.Libs;
+namespace Pecus.Libs.Utils;
 
 /// <summary>
 /// コード生成ヘルパー
