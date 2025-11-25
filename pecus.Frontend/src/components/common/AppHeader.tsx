@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth";
 import { useTheme } from "@/hooks/useTheme";
 import type { UserInfo } from "@/types/userInfo";
+import { getDisplayIconUrl } from "@/utils/imageUrl";
 
 interface AppHeaderProps {
   userInfo: UserInfo | null;
@@ -155,7 +156,7 @@ export default function AppHeader({
                 <div className="size-10 rounded-full ring-0 hover:ring-2 hover:ring-primary transition-all">
                   {userInfo?.identityIconUrl ? (
                     <img
-                      src={userInfo.identityIconUrl}
+                      src={getDisplayIconUrl(userInfo.identityIconUrl)}
                       alt={userInfo.name || "User Avatar"}
                     />
                   ) : (

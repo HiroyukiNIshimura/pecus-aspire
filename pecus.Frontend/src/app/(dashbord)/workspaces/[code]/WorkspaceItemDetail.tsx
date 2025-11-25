@@ -11,6 +11,7 @@ import EditWorkspaceItem from "./EditWorkspaceItem";
 import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
 import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
 import NotionLikeViewer from "@/components/editor/NotionLikeViewer";
+import { getDisplayIconUrl } from "@/utils/imageUrl";
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
@@ -180,7 +181,7 @@ export default function WorkspaceItemDetail({
                 <div className="flex items-center gap-2 mt-1">
                   {item.ownerAvatarUrl && (
                     <img
-                      src={item.ownerAvatarUrl}
+                      src={getDisplayIconUrl(item.ownerAvatarUrl)}
                       alt={item.ownerUsername || "ユーザー"}
                       className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                     />
@@ -207,7 +208,7 @@ export default function WorkspaceItemDetail({
                 <div className="flex items-center gap-2 mt-1">
                   {item.assigneeAvatarUrl && (
                     <img
-                      src={item.assigneeAvatarUrl}
+                      src={getDisplayIconUrl(item.assigneeAvatarUrl)}
                       alt={item.assigneeUsername || "ユーザー"}
                       className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                     />
@@ -226,7 +227,7 @@ export default function WorkspaceItemDetail({
                 <div className="flex items-center gap-2 mt-1">
                   {item.committerAvatarUrl && (
                     <img
-                      src={item.committerAvatarUrl}
+                      src={getDisplayIconUrl(item.committerAvatarUrl)}
                       alt={item.committerUsername || "ユーザー"}
                       className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                     />
@@ -304,7 +305,7 @@ export default function WorkspaceItemDetail({
                         <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
                           {related.ownerAvatarUrl && (
                             <img
-                              src={related.ownerAvatarUrl}
+                              src={getDisplayIconUrl(related.ownerAvatarUrl)}
                               alt={related.ownerUsername || "ユーザー"}
                               className="w-4 h-4 rounded-full object-cover flex-shrink-0"
                             />

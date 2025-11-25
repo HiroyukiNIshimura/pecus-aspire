@@ -13,6 +13,7 @@ import type {
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
 } from "@/connectors/api/pecus";
+import { getDisplayIconUrl } from "@/utils/imageUrl";
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
@@ -226,7 +227,7 @@ export default function WorkspaceDetailClient({
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.createdBy.identityIconUrl && (
                           <img
-                            src={workspaceDetail.createdBy.identityIconUrl}
+                            src={getDisplayIconUrl(workspaceDetail.createdBy.identityIconUrl)}
                             alt={workspaceDetail.createdBy.userName}
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
@@ -289,7 +290,7 @@ export default function WorkspaceDetailClient({
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.updatedBy.identityIconUrl && (
                           <img
-                            src={workspaceDetail.updatedBy.identityIconUrl}
+                            src={getDisplayIconUrl(workspaceDetail.updatedBy.identityIconUrl)}
                             alt={workspaceDetail.updatedBy.userName}
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
@@ -315,7 +316,7 @@ export default function WorkspaceDetailClient({
                           >
                             {member.identityIconUrl && (
                               <img
-                                src={member.identityIconUrl}
+                                src={getDisplayIconUrl(member.identityIconUrl)}
                                 alt={member.userName || "ユーザー"}
                                 className="w-6 h-6 rounded-full object-cover"
                               />

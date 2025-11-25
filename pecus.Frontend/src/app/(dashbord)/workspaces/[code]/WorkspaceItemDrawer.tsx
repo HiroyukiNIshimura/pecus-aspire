@@ -6,6 +6,7 @@ import type {
   WorkspaceDetailUserResponse,
 } from "@/connectors/api/pecus";
 import { updateWorkspaceItemAssignee } from "@/actions/workspaceItem";
+import { getDisplayIconUrl } from "@/utils/imageUrl";
 
 interface WorkspaceItemDrawerProps {
   item: WorkspaceItemDetailResponse;
@@ -155,7 +156,7 @@ export default function WorkspaceItemDrawer({
               <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
                 {item.assigneeAvatarUrl ? (
                   <img
-                    src={item.assigneeAvatarUrl}
+                    src={getDisplayIconUrl(item.assigneeAvatarUrl)}
                     alt={item.assigneeUsername || "ユーザー"}
                     className="w-6 h-6 rounded-full object-cover"
                   />
