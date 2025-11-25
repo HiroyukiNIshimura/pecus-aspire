@@ -26,12 +26,18 @@ try
         .WithReference(pecusDb)
         .WaitFor(pecusDb);
 
+    // WebApi の uploads フォルダの絶対パスを取得
+    var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
+    var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
+    Log.Information("Uploads path: {UploadsPath}", uploadsPath);
+
     var backfire = builder
-        .AddProject<Projects.pecus_BackFire>("backfire")
-        .WithReference(redis)
-        .WithReference(pecusDb)
-        .WaitFor(redis)
-        .WaitFor(pecusDb);
+    .AddProject<Projects.pecus_BackFire>("backfire")
+    .WithReference(redis)
+    .WithReference(pecusDb)
+    .WaitFor(redis)
+    .WaitFor(pecusDb)
+    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath);
 
     var pecusApi = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")

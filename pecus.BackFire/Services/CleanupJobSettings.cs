@@ -89,9 +89,9 @@ public class EmailChangeTokenCleanupSettings
 public class UploadsCleanupSettings
 {
     /// <summary>
-    /// アップロードフォルダのベースパス（デフォルト: ../pecus.WebApi/uploads）
+    /// アップロードフォルダのベースパス（絶対パス、環境変数経由で設定）
     /// </summary>
-    public string UploadsBasePath { get; set; } = "../pecus.WebApi/uploads";
+    public string UploadsBasePath { get; set; } = "";
 
     /// <summary>
     /// tempフォルダ内のファイルを保持する時間（時間単位、デフォルト: 24時間）

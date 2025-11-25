@@ -88,6 +88,18 @@ public static class CleanupJobScheduler
         // 設定をクラスバインド
         var settings = configuration.GetSection("UploadsCleanup").Get<UploadsCleanupSettings>() ?? new UploadsCleanupSettings();
 
+        // UploadsBasePath が設定されていない場合はジョブを登録しない
+        if (string.IsNullOrWhiteSpace(settings.UploadsBasePath))
+        {
+            return;
+        }
+
+        // パスが存在しない場合も警告のみでスキップ
+        if (!Directory.Exists(settings.UploadsBasePath))
+        {
+            return;
+        }
+
         // 値の範囲を安全にクリップ
         settings.Hour = Math.Clamp(settings.Hour, 0, 23);
         settings.Minute = Math.Clamp(settings.Minute, 0, 59);
