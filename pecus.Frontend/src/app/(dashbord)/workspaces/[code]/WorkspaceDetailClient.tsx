@@ -15,14 +15,14 @@ import type {
 } from "@/connectors/api/pecus";
 
 interface WorkspaceDetailClientProps {
-  workspaceId: string;
+  workspaceCode: string;
   workspaceDetail: WorkspaceFullDetailResponse;
   workspaces: WorkspaceListItemResponse[];
   userInfo: UserInfo | null;
 }
 
 export default function WorkspaceDetailClient({
-  workspaceId,
+  workspaceCode,
   workspaceDetail,
   workspaces,
   userInfo,
@@ -154,7 +154,8 @@ export default function WorkspaceDetailClient({
         >
           <WorkspaceItemsSidebar
             ref={sidebarComponentRef}
-            workspaceId={parseInt(workspaceId)}
+            workspaceId={workspaceDetail.id}
+            currentWorkspaceCode={workspaceCode}
             workspaces={workspaces}
             onHomeSelect={handleHomeSelect}
             onItemSelect={handleItemSelect}
@@ -341,7 +342,7 @@ export default function WorkspaceDetailClient({
           {/* アイテム詳細情報 */}
           {!showWorkspaceDetail && selectedItemId && (
             <WorkspaceItemDetail
-              workspaceId={parseInt(workspaceId)}
+              workspaceId={workspaceDetail.id}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
               members={workspaceDetail.members || []}
@@ -351,7 +352,7 @@ export default function WorkspaceDetailClient({
 
         {/* 新規アイテム作成モーダル */}
         <CreateWorkspaceItem
-          workspaceId={parseInt(workspaceId)}
+          workspaceId={workspaceDetail.id}
           isOpen={isCreateModalOpen}
           onClose={handleCloseCreateModal}
           onCreate={handleCreateComplete}
@@ -363,7 +364,8 @@ export default function WorkspaceDetailClient({
           style={{ height: "384px" }}
         >
           <WorkspaceItemsSidebar
-            workspaceId={parseInt(workspaceId)}
+            workspaceId={workspaceDetail.id}
+            currentWorkspaceCode={workspaceCode}
             workspaces={workspaces}
             onHomeSelect={handleHomeSelect}
             onItemSelect={handleItemSelect}

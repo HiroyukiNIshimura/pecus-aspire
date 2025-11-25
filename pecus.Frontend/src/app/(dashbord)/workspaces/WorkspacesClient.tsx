@@ -561,7 +561,7 @@ export default function WorkspacesClient({
 
                             {/* ワークスペース名 */}
                             <div>
-                              <Link href={`/workspaces/${workspace.id}`}>
+                              <Link href={`/workspaces/${workspace.code}`}>
                                 <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words">
                                   {workspace.name}
                                 </h3>

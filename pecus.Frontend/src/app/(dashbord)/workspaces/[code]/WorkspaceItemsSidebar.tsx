@@ -22,6 +22,7 @@ import type {
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
+  currentWorkspaceCode: string;
   workspaces: WorkspaceListItemResponse[];
   scrollContainerId?: string;
   onHomeSelect?: () => void;
@@ -40,6 +41,7 @@ const WorkspaceItemsSidebar = forwardRef<
   (
     {
       workspaceId,
+      currentWorkspaceCode,
       workspaces,
       scrollContainerId = "itemsScrollableDiv",
       onHomeSelect,
@@ -168,7 +170,7 @@ const WorkspaceItemsSidebar = forwardRef<
           <div className="mb-4">
             <WorkspaceSwitcher
               workspaces={workspaces}
-              currentWorkspaceId={workspaceId}
+              currentWorkspaceCode={currentWorkspaceCode}
             />
           </div>
 

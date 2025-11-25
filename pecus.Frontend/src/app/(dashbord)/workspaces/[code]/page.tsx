@@ -12,15 +12,14 @@ import type { UserInfo } from "@/types/userInfo";
 
 interface WorkspaceDetailPageProps {
   params: Promise<{
-    id: string;
+    code: string;
   }>;
 }
 
 export default async function WorkspaceDetailPage({
   params,
 }: WorkspaceDetailPageProps) {
-  const { id } = await params;
-  const workspaceId = parseInt(id, 10);
+  const { code } = await params;
 
   // ユーザー情報取得
   let userInfo: UserInfo | null = null;
@@ -33,8 +32,8 @@ export default async function WorkspaceDetailPage({
     userResponse = await api.profile.getApiProfile();
     userInfo = mapUserResponseToUserInfo(userResponse);
 
-    // ワークスペース詳細情報取得
-    workspaceDetail = await api.workspace.getApiWorkspaces1(workspaceId);
+    // ワークスペース詳細情報取得（code ベース）
+    workspaceDetail = await api.workspace.getApiWorkspacesCode(code);
 
     // ワークスペース一覧取得（切り替え用）
     try {
@@ -75,7 +74,7 @@ export default async function WorkspaceDetailPage({
 
   return (
     <WorkspaceDetailClient
-      workspaceId={id}
+      workspaceCode={code}
       workspaceDetail={workspaceDetail}
       workspaces={workspacesList?.data || []}
       userInfo={userInfo}

@@ -7,7 +7,7 @@ import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
 
 interface WorkspaceSwitcherProps {
   workspaces: WorkspaceListItemResponse[];
-  currentWorkspaceId: number;
+  currentWorkspaceCode: string;
 }
 
 /**
@@ -17,7 +17,7 @@ interface WorkspaceSwitcherProps {
  */
 export default function WorkspaceSwitcher({
   workspaces,
-  currentWorkspaceId,
+  currentWorkspaceCode,
 }: WorkspaceSwitcherProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +25,7 @@ export default function WorkspaceSwitcher({
 
   // 現在のワークスペースのインデックスを取得
   const currentIndex = workspaces.findIndex(
-    (ws) => ws.id === currentWorkspaceId,
+    (ws) => ws.code === currentWorkspaceCode,
   );
 
   // 現在のワークスペース情報
@@ -33,13 +33,13 @@ export default function WorkspaceSwitcher({
 
   // ワークスペース切り替え処理
   const switchWorkspace = useCallback(
-    (workspaceId: number) => {
-      if (workspaceId !== currentWorkspaceId) {
-        router.push(`/workspaces/${workspaceId}`);
+    (workspaceCode: string) => {
+      if (workspaceCode !== currentWorkspaceCode) {
+        router.push(`/workspaces/${workspaceCode}`);
       }
       setIsOpen(false);
     },
-    [currentWorkspaceId, router],
+    [currentWorkspaceCode, router],
   );
 
   // キーボード操作（Enterとエスケープのみ）
@@ -123,16 +123,16 @@ export default function WorkspaceSwitcher({
             <li
               key={workspace.id}
               role="option"
-              aria-selected={workspace.id === currentWorkspaceId}
+              aria-selected={workspace.code === currentWorkspaceCode}
             >
               <button
                 type="button"
                 className={`w-full text-left px-3 py-2 hover:bg-base-200 transition-colors ${
-                  workspace.id === currentWorkspaceId
+                  workspace.code === currentWorkspaceCode
                     ? "bg-primary/10 font-semibold"
                     : ""
                 }`}
-                onClick={() => workspace.id && switchWorkspace(workspace.id)}
+                onClick={() => workspace.code && switchWorkspace(workspace.code)}
               >
                 <div className="text-sm truncate">{workspace.name}</div>
                 {workspace.code && (
