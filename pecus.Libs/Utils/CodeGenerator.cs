@@ -13,32 +13,33 @@ public static class CodeGenerator
     /// </summary>
     public static string GenerateLoginId()
     {
-        // ランダムなGUIDとタイムスタンプを組み合わせてハッシュ化
-        var uniqueString = $"{Guid.NewGuid()}{DateTime.UtcNow.Ticks}";
-        using var sha256 = SHA256.Create();
-        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(uniqueString));
+        // 暗号学的に安全な16バイト（128ビット）のランダム値を生成
+        var randomBytes = RandomNumberGenerator.GetBytes(16);
 
         // Base64エンコードして、URL安全な文字列に変換（先頭16文字を使用）
         return Convert
-            .ToBase64String(hashBytes)
-            .Replace("+", "")
-            .Replace("/", "")
+            .ToBase64String(randomBytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
             .Replace("=", "")
             .Substring(0, 16);
     }
 
     /// <summary>
-    /// ワークスペースコードを生成（8文字の英数字）
+    /// ワークスペースコードを生成（16文字のURL安全なハッシュ文字列）
     /// </summary>
     public static string GenerateWorkspaceCode()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var random = new Random();
+        // 暗号学的に安全な16バイト（128ビット）のランダム値を生成
+        var randomBytes = RandomNumberGenerator.GetBytes(16);
 
-        // 8文字のランダムコードを生成
-        return new string(
-            Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray()
-        );
+        // Base64エンコードして、URL安全な文字列に変換（先頭16文字を使用）
+        return Convert
+            .ToBase64String(randomBytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", "")
+            .Substring(0, 16);
     }
 
     /// <summary>
