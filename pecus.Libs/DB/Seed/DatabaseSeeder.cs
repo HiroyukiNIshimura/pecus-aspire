@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Security;
+using Pecus.Libs.Utils;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -466,7 +467,7 @@ public class DatabaseSeeder
 
             var adminUser = new User
             {
-                LoginId = "admin",
+                LoginId = CodeGenerator.GenerateLoginId(),
                 Username = "管理者",
                 Email = "admin@sample.com",
                 PasswordHash = PasswordHasher.HashPassword("admin123"),
@@ -498,7 +499,7 @@ public class DatabaseSeeder
             {
                 for (int i = 0; i < 200; i++)
                 {
-                    var loginId = $"user{(i + 1):D3}";
+                    var loginId = CodeGenerator.GenerateLoginId();
 
                     // すでに存在するか確認
                     if (await _context.Users.AnyAsync(u => u.LoginId == loginId))
@@ -572,7 +573,7 @@ public class DatabaseSeeder
                     var workspace = new Workspace
                     {
                         Name = Company.Name() + " プロジェクト",
-                        Code = $"PROJ{(i + 1):D3}",
+                        Code = CodeGenerator.GenerateWorkspaceCode(),
                         Description = Lorem.Sentence(10),
                         OrganizationId = organization.Id,
                         GenreId = genre.Id,
@@ -929,12 +930,7 @@ public class DatabaseSeeder
     /// </summary>
     private string GenerateUniqueCode()
     {
-        using var sha256 = SHA256.Create();
-        var input = $"{Guid.NewGuid()}{DateTime.UtcNow.Ticks}";
-        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-        return Convert.ToBase64String(hashBytes)[..16] // 最初の16文字を使用
-            .Replace("/", "_")
-            .Replace("+", "-");
+        return CodeGenerator.GenerateWorkspaceItemCode();
     }
 
 
