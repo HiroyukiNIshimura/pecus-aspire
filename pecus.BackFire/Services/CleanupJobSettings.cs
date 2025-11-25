@@ -82,3 +82,29 @@ public class EmailChangeTokenCleanupSettings
     /// </summary>
     public int Minute { get; set; } = 0;
 }
+
+/// <summary>
+/// アップロードフォルダクリーンアップの設定
+/// </summary>
+public class UploadsCleanupSettings
+{
+    /// <summary>
+    /// アップロードフォルダのベースパス（デフォルト: ../pecus.WebApi/uploads）
+    /// </summary>
+    public string UploadsBasePath { get; set; } = "../pecus.WebApi/uploads";
+
+    /// <summary>
+    /// tempフォルダ内のファイルを保持する時間（時間単位、デフォルト: 24時間）
+    /// </summary>
+    public int TempRetentionHours { get; set; } = 24;
+
+    /// <summary>
+    /// 実行時刻の時（0-23）
+    /// </summary>
+    public int Hour { get; set; } = 4;
+
+    /// <summary>
+    /// 実行時刻の分（0-59）
+    /// </summary>
+    public int Minute { get; set; } = 0;
+}

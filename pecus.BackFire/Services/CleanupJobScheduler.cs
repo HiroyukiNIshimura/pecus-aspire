@@ -16,6 +16,7 @@ public static class CleanupJobScheduler
         ConfigureRefreshTokenCleanupJob(configuration);
         ConfigureDeviceCleanupJob(configuration);
         ConfigureEmailChangeTokenCleanupJob(configuration);
+        ConfigureUploadsCleanupJob(configuration);
     }
 
     /// <summary>
@@ -74,6 +75,26 @@ public static class CleanupJobScheduler
         RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
             "EmailChangeTokenCleanup",
             task => task.CleanupExpiredEmailChangeTokensAsync(settings.BatchSize, settings.OlderThanDays),
+            Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+        );
+    }
+
+    /// <summary>
+    /// アップロードフォルダクリーンアップジョブを設定します
+    /// </summary>
+    /// <param name="configuration">設定</param>
+    private static void ConfigureUploadsCleanupJob(IConfiguration configuration)
+    {
+        // 設定をクラスバインド
+        var settings = configuration.GetSection("UploadsCleanup").Get<UploadsCleanupSettings>() ?? new UploadsCleanupSettings();
+
+        // 値の範囲を安全にクリップ
+        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
+        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+
+        RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.UploadsCleanupTasks>(
+            "UploadsCleanup",
+            task => task.CleanupUploadsAsync(settings.UploadsBasePath, settings.TempRetentionHours),
             Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
         );
     }

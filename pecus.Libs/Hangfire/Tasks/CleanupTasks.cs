@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
-using Pecus.Libs.DB.Models;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 
 /// <summary>
-/// リフレッシュトークンのクリーンアップタスク
+/// DBレコードのクリーンアップタスク
 /// </summary>
 public class CleanupTasks
 {
