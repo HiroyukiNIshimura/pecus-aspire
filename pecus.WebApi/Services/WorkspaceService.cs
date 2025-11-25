@@ -626,6 +626,50 @@ public class WorkspaceService
     }
 
     /// <summary>
+    /// ワークスペースコードからワークスペースIDを取得
+    /// </summary>
+    /// <param name="code">ワークスペースコード</param>
+    /// <returns>ワークスペースID</returns>
+    public async Task<int> GetWorkspaceIdByCodeAsync(string code)
+    {
+        var workspace = await _context.Workspaces
+            .AsNoTracking()
+            .Where(w => w.Code == code)
+            .Select(w => new { w.Id })
+            .FirstOrDefaultAsync();
+
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        return workspace.Id;
+    }
+
+    /// <summary>
+    /// ワークスペースアクセス権限をチェック（codeベース：ユーザーがワークスペースにアクセス可能か確認）
+    /// </summary>
+    /// <param name="code">ワークスペースコード</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>ワークスペースID</returns>
+    public async Task<int> CheckWorkspaceAccessByCodeAsync(string code, int userId)
+    {
+        var workspace = await _context.Workspaces
+            .AsNoTracking()
+            .Where(w => w.Code == code)
+            .Select(w => new { w.Id })
+            .FirstOrDefaultAsync();
+
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        await CheckWorkspaceAccessAsync(workspaceId: workspace.Id, userId: userId);
+        return workspace.Id;
+    }
+
+    /// <summary>
     /// ワークスペースアクセス権限をチェック（ユーザーがワークスペースにアクセス可能か確認）
     /// </summary>
     public async Task CheckWorkspaceAccessAsync(int workspaceId, int userId)

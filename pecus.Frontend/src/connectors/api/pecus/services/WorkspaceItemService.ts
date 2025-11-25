@@ -281,6 +281,30 @@ export class WorkspaceItemService {
         });
     }
     /**
+     * ワークスペースアイテムをコードで取得
+     * @param workspaceId
+     * @param code
+     * @returns WorkspaceItemDetailResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesItemsCode(
+        workspaceId: number,
+        code: string,
+    ): CancelablePromise<WorkspaceItemDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/items/code/{code}',
+            path: {
+                'workspaceId': workspaceId,
+                'code': code,
+            },
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * ワークスペースアイテムステータス更新
      * @param workspaceId
      * @param itemId

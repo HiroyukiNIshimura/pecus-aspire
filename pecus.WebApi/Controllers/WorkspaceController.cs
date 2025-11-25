@@ -35,7 +35,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース新規作成
+    /// ワークスペースを新規作成する
     /// </summary>
     /// <param name="request">ワークスペース作成リクエスト</param>
     [HttpPost]
@@ -85,7 +85,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="request">ワークスペース更新リクエスト</param>
@@ -136,7 +136,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ログインユーザーがアクセス可能なワークスペース一覧取得（ページネーション）
+    /// ログインユーザーがアクセス可能なワークスペース一覧を取得する（ページネーション）
     /// </summary>
     /// <param name="request">ワークスペース一覧取得リクエスト</param>
     [HttpGet]
@@ -213,7 +213,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース詳細情報取得（ログインユーザーがアクセス可能なもののみ）
+    /// ワークスペースの詳細情報を取得する（ログインユーザーがアクセス可能なもののみ）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     [HttpGet("{id:int}")]
@@ -226,8 +226,33 @@ public class WorkspaceController : BaseSecureController
         // ワークスペースアクセス権限チェック
         await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
 
+        return await GetWorkspaceDetailResponseAsync(id);
+    }
+
+    /// <summary>
+    /// ワークスペースの詳細情報を取得する（codeベース：ログインユーザーがアクセス可能なもののみ）
+    /// </summary>
+    /// <param name="code">ワークスペースコード</param>
+    [HttpGet("code/{code}")]
+    [ProducesResponseType(typeof(WorkspaceFullDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceFullDetailResponse>> GetWorkspaceDetailByCode(string code)
+    {
+        // CurrentUser は基底クラスで有効性チェック済み
+        // ワークスペースアクセス権限チェック（codeからIDを解決）
+        var workspaceId = await _workspaceService.CheckWorkspaceAccessByCodeAsync(code: code, userId: CurrentUserId);
+
+        return await GetWorkspaceDetailResponseAsync(workspaceId);
+    }
+
+    /// <summary>
+    /// ワークスペース詳細レスポンスを生成する（内部共通メソッド）
+    /// </summary>
+    private async Task<Ok<WorkspaceFullDetailResponse>> GetWorkspaceDetailResponseAsync(int workspaceId)
+    {
         // ワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
+        var detail = await _workspaceService.GetWorkspaceDetailAsync(workspaceId);
 
         var response = new WorkspaceFullDetailResponse
         {
@@ -251,7 +276,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）
+    /// ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="request">ページネーションリクエスト</param>
@@ -305,7 +330,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースにメンバーを追加（Ownerのみ実行可能）
+    /// ワークスペースにメンバーを追加する（Ownerのみ実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="request">メンバー追加リクエスト</param>
@@ -346,7 +371,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースからメンバーを削除（Ownerまたは自分自身の場合のみ実行可能）
+    /// ワークスペースからメンバーを削除する（Ownerまたは自分自身の場合のみ実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="userId">削除するユーザーID</param>
@@ -385,10 +410,10 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
-    /// <param name="rowVersion">楽観的ロック用バージョン番号</param>
+    /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
     [HttpPost("{id:int}/activate")]
     [ProducesResponseType(typeof(WorkspaceFullDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -441,10 +466,10 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
-    /// <param name="rowVersion">楽観的ロック用バージョン番号</param>
+    /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
     [HttpPost("{id:int}/deactivate")]
     [ProducesResponseType(typeof(WorkspaceFullDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -497,7 +522,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを削除（Admin権限が必要）
+    /// ワークスペースを削除する（Admin権限が必要）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     [HttpDelete("{id:int}")]

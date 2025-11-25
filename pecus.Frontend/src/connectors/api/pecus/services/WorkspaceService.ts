@@ -133,6 +133,27 @@ export class WorkspaceService {
         });
     }
     /**
+     * ワークスペース詳細情報取得（codeベース：ログインユーザーがアクセス可能なもののみ）
+     * @param code ワークスペースコード
+     * @returns WorkspaceFullDetailResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesCode(
+        code: string,
+    ): CancelablePromise<WorkspaceFullDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/code/{code}',
+            path: {
+                'code': code,
+            },
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）
      * @param id ワークスペースID
      * @param page ページ番号（1から始まる）

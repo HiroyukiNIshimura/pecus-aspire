@@ -103,6 +103,32 @@ public class WorkspaceItemController : BaseSecureController
     }
 
     /// <summary>
+    /// ワークスペースアイテムをコードで取得
+    /// </summary>
+    [HttpGet("code/{code}")]
+    [ProducesResponseType(typeof(WorkspaceItemDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceItemDetailResponse>> GetWorkspaceItemByCode(
+        int workspaceId,
+        string code
+    )
+    {
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースアイテムが見つかりません。");
+        }
+
+        var item = await _workspaceItemService.GetWorkspaceItemByCodeAsync(workspaceId, code);
+
+        var response = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId);
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// ワークスペースアイテム一覧取得
     /// </summary>
     [HttpGet]

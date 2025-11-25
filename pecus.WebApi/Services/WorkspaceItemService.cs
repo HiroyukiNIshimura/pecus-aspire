@@ -207,6 +207,36 @@ public class WorkspaceItemService
     }
 
     /// <summary>
+    /// ワークスペースアイテムをコードで取得
+    /// </summary>
+    public async Task<WorkspaceItem> GetWorkspaceItemByCodeAsync(int workspaceId, string code)
+    {
+        var item = await _context
+            .WorkspaceItems.Include(wi => wi.Workspace)
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
+            .Include(wi => wi.RelationsFrom)
+            .ThenInclude(r => r.ToItem)
+            .ThenInclude(ti => ti!.Owner)
+            .Include(wi => wi.RelationsTo)
+            .ThenInclude(r => r.FromItem)
+            .ThenInclude(fi => fi!.Owner)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Code == code);
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        return item;
+    }
+
+    /// <summary>
     /// ワークスペースアイテム一覧を取得
     /// </summary>
     public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsAsync(
