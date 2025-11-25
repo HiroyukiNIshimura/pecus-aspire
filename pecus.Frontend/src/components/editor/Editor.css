@@ -48,6 +48,7 @@
   outline: 0;
   z-index: 0;
   resize: vertical;
+  overflow: hidden;
 }
 
 .notion-like-editor .editor {
@@ -1509,7 +1510,7 @@ button.toolbar-item:disabled i.format,
   position: absolute;
   width: 120px;
   display: inline-block;
-  z-index: 50;
+  z-index: 10;
 }
 
 .sticky-note-container .sticky-note {
