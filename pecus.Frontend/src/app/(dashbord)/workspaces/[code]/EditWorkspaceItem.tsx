@@ -59,35 +59,6 @@ export default function EditWorkspaceItem({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
-  const validateField = useCallback(
-    async (fieldName: string, value: unknown) => {
-      try {
-        const fieldSchema = (updateWorkspaceItemSchema as any).shape?.[
-          fieldName
-        ];
-        if (!fieldSchema) return;
-
-        const result = await fieldSchema.safeParseAsync(value);
-        if (result.success) {
-          setFieldErrors((prev) => {
-            const next = { ...prev };
-            delete next[fieldName];
-            return next;
-          });
-        } else {
-          const errors = result.error.issues.map((issue: any) => issue.message);
-          setFieldErrors((prev) => ({
-            ...prev,
-            [fieldName]: errors,
-          }));
-        }
-      } catch (error) {
-        console.error(`Field validation error for ${fieldName}:`, error);
-      }
-    },
-    [],
-  );
-
   const shouldShowError = useCallback(
     (fieldName: string) => !!fieldErrors[fieldName],
     [fieldErrors],
@@ -386,6 +357,8 @@ export default function EditWorkspaceItem({
                       onChange={handleEditorChange}
                       debounceMs={500}
                       autoFocus={false}
+                      workspaceId={latestItem.workspaceId}
+                      itemId={latestItem.id}
                     />
                   </div>
                 </div>

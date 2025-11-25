@@ -41,3 +41,18 @@ export const INITIAL_SETTINGS: Record<SettingName, boolean> = {
 export type SettingName = keyof typeof DEFAULT_SETTINGS;
 
 export type Settings = typeof INITIAL_SETTINGS;
+
+/**
+ * エディタコンテキスト設定（画像アップロード等で使用）
+ */
+export type EditorContextSettings = {
+  /** ワークスペースID（画像アップロード用） */
+  workspaceId?: number;
+  /** アイテムID（画像アップロード用） */
+  itemId?: number;
+};
+
+export const DEFAULT_EDITOR_CONTEXT_SETTINGS: EditorContextSettings = {
+  workspaceId: undefined,
+  itemId: undefined,
+};

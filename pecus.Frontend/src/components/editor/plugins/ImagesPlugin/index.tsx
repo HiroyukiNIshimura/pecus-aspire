@@ -49,6 +49,7 @@ import {
   ImageNode,
   ImagePayload,
 } from "../../nodes/ImageNode";
+import { useEditorContext } from "../../context/SettingsContext";
 import Button from "../../ui/Button";
 import { DialogActions, DialogButtonsList } from "../../ui/Dialog";
 import FileInput from "../../ui/FileInput";
@@ -103,21 +104,71 @@ export function InsertImageUploadedDialogBody({
 }: {
   onClick: (payload: InsertImagePayload) => void;
 }) {
-  const [src, setSrc] = useState("");
+  const { workspaceId, itemId } = useEditorContext();
   const [altText, setAltText] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewSrc, setPreviewSrc] = useState<string>("");
 
-  const isDisabled = src === "";
+  const isDisabled = !selectedFile || isUploading;
+  const canUpload = workspaceId !== undefined && itemId !== undefined;
 
-  const loadImage = (files: FileList | null) => {
-    const reader = new FileReader();
-    reader.onload = function () {
-      if (typeof reader.result === "string") {
-        setSrc(reader.result);
-      }
-      return "";
-    };
-    if (files !== null) {
+  const handleFileSelect = (files: FileList | null) => {
+    if (files && files[0]) {
+      setSelectedFile(files[0]);
+      setUploadError(null);
+
+      // ローカルプレビュー用のデータURL生成
+      const reader = new FileReader();
+      reader.onload = function () {
+        if (typeof reader.result === "string") {
+          setPreviewSrc(reader.result);
+        }
+      };
       reader.readAsDataURL(files[0]);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedFile) return;
+
+    // workspaceId/itemId が未設定の場合はローカルプレビュー（既存動作）
+    if (!canUpload) {
+      if (previewSrc) {
+        onClick({ altText, src: previewSrc });
+      }
+      return;
+    }
+
+    // バックエンドにアップロード（API Route 経由）
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/items/${itemId}/attachments`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Upload result:", result);
+        onClick({ altText, src: result.url });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setUploadError(errorData.error || "アップロードに失敗しました");
+      }
+    } catch {
+      setUploadError("アップロード中にエラーが発生しました");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -125,7 +176,7 @@ export function InsertImageUploadedDialogBody({
     <>
       <FileInput
         label="Image Upload"
-        onChange={loadImage}
+        onChange={handleFileSelect}
         accept="image/*"
         data-test-id="image-modal-file-upload"
       />
@@ -136,13 +187,21 @@ export function InsertImageUploadedDialogBody({
         value={altText}
         data-test-id="image-modal-alt-text-input"
       />
+      {uploadError && (
+        <div className="text-error text-sm mt-2">{uploadError}</div>
+      )}
+      {!canUpload && selectedFile && (
+        <div className="text-warning text-sm mt-2">
+          ワークスペース情報が未設定のため、ローカルプレビューモードで動作します
+        </div>
+      )}
       <DialogActions>
         <Button
           data-test-id="image-modal-file-upload-btn"
           disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
+          onClick={handleConfirm}
         >
-          Confirm
+          {isUploading ? "アップロード中..." : "Confirm"}
         </Button>
       </DialogActions>
     </>

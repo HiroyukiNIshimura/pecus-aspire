@@ -15,9 +15,8 @@ import { useEffect } from "react";
 import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
 
 const ACCEPTABLE_IMAGE_TYPES = [
-  "image/",
-  "image/heic",
-  "image/heif",
+  "image/png",
+  "image/jpeg",
   "image/gif",
   "image/webp",
 ];

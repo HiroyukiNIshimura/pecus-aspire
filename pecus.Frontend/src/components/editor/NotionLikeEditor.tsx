@@ -86,6 +86,16 @@ export interface NotionLikeEditorProps {
    * Shikiによるコードハイライトを有効化するかどうか
    */
   isCodeShiki?: boolean;
+
+  /**
+   * ワークスペースID（画像アップロード用）
+   */
+  workspaceId?: number;
+
+  /**
+   * アイテムID（画像アップロード用）
+   */
+  itemId?: number;
 }
 
 export default function NotionLikeEditor({
@@ -99,6 +109,8 @@ export default function NotionLikeEditor({
   onChangeMarkdown,
   debounceMs = 300,
   isCodeShiki = false,
+  workspaceId,
+  itemId,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -110,6 +122,15 @@ export default function NotionLikeEditor({
       isCodeShiki,
     }),
     [showToolbar, measureTypingPerf, autoFocus, isCodeShiki],
+  );
+
+  // エディタコンテキスト設定（画像アップロード用）
+  const editorContext = useMemo(
+    () => ({
+      workspaceId,
+      itemId,
+    }),
+    [workspaceId, itemId],
   );
 
   const app = useMemo(
@@ -189,7 +210,7 @@ export default function NotionLikeEditor({
   return (
     <div className="notion-like-editor">
       <FlashMessageContext>
-        <SettingsContext initialSettings={settings}>
+        <SettingsContext initialSettings={settings} editorContext={editorContext}>
           <LexicalExtensionComposer extension={app} contentEditable={null}>
             <SharedHistoryContext>
               <TableContext>
