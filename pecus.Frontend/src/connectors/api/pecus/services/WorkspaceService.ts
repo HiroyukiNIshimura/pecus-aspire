@@ -14,7 +14,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class WorkspaceService {
     /**
-     * ワークスペース新規作成
+     * ワークスペースを新規作成する
      * @param requestBody ワークスペース作成リクエスト
      * @returns WorkspaceFullDetailResponse Created
      * @throws ApiError
@@ -35,7 +35,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ログインユーザーがアクセス可能なワークスペース一覧取得（ページネーション）
+     * ログインユーザーがアクセス可能なワークスペース一覧を取得する（ページネーション）
      * @param page
      * @param isActive
      * @param genreId
@@ -64,7 +64,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
      * @param requestBody ワークスペース更新リクエスト
      * @returns WorkspaceFullDetailResponse OK
@@ -91,7 +91,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース詳細情報取得（ログインユーザーがアクセス可能なもののみ）
+     * ワークスペースの詳細情報を取得する（ログインユーザーがアクセス可能なもののみ）
      * @param id ワークスペースID
      * @returns WorkspaceFullDetailResponse OK
      * @throws ApiError
@@ -112,7 +112,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを削除（Admin権限が必要）
+     * ワークスペースを削除する（Admin権限が必要）
      * @param id ワークスペースID
      * @returns void
      * @throws ApiError
@@ -133,7 +133,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース詳細情報取得（codeベース：ログインユーザーがアクセス可能なもののみ）
+     * ワークスペースの詳細情報を取得する（codeベース：ログインユーザーがアクセス可能なもののみ）
      * @param code ワークスペースコード
      * @returns WorkspaceFullDetailResponse OK
      * @throws ApiError
@@ -154,7 +154,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）
+     * ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）
      * @param id ワークスペースID
      * @param page ページ番号（1から始まる）
      * @returns WorkspaceItemListPagedResponse OK
@@ -180,7 +180,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースにメンバーを追加（Ownerのみ実行可能）
+     * ワークスペースにメンバーを追加する（Ownerのみ実行可能）
      * @param id ワークスペースID
      * @param requestBody メンバー追加リクエスト
      * @returns WorkspaceUserDetailResponse Created
@@ -206,7 +206,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースからメンバーを削除（Ownerまたは自分自身の場合のみ実行可能）
+     * ワークスペースからメンバーを削除する（Ownerまたは自分自身の場合のみ実行可能）
      * @param id ワークスペースID
      * @param userId 削除するユーザーID
      * @returns void
@@ -231,9 +231,9 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
-     * @param requestBody 楽観的ロック用バージョン番号
+     * @param requestBody 楽観的ロック用のバージョン番号
      * @returns WorkspaceFullDetailResponse OK
      * @throws ApiError
      */
@@ -258,9 +258,9 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
      * @param id ワークスペースID
-     * @param requestBody 楽観的ロック用バージョン番号
+     * @param requestBody 楽観的ロック用のバージョン番号
      * @returns WorkspaceFullDetailResponse OK
      * @throws ApiError
      */

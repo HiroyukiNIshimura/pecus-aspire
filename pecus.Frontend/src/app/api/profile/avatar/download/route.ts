@@ -25,14 +25,11 @@ export async function GET(request: NextRequest) {
     // 認証済みAxiosインスタンスを作成
     const axios = await createAuthenticatedAxios();
 
-    // バイナリデータとしてダウンロード（responseType: 'arraybuffer'）
-    const response = await axios.get("/api/downloads/icons", {
-      params: {
-        FileType: fileType,
-        ResourceId: parseInt(resourceId),
-        FileName: fileName,
-        UseOriginal: useOriginal,
-      },
+    // バックエンドの新しいルートベースエンドポイントにアクセス
+    const backendUrl = `/api/downloads/${fileType.toLowerCase()}/${resourceId}/${encodeURIComponent(fileName)}`;
+
+    const response = await axios.get(backendUrl, {
+      params: useOriginal ? { useOriginal: true } : undefined,
       responseType: "arraybuffer",
     });
 

@@ -3990,12 +3990,74 @@
         }
       }
     },
+    "/api/downloads/{fileType}/{resourceId}/{fileName}": {
+      "get": {
+        "tags": [
+          "File"
+        ],
+        "summary": "ファイルを取得（ルートベース）",
+        "parameters": [
+          {
+            "name": "fileType",
+            "in": "path",
+            "description": "ファイル種別（avatar, genre）",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "path",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "fileName",
+            "in": "path",
+            "description": "ファイル名",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "useOriginal",
+            "in": "query",
+            "description": "元画像（リサイズ前）を取得するかどうか",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/downloads/icons": {
       "get": {
         "tags": [
           "File"
         ],
-        "summary": "アイコンファイルを取得（画像を返す）",
+        "summary": "アイコンファイルを取得（画像を返す）- クエリパラメータ版（後方互換性のため維持）",
         "parameters": [
           {
             "name": "FileType",
@@ -4671,60 +4733,6 @@
         }
       }
     },
-    "/api/profile/avatar/dataurl": {
-      "get": {
-        "tags": [
-          "Profile"
-        ],
-        "summary": "自分のアバター画像をDataURLで取得",
-        "description": "ログインユーザーのUserAvatarPathから画像を読み込み、Base64エンコードされたDataURLを返します。\r\nUserAvatarPathがNULLの場合は404を返します。",
-        "responses": {
-          "200": {
-            "description": "DataURL形式の画像データを返します",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AvatarDataUrlResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "アバター画像が設定されていません",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/api/profile/devices": {
       "get": {
         "tags": [
@@ -5336,7 +5344,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース新規作成",
+        "summary": "ワークスペースを新規作成する",
         "requestBody": {
           "description": "ワークスペース作成リクエスト",
           "content": {
@@ -5397,7 +5405,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ログインユーザーがアクセス可能なワークスペース一覧取得（ページネーション）",
+        "summary": "ログインユーザーがアクセス可能なワークスペース一覧を取得する（ページネーション）",
         "parameters": [
           {
             "name": "Page",
@@ -5455,7 +5463,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース情報を更新（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5538,7 +5546,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース詳細情報取得（ログインユーザーがアクセス可能なもののみ）",
+        "summary": "ワークスペースの詳細情報を取得する（ログインユーザーがアクセス可能なもののみ）",
         "parameters": [
           {
             "name": "id",
@@ -5581,7 +5589,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを削除（Admin権限が必要）",
+        "summary": "ワークスペースを削除する（Admin権限が必要）",
         "parameters": [
           {
             "name": "id",
@@ -5619,7 +5627,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース詳細情報取得（codeベース：ログインユーザーがアクセス可能なもののみ）",
+        "summary": "ワークスペースの詳細情報を取得する（codeベース：ログインユーザーがアクセス可能なもののみ）",
         "parameters": [
           {
             "name": "code",
@@ -5663,7 +5671,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース内のアイテム一覧取得（有効なアイテムのみ、ページング対応）",
+        "summary": "ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）",
         "parameters": [
           {
             "name": "id",
@@ -5719,7 +5727,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースにメンバーを追加（Ownerのみ実行可能）",
+        "summary": "ワークスペースにメンバーを追加する（Ownerのみ実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5794,7 +5802,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースからメンバーを削除（Ownerまたは自分自身の場合のみ実行可能）",
+        "summary": "ワークスペースからメンバーを削除する（Ownerまたは自分自身の場合のみ実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5852,7 +5860,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを有効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5866,7 +5874,7 @@
           }
         ],
         "requestBody": {
-          "description": "楽観的ロック用バージョン番号",
+          "description": "楽観的ロック用のバージョン番号",
           "content": {
             "application/json": {
               "schema": {
@@ -5940,7 +5948,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを無効化（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5954,7 +5962,7 @@
           }
         ],
         "requestBody": {
-          "description": "楽観的ロック用バージョン番号",
+          "description": "楽観的ロック用のバージョン番号",
           "content": {
             "application/json": {
               "schema": {
@@ -7468,21 +7476,6 @@
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
-      },
-      "AvatarDataUrlResponse": {
-        "required": [
-          "dataUrl"
-        ],
-        "type": "object",
-        "properties": {
-          "dataUrl": {
-            "type": "string",
-            "description": "DataURL形式の画像データ（例: data:image/jpeg;base64,/9j/4AAQ...）",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "アバターDataURLレスポンス"
       },
       "AvatarType": {
         "enum": [

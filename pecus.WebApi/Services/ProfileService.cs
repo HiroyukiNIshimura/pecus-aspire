@@ -357,12 +357,17 @@ public class ProfileService
                         {
                             var fileName = Path.GetFileName(filePath);
 
-                            // 新しいファイル名とそれに対応する_org付きファイル以外を削除
+                            // 新しいファイル名のベース部分（拡張子なし）を取得
+                            // WebP変換により拡張子が変わる可能性があるため、ベース部分で比較
                             var newFileNameWithoutExt = Path.GetFileNameWithoutExtension(newFileName);
-                            var newFileExt = Path.GetExtension(newFileName);
-                            var newOriginalFileName = $"{newFileNameWithoutExt}_org{newFileExt}";
+                            var currentFileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
 
-                            if (fileName != newFileName && fileName != newOriginalFileName)
+                            // ベース部分が一致するファイル（.webp, .jpg, .png など）と_org付きファイルは保護
+                            // 例: abc.webp, abc.jpg, abc_org.jpg などすべて保護
+                            var isNewFile = currentFileNameWithoutExt == newFileNameWithoutExt;
+                            var isOriginalFile = currentFileNameWithoutExt == $"{newFileNameWithoutExt}_org";
+
+                            if (!isNewFile && !isOriginalFile)
                             {
                                 File.Delete(filePath);
                                 deletedFiles.Add(fileName);
@@ -497,103 +502,4 @@ public class ProfileService
         return true;
     }
 
-    /// <summary>
-    /// ユーザーのアバター画像をDataURL形式で取得
-    /// </summary>
-    /// <param name="userId">ユーザーID</param>
-    /// <returns>DataURL形式の画像データ。アバターが設定されていない場合はnull</returns>
-    public async Task<string?> GetUserAvatarDataUrlAsync(int userId)
-    {
-        // ユーザー取得
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-        {
-            _logger.LogWarning("ユーザーが見つかりません。UserId: {UserId}", userId);
-            return null;
-        }
-
-        // UserAvatarPathがNULLの場合はnullを返す
-        if (string.IsNullOrEmpty(user.UserAvatarPath))
-        {
-            _logger.LogInformation("アバター画像が設定されていません。UserId: {UserId}", userId);
-            return null;
-        }
-
-        // organizationIdが必要
-        if (!user.OrganizationId.HasValue)
-        {
-            _logger.LogWarning("組織IDが設定されていません。UserId: {UserId}", userId);
-            return null;
-        }
-
-        // UserAvatarPathにはファイル名のみが保存されている
-        // ファイルパスを構築: uploads/{organizationId}/avatar/{userId}/{fileName}
-        var filePath = Path.Combine(
-            _environment.ContentRootPath,
-            "uploads",
-            user.OrganizationId.Value.ToString(),
-            "avatar",
-            userId.ToString(),
-            user.UserAvatarPath
-        );
-
-        _logger.LogDebug(
-            "アバター画像ファイルパスを構築しました。UserId: {UserId}, FileName: {FileName}, FilePath: {FilePath}",
-            userId,
-            user.UserAvatarPath,
-            filePath
-        );
-
-        // ファイルが存在するかチェック
-        if (!File.Exists(filePath))
-        {
-            _logger.LogWarning(
-                "アバター画像ファイルが見つかりません。UserId: {UserId}, FileName: {FileName}, FilePath: {FilePath}",
-                userId,
-                user.UserAvatarPath,
-                filePath
-            );
-            return null;
-        }
-
-        try
-        {
-            // ファイルを読み込んでBase64エンコード
-            var imageBytes = await File.ReadAllBytesAsync(filePath);
-            var base64String = Convert.ToBase64String(imageBytes);
-
-            // MIMEタイプを拡張子から推定
-            var extension = Path.GetExtension(filePath).ToLowerInvariant();
-            var mimeType = extension switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".webp" => "image/webp",
-                ".bmp" => "image/bmp",
-                _ => "image/jpeg" // デフォルト
-            };
-
-            // DataURL形式で返す
-            var dataUrl = $"data:{mimeType};base64,{base64String}";
-
-            _logger.LogInformation(
-                "アバター画像をDataURL形式で取得しました。UserId: {UserId}, Size: {Size} bytes",
-                userId,
-                imageBytes.Length
-            );
-
-            return dataUrl;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "アバター画像の読み込みに失敗しました。UserId: {UserId}, Path: {Path}",
-                userId,
-                filePath
-            );
-            return null;
-        }
-    }
 }

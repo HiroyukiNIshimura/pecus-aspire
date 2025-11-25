@@ -103,13 +103,16 @@ public class FileUploadService
                     var originalFilePath = ImageHelper.GenerateOriginalFilePath(filePath);
                     File.Move(filePath, originalFilePath);
 
-                    // 48x48にリサイズしたファイルを作成
-                    await ImageHelper.ResizeImageAsync(originalFilePath, filePath, 48, 48);
+                    // 48x48にリサイズしたファイルを作成（WebP形式で保存される）
+                    var resizedFilePath = await ImageHelper.ResizeImageAsync(originalFilePath, filePath, 48, 48);
+
+                    // リサイズ後のファイルパスを使用（.webp に変更される）
+                    filePath = resizedFilePath;
 
                     _logger.LogInformation(
                         "画像をリサイズしました。Original: {OriginalPath}, Resized: {ResizedPath}",
                         originalFilePath,
-                        filePath
+                        resizedFilePath
                     );
                 }
             }
@@ -120,7 +123,14 @@ public class FileUploadService
                     "画像のリサイズに失敗しました。元ファイルをそのまま使用します。FilePath: {FilePath}",
                     filePath
                 );
-                // リサイズに失敗した場合は元ファイルをそのまま使用
+
+                // リサイズに失敗した場合、元ファイルを復元する
+                var originalFilePath = ImageHelper.GenerateOriginalFilePath(filePath);
+                if (File.Exists(originalFilePath) && !File.Exists(filePath))
+                {
+                    File.Move(originalFilePath, filePath);
+                    _logger.LogInformation("元ファイルを復元しました。FilePath: {FilePath}", filePath);
+                }
             }
         }
 

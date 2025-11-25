@@ -10,7 +10,38 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class FileService {
     /**
-     * アイコンファイルを取得（画像を返す）
+     * ファイルを取得（ルートベース）
+     * @param fileType ファイル種別（avatar, genre）
+     * @param resourceId リソースID（ユーザーIDまたはジャンルID）
+     * @param fileName ファイル名
+     * @param useOriginal 元画像（リサイズ前）を取得するかどうか
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiDownloads(
+        fileType: string,
+        resourceId: number,
+        fileName: string,
+        useOriginal: boolean = false,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/downloads/{fileType}/{resourceId}/{fileName}',
+            path: {
+                'fileType': fileType,
+                'resourceId': resourceId,
+                'fileName': fileName,
+            },
+            query: {
+                'useOriginal': useOriginal,
+            },
+            errors: {
+                404: `Not Found`,
+            },
+        });
+    }
+    /**
+     * アイコンファイルを取得（画像を返す）- クエリパラメータ版（後方互換性のため維持）
      * @param fileType ファイルの種類（avatar, genre）
      * @param resourceId リソースID（ユーザーIDまたはジャンルID）
      * @param fileName ファイル名

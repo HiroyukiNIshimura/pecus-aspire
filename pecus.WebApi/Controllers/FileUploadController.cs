@@ -96,7 +96,7 @@ public class FileUploadController : BaseSecureController
         var response = new FileUploadResponse
         {
             Success = true,
-            FileUrl = $"/api/downloads/{request.FileType.GetDisplayName().ToLowerInvariant()}/{request.ResourceId}/{Path.GetFileName(filePath)}",
+            FileUrl = $"/api/downloads/{request.FileType.ToString().ToLowerInvariant()}/{request.ResourceId}/{Path.GetFileName(filePath)}",
             FileSize = request.File.Length,
             ContentType = request.File.ContentType,
             UploadedAt = DateTime.UtcNow,
