@@ -38,7 +38,6 @@ export default function EditTagClient({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

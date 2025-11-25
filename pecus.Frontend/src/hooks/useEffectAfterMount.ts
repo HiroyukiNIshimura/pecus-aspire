@@ -26,5 +26,6 @@ export const useEffectAfterMount = (
       return;
     }
     effect();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: deps は動的に渡される依存配列で、意図された設計
   }, deps);
 };

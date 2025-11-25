@@ -13,7 +13,6 @@ export default function ForgotPasswordFormClient() {
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

@@ -54,7 +54,6 @@ export default function BasicInfoTab({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

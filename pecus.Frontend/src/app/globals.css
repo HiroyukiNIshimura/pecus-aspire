@@ -17,9 +17,8 @@ body {
 /* Editor の DayPicker 用カスタムプロパティ
 https://daypicker.dev/docs/styling#css-variables */
 .rdp-root {
-  --rdp-accent-color: var(--color-accent)
+  --rdp-accent-color: var(--color-accent);
 }
 [data-theme="dark"] .rdp-root {
-  --rdp-accent-color: var(--color-accent)
+  --rdp-accent-color: var(--color-accent);
 }
-

@@ -47,7 +47,6 @@ export default function EditWorkspaceClient({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

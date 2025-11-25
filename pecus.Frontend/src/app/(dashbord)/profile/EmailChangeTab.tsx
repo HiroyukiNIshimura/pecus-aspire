@@ -39,7 +39,6 @@ export default function EmailChangeTab({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

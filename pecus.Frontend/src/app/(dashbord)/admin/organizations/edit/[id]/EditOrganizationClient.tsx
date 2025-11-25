@@ -41,7 +41,6 @@ export default function EditOrganizationClient({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,
