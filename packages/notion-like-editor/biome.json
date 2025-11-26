@@ -1,48 +1,48 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-	"extends": "//",
-	"css": {
-		"linter": {
-			"enabled": false
-		}
-	},
-	"formatter": {
-		"indentStyle": "tab",
-		"lineWidth": 120
-	},
-	"linter": {
-		"rules": {
-			"suspicious": {
-				"noExplicitAny": "off",
-				"noAssignInExpressions": "off",
-				"noImplicitAnyLet": "off",
-				"noArrayIndexKey": "off",
-				"noDuplicateProperties": "off"
-			},
-			"a11y": {
-				"recommended": false
-			},
-			"correctness": {
-				"noUnusedVariables": "warn",
-				"noUnusedImports": "warn",
-				"useExhaustiveDependencies": "off",
-				"noUnusedFunctionParameters": "off",
-				"noInvalidUseBeforeDeclaration": "off",
-				"useUniqueElementIds": "off",
-				"noUnknownPseudoElement": "off"
-			},
-			"complexity": {
-				"noUselessFragments": "warn"
-			},
-			"style": {
-				"noUselessElse": "off",
-				"useNodejsImportProtocol": "off",
-				"noUnusedTemplateLiteral": "off",
-				"noDescendingSpecificity": "off"
-			},
-			"security": {
-				"noDangerouslySetInnerHtml": "off"
-			}
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "extends": "//",
+  "css": {
+    "linter": {
+      "enabled": false
+    }
+  },
+  "formatter": {
+    "indentStyle": "tab",
+    "lineWidth": 120
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noAssignInExpressions": "off",
+        "noImplicitAnyLet": "off",
+        "noArrayIndexKey": "off",
+        "noDuplicateProperties": "off"
+      },
+      "a11y": {
+        "recommended": false
+      },
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": "off",
+        "noUnusedFunctionParameters": "off",
+        "noInvalidUseBeforeDeclaration": "off",
+        "useUniqueElementIds": "off",
+        "noUnknownPseudoElement": "off"
+      },
+      "complexity": {
+        "noUselessFragments": "warn"
+      },
+      "style": {
+        "noUselessElse": "off",
+        "useNodejsImportProtocol": "off",
+        "noUnusedTemplateLiteral": "off",
+        "noDescendingSpecificity": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      }
+    }
+  }
 }
