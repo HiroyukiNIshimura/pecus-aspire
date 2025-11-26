@@ -60,8 +60,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Image proxy error:', error);
-
-    const errorRes = parseRouterError(error, '画像の取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, '画像の取得に失敗しました');
   }
 }

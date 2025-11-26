@@ -48,8 +48,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Attachment proxy error:', error);
-
-    const errorRes = parseRouterError(error, '添付ファイルの取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, '添付ファイルの取得に失敗しました');
   }
 }

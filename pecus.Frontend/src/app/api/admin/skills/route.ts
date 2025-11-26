@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('API Route /api/admin/skills - Error:', error);
-    const errorRes = parseRouterError(error, 'スキル一覧の取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'スキル一覧の取得に失敗しました');
   }
 }

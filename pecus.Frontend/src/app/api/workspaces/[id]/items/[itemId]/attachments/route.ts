@@ -105,8 +105,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
   } catch (error) {
     console.error('Failed to upload image:', error);
-
-    const errorRes = parseRouterError(error, '画像のアップロードに失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, '画像のアップロードに失敗しました');
   }
 }

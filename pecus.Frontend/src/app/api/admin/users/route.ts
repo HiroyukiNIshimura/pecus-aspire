@@ -35,8 +35,6 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('API Route Error:', error);
-
-    const errorRes = parseRouterError(error, 'ユーザー一覧の取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'ユーザー一覧の取得に失敗しました');
   }
 }

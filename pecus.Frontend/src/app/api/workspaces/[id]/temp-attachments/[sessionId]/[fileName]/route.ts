@@ -49,7 +49,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Failed to get temp file:', error);
-    const errorRes = parseRouterError(error, 'ファイルの取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'ファイルの取得に失敗しました');
   }
 }

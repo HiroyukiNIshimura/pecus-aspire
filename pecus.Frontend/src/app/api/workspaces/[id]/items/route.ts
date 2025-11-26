@@ -28,7 +28,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Failed to fetch workspace items:', error);
-    const errorRes = parseRouterError(error, 'ワークスペースアイテムの取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'ワークスペースアイテムの取得に失敗しました');
   }
 }

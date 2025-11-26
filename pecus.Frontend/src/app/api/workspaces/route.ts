@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    const errorRes = parseRouterError(error, 'ワークスペース一覧の取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'ワークスペース一覧の取得に失敗しました');
   }
 }

@@ -59,8 +59,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to download avatar:', error);
-
-    const errorRes = parseRouterError(error, 'アバターのダウンロードに失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'アバターのダウンロードに失敗しました');
   }
 }

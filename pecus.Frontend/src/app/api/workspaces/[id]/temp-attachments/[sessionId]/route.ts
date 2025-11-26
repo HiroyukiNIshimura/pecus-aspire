@@ -158,7 +158,6 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Failed to cleanup temp files:', error);
-    const errorRes = parseRouterError(error, '一時ファイルのクリーンアップに失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, '一時ファイルのクリーンアップに失敗しました');
   }
 }

@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('API Route /api/admin/tags - Error:', error);
-    const errorRes = parseRouterError(error, 'タグ一覧の取得に失敗しました');
-    return NextResponse.json(errorRes);
+    return parseRouterError(error, 'タグ一覧の取得に失敗しました');
   }
 }
