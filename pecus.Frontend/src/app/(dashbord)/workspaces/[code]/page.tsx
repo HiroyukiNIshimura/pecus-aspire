@@ -6,9 +6,9 @@ import type {
   UserResponse,
   WorkspaceFullDetailResponse,
 } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import WorkspaceDetailClient from "./WorkspaceDetailClient";
+import type { UserInfo } from "@/types/userInfo";
 
 interface WorkspaceDetailPageProps {
   params: Promise<{

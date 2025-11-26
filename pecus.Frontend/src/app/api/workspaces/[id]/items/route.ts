@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { NextRequest, NextResponse } from "next/server";
 
 interface RouteParams {
   params: Promise<{
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? parseInt(request.nextUrl.searchParams.get("page")!, 10)
       : 1;
 
-    if (Number.isNaN(workspaceId)) {
+    if (isNaN(workspaceId)) {
       return NextResponse.json(
         { error: "Invalid workspace ID" },
         { status: 400 },

@@ -7,6 +7,7 @@ import {
 import type {
   SuccessResponse,
   WorkspaceDetailResponse,
+  WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceResponse,
 } from "@/connectors/api/pecus";

@@ -1,16 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> },
 ) {
   try {
     const { id, itemId } = await params;
-    const workspaceId = parseInt(id, 10);
-    const itemIdNum = parseInt(itemId, 10);
+    const workspaceId = parseInt(id);
+    const itemIdNum = parseInt(itemId);
 
-    if (Number.isNaN(workspaceId) || Number.isNaN(itemIdNum)) {
+    if (isNaN(workspaceId) || isNaN(itemIdNum)) {
       return NextResponse.json(
         { error: "Invalid workspace ID or item ID" },
         { status: 400 },

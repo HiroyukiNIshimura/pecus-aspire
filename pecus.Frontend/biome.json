@@ -13,8 +13,7 @@
       "src/**/*.tsx",
       "src/**/*.js",
       "src/**/*.jsx",
-      "!src/connectors",
-      "!src/components/editor.bak"
+      "!src/connectors"
     ]
   },
   "formatter": {
@@ -29,38 +28,11 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noUnknownAtRules": "off",
-        "noExplicitAny": "off",
-        "noArrayIndexKey": "off",
-        "useIterableCallbackReturn": "off",
-        "noImplicitAnyLet": "off",
-        "noAssignInExpressions": "off"
+        "noUnknownAtRules": "off"
       },
       "a11y": {
         "noStaticElementInteractions": "off",
-        "useKeyWithClickEvents": "off",
-        "noSvgWithoutTitle": "off",
-        "noLabelWithoutControl": "off",
-        "useButtonType": "off"
-      },
-      "correctness": {
-        "noUnusedImports": "warn",
-        "noUnusedVariables": "warn",
-        "noUnusedFunctionParameters": "off",
-        "useExhaustiveDependencies": "warn",
-        "noInvalidUseBeforeDeclaration": "off"
-      },
-      "style": {
-        "noNonNullAssertion": "off"
-      },
-      "performance": {
-        "noImgElement": "off"
-      },
-      "complexity": {
-        "noStaticOnlyClass": "off"
-      },
-      "security": {
-        "noDangerouslySetInnerHtml": "off"
+        "useKeyWithClickEvents": "off"
       }
     },
     "domains": {

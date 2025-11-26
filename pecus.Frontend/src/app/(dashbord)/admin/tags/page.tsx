@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { getTags } from "@/actions/admin/tags";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
+import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminTagsClient from "./AdminTagsClient";
 

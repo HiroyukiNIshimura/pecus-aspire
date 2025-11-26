@@ -1,9 +1,9 @@
 "use client";
 
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { useState, useEffect } from "react";
 import WarningIcon from "@mui/icons-material/Warning";
-import { useEffect, useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
 
 interface DeleteWorkspaceModalProps {
@@ -157,6 +157,7 @@ export default function DeleteWorkspaceModal({
                 onChange={(e) => setConfirmCode(e.target.value)}
                 disabled={isDeleting}
                 autoComplete="off"
+                autoFocus
               />
               {confirmCode && !isConfirmValid && (
                 <label className="label">

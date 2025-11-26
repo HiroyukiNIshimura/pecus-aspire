@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -17,26 +17,24 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(
   request: NextRequest,
-  {
-    params,
-  }: {
-    params: Promise<{ fileType: string; resourceId: string; fileName: string }>;
-  },
+  { params }: { params: Promise<{ fileType: string; resourceId: string; fileName: string }> },
 ) {
   try {
     const { fileType, resourceId, fileName } = await params;
-    const useOriginal =
-      request.nextUrl.searchParams.get("useOriginal") === "true";
+    const useOriginal = request.nextUrl.searchParams.get("useOriginal") === "true";
 
     // fileType のバリデーション
     const validFileTypes = ["avatar", "genre"];
     if (!validFileTypes.includes(fileType.toLowerCase())) {
-      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid file type" },
+        { status: 400 },
+      );
     }
 
     // resourceId のバリデーション
     const resourceIdNum = parseInt(resourceId, 10);
-    if (Number.isNaN(resourceIdNum) || resourceIdNum <= 0) {
+    if (isNaN(resourceIdNum) || resourceIdNum <= 0) {
       return NextResponse.json(
         { error: "Invalid resource ID" },
         { status: 400 },
@@ -48,7 +46,7 @@ export async function GET(
 
     // バックエンドの新しいルートベースエンドポイントにアクセス
     const backendUrl = `/api/downloads/${fileType.toLowerCase()}/${resourceId}/${encodeURIComponent(fileName)}`;
-    console.log("Fetching image from backend URL:", backendUrl);
+console.log("Fetching image from backend URL:", backendUrl);
     const response = await axios.get(backendUrl, {
       params: useOriginal ? { useOriginal: true } : undefined,
       responseType: "arraybuffer",
@@ -68,10 +66,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Image proxy error:", error);
     console.error("Error response status:", error.response?.status);
-    console.error(
-      "Error response data:",
-      error.response?.data?.toString?.() || error.response?.data,
-    );
+    console.error("Error response data:", error.response?.data?.toString?.() || error.response?.data);
 
     // 認証エラーの場合は401を返す
     if (error.response?.status === 401) {

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
-import EmailChangeTab from "./EmailChangeTab";
 import PasswordChangeTab from "./PasswordChangeTab";
+import EmailChangeTab from "./EmailChangeTab";
 
 interface SecurityTabProps {
   currentEmail: string;

@@ -17,7 +17,6 @@
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
 - C#: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可。
-- **Biome（フロント）**: `any` 禁止→`unknown`+型ガード、`useEffect` 等の依存配列は完全に、未使用 import/変数は削除、`<button>` に `type` 必須、`<img>` に `alt` 必須。
 
 **統一方針（簡潔版）**
 - コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。

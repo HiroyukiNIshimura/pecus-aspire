@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { requestEmailChange } from "@/actions/profile";
 import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
+import { requestEmailChange } from "@/actions/profile";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 

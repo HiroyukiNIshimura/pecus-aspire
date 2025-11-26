@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { updateWorkspaceItemAssignee } from "@/actions/workspaceItem";
 import type {
-  WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
+  WorkspaceDetailUserResponse,
 } from "@/connectors/api/pecus";
+import { updateWorkspaceItemAssignee } from "@/actions/workspaceItem";
 import { getDisplayIconUrl } from "@/utils/imageUrl";
 
 interface WorkspaceItemDrawerProps {
@@ -137,7 +137,7 @@ export default function WorkspaceItemDrawer({
               value={selectedAssigneeId || ""}
               onChange={(e) =>
                 handleAssigneeChange(
-                  e.target.value ? parseInt(e.target.value, 10) : null,
+                  e.target.value ? parseInt(e.target.value) : null,
                 )
               }
               disabled={isUpdating}

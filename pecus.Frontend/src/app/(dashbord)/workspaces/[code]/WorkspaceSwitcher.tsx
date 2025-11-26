@@ -1,8 +1,8 @@
 "use client";
 
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
 
 interface WorkspaceSwitcherProps {
@@ -115,9 +115,16 @@ export default function WorkspaceSwitcher({
 
       {/* ドロップダウンリスト */}
       {isOpen && (
-        <ul className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-base-100 border border-base-300 rounded shadow-lg">
+        <ul
+          className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-base-100 border border-base-300 rounded shadow-lg"
+          role="listbox"
+        >
           {workspaces.map((workspace) => (
-            <li key={workspace.id}>
+            <li
+              key={workspace.id}
+              role="option"
+              aria-selected={workspace.code === currentWorkspaceCode}
+            >
               <button
                 type="button"
                 className={`w-full text-left px-3 py-2 hover:bg-base-200 transition-colors ${
@@ -125,12 +132,7 @@ export default function WorkspaceSwitcher({
                     ? "bg-primary/10 font-semibold"
                     : ""
                 }`}
-                onClick={() =>
-                  workspace.code && switchWorkspace(workspace.code)
-                }
-                aria-current={
-                  workspace.code === currentWorkspaceCode ? "true" : undefined
-                }
+                onClick={() => workspace.code && switchWorkspace(workspace.code)}
               >
                 <div className="text-sm truncate">{workspace.name}</div>
                 {workspace.code && (

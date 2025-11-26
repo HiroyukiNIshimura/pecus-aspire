@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";

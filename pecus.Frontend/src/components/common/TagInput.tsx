@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
-import type { Tag } from "react-tag-input";
+import { useState, useCallback } from "react";
 import { WithContext as ReactTags } from "react-tag-input";
+import type { Tag } from "react-tag-input";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface TagInputProps {
   tags: string[];
@@ -61,7 +62,7 @@ export default function TagInput({
     [tags, onChange, disabled, allowDuplicates, maxTags],
   );
 
-  const _handleDrag = useCallback(
+  const handleDrag = useCallback(
     (tag: Tag, currPos: number, newPos: number) => {
       if (disabled) return;
 

@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
+import { useState, useRef, useEffect } from "react";
+import type { UserInfo } from "@/types/userInfo";
 import {
-  deleteAvatarFile,
   updateProfile,
   uploadAvatarFile,
+  deleteAvatarFile,
 } from "@/actions/profile";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { usernameSchema } from "@/schemas/profileSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import { z } from "zod";
 
 interface BasicInfoTabProps {
   user: UserInfo;
@@ -104,8 +104,7 @@ export default function BasicInfoTab({
     ) {
       // userAvatarPath からファイル名を抽出
       // DB には "/api/downloads/avatar/1/xxx.jpg" 形式で格納されている場合がある
-      const fileName =
-        user.userAvatarPath.split("/").pop() || user.userAvatarPath;
+      const fileName = user.userAvatarPath.split("/").pop() || user.userAvatarPath;
 
       // プロキシAPI経由のURLを生成
       const proxyUrl = `/api/images/avatar/${user.id}/${encodeURIComponent(fileName)}`;
@@ -119,7 +118,7 @@ export default function BasicInfoTab({
   // クリーンアップ: コンポーネントアンマウント時にオブジェクトURLを解放
   useEffect(() => {
     return () => {
-      if (avatarPreviewUrl?.startsWith("blob:")) {
+      if (avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(avatarPreviewUrl);
       }
     };
@@ -258,7 +257,7 @@ export default function BasicInfoTab({
     }
 
     // オブジェクトURLを解放
-    if (avatarPreviewUrl?.startsWith("blob:")) {
+    if (avatarPreviewUrl && avatarPreviewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(avatarPreviewUrl);
     }
     setUploadedFileUrl(user.identityIconUrl || null);

@@ -1,24 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 type ThemeType = "light" | "dark" | "auto";
 
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>("auto");
   const [mounted, setMounted] = useState(false);
-
-  const applyTheme = useCallback((selectedTheme: ThemeType) => {
-    const html = document.documentElement;
-
-    if (selectedTheme === "auto") {
-      // システム設定を監視
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      html.setAttribute("data-theme", prefersDark ? "dark" : "light");
-    } else {
-      html.setAttribute("data-theme", selectedTheme);
-    }
-  }, []);
 
   // マウント時に localStorage から復元
   useEffect(() => {
@@ -32,7 +18,21 @@ export function useTheme() {
       applyTheme("auto");
     }
     setMounted(true);
-  }, [applyTheme]);
+  }, []);
+
+  const applyTheme = (selectedTheme: ThemeType) => {
+    const html = document.documentElement;
+
+    if (selectedTheme === "auto") {
+      // システム設定を監視
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      html.setAttribute("data-theme", prefersDark ? "dark" : "light");
+    } else {
+      html.setAttribute("data-theme", selectedTheme);
+    }
+  };
 
   const changeTheme = (newTheme: ThemeType) => {
     setTheme(newTheme);

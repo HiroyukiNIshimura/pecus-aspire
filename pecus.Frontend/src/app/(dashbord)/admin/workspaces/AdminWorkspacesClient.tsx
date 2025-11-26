@@ -1,13 +1,13 @@
 "use client";
 
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
@@ -15,6 +15,7 @@ import type {
   WorkspaceStatistics,
 } from "@/connectors/api/pecus";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
+import { useEffectAfterMount } from "@/hooks/useEffectAfterMount";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
 import type { UserInfo } from "@/types/userInfo";
@@ -55,7 +56,7 @@ export default function AdminWorkspacesClient({
   fetchError,
 }: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, _setUserInfo] = useState<UserInfo | null>(
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(
     initialUser || null,
   );
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +72,7 @@ export default function AdminWorkspacesClient({
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>("");
-  const [genres, _setGenres] = useState<MasterGenreResponse[]>(
+  const [genres, setGenres] = useState<MasterGenreResponse[]>(
     initialGenres || [],
   );
   const [filterOpen, setFilterOpen] = useState(false);
@@ -285,12 +286,14 @@ export default function AdminWorkspacesClient({
                         d="M20 12H4"
                       />
                     ) : (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
+                      <>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </>
                     )}
                   </svg>
                 </div>
@@ -340,9 +343,7 @@ export default function AdminWorkspacesClient({
                           value={filterGenreId ?? ""}
                           onChange={(e) => {
                             setFilterGenreId(
-                              e.target.value
-                                ? parseInt(e.target.value, 10)
-                                : null,
+                              e.target.value ? parseInt(e.target.value) : null,
                             );
                           }}
                         >

@@ -1,13 +1,13 @@
 "use client";
 
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { usernameFilterSchema } from "@/schemas/filterSchemas";
@@ -66,7 +66,7 @@ export default function AdminUsersClient({
     initialStatistics || null,
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [skills, _setSkills] = useState<Skill[]>(initialSkills || []);
+  const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
@@ -83,7 +83,7 @@ export default function AdminUsersClient({
           const response = await fetch("/api/admin/users?page=1&IsActive=true");
           if (response.ok) {
             const data = await response.json();
-            if (data?.data) {
+            if (data && data.data) {
               const mappedUsers = data.data.map((user: any) => ({
                 id: user.id ?? 0,
                 username: user.username ?? "",
@@ -130,7 +130,7 @@ export default function AdminUsersClient({
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          if (data?.data) {
+          if (data && data.data) {
             const mappedUsers = data.data.map((user: any) => ({
               id: user.id ?? 0,
               username: user.username ?? "",
@@ -173,7 +173,7 @@ export default function AdminUsersClient({
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          if (data?.data) {
+          if (data && data.data) {
             const mappedUsers = data.data.map((user: any) => ({
               id: user.id ?? 0,
               username: user.username ?? "",

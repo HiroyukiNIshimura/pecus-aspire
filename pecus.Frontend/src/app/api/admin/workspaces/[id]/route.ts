@@ -4,14 +4,14 @@ import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const workspaceId = parseInt(id, 10);
 
-    if (Number.isNaN(workspaceId) || workspaceId <= 0) {
+    if (isNaN(workspaceId) || workspaceId <= 0) {
       return NextResponse.json(
         { error: "Invalid workspace ID" },
         { status: 400 },

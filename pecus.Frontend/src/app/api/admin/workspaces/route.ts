@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const page = parseInt(searchParams.get("page") || "1");
     const isActive =
       searchParams.get("IsActive") === "true"
         ? true
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
           ? false
           : undefined;
     const genreId = searchParams.get("GenreId")
-      ? parseInt(searchParams.get("GenreId")!, 10)
+      ? parseInt(searchParams.get("GenreId")!)
       : undefined;
     const name = searchParams.get("Name") || undefined;
 

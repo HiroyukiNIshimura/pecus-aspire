@@ -1,20 +1,20 @@
 "use client";
 
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
+import { useState, useMemo, useCallback } from "react";
 import SaveIcon from "@mui/icons-material/Save";
-import type { EditorContextSettings } from "@pecus/notion-like-editor";
-import { NotionLikeEditor } from "@pecus/notion-like-editor";
-import { useCallback, useMemo, useState } from "react";
-import { createWorkspaceItem } from "@/actions/workspaceItem";
-import TagInput from "@/components/common/TagInput";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
 } from "@/connectors/api/pecus";
+import TagInput from "@/components/common/TagInput";
+import { createWorkspaceItem } from "@/actions/workspaceItem";
 import { useFormValidation } from "@/hooks/useFormValidation";
-import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
 import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
+import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
+import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
+import type { EditorContextSettings } from "@/components/editor/appSettings";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -74,6 +74,7 @@ export default function CreateWorkspaceItem({
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit: handleFormSubmit,
     validateField,
     shouldShowError,
@@ -206,7 +207,6 @@ export default function CreateWorkspaceItem({
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
                   viewBox="0 0 24 24"
-                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -248,24 +248,24 @@ export default function CreateWorkspaceItem({
                   maxLength={200}
                 />
                 {shouldShowError("subject") && (
-                  <div className="label">
+                  <label className="label">
                     <span className="label-text-alt text-error">
                       {getFieldError("subject")}
                     </span>
-                  </div>
+                  </label>
                 )}
-                <div className="label">
+                <label className="label">
                   <span className="label-text-alt text-xs">
                     {formData.subject.length}/200 文字
                   </span>
-                </div>
+                </label>
               </div>
 
               {/* 本文（WYSIWYGエディタ） */}
               <div className="form-control">
-                <div className="label">
+                <label className="label">
                   <span className="label-text font-semibold">本文</span>
-                </div>
+                </label>
                 <div>
                   <NotionLikeEditor
                     onChange={handleEditorChange}
@@ -296,11 +296,11 @@ export default function CreateWorkspaceItem({
                   disabled={isSubmitting}
                 />
                 {shouldShowError("dueDate") && (
-                  <div className="label">
+                  <label className="label">
                     <span className="label-text-alt text-error">
                       {getFieldError("dueDate")}
                     </span>
-                  </div>
+                  </label>
                 )}
               </div>
 
@@ -330,11 +330,11 @@ export default function CreateWorkspaceItem({
                   <option value="Critical">緊急</option>
                 </select>
                 {shouldShowError("priority") && (
-                  <div className="label">
+                  <label className="label">
                     <span className="label-text-alt text-error">
                       {getFieldError("priority")}
                     </span>
-                  </div>
+                  </label>
                 )}
               </div>
 

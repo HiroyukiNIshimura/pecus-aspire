@@ -7,6 +7,7 @@ import {
 import type {
   SuccessResponse,
   TagDetailResponse,
+  TagListItemResponse,
   TagListItemResponseTagStatisticsPagedResponse,
   TagResponse,
 } from "@/connectors/api/pecus";

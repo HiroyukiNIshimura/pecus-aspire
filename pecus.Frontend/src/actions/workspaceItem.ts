@@ -5,13 +5,15 @@ import {
   detectConcurrencyError,
 } from "@/connectors/api/PecusApiClient";
 import type {
-  CreateWorkspaceItemRequest,
-  UpdateWorkspaceItemAssigneeRequest,
-  UpdateWorkspaceItemRequest,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
+  UpdateWorkspaceItemAssigneeRequest,
 } from "@/connectors/api/pecus";
-import type { ApiResponse } from "./types";
+import type {
+  CreateWorkspaceItemRequest,
+  UpdateWorkspaceItemRequest,
+} from "@/connectors/api/pecus";
+import type { ApiResponse, ConflictResponse } from "./types";
 
 /**
  * Server Action: 最新のワークスペースアイテムを取得

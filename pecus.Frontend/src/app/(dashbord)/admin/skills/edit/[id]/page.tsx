@@ -15,7 +15,7 @@ export default async function EditSkillPage({
   const { id } = await params;
   const skillId = parseInt(id, 10);
 
-  if (Number.isNaN(skillId) || skillId <= 0) {
+  if (isNaN(skillId) || skillId <= 0) {
     notFound();
   }
 

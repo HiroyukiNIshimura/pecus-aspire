@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getWorkspaces } from "@/actions/admin/workspace";
 import { getGenres } from "@/actions/master";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
@@ -8,6 +7,7 @@ import type {
   WorkspaceListItemResponse,
   WorkspaceStatistics,
 } from "@/connectors/api/pecus";
+import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
 

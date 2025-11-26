@@ -9,8 +9,8 @@ import type {
 import { useNotify } from "@/hooks/useNotify";
 import type { UserInfo } from "@/types/userInfo";
 import BasicInfoTab from "./BasicInfoTab";
-import SecurityTab from "./SecurityTab";
 import SkillsTab from "./SkillsTab";
+import SecurityTab from "./SecurityTab";
 
 interface ProfileSettingsClientProps {
   initialUser: UserInfo;
@@ -30,7 +30,7 @@ export default function ProfileSettingsClient({
   const notify = useNotify();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [user, setUser] = useState<UserInfo>(initialUser);
-  const [pendingEmailChange, _setPendingEmailChange] =
+  const [pendingEmailChange, setPendingEmailChange] =
     useState<PendingEmailChangeResponse | null>(initialPendingEmailChange);
   const [isLoading, setIsLoading] = useState(false);
 

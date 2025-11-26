@@ -37,7 +37,6 @@
     "build/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "src/components/editor.bak"
+    "node_modules"
   ]
 }

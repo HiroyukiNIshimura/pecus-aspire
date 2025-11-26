@@ -15,7 +15,7 @@ import { type DependencyList, useEffect, useRef } from "react";
  * }, [filterGenreId, filterIsActive]);
  */
 export const useEffectAfterMount = (
-  effect: () => undefined | (() => void),
+  effect: () => void | (() => void),
   deps?: DependencyList,
 ) => {
   const isFirstRender = useRef(true);

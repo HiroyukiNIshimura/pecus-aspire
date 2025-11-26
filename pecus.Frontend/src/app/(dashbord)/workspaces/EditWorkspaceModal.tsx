@@ -1,16 +1,16 @@
 "use client";
 
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
 import { useEffect, useState } from "react";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { updateWorkspaceSchema } from "@/schemas/workspaceSchemas";
 import { getWorkspaceDetail, updateWorkspace } from "@/actions/workspace";
 import type {
   MasterGenreResponse,
-  WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
+  WorkspaceFullDetailResponse,
 } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { updateWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 
 interface EditWorkspaceModalProps {
   isOpen: boolean;

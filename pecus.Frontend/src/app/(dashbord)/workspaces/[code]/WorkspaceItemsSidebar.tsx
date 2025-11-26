@@ -1,24 +1,24 @@
 "use client";
 
-import AddIcon from "@mui/icons-material/Add";
-import ClearIcon from "@mui/icons-material/Clear";
-import HomeIcon from "@mui/icons-material/Home";
-import SearchIcon from "@mui/icons-material/Search";
 import {
-  forwardRef,
+  useState,
+  useMemo,
   useCallback,
   useEffect,
-  useImperativeHandle,
-  useMemo,
   useRef,
-  useState,
+  forwardRef,
+  useImperativeHandle,
 } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+import HomeIcon from "@mui/icons-material/Home";
+import AddIcon from "@mui/icons-material/Add";
+import WorkspaceSwitcher from "./WorkspaceSwitcher";
 import type {
   WorkspaceItemListResponse,
   WorkspaceListItemResponse,
 } from "@/connectors/api/pecus";
-import WorkspaceSwitcher from "./WorkspaceSwitcher";
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
@@ -106,7 +106,7 @@ const WorkspaceItemsSidebar = forwardRef<
     // 初期ロード
     useEffect(() => {
       refreshItems();
-    }, [refreshItems]);
+    }, [workspaceId, refreshItems]);
 
     // imperative handle で refreshItems を公開
     useImperativeHandle(
