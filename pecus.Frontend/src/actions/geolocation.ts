@@ -1,5 +1,6 @@
 'use server';
 
+import { parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { ApiResponse } from './types';
 
 /**
@@ -145,23 +146,18 @@ export async function getLocationFromCoordinates(
       success: true,
       data: locationInfo,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to get location from coordinates:', error);
 
     // タイムアウトエラーの処理
-    if (error.name === 'AbortError') {
+    if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') {
       return {
         success: false,
         error: 'server',
         message: '位置情報の取得がタイムアウトしました。',
       };
     }
-
-    return {
-      success: false,
-      error: 'server',
-      message: error.message || '位置情報の取得中にエラーが発生しました。',
-    };
+    return parseErrorResponse(error, '位置情報の取得中にエラーが発生しました。');
   }
 }
 
@@ -222,12 +218,8 @@ export async function getLocationsFromCoordinates(
       success: true,
       data: locationInfos,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to get locations from coordinates:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.message || '複数の位置情報取得中にエラーが発生しました。',
-    };
+    return parseErrorResponse(error, '複数の位置情報取得中にエラーが発生しました。');
   }
 }

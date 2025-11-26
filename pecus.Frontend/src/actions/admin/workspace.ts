@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   SuccessResponse,
   WorkspaceDetailResponse,
@@ -21,13 +21,9 @@ export async function getWorkspaces(
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to fetch workspaces',
-    };
+    return parseErrorResponse(error, 'ワークスペース一覧の取得に失敗しました');
   }
 }
 
@@ -39,13 +35,9 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.getApiAdminWorkspaces1(workspaceId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspace detail:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to fetch workspace detail',
-    };
+    return parseErrorResponse(error, 'ワークスペース詳細の取得に失敗しました');
   }
 }
 
@@ -62,13 +54,9 @@ export async function createWorkspace(request: {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to create workspace:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to create workspace',
-    };
+    return parseErrorResponse(error, 'ワークスペースの作成に失敗しました');
   }
 }
 
@@ -89,7 +77,7 @@ export async function updateWorkspace(
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.putApiAdminWorkspaces(workspaceId, request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -107,11 +95,7 @@ export async function updateWorkspace(
     }
 
     console.error('Failed to update workspace:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to update workspace',
-    };
+    return parseErrorResponse(error, 'ワークスペースの更新に失敗しました');
   }
 }
 
@@ -123,13 +107,9 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.deleteApiAdminWorkspaces(workspaceId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete workspace:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to delete workspace',
-    };
+    return parseErrorResponse(error, 'ワークスペースの削除に失敗しました');
   }
 }
 
@@ -142,7 +122,7 @@ export async function activateWorkspace(workspaceId: number): Promise<ApiRespons
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -160,11 +140,7 @@ export async function activateWorkspace(workspaceId: number): Promise<ApiRespons
     }
 
     console.error('Failed to activate workspace:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to activate workspace',
-    };
+    return parseErrorResponse(error, 'ワークスペースの有効化に失敗しました');
   }
 }
 
@@ -177,7 +153,7 @@ export async function deactivateWorkspace(workspaceId: number): Promise<ApiRespo
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -195,10 +171,6 @@ export async function deactivateWorkspace(workspaceId: number): Promise<ApiRespo
     }
 
     console.error('Failed to deactivate workspace:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to deactivate workspace',
-    };
+    return parseErrorResponse(error, 'ワークスペースの無効化に失敗しました');
   }
 }

@@ -3,6 +3,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
 import NotionLikeEditor from '@/components/editor/NotionLikeEditor';
 import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
@@ -70,7 +71,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
         if (!result.success) {
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
-          result.error.issues.forEach((issue: any) => {
+          result.error.issues.forEach((issue: $ZodIssue) => {
             const path = issue.path.join('.');
             if (!errors[path]) errors[path] = [];
             errors[path].push(issue.message);

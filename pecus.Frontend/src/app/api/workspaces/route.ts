@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { parseRouterError } from '../routerError';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,20 +37,9 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspaces:', error);
-
-    if (error.status === 401) {
-      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
-    }
-
-    if (error.status === 403) {
-      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
-    }
-
-    return NextResponse.json(
-      { error: error.message || 'ワークスペース一覧の取得に失敗しました。' },
-      { status: error.status || 500 },
-    );
+    const errorRes = parseRouterError(error, 'ワークスペース一覧の取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

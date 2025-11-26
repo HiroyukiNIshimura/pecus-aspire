@@ -13,7 +13,7 @@ interface UseDelayedLoadingReturn {
   /**内部の処理中状態 */
   isLoading: boolean;
   /**async 関数をラップして遅延ロジックを適用 */
-  withDelayedLoading: <T extends any[], _R>(fn: (...args: T) => Promise<void>) => (...args: T) => Promise<void>;
+  withDelayedLoading: <T extends unknown[], _R>(fn: (...args: T) => Promise<void>) => (...args: T) => Promise<void>;
 }
 
 /**
@@ -43,7 +43,7 @@ export function useDelayedLoading(options: UseDelayedLoadingOptions = {}): UseDe
   const [showLoading, setShowLoading] = useState(false);
 
   const withDelayedLoading = useCallback(
-    <T extends any[]>(fn: (...args: T) => Promise<void>) => {
+    <T extends unknown[]>(fn: (...args: T) => Promise<void>) => {
       return async (...args: T) => {
         try {
           setIsLoading(true);

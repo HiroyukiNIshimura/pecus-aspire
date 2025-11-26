@@ -35,10 +35,12 @@ export default function AppHeader({
     // ドロップダウンを閉じる
     setTimeout(() => {
       const themeDropdown = document.querySelector('.navbar-end > .dropdown:first-of-type') as HTMLElement;
-      if (themeDropdown && (window as any).HSDropdown) {
-        const { element } = (window as any).HSDropdown.getInstance(themeDropdown, true);
-        if (element) {
-          element.close();
+      if (themeDropdown && window.HSDropdown) {
+        const instance = window.HSDropdown.getInstance(themeDropdown, true) as {
+          element?: { close: () => void };
+        } | null;
+        if (instance?.element) {
+          instance.element.close();
         }
       }
     }, 0);

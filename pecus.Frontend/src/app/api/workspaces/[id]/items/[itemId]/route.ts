@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string; itemId: string }> }) {
@@ -15,11 +16,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const data = await clients.workspaceItem.getApiWorkspacesItems1(workspaceId, itemIdNum);
 
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspace item detail:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch workspace item detail' },
-      { status: error.status || 500 },
-    );
+    const errorRes = parseRouterError(error, 'ワークスペースアイテムの取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { updateWorkspaceItemAssignee } from '@/actions/workspaceItem';
-import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface WorkspaceItemDrawerProps {
@@ -45,9 +45,13 @@ export default function WorkspaceItemDrawer({
         setError(result.message || '担当者の更新に失敗しました。');
         setSelectedAssigneeId(item.assigneeId || null);
       }
-    } catch (err: any) {
-      setError(err.message || '担当者の更新に失敗しました。');
-      setSelectedAssigneeId(item.assigneeId || null);
+    } catch (err) {
+      if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
+        //TODO: ConcurrencyErrorの場合の処理
+      } else {
+        setError((err as ErrorResponse).message || '担当者の更新に失敗しました。');
+        setSelectedAssigneeId(item.assigneeId || null);
+      }
     } finally {
       setIsUpdating(false);
     }

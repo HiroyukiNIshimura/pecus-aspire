@@ -34,7 +34,7 @@ export default function EditWorkspaceClient({
   const [formData, setFormData] = useState({
     name: workspaceDetail.name || '',
     description: workspaceDetail.description || '',
-    genreId: (workspaceDetail as any).genreId ? String((workspaceDetail as any).genreId) : '',
+    genreId: workspaceDetail.genreId ? String(workspaceDetail.genreId) : '',
     isActive: workspaceDetail.isActive ?? true,
   });
 

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -57,24 +58,10 @@ export async function GET(
         'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Image proxy error:', error);
-    console.error('Error response status:', error.response?.status);
-    console.error('Error response data:', error.response?.data?.toString?.() || error.response?.data);
 
-    // 認証エラーの場合は401を返す
-    if (error.response?.status === 401) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // 404エラーの場合
-    if (error.response?.status === 404) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch image' },
-      { status: error.response?.status || 500 },
-    );
+    const errorRes = parseRouterError(error, '画像の取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

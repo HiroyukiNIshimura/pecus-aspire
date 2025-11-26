@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUsers } from '@/actions/admin/user';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { SkillListItemResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminUsersClient from './AdminUsersClient';
 
@@ -52,7 +52,7 @@ export default async function AdminUsers() {
     if (usersResult.success) {
       const responseData = usersResult.data;
       if (responseData?.data) {
-        users = responseData.data.map((user: any) => ({
+        users = responseData.data.map((user: UserResponse) => ({
           id: user.id ?? 0,
           username: user.username ?? '',
           email: user.email ?? '',
@@ -71,20 +71,21 @@ export default async function AdminUsers() {
     // スキル一覧を取得
     const skillsResult = await getAllSkills(true);
     if (skillsResult.success && skillsResult.data) {
-      skills = skillsResult.data.map((skill: any) => ({
+      skills = skillsResult.data.map((skill: SkillListItemResponse) => ({
         id: skill.id,
         name: skill.name,
       }));
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('AdminUsers: failed to fetch users, user info, or skills', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

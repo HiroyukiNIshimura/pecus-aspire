@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSkills } from '@/actions/admin/skills';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { SkillListItemResponse, SkillStatistics, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminSkillsClient from './AdminSkillsClient';
 
@@ -9,10 +9,10 @@ export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminSkills() {
-  let skills: any[] = [];
+  let skills: SkillListItemResponse[] = [];
   let totalCount: number = 0;
   let totalPages: number = 1;
-  let statistics: any = null;
+  let statistics: SkillStatistics | undefined;
   let userResponse: UserResponse | null = null;
   let fetchError: string | null = null;
 
@@ -29,19 +29,20 @@ export default async function AdminSkills() {
       skills = responseData?.data ?? [];
       totalCount = responseData?.totalCount ?? 0;
       totalPages = responseData?.totalPages ?? 1;
-      statistics = responseData?.summary ?? null;
+      statistics = responseData?.summary;
     } else {
       fetchError = `スキル情報の取得に失敗しました (${skillsResult.error})`;
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('AdminSkills: failed to fetch data', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

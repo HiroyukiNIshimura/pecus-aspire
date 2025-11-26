@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { SuccessResponse, UserResponse, UserResponseUserStatisticsPagedResponse } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
 
@@ -26,13 +26,9 @@ export async function getUsers(
       skillFilterMode,
     );
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch users:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to fetch users',
-    };
+    return parseErrorResponse(error, 'ユーザー一覧の取得に失敗しました');
   }
 }
 
@@ -48,13 +44,9 @@ export async function createUserWithoutPassword(request: {
     const api = createPecusApiClients();
     const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to create user:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to create user',
-    };
+    return parseErrorResponse(error, 'ユーザーの作成に失敗しました');
   }
 }
 
@@ -66,13 +58,9 @@ export async function deleteUser(userId: number): Promise<ApiResponse<SuccessRes
     const api = createPecusApiClients();
     const response = await api.adminUser.deleteApiAdminUsers(userId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete user:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to delete user',
-    };
+    return parseErrorResponse(error, 'ユーザーの削除に失敗しました');
   }
 }
 
@@ -87,7 +75,7 @@ export async function setUserActiveStatus(userId: number, isActive: boolean): Pr
       isActive,
     });
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
       const payload = concurrencyError.payload ?? {};
@@ -103,11 +91,7 @@ export async function setUserActiveStatus(userId: number, isActive: boolean): Pr
       };
     }
     console.error('Failed to set user active status:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to set user active status',
-    };
+    return parseErrorResponse(error, 'ユーザーのアクティブ状態の設定に失敗しました');
   }
 }
 
@@ -119,13 +103,9 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
     const api = createPecusApiClients();
     const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to request password reset:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to request password reset',
-    };
+    return parseErrorResponse(error, 'パスワードリセットのリクエストに失敗しました');
   }
 }
 
@@ -137,13 +117,9 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<UserRes
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers(userId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch user detail:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'ユーザー情報の取得に失敗しました',
-    };
+    return parseErrorResponse(error, 'ユーザー情報の取得に失敗しました');
   }
 }
 
@@ -163,7 +139,7 @@ export async function setUserSkills(
       userRowVersion,
     });
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -181,11 +157,7 @@ export async function setUserSkills(
     }
 
     console.error('Failed to set user skills:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'ユーザースキルの更新に失敗しました',
-    };
+    return parseErrorResponse(error, 'ユーザースキルの更新に失敗しました');
   }
 }
 
@@ -209,7 +181,7 @@ export async function setUserRoles(
       userRowVersion,
     });
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -227,10 +199,6 @@ export async function setUserRoles(
     }
 
     console.error('Failed to set user roles:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'ユーザーロールの更新に失敗しました',
-    };
+    return parseErrorResponse(error, 'ユーザーロールの更新に失敗しました');
   }
 }

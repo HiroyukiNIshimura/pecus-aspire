@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -46,28 +47,9 @@ export async function GET(
         'Cache-Control': 'private, max-age=3600',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to get temp file:', error);
-
-    const status = error.response?.status || error.status;
-
-    if (status === 401) {
-      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
-    }
-
-    if (status === 403) {
-      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
-    }
-
-    if (status === 404) {
-      return NextResponse.json({ error: 'ファイルが見つかりません。' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      {
-        error: error.response?.data?.message || error.message || 'ファイルの取得に失敗しました。',
-      },
-      { status: status || 500 },
-    );
+    const errorRes = parseRouterError(error, 'ファイルの取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

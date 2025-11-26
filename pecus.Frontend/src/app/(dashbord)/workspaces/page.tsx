@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MasterGenreResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import WorkspacesClient from './WorkspacesClient';
@@ -20,15 +20,16 @@ export default async function WorkspacesPage() {
 
     // ユーザー情報とジャンル一覧を並行取得
     [userResponse, genres] = await Promise.all([api.profile.getApiProfile(), api.master.getApiMasterGenres()]);
-  } catch (error: any) {
+  } catch (error) {
     console.error('WorkspacesPage: failed to fetch data', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

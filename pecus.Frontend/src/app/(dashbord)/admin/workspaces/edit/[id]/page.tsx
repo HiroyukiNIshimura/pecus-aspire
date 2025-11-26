@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MasterGenreResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditWorkspaceClient from './EditWorkspaceClient';
@@ -39,13 +39,16 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
       const genresResponse = await api.master.getApiMasterGenres();
       genres = genresResponse || [];
     }
-  } catch (error: any) {
+  } catch (error) {
+    console.error('EditWorkspacePage: failed to fetch workspace', error);
+
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得中にエラーが発生しました。';
+    fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

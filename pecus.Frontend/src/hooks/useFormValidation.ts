@@ -2,15 +2,30 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { z } from 'zod';
-import type { $ZodIssueBase } from 'zod/v4/core';
 
 interface FieldError {
   [fieldName: string]: string[];
 }
 
-interface UseFormValidationOptions<T extends Record<string, unknown>> {
-  schema: z.ZodSchema<T>;
-  onSubmit: (data: T) => Promise<void>;
+interface UseFormValidationOptions<T extends z.ZodRawShape> {
+  schema: z.ZodObject<T>;
+  onSubmit: (data: z.infer<z.ZodObject<T>>) => Promise<void>;
+}
+
+/**
+ * スキーマが boolean 型かどうかを判定するヘルパー
+ * ZodBoolean, ZodOptional<ZodBoolean>, ZodNullable<ZodBoolean>, ZodDefault<ZodBoolean> に対応
+ */
+function isBooleanSchema(schema: unknown): boolean {
+  if (schema instanceof z.ZodBoolean) {
+    return true;
+  }
+  if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable || schema instanceof z.ZodDefault) {
+    // unwrap して再帰的にチェック
+    const unwrapped = (schema as { unwrap: () => unknown }).unwrap();
+    return isBooleanSchema(unwrapped);
+  }
+  return false;
 }
 
 /**
@@ -19,10 +34,7 @@ interface UseFormValidationOptions<T extends Record<string, unknown>> {
  * - サブミット時検証: Zodスキーマの全体検証
  * - 属性管理: data-pristine-*不要
  */
-export function useFormValidation<T extends Record<string, unknown>>({
-  schema,
-  onSubmit,
-}: UseFormValidationOptions<T>) {
+export function useFormValidation<T extends z.ZodRawShape>({ schema, onSubmit }: UseFormValidationOptions<T>) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldError>({});
@@ -35,10 +47,21 @@ export function useFormValidation<T extends Record<string, unknown>>({
     async (fieldName: string, value: unknown) => {
       try {
         // スキーマから該当フィールドのスキーマを抽出
-        const fieldSchema = (schema as any).shape?.[fieldName];
-        if (!fieldSchema) return { isValid: true, errors: [] };
+        if (!(fieldName in schema.shape)) {
+          return { isValid: true, errors: [] };
+        }
+        const fieldSchema = schema.shape[fieldName as keyof T];
+        if (!fieldSchema || typeof fieldSchema !== 'object' || !('safeParseAsync' in fieldSchema)) {
+          return { isValid: true, errors: [] };
+        }
 
-        const result = await fieldSchema.safeParseAsync(value);
+        // safeParseAsync メソッドを持つオブジェクトとして呼び出し
+        const parseAsync = fieldSchema.safeParseAsync as (value: unknown) => Promise<{
+          success: boolean;
+          data?: unknown;
+          error?: { issues: Array<{ message: string }> };
+        }>;
+        const result = await parseAsync(value);
 
         if (result.success) {
           // エラーをクリア
@@ -49,7 +72,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
           });
           return { isValid: true, errors: [] };
         } else {
-          const errors = result.error.issues.map((issue: $ZodIssueBase) => issue.message);
+          const errors = result.error?.issues.map((issue) => issue.message) ?? [];
           setFieldErrors((prev) => ({
             ...prev,
             [fieldName]: errors,
@@ -84,24 +107,22 @@ export function useFormValidation<T extends Record<string, unknown>>({
       try {
         // フォームデータを収集
         const formData = new FormData(formRef.current!);
-        const data = Object.fromEntries(formData) as Record<string, any>;
+        const data = Object.fromEntries(formData) as Record<string, unknown>;
 
         // チェックボックス値を正しく処理
         // FormData では未チェックのチェックボックスが含まれないため、スキーマから判定して追加
-        if (schema instanceof z.ZodObject) {
-          const shape = (schema as any).shape || {};
-          Object.keys(shape).forEach((key) => {
-            const fieldSchema = shape[key];
-            // boolean 型フィールドの場合、未設定なら false を設定
-            if (fieldSchema instanceof z.ZodBoolean || fieldSchema._def?.innerType instanceof z.ZodBoolean) {
-              if (!(key in data)) {
-                data[key] = false;
-              } else {
-                // "on" という値を true に変換
-                data[key] = data[key] === 'on' || data[key] === true;
-              }
+        const shape = schema.shape;
+        for (const key of Object.keys(shape)) {
+          const fieldSchema = shape[key as keyof T];
+          // boolean 型フィールドかどうかを判定
+          if (isBooleanSchema(fieldSchema)) {
+            if (!(key in data)) {
+              data[key] = false;
+            } else {
+              // "on" という値を true に変換
+              data[key] = data[key] === 'on' || data[key] === true;
             }
-          });
+          }
         }
 
         // Zodで全体を検証

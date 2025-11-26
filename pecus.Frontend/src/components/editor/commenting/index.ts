@@ -114,7 +114,7 @@ export class CommentStore {
   addComment(commentOrThread: Comment | Thread, thread?: Thread, offset?: number): void {
     const nextComments = Array.from(this._comments);
     // The YJS types explicitly use `any` as well.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
     const sharedCommentsArray: YArray<any> | null = this._getCollabComments();
 
     if (thread !== undefined && commentOrThread.type === 'comment') {
@@ -155,7 +155,7 @@ export class CommentStore {
   ): { markedComment: Comment; index: number } | null {
     const nextComments = Array.from(this._comments);
     // The YJS types explicitly use `any` as well.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
     const sharedCommentsArray: YArray<any> | null = this._getCollabComments();
     let commentIndex: number | null = null;
 
@@ -226,19 +226,19 @@ export class CommentStore {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: false positive
   _getCollabComments(): null | YArray<any> {
     const provider = this._collabProvider;
     if (provider !== null) {
       // @ts-expect-error doc does exist
       const doc = provider.doc;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: false positive
       return doc.get('comments', YArray) as YArray<any>;
     }
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: false positive
   _createCollabSharedMap(commentOrThread: Comment | Thread): YMap<any> {
     const sharedMap = new YMap();
     const type = commentOrThread.type;
@@ -302,7 +302,7 @@ export class CommentStore {
 
     const onSharedCommentChanges = (
       // The YJS types explicitly use `any` as well.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: false positive
       events: Array<YEvent<any>>,
       transaction: Transaction,
     ) => {
@@ -331,7 +331,7 @@ export class CommentStore {
                 insert
                   .slice()
                   .reverse()
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  // biome-ignore lint/suspicious/noExplicitAny: false positive
                   .forEach((map: YMap<any>) => {
                     const id = map.get('id');
                     const type = map.get('type');

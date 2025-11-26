@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { ApiResponse } from './types';
 
 /**
@@ -12,11 +12,8 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
     await clients.workspace.deleteApiWorkspaces(workspaceId);
 
     return { success: true, data: undefined };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'ワークスペースの削除に失敗しました。',
-    };
+  } catch (error) {
+    console.error('Failed to delete workspace:', error);
+    return parseErrorResponse(error, 'ワークスペースの削除に失敗しました。');
   }
 }

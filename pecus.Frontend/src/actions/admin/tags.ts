@@ -1,6 +1,6 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   SuccessResponse,
   TagDetailResponse,
@@ -20,13 +20,9 @@ export async function getTags(
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags(page, isActive);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch tags:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグ一覧の取得に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグ一覧の取得に失敗しました');
   }
 }
 
@@ -38,13 +34,9 @@ export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailRes
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags1(id);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch tag detail:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグ情報の取得に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグ情報の取得に失敗しました');
   }
 }
 
@@ -56,13 +48,9 @@ export async function createTag(request: { name: string; description?: string })
     const api = createPecusApiClients();
     const response = await api.adminTag.postApiAdminTags(request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to create tag:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグの作成に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグの作成に失敗しました');
   }
 }
 
@@ -95,7 +83,7 @@ export async function updateTag(
     }
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -113,11 +101,7 @@ export async function updateTag(
     }
 
     console.error('Failed to update tag:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグの更新に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグの更新に失敗しました');
   }
 }
 
@@ -129,13 +113,9 @@ export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse
     const api = createPecusApiClients();
     const response = await api.adminTag.deleteApiAdminTags(id);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete tag:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグの削除に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグの削除に失敗しました');
   }
 }
 
@@ -147,7 +127,7 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsActivate(id);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
       const payload = concurrencyError.payload ?? {};
@@ -163,11 +143,7 @@ export async function activateTag(id: number): Promise<ApiResponse<SuccessRespon
       };
     }
     console.error('Failed to activate tag:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグの有効化に失敗しました',
-    };
+    return parseErrorResponse(error, 'タグの有効化に失敗しました');
   }
 }
 
@@ -179,7 +155,7 @@ export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResp
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsDeactivate(id);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
       const payload = concurrencyError.payload ?? {};
@@ -195,10 +171,7 @@ export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResp
       };
     }
     console.error('Failed to deactivate tag:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'タグの無効化に失敗しました',
-    };
+
+    return parseErrorResponse(error, 'タグの無効化に失敗しました');
   }
 }

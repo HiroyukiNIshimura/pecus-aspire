@@ -83,7 +83,7 @@ export default function EditUserClient({
 
     setIsSubmitting(true);
     try {
-      const updatePromises: Array<Promise<any>> = [];
+      const updatePromises: Array<Promise<void>> = [];
       const updateMessages: string[] = [];
 
       // === 並列で更新処理を実行 ===

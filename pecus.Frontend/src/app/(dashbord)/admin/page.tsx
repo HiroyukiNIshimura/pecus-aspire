@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { OrganizationResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminClient from './AdminClient';
@@ -20,15 +20,16 @@ export default async function AdminPage() {
 
     // 組織情報を取得
     organization = await api.adminOrganization.getApiAdminOrganization();
-  } catch (error: any) {
+  } catch (error) {
     console.error('AdminPage: failed to fetch organization or user', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

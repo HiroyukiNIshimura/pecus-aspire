@@ -2,8 +2,8 @@ import { notFound, redirect } from 'next/navigation';
 import { getAllRoles } from '@/actions/admin/role';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { RoleResponse, SkillListItemResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditUserClient from './EditUserClient';
 
@@ -19,8 +19,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
   let userResponse: UserResponse | null = null;
   let userDetail = null;
-  let skills: any[] = [];
-  let roles: any[] = [];
+  let skills: SkillListItemResponse[] = [];
+  let roles: RoleResponse[] = [];
   let fetchError: string | null = null;
 
   try {
@@ -45,13 +45,14 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     if (rolesResult.success) {
       roles = rolesResult.data || [];
     }
-  } catch (error: any) {
+  } catch (error) {
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得中にエラーが発生しました。';
+    fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

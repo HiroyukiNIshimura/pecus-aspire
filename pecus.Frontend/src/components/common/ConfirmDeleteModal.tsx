@@ -36,6 +36,7 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
     const [inputValue, setInputValue] = useState<string>('');
     const [mismatch, setMismatch] = useState<boolean>(false);
     const overlayRef = useRef<HTMLDivElement>(null);
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
     const hsOverlayRef = useRef<any>(null);
 
     useImperativeHandle(ref, () => ({

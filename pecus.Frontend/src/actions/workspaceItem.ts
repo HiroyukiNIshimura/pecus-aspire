@@ -1,6 +1,12 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import {
+  createPecusApiClients,
+  detect400ValidationError,
+  detect404ValidationError,
+  detectConcurrencyError,
+  parseErrorResponse,
+} from '@/connectors/api/PecusApiClient';
 import type {
   CreateWorkspaceItemRequest,
   UpdateWorkspaceItemAssigneeRequest,
@@ -21,25 +27,16 @@ export async function fetchLatestWorkspaceItem(
     const api = createPecusApiClients();
     const response = await api.workspaceItem.getApiWorkspacesItems1(workspaceId, itemId);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspace item:', error);
-    console.error('Error status:', error.status);
 
+    const notFound = detect404ValidationError(error);
     // アイテムが見つからない（404 Not Found）
-    if (error.status === 404) {
-      return {
-        success: false,
-        error: 'not-found',
-        message: 'アイテムが見つかりません。',
-      };
+    if (notFound) {
+      return notFound;
     }
 
-    // その他のエラー
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'アイテムの取得に失敗しました。',
-    };
+    return parseErrorResponse(error, 'アイテムの取得に失敗しました。');
   }
 }
 
@@ -54,40 +51,22 @@ export async function createWorkspaceItem(
     const api = createPecusApiClients();
     const response = await api.workspaceItem.postApiWorkspacesItems(workspaceId, request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to create workspace item:', error);
-    console.error('Error body:', error.body);
-    console.error('Error status:', error.status);
 
+    const badRequest = detect400ValidationError(error);
     // バリデーションエラー
-    if (error.status === 400) {
-      // エラーボディが配列の場合（複数のバリデーションエラー）
-      const errorMessages = Array.isArray(error.body)
-        ? error.body.map((err: any) => err.message || err).join('、')
-        : error.body?.message || error.message || '入力内容に誤りがあります。';
-
-      return {
-        success: false,
-        error: 'validation',
-        message: errorMessages,
-      };
+    if (badRequest) {
+      return badRequest;
     }
 
-    // ワークスペースが見つからない（404 Not Found）
-    if (error.status === 404) {
-      return {
-        success: false,
-        error: 'not-found',
-        message: 'ワークスペースが見つかりません。',
-      };
+    const notFound = detect404ValidationError(error);
+    // アイテムが見つからない（404 Not Found）
+    if (notFound) {
+      return notFound;
     }
-
     // その他のエラー
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'アイテムの作成に失敗しました。',
-    };
+    return parseErrorResponse(error, 'アイテムの作成に失敗しました。');
   }
 }
 
@@ -103,10 +82,8 @@ export async function updateWorkspaceItem(
     const api = createPecusApiClients();
     const response = await api.workspaceItem.patchApiWorkspacesItems(workspaceId, itemId, request);
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to update workspace item:', error);
-    console.error('Error body:', error.body);
-    console.error('Error status:', error.status);
 
     // 409 Conflict: 並行更新による競合
     const concurrency = detectConcurrencyError(error);
@@ -123,33 +100,18 @@ export async function updateWorkspaceItem(
     }
 
     // バリデーションエラー
-    if (error.status === 400) {
-      const errorMessages = Array.isArray(error.body)
-        ? error.body.map((err: any) => err.message || err).join('、')
-        : error.body?.message || error.message || '入力内容に誤りがあります。';
-
-      return {
-        success: false,
-        error: 'validation',
-        message: errorMessages,
-      };
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      // バリデーションエラー
+      return badRequest;
     }
-
+    const notFound = detect404ValidationError(error);
     // アイテムが見つからない（404 Not Found）
-    if (error.status === 404) {
-      return {
-        success: false,
-        error: 'not-found',
-        message: 'アイテムが見つかりません。',
-      };
+    if (notFound) {
+      return notFound;
     }
 
-    // その他のエラー
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'アイテムの更新に失敗しました。',
-    };
+    return parseErrorResponse(error, 'アイテムの更新に失敗しました。');
   }
 }
 
@@ -178,10 +140,8 @@ export async function updateWorkspaceItemAssignee(
       error: 'server',
       message: 'アイテムの取得に失敗しました。',
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to update workspace item assignee:', error);
-    console.error('Error body:', error.body);
-    console.error('Error status:', error.status);
 
     // 409 Conflict: 並行更新による競合
     const concurrency = detectConcurrencyError(error);
@@ -201,32 +161,18 @@ export async function updateWorkspaceItemAssignee(
     }
 
     // バリデーションエラー
-    if (error.status === 400) {
-      const errorMessages = Array.isArray(error.body)
-        ? error.body.map((err: any) => err.message || err).join('、')
-        : error.body?.message || error.message || '入力内容に誤りがあります。';
-
-      return {
-        success: false,
-        error: 'validation',
-        message: errorMessages,
-      };
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      // バリデーションエラー
+      return badRequest;
     }
-
-    // アイテムが見つからない（404 Not Found）
-    if (error.status === 404) {
-      return {
-        success: false,
-        error: 'not-found',
-        message: 'アイテムが見つかりません。',
-      };
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      // アイテムが見つからない（404 Not Found）
+      return notFound;
     }
 
     // その他のエラー
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || '作業者の更新に失敗しました。',
-    };
+    return parseErrorResponse(error, '担当者の更新に失敗しました。');
   }
 }

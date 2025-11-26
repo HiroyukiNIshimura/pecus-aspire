@@ -5,7 +5,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useEffect, useState } from 'react';
 import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import NotionLikeViewer from '@/components/editor/NotionLikeViewer';
-import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceItemDrawer from './WorkspaceItemDrawer';
@@ -43,8 +43,8 @@ export default function WorkspaceItemDetail({
         } else {
           setError(result.message || 'アイテムの取得に失敗しました。');
         }
-      } catch (err: any) {
-        setError(err.message || 'アイテムの取得に失敗しました。');
+      } catch (err) {
+        setError((err as ErrorResponse).message || 'アイテムの取得に失敗しました。');
       } finally {
         setIsLoading(false);
       }

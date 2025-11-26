@@ -4,6 +4,7 @@ import {
   createAuthenticatedAxios,
   createPecusApiClients,
   detectConcurrencyError,
+  parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
   AvatarType,
@@ -37,7 +38,7 @@ export async function updateProfile(request: {
       rowVersion: request.rowVersion,
     });
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict（並行更新）を検出
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -55,13 +56,7 @@ export async function updateProfile(request: {
     }
 
     console.error('Failed to update profile:', error);
-    console.error('Error body:', error.body);
-    console.error('Request that failed:', request);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to update profile',
-    };
+    return parseErrorResponse(error, 'プロフィールの更新に失敗しました');
   }
 }
 
@@ -80,13 +75,9 @@ export async function requestEmailChange(
     });
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to request email change:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'メールアドレス変更リクエストに失敗しました',
-    };
+    return parseErrorResponse(error, 'メールアドレス変更リクエストに失敗しました');
   }
 }
 
@@ -100,13 +91,9 @@ export async function verifyEmailChange(token: string): Promise<ApiResponse<Emai
     const response = await api.profileEmail.getApiProfileEmailVerify(token);
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to verify email change:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'メールアドレス変更の確認に失敗しました',
-    };
+    return parseErrorResponse(error, 'メールアドレス変更の確認に失敗しました');
   }
 }
 
@@ -123,13 +110,9 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
     });
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to update password:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'パスワード変更に失敗しました',
-    };
+    return parseErrorResponse(error, 'パスワード変更に失敗しました');
   }
 }
 
@@ -146,7 +129,7 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
     });
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     // 409 Conflict（スキル更新で rowVersion チェックする場合）
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
@@ -158,11 +141,7 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
     }
 
     console.error('Failed to set skills:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'スキル設定に失敗しました',
-    };
+    return parseErrorResponse(error, 'スキル設定に失敗しました');
   }
 }
 
@@ -220,13 +199,9 @@ export async function uploadAvatarFile(fileData: {
         contentType: response.data.contentType ?? undefined,
       },
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to upload avatar file:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.response?.data?.message || error.message || 'アップロードに失敗しました',
-    };
+    return parseErrorResponse(error, 'アップロードに失敗しました');
   }
 }
 
@@ -243,12 +218,8 @@ export async function deleteAvatarFile(fileData: {
     const response = await api.file.deleteApiDownloadsIcons('Avatar', fileData.resourceId, fileData.fileName);
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to delete avatar file:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || '削除に失敗しました',
-    };
+    return parseErrorResponse(error, '削除に失敗しました');
   }
 }

@@ -1,8 +1,8 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { LoginResponse } from '@/connectors/api/pecus';
+import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
+import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import { type SessionData, SessionManager } from '@/libs/session';
@@ -65,20 +65,16 @@ export async function login(request: {
         id: response.userId || 0,
         name: response.username || '',
         email: response.email || '',
-        roles: response.roles ? response.roles.map((role: any) => role.name || '') : [],
+        roles: response.roles ? response.roles.map((role: RoleInfoResponse) => role.name || '') : [],
       },
     };
 
     await SessionManager.setSession(sessionData);
 
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to login:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.body?.message || error.message || 'Failed to login',
-    };
+    return parseErrorResponse(error, 'ログインに失敗しました');
   }
 }
 
@@ -98,13 +94,9 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData['user'] 
     }
 
     return { success: true, data: session.user };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to get current user:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.message || 'Failed to get current user',
-    };
+    return parseErrorResponse(error, 'ユーザー情報の取得に失敗しました');
   }
 }
 
@@ -117,12 +109,8 @@ export async function logout(): Promise<ApiResponse<null>> {
     await SessionManager.clearSession();
 
     return { success: true, data: null };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to logout:', error);
-    return {
-      success: false,
-      error: 'server',
-      message: error.message || 'Failed to logout',
-    };
+    return parseErrorResponse(error, 'ログアウトに失敗しました');
   }
 }

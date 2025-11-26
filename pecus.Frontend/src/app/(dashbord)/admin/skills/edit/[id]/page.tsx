@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditSkillClient from './EditSkillClient';
@@ -31,13 +31,14 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     } else {
       fetchError = skillResult.error;
     }
-  } catch (error: any) {
+  } catch (error) {
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得中にエラーが発生しました。';
+    fetchError = parseErrorResponse(error, 'データの取得中にエラーが発生しました。').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

@@ -56,7 +56,7 @@ export async function getOrganization(): Promise<ApiResponse<any>> {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.apiAdminOrganizationGet();
     return { success: true, data: response.data };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch organization:', error);
     return {
       success: false,

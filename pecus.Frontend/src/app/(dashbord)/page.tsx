@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import DashboardClient from './DashboardClient';
@@ -16,15 +16,16 @@ export default async function Dashboard() {
 
     // ユーザー情報を取得
     userResponse = await api.profile.getApiProfile();
-  } catch (error: any) {
+  } catch (error) {
     console.error('Dashboard: failed to fetch user', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'ユーザー情報の取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'ユーザー情報の取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

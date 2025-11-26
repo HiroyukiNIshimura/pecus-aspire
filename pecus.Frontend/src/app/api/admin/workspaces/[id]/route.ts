@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json(response);
   } catch (error) {
     console.error('Failed to fetch workspace detail:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const errorRes = parseRouterError(error, 'ワークスペースの取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

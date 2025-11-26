@@ -1,5 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
+import { parseRouterError, type RouterErrorType } from '@/app/api/routerError';
+import {
+  createAuthenticatedAxios,
+  detect401ValidationError,
+  detect404ValidationError,
+  parseErrorResponse,
+} from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,29 +109,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       mimeType: response.data.mimeType,
       previewUrl: proxyPreviewUrl,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to upload temp file:', error);
 
-    const status = error.response?.status || error.status;
-
-    if (status === 401) {
-      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
+    // 認証エラーの場合は401を返す
+    const noAuthError = detect401ValidationError(error);
+    if (noAuthError) {
+      return NextResponse.json({ error: noAuthError.message }, { status: 401 });
     }
 
-    if (status === 403) {
-      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return NextResponse.json({ error: notFound.message }, { status: 404 });
     }
 
-    if (status === 404) {
-      return NextResponse.json({ error: 'ワークスペースが見つかりません。' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      {
-        error: error.response?.data?.message || error.message || '一時ファイルのアップロードに失敗しました。',
-      },
-      { status: status || 500 },
-    );
+    const errorRes = parseErrorResponse(error, 'ファイルのアップロードに失敗しました');
+    const errorResponse: RouterErrorType = { error: errorRes.message, status: 500 };
+    return NextResponse.json(errorResponse);
   }
 }
 
@@ -156,28 +156,9 @@ export async function DELETE(
     await axios.delete(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`);
 
     return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to cleanup temp files:', error);
-
-    const status = error.response?.status || error.status;
-
-    if (status === 401) {
-      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
-    }
-
-    if (status === 403) {
-      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
-    }
-
-    if (status === 404) {
-      return NextResponse.json({ error: 'ワークスペースが見つかりません。' }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      {
-        error: error.response?.data?.message || error.message || '一時ファイルのクリーンアップに失敗しました。',
-      },
-      { status: status || 500 },
-    );
+    const errorRes = parseRouterError(error, '一時ファイルのクリーンアップに失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MasterSkillResponse, PendingEmailChangeResponse, UserResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileSettingsClient from './ProfileSettingsClient';
@@ -25,29 +25,23 @@ export default async function ProfileSettingsPage() {
     // マスタスキルを取得
     try {
       masterSkills = await api.master.getApiMasterSkills();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to fetch master skills:', error);
       fetchError = `スキル情報の取得に失敗しました`;
     }
 
     // 保留中のメールアドレス変更を取得
-    try {
-      pendingEmailChange = await api.profileEmail.getApiProfileEmailPending();
-    } catch (error: any) {
-      // 204 No Content は正常（保留なし）
-      if (error.status !== 204) {
-        console.warn('Failed to fetch pending email change:', error);
-      }
-    }
-  } catch (error: any) {
+    pendingEmailChange = await api.profileEmail.getApiProfileEmailPending();
+  } catch (error) {
     console.error('Failed to fetch profile data:', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'プロフィール情報の取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'プロフィール情報の取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getWorkspaces } from '@/actions/admin/workspace';
 import { getGenres } from '@/actions/master';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   MasterGenreResponse,
   UserResponse,
@@ -46,15 +46,16 @@ export default async function AdminWorkspaces() {
     if (genresResult.success) {
       genres = genresResult.data ?? [];
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('AdminWorkspaces: failed to fetch data', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
+    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

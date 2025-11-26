@@ -1,7 +1,12 @@
-import { jwtDecode } from 'jwt-decode';
+import { type JwtPayload, jwtDecode } from 'jwt-decode';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+interface CustomJwtPayload extends JwtPayload {
+  // 必要に応じてカスタムクレームを追加
+  userId?: number;
+  roles?: string[];
+}
 /**
  * Next.js Middleware
  *
@@ -38,9 +43,9 @@ export async function middleware(request: NextRequest) {
 
   try {
     // アクセストークンの有効期限をチェック
-    const decoded: any = jwtDecode(accessToken);
+    const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(accessToken);
     const now = Math.floor(Date.now() / 1000);
-    const expiresIn = decoded.exp - now;
+    const expiresIn = (decoded.exp ?? 0) - now;
 
     // 有効期限が5分以上残っている場合はそのまま通過
     if (expiresIn > 300) {

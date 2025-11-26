@@ -8,7 +8,7 @@
 
 import type { SerializedDocument } from '@lexical/file';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: false positive
 async function* generateReader<T = any>(reader: ReadableStreamDefaultReader<T>) {
   let done = false;
   while (!done) {

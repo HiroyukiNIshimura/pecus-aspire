@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getUsers } from '@/actions/admin/user';
+import { parseRouterError } from '../../routerError';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,8 +33,10 @@ export async function GET(request: NextRequest) {
     } else {
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Route Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    const errorRes = parseRouterError(error, 'ユーザー一覧の取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 
 interface RouteParams {
@@ -25,15 +26,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const response = await api.workspace.getApiWorkspacesItems(workspaceId, page);
 
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Failed to fetch workspace items:', error);
-
-    // 404 エラーの場合
-    if (error.status === 404) {
-      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
-    }
-
-    // その他のエラー
-    return NextResponse.json({ error: error.message || 'Failed to fetch workspace items' }, { status: 500 });
+    const errorRes = parseRouterError(error, 'ワークスペースアイテムの取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

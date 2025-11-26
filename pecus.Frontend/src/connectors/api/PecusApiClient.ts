@@ -5,6 +5,7 @@ import {
 } from "./PecusApiClient.generated";
 import Axios from "axios";
 import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
+import { ErrorResponse } from "@/actions/types";
 
 /**
  * 並行更新による競合エラー（汎用型）
@@ -76,8 +77,110 @@ export function detectConcurrencyError(error: unknown): ConcurrencyError<Concurr
     return new ConcurrencyError<ConcurrencyErrorResponseBody>(String(message), body as ConcurrencyErrorResponseBody);
   }
 
-  return null;
+  return  null;
 }
+
+export function detect401ValidationError(error: unknown): ErrorResponse | undefined {
+  if (Axios.isAxiosError(error) && error.response?.status === 401) {
+    return {
+      success: false,
+      error: 'unauthorized',
+      message: '認証に失敗しました。ログイン状態を確認してください。',
+    };
+  }
+  return undefined;
+}
+
+export function detect400ValidationError(error: unknown): ErrorResponse | undefined {
+  if (Axios.isAxiosError(error) && error.response?.status === 400) {
+    const body = error.response.data ?? {};
+    // レスポンスボディから message を抽出
+    const message =
+      (typeof body === "object" &&
+      body !== null &&
+      "message" in body
+        ? (body as Record<string, unknown>).message
+        : null) || '入力内容に誤りがあります。';
+
+    return {
+      success: false,
+      error: 'validation',
+      message: String(message),
+    };
+  }
+  return undefined;
+}
+
+export function detect404ValidationError(error: unknown): ErrorResponse | undefined {
+  if (Axios.isAxiosError(error) && error.response?.status === 404) {
+    return {
+      success: false,
+      error: 'not_found',
+      message: '対象が見つかりません。',
+    };
+  }
+  return undefined;
+}
+
+export function detect403ValidationError(error: unknown): ErrorResponse | undefined {
+  if (Axios.isAxiosError(error) && error.response?.status === 403) {
+    return {
+      success: false,
+      error: 'forbidden',
+      message: 'アクセスが禁止されています。',
+    };
+  }
+  return undefined;
+}
+
+export const parseErrorResponse = (error: unknown, defaultMessage?: string): ErrorResponse => {
+  if (typeof error === 'string') {
+    return {
+      success: false,
+      error: 'server',
+      message: error || defaultMessage || 'An unexpected error occurred',
+    };
+  }
+
+  if (Axios.isAxiosError(error)) {
+    return {
+      success: false,
+      error: 'server',
+      message: error.message || defaultMessage || 'An unexpected error occurred',
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      success: false,
+      error: 'server',
+      message: error.message || defaultMessage || 'An unexpected error occurred',
+    };
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    if ('message' in error) {
+      return {
+        success: false,
+        error: 'server',
+        message: (error.message as string) || defaultMessage || 'An unexpected error occurred',
+      };
+    }
+    if ('body' in error && typeof error.body === 'object' && error.body !== null && 'message' in error.body) {
+      return {
+        success: false,
+        error: 'server',
+        message: (error.body?.message as string) || defaultMessage || 'An unexpected error occurred',
+      };
+    }
+  }
+  return {
+    success: false,
+    error: 'server',
+    message: defaultMessage || 'An unexpected error occurred',
+  };
+};
+
 
 /**
  * Pecus API クライアントを初期化して返す

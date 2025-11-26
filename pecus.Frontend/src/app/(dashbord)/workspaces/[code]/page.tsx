@@ -1,8 +1,16 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UserResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import {
+  createPecusApiClients,
+  detect401ValidationError,
+  detect404ValidationError,
+} from '@/connectors/api/PecusApiClient';
+import type {
+  UserResponse,
+  WorkspaceFullDetailResponse,
+  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
+} from '@/connectors/api/pecus';
 import type { UserInfo } from '@/types/userInfo';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import WorkspaceDetailClient from './WorkspaceDetailClient';
@@ -20,7 +28,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
   let userInfo: UserInfo | null = null;
   let userResponse: UserResponse | null = null;
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
-  let workspacesList: any = null;
+  let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
 
   try {
     const api = createPecusApiClients();
@@ -38,16 +46,18 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       // ワークスペース一覧取得失敗時は空配列を渡す
       workspacesList = { data: [] };
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('WorkspaceDetailPage: failed to fetch data', error);
 
+    const noAuthError = detect401ValidationError(error);
     // 認証エラーの場合はサインインページへリダイレクト
-    if (error.status === 401) {
+    if (noAuthError) {
       redirect('/signin');
     }
 
+    const notFoundError = detect404ValidationError(error);
     // ワークスペースが見つからない場合は一覧ページへリダイレクト
-    if (error.status === 404) {
+    if (notFoundError) {
       redirect('/workspaces');
     }
   }

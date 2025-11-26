@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -45,18 +46,10 @@ export async function GET(
         'Cache-Control': 'private, max-age=3600', // 1時間キャッシュ
       },
     });
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Attachment proxy error:', error);
 
-    const err = error as { response?: { status?: number } };
-    if (err.response?.status === 404) {
-      return NextResponse.json({ error: '添付ファイルが見つかりません' }, { status: 404 });
-    }
-
-    if (err.response?.status === 401) {
-      return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
-    }
-
-    return NextResponse.json({ error: '添付ファイルの取得に失敗しました' }, { status: 500 });
+    const errorRes = parseRouterError(error, '添付ファイルの取得に失敗しました');
+    return NextResponse.json(errorRes);
   }
 }

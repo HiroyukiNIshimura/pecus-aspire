@@ -8,6 +8,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
+import type { UserResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useValidation } from '@/hooks/useValidation';
 import { usernameFilterSchema } from '@/schemas/filterSchemas';
@@ -82,7 +83,7 @@ export default function AdminUsersClient({
           if (response.ok) {
             const data = await response.json();
             if (data?.data) {
-              const mappedUsers = data.data.map((user: any) => ({
+              const mappedUsers = data.data.map((user: UserResponse) => ({
                 id: user.id ?? 0,
                 username: user.username ?? '',
                 email: user.email ?? '',
@@ -128,7 +129,7 @@ export default function AdminUsersClient({
       if (response.ok) {
         const data = await response.json();
         if (data?.data) {
-          const mappedUsers = data.data.map((user: any) => ({
+          const mappedUsers = data.data.map((user: UserResponse) => ({
             id: user.id ?? 0,
             username: user.username ?? '',
             email: user.email ?? '',
@@ -170,7 +171,7 @@ export default function AdminUsersClient({
         if (response.ok) {
           const data = await response.json();
           if (data?.data) {
-            const mappedUsers = data.data.map((user: any) => ({
+            const mappedUsers = data.data.map((user: UserResponse) => ({
               id: user.id ?? 0,
               username: user.username ?? '',
               email: user.email ?? '',
