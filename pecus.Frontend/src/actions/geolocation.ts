@@ -2,6 +2,7 @@
 
 import { parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { ApiResponse } from './types';
+import { serverError, validationError } from './types';
 
 /**
  * Nominatim OpenStreetMap API から返されるレスポンス
@@ -69,27 +70,15 @@ export async function getLocationFromCoordinates(
   try {
     // 入力値の検証
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-      return {
-        success: false,
-        error: 'validation',
-        message: '緯度と経度は数値である必要があります。',
-      };
+      return validationError('緯度と経度は数値である必要があります。');
     }
 
     if (latitude < -90 || latitude > 90) {
-      return {
-        success: false,
-        error: 'validation',
-        message: '緯度は-90から90の範囲内である必要があります。',
-      };
+      return validationError('緯度は-90から90の範囲内である必要があります。');
     }
 
     if (longitude < -180 || longitude > 180) {
-      return {
-        success: false,
-        error: 'validation',
-        message: '経度は-180から180の範囲内である必要があります。',
-      };
+      return validationError('経度は-180から180の範囲内である必要があります。');
     }
 
     // Nominatim API を呼び出し
@@ -109,22 +98,14 @@ export async function getLocationFromCoordinates(
 
     if (!response.ok) {
       console.error(`Nominatim API error: ${response.status} ${response.statusText}`);
-      return {
-        success: false,
-        error: 'server',
-        message: `位置情報の取得に失敗しました。(Status: ${response.status})`,
-      };
+      return serverError(`位置情報の取得に失敗しました。(Status: ${response.status})`);
     }
 
     const data: NominatimResponse = await response.json();
 
     // レスポンスの必須フィールドチェック
     if (!data.address || !data.display_name) {
-      return {
-        success: false,
-        error: 'server',
-        message: '位置情報の取得に失敗しました。(Invalid response)',
-      };
+      return serverError('位置情報の取得に失敗しました。(Invalid response)');
     }
 
     // LocationInfo にマッピング
@@ -151,11 +132,7 @@ export async function getLocationFromCoordinates(
 
     // タイムアウトエラーの処理
     if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') {
-      return {
-        success: false,
-        error: 'server',
-        message: '位置情報の取得がタイムアウトしました。',
-      };
+      return serverError('位置情報の取得がタイムアウトしました。');
     }
     return parseErrorResponse(error, '位置情報の取得中にエラーが発生しました。');
   }
@@ -178,20 +155,12 @@ export async function getLocationsFromCoordinates(
 ): Promise<ApiResponse<LocationInfo[]>> {
   try {
     if (!Array.isArray(coordinates) || coordinates.length === 0) {
-      return {
-        success: false,
-        error: 'validation',
-        message: '座標情報の配列が空です。',
-      };
+      return validationError('座標情報の配列が空です。');
     }
 
     // 最大 50 件の制限（API レート制限対策）
     if (coordinates.length > 50) {
-      return {
-        success: false,
-        error: 'validation',
-        message: '座標情報は最大50件までです。',
-      };
+      return validationError('座標情報は最大50件までです。');
     }
 
     const locationPromises = coordinates.map((coord) => getLocationFromCoordinates(coord.latitude, coord.longitude));
@@ -207,11 +176,7 @@ export async function getLocationsFromCoordinates(
       .map((result) => result.data);
 
     if (locationInfos.length === 0) {
-      return {
-        success: false,
-        error: 'server',
-        message: '位置情報を取得できませんでした。',
-      };
+      return serverError('位置情報を取得できませんでした。');
     }
 
     return {

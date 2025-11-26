@@ -39,3 +39,64 @@ export type ErrorResponse = {
  * - error: その他のエラー（validation, server, not_found, forbidden）
  */
 export type ApiResponse<T> = { success: true; data: T } | ConflictResponse<T> | ErrorResponse;
+
+// ============================================
+// ヘルパー関数
+// ============================================
+
+/**
+ * エラーレスポンスを生成する内部ヘルパー
+ */
+function createErrorResponse<T>(errorType: ErrorResponse['error'], message: string): ApiResponse<T> {
+  return {
+    success: false,
+    error: errorType,
+    message,
+  };
+}
+
+/**
+ * バリデーションエラーレスポンスを生成
+ * 入力値検証エラー（事前チェック）に使用
+ *
+ * @param message エラーメッセージ
+ * @example
+ * if (latitude < -90 || latitude > 90) {
+ *   return validationError('緯度は-90から90の範囲内である必要があります。');
+ * }
+ */
+export function validationError<T>(message: string): ApiResponse<T> {
+  return createErrorResponse('validation', message);
+}
+
+/**
+ * サーバーエラーレスポンスを生成
+ * API レスポンスエラー（非例外）に使用
+ *
+ * @param message エラーメッセージ
+ * @example
+ * if (!response.ok) {
+ *   return serverError(`位置情報の取得に失敗しました。(Status: ${response.status})`);
+ * }
+ */
+export function serverError<T>(message: string): ApiResponse<T> {
+  return createErrorResponse('server', message);
+}
+
+/**
+ * Not Found エラーレスポンスを生成
+ *
+ * @param message エラーメッセージ
+ */
+export function notFoundError<T>(message: string): ApiResponse<T> {
+  return createErrorResponse('not_found', message);
+}
+
+/**
+ * Forbidden エラーレスポンスを生成
+ *
+ * @param message エラーメッセージ
+ */
+export function forbiddenError<T>(message: string): ApiResponse<T> {
+  return createErrorResponse('forbidden', message);
+}

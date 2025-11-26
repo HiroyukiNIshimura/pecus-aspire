@@ -172,7 +172,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
       // 【優先】Server Action で Nominatim API を呼び出し
       const result = await getLocationFromCoordinates(latitude, longitude);
 
-      if ('data' in result && result.data) {
+      if (result.success && result.data) {
         // Nominatim APIから取得した詳細な地域情報を使用
         const parts = [
           result.data.country && `${result.data.country}(${result.data.countryCode})`,

@@ -15,7 +15,7 @@ export default function ForgotPasswordFormClient() {
     onSubmit: async (data) => {
       const result = await requestPasswordResetAction(data);
       if (result.success) {
-        setSuccessMessage(result.message);
+        setSuccessMessage(result.data.message);
         // フォームをリセット
         formRef.current?.reset();
         setEmail('');

@@ -9,6 +9,7 @@ import {
 } from '@/connectors/api/PecusApiClient';
 import type { WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * Server Action: ワークスペースを作成（一般ユーザー用）
@@ -132,11 +133,7 @@ export async function toggleWorkspaceActive(
     // rowVersionが存在しない、または0の場合はエラー
     if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
       console.error('Invalid rowVersion:', detailResponse.rowVersion);
-      return {
-        success: false,
-        error: 'validation',
-        message: 'ワークスペースのバージョン情報が取得できませんでした。',
-      };
+      return validationError('ワークスペースのバージョン情報が取得できませんでした。');
     }
 
     // isActiveに応じて適切なエンドポイントを呼び出す

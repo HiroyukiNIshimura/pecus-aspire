@@ -15,6 +15,7 @@ import type {
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
+import { serverError } from './types';
 
 /**
  * Server Action: 最新のワークスペースアイテムを取得
@@ -135,11 +136,7 @@ export async function updateWorkspaceItemAssignee(
       };
     }
 
-    return {
-      success: false,
-      error: 'server',
-      message: 'アイテムの取得に失敗しました。',
-    };
+    return serverError('アイテムの取得に失敗しました。');
   } catch (error) {
     console.error('Failed to update workspace item assignee:', error);
 

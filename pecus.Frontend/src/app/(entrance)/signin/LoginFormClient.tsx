@@ -75,7 +75,7 @@ export default function LoginFormClient() {
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : 'ログイン認証に失敗しました。');
+        setApiError(result.message || 'ログイン認証に失敗しました。');
       } catch (err: unknown) {
         console.error('ログイン処理中にエラーが発生:', err);
         setApiError('ログイン処理中にエラーが発生しました。');

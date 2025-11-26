@@ -97,7 +97,7 @@ export default function EditUserClient({
         updatePromises.push(
           setUserActiveStatus(userDetail.id!, isActive).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || 'アクティブ状態の更新に失敗しました。');
+              throw new Error(result.message || 'アクティブ状態の更新に失敗しました。');
             }
             updateMessages.push(isActive ? 'ユーザーを有効化しました' : 'ユーザーを無効化しました');
           }),
@@ -108,7 +108,7 @@ export default function EditUserClient({
         updatePromises.push(
           setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || 'スキルの更新に失敗しました。');
+              throw new Error(result.message || 'スキルの更新に失敗しました。');
             }
             updateMessages.push('スキルを更新しました');
           }),
@@ -119,7 +119,7 @@ export default function EditUserClient({
         updatePromises.push(
           setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || 'ロールの更新に失敗しました。');
+              throw new Error(result.message || 'ロールの更新に失敗しました。');
             }
             updateMessages.push('ロールを更新しました');
           }),
@@ -171,7 +171,7 @@ export default function EditUserClient({
       if (result.success) {
         notify.success('パスワードリセットメールを送信しました。');
       } else {
-        notify.error(result.error || 'パスワードリセットの送信に失敗しました。');
+        notify.error(result.message || 'パスワードリセットの送信に失敗しました。');
       }
     } catch (err: unknown) {
       console.error('パスワードリセット送信中にエラーが発生:', err);

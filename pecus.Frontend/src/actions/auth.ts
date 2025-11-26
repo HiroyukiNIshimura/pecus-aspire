@@ -7,6 +7,7 @@ import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import { type SessionData, SessionManager } from '@/libs/session';
 import type { ApiResponse } from './types';
+import { serverError } from './types';
 
 /**
  * Server Action: ログイン
@@ -50,11 +51,7 @@ export async function login(request: {
     const refreshToken = response.refreshToken || '';
 
     if (!accessToken) {
-      return {
-        success: false,
-        error: 'server',
-        message: 'Invalid response from server',
-      };
+      return serverError('Invalid response from server');
     }
 
     // セッション情報を保存

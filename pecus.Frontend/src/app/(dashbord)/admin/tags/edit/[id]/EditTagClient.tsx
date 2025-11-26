@@ -51,12 +51,8 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
           notify.success('タグを更新しました。');
           router.push('/admin/tags');
         } else {
-          console.error('タグの更新に失敗しました:', result.error);
-          notify.error(
-            result.error
-              ? `タグの更新中にエラーが発生しました。(${result.error})`
-              : 'タグの更新中にエラーが発生しました。',
-          );
+          console.error('タグの更新に失敗しました:', result.message);
+          notify.error(result.message || 'タグの更新中にエラーが発生しました。');
         }
       } catch (err: unknown) {
         console.error('タグの更新中にエラーが発生しました:', err);
