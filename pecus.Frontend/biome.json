@@ -14,7 +14,8 @@
       "src/**/*.tsx",
       "src/**/*.js",
       "src/**/*.jsx",
-      "!src/connectors"
+      "!src/connectors",
+      "!public/**"
     ]
   },
   "formatter": {
@@ -30,7 +31,7 @@
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off",
-        "noExplicitAny": "off"
+        "noExplicitAny": "on"
       },
       "a11y": {
         "noStaticElementInteractions": "off",
