@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import { useEffect, useState } from "react";
-import { createWorkspace } from "@/actions/workspace";
-import type { MasterGenreResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import { useEffect, useState } from 'react';
+import { createWorkspace } from '@/actions/workspace';
+import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
         // genreId が string の場合は number に変換
         const requestData = {
           ...data,
-          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+          genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
         };
 
         const result = await createWorkspace(requestData);
@@ -124,13 +124,13 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                   name="name"
                   type="text"
                   placeholder="例：プロジェクトA"
-                  className={`input input-bordered ${shouldShowError("name") ? "input-error" : ""}`}
-                  onBlur={(e) => validateField("name", e.target.value)}
+                  className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
+                  onBlur={(e) => validateField('name', e.target.value)}
                   disabled={isSubmitting}
                 />
-                {shouldShowError("name") && (
+                {shouldShowError('name') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('name')}</span>
                   </div>
                 )}
               </div>
@@ -145,14 +145,14 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                   name="description"
                   placeholder="ワークスペースの説明を入力してください..."
                   className={`textarea textarea-bordered h-24 ${
-                    shouldShowError("description") ? "textarea-error" : ""
+                    shouldShowError('description') ? 'textarea-error' : ''
                   }`}
-                  onBlur={(e) => validateField("description", e.target.value)}
+                  onBlur={(e) => validateField('description', e.target.value)}
                   disabled={isSubmitting}
                 />
-                {shouldShowError("description") && (
+                {shouldShowError('description') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('description')}</span>
                   </div>
                 )}
               </div>
@@ -167,7 +167,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                 <select
                   id="genreId"
                   name="genreId"
-                  className={`select select-bordered ${shouldShowError("genreId") ? "select-error" : ""}`}
+                  className={`select select-bordered ${shouldShowError('genreId') ? 'select-error' : ''}`}
                   disabled={isSubmitting || genres.length === 0}
                 >
                   <option value="">選択してください</option>
@@ -178,9 +178,9 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                     </option>
                   ))}
                 </select>
-                {shouldShowError("genreId") && (
+                {shouldShowError('genreId') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("genreId")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
                   </div>
                 )}
               </div>

@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { z } from "zod";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import { type RequestPasswordResetInput, requestPasswordResetSchema } from "@/schemas/signInSchemas";
+import { z } from 'zod';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { type RequestPasswordResetInput, requestPasswordResetSchema } from '@/schemas/signInSchemas';
 
 /**
  * パスワードリセットリクエスト実行
@@ -28,7 +28,7 @@ export async function requestPasswordResetAction(
 
     return {
       success: true,
-      message: result.message || "パスワードリセットメールを送信しました。メールを確認してください。",
+      message: result.message || 'パスワードリセットメールを送信しました。メールを確認してください。',
     };
   } catch (error) {
     // Zodバリデーションエラー
@@ -43,14 +43,14 @@ export async function requestPasswordResetAction(
     if (error instanceof Error) {
       return {
         success: false,
-        errors: [error.message || "パスワードリセットリクエストに失敗しました。"],
+        errors: [error.message || 'パスワードリセットリクエストに失敗しました。'],
       };
     }
 
     // 予期しないエラー
     return {
       success: false,
-      errors: ["予期しないエラーが発生しました。"],
+      errors: ['予期しないエラーが発生しました。'],
     };
   }
 }

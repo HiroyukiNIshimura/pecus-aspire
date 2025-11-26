@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import { $isCodeNode } from "@lexical/code";
-import { $getNearestNodeFromDOMNode, $getSelection, $setSelection, type LexicalEditor } from "lexical";
-import { useState } from "react";
+import { $isCodeNode } from '@lexical/code';
+import { $getNearestNodeFromDOMNode, $getSelection, $setSelection, type LexicalEditor } from 'lexical';
+import { useState } from 'react';
 
-import { useDebounce } from "../../utils";
+import { useDebounce } from '../../utils';
 
 interface Props {
   editor: LexicalEditor;
@@ -30,7 +30,7 @@ export function CopyButton({ editor, getCodeDOMNode }: Props) {
       return;
     }
 
-    let content = "";
+    let content = '';
 
     editor.update(() => {
       const codeNode = $getNearestNodeFromDOMNode(codeDOMNode);
@@ -48,7 +48,7 @@ export function CopyButton({ editor, getCodeDOMNode }: Props) {
       setCopyCompleted(true);
       removeSuccessIcon();
     } catch (err) {
-      console.error("Failed to copy: ", err);
+      console.error('Failed to copy: ', err);
     }
   }
 

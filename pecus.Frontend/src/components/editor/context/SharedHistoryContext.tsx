@@ -6,11 +6,11 @@
  *
  */
 
-import type { HistoryState } from "@lexical/react/LexicalHistoryPlugin";
-import { createEmptyHistoryState } from "@lexical/react/LexicalHistoryPlugin";
-import type * as React from "react";
-import type { JSX } from "react";
-import { createContext, type ReactNode, useContext, useMemo } from "react";
+import type { HistoryState } from '@lexical/react/LexicalHistoryPlugin';
+import { createEmptyHistoryState } from '@lexical/react/LexicalHistoryPlugin';
+import type * as React from 'react';
+import type { JSX } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
 type ContextShape = {
   historyState?: HistoryState;

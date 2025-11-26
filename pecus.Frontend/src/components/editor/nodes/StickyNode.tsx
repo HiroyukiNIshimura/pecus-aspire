@@ -15,14 +15,14 @@ import type {
   SerializedEditor,
   SerializedLexicalNode,
   Spread,
-} from "lexical";
-import { $setSelection, createEditor, DecoratorNode } from "lexical";
-import type { JSX } from "react";
-import * as React from "react";
+} from 'lexical';
+import { $setSelection, createEditor, DecoratorNode } from 'lexical';
+import type { JSX } from 'react';
+import * as React from 'react';
 
-const StickyComponent = React.lazy(() => import("./StickyComponent"));
+const StickyComponent = React.lazy(() => import('./StickyComponent'));
 
-type StickyNoteColor = "pink" | "yellow";
+type StickyNoteColor = 'pink' | 'yellow';
 
 export type SerializedStickyNode = Spread<
   {
@@ -41,7 +41,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
   __caption: LexicalEditor;
 
   static getType(): string {
-    return "sticky";
+    return 'sticky';
   }
 
   static clone(node: StickyNode): StickyNode {
@@ -64,7 +64,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
     return stickyNode;
   }
 
-  constructor(x: number, y: number, color: "pink" | "yellow", caption?: LexicalEditor, key?: NodeKey) {
+  constructor(x: number, y: number, color: 'pink' | 'yellow', caption?: LexicalEditor, key?: NodeKey) {
     super(key);
     this.__x = x;
     this.__y = y;
@@ -83,8 +83,8 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
   }
 
   createDOM(_config: EditorConfig): HTMLElement {
-    const div = document.createElement("div");
-    div.style.display = "contents";
+    const div = document.createElement('div');
+    div.style.display = 'contents';
     return div;
   }
 
@@ -101,7 +101,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
 
   toggleColor(): void {
     const writable = this.getWritable();
-    writable.__color = writable.__color === "pink" ? "yellow" : "pink";
+    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
   }
 
   decorate(_editor: LexicalEditor, _config: EditorConfig): JSX.Element {
@@ -126,5 +126,5 @@ export function $isStickyNode(node: LexicalNode | null | undefined): node is Sti
 }
 
 export function $createStickyNode(xOffset: number, yOffset: number): StickyNode {
-  return new StickyNode(xOffset, yOffset, "yellow");
+  return new StickyNode(xOffset, yOffset, 'yellow');
 }

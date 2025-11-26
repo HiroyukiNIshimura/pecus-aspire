@@ -6,7 +6,7 @@
  *
  */
 
-import { IS_CHROME } from "@lexical/utils";
+import { IS_CHROME } from '@lexical/utils';
 import {
   type DOMConversionMap,
   type DOMConversionOutput,
@@ -16,10 +16,10 @@ import {
   type LexicalEditor,
   type LexicalNode,
   type SerializedElementNode,
-} from "lexical";
+} from 'lexical';
 
-import { $isCollapsibleContainerNode } from "./CollapsibleContainerNode";
-import { domOnBeforeMatch, setDomHiddenUntilFound } from "./CollapsibleUtils";
+import { $isCollapsibleContainerNode } from './CollapsibleContainerNode';
+import { domOnBeforeMatch, setDomHiddenUntilFound } from './CollapsibleUtils';
 
 type SerializedCollapsibleContentNode = SerializedElementNode;
 
@@ -32,7 +32,7 @@ export function $convertCollapsibleContentElement(_domNode: HTMLElement): DOMCon
 
 export class CollapsibleContentNode extends ElementNode {
   static getType(): string {
-    return "collapsible-content";
+    return 'collapsible-content';
   }
 
   static clone(node: CollapsibleContentNode): CollapsibleContentNode {
@@ -40,13 +40,13 @@ export class CollapsibleContentNode extends ElementNode {
   }
 
   createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement {
-    const dom = document.createElement("div");
-    dom.classList.add("Collapsible__content");
+    const dom = document.createElement('div');
+    dom.classList.add('Collapsible__content');
     if (IS_CHROME) {
       editor.getEditorState().read(() => {
         const containerNode = this.getParentOrThrow();
         if (!$isCollapsibleContainerNode(containerNode)) {
-          throw new Error("Expected parent node to be a CollapsibleContainerNode");
+          throw new Error('Expected parent node to be a CollapsibleContainerNode');
         }
         if (!containerNode.__open) {
           setDomHiddenUntilFound(dom);
@@ -56,7 +56,7 @@ export class CollapsibleContentNode extends ElementNode {
         editor.update(() => {
           const containerNode = this.getParentOrThrow().getLatest();
           if (!$isCollapsibleContainerNode(containerNode)) {
-            throw new Error("Expected parent node to be a CollapsibleContainerNode");
+            throw new Error('Expected parent node to be a CollapsibleContainerNode');
           }
           if (!containerNode.__open) {
             containerNode.toggleOpen();
@@ -74,7 +74,7 @@ export class CollapsibleContentNode extends ElementNode {
   static importDOM(): DOMConversionMap | null {
     return {
       div: (domNode: HTMLElement) => {
-        if (!domNode.hasAttribute("data-lexical-collapsible-content")) {
+        if (!domNode.hasAttribute('data-lexical-collapsible-content')) {
           return null;
         }
         return {
@@ -86,9 +86,9 @@ export class CollapsibleContentNode extends ElementNode {
   }
 
   exportDOM(): DOMExportOutput {
-    const element = document.createElement("div");
-    element.classList.add("Collapsible__content");
-    element.setAttribute("data-lexical-collapsible-content", "true");
+    const element = document.createElement('div');
+    element.classList.add('Collapsible__content');
+    element.setAttribute('data-lexical-collapsible-content', 'true');
     return { element };
   }
 

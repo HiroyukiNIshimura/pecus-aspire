@@ -6,24 +6,24 @@
  *
  */
 
-import type { LexicalEditor, NodeKey } from "lexical";
-import type { JSX } from "react";
+import type { LexicalEditor, NodeKey } from 'lexical';
+import type { JSX } from 'react';
 
-import "./StickyNode.css";
+import './StickyNode.css';
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
-import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
-import { calculateZoomLevel } from "@lexical/utils";
-import { $getNodeByKey } from "lexical";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { LexicalNestedComposer } from '@lexical/react/LexicalNestedComposer';
+import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
+import { calculateZoomLevel } from '@lexical/utils';
+import { $getNodeByKey } from 'lexical';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { useSharedHistoryContext } from "../context/SharedHistoryContext";
-import StickyEditorTheme from "../themes/StickyEditorTheme";
-import ContentEditable from "../ui/ContentEditable";
-import { $isStickyNode } from "./StickyNode";
+import { useSharedHistoryContext } from '../context/SharedHistoryContext';
+import StickyEditorTheme from '../themes/StickyEditorTheme';
+import ContentEditable from '../ui/ContentEditable';
+import { $isStickyNode } from './StickyNode';
 
 type Positioning = {
   isDragging: boolean;
@@ -49,7 +49,7 @@ export default function StickyComponent({
   caption,
 }: {
   caption: LexicalEditor;
-  color: "pink" | "yellow";
+  color: 'pink' | 'yellow';
   nodeKey: NodeKey;
   x: number;
   y: number;
@@ -71,7 +71,7 @@ export default function StickyComponent({
     const rootElement = editor.getRootElement();
     if (rootElement) {
       // .editor-scroller を探す（エディターの親要素）
-      const scrollerContainer = rootElement.closest(".editor-scroller");
+      const scrollerContainer = rootElement.closest('.editor-scroller');
       if (scrollerContainer) {
         setPortalContainer(scrollerContainer as HTMLElement);
       } else {
@@ -92,12 +92,12 @@ export default function StickyComponent({
     };
 
     // FlyonUI が監視するイベントをキャプチャ
-    stickyContainer.addEventListener("focusin", stopFlyonuiEvents);
-    stickyContainer.addEventListener("focusout", stopFlyonuiEvents);
+    stickyContainer.addEventListener('focusin', stopFlyonuiEvents);
+    stickyContainer.addEventListener('focusout', stopFlyonuiEvents);
 
     return () => {
-      stickyContainer.removeEventListener("focusin", stopFlyonuiEvents);
-      stickyContainer.removeEventListener("focusout", stopFlyonuiEvents);
+      stickyContainer.removeEventListener('focusin', stopFlyonuiEvents);
+      stickyContainer.removeEventListener('focusout', stopFlyonuiEvents);
     };
   }, []);
 
@@ -154,12 +154,12 @@ export default function StickyComponent({
       }
     };
 
-    window.addEventListener("resize", handleWindowResize);
-    window.addEventListener("scroll", handleScroll, true); // capture phase でスクロールを検知
+    window.addEventListener('resize', handleWindowResize);
+    window.addEventListener('scroll', handleScroll, true); // capture phase でスクロールを検知
 
     return () => {
-      window.removeEventListener("resize", handleWindowResize);
-      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener('resize', handleWindowResize);
+      window.removeEventListener('scroll', handleScroll, true);
       removeRootListener();
     };
   }, [editor]);
@@ -170,7 +170,7 @@ export default function StickyComponent({
       // Delay adding transition so we don't trigger the
       // transition on load of the sticky.
       setTimeout(() => {
-        stickyContainer.style.setProperty("transition", "top 0.3s ease 0s, left 0.3s ease 0s");
+        stickyContainer.style.setProperty('transition', 'top 0.3s ease 0s, left 0.3s ease 0s');
       }, 500);
     }
   }, []);
@@ -213,7 +213,7 @@ export default function StickyComponent({
     const positioning = positioningRef.current;
     if (stickyContainer !== null) {
       positioning.isDragging = false;
-      stickyContainer.classList.remove("dragging");
+      stickyContainer.classList.remove('dragging');
       editor.update(() => {
         const node = $getNodeByKey(nodeKey);
         if ($isStickyNode(node)) {
@@ -221,8 +221,8 @@ export default function StickyComponent({
         }
       });
     }
-    document.removeEventListener("pointermove", handlePointerMove);
-    document.removeEventListener("pointerup", handlePointerUp);
+    document.removeEventListener('pointermove', handlePointerMove);
+    document.removeEventListener('pointerup', handlePointerUp);
   };
 
   const handleDelete = () => {
@@ -264,9 +264,9 @@ export default function StickyComponent({
             positioning.offsetX = (event.clientX - portalRect.left) / zoom - positioning.x;
             positioning.offsetY = (event.clientY - portalRect.top) / zoom - positioning.y;
             positioning.isDragging = true;
-            stickContainer.classList.add("dragging");
-            document.addEventListener("pointermove", handlePointerMove);
-            document.addEventListener("pointerup", handlePointerUp);
+            stickContainer.classList.add('dragging');
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
             event.preventDefault();
           }
         }}

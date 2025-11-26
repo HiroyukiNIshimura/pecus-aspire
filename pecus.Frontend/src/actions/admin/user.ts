@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type { SuccessResponse, UserResponse, UserResponseUserStatisticsPagedResponse } from "@/connectors/api/pecus";
-import type { ApiResponse } from "../types";
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import type { SuccessResponse, UserResponse, UserResponseUserStatisticsPagedResponse } from '@/connectors/api/pecus';
+import type { ApiResponse } from '../types';
 
 /**
  * Server Action: ユーザー一覧を取得
@@ -13,7 +13,7 @@ export async function getUsers(
   isActive?: boolean,
   username?: string,
   skillIds?: number[],
-  skillFilterMode: string = "and",
+  skillFilterMode: string = 'and',
 ): Promise<ApiResponse<UserResponseUserStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
@@ -27,11 +27,11 @@ export async function getUsers(
     );
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to fetch users:", error);
+    console.error('Failed to fetch users:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to fetch users",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to fetch users',
     };
   }
 }
@@ -49,11 +49,11 @@ export async function createUserWithoutPassword(request: {
     const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to create user:", error);
+    console.error('Failed to create user:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to create user",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to create user',
     };
   }
 }
@@ -67,11 +67,11 @@ export async function deleteUser(userId: number): Promise<ApiResponse<SuccessRes
     const response = await api.adminUser.deleteApiAdminUsers(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to delete user:", error);
+    console.error('Failed to delete user:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to delete user",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to delete user',
     };
   }
 }
@@ -94,19 +94,19 @@ export async function setUserActiveStatus(userId: number, isActive: boolean): Pr
       const current = payload.current as UserResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "user",
+          type: 'user',
           data: current as UserResponse,
         },
       };
     }
-    console.error("Failed to set user active status:", error);
+    console.error('Failed to set user active status:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to set user active status",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to set user active status',
     };
   }
 }
@@ -120,11 +120,11 @@ export async function requestPasswordReset(userId: number): Promise<ApiResponse<
     const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to request password reset:", error);
+    console.error('Failed to request password reset:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to request password reset",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to request password reset',
     };
   }
 }
@@ -138,11 +138,11 @@ export async function getUserDetail(userId: number): Promise<ApiResponse<UserRes
     const response = await api.adminUser.getApiAdminUsers(userId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to fetch user detail:", error);
+    console.error('Failed to fetch user detail:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ユーザー情報の取得に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'ユーザー情報の取得に失敗しました',
     };
   }
 }
@@ -171,20 +171,20 @@ export async function setUserSkills(
       const current = payload.current as UserResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "user",
+          type: 'user',
           data: current as UserResponse,
         },
       };
     }
 
-    console.error("Failed to set user skills:", error);
+    console.error('Failed to set user skills:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ユーザースキルの更新に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'ユーザースキルの更新に失敗しました',
     };
   }
 }
@@ -217,20 +217,20 @@ export async function setUserRoles(
       const current = payload.current as UserResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "user",
+          type: 'user',
           data: current as UserResponse,
         },
       };
     }
 
-    console.error("Failed to set user roles:", error);
+    console.error('Failed to set user roles:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ユーザーロールの更新に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'ユーザーロールの更新に失敗しました',
     };
   }
 }

@@ -5,19 +5,19 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-"use client";
+'use client';
 
-import "./Editor.css";
-import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
-import { defineExtension } from "lexical";
-import { useMemo } from "react";
-import { INITIAL_SETTINGS } from "./appSettings";
-import { buildHTMLConfig } from "./buildHTMLConfig";
-import { SettingsContext } from "./context/SettingsContext";
-import NotionLikeEditorNodes from "./nodes/NotionLikeEditorNodes";
-import { TableContext } from "./plugins/TablePlugin";
-import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
-import Viewer from "./Viewer";
+import './Editor.css';
+import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
+import { defineExtension } from 'lexical';
+import { useMemo } from 'react';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
+import { SettingsContext } from './context/SettingsContext';
+import NotionLikeEditorNodes from './nodes/NotionLikeEditorNodes';
+import { TableContext } from './plugins/TablePlugin';
+import NotionLikeEditorTheme from './themes/NotionLikeEditorTheme';
+import Viewer from './Viewer';
 
 export interface NotionLikeViewerProps {
   /**
@@ -46,8 +46,8 @@ export default function NotionLikeViewer({ initialViewerState, isCodeShiki = fal
       defineExtension({
         $initialEditorState: initialViewerState,
         html: buildHTMLConfig(),
-        name: "pecus/NotionLikeViewer",
-        namespace: "NotionLikeViewer",
+        name: 'pecus/NotionLikeViewer',
+        namespace: 'NotionLikeViewer',
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
         editable: false,

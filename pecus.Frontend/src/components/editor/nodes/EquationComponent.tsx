@@ -6,9 +6,9 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useLexicalEditable } from "@lexical/react/useLexicalEditable";
-import { mergeRegister } from "@lexical/utils";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useLexicalEditable } from '@lexical/react/useLexicalEditable';
+import { mergeRegister } from '@lexical/utils';
 import {
   $getNodeByKey,
   $getSelection,
@@ -17,14 +17,14 @@ import {
   KEY_ESCAPE_COMMAND,
   type NodeKey,
   SELECTION_CHANGE_COMMAND,
-} from "lexical";
-import type { JSX } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+} from 'lexical';
+import type { JSX } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-import EquationEditor from "../ui/EquationEditor";
-import KatexRenderer from "../ui/KatexRenderer";
-import { $isEquationNode } from "./EquationNode";
+import EquationEditor from '../ui/EquationEditor';
+import KatexRenderer from '../ui/KatexRenderer';
+import { $isEquationNode } from './EquationNode';
 
 type EquationComponentProps = {
   equation: string;

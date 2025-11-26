@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
+import { type NextRequest, NextResponse } from 'next/server';
+import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * ファイル名を安全なASCII互換の形式に変換
@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
  */
 function getSafeFileName(originalName: string): string {
   // 拡張子を取得
-  const lastDotIndex = originalName.lastIndexOf(".");
-  const extension = lastDotIndex > 0 ? originalName.slice(lastDotIndex) : "";
+  const lastDotIndex = originalName.lastIndexOf('.');
+  const extension = lastDotIndex > 0 ? originalName.slice(lastDotIndex) : '';
   const baseName = lastDotIndex > 0 ? originalName.slice(0, lastDotIndex) : originalName;
 
   // ASCII文字のみかチェック（制御文字も除外）
@@ -21,7 +21,7 @@ function getSafeFileName(originalName: string): string {
 
   if (isAsciiSafe) {
     // ASCII文字のみの場合はそのまま返す（スペースはアンダースコアに変換）
-    return baseName.replace(/\s+/g, "_") + extension;
+    return baseName.replace(/\s+/g, '_') + extension;
   }
 
   // 非ASCII文字を含む場合はタイムスタンプベースの名前を生成
@@ -40,26 +40,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: "無効なワークスペースIDです。" }, { status: 400 });
+      return NextResponse.json({ error: '無効なワークスペースIDです。' }, { status: 400 });
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json({ error: "無効なセッションIDです。" }, { status: 400 });
+      return NextResponse.json({ error: '無効なセッションIDです。' }, { status: 400 });
     }
 
     // FormData からファイルを取得
     const clientFormData = await request.formData();
-    const file = clientFormData.get("file") as File | null;
+    const file = clientFormData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "ファイルが指定されていません。" }, { status: 400 });
+      return NextResponse.json({ error: 'ファイルが指定されていません。' }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成
     const axios = await createAuthenticatedAxios();
 
     // FormDataを作成（Node.js環境でも動作するFormData）
-    const FormData = (await import("form-data")).default;
+    const FormData = (await import('form-data')).default;
     const formData = new FormData();
 
     // FileをArrayBufferに変換してBufferに変換
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // ファイル名を安全な形式に変換
     const safeFileName = getSafeFileName(file.name);
 
-    formData.append("file", buffer, {
+    formData.append('file', buffer, {
       filename: safeFileName,
       contentType: file.type,
     });
@@ -83,12 +83,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // バックエンドからのレスポンスをプロキシURL形式に変換
     const backendPreviewUrl = response.data.previewUrl as string | undefined;
-    let proxyPreviewUrl = "";
+    let proxyPreviewUrl = '';
 
     if (backendPreviewUrl) {
       // バックエンドのURLからファイル名を抽出
       // previewUrl 形式: /api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{fileName}
-      const urlParts = backendPreviewUrl.split("/");
+      const urlParts = backendPreviewUrl.split('/');
       const fileName = urlParts[urlParts.length - 1];
 
       // Next.js API Route のプロキシURLを生成
@@ -104,25 +104,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       previewUrl: proxyPreviewUrl,
     });
   } catch (error: any) {
-    console.error("Failed to upload temp file:", error);
+    console.error('Failed to upload temp file:', error);
 
     const status = error.response?.status || error.status;
 
     if (status === 401) {
-      return NextResponse.json({ error: "認証が必要です。" }, { status: 401 });
+      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
     }
 
     if (status === 403) {
-      return NextResponse.json({ error: "アクセス権限がありません。" }, { status: 403 });
+      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
     }
 
     if (status === 404) {
-      return NextResponse.json({ error: "ワークスペースが見つかりません。" }, { status: 404 });
+      return NextResponse.json({ error: 'ワークスペースが見つかりません。' }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error: error.response?.data?.message || error.message || "一時ファイルのアップロードに失敗しました。",
+        error: error.response?.data?.message || error.message || '一時ファイルのアップロードに失敗しました。',
       },
       { status: status || 500 },
     );
@@ -142,11 +142,11 @@ export async function DELETE(
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: "無効なワークスペースIDです。" }, { status: 400 });
+      return NextResponse.json({ error: '無効なワークスペースIDです。' }, { status: 400 });
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json({ error: "無効なセッションIDです。" }, { status: 400 });
+      return NextResponse.json({ error: '無効なセッションIDです。' }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成
@@ -157,25 +157,25 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (error: any) {
-    console.error("Failed to cleanup temp files:", error);
+    console.error('Failed to cleanup temp files:', error);
 
     const status = error.response?.status || error.status;
 
     if (status === 401) {
-      return NextResponse.json({ error: "認証が必要です。" }, { status: 401 });
+      return NextResponse.json({ error: '認証が必要です。' }, { status: 401 });
     }
 
     if (status === 403) {
-      return NextResponse.json({ error: "アクセス権限がありません。" }, { status: 403 });
+      return NextResponse.json({ error: 'アクセス権限がありません。' }, { status: 403 });
     }
 
     if (status === 404) {
-      return NextResponse.json({ error: "ワークスペースが見つかりません。" }, { status: 404 });
+      return NextResponse.json({ error: 'ワークスペースが見つかりません。' }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error: error.response?.data?.message || error.message || "一時ファイルのクリーンアップに失敗しました。",
+        error: error.response?.data?.message || error.message || '一時ファイルのクリーンアップに失敗しました。',
       },
       { status: status || 500 },
     );

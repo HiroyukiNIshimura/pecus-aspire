@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import AppHeader from "@/components/common/AppHeader";
-import type { UserInfo } from "@/types/userInfo";
+import AppHeader from '@/components/common/AppHeader';
+import type { UserInfo } from '@/types/userInfo';
 
 interface AdminHeaderProps {
   userInfo: UserInfo | null;

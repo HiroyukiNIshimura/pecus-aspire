@@ -1,4 +1,5 @@
 {
+  "biome.enabled": true,
   "editor.formatOnSave": false,
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
@@ -7,30 +8,30 @@
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": [
-      "quickfix.biome"
-    ]
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "explicit"
+    }
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": [
-      "quickfix.biome"
-    ]
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "explicit"
+    }
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": [
-      "quickfix.biome"
-    ]
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "explicit"
+    }
   },
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": [
-      "quickfix.biome"
-    ]
+    "editor.codeActionsOnSave": {
+        "source.fixAll.biome": "explicit"
+    }
   },
   "omnisharp.enableEditorConfigSupport": true,
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
@@ -47,5 +48,6 @@
   },
   "shellcheck.ignorePatterns": {
     "**/.env*": true
-  }
+  },
+  "editor.defaultFormatter": "biomejs.biome"
 }

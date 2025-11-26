@@ -1,17 +1,17 @@
-import { redirect } from "next/navigation";
-import { getWorkspaces } from "@/actions/admin/workspace";
-import { getGenres } from "@/actions/master";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import { redirect } from 'next/navigation';
+import { getWorkspaces } from '@/actions/admin/workspace';
+import { getGenres } from '@/actions/master';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
   MasterGenreResponse,
   UserResponse,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
-} from "@/connectors/api/pecus";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import AdminWorkspacesClient from "./AdminWorkspacesClient";
+} from '@/connectors/api/pecus';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import AdminWorkspacesClient from './AdminWorkspacesClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminWorkspaces() {
@@ -47,19 +47,19 @@ export default async function AdminWorkspaces() {
       genres = genresResult.data ?? [];
     }
   } catch (error: any) {
-    console.error("AdminWorkspaces: failed to fetch data", error);
+    console.error('AdminWorkspaces: failed to fetch data', error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // UserResponse から UserInfo に変換

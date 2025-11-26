@@ -34,16 +34,16 @@ export default function PasswordRequirementIndicator({ password, requirements }:
   return (
     <div className="label">
       <span className="label-text-alt flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-        <span className={reqs.minLength ? "text-success" : "text-error"}>{reqs.minLength ? "✔" : "✘"} 8文字以上</span>
-        <span className={reqs.hasUpperCase ? "text-success" : "text-error"}>
-          {reqs.hasUpperCase ? "✔" : "✘"} 大文字
+        <span className={reqs.minLength ? 'text-success' : 'text-error'}>{reqs.minLength ? '✔' : '✘'} 8文字以上</span>
+        <span className={reqs.hasUpperCase ? 'text-success' : 'text-error'}>
+          {reqs.hasUpperCase ? '✔' : '✘'} 大文字
         </span>
-        <span className={reqs.hasLowerCase ? "text-success" : "text-error"}>
-          {reqs.hasLowerCase ? "✔" : "✘"} 小文字
+        <span className={reqs.hasLowerCase ? 'text-success' : 'text-error'}>
+          {reqs.hasLowerCase ? '✔' : '✘'} 小文字
         </span>
-        <span className={reqs.hasNumber ? "text-success" : "text-error"}>{reqs.hasNumber ? "✔" : "✘"} 数字</span>
-        <span className={reqs.hasSpecialChar ? "text-success" : "text-base-content/50"}>
-          {reqs.hasSpecialChar ? "✔" : "○"} 記号(任意)
+        <span className={reqs.hasNumber ? 'text-success' : 'text-error'}>{reqs.hasNumber ? '✔' : '✘'} 数字</span>
+        <span className={reqs.hasSpecialChar ? 'text-success' : 'text-base-content/50'}>
+          {reqs.hasSpecialChar ? '✔' : '○'} 記号(任意)
         </span>
       </span>
     </div>

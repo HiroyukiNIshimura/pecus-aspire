@@ -6,36 +6,36 @@
  *
  */
 
-"use client";
+'use client';
 
-import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
-import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
-import { CAN_USE_DOM } from "@lexical/utils";
-import { useEffect, useState } from "react";
-import { useSettings } from "./context/SettingsContext";
-import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
-import CodeHighlightPrismPlugin from "./plugins/CodeHighlightPrismPlugin";
-import CodeHighlightShikiPlugin from "./plugins/CodeHighlightShikiPlugin";
-import CollapsiblePlugin from "./plugins/CollapsiblePlugin";
-import EquationsPlugin from "./plugins/EquationsPlugin";
-import FigmaPlugin from "./plugins/FigmaPlugin";
-import ImagesPlugin from "./plugins/ImagesPlugin";
-import { LayoutPlugin } from "./plugins/LayoutPlugin/LayoutPlugin";
-import LinkPlugin from "./plugins/LinkPlugin";
-import PageBreakPlugin from "./plugins/PageBreakPlugin";
-import SpecialTextPlugin from "./plugins/SpecialTextPlugin";
-import TabFocusPlugin from "./plugins/TabFocusPlugin";
-import TableCellResizer from "./plugins/TableCellResizer";
-import TableOfContentsPlugin from "./plugins/TableOfContentsPlugin";
-import TwitterPlugin from "./plugins/TwitterPlugin";
-import YouTubePlugin from "./plugins/YouTubePlugin";
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
+import { ClickableLinkPlugin } from '@lexical/react/LexicalClickableLinkPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
+import { CAN_USE_DOM } from '@lexical/utils';
+import { useEffect, useState } from 'react';
+import { useSettings } from './context/SettingsContext';
+import CodeActionMenuPlugin from './plugins/CodeActionMenuPlugin';
+import CodeHighlightPrismPlugin from './plugins/CodeHighlightPrismPlugin';
+import CodeHighlightShikiPlugin from './plugins/CodeHighlightShikiPlugin';
+import CollapsiblePlugin from './plugins/CollapsiblePlugin';
+import EquationsPlugin from './plugins/EquationsPlugin';
+import FigmaPlugin from './plugins/FigmaPlugin';
+import ImagesPlugin from './plugins/ImagesPlugin';
+import { LayoutPlugin } from './plugins/LayoutPlugin/LayoutPlugin';
+import LinkPlugin from './plugins/LinkPlugin';
+import PageBreakPlugin from './plugins/PageBreakPlugin';
+import SpecialTextPlugin from './plugins/SpecialTextPlugin';
+import TabFocusPlugin from './plugins/TabFocusPlugin';
+import TableCellResizer from './plugins/TableCellResizer';
+import TableOfContentsPlugin from './plugins/TableOfContentsPlugin';
+import TwitterPlugin from './plugins/TwitterPlugin';
+import YouTubePlugin from './plugins/YouTubePlugin';
 
 export default function Viewer() {
   const {
@@ -63,17 +63,17 @@ export default function Viewer() {
 
   useEffect(() => {
     const updateViewPortWidth = () => {
-      const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
+      const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
 
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
       }
     };
     updateViewPortWidth();
-    window.addEventListener("resize", updateViewPortWidth);
+    window.addEventListener('resize', updateViewPortWidth);
 
     return () => {
-      window.removeEventListener("resize", updateViewPortWidth);
+      window.removeEventListener('resize', updateViewPortWidth);
     };
   }, [isSmallWidthViewport]);
 

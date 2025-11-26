@@ -1,13 +1,13 @@
-"use server";
+'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceResponse,
-} from "@/connectors/api/pecus";
-import type { ApiResponse } from "../types";
+} from '@/connectors/api/pecus';
+import type { ApiResponse } from '../types';
 
 /**
  * Server Action: ワークスペース一覧を取得
@@ -22,11 +22,11 @@ export async function getWorkspaces(
     const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to fetch workspaces:", error);
+    console.error('Failed to fetch workspaces:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to fetch workspaces",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to fetch workspaces',
     };
   }
 }
@@ -40,11 +40,11 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
     const response = await api.adminWorkspace.getApiAdminWorkspaces1(workspaceId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to fetch workspace detail:", error);
+    console.error('Failed to fetch workspace detail:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to fetch workspace detail",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to fetch workspace detail',
     };
   }
 }
@@ -63,11 +63,11 @@ export async function createWorkspace(request: {
     const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to create workspace:", error);
+    console.error('Failed to create workspace:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to create workspace",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to create workspace',
     };
   }
 }
@@ -97,20 +97,20 @@ export async function updateWorkspace(
       const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "workspace",
+          type: 'workspace',
           data: current as WorkspaceDetailResponse,
         },
       };
     }
 
-    console.error("Failed to update workspace:", error);
+    console.error('Failed to update workspace:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to update workspace",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to update workspace',
     };
   }
 }
@@ -124,11 +124,11 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
     const response = await api.adminWorkspace.deleteApiAdminWorkspaces(workspaceId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to delete workspace:", error);
+    console.error('Failed to delete workspace:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to delete workspace",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to delete workspace',
     };
   }
 }
@@ -150,20 +150,20 @@ export async function activateWorkspace(workspaceId: number): Promise<ApiRespons
       const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "workspace",
+          type: 'workspace',
           data: current as WorkspaceDetailResponse,
         },
       };
     }
 
-    console.error("Failed to activate workspace:", error);
+    console.error('Failed to activate workspace:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to activate workspace",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to activate workspace',
     };
   }
 }
@@ -185,20 +185,20 @@ export async function deactivateWorkspace(workspaceId: number): Promise<ApiRespo
       const current = payload.current as WorkspaceDetailResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "workspace",
+          type: 'workspace',
           data: current as WorkspaceDetailResponse,
         },
       };
     }
 
-    console.error("Failed to deactivate workspace:", error);
+    console.error('Failed to deactivate workspace:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to deactivate workspace",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to deactivate workspace',
     };
   }
 }

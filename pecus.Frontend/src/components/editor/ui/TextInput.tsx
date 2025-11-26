@@ -6,14 +6,14 @@
  *
  */
 
-import { type JSX, useState } from "react";
+import { type JSX, useState } from 'react';
 
-import "./Input.css";
+import './Input.css';
 
-import type { HTMLInputTypeAttribute } from "react";
+import type { HTMLInputTypeAttribute } from 'react';
 
 type Props = Readonly<{
-  "data-test-id"?: string;
+  'data-test-id'?: string;
   label: string;
   onChange: (val: string) => void;
   placeholder?: string;
@@ -22,16 +22,16 @@ type Props = Readonly<{
 }>;
 //ユニークなinputのID生成
 function generateId(label: string): string {
-  return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
+  return `input-${label.replace(/\s+/g, '-').toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 export default function TextInput({
   label,
   value,
   onChange,
-  placeholder = "",
-  "data-test-id": dataTestId,
-  type = "text",
+  placeholder = '',
+  'data-test-id': dataTestId,
+  type = 'text',
 }: Props): JSX.Element {
   const [inputId, _setInputId] = useState(generateId(label));
 

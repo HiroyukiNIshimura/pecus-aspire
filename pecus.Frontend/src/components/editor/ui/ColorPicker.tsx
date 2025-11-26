@@ -6,16 +6,16 @@
  *
  */
 
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import "./ColorPicker.css";
+import './ColorPicker.css';
 
-import { calculateZoomLevel } from "@lexical/utils";
-import type * as React from "react";
-import { useMemo, useRef, useState } from "react";
+import { calculateZoomLevel } from '@lexical/utils';
+import type * as React from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import { isKeyboardInput } from "../utils/focusUtils";
-import TextInput from "./TextInput";
+import { isKeyboardInput } from '../utils/focusUtils';
+import TextInput from './TextInput';
 
 let skipAddingToHistoryStack = false;
 
@@ -25,33 +25,33 @@ interface ColorPickerProps {
 }
 
 export function parseAllowedColor(input: string) {
-  return /^rgb\(\d+, \d+, \d+\)$/.test(input) ? input : "";
+  return /^rgb\(\d+, \d+, \d+\)$/.test(input) ? input : '';
 }
 
 const basicColors = [
-  "#d0021b",
-  "#f5a623",
-  "#f8e71c",
-  "#8b572a",
-  "#7ed321",
-  "#417505",
-  "#bd10e0",
-  "#9013fe",
-  "#4a90e2",
-  "#50e3c2",
-  "#b8e986",
-  "#000000",
-  "#4a4a4a",
-  "#9b9b9b",
-  "#ffffff",
+  '#d0021b',
+  '#f5a623',
+  '#f8e71c',
+  '#8b572a',
+  '#7ed321',
+  '#417505',
+  '#bd10e0',
+  '#9013fe',
+  '#4a90e2',
+  '#50e3c2',
+  '#b8e986',
+  '#000000',
+  '#4a4a4a',
+  '#9b9b9b',
+  '#ffffff',
 ];
 
 const WIDTH = 214;
 const HEIGHT = 150;
 
 export default function ColorPicker({ color, onChange }: Readonly<ColorPickerProps>): JSX.Element {
-  const [selfColor, setSelfColor] = useState(transformColor("hex", color));
-  const [inputColor, setInputColor] = useState(transformColor("hex", color).hex);
+  const [selfColor, setSelfColor] = useState(transformColor('hex', color));
+  const [inputColor, setInputColor] = useState(transformColor('hex', color).hex);
   const innerDivRef = useRef(null);
 
   const saturationPosition = useMemo(
@@ -79,7 +79,7 @@ export default function ColorPicker({ color, onChange }: Readonly<ColorPickerPro
   const onSetHex = (hex: string) => {
     setInputColor(hex);
     if (/^#[0-9A-Fa-f]{6}$/i.test(hex)) {
-      const newColor = transformColor("hex", hex);
+      const newColor = transformColor('hex', hex);
       setSelfColor(newColor);
       emitOnChange(newColor.hex);
     }
@@ -91,7 +91,7 @@ export default function ColorPicker({ color, onChange }: Readonly<ColorPickerPro
       s: (x / WIDTH) * 100,
       v: 100 - (y / HEIGHT) * 100,
     };
-    const newColor = transformColor("hsv", newHsv);
+    const newColor = transformColor('hsv', newHsv);
     setSelfColor(newColor);
     setInputColor(newColor.hex);
     emitOnChange(newColor.hex);
@@ -99,7 +99,7 @@ export default function ColorPicker({ color, onChange }: Readonly<ColorPickerPro
 
   const onMoveHue = ({ x }: Position) => {
     const newHsv = { ...selfColor.hsv, h: (x / WIDTH) * 360 };
-    const newColor = transformColor("hsv", newHsv);
+    const newColor = transformColor('hsv', newHsv);
 
     setSelfColor(newColor);
     setInputColor(newColor.hex);
@@ -107,7 +107,7 @@ export default function ColorPicker({ color, onChange }: Readonly<ColorPickerPro
   };
 
   const onBasicColorClick = (e: React.MouseEvent, basicColor: string) => {
-    const newColor = transformColor("hex", basicColor);
+    const newColor = transformColor('hex', basicColor);
 
     setSelfColor(newColor);
     setInputColor(newColor.hex);
@@ -121,7 +121,7 @@ export default function ColorPicker({ color, onChange }: Readonly<ColorPickerPro
         {basicColors.map((basicColor) => (
           <button
             type="button"
-            className={basicColor === selfColor.hex ? " active" : ""}
+            className={basicColor === selfColor.hex ? ' active' : ''}
             key={basicColor}
             style={{ backgroundColor: basicColor }}
             onClick={(e) => onBasicColorClick(e, basicColor)}
@@ -202,15 +202,15 @@ function MoveWrapper({ className, style, onChange, children }: MoveWrapperProps)
         skipAddingToHistoryStack = false;
       }
 
-      document.removeEventListener("mousemove", onMouseMove, false);
-      document.removeEventListener("mouseup", onMouseUp, false);
+      document.removeEventListener('mousemove', onMouseMove, false);
+      document.removeEventListener('mouseup', onMouseUp, false);
 
       move(_e);
       draggedRef.current = false;
     };
 
-    document.addEventListener("mousemove", onMouseMove, false);
-    document.addEventListener("mouseup", onMouseUp, false);
+    document.addEventListener('mousemove', onMouseMove, false);
+    document.addEventListener('mouseup', onMouseUp, false);
   };
 
   return (
@@ -241,11 +241,11 @@ interface Color {
 }
 
 export function toHex(value: string): string {
-  if (!value.startsWith("#")) {
-    const ctx = document.createElement("canvas").getContext("2d");
+  if (!value.startsWith('#')) {
+    const ctx = document.createElement('canvas').getContext('2d');
 
     if (!ctx) {
-      throw new Error("2d context not supported or canvas already initialized");
+      throw new Error('2d context not supported or canvas already initialized');
     }
 
     ctx.fillStyle = value;
@@ -253,16 +253,16 @@ export function toHex(value: string): string {
     return ctx.fillStyle;
   } else if (value.length === 4 || value.length === 5) {
     value = value
-      .split("")
-      .map((v, i) => (i ? v + v : "#"))
-      .join("");
+      .split('')
+      .map((v, i) => (i ? v + v : '#'))
+      .join('');
 
     return value;
   } else if (value.length === 7 || value.length === 9) {
     return value;
   }
 
-  return "#000000";
+  return '#000000';
 }
 
 function hex2rgb(hex: string): RGB {
@@ -314,28 +314,28 @@ function hsv2rgb({ h, s, v }: HSV): RGB {
 }
 
 function rgb2hex({ b, g, r }: RGB): string {
-  return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+  return `#${[r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
 }
 
 function transformColor<M extends keyof Color, C extends Color[M]>(format: M, color: C): Color {
-  let hex: Color["hex"] = toHex("#121212");
-  let rgb: Color["rgb"] = hex2rgb(hex);
-  let hsv: Color["hsv"] = rgb2hsv(rgb);
+  let hex: Color['hex'] = toHex('#121212');
+  let rgb: Color['rgb'] = hex2rgb(hex);
+  let hsv: Color['hsv'] = rgb2hsv(rgb);
 
-  if (format === "hex") {
-    const value = color as Color["hex"];
+  if (format === 'hex') {
+    const value = color as Color['hex'];
 
     hex = toHex(value);
     rgb = hex2rgb(hex);
     hsv = rgb2hsv(rgb);
-  } else if (format === "rgb") {
-    const value = color as Color["rgb"];
+  } else if (format === 'rgb') {
+    const value = color as Color['rgb'];
 
     rgb = value;
     hex = rgb2hex(rgb);
     hsv = rgb2hsv(rgb);
-  } else if (format === "hsv") {
-    const value = color as Color["hsv"];
+  } else if (format === 'hsv') {
+    const value = color as Color['hsv'];
 
     hsv = value;
     rgb = hsv2rgb(hsv);

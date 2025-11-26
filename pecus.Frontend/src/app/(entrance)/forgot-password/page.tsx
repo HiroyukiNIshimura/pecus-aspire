@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import { getCurrentUser } from "@/actions/auth";
-import ForgotPasswordFormClient from "./ForgotPasswordFormClient";
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import { getCurrentUser } from '@/actions/auth';
+import ForgotPasswordFormClient from './ForgotPasswordFormClient';
 
 /**
  * パスワード忘却ページ (Server Component)
@@ -12,7 +12,7 @@ import ForgotPasswordFormClient from "./ForgotPasswordFormClient";
  * - ログイン済みユーザーは /admin にリダイレクト
  * - 未認証なら ForgotPasswordFormClient をレンダリング
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function ForgotPasswordPage() {
   // === 認証チェック: ログイン済みなら /admin へリダイレクト ===
@@ -24,12 +24,12 @@ export default async function ForgotPasswordPage() {
       currentUser = result.data;
     }
   } catch (err) {
-    console.error("認証状態の確認中にエラーが発生:", err);
+    console.error('認証状態の確認中にエラーが発生:', err);
   }
 
   // ログイン済みユーザーはダッシュボードへリダイレクト
   if (currentUser) {
-    redirect("/");
+    redirect('/');
   }
 
   return (

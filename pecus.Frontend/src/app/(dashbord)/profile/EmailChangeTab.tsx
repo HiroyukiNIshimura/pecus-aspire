@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { requestEmailChange } from "@/actions/profile";
-import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { updateEmailFormSchema } from "@/schemas/profileSchemas";
+import { useState } from 'react';
+import { requestEmailChange } from '@/actions/profile';
+import type { PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { updateEmailFormSchema } from '@/schemas/profileSchemas';
 
 interface EmailChangeTabProps {
   currentEmail: string;
@@ -36,7 +36,7 @@ export default function EmailChangeTab({
     schema: updateEmailFormSchema,
     onSubmit: async (data) => {
       if (data.newEmail === currentEmail) {
-        notify.error("新しいメールアドレスが現在と同じです");
+        notify.error('新しいメールアドレスが現在と同じです');
         return;
       }
 
@@ -50,17 +50,17 @@ export default function EmailChangeTab({
         if (result.success) {
           notify.info(
             result.data.message ||
-              "確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。",
+              '確認メールを送信しました。メールに記載されたリンクをクリックして変更を完了してください。',
           );
           setPendingEmail(result.data.newEmail);
           setPendingExpiresAt(new Date(result.data.expiresAt));
           formRef.current?.reset();
         } else {
-          notify.error(result.message || "メールアドレス変更リクエストに失敗しました");
+          notify.error(result.message || 'メールアドレス変更リクエストに失敗しました');
         }
       } catch (error) {
-        console.error("Email change error:", error);
-        notify.error("メールアドレス変更に失敗しました");
+        console.error('Email change error:', error);
+        notify.error('メールアドレス変更に失敗しました');
       } finally {
         setIsLoading(false);
       }
@@ -100,7 +100,7 @@ export default function EmailChangeTab({
               <p>
                 新しいメールアドレス: <strong>{pendingEmail}</strong>
               </p>
-              <p>有効期限: {pendingExpiresAt.toLocaleString("ja-JP")}</p>
+              <p>有効期限: {pendingExpiresAt.toLocaleString('ja-JP')}</p>
               <p className="mt-1">メールに記載されたリンクをクリックして変更を完了してください。</p>
             </div>
           </div>
@@ -155,14 +155,14 @@ export default function EmailChangeTab({
           name="newEmail"
           type="email"
           placeholder="new-email@example.com"
-          className={`input input-bordered ${shouldShowError("newEmail") ? "input-error" : ""}`}
-          onChange={(e) => handleFieldChange("newEmail", e.target.value)}
+          className={`input input-bordered ${shouldShowError('newEmail') ? 'input-error' : ''}`}
+          onChange={(e) => handleFieldChange('newEmail', e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
-        {shouldShowError("newEmail") && (
+        {shouldShowError('newEmail') && (
           <div className="label">
-            <span className="label-text-alt text-error">{getFieldError("newEmail")}</span>
+            <span className="label-text-alt text-error">{getFieldError('newEmail')}</span>
           </div>
         )}
       </div>
@@ -178,16 +178,16 @@ export default function EmailChangeTab({
         <input
           id="currentPassword"
           name="currentPassword"
-          type={showPassword ? "text" : "password"}
+          type={showPassword ? 'text' : 'password'}
           placeholder="現在のパスワードを入力"
-          className={`input input-bordered ${shouldShowError("currentPassword") ? "input-error" : ""}`}
-          onChange={(e) => handleFieldChange("currentPassword", e.target.value)}
+          className={`input input-bordered ${shouldShowError('currentPassword') ? 'input-error' : ''}`}
+          onChange={(e) => handleFieldChange('currentPassword', e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
-        {shouldShowError("currentPassword") && (
+        {shouldShowError('currentPassword') && (
           <div className="label">
-            <span className="label-text-alt text-error">{getFieldError("currentPassword")}</span>
+            <span className="label-text-alt text-error">{getFieldError('currentPassword')}</span>
           </div>
         )}
       </div>
@@ -219,7 +219,7 @@ export default function EmailChangeTab({
               送信中...
             </>
           ) : (
-            "確認メールを送信"
+            '確認メールを送信'
           )}
         </button>
       </div>

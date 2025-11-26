@@ -1,39 +1,39 @@
-"use client";
+'use client';
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import GridViewIcon from "@mui/icons-material/GridView";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import PersonIcon from "@mui/icons-material/Person";
-import PowerOffIcon from "@mui/icons-material/PowerOff";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import SearchIcon from "@mui/icons-material/Search";
-import ToggleOffIcon from "@mui/icons-material/ToggleOff";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { deleteWorkspace } from "@/actions/deleteWorkspace";
-import { toggleWorkspaceActive } from "@/actions/workspace";
-import AppHeader from "@/components/common/AppHeader";
-import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import GridViewIcon from '@mui/icons-material/GridView';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import PersonIcon from '@mui/icons-material/Person';
+import PowerOffIcon from '@mui/icons-material/PowerOff';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import SearchIcon from '@mui/icons-material/Search';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { deleteWorkspace } from '@/actions/deleteWorkspace';
+import { toggleWorkspaceActive } from '@/actions/workspace';
+import AppHeader from '@/components/common/AppHeader';
+import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
-} from "@/connectors/api/pecus";
-import { useDelayedLoading } from "@/hooks/useDelayedLoading";
-import { useNotify } from "@/hooks/useNotify";
-import { useValidation } from "@/hooks/useValidation";
-import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
-import type { UserInfo } from "@/types/userInfo";
-import CreateWorkspaceModal from "./CreateWorkspaceModal";
-import EditWorkspaceModal from "./EditWorkspaceModal";
+} from '@/connectors/api/pecus';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
+import { useValidation } from '@/hooks/useValidation';
+import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
+import type { UserInfo } from '@/types/userInfo';
+import CreateWorkspaceModal from './CreateWorkspaceModal';
+import EditWorkspaceModal from './EditWorkspaceModal';
 
 interface WorkspacesClientProps {
   initialUser?: UserInfo | null;
@@ -51,7 +51,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   const [totalCount, setTotalCount] = useState(0);
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
-  const [filterName, setFilterName] = useState<string>("");
+  const [filterName, setFilterName] = useState<string>('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -67,7 +67,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const response = await fetch("/api/workspaces?page=1&IsActive=true");
+        const response = await fetch('/api/workspaces?page=1&IsActive=true');
         if (response.ok) {
           const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
           setWorkspaces(data.data || []);
@@ -77,7 +77,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error("Failed to fetch initial workspaces:", error);
+        console.error('Failed to fetch initial workspaces:', error);
       }
       setIsLoading(false);
     };
@@ -89,12 +89,12 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
     try {
       const nextPage = currentPage + 1;
       const params = new URLSearchParams();
-      params.append("page", nextPage.toString());
+      params.append('page', nextPage.toString());
       if (filterIsActive !== null) {
-        params.append("IsActive", filterIsActive.toString());
+        params.append('IsActive', filterIsActive.toString());
       }
       if (filterName) {
-        params.append("Name", filterName);
+        params.append('Name', filterName);
       }
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
@@ -109,19 +109,19 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         }
       }
     } catch (error) {
-      console.error("Failed to load more workspaces:", error);
+      console.error('Failed to load more workspaces:', error);
     }
   };
 
   const handleFilterChange = withDelayedLoading(async () => {
     try {
       const params = new URLSearchParams();
-      params.append("page", "1");
+      params.append('page', '1');
       if (filterIsActive !== null) {
-        params.append("IsActive", filterIsActive.toString());
+        params.append('IsActive', filterIsActive.toString());
       }
       if (filterName) {
-        params.append("Name", filterName);
+        params.append('Name', filterName);
       }
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
@@ -134,7 +134,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         setStatistics(data.summary || null);
       }
     } catch (error) {
-      console.error("Failed to filter workspaces:", error);
+      console.error('Failed to filter workspaces:', error);
     }
   });
 
@@ -151,7 +151,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   };
 
   const handleReset = () => {
-    setFilterName("");
+    setFilterName('');
     setFilterIsActive(true);
     nameValidation.clearErrors();
     handleFilterChange();
@@ -186,14 +186,14 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
-        notify.success(workspace.isActive ? "ワークスペースを無効化しました" : "ワークスペースを有効化しました");
+        notify.success(workspace.isActive ? 'ワークスペースを無効化しました' : 'ワークスペースを有効化しました');
       } else {
         // エラー表示
-        notify.error(result.message || "状態の切り替えに失敗しました。");
+        notify.error(result.message || '状態の切り替えに失敗しました。');
       }
     } catch (error) {
-      console.error("Toggle active failed:", error);
-      notify.error("状態の切り替えに失敗しました。");
+      console.error('Toggle active failed:', error);
+      notify.error('状態の切り替えに失敗しました。');
     }
   };
 
@@ -212,14 +212,14 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
-        notify.success("ワークスペースを削除しました");
+        notify.success('ワークスペースを削除しました');
       } else {
         // エラー表示
-        notify.error(result.message || "ワークスペースの削除に失敗しました。");
+        notify.error(result.message || 'ワークスペースの削除に失敗しました。');
       }
     } catch (error) {
-      console.error("Delete workspace failed:", error);
-      notify.error("ワークスペースの削除に失敗しました。");
+      console.error('Delete workspace failed:', error);
+      notify.error('ワークスペースの削除に失敗しました。');
     }
   };
 
@@ -270,13 +270,13 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                 <h2 className="card-title text-lg flex items-center gap-2">
                   <FilterListIcon />
                   <span
-                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? "text-success" : ""}`}
+                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? 'text-success' : ''}`}
                   >
                     フィルター
                   </span>
                 </h2>
                 <svg
-                  className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
+                  className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -301,11 +301,11 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                         id="filterName"
                         type="text"
                         placeholder="検索名を入力..."
-                        className={`input input-bordered ${nameValidation.hasErrors ? "input-error" : ""}`}
+                        className={`input input-bordered ${nameValidation.hasErrors ? 'input-error' : ''}`}
                         value={filterName}
                         onChange={(e) => handleNameChange(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" && nameValidation.isValid) {
+                          if (e.key === 'Enter' && nameValidation.isValid) {
                             handleSearch();
                           }
                         }}
@@ -325,10 +325,10 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                       <select
                         id="filterIsActive"
                         className="select select-bordered"
-                        value={filterIsActive === null ? "" : filterIsActive ? "true" : "false"}
+                        value={filterIsActive === null ? '' : filterIsActive ? 'true' : 'false'}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setFilterIsActive(value === "" ? null : value === "true");
+                          setFilterIsActive(value === '' ? null : value === 'true');
                         }}
                       >
                         <option value="">すべて</option>
@@ -514,7 +514,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                             <div className="flex items-center justify-between text-sm gap-2">
                               <span className="text-base-content/70 flex-shrink-0">作成日</span>
                               <span className="font-medium">
-                                {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString("ja-JP") : "-"}
+                                {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '-'}
                               </span>
                             </div>
                           </div>

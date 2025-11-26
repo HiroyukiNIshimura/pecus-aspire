@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useDelayedLoading } from "@/hooks/useDelayedLoading";
-import { type ApiErrorResponse, isAuthenticationError } from "@/types/errors";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
+import type { UserInfo } from '@/types/userInfo';
 
 interface OrganizationData {
   id?: number | string;
@@ -44,7 +44,7 @@ export default function AdminClient({
   // 認証エラーが検出されたらログインページにリダイレクト
   useEffect(() => {
     if (clientError && isAuthenticationError(clientError)) {
-      router.push("/signin");
+      router.push('/signin');
     }
   }, [clientError, router]);
 
@@ -92,7 +92,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">組織名</span>
                       </label>
                       <div id="org-name" className="text-lg">
-                        {organization?.name ?? "未設定"}
+                        {organization?.name ?? '未設定'}
                       </div>
                     </div>
 
@@ -101,7 +101,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">組織ID</span>
                       </label>
                       <div id="org-id" className="text-lg">
-                        {organization?.id ?? "未設定"}
+                        {organization?.id ?? '未設定'}
                       </div>
                     </div>
 
@@ -110,7 +110,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">組織コード</span>
                       </label>
                       <div id="org-code" className="text-lg">
-                        {organization?.code ?? "未設定"}
+                        {organization?.code ?? '未設定'}
                       </div>
                     </div>
 
@@ -120,9 +120,9 @@ export default function AdminClient({
                       </label>
                       <div
                         id="org-status"
-                        className={`badge badge-lg ${organization?.isActive ? "badge-success" : "badge-error"}`}
+                        className={`badge badge-lg ${organization?.isActive ? 'badge-success' : 'badge-error'}`}
                       >
-                        {organization?.isActive ? "アクティブ" : "非アクティブ"}
+                        {organization?.isActive ? 'アクティブ' : '非アクティブ'}
                       </div>
                     </div>
 
@@ -132,8 +132,8 @@ export default function AdminClient({
                       </label>
                       <div id="org-created" className="text-lg">
                         {organization?.createdAt
-                          ? new Date(organization.createdAt).toLocaleDateString("ja-JP")
-                          : "未設定"}
+                          ? new Date(organization.createdAt).toLocaleDateString('ja-JP')
+                          : '未設定'}
                       </div>
                     </div>
 
@@ -155,7 +155,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">代表者名</span>
                       </label>
                       <div id="org-representative" className="text-lg">
-                        {organization?.representativeName ?? "未設定"}
+                        {organization?.representativeName ?? '未設定'}
                       </div>
                     </div>
 
@@ -164,7 +164,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">電話番号</span>
                       </label>
                       <div id="org-phone" className="text-lg">
-                        {organization?.phoneNumber ?? "未設定"}
+                        {organization?.phoneNumber ?? '未設定'}
                       </div>
                     </div>
 
@@ -173,7 +173,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">メールアドレス</span>
                       </label>
                       <div id="org-email" className="text-lg">
-                        {organization?.email ?? "未設定"}
+                        {organization?.email ?? '未設定'}
                       </div>
                     </div>
                   </div>
@@ -185,7 +185,7 @@ export default function AdminClient({
                       <span className="label-text font-semibold">説明</span>
                     </label>
                     <div id="org-description" className="text-base">
-                      {organization?.description ?? "説明が設定されていません。"}
+                      {organization?.description ?? '説明が設定されていません。'}
                     </div>
                   </div>
 
@@ -193,7 +193,7 @@ export default function AdminClient({
                     <button
                       className="btn btn-primary"
                       type="button"
-                      onClick={() => router.push("/admin/organizations/edit/1")}
+                      onClick={() => router.push('/admin/organizations/edit/1')}
                     >
                       編集
                     </button>

@@ -1,12 +1,12 @@
-import { redirect } from "next/navigation";
-import { getAllSkills } from "@/actions/admin/skills";
-import { getUsers } from "@/actions/admin/user";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse } from "@/connectors/api/pecus";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import AdminUsersClient from "./AdminUsersClient";
+import { redirect } from 'next/navigation';
+import { getAllSkills } from '@/actions/admin/skills';
+import { getUsers } from '@/actions/admin/user';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { UserResponse } from '@/connectors/api/pecus';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import AdminUsersClient from './AdminUsersClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Skill {
   id: number;
@@ -54,8 +54,8 @@ export default async function AdminUsers() {
       if (responseData?.data) {
         users = responseData.data.map((user: any) => ({
           id: user.id ?? 0,
-          username: user.username ?? "",
-          email: user.email ?? "",
+          username: user.username ?? '',
+          email: user.email ?? '',
           isActive: user.isActive ?? true,
           createdAt: user.createdAt ?? new Date().toISOString(),
           skills: user.skills ?? [],
@@ -77,19 +77,19 @@ export default async function AdminUsers() {
       }));
     }
   } catch (error: any) {
-    console.error("AdminUsers: failed to fetch users, user info, or skills", error);
+    console.error('AdminUsers: failed to fetch users, user info, or skills', error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // UserResponse から UserInfo に変換

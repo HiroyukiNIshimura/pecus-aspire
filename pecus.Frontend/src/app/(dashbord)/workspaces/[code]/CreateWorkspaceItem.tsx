@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import SaveIcon from "@mui/icons-material/Save";
-import { useCallback, useMemo, useState } from "react";
-import { createWorkspaceItem } from "@/actions/workspaceItem";
-import TagInput from "@/components/common/TagInput";
-import type { EditorContextSettings } from "@/components/editor/appSettings";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
-import type { CreateWorkspaceItemRequest, TaskPriority } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
-import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
+import { useCallback, useMemo, useState } from 'react';
+import { createWorkspaceItem } from '@/actions/workspaceItem';
+import TagInput from '@/components/common/TagInput';
+import type { EditorContextSettings } from '@/components/editor/appSettings';
+import NotionLikeEditor from '@/components/editor/NotionLikeEditor';
+import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
+import { createWorkspaceItemSchema } from '@/schemas/editSchemas';
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -29,13 +29,13 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
 
   // フォーム状態
   const [formData, setFormData] = useState<CreateWorkspaceItemInput>({
-    subject: "",
-    dueDate: "",
-    priority: "Medium",
+    subject: '',
+    dueDate: '',
+    priority: 'Medium',
     isDraft: true,
   });
 
-  const [editorState, setEditorState] = useState<string>("");
+  const [editorState, setEditorState] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -103,10 +103,10 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
           resetForm();
           onClose();
         } else {
-          setGlobalError(result.message || "アイテムの作成に失敗しました");
+          setGlobalError(result.message || 'アイテムの作成に失敗しました');
         }
       } catch (err) {
-        setGlobalError(err instanceof Error ? err.message : "エラーが発生しました");
+        setGlobalError(err instanceof Error ? err.message : 'エラーが発生しました');
       }
     },
   });
@@ -134,12 +134,12 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
 
     // コンポーネント独自の状態をリセット
     setFormData({
-      subject: "",
-      dueDate: "",
-      priority: "Medium",
+      subject: '',
+      dueDate: '',
+      priority: 'Medium',
       isDraft: true,
     });
-    setEditorState("");
+    setEditorState('');
     setTags([]);
     setGlobalError(null);
     // 一時ファイルIDリストをリセット（次のモーダル表示時に新しいsessionIdが使われる）
@@ -215,16 +215,16 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   name="subject"
                   type="text"
                   placeholder="例：新しいタスクの件名"
-                  className={`input input-bordered w-full ${shouldShowError("subject") ? "input-error" : ""}`}
+                  className={`input input-bordered w-full ${shouldShowError('subject') ? 'input-error' : ''}`}
                   value={formData.subject}
-                  onChange={(e) => handleFieldChange("subject", e.target.value)}
-                  onBlur={() => validateField("subject", formData.subject)}
+                  onChange={(e) => handleFieldChange('subject', e.target.value)}
+                  onBlur={() => validateField('subject', formData.subject)}
                   disabled={isSubmitting}
                   maxLength={200}
                 />
-                {shouldShowError("subject") && (
+                {shouldShowError('subject') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("subject")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('subject')}</span>
                   </div>
                 )}
                 <div className="label">
@@ -258,15 +258,15 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   id="dueDate"
                   name="dueDate"
                   type="date"
-                  className={`input input-bordered w-full ${shouldShowError("dueDate") ? "input-error" : ""}`}
+                  className={`input input-bordered w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
                   value={formData.dueDate}
-                  onChange={(e) => handleFieldChange("dueDate", e.target.value)}
-                  onBlur={() => validateField("dueDate", formData.dueDate)}
+                  onChange={(e) => handleFieldChange('dueDate', e.target.value)}
+                  onBlur={() => validateField('dueDate', formData.dueDate)}
                   disabled={isSubmitting}
                 />
-                {shouldShowError("dueDate") && (
+                {shouldShowError('dueDate') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("dueDate")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
                   </div>
                 )}
               </div>
@@ -279,9 +279,9 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 <select
                   id="priority"
                   name="priority"
-                  className={`select select-bordered w-full ${shouldShowError("priority") ? "select-error" : ""}`}
+                  className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
                   value={formData.priority}
-                  onChange={(e) => handleFieldChange("priority", e.target.value as TaskPriority)}
+                  onChange={(e) => handleFieldChange('priority', e.target.value as TaskPriority)}
                   disabled={isSubmitting}
                 >
                   <option value="Low">低</option>
@@ -289,9 +289,9 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   <option value="High">高</option>
                   <option value="Critical">緊急</option>
                 </select>
-                {shouldShowError("priority") && (
+                {shouldShowError('priority') && (
                   <div className="label">
-                    <span className="label-text-alt text-error">{getFieldError("priority")}</span>
+                    <span className="label-text-alt text-error">{getFieldError('priority')}</span>
                   </div>
                 )}
               </div>
@@ -318,7 +318,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     name="isDraft"
                     className="checkbox checkbox-primary"
                     checked={formData.isDraft}
-                    onChange={(e) => handleFieldChange("isDraft", e.target.checked)}
+                    onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
                     disabled={isSubmitting}
                   />
                   <span className="label-text">下書きとして保存</span>

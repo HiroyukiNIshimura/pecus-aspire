@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import { requestPasswordResetAction } from "@/actions/password";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { requestPasswordResetSchema } from "@/schemas/signInSchemas";
+import Link from 'next/link';
+import { useState } from 'react';
+import { requestPasswordResetAction } from '@/actions/password';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { requestPasswordResetSchema } from '@/schemas/signInSchemas';
 
 export default function ForgotPasswordFormClient() {
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: requestPasswordResetSchema,
@@ -18,10 +18,10 @@ export default function ForgotPasswordFormClient() {
         setSuccessMessage(result.message);
         // フォームをリセット
         formRef.current?.reset();
-        setEmail("");
+        setEmail('');
         // 5秒後にメッセージをクリア
         setTimeout(() => {
-          setSuccessMessage("");
+          setSuccessMessage('');
         }, 5000);
       }
     },
@@ -66,18 +66,18 @@ export default function ForgotPasswordFormClient() {
                 id="email"
                 name="email"
                 placeholder="example@example.com"
-                className={`input input-bordered w-full ${shouldShowError("email") ? "input-error" : ""}`}
+                className={`input input-bordered w-full ${shouldShowError('email') ? 'input-error' : ''}`}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  validateField("email", e.target.value);
+                  validateField('email', e.target.value);
                 }}
                 disabled={isSubmitting}
                 required
               />
-              {shouldShowError("email") && (
+              {shouldShowError('email') && (
                 <div className="label">
-                  <span className="label-text-alt text-error">{getFieldError("email")}</span>
+                  <span className="label-text-alt text-error">{getFieldError('email')}</span>
                 </div>
               )}
             </div>
@@ -92,7 +92,7 @@ export default function ForgotPasswordFormClient() {
                   送信中...
                 </>
               ) : (
-                "リセットメールを送信"
+                'リセットメールを送信'
               )}
             </button>
           </div>

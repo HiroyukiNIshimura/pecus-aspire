@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateSkill } from "@/actions/admin/skills";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import type { SkillDetailResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useNotify } from "@/hooks/useNotify";
-import { editSkillSchema } from "@/schemas/editSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { updateSkill } from '@/actions/admin/skills';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { SkillDetailResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
+import { editSkillSchema } from '@/schemas/editSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 interface EditSkillClientProps {
   initialUser: UserInfo | null;
@@ -26,8 +26,8 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
 
   // フォーム状態
   const [formData, setFormData] = useState({
-    name: skillDetail.name || "",
-    description: skillDetail.description || "",
+    name: skillDetail.name || '',
+    description: skillDetail.description || '',
     isActive: skillDetail.isActive ?? true,
   });
 
@@ -38,7 +38,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
       try {
         // rowVersion が存在しない場合はエラー
         if (!skillDetail.rowVersion) {
-          notify.error("スキル情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error('スキル情報の更新に必要なバージョン情報が取得できませんでした。');
           return;
         }
 
@@ -50,19 +50,19 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
         });
 
         if (result.success) {
-          notify.success("スキルを更新しました。");
-          router.push("/admin/skills");
+          notify.success('スキルを更新しました。');
+          router.push('/admin/skills');
         } else {
-          console.error("スキルの更新に失敗しました:", result.error);
+          console.error('スキルの更新に失敗しました:', result.error);
           notify.error(
             result.error
               ? `スキルの更新中にエラーが発生しました。(${result.error})`
-              : "スキルの更新中にエラーが発生しました。",
+              : 'スキルの更新中にエラーが発生しました。',
           );
         }
       } catch (err: unknown) {
-        console.error("スキルの更新中にエラーが発生しました:", err);
-        notify.error("スキルの更新中にエラーが発生しました。");
+        console.error('スキルの更新中にエラーが発生しました:', err);
+        notify.error('スキルの更新中にエラーが発生しました。');
       }
     },
   });
@@ -79,7 +79,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
   };
 
   const handleCancel = () => {
-    router.push("/admin/skills");
+    router.push('/admin/skills');
   };
 
   return (
@@ -110,7 +110,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                 <h1 className="text-3xl font-bold">スキル編集</h1>
                 <p className="text-base-content/60 mt-2">スキル情報を編集します</p>
               </div>
-              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/skills")}>
+              <button type="button" className="btn btn-outline" onClick={() => router.push('/admin/skills')}>
                 一覧に戻る
               </button>
             </div>
@@ -138,15 +138,15 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                       id="input-skill-name"
                       name="name"
                       type="text"
-                      className={`input input-bordered w-full ${shouldShowError("name") ? "input-error" : ""}`}
+                      className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) => handleFieldChange('name', e.target.value)}
                       placeholder="スキル名を入力"
                       disabled={isSubmitting}
                       required
                     />
-                    {shouldShowError("name") && (
-                      <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                    {shouldShowError('name') && (
+                      <span className="label-text-alt text-error">{getFieldError('name')}</span>
                     )}
                   </div>
 
@@ -158,16 +158,16 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                       id="input-description"
                       name="description"
                       className={`textarea textarea-bordered w-full ${
-                        shouldShowError("description") ? "textarea-error" : ""
+                        shouldShowError('description') ? 'textarea-error' : ''
                       }`}
                       placeholder="スキルの説明を入力してください"
                       value={formData.description}
-                      onChange={(e) => handleFieldChange("description", e.target.value)}
+                      onChange={(e) => handleFieldChange('description', e.target.value)}
                       disabled={isSubmitting}
                       rows={3}
                     ></textarea>
-                    {shouldShowError("description") && (
-                      <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                    {shouldShowError('description') && (
+                      <span className="label-text-alt text-error">{getFieldError('description')}</span>
                     )}
                   </div>
 
@@ -179,7 +179,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                         type="checkbox"
                         className="checkbox checkbox-primary"
                         checked={formData.isActive}
-                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
+                        onChange={(e) => handleFieldChange('isActive', e.target.checked)}
                         disabled={isSubmitting}
                       />
                     </label>
@@ -198,7 +198,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                           更新中...
                         </>
                       ) : (
-                        "更新"
+                        '更新'
                       )}
                     </button>
                   </div>
@@ -214,7 +214,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">スキルID</p>
-                    <p className="text-lg font-semibold">{skillDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">{skillDetail.id || '-'}</p>
                   </div>
 
                   <div>
@@ -225,14 +225,14 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
-                      {skillDetail.createdAt ? new Date(skillDetail.createdAt).toLocaleString("ja-JP") : "-"}
+                      {skillDetail.createdAt ? new Date(skillDetail.createdAt).toLocaleString('ja-JP') : '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
-                      {skillDetail.updatedAt ? new Date(skillDetail.updatedAt).toLocaleString("ja-JP") : "-"}
+                      {skillDetail.updatedAt ? new Date(skillDetail.updatedAt).toLocaleString('ja-JP') : '-'}
                     </p>
                   </div>
                 </div>

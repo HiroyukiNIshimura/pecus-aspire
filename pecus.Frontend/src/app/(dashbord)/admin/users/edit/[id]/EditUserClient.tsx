@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { requestPasswordReset, setUserActiveStatus, setUserRoles, setUserSkills } from "@/actions/admin/user";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import type { UserResponse } from "@/connectors/api/pecus";
-import { useNotify } from "@/hooks/useNotify";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { requestPasswordReset, setUserActiveStatus, setUserRoles, setUserSkills } from '@/actions/admin/user';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { UserResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
+import type { UserInfo } from '@/types/userInfo';
 
 interface Skill {
   id: number;
@@ -97,9 +97,9 @@ export default function EditUserClient({
         updatePromises.push(
           setUserActiveStatus(userDetail.id!, isActive).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || "アクティブ状態の更新に失敗しました。");
+              throw new Error(result.error || 'アクティブ状態の更新に失敗しました。');
             }
-            updateMessages.push(isActive ? "ユーザーを有効化しました" : "ユーザーを無効化しました");
+            updateMessages.push(isActive ? 'ユーザーを有効化しました' : 'ユーザーを無効化しました');
           }),
         );
       }
@@ -108,9 +108,9 @@ export default function EditUserClient({
         updatePromises.push(
           setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || "スキルの更新に失敗しました。");
+              throw new Error(result.error || 'スキルの更新に失敗しました。');
             }
-            updateMessages.push("スキルを更新しました");
+            updateMessages.push('スキルを更新しました');
           }),
         );
       }
@@ -119,9 +119,9 @@ export default function EditUserClient({
         updatePromises.push(
           setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
-              throw new Error(result.error || "ロールの更新に失敗しました。");
+              throw new Error(result.error || 'ロールの更新に失敗しました。');
             }
-            updateMessages.push("ロールを更新しました");
+            updateMessages.push('ロールを更新しました');
           }),
         );
       }
@@ -131,15 +131,15 @@ export default function EditUserClient({
 
       // 成功時のフィードバック: 何が変更されたかを具体的に表示
       if (updateMessages.length > 0) {
-        notify.success(`更新完了: ${updateMessages.join("、")}`);
+        notify.success(`更新完了: ${updateMessages.join('、')}`);
       } else {
-        notify.info("変更はありませんでした。");
+        notify.info('変更はありませんでした。');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
         notify.error(err.message);
       } else {
-        notify.error("ユーザー情報の更新中にエラーが発生しました。");
+        notify.error('ユーザー情報の更新中にエラーが発生しました。');
       }
     } finally {
       setIsSubmitting(false);
@@ -147,7 +147,7 @@ export default function EditUserClient({
   };
 
   const handleCancel = () => {
-    router.push("/admin/users");
+    router.push('/admin/users');
   };
 
   // === トグル関数: IDの追加/削除を管理 ===
@@ -169,20 +169,20 @@ export default function EditUserClient({
       // 成功時はメール送信完了をユーザーに通知
       const result = await requestPasswordReset(userDetail.id!);
       if (result.success) {
-        notify.success("パスワードリセットメールを送信しました。");
+        notify.success('パスワードリセットメールを送信しました。');
       } else {
-        notify.error(result.error || "パスワードリセットの送信に失敗しました。");
+        notify.error(result.error || 'パスワードリセットの送信に失敗しました。');
       }
     } catch (err: unknown) {
-      console.error("パスワードリセット送信中にエラーが発生:", err);
-      notify.error("パスワードリセット送信中にエラーが発生しました。");
+      console.error('パスワードリセット送信中にエラーが発生:', err);
+      notify.error('パスワードリセット送信中にエラーが発生しました。');
     }
   };
 
   const formatDate = (dateString?: string): string => {
-    if (!dateString) return "-";
+    if (!dateString) return '-';
     try {
-      return new Date(dateString).toLocaleString("ja-JP");
+      return new Date(dateString).toLocaleString('ja-JP');
     } catch {
       return dateString;
     }
@@ -216,7 +216,7 @@ export default function EditUserClient({
                 <h1 className="text-3xl font-bold">ユーザー編集</h1>
                 <p className="text-base-content/60 mt-2">ユーザーのアクティブ状態、スキル、ロールを編集します</p>
               </div>
-              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/users")}>
+              <button type="button" className="btn btn-outline" onClick={() => router.push('/admin/users')}>
                 一覧に戻る
               </button>
             </div>
@@ -236,17 +236,17 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザー名</p>
-                    <p className="text-lg font-semibold">{userDetail.username || "-"}</p>
+                    <p className="text-lg font-semibold">{userDetail.username || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">メールアドレス</p>
-                    <p className="text-lg font-semibold">{userDetail.email || "-"}</p>
+                    <p className="text-lg font-semibold">{userDetail.email || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">ログインID</p>
-                    <p className="text-lg font-semibold">{userDetail.loginId || "-"}</p>
+                    <p className="text-lg font-semibold">{userDetail.loginId || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -279,7 +279,7 @@ export default function EditUserClient({
                     {isActiveChanged && (
                       <div className="alert alert-info mt-2">
                         <span className="text-sm">
-                          {isActive ? "✓ ユーザーを有効化します" : "✗ ユーザーを無効化します"}
+                          {isActive ? '✓ ユーザーを有効化します' : '✗ ユーザーを無効化します'}
                         </span>
                       </div>
                     )}
@@ -298,7 +298,7 @@ export default function EditUserClient({
                       <summary className="btn btn-outline w-full justify-start">
                         {selectedSkillIds.length > 0
                           ? `${selectedSkillIds.length} 個のスキルを選択中`
-                          : "スキルを選択してください"}
+                          : 'スキルを選択してください'}
                       </summary>
                       <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                         {availableSkills.length === 0 ? (
@@ -362,7 +362,7 @@ export default function EditUserClient({
                       <summary className="btn btn-outline w-full justify-start">
                         {selectedRoleIds.length > 0
                           ? `${selectedRoleIds.length} 個のロールを選択中`
-                          : "ロールを選択してください"}
+                          : 'ロールを選択してください'}
                       </summary>
                       <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                         {availableRoles.length === 0 ? (
@@ -428,7 +428,7 @@ export default function EditUserClient({
                         <>
                           更新
                           {hasChanges &&
-                            ` (${[isActiveChanged && "アクティブ", skillsChanged && "スキル", rolesChanged && "ロール"].filter(Boolean).join("・")})`}
+                            ` (${[isActiveChanged && 'アクティブ', skillsChanged && 'スキル', rolesChanged && 'ロール'].filter(Boolean).join('・')})`}
                         </>
                       )}
                     </button>
@@ -445,7 +445,7 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザーID</p>
-                    <p className="text-lg font-semibold">{userDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">{userDetail.id || '-'}</p>
                   </div>
 
                   <div>
@@ -455,7 +455,7 @@ export default function EditUserClient({
 
                   <div>
                     <p className="text-sm text-base-content/60">管理者権限</p>
-                    <p className="text-lg font-semibold">{userDetail.isAdmin ? "有効" : "なし"}</p>
+                    <p className="text-lg font-semibold">{userDetail.isAdmin ? '有効' : 'なし'}</p>
                   </div>
                 </div>
               </div>

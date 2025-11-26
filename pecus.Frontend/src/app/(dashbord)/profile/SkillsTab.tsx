@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { setUserSkills } from "@/actions/profile";
-import type { MasterSkillResponse } from "@/connectors/api/pecus";
+import { useState } from 'react';
+import { setUserSkills } from '@/actions/profile';
+import type { MasterSkillResponse } from '@/connectors/api/pecus';
 
 interface SkillsTabProps {
   initialSkillIds: number[];
@@ -41,13 +41,13 @@ export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoa
       });
 
       if (result.success) {
-        notify.success("スキルが更新されました");
+        notify.success('スキルが更新されました');
       } else {
-        notify.error(result.message || "スキル更新に失敗しました");
+        notify.error(result.message || 'スキル更新に失敗しました');
       }
     } catch (error) {
-      console.error("Skill update error:", error);
-      notify.error("予期しないエラーが発生しました");
+      console.error('Skill update error:', error);
+      notify.error('予期しないエラーが発生しました');
     } finally {
       setIsLoading(false);
     }
@@ -70,10 +70,10 @@ export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoa
             disabled={isLoading}
           >
             <span className="flex-1 text-left">
-              {selectedSkillIds.size > 0 ? `${selectedSkillIds.size}個のスキルを選択` : "スキルを選択"}
+              {selectedSkillIds.size > 0 ? `${selectedSkillIds.size}個のスキルを選択` : 'スキルを選択'}
             </span>
             <svg
-              className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -137,7 +137,7 @@ export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoa
               保存中...
             </>
           ) : (
-            "スキルを保存"
+            'スキルを保存'
           )}
         </button>
       </div>

@@ -6,12 +6,12 @@
  *
  */
 
-import type * as React from "react";
-import type { JSX } from "react";
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
-import type { EditorContextSettings, SettingName } from "../appSettings";
+import type * as React from 'react';
+import type { JSX } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import type { EditorContextSettings, SettingName } from '../appSettings';
 
-import { DEFAULT_EDITOR_CONTEXT_SETTINGS, DEFAULT_SETTINGS, INITIAL_SETTINGS } from "../appSettings";
+import { DEFAULT_EDITOR_CONTEXT_SETTINGS, DEFAULT_SETTINGS, INITIAL_SETTINGS } from '../appSettings';
 
 type SettingsContextShape = {
   setOption: (name: SettingName, value: boolean) => void;
@@ -86,5 +86,5 @@ function setURLParam(param: SettingName, value: null | boolean) {
     params.delete(param);
   }
   url.search = params.toString();
-  window.history.pushState(null, "", url.toString());
+  window.history.pushState(null, '', url.toString());
 }

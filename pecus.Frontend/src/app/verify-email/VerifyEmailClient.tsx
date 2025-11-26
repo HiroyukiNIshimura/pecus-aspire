@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { verifyEmailChange } from "@/actions/profile";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { verifyEmailChange } from '@/actions/profile';
 
-type VerificationState = "verifying" | "success" | "error";
+type VerificationState = 'verifying' | 'success' | 'error';
 
 export default function VerifyEmailClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [state, setState] = useState<VerificationState>("verifying");
-  const [message, setMessage] = useState<string>("");
-  const [newEmail, setNewEmail] = useState<string>("");
+  const [state, setState] = useState<VerificationState>('verifying');
+  const [message, setMessage] = useState<string>('');
+  const [newEmail, setNewEmail] = useState<string>('');
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const token = searchParams.get('token');
 
     if (!token) {
-      setState("error");
-      setMessage("トークンが指定されていません。");
+      setState('error');
+      setMessage('トークンが指定されていません。');
       return;
     }
 
@@ -27,12 +27,12 @@ export default function VerifyEmailClient() {
       const result = await verifyEmailChange(token);
 
       if (result.success) {
-        setState("success");
+        setState('success');
         setMessage(result.data.message);
         setNewEmail(result.data.newEmail);
       } else {
-        setState("error");
-        setMessage(result.message || "メールアドレスの変更に失敗しました。");
+        setState('error');
+        setMessage(result.message || 'メールアドレスの変更に失敗しました。');
       }
     };
 
@@ -40,13 +40,13 @@ export default function VerifyEmailClient() {
   }, [searchParams]);
 
   const handleBackToProfile = () => {
-    router.push("/profile");
+    router.push('/profile');
   };
 
   return (
     <div className="card bg-base-100 shadow-xl max-w-md w-full">
       <div className="card-body items-center text-center">
-        {state === "verifying" && (
+        {state === 'verifying' && (
           <>
             <span className="loading loading-spinner loading-lg text-primary"></span>
             <h2 className="card-title text-2xl mt-4">確認中...</h2>
@@ -54,7 +54,7 @@ export default function VerifyEmailClient() {
           </>
         )}
 
-        {state === "success" && (
+        {state === 'success' && (
           <>
             <div className="text-success">
               <svg
@@ -83,7 +83,7 @@ export default function VerifyEmailClient() {
           </>
         )}
 
-        {state === "error" && (
+        {state === 'error' && (
           <>
             <div className="text-error">
               <svg

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import type { Tag } from "react-tag-input";
-import { WithContext as ReactTags } from "react-tag-input";
+import { useCallback } from 'react';
+import type { Tag } from 'react-tag-input';
+import { WithContext as ReactTags } from 'react-tag-input';
 
 interface TagInputProps {
   tags: string[];
@@ -16,7 +16,7 @@ interface TagInputProps {
 export default function TagInput({
   tags,
   onChange,
-  placeholder = "タグを入力してEnterキーを押す...",
+  placeholder = 'タグを入力してEnterキーを押す...',
   disabled = false,
   maxTags,
   allowDuplicates = false,
@@ -25,7 +25,7 @@ export default function TagInput({
   const tagObjects: Tag[] = tags.map((tag) => ({
     id: tag,
     text: tag,
-    className: "",
+    className: '',
   }));
 
   const handleDelete = useCallback(
@@ -72,19 +72,19 @@ export default function TagInput({
             handleAddition={handleAddition}
             placeholder={placeholder}
             classNames={{
-              tags: "tag-input-container tag-input-inline",
-              tagInput: "tag-input-field",
+              tags: 'tag-input-container tag-input-inline',
+              tagInput: 'tag-input-field',
               tagInputField: disabled
-                ? "input input-bordered w-full opacity-50 cursor-not-allowed"
-                : "input input-bordered w-full focus:input-primary",
-              selected: "tag-list",
+                ? 'input input-bordered w-full opacity-50 cursor-not-allowed'
+                : 'input input-bordered w-full focus:input-primary',
+              selected: 'tag-list',
               // Use FlyonUI utility classes so colors come from the design system
               tag: disabled
-                ? "tag-item tag-item-disabled bg-base-200 text-base-content/60"
-                : "tag-item bg-accent text-accent-content",
-              remove: "tag-remove",
-              suggestions: "tag-suggestions",
-              activeSuggestion: "tag-suggestion-active",
+                ? 'tag-item tag-item-disabled bg-base-200 text-base-content/60'
+                : 'tag-item bg-accent text-accent-content',
+              remove: 'tag-remove',
+              suggestions: 'tag-suggestions',
+              activeSuggestion: 'tag-suggestion-active',
             }}
           />
         );

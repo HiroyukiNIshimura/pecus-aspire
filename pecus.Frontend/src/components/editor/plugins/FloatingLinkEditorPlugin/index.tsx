@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import "./index.css";
+import './index.css';
 
-import { $createLinkNode, $isAutoLinkNode, $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $findMatchingParent, mergeRegister } from "@lexical/utils";
+import { $createLinkNode, $isAutoLinkNode, $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $findMatchingParent, mergeRegister } from '@lexical/utils';
 import {
   $getSelection,
   $isLineBreakNode,
@@ -26,14 +26,14 @@ import {
   KEY_ESCAPE_COMMAND,
   type LexicalEditor,
   SELECTION_CHANGE_COMMAND,
-} from "lexical";
-import type * as React from "react";
-import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+} from 'lexical';
+import type * as React from 'react';
+import { type Dispatch, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { getSelectedNode } from "../../utils/getSelectedNode";
-import { setFloatingElemPositionForLinkEditor } from "../../utils/setFloatingElemPositionForLinkEditor";
-import { sanitizeUrl } from "../../utils/url";
+import { getSelectedNode } from '../../utils/getSelectedNode';
+import { setFloatingElemPositionForLinkEditor } from '../../utils/setFloatingElemPositionForLinkEditor';
+import { sanitizeUrl } from '../../utils/url';
 
 function preventDefault(event: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLElement>): void {
   event.preventDefault();
@@ -56,8 +56,8 @@ function FloatingLinkEditor({
 }): JSX.Element {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [linkUrl, setLinkUrl] = useState("");
-  const [editedLinkUrl, setEditedLinkUrl] = useState("https://");
+  const [linkUrl, setLinkUrl] = useState('');
+  const [editedLinkUrl, setEditedLinkUrl] = useState('https://');
   const [lastSelection, setLastSelection] = useState<BaseSelection | null>(null);
 
   const $updateLinkEditor = useCallback(() => {
@@ -71,7 +71,7 @@ function FloatingLinkEditor({
       } else if ($isLinkNode(node)) {
         setLinkUrl(node.getURL());
       } else {
-        setLinkUrl("");
+        setLinkUrl('');
       }
       if (isLinkEditMode) {
         setEditedLinkUrl(linkUrl);
@@ -86,7 +86,7 @@ function FloatingLinkEditor({
         } else if ($isLinkNode(node)) {
           setLinkUrl(node.getURL());
         } else {
-          setLinkUrl("");
+          setLinkUrl('');
         }
         if (isLinkEditMode) {
           setEditedLinkUrl(linkUrl);
@@ -124,13 +124,13 @@ function FloatingLinkEditor({
         setFloatingElemPositionForLinkEditor(domRect, editorElem, anchorElem);
       }
       setLastSelection(selection);
-    } else if (!activeElement || activeElement.className !== "link-input") {
+    } else if (!activeElement || activeElement.className !== 'link-input') {
       if (rootElement !== null) {
         setFloatingElemPositionForLinkEditor(null, editorElem, anchorElem);
       }
       setLastSelection(null);
       setIsLinkEditMode(false);
-      setLinkUrl("");
+      setLinkUrl('');
     }
 
     return true;
@@ -145,17 +145,17 @@ function FloatingLinkEditor({
       });
     };
 
-    window.addEventListener("resize", update);
+    window.addEventListener('resize', update);
 
     if (scrollerElem) {
-      scrollerElem.addEventListener("scroll", update);
+      scrollerElem.addEventListener('scroll', update);
     }
 
     return () => {
-      window.removeEventListener("resize", update);
+      window.removeEventListener('resize', update);
 
       if (scrollerElem) {
-        scrollerElem.removeEventListener("scroll", update);
+        scrollerElem.removeEventListener('scroll', update);
       }
     };
   }, [anchorElem.parentElement, editor, $updateLinkEditor]);
@@ -213,16 +213,16 @@ function FloatingLinkEditor({
         setIsLinkEditMode(false);
       }
     };
-    editorElement.addEventListener("focusout", handleBlur);
+    editorElement.addEventListener('focusout', handleBlur);
     return () => {
-      editorElement.removeEventListener("focusout", handleBlur);
+      editorElement.removeEventListener('focusout', handleBlur);
     };
   }, [setIsLink, setIsLinkEditMode, isLink]);
 
   const monitorInputInteraction = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       handleLinkSubmission(event);
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       event.preventDefault();
       setIsLinkEditMode(false);
     }
@@ -231,7 +231,7 @@ function FloatingLinkEditor({
   const handleLinkSubmission = (event: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     if (lastSelection !== null) {
-      if (linkUrl !== "") {
+      if (linkUrl !== '') {
         editor.update(() => {
           editor.dispatchCommand(TOGGLE_LINK_COMMAND, sanitizeUrl(editedLinkUrl));
           const selection = $getSelection();
@@ -248,7 +248,7 @@ function FloatingLinkEditor({
           }
         });
       }
-      setEditedLinkUrl("https://");
+      setEditedLinkUrl('https://');
       setIsLinkEditMode(false);
     }
   };
@@ -395,7 +395,7 @@ function useFloatingLinkEditorToolbar(
             const node = getSelectedNode(selection);
             const linkNode = $findMatchingParent(node, $isLinkNode);
             if ($isLinkNode(linkNode) && (payload.metaKey || payload.ctrlKey)) {
-              window.open(linkNode.getURL(), "_blank");
+              window.open(linkNode.getURL(), '_blank');
               return true;
             }
           }

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
-import { useEffect, useState } from "react";
-import { getWorkspaceDetail, updateWorkspace } from "@/actions/workspace";
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import { useEffect, useState } from 'react';
+import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
 import type {
   MasterGenreResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
-} from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { updateWorkspaceSchema } from "@/schemas/workspaceSchemas";
+} from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { updateWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
 interface EditWorkspaceModalProps {
   isOpen: boolean;
@@ -34,15 +34,15 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
         const result = await updateWorkspace(workspaceDetail.id, {
           name: data.name,
           description: data.description || undefined,
-          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+          genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
           rowVersion: workspaceDetail.rowVersion,
         });
 
         if (!result.success) {
-          if (result.error === "conflict") {
-            setServerErrors([{ key: 0, message: result.message || "別のユーザーが同時に更新しました。" }]);
+          if (result.error === 'conflict') {
+            setServerErrors([{ key: 0, message: result.message || '別のユーザーが同時に更新しました。' }]);
           } else {
-            setServerErrors([{ key: 1, message: result.message || "エラーが発生しました。" }]);
+            setServerErrors([{ key: 1, message: result.message || 'エラーが発生しました。' }]);
           }
           return;
         }
@@ -68,7 +68,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       if (result.success) {
         setWorkspaceDetail(result.data);
       } else {
-        setServerErrors([{ key: 2, message: result.message || "ワークスペースの詳細情報の取得に失敗しました。" }]);
+        setServerErrors([{ key: 2, message: result.message || 'ワークスペースの詳細情報の取得に失敗しました。' }]);
       }
 
       setIsLoading(false);
@@ -168,13 +168,13 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                     type="text"
                     defaultValue={workspaceDetail.name}
                     placeholder="例：プロジェクトA"
-                    className={`input input-bordered ${shouldShowError("name") ? "input-error" : ""}`}
-                    onBlur={(e) => validateField("name", e.target.value)}
+                    className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
+                    onBlur={(e) => validateField('name', e.target.value)}
                     disabled={isSubmitting}
                   />
-                  {shouldShowError("name") && (
+                  {shouldShowError('name') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('name')}</span>
                     </div>
                   )}
                 </div>
@@ -187,17 +187,17 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   <textarea
                     id="description"
                     name="description"
-                    defaultValue={workspaceDetail.description || ""}
+                    defaultValue={workspaceDetail.description || ''}
                     placeholder="ワークスペースの説明を入力してください..."
                     className={`textarea textarea-bordered h-24 ${
-                      shouldShowError("description") ? "textarea-error" : ""
+                      shouldShowError('description') ? 'textarea-error' : ''
                     }`}
-                    onBlur={(e) => validateField("description", e.target.value)}
+                    onBlur={(e) => validateField('description', e.target.value)}
                     disabled={isSubmitting}
                   />
-                  {shouldShowError("description") && (
+                  {shouldShowError('description') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('description')}</span>
                     </div>
                   )}
                 </div>
@@ -212,8 +212,8 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                   <select
                     id="genreId"
                     name="genreId"
-                    defaultValue={workspaceDetail.genreId ?? ""}
-                    className={`select select-bordered ${shouldShowError("genreId") ? "select-error" : ""}`}
+                    defaultValue={workspaceDetail.genreId ?? ''}
+                    className={`select select-bordered ${shouldShowError('genreId') ? 'select-error' : ''}`}
                     disabled={isSubmitting || genres.length === 0}
                   >
                     <option value="">選択してください</option>
@@ -224,9 +224,9 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                       </option>
                     ))}
                   </select>
-                  {shouldShowError("genreId") && (
+                  {shouldShowError('genreId') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("genreId")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
                     </div>
                   )}
                 </div>

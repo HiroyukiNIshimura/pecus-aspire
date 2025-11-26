@@ -2,7 +2,7 @@
  * Server Actions 共通型定義
  */
 
-import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes.generated";
+import type { ConflictLatestData } from '@/connectors/api/ConflictDataTypes.generated';
 
 /**
  * 409 Conflict レスポンス型
@@ -12,7 +12,7 @@ import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes.gene
  */
 export type ConflictResponse<_T> = {
   success: false;
-  error: "conflict";
+  error: 'conflict';
   message: string;
   /**
    * 最新の DB データ
@@ -27,7 +27,7 @@ export type ConflictResponse<_T> = {
  */
 export type ErrorResponse = {
   success: false;
-  error: "validation" | "server" | "not_found" | "forbidden" | string;
+  error: 'validation' | 'server' | 'not_found' | 'forbidden' | string;
   message: string;
 };
 

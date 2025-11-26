@@ -18,26 +18,26 @@
  */
 export function toProxyImageUrl(url: string | null | undefined): string {
   if (!url) {
-    return "";
+    return '';
   }
 
   // 既にプロキシURL形式の場合はそのまま返す
-  if (url.startsWith("/api/images/")) {
+  if (url.startsWith('/api/images/')) {
     return url;
   }
 
   // バックエンドのダウンロードURL形式をプロキシURL形式に変換
-  if (url.startsWith("/api/downloads/")) {
-    return url.replace("/api/downloads/", "/api/images/");
+  if (url.startsWith('/api/downloads/')) {
+    return url.replace('/api/downloads/', '/api/images/');
   }
 
   // 外部URL（Gravatar等）はそのまま返す
-  if (url.startsWith("http://") || url.startsWith("https://")) {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
 
   // Data URL はそのまま返す
-  if (url.startsWith("data:")) {
+  if (url.startsWith('data:')) {
     return url;
   }
 

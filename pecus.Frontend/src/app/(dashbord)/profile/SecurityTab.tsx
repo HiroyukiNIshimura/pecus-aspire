@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
-import EmailChangeTab from "./EmailChangeTab";
-import PasswordChangeTab from "./PasswordChangeTab";
+import { useState } from 'react';
+import type { PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import EmailChangeTab from './EmailChangeTab';
+import PasswordChangeTab from './PasswordChangeTab';
 
 interface SecurityTabProps {
   currentEmail: string;
@@ -18,7 +18,7 @@ interface SecurityTabProps {
   setIsLoading: (loading: boolean) => void;
 }
 
-type SecuritySubTab = "password" | "email";
+type SecuritySubTab = 'password' | 'email';
 
 export default function SecurityTab({
   currentEmail,
@@ -27,11 +27,11 @@ export default function SecurityTab({
   isLoading,
   setIsLoading,
 }: SecurityTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState<SecuritySubTab>("password");
+  const [activeSubTab, setActiveSubTab] = useState<SecuritySubTab>('password');
 
   const subTabs: { id: SecuritySubTab; label: string }[] = [
-    { id: "password", label: "パスワード変更" },
-    { id: "email", label: "メールアドレス変更" },
+    { id: 'password', label: 'パスワード変更' },
+    { id: 'email', label: 'メールアドレス変更' },
   ];
 
   return (
@@ -45,8 +45,8 @@ export default function SecurityTab({
             onClick={() => setActiveSubTab(tab.id)}
             className={`px-4 py-2 font-medium transition-colors ${
               activeSubTab === tab.id
-                ? "text-primary border-b-2 border-primary -mb-0.5"
-                : "text-base-content/70 hover:text-base-content"
+                ? 'text-primary border-b-2 border-primary -mb-0.5'
+                : 'text-base-content/70 hover:text-base-content'
             }`}
           >
             {tab.label}
@@ -56,10 +56,10 @@ export default function SecurityTab({
 
       {/* サブタブコンテンツ */}
       <div className="pt-4">
-        {activeSubTab === "password" && (
+        {activeSubTab === 'password' && (
           <PasswordChangeTab notify={notify} isLoading={isLoading} setIsLoading={setIsLoading} />
         )}
-        {activeSubTab === "email" && (
+        {activeSubTab === 'email' && (
           <EmailChangeTab
             currentEmail={currentEmail}
             pendingEmailChange={pendingEmailChange}

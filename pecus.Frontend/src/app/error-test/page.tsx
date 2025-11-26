@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import NotFoundPage from "../404";
-import ServerErrorPage from "../500";
-import GatewayErrorPage from "../502";
+import { useState } from 'react';
+import NotFoundPage from '../404';
+import ServerErrorPage from '../500';
+import GatewayErrorPage from '../502';
 
-type ErrorType = "404" | "500" | "502";
+type ErrorType = '404' | '500' | '502';
 
 export default function ErrorTestPage() {
-  const [selectedError, setSelectedError] = useState<ErrorType>("404");
+  const [selectedError, setSelectedError] = useState<ErrorType>('404');
 
   const renderErrorPage = () => {
     switch (selectedError) {
-      case "404":
+      case '404':
         return <NotFoundPage />;
-      case "500":
+      case '500':
         return <ServerErrorPage />;
-      case "502":
+      case '502':
         return <GatewayErrorPage />;
       default:
         return <NotFoundPage />;
@@ -35,12 +35,12 @@ export default function ErrorTestPage() {
             </div>
 
             <div className="flex gap-2 flex-wrap">
-              {(["404", "500", "502"] as const).map((errorType) => (
+              {(['404', '500', '502'] as const).map((errorType) => (
                 <button
                   type="button"
                   key={errorType}
                   onClick={() => setSelectedError(errorType)}
-                  className={`btn btn-sm ${selectedError === errorType ? "btn-primary" : "btn-outline"}`}
+                  className={`btn btn-sm ${selectedError === errorType ? 'btn-primary' : 'btn-outline'}`}
                 >
                   {errorType} エラー
                 </button>

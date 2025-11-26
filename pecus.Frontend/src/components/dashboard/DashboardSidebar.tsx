@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import GridIcon from "@mui/icons-material/GridView";
-import HistoryIcon from "@mui/icons-material/History";
-import TaskIcon from "@mui/icons-material/Task";
-import { usePathname } from "next/navigation";
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import GridIcon from '@mui/icons-material/GridView';
+import HistoryIcon from '@mui/icons-material/History';
+import TaskIcon from '@mui/icons-material/Task';
+import { usePathname } from 'next/navigation';
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -14,16 +14,16 @@ interface DashboardSidebarProps {
 }
 
 const menuItems = [
-  { href: "/", label: "概要", icon: DashboardIcon },
-  { href: "/workspaces", label: "マイワークスペース", icon: GridIcon },
-  { href: "/my-items", label: "マイアイテム", icon: AssignmentIcon },
-  { href: "/tasks", label: "タスク", icon: TaskIcon },
-  { href: "/activity", label: "アクティビティ", icon: HistoryIcon },
+  { href: '/', label: '概要', icon: DashboardIcon },
+  { href: '/workspaces', label: 'マイワークスペース', icon: GridIcon },
+  { href: '/my-items', label: 'マイアイテム', icon: AssignmentIcon },
+  { href: '/tasks', label: 'タスク', icon: TaskIcon },
+  { href: '/activity', label: 'アクティビティ', icon: HistoryIcon },
 ];
 
 const adminItem = {
-  href: "/admin",
-  label: "管理者",
+  href: '/admin',
+  label: '管理者',
   icon: AdminPanelSettingsIcon,
 };
 
@@ -33,7 +33,7 @@ export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSide
 
   return (
     <aside
-      className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}
+      className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:relative z-20 lg:w-64 md:w-20 w-64`}
     >
       <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">
         機能メニュー
@@ -45,11 +45,11 @@ export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSide
             <li key={item.href} className="w-full">
               <a
                 href={item.href}
-                className={`${pathname === item.href ? "menu-active" : ""} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? "!justify-start !items-center" : "!justify-center !items-center"} w-full`}
+                className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
+                <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>
           );

@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { ApiResponse } from "./types";
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { ApiResponse } from './types';
 
 /**
  * ワークスペースを削除（Admin権限が必要）
@@ -15,8 +15,8 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
   } catch (error: any) {
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ワークスペースの削除に失敗しました。",
+      error: 'server',
+      message: error.body?.message || error.message || 'ワークスペースの削除に失敗しました。',
     };
   }
 }

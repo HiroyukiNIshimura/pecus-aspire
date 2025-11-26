@@ -6,13 +6,13 @@
  *
  */
 
-import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   NodeContextMenuOption,
   NodeContextMenuPlugin,
   NodeContextMenuSeparator,
-} from "@lexical/react/LexicalNodeContextMenuPlugin";
+} from '@lexical/react/LexicalNodeContextMenuPlugin';
 import {
   $getSelection,
   $isDecoratorNode,
@@ -22,9 +22,9 @@ import {
   CUT_COMMAND,
   type LexicalNode,
   PASTE_COMMAND,
-} from "lexical";
-import type { JSX } from "react";
-import { useMemo } from "react";
+} from 'lexical';
+import type { JSX } from 'react';
+import { useMemo } from 'react';
 
 export default function ContextMenuPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext();
@@ -66,10 +66,10 @@ export default function ContextMenuPlugin(): JSX.Element {
 
             const permission = await navigator.permissions.query({
               // @ts-expect-error These types are incorrect.
-              name: "clipboard-read",
+              name: 'clipboard-read',
             });
-            if (permission.state === "denied") {
-              alert("Not allowed to paste from clipboard.");
+            if (permission.state === 'denied') {
+              alert('Not allowed to paste from clipboard.');
               return;
             }
 
@@ -78,7 +78,7 @@ export default function ContextMenuPlugin(): JSX.Element {
               data.setData(type, dataString);
             }
 
-            const event = new ClipboardEvent("paste", {
+            const event = new ClipboardEvent('paste', {
               clipboardData: data,
             });
 
@@ -93,19 +93,19 @@ export default function ContextMenuPlugin(): JSX.Element {
           navigator.clipboard.read().then(async (..._args) => {
             const permission = await navigator.permissions.query({
               // @ts-expect-error These types are incorrect.
-              name: "clipboard-read",
+              name: 'clipboard-read',
             });
 
-            if (permission.state === "denied") {
-              alert("Not allowed to paste from clipboard.");
+            if (permission.state === 'denied') {
+              alert('Not allowed to paste from clipboard.');
               return;
             }
 
             const data = new DataTransfer();
             const clipboardText = await navigator.clipboard.readText();
-            data.setData("text/plain", clipboardText);
+            data.setData('text/plain', clipboardText);
 
-            const event = new ClipboardEvent("paste", {
+            const event = new ClipboardEvent('paste', {
               clipboardData: data,
             });
             editor.dispatchCommand(PASTE_COMMAND, event);

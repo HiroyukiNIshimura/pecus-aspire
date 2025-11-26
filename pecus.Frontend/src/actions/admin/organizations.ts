@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type { OrganizationResponse } from "@/connectors/api/pecus";
-import type { ApiResponse } from "../types";
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import type { OrganizationResponse } from '@/connectors/api/pecus';
+import type { ApiResponse } from '../types';
 
 /**
  * Server Action: 自組織の詳細情報を取得
@@ -13,11 +13,11 @@ export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationR
     const response = await api.adminOrganization.getApiAdminOrganization();
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to fetch organization detail:", error);
+    console.error('Failed to fetch organization detail:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "組織情報の取得に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || '組織情報の取得に失敗しました',
     };
   }
 }
@@ -48,20 +48,20 @@ export async function updateOrganization(request: {
       const current = payload.current as OrganizationResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "organization",
+          type: 'organization',
           data: current as OrganizationResponse,
         },
       };
     }
 
-    console.error("Failed to update organization:", error);
+    console.error('Failed to update organization:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "組織情報の更新に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || '組織情報の更新に失敗しました',
     };
   }
 }

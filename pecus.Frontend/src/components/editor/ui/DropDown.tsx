@@ -6,13 +6,13 @@
  *
  */
 
-import { isDOMNode } from "lexical";
-import type { JSX } from "react";
-import * as React from "react";
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { isDOMNode } from 'lexical';
+import type { JSX } from 'react';
+import * as React from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { focusNearestDescendant, isKeyboardInput } from "../utils/focusUtils";
+import { focusNearestDescendant, isKeyboardInput } from '../utils/focusUtils';
 
 type DropDownContextType = {
   registerItem: (ref: React.RefObject<null | HTMLButtonElement>) => void;
@@ -38,7 +38,7 @@ export function DropDownItem({
   const dropDownContext = React.useContext(DropDownContext);
 
   if (dropDownContext === null) {
-    throw new Error("DropDownItem must be used within a DropDown");
+    throw new Error('DropDownItem must be used within a DropDown');
   }
 
   const { registerItem } = dropDownContext;
@@ -76,20 +76,20 @@ function DropDownItems({
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const key = event.key;
-    if (key === "Escape") {
+    if (key === 'Escape') {
       onClose();
     }
     if (!items) {
       return;
     }
 
-    if (["Escape", "ArrowUp", "ArrowDown", "Tab"].includes(key)) {
+    if (['Escape', 'ArrowUp', 'ArrowDown', 'Tab'].includes(key)) {
       event.preventDefault();
     }
 
-    if (key === "Escape" || key === "Tab") {
+    if (key === 'Escape' || key === 'Tab') {
       onClose();
-    } else if (key === "ArrowUp") {
+    } else if (key === 'ArrowUp') {
       setHighlightedItem((prev) => {
         if (!prev) {
           return items[0];
@@ -97,7 +97,7 @@ function DropDownItems({
         const index = items.indexOf(prev) - 1;
         return items[index === -1 ? items.length - 1 : index];
       });
-    } else if (key === "ArrowDown") {
+    } else if (key === 'ArrowDown') {
       setHighlightedItem((prev) => {
         if (!prev) {
           return items[0];
@@ -202,10 +202,10 @@ export default function DropDown({
           }
         }
       };
-      document.addEventListener("click", handle);
+      document.addEventListener('click', handle);
 
       return () => {
-        document.removeEventListener("click", handle);
+        document.removeEventListener('click', handle);
       };
     }
   }, [showDropDown, stopCloseOnClickSelf]);
@@ -225,10 +225,10 @@ export default function DropDown({
       }
     };
 
-    document.addEventListener("scroll", handleButtonPositionUpdate);
+    document.addEventListener('scroll', handleButtonPositionUpdate);
 
     return () => {
-      document.removeEventListener("scroll", handleButtonPositionUpdate);
+      document.removeEventListener('scroll', handleButtonPositionUpdate);
     };
   }, [showDropDown]);
 

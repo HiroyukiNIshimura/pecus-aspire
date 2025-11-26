@@ -6,11 +6,11 @@
  *
  */
 
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
-import FlashMessage from "../ui/FlashMessage";
+import FlashMessage from '../ui/FlashMessage';
 
 export type ShowFlashMessage = (message?: React.ReactNode, duration?: number) => void;
 
@@ -46,7 +46,7 @@ export const FlashMessageContext = ({ children }: { children: ReactNode }): JSX.
 export const useFlashMessageContext = (): ShowFlashMessage => {
   const ctx = useContext(Context);
   if (!ctx) {
-    throw new Error("Missing FlashMessageContext");
+    throw new Error('Missing FlashMessageContext');
   }
   return ctx;
 };

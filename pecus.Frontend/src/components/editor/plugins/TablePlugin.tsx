@@ -6,15 +6,15 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import type { EditorThemeClasses, Klass, LexicalEditor, LexicalNode } from "lexical";
-import type { JSX } from "react";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import type { EditorThemeClasses, Klass, LexicalEditor, LexicalNode } from 'lexical';
+import type { JSX } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-import Button from "../ui/Button";
-import { DialogActions } from "../ui/Dialog";
-import TextInput from "../ui/TextInput";
+import Button from '../ui/Button';
+import { DialogActions } from '../ui/Dialog';
+import TextInput from '../ui/TextInput';
 
 export type InsertTableCommandPayload = Readonly<{
   columns: string;
@@ -77,8 +77,8 @@ export function InsertTableDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }): JSX.Element {
-  const [rows, setRows] = useState("5");
-  const [columns, setColumns] = useState("5");
+  const [rows, setRows] = useState('5');
+  const [columns, setColumns] = useState('5');
   const [isDisabled, setIsDisabled] = useState(true);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export function InsertTableDialog({
   return (
     <>
       <TextInput
-        placeholder={"# of rows (1-500)"}
+        placeholder={'# of rows (1-500)'}
         label="Rows"
         onChange={setRows}
         value={rows}
@@ -111,7 +111,7 @@ export function InsertTableDialog({
         type="number"
       />
       <TextInput
-        placeholder={"# of columns (1-50)"}
+        placeholder={'# of columns (1-50)'}
         label="Columns"
         onChange={setColumns}
         value={columns}
@@ -138,7 +138,7 @@ export function TablePlugin({
   const cellContext = useContext(CellContext);
   useEffect(() => {
     if (!editor.hasNodes([TableNode, TableRowNode, TableCellNode])) {
-      throw new Error("TablePlugin: TableNode, TableRowNode, or TableCellNode is not registered on editor");
+      throw new Error('TablePlugin: TableNode, TableRowNode, or TableCellNode is not registered on editor');
     }
   }, [editor]);
   useEffect(() => {

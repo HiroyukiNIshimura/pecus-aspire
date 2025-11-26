@@ -1,4 +1,4 @@
-declare module "pristinejs" {
+declare module 'pristinejs' {
   export default class Pristine {
     constructor(
       form: HTMLFormElement,

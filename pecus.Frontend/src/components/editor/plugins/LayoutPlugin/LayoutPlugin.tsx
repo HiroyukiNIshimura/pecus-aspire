@@ -6,9 +6,9 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $findMatchingParent, $insertNodeToNearestRoot, mergeRegister } from "@lexical/utils";
-import type { ElementNode, LexicalCommand, LexicalNode, NodeKey } from "lexical";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $findMatchingParent, $insertNodeToNearestRoot, mergeRegister } from '@lexical/utils';
+import type { ElementNode, LexicalCommand, LexicalNode, NodeKey } from 'lexical';
 import {
   $createParagraphNode,
   $getNodeByKey,
@@ -21,15 +21,15 @@ import {
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND,
   KEY_ARROW_UP_COMMAND,
-} from "lexical";
-import { useEffect } from "react";
+} from 'lexical';
+import { useEffect } from 'react';
 
 import {
   $createLayoutContainerNode,
   $isLayoutContainerNode,
   LayoutContainerNode,
-} from "../../nodes/LayoutContainerNode";
-import { $createLayoutItemNode, $isLayoutItemNode, LayoutItemNode } from "../../nodes/LayoutItemNode";
+} from '../../nodes/LayoutContainerNode';
+import { $createLayoutItemNode, $isLayoutItemNode, LayoutItemNode } from '../../nodes/LayoutItemNode';
 
 export const INSERT_LAYOUT_COMMAND: LexicalCommand<string> = createCommand<string>();
 
@@ -42,7 +42,7 @@ export function LayoutPlugin(): null {
   const [editor] = useLexicalComposerContext();
   useEffect(() => {
     if (!editor.hasNodes([LayoutContainerNode, LayoutItemNode])) {
-      throw new Error("LayoutPlugin: LayoutContainerNode, or LayoutItemNode not registered on editor");
+      throw new Error('LayoutPlugin: LayoutContainerNode, or LayoutItemNode not registered on editor');
     }
 
     const $onEscape = (before: boolean) => {

@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies } from 'next/headers';
 
 export type SessionData = {
   accessToken: string;
@@ -12,9 +12,9 @@ export type SessionData = {
 };
 
 export class SessionManager {
-  private static readonly ACCESS_TOKEN_KEY = "accessToken";
-  private static readonly REFRESH_TOKEN_KEY = "refreshToken";
-  private static readonly USER_KEY = "user";
+  private static readonly ACCESS_TOKEN_KEY = 'accessToken';
+  private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
+  private static readonly USER_KEY = 'user';
 
   // セッション取得（SSR専用）
   static async getSession(): Promise<SessionData | null> {
@@ -25,7 +25,7 @@ export class SessionManager {
       const userStr = cookieStore.get(SessionManager.USER_KEY)?.value;
 
       if (!accessToken || !refreshToken || !userStr) {
-        console.log("Server  Session incomplete:", {
+        console.log('Server  Session incomplete:', {
           hasAccessToken: !!accessToken,
           hasRefreshToken: !!refreshToken,
           hasUser: !!userStr,
@@ -37,11 +37,11 @@ export class SessionManager {
         const user = JSON.parse(userStr);
         return { accessToken, refreshToken, user };
       } catch (parseError) {
-        console.error("Server  Failed to parse user data:", parseError);
+        console.error('Server  Failed to parse user data:', parseError);
         return null;
       }
     } catch (error) {
-      console.error("Server  Failed to get session:", error);
+      console.error('Server  Failed to get session:', error);
       return null;
     }
   }
@@ -54,10 +54,10 @@ export class SessionManager {
       const userString = JSON.stringify(data.user);
 
       const cookieOptions = {
-        path: "/",
+        path: '/',
         httpOnly: false,
-        sameSite: "strict" as const,
-        secure: process.env.NODE_ENV === "production", // 本番環境でのみHTTPS必須
+        sameSite: 'strict' as const,
+        secure: process.env.NODE_ENV === 'production', // 本番環境でのみHTTPS必須
         maxAge: 60 * 60 * 24 * 7, // 7日間保持
       };
 
@@ -65,9 +65,9 @@ export class SessionManager {
       cookieStore.set(SessionManager.REFRESH_TOKEN_KEY, data.refreshToken, cookieOptions);
       cookieStore.set(SessionManager.USER_KEY, userString, cookieOptions);
 
-      console.log("Server  Session saved successfully");
+      console.log('Server  Session saved successfully');
     } catch (error) {
-      console.error("Server  Failed to set session:", error);
+      console.error('Server  Failed to set session:', error);
       throw error;
     }
   }
@@ -79,9 +79,9 @@ export class SessionManager {
       cookieStore.delete(SessionManager.ACCESS_TOKEN_KEY);
       cookieStore.delete(SessionManager.REFRESH_TOKEN_KEY);
       cookieStore.delete(SessionManager.USER_KEY);
-      console.log("Server  Session cleared");
+      console.log('Server  Session cleared');
     } catch (error) {
-      console.error("Server  Failed to clear session:", error);
+      console.error('Server  Failed to clear session:', error);
       throw error;
     }
   }

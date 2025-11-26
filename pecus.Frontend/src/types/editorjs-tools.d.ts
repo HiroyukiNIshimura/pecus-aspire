@@ -1,5 +1,5 @@
-declare module "@editorjs/checklist" {
-  import { BlockTool } from "@editorjs/editorjs";
+declare module '@editorjs/checklist' {
+  import { BlockTool } from '@editorjs/editorjs';
   export default class Checklist implements BlockTool {
     constructor(config: any);
     render(): HTMLElement;
@@ -7,8 +7,8 @@ declare module "@editorjs/checklist" {
   }
 }
 
-declare module "@editorjs/simple-image" {
-  import { BlockTool } from "@editorjs/editorjs";
+declare module '@editorjs/simple-image' {
+  import { BlockTool } from '@editorjs/editorjs';
   export default class SimpleImage implements BlockTool {
     constructor(config: any);
     render(): HTMLElement;

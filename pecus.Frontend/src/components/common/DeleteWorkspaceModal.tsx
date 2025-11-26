@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import WarningIcon from "@mui/icons-material/Warning";
-import { useEffect, useState } from "react";
-import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import WarningIcon from '@mui/icons-material/Warning';
+import { useEffect, useState } from 'react';
+import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 
 interface DeleteWorkspaceModalProps {
   isOpen: boolean;
@@ -14,13 +14,13 @@ interface DeleteWorkspaceModalProps {
 }
 
 export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, workspace }: DeleteWorkspaceModalProps) {
-  const [confirmCode, setConfirmCode] = useState("");
+  const [confirmCode, setConfirmCode] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   // モーダルが閉じられたら入力をクリア
   useEffect(() => {
     if (!isOpen) {
-      setConfirmCode("");
+      setConfirmCode('');
     }
   }, [isOpen]);
 
@@ -127,7 +127,7 @@ export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, works
                 id="confirmCode"
                 type="text"
                 placeholder={`${workspace.code} を入力`}
-                className={`input input-bordered ${confirmCode && !isConfirmValid ? "input-error" : ""}`}
+                className={`input input-bordered ${confirmCode && !isConfirmValid ? 'input-error' : ''}`}
                 value={confirmCode}
                 onChange={(e) => setConfirmCode(e.target.value)}
                 disabled={isDeleting}

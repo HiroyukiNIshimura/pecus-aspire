@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { OrganizationResponse, UserResponse } from "@/connectors/api/pecus";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import AdminClient from "./AdminClient";
+import { redirect } from 'next/navigation';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { OrganizationResponse, UserResponse } from '@/connectors/api/pecus';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import AdminClient from './AdminClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function AdminPage() {
@@ -21,19 +21,19 @@ export default async function AdminPage() {
     // 組織情報を取得
     organization = await api.adminOrganization.getApiAdminOrganization();
   } catch (error: any) {
-    console.error("AdminPage: failed to fetch organization or user", error);
+    console.error('AdminPage: failed to fetch organization or user', error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || 'データの取得に失敗しました';
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // UserResponse から UserInfo に変換

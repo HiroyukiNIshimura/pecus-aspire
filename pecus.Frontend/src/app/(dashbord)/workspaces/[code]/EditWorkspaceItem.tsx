@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchLatestWorkspaceItem, updateWorkspaceItem } from "@/actions/workspaceItem";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
-import type { TaskPriority, WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
-import { useNotify } from "@/hooks/useNotify";
-import { updateWorkspaceItemSchema } from "@/schemas/editSchemas";
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
+import NotionLikeEditor from '@/components/editor/NotionLikeEditor';
+import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
+import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
 
 interface EditWorkspaceItemProps {
   item: WorkspaceItemDetailResponse;
@@ -26,17 +26,17 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
-    subject: item.subject || "",
-    dueDate: item.dueDate ? new Date(item.dueDate).toISOString().split("T")[0] : "",
-    priority: (item.priority || "Medium") as TaskPriority,
+    subject: item.subject || '',
+    dueDate: item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0] : '',
+    priority: (item.priority || 'Medium') as TaskPriority,
     isDraft: item.isDraft ?? false,
     isArchived: item.isArchived ?? false,
     rowVersion: item.rowVersion,
   });
 
   // エディタ初期値（item.body）とユーザー入力値は分離して管理
-  const [initialEditorState, setInitialEditorState] = useState<string>(item.body || "");
-  const [editorValue, setEditorValue] = useState<string>(item.body || "");
+  const [initialEditorState, setInitialEditorState] = useState<string>(item.body || '');
+  const [editorValue, setEditorValue] = useState<string>(item.body || '');
   const [editorInitKey, setEditorInitKey] = useState<number>(0);
 
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
@@ -71,7 +71,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
           // エラーをフィールドごとに分類
           const errors: Record<string, string[]> = {};
           result.error.issues.forEach((issue: any) => {
-            const path = issue.path.join(".");
+            const path = issue.path.join('.');
             if (!errors[path]) errors[path] = [];
             errors[path].push(issue.message);
           });
@@ -82,7 +82,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
 
         // rowVersion が存在しない場合はエラー
         if (!latestItem.rowVersion) {
-          notify.error("アイテム情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error('アイテム情報の更新に必要なバージョン情報が取得できませんでした。');
           setIsSubmitting(false);
           return;
         }
@@ -105,7 +105,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
         });
 
         if (updateResult.success) {
-          notify.success("アイテムを更新しました。");
+          notify.success('アイテムを更新しました。');
 
           // 最新のアイテムデータを再取得（body を含む完全な情報を取得）
           const fetchResult = await fetchLatestWorkspaceItem(latestItem.workspaceId || 0, latestItem.id);
@@ -114,17 +114,17 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
             onSave(fetchResult.data);
           }
           onClose();
-        } else if (updateResult.error === "conflict") {
+        } else if (updateResult.error === 'conflict') {
           // 409 Conflict: 並行更新
           notify.error(
-            updateResult.message || "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            updateResult.message || '別のユーザーが同時に変更しました。ページをリロードして再度操作してください。',
           );
         } else {
-          notify.error(updateResult.message || "アイテムの更新に失敗しました。");
+          notify.error(updateResult.message || 'アイテムの更新に失敗しました。');
         }
       } catch (err: unknown) {
-        console.error("アイテム更新中にエラーが発生しました:", err);
-        notify.error("アイテムの更新中にエラーが発生しました。");
+        console.error('アイテム更新中にエラーが発生しました:', err);
+        notify.error('アイテムの更新中にエラーが発生しました。');
       } finally {
         setIsSubmitting(false);
       }
@@ -149,23 +149,23 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
           setLatestItem(result.data);
           // フォームデータを更新
           setFormData({
-            subject: result.data.subject || "",
-            dueDate: result.data.dueDate ? new Date(result.data.dueDate).toISOString().split("T")[0] : "",
-            priority: (result.data.priority || "Medium") as TaskPriority,
+            subject: result.data.subject || '',
+            dueDate: result.data.dueDate ? new Date(result.data.dueDate).toISOString().split('T')[0] : '',
+            priority: (result.data.priority || 'Medium') as TaskPriority,
             isDraft: result.data.isDraft ?? false,
             isArchived: result.data.isArchived ?? false,
             rowVersion: result.data.rowVersion,
           });
           // エディタ初期値とユーザー入力値を両方初期化
-          setInitialEditorState(result.data.body || "");
-          setEditorValue(result.data.body || "");
+          setInitialEditorState(result.data.body || '');
+          setEditorValue(result.data.body || '');
           setEditorInitKey((k) => k + 1); // 強制再マウント
         } else {
-          setItemLoadError(result.message || "アイテムの取得に失敗しました。");
+          setItemLoadError(result.message || 'アイテムの取得に失敗しました。');
         }
       } catch (err) {
-        console.error("アイテム取得中にエラーが発生しました:", err);
-        setItemLoadError("アイテムの取得中にエラーが発生しました。");
+        console.error('アイテム取得中にエラーが発生しました:', err);
+        setItemLoadError('アイテムの取得中にエラーが発生しました。');
       } finally {
         setIsLoadingItem(false);
       }
@@ -272,15 +272,15 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                     name="subject"
                     type="text"
                     placeholder="例：アイテムの件名"
-                    className={`input input-bordered w-full ${shouldShowError("subject") ? "input-error" : ""}`}
+                    className={`input input-bordered w-full ${shouldShowError('subject') ? 'input-error' : ''}`}
                     value={formData.subject}
-                    onChange={(e) => handleFieldChange("subject", e.target.value)}
+                    onChange={(e) => handleFieldChange('subject', e.target.value)}
                     disabled={isSubmitting}
                     maxLength={200}
                   />
-                  {shouldShowError("subject") && (
+                  {shouldShowError('subject') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("subject")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('subject')}</span>
                     </div>
                   )}
                   <div className="label">
@@ -316,14 +316,14 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                     id="dueDate"
                     name="dueDate"
                     type="date"
-                    className={`input input-bordered w-full ${shouldShowError("dueDate") ? "input-error" : ""}`}
+                    className={`input input-bordered w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
                     value={formData.dueDate}
-                    onChange={(e) => handleFieldChange("dueDate", e.target.value)}
+                    onChange={(e) => handleFieldChange('dueDate', e.target.value)}
                     disabled={isSubmitting}
                   />
-                  {shouldShowError("dueDate") && (
+                  {shouldShowError('dueDate') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("dueDate")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
                     </div>
                   )}
                 </div>
@@ -336,9 +336,9 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                   <select
                     id="priority"
                     name="priority"
-                    className={`select select-bordered w-full ${shouldShowError("priority") ? "select-error" : ""}`}
-                    value={formData.priority || "Medium"}
-                    onChange={(e) => handleFieldChange("priority", e.target.value as TaskPriority)}
+                    className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
+                    value={formData.priority || 'Medium'}
+                    onChange={(e) => handleFieldChange('priority', e.target.value as TaskPriority)}
                     disabled={isSubmitting}
                   >
                     <option value="Low">低</option>
@@ -346,9 +346,9 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                     <option value="High">高</option>
                     <option value="Critical">緊急</option>
                   </select>
-                  {shouldShowError("priority") && (
+                  {shouldShowError('priority') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError("priority")}</span>
+                      <span className="label-text-alt text-error">{getFieldError('priority')}</span>
                     </div>
                   )}
                 </div>
@@ -361,7 +361,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                       name="isDraft"
                       className="checkbox checkbox-primary"
                       checked={formData.isDraft || false}
-                      onChange={(e) => handleFieldChange("isDraft", e.target.checked)}
+                      onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
                       disabled={isSubmitting}
                     />
                     <span className="label-text">下書き</span>
@@ -376,7 +376,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                       name="isArchived"
                       className="checkbox checkbox-neutral"
                       checked={formData.isArchived || false}
-                      onChange={(e) => handleFieldChange("isArchived", e.target.checked)}
+                      onChange={(e) => handleFieldChange('isArchived', e.target.checked)}
                       disabled={isSubmitting}
                     />
                     <span className="label-text">アーカイブ</span>
@@ -398,7 +398,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                         保存中...
                       </>
                     ) : (
-                      "保存"
+                      '保存'
                     )}
                   </button>
                 </div>

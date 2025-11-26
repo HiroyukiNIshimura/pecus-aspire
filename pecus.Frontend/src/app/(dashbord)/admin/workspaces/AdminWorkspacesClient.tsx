@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { useCallback, useEffect, useState } from "react";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import Pagination from "@/components/common/Pagination";
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { useCallback, useEffect, useState } from 'react';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import Pagination from '@/components/common/Pagination';
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
-} from "@/connectors/api/pecus";
-import { useDelayedLoading } from "@/hooks/useDelayedLoading";
-import { useValidation } from "@/hooks/useValidation";
-import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
-import type { UserInfo } from "@/types/userInfo";
+} from '@/connectors/api/pecus';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useValidation } from '@/hooks/useValidation';
+import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 /**
  * ワークスペース管理画面のクライアントコンポーネント
@@ -63,7 +63,7 @@ export default function AdminWorkspacesClient({
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
-  const [filterName, setFilterName] = useState<string>("");
+  const [filterName, setFilterName] = useState<string>('');
   const [genres, _setGenres] = useState<MasterGenreResponse[]>(initialGenres || []);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -88,7 +88,7 @@ export default function AdminWorkspacesClient({
     const fetchInitialData = async () => {
       if (!initialWorkspaces || initialWorkspaces.length === 0) {
         try {
-          const response = await fetch("/api/admin/workspaces?page=1&IsActive=true");
+          const response = await fetch('/api/admin/workspaces?page=1&IsActive=true');
           if (response.ok) {
             const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
             setWorkspaces(data.data || []);
@@ -98,7 +98,7 @@ export default function AdminWorkspacesClient({
             setStatistics(data.summary || null);
           }
         } catch (error) {
-          console.error("Failed to fetch initial workspaces:", error);
+          console.error('Failed to fetch initial workspaces:', error);
         }
       }
       setIsLoading(false);
@@ -119,15 +119,15 @@ export default function AdminWorkspacesClient({
     try {
       const page = selected + 1; // react-paginateは0-based
       const params = new URLSearchParams();
-      params.append("page", page.toString());
+      params.append('page', page.toString());
       if (filterIsActive !== null) {
-        params.append("IsActive", filterIsActive.toString());
+        params.append('IsActive', filterIsActive.toString());
       }
       if (filterGenreId !== null) {
-        params.append("GenreId", filterGenreId.toString());
+        params.append('GenreId', filterGenreId.toString());
       }
       if (filterName) {
-        params.append("Name", filterName);
+        params.append('Name', filterName);
       }
       const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
       if (response.ok) {
@@ -139,7 +139,7 @@ export default function AdminWorkspacesClient({
         setStatistics(data.summary || null);
       }
     } catch (error) {
-      console.error("Failed to fetch workspaces:", error);
+      console.error('Failed to fetch workspaces:', error);
     }
   });
 
@@ -148,15 +148,15 @@ export default function AdminWorkspacesClient({
     await withDelayedLoading(async () => {
       try {
         const params = new URLSearchParams();
-        params.append("page", "1");
+        params.append('page', '1');
         if (filterIsActive !== null) {
-          params.append("IsActive", filterIsActive.toString());
+          params.append('IsActive', filterIsActive.toString());
         }
         if (filterGenreId !== null) {
-          params.append("GenreId", filterGenreId.toString());
+          params.append('GenreId', filterGenreId.toString());
         }
         if (filterName) {
-          params.append("Name", filterName);
+          params.append('Name', filterName);
         }
         const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
         if (response.ok) {
@@ -168,7 +168,7 @@ export default function AdminWorkspacesClient({
           setStatistics(data.summary || null);
         }
       } catch (error) {
-        console.error("Failed to fetch workspaces:", error);
+        console.error('Failed to fetch workspaces:', error);
       }
     })();
   }, [filterIsActive, filterGenreId, filterName, withDelayedLoading]);
@@ -196,7 +196,7 @@ export default function AdminWorkspacesClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? "初期化中..." : "検索中..."} />
+      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />
@@ -233,13 +233,13 @@ export default function AdminWorkspacesClient({
                   <div className="flex items-center gap-2">
                     <FilterListIcon />
                     <span
-                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? "text-success" : ""}`}
+                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? 'text-success' : ''}`}
                     >
                       フィルター
                     </span>
                   </div>
                   <svg
-                    className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -265,13 +265,13 @@ export default function AdminWorkspacesClient({
                         <input
                           type="text"
                           id="filter-name"
-                          className={`input input-bordered w-full ${nameValidation.hasErrors ? "input-error" : ""}`}
+                          className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
                           placeholder="前方一致検索..."
                           value={filterName}
                           onChange={(e) => handleNameChange(e.target.value)}
                           onKeyDown={(e) => {
                             // 【ポイント2】Enterキーで検索: nameValidation.isValid でバリデーションチェック
-                            if (e.key === "Enter" && nameValidation.isValid) {
+                            if (e.key === 'Enter' && nameValidation.isValid) {
                               handleSearch();
                             }
                           }}
@@ -292,7 +292,7 @@ export default function AdminWorkspacesClient({
                         <select
                           id="filter-genre"
                           className="select select-bordered w-full"
-                          value={filterGenreId ?? ""}
+                          value={filterGenreId ?? ''}
                           onChange={(e) => {
                             setFilterGenreId(e.target.value ? parseInt(e.target.value, 10) : null);
                           }}
@@ -370,7 +370,7 @@ export default function AdminWorkspacesClient({
                           // フィルター条件をデフォルト状態にリセット
                           setFilterGenreId(null);
                           setFilterIsActive(true);
-                          setFilterName("");
+                          setFilterName('');
                           // 【ポイント5】エラーのクリア: nameValidation.clearErrors()
                           nameValidation.clearErrors();
 
@@ -379,8 +379,8 @@ export default function AdminWorkspacesClient({
                           await withDelayedLoading(async () => {
                             try {
                               const params = new URLSearchParams();
-                              params.append("page", "1");
-                              params.append("IsActive", "true"); // デフォルト: アクティブのみ
+                              params.append('page', '1');
+                              params.append('IsActive', 'true'); // デフォルト: アクティブのみ
 
                               const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
                               if (response.ok) {
@@ -393,7 +393,7 @@ export default function AdminWorkspacesClient({
                                 setStatistics(data.summary || null);
                               }
                             } catch (error) {
-                              console.error("Failed to fetch workspaces after reset:", error);
+                              console.error('Failed to fetch workspaces after reset:', error);
                             }
                           })();
                         }}
@@ -430,21 +430,21 @@ export default function AdminWorkspacesClient({
                     <tbody>
                       {workspaces.map((workspace) => (
                         <tr key={workspace.id}>
-                          <td>{workspace.code || "-"}</td>
+                          <td>{workspace.code || '-'}</td>
                           <td className="font-semibold">{workspace.name}</td>
                           <td>
-                            <span className="badge badge-outline">{workspace.genreName || "-"}</span>
+                            <span className="badge badge-outline">{workspace.genreName || '-'}</span>
                           </td>
                           <td>
                             <span className="badge badge-info">{workspace.memberCount ?? 0} 人</span>
                           </td>
                           <td>
-                            <div className={`badge ${workspace.isActive ? "badge-success" : "badge-neutral"}`}>
-                              {workspace.isActive ? "アクティブ" : "非アクティブ"}
+                            <div className={`badge ${workspace.isActive ? 'badge-success' : 'badge-neutral'}`}>
+                              {workspace.isActive ? 'アクティブ' : '非アクティブ'}
                             </div>
                           </td>
                           <td>
-                            {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString("ja-JP") : "不明"}
+                            {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '不明'}
                           </td>
                           <td>
                             <div className="flex gap-2">
@@ -510,7 +510,7 @@ export default function AdminWorkspacesClient({
                       <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.activeWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が稼働中`
-                          : "稼働中のワークスペースなし"}
+                          : '稼働中のワークスペースなし'}
                       </div>
                     </div>
                   </div>
@@ -529,7 +529,7 @@ export default function AdminWorkspacesClient({
                       <div className="text-xs text-base-content opacity-70">
                         {(stats.totalWorkspaceCount ?? 0) > 0
                           ? `${Math.round(((stats.inactiveWorkspaceCount ?? 0) / (stats.totalWorkspaceCount ?? 1)) * 100)}% が停止中`
-                          : "非アクティブなワークスペースなし"}
+                          : '非アクティブなワークスペースなし'}
                       </div>
                     </div>
                   </div>

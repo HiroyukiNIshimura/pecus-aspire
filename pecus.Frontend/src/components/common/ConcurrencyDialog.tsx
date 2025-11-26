@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes.generated";
+import type { ConflictLatestData } from '@/connectors/api/ConflictDataTypes.generated';
 
 /**
  * ConcurrencyDialog コンポーネントのプロパティ

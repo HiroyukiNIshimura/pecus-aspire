@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import AddIcon from "@mui/icons-material/Add";
-import ClearIcon from "@mui/icons-material/Clear";
-import HomeIcon from "@mui/icons-material/Home";
-import SearchIcon from "@mui/icons-material/Search";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from "@/connectors/api/pecus";
-import WorkspaceSwitcher from "./WorkspaceSwitcher";
+import AddIcon from '@mui/icons-material/Add';
+import ClearIcon from '@mui/icons-material/Clear';
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
@@ -29,15 +29,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       workspaceId,
       currentWorkspaceCode,
       workspaces,
-      scrollContainerId = "itemsScrollableDiv",
+      scrollContainerId = 'itemsScrollableDiv',
       onHomeSelect,
       onItemSelect,
       onCreateNew,
     },
     ref,
   ) => {
-    const [selectedItemId, setSelectedItemId] = useState<"home" | "new" | number | null>("home");
-    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedItemId, setSelectedItemId] = useState<'home' | 'new' | number | null>('home');
+    const [searchQuery, setSearchQuery] = useState('');
     const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -60,7 +60,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
 
           if (!response.ok) {
-            throw new Error("Failed to fetch items");
+            throw new Error('Failed to fetch items');
           }
 
           const data = await response.json();
@@ -75,7 +75,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             setSelectedItemId(selectItemId);
           }
         } catch (err) {
-          setError(err instanceof Error ? err.message : "Failed to fetch items");
+          setError(err instanceof Error ? err.message : 'Failed to fetch items');
         } finally {
           setIsLoading(false);
         }
@@ -104,7 +104,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         const response = await fetch(`/api/workspaces/${workspaceId}/items?page=${nextPage}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch items");
+          throw new Error('Failed to fetch items');
         }
 
         const data = await response.json();
@@ -120,7 +120,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load more items");
+        setError(err instanceof Error ? err.message : 'Failed to load more items');
       }
     }, [workspaceId]);
 
@@ -146,13 +146,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <button
               type="button"
               onClick={() => {
-                setSelectedItemId("home");
+                setSelectedItemId('home');
                 onHomeSelect?.();
               }}
               className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
-                selectedItemId === "home"
-                  ? "bg-primary text-primary-content font-semibold"
-                  : "hover:bg-base-300 text-base-content"
+                selectedItemId === 'home'
+                  ? 'bg-primary text-primary-content font-semibold'
+                  : 'hover:bg-base-300 text-base-content'
               }`}
               title="ワークスペースHome"
             >
@@ -166,7 +166,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <button
               type="button"
               onClick={() => {
-                setSelectedItemId("new");
+                setSelectedItemId('new');
                 onCreateNew?.();
               }}
               className="btn btn-primary btn-sm gap-1"
@@ -193,7 +193,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-2.5 text-base-content/50 hover:text-base-content transition-colors"
                 title="クリア"
               >
@@ -214,10 +214,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">
-            <p className="text-sm">{searchQuery ? "該当するアイテムがありません" : "アイテムがありません"}</p>
+            <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
           </div>
         ) : (
-          <div id={scrollContainerId} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: "750px" }}>
+          <div id={scrollContainerId} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
             <InfiniteScroll
               dataLength={filteredItems.length}
               next={loadMoreItems}
@@ -247,12 +247,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                       }}
                       className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
                         selectedItemId === item.id
-                          ? "bg-primary text-primary-content font-semibold"
-                          : "hover:bg-base-300 text-base-content"
+                          ? 'bg-primary text-primary-content font-semibold'
+                          : 'hover:bg-base-300 text-base-content'
                       }`}
-                      title={item.subject || "（未設定）"}
+                      title={item.subject || '（未設定）'}
                     >
-                      {item.subject || "（未設定）"}
+                      {item.subject || '（未設定）'}
                     </button>
                   </li>
                 ))}
@@ -265,6 +265,6 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
   },
 );
 
-WorkspaceItemsSidebar.displayName = "WorkspaceItemsSidebar";
+WorkspaceItemsSidebar.displayName = 'WorkspaceItemsSidebar';
 
 export default WorkspaceItemsSidebar;

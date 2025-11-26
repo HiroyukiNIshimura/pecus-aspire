@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import AppHeader from "@/components/common/AppHeader";
-import type { MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
-import { useNotify } from "@/hooks/useNotify";
-import type { UserInfo } from "@/types/userInfo";
-import BasicInfoTab from "./BasicInfoTab";
-import SecurityTab from "./SecurityTab";
-import SkillsTab from "./SkillsTab";
+import { useState } from 'react';
+import AppHeader from '@/components/common/AppHeader';
+import type { MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
+import type { UserInfo } from '@/types/userInfo';
+import BasicInfoTab from './BasicInfoTab';
+import SecurityTab from './SecurityTab';
+import SkillsTab from './SkillsTab';
 
 interface ProfileSettingsClientProps {
   initialUser: UserInfo;
@@ -16,7 +16,7 @@ interface ProfileSettingsClientProps {
   fetchError?: string | null;
 }
 
-type TabType = "basic" | "skills" | "security";
+type TabType = 'basic' | 'skills' | 'security';
 
 export default function ProfileSettingsClient({
   initialUser,
@@ -24,7 +24,7 @@ export default function ProfileSettingsClient({
   masterSkills,
 }: ProfileSettingsClientProps) {
   const notify = useNotify();
-  const [activeTab, setActiveTab] = useState<TabType>("basic");
+  const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [user, setUser] = useState<UserInfo>(initialUser);
   const [pendingEmailChange, _setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(
     initialPendingEmailChange,
@@ -32,9 +32,9 @@ export default function ProfileSettingsClient({
   const [isLoading, setIsLoading] = useState(false);
 
   const tabs: { id: TabType; label: string }[] = [
-    { id: "basic", label: "基本情報" },
-    { id: "skills", label: "スキル" },
-    { id: "security", label: "セキュリティ" },
+    { id: 'basic', label: '基本情報' },
+    { id: 'skills', label: 'スキル' },
+    { id: 'security', label: 'セキュリティ' },
   ];
 
   return (
@@ -55,8 +55,8 @@ export default function ProfileSettingsClient({
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "text-primary border-b-2 border-primary -mb-0.5"
-                      : "text-base-content/70 hover:text-base-content"
+                      ? 'text-primary border-b-2 border-primary -mb-0.5'
+                      : 'text-base-content/70 hover:text-base-content'
                   }`}
                 >
                   {tab.label}
@@ -66,7 +66,7 @@ export default function ProfileSettingsClient({
           </div>
           {/* タブコンテンツ */}
           <div className="bg-base-100 rounded-lg shadow-md p-8">
-            {activeTab === "basic" && (
+            {activeTab === 'basic' && (
               <BasicInfoTab
                 user={user}
                 onUpdate={setUser}
@@ -75,7 +75,7 @@ export default function ProfileSettingsClient({
                 setIsLoading={setIsLoading}
               />
             )}
-            {activeTab === "skills" && (
+            {activeTab === 'skills' && (
               <SkillsTab
                 initialSkillIds={user.skills?.map((s) => s.id) || []}
                 masterSkills={masterSkills}
@@ -84,9 +84,9 @@ export default function ProfileSettingsClient({
                 setIsLoading={setIsLoading}
               />
             )}
-            {activeTab === "security" && (
+            {activeTab === 'security' && (
               <SecurityTab
-                currentEmail={user.email || ""}
+                currentEmail={user.email || ''}
                 pendingEmailChange={pendingEmailChange}
                 notify={notify}
                 isLoading={isLoading}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback, useRef, useState } from "react";
-import { z } from "zod";
-import type { $ZodIssueBase } from "zod/v4/core";
+import { useCallback, useRef, useState } from 'react';
+import { z } from 'zod';
+import type { $ZodIssueBase } from 'zod/v4/core';
 
 interface FieldError {
   [fieldName: string]: string[];
@@ -98,7 +98,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
                 data[key] = false;
               } else {
                 // "on" という値を true に変換
-                data[key] = data[key] === "on" || data[key] === true;
+                data[key] = data[key] === 'on' || data[key] === true;
               }
             }
           });
@@ -111,7 +111,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
           // エラーをフィールドごとに分類
           const errors: FieldError = {};
           result.error.issues.forEach((issue) => {
-            const path = issue.path.join(".");
+            const path = issue.path.join('.');
             if (!errors[path]) errors[path] = [];
             errors[path].push(issue.message);
           });
@@ -122,7 +122,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
         // 検証成功 → コールバック実行
         await onSubmit(result.data);
       } catch (error) {
-        console.error("Form submission error:", error);
+        console.error('Form submission error:', error);
       } finally {
         setIsSubmitting(false);
       }

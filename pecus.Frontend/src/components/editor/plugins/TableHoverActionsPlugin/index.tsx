@@ -6,8 +6,8 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useLexicalEditable } from "@lexical/react/useLexicalEditable";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useLexicalEditable } from '@lexical/react/useLexicalEditable';
 import {
   $getTableAndElementByKey,
   $getTableColumnIndexFromTableCellNode,
@@ -20,16 +20,16 @@ import {
   type TableCellNode,
   TableNode,
   type TableRowNode,
-} from "@lexical/table";
-import { $findMatchingParent, mergeRegister } from "@lexical/utils";
-import { $getNearestNodeFromDOMNode, type EditorThemeClasses, isHTMLElement, type NodeKey } from "lexical";
-import type * as React from "react";
-import type { JSX } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+} from '@lexical/table';
+import { $findMatchingParent, mergeRegister } from '@lexical/utils';
+import { $getNearestNodeFromDOMNode, type EditorThemeClasses, isHTMLElement, type NodeKey } from 'lexical';
+import type * as React from 'react';
+import type { JSX } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { getThemeSelector } from "../../utils/getThemeSelector";
-import { useDebounce } from "../CodeActionMenuPlugin/utils";
+import { getThemeSelector } from '../../utils/getThemeSelector';
+import { useDebounce } from '../CodeActionMenuPlugin/utils';
 
 const BUTTON_WIDTH_PX = 20;
 
@@ -106,7 +106,7 @@ function TableHoverActionsContainer({ anchorElem }: { anchorElem: HTMLElement })
         // Adjust for using the scrollable table container
         const parentElement = (tableDOMElement as HTMLTableElement).parentElement;
         let tableHasScroll = false;
-        if (parentElement?.classList.contains("NotionLikeEditorTheme__tableScrollableWrapper")) {
+        if (parentElement?.classList.contains('NotionLikeEditorTheme__tableScrollableWrapper')) {
           tableHasScroll = parentElement.scrollWidth > parentElement.clientWidth;
         }
         const { y: editorElemY, left: editorElemLeft } = anchorElem.getBoundingClientRect();
@@ -152,13 +152,13 @@ function TableHoverActionsContainer({ anchorElem }: { anchorElem: HTMLElement })
       return;
     }
 
-    document.addEventListener("mousemove", debouncedOnMouseMove);
+    document.addEventListener('mousemove', debouncedOnMouseMove);
 
     return () => {
       setShownRow(false);
       setShownColumn(false);
       debouncedOnMouseMove.cancel();
-      document.removeEventListener("mousemove", debouncedOnMouseMove);
+      document.removeEventListener('mousemove', debouncedOnMouseMove);
     };
   }, [shouldListenMouseMove, debouncedOnMouseMove]);
 
@@ -172,12 +172,12 @@ function TableHoverActionsContainer({ anchorElem }: { anchorElem: HTMLElement })
               let resetObserver = false;
               for (const [key, type] of mutations) {
                 switch (type) {
-                  case "created": {
+                  case 'created': {
                     tableSetRef.current.add(key);
                     resetObserver = true;
                     break;
                   }
-                  case "destroyed": {
+                  case 'destroyed': {
                     tableSetRef.current.delete(key);
                     resetObserver = true;
                     break;
@@ -254,16 +254,16 @@ function getMouseInfo(
   isOutside: boolean;
 } {
   const target = event.target;
-  const tableCellClass = getThemeSelector(getTheme, "tableCell");
+  const tableCellClass = getThemeSelector(getTheme, 'tableCell');
 
   if (isHTMLElement(target)) {
     const tableDOMNode = target.closest<HTMLElement>(`td${tableCellClass}, th${tableCellClass}`);
 
     const isOutside = !(
       tableDOMNode ||
-      target.closest<HTMLElement>(`button${getThemeSelector(getTheme, "tableAddRows")}`) ||
-      target.closest<HTMLElement>(`button${getThemeSelector(getTheme, "tableAddColumns")}`) ||
-      target.closest<HTMLElement>("div.TableCellResizer__resizer")
+      target.closest<HTMLElement>(`button${getThemeSelector(getTheme, 'tableAddRows')}`) ||
+      target.closest<HTMLElement>(`button${getThemeSelector(getTheme, 'tableAddColumns')}`) ||
+      target.closest<HTMLElement>('div.TableCellResizer__resizer')
     );
 
     return { isOutside, tableDOMNode };

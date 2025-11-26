@@ -1,8 +1,8 @@
-"use server";
+'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
-import type { WorkspaceFullDetailResponse } from "@/connectors/api/pecus";
-import type { ApiResponse } from "./types";
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import type { WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type { ApiResponse } from './types';
 
 /**
  * Server Action: ワークスペースを作成（一般ユーザー用）
@@ -18,22 +18,22 @@ export async function createWorkspace(request: {
     const response = await api.workspace.postApiWorkspaces(request);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to create workspace:", error);
+    console.error('Failed to create workspace:', error);
 
     // バリデーションエラー
     if (error.status === 400) {
       return {
         success: false,
-        error: "validation",
-        message: error.body?.message || error.message || "入力内容に誤りがあります。",
+        error: 'validation',
+        message: error.body?.message || error.message || '入力内容に誤りがあります。',
       };
     }
 
     // その他のエラー
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ワークスペースの作成に失敗しました。",
+      error: 'server',
+      message: error.body?.message || error.message || 'ワークスペースの作成に失敗しました。',
     };
   }
 }
@@ -47,22 +47,22 @@ export async function getWorkspaceDetail(workspaceId: number): Promise<ApiRespon
     const response = await api.workspace.getApiWorkspaces1(workspaceId);
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to get workspace detail:", error);
+    console.error('Failed to get workspace detail:', error);
 
     // 存在しない（404 Not Found）
     if (error.status === 404) {
       return {
         success: false,
-        error: "not-found",
-        message: "ワークスペースが見つかりません。",
+        error: 'not-found',
+        message: 'ワークスペースが見つかりません。',
       };
     }
 
     // その他のエラー
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ワークスペースの取得に失敗しました。",
+      error: 'server',
+      message: error.body?.message || error.message || 'ワークスペースの取得に失敗しました。',
     };
   }
 }
@@ -89,16 +89,16 @@ export async function updateWorkspace(
     });
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to update workspace:", error);
+    console.error('Failed to update workspace:', error);
 
     // 競合エラー（409 Conflict）
     const concurrency = detectConcurrencyError(error);
     if (concurrency) {
       return {
         success: false,
-        error: "conflict",
-        message: concurrency.message || "別のユーザーが同時に更新しました。",
-        latest: { type: "workspace", data: concurrency.payload as any },
+        error: 'conflict',
+        message: concurrency.message || '別のユーザーが同時に更新しました。',
+        latest: { type: 'workspace', data: concurrency.payload as any },
       } as any;
     }
 
@@ -106,8 +106,8 @@ export async function updateWorkspace(
     if (error.status === 400) {
       return {
         success: false,
-        error: "validation",
-        message: error.body?.message || error.message || "入力内容に誤りがあります。",
+        error: 'validation',
+        message: error.body?.message || error.message || '入力内容に誤りがあります。',
       };
     }
 
@@ -115,16 +115,16 @@ export async function updateWorkspace(
     if (error.status === 404) {
       return {
         success: false,
-        error: "not-found",
-        message: "ワークスペースが見つかりません。",
+        error: 'not-found',
+        message: 'ワークスペースが見つかりません。',
       };
     }
 
     // その他のエラー
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ワークスペースの更新に失敗しました。",
+      error: 'server',
+      message: error.body?.message || error.message || 'ワークスペースの更新に失敗しました。',
     };
   }
 }
@@ -142,7 +142,7 @@ export async function toggleWorkspaceActive(
     // 最新のワークスペース情報を取得してrowVersionを取得
     const detailResponse = await api.workspace.getApiWorkspaces1(workspaceId);
 
-    console.log("Toggle workspace:", {
+    console.log('Toggle workspace:', {
       workspaceId,
       isActive,
       rowVersion: detailResponse.rowVersion,
@@ -152,11 +152,11 @@ export async function toggleWorkspaceActive(
 
     // rowVersionが存在しない、または0の場合はエラー
     if (!detailResponse.rowVersion || detailResponse.rowVersion === 0) {
-      console.error("Invalid rowVersion:", detailResponse.rowVersion);
+      console.error('Invalid rowVersion:', detailResponse.rowVersion);
       return {
         success: false,
-        error: "validation",
-        message: "ワークスペースのバージョン情報が取得できませんでした。",
+        error: 'validation',
+        message: 'ワークスペースのバージョン情報が取得できませんでした。',
       };
     }
 
@@ -167,8 +167,8 @@ export async function toggleWorkspaceActive(
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to toggle workspace active status:", error);
-    console.error("Error details:", {
+    console.error('Failed to toggle workspace active status:', error);
+    console.error('Error details:', {
       status: error.status,
       statusText: error.statusText,
       body: error.body,
@@ -180,9 +180,9 @@ export async function toggleWorkspaceActive(
     if (concurrency) {
       return {
         success: false,
-        error: "conflict",
-        message: concurrency.message || "別のユーザーが同時に更新しました。",
-        latest: { type: "workspace", data: concurrency.payload as any },
+        error: 'conflict',
+        message: concurrency.message || '別のユーザーが同時に更新しました。',
+        latest: { type: 'workspace', data: concurrency.payload as any },
       } as any;
     }
 
@@ -190,8 +190,8 @@ export async function toggleWorkspaceActive(
     if (error.status === 400) {
       return {
         success: false,
-        error: "validation",
-        message: error.body?.message || error.body?.title || "入力データが不正です。",
+        error: 'validation',
+        message: error.body?.message || error.body?.title || '入力データが不正です。',
       };
     }
 
@@ -199,16 +199,16 @@ export async function toggleWorkspaceActive(
     if (error.status === 404) {
       return {
         success: false,
-        error: "not-found",
-        message: "ワークスペースが見つかりません。",
+        error: 'not-found',
+        message: 'ワークスペースが見つかりません。',
       };
     }
 
     // その他のエラー
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "ワークスペースの状態変更に失敗しました。",
+      error: 'server',
+      message: error.body?.message || error.message || 'ワークスペースの状態変更に失敗しました。',
     };
   }
 }

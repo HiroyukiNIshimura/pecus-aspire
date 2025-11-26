@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { HSAccordion, HSDropdown, HSOverlay, HSStaticMethods, HSTooltip } from "flyonui/flyonui";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import type { HSAccordion, HSDropdown, HSOverlay, HSStaticMethods, HSTooltip } from 'flyonui/flyonui';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 
 async function loadFlyonUI() {
-  return import("flyonui/flyonui");
+  return import('flyonui/flyonui');
 }
 
 export default function FlyonuiScript() {
@@ -21,13 +21,13 @@ export default function FlyonuiScript() {
 
   useEffect(() => {
     setTimeout(() => {
-      if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === "function") {
+      if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
         window.HSStaticMethods.autoInit();
         window.HSDropdown.autoInit();
         window.HSAccordion.autoInit();
         window.HSOverlay.autoInit();
         // HSTooltipの初期化を追加
-        if (window.HSTooltip && typeof window.HSTooltip.autoInit === "function") {
+        if (window.HSTooltip && typeof window.HSTooltip.autoInit === 'function') {
           window.HSTooltip.autoInit();
         }
       }

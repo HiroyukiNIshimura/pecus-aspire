@@ -12,28 +12,28 @@ export interface ApiErrorResponse {
  */
 export enum ErrorCode {
   // 認証関連
-  UNAUTHORIZED = "UNAUTHORIZED",
-  AUTHENTICATION_EXPIRED = "AUTHENTICATION_EXPIRED",
-  TOKEN_INVALID = "TOKEN_INVALID",
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  AUTHENTICATION_EXPIRED = 'AUTHENTICATION_EXPIRED',
+  TOKEN_INVALID = 'TOKEN_INVALID',
 
   // 認可関連
-  FORBIDDEN = "FORBIDDEN",
-  PERMISSION_DENIED = "PERMISSION_DENIED",
+  FORBIDDEN = 'FORBIDDEN',
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
 
   // リソース関連
-  NOT_FOUND = "NOT_FOUND",
-  CONFLICT = "CONFLICT",
+  NOT_FOUND = 'NOT_FOUND',
+  CONFLICT = 'CONFLICT',
 
   // バリデーション
-  VALIDATION_ERROR = "VALIDATION_ERROR",
-  BAD_REQUEST = "BAD_REQUEST",
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  BAD_REQUEST = 'BAD_REQUEST',
 
   // サーバー関連
-  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 
   // その他
-  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 /**
@@ -65,7 +65,7 @@ export function getErrorCodeFromStatus(statusCode: number): ErrorCode {
  */
 export function isApiError(error: unknown): error is ApiErrorResponse {
   return (
-    typeof error === "object" && error !== null && ("code" in error || "message" in error || "statusCode" in error)
+    typeof error === 'object' && error !== null && ('code' in error || 'message' in error || 'statusCode' in error)
   );
 }
 

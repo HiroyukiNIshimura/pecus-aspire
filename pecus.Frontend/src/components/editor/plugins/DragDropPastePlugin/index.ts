@@ -6,15 +6,15 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { DRAG_DROP_PASTE } from "@lexical/rich-text";
-import { isMimeType, mediaFileReader } from "@lexical/utils";
-import { COMMAND_PRIORITY_LOW } from "lexical";
-import { useEffect } from "react";
-import { useEditorContext } from "../../context/SettingsContext";
-import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { DRAG_DROP_PASTE } from '@lexical/rich-text';
+import { isMimeType, mediaFileReader } from '@lexical/utils';
+import { COMMAND_PRIORITY_LOW } from 'lexical';
+import { useEffect } from 'react';
+import { useEditorContext } from '../../context/SettingsContext';
+import { INSERT_IMAGE_COMMAND } from '../ImagesPlugin';
 
-const ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+const ACCEPTABLE_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 /**
  * 画像ファイルをバックエンドにアップロードしてプロキシURLを取得（既存アイテム用）
@@ -26,10 +26,10 @@ const ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/w
 async function uploadImageFile(file: File, workspaceId: number, itemId: number): Promise<string | null> {
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
-      method: "POST",
+      method: 'POST',
       body: formData,
     });
 
@@ -37,11 +37,11 @@ async function uploadImageFile(file: File, workspaceId: number, itemId: number):
       const result = await response.json();
       return result.url;
     } else {
-      console.error("Failed to upload image:", await response.text());
+      console.error('Failed to upload image:', await response.text());
       return null;
     }
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error('Error uploading image:', error);
     return null;
   }
 }
@@ -60,10 +60,10 @@ async function uploadTempImageFile(
 ): Promise<{ tempFileId: string; previewUrl: string } | null> {
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
-      method: "POST",
+      method: 'POST',
       body: formData,
     });
 
@@ -74,11 +74,11 @@ async function uploadTempImageFile(
         previewUrl: result.previewUrl,
       };
     } else {
-      console.error("Failed to upload temp image:", await response.text());
+      console.error('Failed to upload temp image:', await response.text());
       return null;
     }
   } catch (error) {
-    console.error("Error uploading temp image:", error);
+    console.error('Error uploading temp image:', error);
     return null;
   }
 }

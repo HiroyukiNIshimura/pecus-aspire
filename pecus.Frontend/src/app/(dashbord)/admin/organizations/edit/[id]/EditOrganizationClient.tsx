@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateOrganization } from "@/actions/admin/organizations";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import type { OrganizationResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useNotify } from "@/hooks/useNotify";
-import { editOrganizationSchema } from "@/schemas/editSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { updateOrganization } from '@/actions/admin/organizations';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { OrganizationResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
+import { editOrganizationSchema } from '@/schemas/editSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 interface EditOrganizationClientProps {
   initialUser: UserInfo | null;
@@ -30,11 +30,11 @@ export default function EditOrganizationClient({
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
-    name: organizationDetail.name || "",
-    description: organizationDetail.description || "",
-    representativeName: organizationDetail.representativeName || "",
-    phoneNumber: organizationDetail.phoneNumber || "",
-    email: organizationDetail.email || "",
+    name: organizationDetail.name || '',
+    description: organizationDetail.description || '',
+    representativeName: organizationDetail.representativeName || '',
+    phoneNumber: organizationDetail.phoneNumber || '',
+    email: organizationDetail.email || '',
   });
 
   // Zod一本化フック
@@ -44,7 +44,7 @@ export default function EditOrganizationClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!organizationDetail.rowVersion) {
-          notify.error("組織情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error('組織情報の更新に必要なバージョン情報が取得できませんでした。');
           return;
         }
 
@@ -58,19 +58,19 @@ export default function EditOrganizationClient({
         });
 
         if (result.success) {
-          notify.success("組織情報を更新しました。");
-          router.push("/admin");
+          notify.success('組織情報を更新しました。');
+          router.push('/admin');
         } else {
-          console.error("組織情報の更新に失敗しました:", result.error);
+          console.error('組織情報の更新に失敗しました:', result.error);
           notify.error(
             result.error
               ? `組織情報の更新中にエラーが発生しました。(${result.error})`
-              : "組織情報の更新中にエラーが発生しました。",
+              : '組織情報の更新中にエラーが発生しました。',
           );
         }
       } catch (err: unknown) {
-        console.error("組織情報の更新中にエラーが発生しました:", err);
-        notify.error("組織情報の更新中にエラーが発生しました。");
+        console.error('組織情報の更新中にエラーが発生しました:', err);
+        notify.error('組織情報の更新中にエラーが発生しました。');
       }
     },
   });
@@ -87,7 +87,7 @@ export default function EditOrganizationClient({
   };
 
   const handleCancel = () => {
-    router.push("/admin");
+    router.push('/admin');
   };
 
   return (
@@ -118,7 +118,7 @@ export default function EditOrganizationClient({
                 <h1 className="text-3xl font-bold">組織編集</h1>
                 <p className="text-base-content/60 mt-2">組織情報を編集します</p>
               </div>
-              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin")}>
+              <button type="button" className="btn btn-outline" onClick={() => router.push('/admin')}>
                 一覧に戻る
               </button>
             </div>
@@ -138,12 +138,12 @@ export default function EditOrganizationClient({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">組織ID</p>
-                    <p className="text-lg font-semibold">{organizationDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">{organizationDetail.id || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">組織コード</p>
-                    <p className="text-lg font-semibold">{organizationDetail.code || "-"}</p>
+                    <p className="text-lg font-semibold">{organizationDetail.code || '-'}</p>
                   </div>
 
                   <div>
@@ -155,8 +155,8 @@ export default function EditOrganizationClient({
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
                       {organizationDetail.createdAt
-                        ? new Date(organizationDetail.createdAt).toLocaleString("ja-JP")
-                        : "-"}
+                        ? new Date(organizationDetail.createdAt).toLocaleString('ja-JP')
+                        : '-'}
                     </p>
                   </div>
                 </div>
@@ -179,13 +179,13 @@ export default function EditOrganizationClient({
                         id="input-name"
                         name="name"
                         type="text"
-                        className={`input input-bordered ${shouldShowError("name") ? "input-error" : ""}`}
+                        className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
                         value={formData.name}
-                        onChange={(e) => handleFieldChange("name", e.target.value)}
+                        onChange={(e) => handleFieldChange('name', e.target.value)}
                         required
                       />
-                      {shouldShowError("name") && (
-                        <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                      {shouldShowError('name') && (
+                        <span className="label-text-alt text-error">{getFieldError('name')}</span>
                       )}
                     </div>
 
@@ -197,12 +197,12 @@ export default function EditOrganizationClient({
                         id="input-representative-name"
                         name="representativeName"
                         type="text"
-                        className={`input input-bordered ${shouldShowError("representativeName") ? "input-error" : ""}`}
+                        className={`input input-bordered ${shouldShowError('representativeName') ? 'input-error' : ''}`}
                         value={formData.representativeName}
-                        onChange={(e) => handleFieldChange("representativeName", e.target.value)}
+                        onChange={(e) => handleFieldChange('representativeName', e.target.value)}
                       />
-                      {shouldShowError("representativeName") && (
-                        <span className="label-text-alt text-error">{getFieldError("representativeName")}</span>
+                      {shouldShowError('representativeName') && (
+                        <span className="label-text-alt text-error">{getFieldError('representativeName')}</span>
                       )}
                     </div>
 
@@ -214,12 +214,12 @@ export default function EditOrganizationClient({
                         id="input-email"
                         name="email"
                         type="email"
-                        className={`input input-bordered ${shouldShowError("email") ? "input-error" : ""}`}
+                        className={`input input-bordered ${shouldShowError('email') ? 'input-error' : ''}`}
                         value={formData.email}
-                        onChange={(e) => handleFieldChange("email", e.target.value)}
+                        onChange={(e) => handleFieldChange('email', e.target.value)}
                       />
-                      {shouldShowError("email") && (
-                        <span className="label-text-alt text-error">{getFieldError("email")}</span>
+                      {shouldShowError('email') && (
+                        <span className="label-text-alt text-error">{getFieldError('email')}</span>
                       )}
                     </div>
 
@@ -231,12 +231,12 @@ export default function EditOrganizationClient({
                         id="input-phone-number"
                         name="phoneNumber"
                         type="text"
-                        className={`input input-bordered ${shouldShowError("phoneNumber") ? "input-error" : ""}`}
+                        className={`input input-bordered ${shouldShowError('phoneNumber') ? 'input-error' : ''}`}
                         value={formData.phoneNumber}
-                        onChange={(e) => handleFieldChange("phoneNumber", e.target.value)}
+                        onChange={(e) => handleFieldChange('phoneNumber', e.target.value)}
                       />
-                      {shouldShowError("phoneNumber") && (
-                        <span className="label-text-alt text-error">{getFieldError("phoneNumber")}</span>
+                      {shouldShowError('phoneNumber') && (
+                        <span className="label-text-alt text-error">{getFieldError('phoneNumber')}</span>
                       )}
                     </div>
 
@@ -248,15 +248,15 @@ export default function EditOrganizationClient({
                         id="input-description"
                         name="description"
                         className={`textarea textarea-bordered ${
-                          shouldShowError("description") ? "textarea-error" : ""
+                          shouldShowError('description') ? 'textarea-error' : ''
                         }`}
                         placeholder="組織の説明を入力してください"
                         value={formData.description}
-                        onChange={(e) => handleFieldChange("description", e.target.value)}
+                        onChange={(e) => handleFieldChange('description', e.target.value)}
                         rows={3}
                       ></textarea>
-                      {shouldShowError("description") && (
-                        <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                      {shouldShowError('description') && (
+                        <span className="label-text-alt text-error">{getFieldError('description')}</span>
                       )}
                     </div>
                   </div>
@@ -273,7 +273,7 @@ export default function EditOrganizationClient({
                           更新中...
                         </>
                       ) : (
-                        "更新"
+                        '更新'
                       )}
                     </button>
                   </div>
@@ -291,8 +291,8 @@ export default function EditOrganizationClient({
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
                       {organizationDetail.updatedAt
-                        ? new Date(organizationDetail.updatedAt).toLocaleString("ja-JP")
-                        : "-"}
+                        ? new Date(organizationDetail.updatedAt).toLocaleString('ja-JP')
+                        : '-'}
                     </p>
                   </div>
                 </div>

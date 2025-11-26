@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import { getCurrentUser } from "@/actions/auth";
-import LoginFormClient from "./LoginFormClient";
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import { getCurrentUser } from '@/actions/auth';
+import LoginFormClient from './LoginFormClient';
 
 /**
  * ログインページ (Server Component)
@@ -12,7 +12,7 @@ import LoginFormClient from "./LoginFormClient";
  * - 既にログイン済みなら /admin にリダイレクト
  * - 未認証なら LoginFormClient をレンダリング
  */
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function SignInPage() {
   // === 認証チェック: 既にログイン済みなら /admin へリダイレクト ===
@@ -24,12 +24,12 @@ export default async function SignInPage() {
       currentUser = result.data;
     }
   } catch (err) {
-    console.error("認証状態の確認中にエラーが発生:", err);
+    console.error('認証状態の確認中にエラーが発生:', err);
   }
 
   // ログイン済みユーザーはダッシュボードへリダイレクト
   if (currentUser) {
-    redirect("/");
+    redirect('/');
   }
 
   return (

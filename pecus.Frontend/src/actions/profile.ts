@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
 import {
   createAuthenticatedAxios,
   createPecusApiClients,
   detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
+} from '@/connectors/api/PecusApiClient';
 import type {
   AvatarType,
   EmailChangeRequestResponse,
@@ -12,9 +12,9 @@ import type {
   MessageResponse,
   SuccessResponse,
   UserResponse,
-} from "@/connectors/api/pecus";
-import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from "@/schemas/profileSchemas";
-import type { ApiResponse } from "./types";
+} from '@/connectors/api/pecus';
+import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from '@/schemas/profileSchemas';
+import type { ApiResponse } from './types';
 
 /**
  * Server Action: プロフィールを更新（ユーザー名、アバター）
@@ -45,22 +45,22 @@ export async function updateProfile(request: {
       const current = payload.current as UserResponse | undefined;
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
         latest: {
-          type: "user",
+          type: 'user',
           data: current as UserResponse,
         },
       };
     }
 
-    console.error("Failed to update profile:", error);
-    console.error("Error body:", error.body);
-    console.error("Request that failed:", request);
+    console.error('Failed to update profile:', error);
+    console.error('Error body:', error.body);
+    console.error('Request that failed:', request);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to update profile",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to update profile',
     };
   }
 }
@@ -81,11 +81,11 @@ export async function requestEmailChange(
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to request email change:", error);
+    console.error('Failed to request email change:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "メールアドレス変更リクエストに失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'メールアドレス変更リクエストに失敗しました',
     };
   }
 }
@@ -101,11 +101,11 @@ export async function verifyEmailChange(token: string): Promise<ApiResponse<Emai
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to verify email change:", error);
+    console.error('Failed to verify email change:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "メールアドレス変更の確認に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'メールアドレス変更の確認に失敗しました',
     };
   }
 }
@@ -124,11 +124,11 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to update password:", error);
+    console.error('Failed to update password:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "パスワード変更に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'パスワード変更に失敗しました',
     };
   }
 }
@@ -152,16 +152,16 @@ export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiRe
     if (concurrencyError) {
       return {
         success: false,
-        error: "conflict",
+        error: 'conflict',
         message: concurrencyError.message,
       };
     }
 
-    console.error("Failed to set skills:", error);
+    console.error('Failed to set skills:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "スキル設定に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || 'スキル設定に失敗しました',
     };
   }
 }
@@ -193,20 +193,20 @@ export async function uploadAvatarFile(fileData: {
     const axios = await createAuthenticatedAxios();
 
     // FormDataを作成（Node.js環境でも動作するFormData）
-    const FormData = (await import("form-data")).default;
+    const FormData = (await import('form-data')).default;
     const formData = new FormData();
 
     // ArrayBufferをBufferに変換してFormDataに追加
     const buffer = Buffer.from(fileData.arrayBuffer);
-    formData.append("FileType", "Avatar");
-    formData.append("ResourceId", userResponse.id.toString());
-    formData.append("File", buffer, {
+    formData.append('FileType', 'Avatar');
+    formData.append('ResourceId', userResponse.id.toString());
+    formData.append('File', buffer, {
       filename: fileData.fileName,
       contentType: fileData.fileType,
     });
 
     // Axiosで直接POSTリクエスト
-    const response = await axios.post("/api/files", formData, {
+    const response = await axios.post('/api/files', formData, {
       headers: {
         ...formData.getHeaders(),
       },
@@ -221,11 +221,11 @@ export async function uploadAvatarFile(fileData: {
       },
     };
   } catch (error: any) {
-    console.error("Failed to upload avatar file:", error);
+    console.error('Failed to upload avatar file:', error);
     return {
       success: false,
-      error: "server",
-      message: error.response?.data?.message || error.message || "アップロードに失敗しました",
+      error: 'server',
+      message: error.response?.data?.message || error.message || 'アップロードに失敗しました',
     };
   }
 }
@@ -240,15 +240,15 @@ export async function deleteAvatarFile(fileData: {
 }): Promise<ApiResponse<MessageResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.file.deleteApiDownloadsIcons("Avatar", fileData.resourceId, fileData.fileName);
+    const response = await api.file.deleteApiDownloadsIcons('Avatar', fileData.resourceId, fileData.fileName);
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to delete avatar file:", error);
+    console.error('Failed to delete avatar file:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "削除に失敗しました",
+      error: 'server',
+      message: error.body?.message || error.message || '削除に失敗しました',
     };
   }
 }

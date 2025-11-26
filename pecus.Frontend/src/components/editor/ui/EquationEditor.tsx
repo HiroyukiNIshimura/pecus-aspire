@@ -6,12 +6,12 @@
  *
  */
 
-import type { JSX, Ref, RefObject } from "react";
+import type { JSX, Ref, RefObject } from 'react';
 
-import "./EquationEditor.css";
+import './EquationEditor.css';
 
-import { isHTMLElement } from "lexical";
-import { type ChangeEvent, forwardRef } from "react";
+import { isHTMLElement } from 'lexical';
+import { type ChangeEvent, forwardRef } from 'react';
 
 type BaseEquationEditorProps = {
   equation: string;
@@ -40,14 +40,14 @@ function EquationEditor(
     </span>
   ) : (
     <div className="EquationEditor_inputBackground">
-      <span className="EquationEditor_dollarSign">{"$$\n"}</span>
+      <span className="EquationEditor_dollarSign">{'$$\n'}</span>
       <textarea
         className="EquationEditor_blockEditor"
         value={equation}
         onChange={onChange}
         ref={forwardedRef as RefObject<HTMLTextAreaElement>}
       />
-      <span className="EquationEditor_dollarSign">{"\n$$"}</span>
+      <span className="EquationEditor_dollarSign">{'\n$$'}</span>
     </div>
   );
 }

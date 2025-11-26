@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateTag } from "@/actions/admin/tags";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import type { TagDetailResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useNotify } from "@/hooks/useNotify";
-import { editTagSchema } from "@/schemas/editSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { updateTag } from '@/actions/admin/tags';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { TagDetailResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
+import { editTagSchema } from '@/schemas/editSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 interface EditTagClientProps {
   initialUser: UserInfo | null;
@@ -26,7 +26,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
 
   // フォーム状態
   const [formData, setFormData] = useState({
-    name: tagDetail.name || "",
+    name: tagDetail.name || '',
     isActive: tagDetail.isActive ?? true,
   });
 
@@ -37,7 +37,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
       try {
         // rowVersion が存在しない場合はエラー
         if (!tagDetail.rowVersion) {
-          notify.error("タグ情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error('タグ情報の更新に必要なバージョン情報が取得できませんでした。');
           return;
         }
 
@@ -48,19 +48,19 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
         });
 
         if (result.success) {
-          notify.success("タグを更新しました。");
-          router.push("/admin/tags");
+          notify.success('タグを更新しました。');
+          router.push('/admin/tags');
         } else {
-          console.error("タグの更新に失敗しました:", result.error);
+          console.error('タグの更新に失敗しました:', result.error);
           notify.error(
             result.error
               ? `タグの更新中にエラーが発生しました。(${result.error})`
-              : "タグの更新中にエラーが発生しました。",
+              : 'タグの更新中にエラーが発生しました。',
           );
         }
       } catch (err: unknown) {
-        console.error("タグの更新中にエラーが発生しました:", err);
-        notify.error("タグの更新中にエラーが発生しました。");
+        console.error('タグの更新中にエラーが発生しました:', err);
+        notify.error('タグの更新中にエラーが発生しました。');
       }
     },
   });
@@ -77,7 +77,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
   };
 
   const handleCancel = () => {
-    router.push("/admin/tags");
+    router.push('/admin/tags');
   };
 
   return (
@@ -108,7 +108,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                 <h1 className="text-3xl font-bold">タグ編集</h1>
                 <p className="text-base-content/60 mt-2">タグ情報を編集します</p>
               </div>
-              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/tags")}>
+              <button type="button" className="btn btn-outline" onClick={() => router.push('/admin/tags')}>
                 一覧に戻る
               </button>
             </div>
@@ -136,15 +136,15 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                       id="name"
                       name="name"
                       type="text"
-                      className={`input input-bordered w-full ${shouldShowError("name") ? "input-error" : ""}`}
+                      className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) => handleFieldChange('name', e.target.value)}
                       placeholder="タグ名を入力"
                       disabled={isSubmitting}
                       required
                     />
-                    {shouldShowError("name") && (
-                      <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                    {shouldShowError('name') && (
+                      <span className="label-text-alt text-error">{getFieldError('name')}</span>
                     )}
                   </div>
 
@@ -156,7 +156,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                         type="checkbox"
                         className="checkbox checkbox-primary"
                         checked={formData.isActive}
-                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
+                        onChange={(e) => handleFieldChange('isActive', e.target.checked)}
                         disabled={isSubmitting}
                       />
                     </label>
@@ -174,7 +174,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                           更新中...
                         </>
                       ) : (
-                        "更新"
+                        '更新'
                       )}
                     </button>
                   </div>
@@ -190,7 +190,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">タグID</p>
-                    <p className="text-lg font-semibold">{tagDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">{tagDetail.id || '-'}</p>
                   </div>
 
                   <div>
@@ -201,7 +201,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
-                      {tagDetail.createdAt ? new Date(tagDetail.createdAt).toLocaleString("ja-JP") : "-"}
+                      {tagDetail.createdAt ? new Date(tagDetail.createdAt).toLocaleString('ja-JP') : '-'}
                     </p>
                   </div>
 
@@ -209,7 +209,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
                     <div>
                       <p className="text-sm text-base-content/60">更新日時</p>
                       <p className="text-lg font-semibold">
-                        {tagDetail.updatedAt ? new Date(tagDetail.updatedAt).toLocaleString("ja-JP") : "-"}
+                        {tagDetail.updatedAt ? new Date(tagDetail.updatedAt).toLocaleString('ja-JP') : '-'}
                       </p>
                     </div>
                   )}

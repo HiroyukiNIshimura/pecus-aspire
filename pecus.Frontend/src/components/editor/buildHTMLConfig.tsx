@@ -14,25 +14,25 @@ import {
   isHTMLElement,
   ParagraphNode,
   TextNode,
-} from "lexical";
+} from 'lexical';
 
-import { parseAllowedFontSize } from "./plugins/ToolbarPlugin/fontSize";
-import { parseAllowedColor } from "./ui/ColorPicker";
+import { parseAllowedFontSize } from './plugins/ToolbarPlugin/fontSize';
+import { parseAllowedColor } from './ui/ColorPicker';
 
 function getExtraStyles(element: HTMLElement): string {
   // Parse styles from pasted input, but only if they match exactly the
   // sort of styles that would be produced by exportDOM
-  let extraStyles = "";
+  let extraStyles = '';
   const fontSize = parseAllowedFontSize(element.style.fontSize);
   const backgroundColor = parseAllowedColor(element.style.backgroundColor);
   const color = parseAllowedColor(element.style.color);
-  if (fontSize !== "" && fontSize !== "15px") {
+  if (fontSize !== '' && fontSize !== '15px') {
     extraStyles += `font-size: ${fontSize};`;
   }
-  if (backgroundColor !== "" && backgroundColor !== "rgb(255, 255, 255)") {
+  if (backgroundColor !== '' && backgroundColor !== 'rgb(255, 255, 255)') {
     extraStyles += `background-color: ${backgroundColor};`;
   }
-  if (color !== "" && color !== "rgb(0, 0, 0)") {
+  if (color !== '' && color !== 'rgb(0, 0, 0)') {
     extraStyles += `color: ${color};`;
   }
   return extraStyles;
@@ -84,7 +84,7 @@ function buildExportMap(): DOMExportOutputMap {
       ParagraphNode,
       (editor, target) => {
         const output = target.exportDOM(editor);
-        if (isHTMLElement(output.element) && output.element.tagName === "P") {
+        if (isHTMLElement(output.element) && output.element.tagName === 'P') {
           const after = output.after;
           return {
             ...output,
@@ -92,11 +92,11 @@ function buildExportMap(): DOMExportOutputMap {
               if (after) {
                 generatedElement = after(generatedElement);
               }
-              if (isHTMLElement(generatedElement) && generatedElement.tagName === "P") {
+              if (isHTMLElement(generatedElement) && generatedElement.tagName === 'P') {
                 for (const childNode of generatedElement.childNodes) {
                   if (isBlockDomNode(childNode)) {
-                    const div = document.createElement("div");
-                    div.setAttribute("role", "paragraph");
+                    const div = document.createElement('div');
+                    div.setAttribute('role', 'paragraph');
                     for (const attr of generatedElement.attributes) {
                       div.setAttribute(attr.name, attr.value);
                     }

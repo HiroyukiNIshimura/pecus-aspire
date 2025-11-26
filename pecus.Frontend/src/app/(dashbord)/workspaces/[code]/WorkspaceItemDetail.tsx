@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import EditIcon from "@mui/icons-material/Edit";
-import MenuIcon from "@mui/icons-material/Menu";
-import { useEffect, useState } from "react";
-import { fetchLatestWorkspaceItem } from "@/actions/workspaceItem";
-import NotionLikeViewer from "@/components/editor/NotionLikeViewer";
-import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
-import { getDisplayIconUrl } from "@/utils/imageUrl";
-import EditWorkspaceItem from "./EditWorkspaceItem";
-import WorkspaceItemDrawer from "./WorkspaceItemDrawer";
+import EditIcon from '@mui/icons-material/Edit';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useEffect, useState } from 'react';
+import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
+import NotionLikeViewer from '@/components/editor/NotionLikeViewer';
+import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
+import EditWorkspaceItem from './EditWorkspaceItem';
+import WorkspaceItemDrawer from './WorkspaceItemDrawer';
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
@@ -41,10 +41,10 @@ export default function WorkspaceItemDetail({
         if (result.success) {
           setItem(result.data);
         } else {
-          setError(result.message || "アイテムの取得に失敗しました。");
+          setError(result.message || 'アイテムの取得に失敗しました。');
         }
       } catch (err: any) {
-        setError(err.message || "アイテムの取得に失敗しました。");
+        setError(err.message || 'アイテムの取得に失敗しました。');
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +101,7 @@ export default function WorkspaceItemDetail({
         {/* ヘッダー */}
         <div className="flex items-start justify-between gap-2 mb-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold mb-2">{item.subject || "（未設定）"}</h2>
+            <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
             <div className="flex items-center gap-2">
               {item.priority !== undefined && item.priority !== null && (
                 <div className="badge badge-primary">優先度: {item.priority}</div>
@@ -146,7 +146,7 @@ export default function WorkspaceItemDetail({
           {item.createdAt && (
             <div>
               <span className="text-xs text-base-content/70">作成日時</span>
-              <p className="font-semibold">{new Date(item.createdAt).toLocaleString("ja-JP")}</p>
+              <p className="font-semibold">{new Date(item.createdAt).toLocaleString('ja-JP')}</p>
             </div>
           )}
 
@@ -158,7 +158,7 @@ export default function WorkspaceItemDetail({
                 {item.ownerAvatarUrl && (
                   <img
                     src={getDisplayIconUrl(item.ownerAvatarUrl)}
-                    alt={item.ownerUsername || "ユーザー"}
+                    alt={item.ownerUsername || 'ユーザー'}
                     className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                   />
                 )}
@@ -171,7 +171,7 @@ export default function WorkspaceItemDetail({
           {item.updatedAt && (
             <div>
               <span className="text-xs text-base-content/70">更新日時</span>
-              <p className="font-semibold">{new Date(item.updatedAt).toLocaleString("ja-JP")}</p>
+              <p className="font-semibold">{new Date(item.updatedAt).toLocaleString('ja-JP')}</p>
             </div>
           )}
 
@@ -183,7 +183,7 @@ export default function WorkspaceItemDetail({
                 {item.assigneeAvatarUrl && (
                   <img
                     src={getDisplayIconUrl(item.assigneeAvatarUrl)}
-                    alt={item.assigneeUsername || "ユーザー"}
+                    alt={item.assigneeUsername || 'ユーザー'}
                     className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                   />
                 )}
@@ -200,7 +200,7 @@ export default function WorkspaceItemDetail({
                 {item.committerAvatarUrl && (
                   <img
                     src={getDisplayIconUrl(item.committerAvatarUrl)}
-                    alt={item.committerUsername || "ユーザー"}
+                    alt={item.committerUsername || 'ユーザー'}
                     className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                   />
                 )}
@@ -233,7 +233,7 @@ export default function WorkspaceItemDetail({
                 <div key={related.id} className="flex items-center gap-2 p-2 bg-base-200 rounded">
                   {/* 方向インジケーター */}
                   <div className="flex-shrink-0">
-                    {related.direction === "from" ? (
+                    {related.direction === 'from' ? (
                       <span className="badge badge-sm badge-primary" title="このアイテムから関連">
                         →
                       </span>
@@ -257,7 +257,7 @@ export default function WorkspaceItemDetail({
                       className="truncate hover:underline cursor-pointer text-left w-full"
                       disabled={!related.id}
                     >
-                      {related.subject || "（件名未設定）"}
+                      {related.subject || '（件名未設定）'}
                     </button>
                     {/* オーナー情報 */}
                     {related.ownerId && (
@@ -265,7 +265,7 @@ export default function WorkspaceItemDetail({
                         {related.ownerAvatarUrl && (
                           <img
                             src={getDisplayIconUrl(related.ownerAvatarUrl)}
-                            alt={related.ownerUsername || "ユーザー"}
+                            alt={related.ownerUsername || 'ユーザー'}
                             className="w-4 h-4 rounded-full object-cover flex-shrink-0"
                           />
                         )}

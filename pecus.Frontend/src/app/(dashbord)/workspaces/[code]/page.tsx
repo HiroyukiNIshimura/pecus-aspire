@@ -1,11 +1,11 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-import { redirect } from "next/navigation";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse, WorkspaceFullDetailResponse } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import WorkspaceDetailClient from "./WorkspaceDetailClient";
+import { redirect } from 'next/navigation';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { UserResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type { UserInfo } from '@/types/userInfo';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import WorkspaceDetailClient from './WorkspaceDetailClient';
 
 interface WorkspaceDetailPageProps {
   params: Promise<{
@@ -34,32 +34,32 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
     try {
       workspacesList = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
     } catch (err) {
-      console.warn("Failed to fetch workspaces list:", err);
+      console.warn('Failed to fetch workspaces list:', err);
       // ワークスペース一覧取得失敗時は空配列を渡す
       workspacesList = { data: [] };
     }
   } catch (error: any) {
-    console.error("WorkspaceDetailPage: failed to fetch data", error);
+    console.error('WorkspaceDetailPage: failed to fetch data', error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
     // ワークスペースが見つからない場合は一覧ページへリダイレクト
     if (error.status === 404) {
-      redirect("/workspaces");
+      redirect('/workspaces');
     }
   }
 
   // ユーザー情報が取得できない場合はリダイレクト
   if (!userInfo) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // ワークスペース情報が取得できない場合はリダイレクト
   if (!workspaceDetail) {
-    redirect("/workspaces");
+    redirect('/workspaces');
   }
 
   return (

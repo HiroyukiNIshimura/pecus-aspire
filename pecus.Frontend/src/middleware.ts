@@ -1,6 +1,6 @@
-import { jwtDecode } from "jwt-decode";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { jwtDecode } from 'jwt-decode';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Next.js Middleware
@@ -16,24 +16,24 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証不要なパス（公開ページ）
-  const publicPaths = ["/signin", "/signup", "/forgot-password", "/password-reset", "/error-test"];
+  const publicPaths = ['/signin', '/signup', '/forgot-password', '/password-reset', '/error-test'];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
   // 静的リソース・API Routesはスキップ
-  if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname.includes(".")) {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
     return NextResponse.next();
   }
 
   // クッキーからトークンを取得
-  const accessToken = request.cookies.get("accessToken")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const accessToken = request.cookies.get('accessToken')?.value;
+  const refreshToken = request.cookies.get('refreshToken')?.value;
 
   // トークンが存在しない場合はログインページへ
   if (!accessToken || !refreshToken) {
-    console.log("[Middleware] No tokens found, redirecting to signin");
-    return NextResponse.redirect(new URL("/signin", request.url));
+    console.log('[Middleware] No tokens found, redirecting to signin');
+    return NextResponse.redirect(new URL('/signin', request.url));
   }
 
   try {
@@ -51,53 +51,53 @@ export async function middleware(request: NextRequest) {
     // 有効期限が5分未満の場合はリフレッシュを試行
     console.log(`[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`);
 
-    const apiBaseUrl = process.env.API_BASE_URL || "https://localhost:7265";
+    const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
     const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ refreshToken }),
     });
 
     if (!refreshResponse.ok) {
-      console.error("[Middleware] Refresh failed:", refreshResponse.status);
+      console.error('[Middleware] Refresh failed:', refreshResponse.status);
 
       // リフレッシュトークンも無効な場合はクッキーをクリアしてログインページへ
-      const response = NextResponse.redirect(new URL("/signin", request.url));
-      response.cookies.delete("accessToken");
-      response.cookies.delete("refreshToken");
-      response.cookies.delete("user");
+      const response = NextResponse.redirect(new URL('/signin', request.url));
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
+      response.cookies.delete('user');
       return response;
     }
 
     const data = await refreshResponse.json();
-    console.log("[Middleware] Token refreshed successfully");
+    console.log('[Middleware] Token refreshed successfully');
 
     // 新しいトークンをクッキーに設定してリクエストを続行
     const response = NextResponse.next();
-    response.cookies.set("accessToken", data.accessToken, {
-      path: "/",
+    response.cookies.set('accessToken', data.accessToken, {
+      path: '/',
       httpOnly: false,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
-    response.cookies.set("refreshToken", data.refreshToken, {
-      path: "/",
+    response.cookies.set('refreshToken', data.refreshToken, {
+      path: '/',
       httpOnly: false,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return response;
   } catch (error) {
-    console.error("[Middleware] Token validation error:", error);
+    console.error('[Middleware] Token validation error:', error);
 
     // トークンのデコードに失敗した場合はクッキーをクリア
-    const response = NextResponse.redirect(new URL("/signin", request.url));
-    response.cookies.delete("accessToken");
-    response.cookies.delete("refreshToken");
-    response.cookies.delete("user");
+    const response = NextResponse.redirect(new URL('/signin', request.url));
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    response.cookies.delete('user');
     return response;
   }
 }
@@ -112,6 +112,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

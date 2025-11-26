@@ -1,12 +1,12 @@
-"use server";
+'use server';
 
-import { headers } from "next/headers";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { LoginResponse } from "@/connectors/api/pecus";
-import type { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
-import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
-import { type SessionData, SessionManager } from "@/libs/session";
-import type { ApiResponse } from "./types";
+import { headers } from 'next/headers';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { LoginResponse } from '@/connectors/api/pecus';
+import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
+import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
+import { type SessionData, SessionManager } from '@/libs/session';
+import type { ApiResponse } from './types';
 
 /**
  * Server Action: ログイン
@@ -26,9 +26,9 @@ export async function login(request: {
     // Next.js のヘッダーからクライアントIPを取得
     const headersList = await headers();
     const clientIp =
-      headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      headersList.get("x-real-ip") ||
-      headersList.get("cf-connecting-ip") || // Cloudflare 対応
+      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      headersList.get('x-real-ip') ||
+      headersList.get('cf-connecting-ip') || // Cloudflare 対応
       undefined;
 
     const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
@@ -47,13 +47,13 @@ export async function login(request: {
 
     // APIレスポンスからトークンを取得
     const accessToken = response.accessToken;
-    const refreshToken = response.refreshToken || "";
+    const refreshToken = response.refreshToken || '';
 
     if (!accessToken) {
       return {
         success: false,
-        error: "server",
-        message: "Invalid response from server",
+        error: 'server',
+        message: 'Invalid response from server',
       };
     }
 
@@ -63,9 +63,9 @@ export async function login(request: {
       refreshToken,
       user: {
         id: response.userId || 0,
-        name: response.username || "",
-        email: response.email || "",
-        roles: response.roles ? response.roles.map((role: any) => role.name || "") : [],
+        name: response.username || '',
+        email: response.email || '',
+        roles: response.roles ? response.roles.map((role: any) => role.name || '') : [],
       },
     };
 
@@ -73,11 +73,11 @@ export async function login(request: {
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error("Failed to login:", error);
+    console.error('Failed to login:', error);
     return {
       success: false,
-      error: "server",
-      message: error.body?.message || error.message || "Failed to login",
+      error: 'server',
+      message: error.body?.message || error.message || 'Failed to login',
     };
   }
 }
@@ -89,7 +89,7 @@ export async function login(request: {
  * - ログイン済みならユーザー情報を返す
  * - 未認証なら null を返す
  */
-export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] | null>> {
+export async function getCurrentUser(): Promise<ApiResponse<SessionData['user'] | null>> {
   try {
     const session = await SessionManager.getSession();
 
@@ -99,11 +99,11 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] 
 
     return { success: true, data: session.user };
   } catch (error: any) {
-    console.error("Failed to get current user:", error);
+    console.error('Failed to get current user:', error);
     return {
       success: false,
-      error: "server",
-      message: error.message || "Failed to get current user",
+      error: 'server',
+      message: error.message || 'Failed to get current user',
     };
   }
 }
@@ -118,11 +118,11 @@ export async function logout(): Promise<ApiResponse<null>> {
 
     return { success: true, data: null };
   } catch (error: any) {
-    console.error("Failed to logout:", error);
+    console.error('Failed to logout:', error);
     return {
       success: false,
-      error: "server",
-      message: error.message || "Failed to logout",
+      error: 'server',
+      message: error.message || 'Failed to logout',
     };
   }
 }

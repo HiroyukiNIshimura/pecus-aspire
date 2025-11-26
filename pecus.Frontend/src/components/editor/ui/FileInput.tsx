@@ -6,12 +6,12 @@
  *
  */
 
-import { type JSX, useState } from "react";
+import { type JSX, useState } from 'react';
 
-import "./Input.css";
+import './Input.css';
 
 type Props = Readonly<{
-  "data-test-id"?: string;
+  'data-test-id'?: string;
   accept?: string;
   label: string;
   onChange: (files: FileList | null) => void;
@@ -19,10 +19,10 @@ type Props = Readonly<{
 
 //ユニークなinputのID生成
 function generateId(label: string): string {
-  return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
+  return `input-${label.replace(/\s+/g, '-').toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
-export default function FileInput({ accept, label, onChange, "data-test-id": dataTestId }: Props): JSX.Element {
+export default function FileInput({ accept, label, onChange, 'data-test-id': dataTestId }: Props): JSX.Element {
   const [inputId] = useState(generateId(label));
 
   return (

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useAtom } from "jotai";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { login } from "@/actions/auth";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { deviceInfoAtom } from "@/libs/atoms/deviceInfoAtom";
-import { loginSchema } from "@/schemas/signInSchemas";
-import { getDeviceInfo } from "@/utils/deviceInfo";
+import { useAtom } from 'jotai';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { login } from '@/actions/auth';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
+import { loginSchema } from '@/schemas/signInSchemas';
+import { getDeviceInfo } from '@/utils/deviceInfo';
 
 /**
  * ログインフォーム (Client Component)
@@ -26,8 +26,8 @@ export default function LoginFormClient() {
 
   // === フォーム入力状態の管理 ===
   const [formData, setFormData] = useState({
-    loginIdentifier: "",
-    password: "",
+    loginIdentifier: '',
+    password: '',
   });
 
   // === ページロード時にデバイス情報を取得 ===
@@ -52,7 +52,7 @@ export default function LoginFormClient() {
       // === ログイン API 呼び出し ===
       try {
         if (!deviceInfo) {
-          setApiError("デバイス情報の取得に失敗しました。ページを再読み込みしてください。");
+          setApiError('デバイス情報の取得に失敗しました。ページを再読み込みしてください。');
           return;
         }
 
@@ -70,15 +70,15 @@ export default function LoginFormClient() {
         });
 
         if (result.success) {
-          router.push("/");
+          router.push('/');
           return;
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : "ログイン認証に失敗しました。");
+        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : 'ログイン認証に失敗しました。');
       } catch (err: unknown) {
-        console.error("ログイン処理中にエラーが発生:", err);
-        setApiError("ログイン処理中にエラーが発生しました。");
+        console.error('ログイン処理中にエラーが発生:', err);
+        setApiError('ログイン処理中にエラーが発生しました。');
       }
     },
   });
@@ -123,14 +123,14 @@ export default function LoginFormClient() {
                   id="loginIdentifier"
                   name="loginIdentifier"
                   placeholder="ログインIDまたはメールアドレス"
-                  className={`input input-bordered w-full ${shouldShowError("loginIdentifier") ? "input-error" : ""}`}
+                  className={`input input-bordered w-full ${shouldShowError('loginIdentifier') ? 'input-error' : ''}`}
                   value={formData.loginIdentifier}
-                  onChange={(event) => handleFieldChange("loginIdentifier", event.target.value)}
+                  onChange={(event) => handleFieldChange('loginIdentifier', event.target.value)}
                   disabled={isSubmitting}
                   required
                 />
-                {shouldShowError("loginIdentifier") && (
-                  <span className="label-text-alt text-error">{getFieldError("loginIdentifier")}</span>
+                {shouldShowError('loginIdentifier') && (
+                  <span className="label-text-alt text-error">{getFieldError('loginIdentifier')}</span>
                 )}
               </div>
             </div>
@@ -147,14 +147,14 @@ export default function LoginFormClient() {
                   id="password"
                   name="password"
                   placeholder="パスワード"
-                  className={`input input-bordered w-full ${shouldShowError("password") ? "input-error" : ""}`}
+                  className={`input input-bordered w-full ${shouldShowError('password') ? 'input-error' : ''}`}
                   value={formData.password}
-                  onChange={(event) => handleFieldChange("password", event.target.value)}
+                  onChange={(event) => handleFieldChange('password', event.target.value)}
                   disabled={isSubmitting}
                   required
                 />
-                {shouldShowError("password") && (
-                  <span className="label-text-alt text-error">{getFieldError("password")}</span>
+                {shouldShowError('password') && (
+                  <span className="label-text-alt text-error">{getFieldError('password')}</span>
                 )}
               </div>
             </div>

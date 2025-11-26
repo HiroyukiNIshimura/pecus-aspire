@@ -6,7 +6,7 @@
  *
  */
 
-import { IS_CHROME } from "@lexical/utils";
+import { IS_CHROME } from '@lexical/utils';
 import {
   $getSiblingCaret,
   $isElementNode,
@@ -23,9 +23,9 @@ import {
   type RangeSelection,
   type SerializedElementNode,
   type Spread,
-} from "lexical";
+} from 'lexical';
 
-import { setDomHiddenUntilFound } from "./CollapsibleUtils";
+import { setDomHiddenUntilFound } from './CollapsibleUtils';
 
 type SerializedCollapsibleContainerNode = Spread<
   {
@@ -51,7 +51,7 @@ export class CollapsibleContainerNode extends ElementNode {
   }
 
   static getType(): string {
-    return "collapsible-container";
+    return 'collapsible-container';
   }
 
   static clone(node: CollapsibleContainerNode): CollapsibleContainerNode {
@@ -71,7 +71,7 @@ export class CollapsibleContainerNode extends ElementNode {
         nodesToInsert.push(...child.getChildren());
       }
     }
-    const caret = $rewindSiblingCaret($getSiblingCaret(this, "previous"));
+    const caret = $rewindSiblingCaret($getSiblingCaret(this, 'previous'));
     caret.splice(1, nodesToInsert);
     // Merge the first child of the CollapsibleTitleNode with the
     // previous sibling of the CollapsibleContainerNode
@@ -86,12 +86,12 @@ export class CollapsibleContainerNode extends ElementNode {
     // details is not well supported in Chrome #5582
     let dom: HTMLElement;
     if (IS_CHROME) {
-      dom = document.createElement("div");
-      dom.setAttribute("open", "");
+      dom = document.createElement('div');
+      dom.setAttribute('open', '');
     } else {
-      const detailsDom = document.createElement("details");
+      const detailsDom = document.createElement('details');
       detailsDom.open = this.__open;
-      detailsDom.addEventListener("toggle", () => {
+      detailsDom.addEventListener('toggle', () => {
         const open = editor.getEditorState().read(() => this.getOpen());
         if (open !== detailsDom.open) {
           editor.update(() => this.toggleOpen());
@@ -99,7 +99,7 @@ export class CollapsibleContainerNode extends ElementNode {
       });
       dom = detailsDom;
     }
-    dom.classList.add("Collapsible__container");
+    dom.classList.add('Collapsible__container');
 
     return dom;
   }
@@ -111,13 +111,13 @@ export class CollapsibleContainerNode extends ElementNode {
       if (IS_CHROME) {
         const contentDom = dom.children[1];
         if (!isHTMLElement(contentDom)) {
-          throw new Error("Expected contentDom to be an HTMLElement");
+          throw new Error('Expected contentDom to be an HTMLElement');
         }
         if (currentOpen) {
-          dom.setAttribute("open", "");
+          dom.setAttribute('open', '');
           contentDom.hidden = false;
         } else {
-          dom.removeAttribute("open");
+          dom.removeAttribute('open');
           setDomHiddenUntilFound(contentDom);
         }
       } else {
@@ -144,9 +144,9 @@ export class CollapsibleContainerNode extends ElementNode {
   }
 
   exportDOM(): DOMExportOutput {
-    const element = document.createElement("details");
-    element.classList.add("Collapsible__container");
-    element.setAttribute("open", this.__open.toString());
+    const element = document.createElement('details');
+    element.classList.add('Collapsible__container');
+    element.setAttribute('open', this.__open.toString());
     return { element };
   }
 

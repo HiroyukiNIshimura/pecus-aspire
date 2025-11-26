@@ -6,13 +6,13 @@
  *
  */
 
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import "./index.css";
+import './index.css';
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
-import { mergeRegister } from "@lexical/utils";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
+import { mergeRegister } from '@lexical/utils';
 import {
   CLICK_COMMAND,
   COMMAND_PRIORITY_HIGH,
@@ -23,8 +23,8 @@ import {
   type LexicalNode,
   type NodeKey,
   type SerializedLexicalNode,
-} from "lexical";
-import { useEffect } from "react";
+} from 'lexical';
+import { useEffect } from 'react';
 
 export type SerializedPageBreakNode = SerializedLexicalNode;
 
@@ -57,7 +57,7 @@ function PageBreakComponent({ nodeKey }: { nodeKey: NodeKey }) {
   useEffect(() => {
     const pbElem = editor.getElementByKey(nodeKey);
     if (pbElem !== null) {
-      pbElem.className = isSelected ? "selected" : "";
+      pbElem.className = isSelected ? 'selected' : '';
     }
   }, [editor, isSelected, nodeKey]);
 
@@ -66,7 +66,7 @@ function PageBreakComponent({ nodeKey }: { nodeKey: NodeKey }) {
 
 export class PageBreakNode extends DecoratorNode<JSX.Element> {
   static getType(): string {
-    return "page-break";
+    return 'page-break';
   }
 
   static clone(node: PageBreakNode): PageBreakNode {
@@ -80,7 +80,7 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
   static importDOM(): DOMConversionMap | null {
     return {
       figure: (domNode: HTMLElement) => {
-        const tp = domNode.getAttribute("type");
+        const tp = domNode.getAttribute('type');
         if (tp !== PageBreakNode.getType()) {
           return null;
         }
@@ -94,14 +94,14 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
   }
 
   createDOM(): HTMLElement {
-    const el = document.createElement("figure");
-    el.style.pageBreakAfter = "always";
-    el.setAttribute("type", this.getType());
+    const el = document.createElement('figure');
+    el.style.pageBreakAfter = 'always';
+    el.setAttribute('type', this.getType());
     return el;
   }
 
   getTextContent(): string {
-    return "\n";
+    return '\n';
   }
 
   isInline(): false {

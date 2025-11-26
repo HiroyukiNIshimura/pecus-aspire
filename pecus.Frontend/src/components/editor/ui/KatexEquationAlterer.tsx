@@ -6,23 +6,23 @@
  *
  */
 
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import "./KatexEquationAlterer.css";
+import './KatexEquationAlterer.css';
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { useCallback, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useCallback, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-import Button from "../ui/Button";
-import KatexRenderer from "./KatexRenderer";
+import Button from '../ui/Button';
+import KatexRenderer from './KatexRenderer';
 
 type Props = {
   initialEquation?: string;
   onConfirm: (equation: string, inline: boolean) => void;
 };
 
-export default function KatexEquationAlterer({ onConfirm, initialEquation = "" }: Props): JSX.Element {
+export default function KatexEquationAlterer({ onConfirm, initialEquation = '' }: Props): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [equation, setEquation] = useState<string>(initialEquation);
   const [inline, setInline] = useState<boolean>(true);

@@ -6,29 +6,29 @@
  *
  */
 
-import type { JSX } from "react";
+import type { JSX } from 'react';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-import useReport from "../../hooks/useReport";
+import useReport from '../../hooks/useReport';
 
 const validInputTypes = new Set([
-  "insertText",
-  "insertCompositionText",
-  "insertFromComposition",
-  "insertLineBreak",
-  "insertParagraph",
-  "deleteCompositionText",
-  "deleteContentBackward",
-  "deleteByComposition",
-  "deleteContent",
-  "deleteContentForward",
-  "deleteWordBackward",
-  "deleteWordForward",
-  "deleteHardLineBackward",
-  "deleteSoftLineBackward",
-  "deleteHardLineForward",
-  "deleteSoftLineForward",
+  'insertText',
+  'insertCompositionText',
+  'insertFromComposition',
+  'insertLineBreak',
+  'insertParagraph',
+  'deleteCompositionText',
+  'deleteContentBackward',
+  'deleteByComposition',
+  'deleteContent',
+  'deleteContentForward',
+  'deleteWordBackward',
+  'deleteWordForward',
+  'deleteHardLineBackward',
+  'deleteSoftLineBackward',
+  'deleteHardLineForward',
+  'deleteSoftLineForward',
 ]);
 
 export default function TypingPerfPlugin(): JSX.Element | null {
@@ -86,7 +86,7 @@ export default function TypingPerfPlugin(): JSX.Element | null {
     const keyDownHandler = function keyDownHandler(event: KeyboardEvent) {
       const key = event.key;
 
-      if (key === "Backspace" || key === "Enter") {
+      if (key === 'Backspace' || key === 'Enter') {
         measureEventStart();
       }
     };
@@ -99,18 +99,18 @@ export default function TypingPerfPlugin(): JSX.Element | null {
       invalidatingEvent = true;
     };
 
-    window.addEventListener("keydown", keyDownHandler, true);
-    window.addEventListener("selectionchange", measureEventEnd, true);
-    window.addEventListener("beforeinput", beforeInputHandler, true);
-    window.addEventListener("paste", pasteHandler, true);
-    window.addEventListener("cut", cutHandler, true);
+    window.addEventListener('keydown', keyDownHandler, true);
+    window.addEventListener('selectionchange', measureEventEnd, true);
+    window.addEventListener('beforeinput', beforeInputHandler, true);
+    window.addEventListener('paste', pasteHandler, true);
+    window.addEventListener('cut', cutHandler, true);
 
     return () => {
-      window.removeEventListener("keydown", keyDownHandler, true);
-      window.removeEventListener("selectionchange", measureEventEnd, true);
-      window.removeEventListener("beforeinput", beforeInputHandler, true);
-      window.removeEventListener("paste", pasteHandler, true);
-      window.removeEventListener("cut", cutHandler, true);
+      window.removeEventListener('keydown', keyDownHandler, true);
+      window.removeEventListener('selectionchange', measureEventEnd, true);
+      window.removeEventListener('beforeinput', beforeInputHandler, true);
+      window.removeEventListener('paste', pasteHandler, true);
+      window.removeEventListener('cut', cutHandler, true);
     };
   }, [report]);
 

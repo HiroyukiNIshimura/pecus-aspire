@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { UserResponse } from "@/connectors/api/pecus";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import DashboardClient from "./DashboardClient";
+import { redirect } from 'next/navigation';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { UserResponse } from '@/connectors/api/pecus';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import DashboardClient from './DashboardClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function Dashboard() {
@@ -17,19 +17,19 @@ export default async function Dashboard() {
     // ユーザー情報を取得
     userResponse = await api.profile.getApiProfile();
   } catch (error: any) {
-    console.error("Dashboard: failed to fetch user", error);
+    console.error('Dashboard: failed to fetch user', error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || "ユーザー情報の取得に失敗しました";
+    fetchError = error.body?.message || error.message || 'ユーザー情報の取得に失敗しました';
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // UserResponse から UserInfo に変換

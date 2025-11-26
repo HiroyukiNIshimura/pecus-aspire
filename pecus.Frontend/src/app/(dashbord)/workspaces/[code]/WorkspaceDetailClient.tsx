@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import PersonIcon from "@mui/icons-material/Person";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import AppHeader from "@/components/common/AppHeader";
-import type { WorkspaceFullDetailResponse, WorkspaceListItemResponse } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
-import { getDisplayIconUrl } from "@/utils/imageUrl";
-import CreateWorkspaceItem from "./CreateWorkspaceItem";
-import WorkspaceItemDetail from "./WorkspaceItemDetail";
-import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
-import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
+import PersonIcon from '@mui/icons-material/Person';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import AppHeader from '@/components/common/AppHeader';
+import type { WorkspaceFullDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { UserInfo } from '@/types/userInfo';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
+import CreateWorkspaceItem from './CreateWorkspaceItem';
+import WorkspaceItemDetail from './WorkspaceItemDetail';
+import type { WorkspaceItemsSidebarHandle } from './WorkspaceItemsSidebar';
+import WorkspaceItemsSidebar from './WorkspaceItemsSidebar';
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
@@ -37,8 +37,8 @@ export default function WorkspaceDetailClient({
 
   // ローカルストレージからサイドバー幅を取得（初期値: 256px）
   const [sidebarWidth, setSidebarWidth] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("workspaceSidebarWidth");
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('workspaceSidebarWidth');
       return saved ? parseInt(saved, 10) : 256;
     }
     return 256;
@@ -94,7 +94,7 @@ export default function WorkspaceDetailClient({
       if (newWidth >= 200 && newWidth <= 600) {
         setSidebarWidth(newWidth);
         // ローカルストレージに保存
-        localStorage.setItem("workspaceSidebarWidth", newWidth.toString());
+        localStorage.setItem('workspaceSidebarWidth', newWidth.toString());
       }
     },
     [isResizing],
@@ -107,11 +107,11 @@ export default function WorkspaceDetailClient({
   // マウスイベントリスナーの登録
   useEffect(() => {
     if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
       return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
       };
     }
   }, [isResizing, handleMouseMove, handleMouseUp]);
@@ -161,9 +161,9 @@ export default function WorkspaceDetailClient({
           <div
             onMouseDown={handleMouseDown}
             className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors ${
-              isResizing ? "bg-primary" : ""
+              isResizing ? 'bg-primary' : ''
             }`}
-            style={{ userSelect: "none" }}
+            style={{ userSelect: 'none' }}
           />
         </div>
 
@@ -190,14 +190,14 @@ export default function WorkspaceDetailClient({
                   {/* ステータス */}
                   <div>
                     <span className="text-xs text-base-content/70">ステータス</span>
-                    <p className="font-semibold">{workspaceDetail.isActive ? "アクティブ" : "非アクティブ"}</p>
+                    <p className="font-semibold">{workspaceDetail.isActive ? 'アクティブ' : '非アクティブ'}</p>
                   </div>
 
                   {/* 作成日時 */}
                   {workspaceDetail.createdAt && (
                     <div>
                       <span className="text-xs text-base-content/70">作成日時</span>
-                      <p className="font-semibold">{new Date(workspaceDetail.createdAt).toLocaleString("ja-JP")}</p>
+                      <p className="font-semibold">{new Date(workspaceDetail.createdAt).toLocaleString('ja-JP')}</p>
                     </div>
                   )}
 
@@ -242,7 +242,7 @@ export default function WorkspaceDetailClient({
                   {workspaceDetail.updatedAt && (
                     <div>
                       <span className="text-xs text-base-content/70">更新日時</span>
-                      <p className="font-semibold">{new Date(workspaceDetail.updatedAt).toLocaleString("ja-JP")}</p>
+                      <p className="font-semibold">{new Date(workspaceDetail.updatedAt).toLocaleString('ja-JP')}</p>
                     </div>
                   )}
 
@@ -274,7 +274,7 @@ export default function WorkspaceDetailClient({
                           {member.identityIconUrl && (
                             <img
                               src={getDisplayIconUrl(member.identityIconUrl)}
-                              alt={member.userName || "ユーザー"}
+                              alt={member.userName || 'ユーザー'}
                               className="w-6 h-6 rounded-full object-cover"
                             />
                           )}
@@ -311,7 +311,7 @@ export default function WorkspaceDetailClient({
         />
 
         {/* アイテム一覧 (スマホ) */}
-        <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: "384px" }}>
+        <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: '384px' }}>
           <WorkspaceItemsSidebar
             workspaceId={workspaceDetail.id}
             currentWorkspaceCode={workspaceCode}

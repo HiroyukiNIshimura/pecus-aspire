@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import Pagination from "@/components/common/Pagination";
-import { useDelayedLoading } from "@/hooks/useDelayedLoading";
-import { useValidation } from "@/hooks/useValidation";
-import { usernameFilterSchema } from "@/schemas/filterSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import Pagination from '@/components/common/Pagination';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useValidation } from '@/hooks/useValidation';
+import { usernameFilterSchema } from '@/schemas/filterSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 interface Skill {
   id: number;
@@ -66,10 +66,10 @@ export default function AdminUsersClient({
   const [isLoading, setIsLoading] = useState(true);
   const [skills, _setSkills] = useState<Skill[]>(initialSkills || []);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterUsername, setFilterUsername] = useState<string>("");
+  const [filterUsername, setFilterUsername] = useState<string>('');
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterSkillIds, setFilterSkillIds] = useState<number[]>([]);
-  const [filterSkillMode, setFilterSkillMode] = useState<"and" | "or">("and");
+  const [filterSkillMode, setFilterSkillMode] = useState<'and' | 'or'>('and');
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const usernameValidation = useValidation(usernameFilterSchema);
@@ -78,14 +78,14 @@ export default function AdminUsersClient({
     const fetchInitialData = async () => {
       if (!initialUsers || initialUsers.length === 0) {
         try {
-          const response = await fetch("/api/admin/users?page=1&IsActive=true");
+          const response = await fetch('/api/admin/users?page=1&IsActive=true');
           if (response.ok) {
             const data = await response.json();
             if (data?.data) {
               const mappedUsers = data.data.map((user: any) => ({
                 id: user.id ?? 0,
-                username: user.username ?? "",
-                email: user.email ?? "",
+                username: user.username ?? '',
+                email: user.email ?? '',
                 isActive: user.isActive ?? true,
                 createdAt: user.createdAt ?? new Date().toISOString(),
                 skills: user.skills ?? [],
@@ -98,7 +98,7 @@ export default function AdminUsersClient({
             }
           }
         } catch (error) {
-          console.error("Failed to fetch initial users:", error);
+          console.error('Failed to fetch initial users:', error);
         }
       }
       setIsLoading(false);
@@ -111,18 +111,18 @@ export default function AdminUsersClient({
     try {
       const page = selected + 1;
       const params = new URLSearchParams();
-      params.append("page", page.toString());
+      params.append('page', page.toString());
       if (filterIsActive !== null) {
-        params.append("IsActive", filterIsActive.toString());
+        params.append('IsActive', filterIsActive.toString());
       }
       if (filterUsername) {
-        params.append("Username", filterUsername);
+        params.append('Username', filterUsername);
       }
       if (filterSkillIds.length > 0) {
         filterSkillIds.forEach((skillId) => {
-          params.append("SkillIds", skillId.toString());
+          params.append('SkillIds', skillId.toString());
         });
-        params.append("SkillFilterMode", filterSkillMode);
+        params.append('SkillFilterMode', filterSkillMode);
       }
       const response = await fetch(`/api/admin/users?${params.toString()}`);
       if (response.ok) {
@@ -130,8 +130,8 @@ export default function AdminUsersClient({
         if (data?.data) {
           const mappedUsers = data.data.map((user: any) => ({
             id: user.id ?? 0,
-            username: user.username ?? "",
-            email: user.email ?? "",
+            username: user.username ?? '',
+            email: user.email ?? '',
             isActive: user.isActive ?? true,
             createdAt: user.createdAt ?? new Date().toISOString(),
             skills: user.skills ?? [],
@@ -144,7 +144,7 @@ export default function AdminUsersClient({
         }
       }
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      console.error('Failed to fetch users:', error);
     }
   });
 
@@ -153,18 +153,18 @@ export default function AdminUsersClient({
     await withDelayedLoading(async () => {
       try {
         const params = new URLSearchParams();
-        params.append("page", "1");
+        params.append('page', '1');
         if (filterIsActive !== null) {
-          params.append("IsActive", filterIsActive.toString());
+          params.append('IsActive', filterIsActive.toString());
         }
         if (filterUsername) {
-          params.append("Username", filterUsername);
+          params.append('Username', filterUsername);
         }
         if (filterSkillIds.length > 0) {
           filterSkillIds.forEach((skillId) => {
-            params.append("SkillIds", skillId.toString());
+            params.append('SkillIds', skillId.toString());
           });
-          params.append("SkillFilterMode", filterSkillMode);
+          params.append('SkillFilterMode', filterSkillMode);
         }
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
@@ -172,8 +172,8 @@ export default function AdminUsersClient({
           if (data?.data) {
             const mappedUsers = data.data.map((user: any) => ({
               id: user.id ?? 0,
-              username: user.username ?? "",
-              email: user.email ?? "",
+              username: user.username ?? '',
+              email: user.email ?? '',
               isActive: user.isActive ?? true,
               createdAt: user.createdAt ?? new Date().toISOString(),
               skills: user.skills ?? [],
@@ -186,7 +186,7 @@ export default function AdminUsersClient({
           }
         }
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error('Failed to fetch users:', error);
       }
     })();
   }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading]);
@@ -208,10 +208,10 @@ export default function AdminUsersClient({
   };
 
   const handleReset = () => {
-    setFilterUsername("");
+    setFilterUsername('');
     setFilterIsActive(true);
     setFilterSkillIds([]);
-    setFilterSkillMode("and");
+    setFilterSkillMode('and');
     usernameValidation.clearErrors();
     setCurrentPage(1);
     // リセット後、初期フィルター条件で検索実行
@@ -220,7 +220,7 @@ export default function AdminUsersClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? "初期化中..." : "検索中..."} />
+      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />
@@ -264,13 +264,13 @@ export default function AdminUsersClient({
                   <div className="flex items-center gap-2">
                     <FilterListIcon />
                     <span
-                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterUsername || (filterSkillIds && filterSkillIds.length > 0) ? "text-success" : ""}`}
+                      className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterUsername || (filterSkillIds && filterSkillIds.length > 0) ? 'text-success' : ''}`}
                     >
                       フィルター
                     </span>
                   </div>
                   <svg
-                    className={`w-5 h-5 transition-transform ${filterOpen ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -294,12 +294,12 @@ export default function AdminUsersClient({
                         <input
                           type="text"
                           id="filter-username"
-                          className={`input input-bordered w-full ${usernameValidation.hasErrors ? "input-error" : ""}`}
+                          className={`input input-bordered w-full ${usernameValidation.hasErrors ? 'input-error' : ''}`}
                           placeholder="前方一致検索..."
                           value={filterUsername}
                           onChange={(e) => handleUsernameChange(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" && usernameValidation.isValid) {
+                            if (e.key === 'Enter' && usernameValidation.isValid) {
                               handleSearch();
                             }
                           }}
@@ -365,7 +365,7 @@ export default function AdminUsersClient({
                         </div>
                         <details className="dropdown w-full">
                           <summary className="btn btn-outline w-full justify-start">
-                            {filterSkillIds.length > 0 ? `${filterSkillIds.length} 個選択中` : "スキルを選択"}
+                            {filterSkillIds.length > 0 ? `${filterSkillIds.length} 個選択中` : 'スキルを選択'}
                           </summary>
                           <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                             {skills.map((skill) => (
@@ -409,8 +409,8 @@ export default function AdminUsersClient({
                                   type="radio"
                                   name="skillFilterMode"
                                   value="and"
-                                  checked={filterSkillMode === "and"}
-                                  onChange={(e) => setFilterSkillMode(e.target.value as "and" | "or")}
+                                  checked={filterSkillMode === 'and'}
+                                  onChange={(e) => setFilterSkillMode(e.target.value as 'and' | 'or')}
                                   className="radio radio-primary radio-sm"
                                 />
                                 <span className="text-sm">すべてのスキルを保有</span>
@@ -420,8 +420,8 @@ export default function AdminUsersClient({
                                   type="radio"
                                   name="skillFilterMode"
                                   value="or"
-                                  checked={filterSkillMode === "or"}
-                                  onChange={(e) => setFilterSkillMode(e.target.value as "and" | "or")}
+                                  checked={filterSkillMode === 'or'}
+                                  onChange={(e) => setFilterSkillMode(e.target.value as 'and' | 'or')}
                                   className="radio radio-primary radio-sm"
                                 />
                                 <span className="text-sm">いずれかのスキルを保有</span>
@@ -492,11 +492,11 @@ export default function AdminUsersClient({
                               )}
                             </td>
                             <td>
-                              <div className={`badge ${user.isActive ? "badge-success" : "badge-neutral"}`}>
-                                {user.isActive ? "アクティブ" : "非アクティブ"}
+                              <div className={`badge ${user.isActive ? 'badge-success' : 'badge-neutral'}`}>
+                                {user.isActive ? 'アクティブ' : '非アクティブ'}
                               </div>
                             </td>
-                            <td>{new Date(user.createdAt).toLocaleDateString("ja-JP")}</td>
+                            <td>{new Date(user.createdAt).toLocaleDateString('ja-JP')}</td>
                             <td>
                               <div className="flex gap-2">
                                 <button

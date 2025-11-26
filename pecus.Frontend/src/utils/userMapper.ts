@@ -1,5 +1,5 @@
-import type { UserResponse } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
+import type { UserResponse } from '@/connectors/api/pecus';
+import type { UserInfo } from '@/types/userInfo';
 
 /**
  * UserResponse を UserInfo に変換

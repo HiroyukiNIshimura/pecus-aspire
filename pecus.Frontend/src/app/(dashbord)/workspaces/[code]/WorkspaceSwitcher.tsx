@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 
 interface WorkspaceSwitcherProps {
   workspaces: WorkspaceListItemResponse[];
@@ -43,12 +43,12 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
       if (workspaces.length === 0) return;
 
       switch (e.key) {
-        case "Enter":
-        case " ":
+        case 'Enter':
+        case ' ':
           e.preventDefault();
           setIsOpen((prev) => !prev);
           break;
-        case "Escape":
+        case 'Escape':
           e.preventDefault();
           setIsOpen(false);
           break;
@@ -66,9 +66,9 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
       return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener('mousedown', handleClickOutside);
       };
     }
   }, [isOpen]);
@@ -91,7 +91,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
       >
         <div className="flex-1 min-w-0">
           <div className="text-xs text-base-content/70 mb-1">ワークスペース</div>
-          <div className="font-semibold text-sm truncate">{currentWorkspace?.name || "ワークスペース"}</div>
+          <div className="font-semibold text-sm truncate">{currentWorkspace?.name || 'ワークスペース'}</div>
           {currentWorkspace?.code && (
             <code className="text-xs text-base-content/70 truncate block">{currentWorkspace.code}</code>
           )}
@@ -107,7 +107,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
               <button
                 type="button"
                 className={`w-full text-left px-3 py-2 hover:bg-base-200 transition-colors ${
-                  workspace.code === currentWorkspaceCode ? "bg-primary/10 font-semibold" : ""
+                  workspace.code === currentWorkspaceCode ? 'bg-primary/10 font-semibold' : ''
                 }`}
                 onClick={() => workspace.code && switchWorkspace(workspace.code)}
               >

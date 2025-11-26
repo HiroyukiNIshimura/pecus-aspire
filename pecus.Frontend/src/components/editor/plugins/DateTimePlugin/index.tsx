@@ -6,8 +6,8 @@
  *
  */
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $wrapNodeInElement, mergeRegister } from "@lexical/utils";
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { $wrapNodeInElement, mergeRegister } from '@lexical/utils';
 import {
   $createParagraphNode,
   $insertNodes,
@@ -15,24 +15,24 @@ import {
   COMMAND_PRIORITY_EDITOR,
   createCommand,
   type LexicalCommand,
-} from "lexical";
-import type { JSX } from "react";
-import { useEffect } from "react";
+} from 'lexical';
+import type { JSX } from 'react';
+import { useEffect } from 'react';
 
-import { $createDateTimeNode, DateTimeNode } from "../../nodes/DateTimeNode/DateTimeNode";
+import { $createDateTimeNode, DateTimeNode } from '../../nodes/DateTimeNode/DateTimeNode';
 
 type CommandPayload = {
   dateTime: Date;
 };
 
-export const INSERT_DATETIME_COMMAND: LexicalCommand<CommandPayload> = createCommand("INSERT_DATETIME_COMMAND");
+export const INSERT_DATETIME_COMMAND: LexicalCommand<CommandPayload> = createCommand('INSERT_DATETIME_COMMAND');
 
 export default function DateTimePlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
     if (!editor.hasNodes([DateTimeNode])) {
-      throw new Error("DateTimePlugin: DateTimeNode not registered on editor");
+      throw new Error('DateTimePlugin: DateTimeNode not registered on editor');
     }
 
     return mergeRegister(

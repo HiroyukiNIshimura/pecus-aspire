@@ -19,21 +19,21 @@ import {
   type Spread,
   type StateConfigValue,
   type StateValueOrUpdater,
-} from "lexical";
-import type { JSX } from "react";
-import * as React from "react";
+} from 'lexical';
+import type { JSX } from 'react';
+import * as React from 'react';
 
-const DateTimeComponent = React.lazy(() => import("./DateTimeComponent"));
+const DateTimeComponent = React.lazy(() => import('./DateTimeComponent'));
 
 const getDateTimeText = (dateTime: Date) => {
   if (dateTime === undefined) {
-    return "";
+    return '';
   }
   const hours = dateTime?.getHours();
   const minutes = dateTime?.getMinutes();
   return (
     dateTime.toDateString() +
-    (hours === 0 && minutes === 0 ? "" : ` ${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`)
+    (hours === 0 && minutes === 0 ? '' : ` ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`)
   );
 };
 
@@ -45,17 +45,17 @@ export type SerializedDateTimeNode = Spread<
 >;
 
 function $convertDateTimeElement(domNode: HTMLElement): DOMConversionOutput | null {
-  const dateTimeValue = domNode.getAttribute("data-lexical-datetime");
+  const dateTimeValue = domNode.getAttribute('data-lexical-datetime');
   if (dateTimeValue) {
     const node = $createDateTimeNode(new Date(Date.parse(dateTimeValue)));
     return { node };
   }
-  const gDocsDateTimePayload = domNode.getAttribute("data-rich-links");
+  const gDocsDateTimePayload = domNode.getAttribute('data-rich-links');
   if (!gDocsDateTimePayload) {
     return null;
   }
   const parsed = JSON.parse(gDocsDateTimePayload);
-  const parsedDate = Date.parse(parsed?.dat_df?.dfie_dt || "");
+  const parsedDate = Date.parse(parsed?.dat_df?.dfie_dt || '');
   if (Number.isNaN(parsedDate)) {
     return null;
   }
@@ -63,21 +63,21 @@ function $convertDateTimeElement(domNode: HTMLElement): DOMConversionOutput | nu
   return { node };
 }
 
-const dateTimeState = createState("dateTime", {
+const dateTimeState = createState('dateTime', {
   parse: (v) => new Date(v as string),
   unparse: (v) => v.toISOString(),
 });
 
 export class DateTimeNode extends DecoratorNode<JSX.Element> {
   $config() {
-    return this.config("datetime", {
+    return this.config('datetime', {
       extends: DecoratorNode,
       importDOM: buildImportMap({
         span: (domNode) =>
-          domNode.getAttribute("data-lexical-datetime") !== null ||
+          domNode.getAttribute('data-lexical-datetime') !== null ||
           // GDocs Support
-          (domNode.getAttribute("data-rich-links") !== null &&
-            JSON.parse(domNode.getAttribute("data-rich-links") || "{}").type === "date")
+          (domNode.getAttribute('data-rich-links') !== null &&
+            JSON.parse(domNode.getAttribute('data-rich-links') || '{}').type === 'date')
             ? {
                 conversion: $convertDateTimeElement,
                 priority: 2,
@@ -102,16 +102,16 @@ export class DateTimeNode extends DecoratorNode<JSX.Element> {
   }
 
   exportDOM(): DOMExportOutput {
-    const element = document.createElement("span");
+    const element = document.createElement('span');
     element.textContent = getDateTimeText(this.getDateTime());
-    element.setAttribute("data-lexical-datetime", this.getDateTime()?.toString() || "");
+    element.setAttribute('data-lexical-datetime', this.getDateTime()?.toString() || '');
     return { element };
   }
 
   createDOM(): HTMLElement {
-    const element = document.createElement("span");
-    element.setAttribute("data-lexical-datetime", this.getDateTime()?.toString() || "");
-    element.style.display = "inline-block";
+    const element = document.createElement('span');
+    element.setAttribute('data-lexical-datetime', this.getDateTime()?.toString() || '');
+    element.style.display = 'inline-block';
     return element;
   }
 

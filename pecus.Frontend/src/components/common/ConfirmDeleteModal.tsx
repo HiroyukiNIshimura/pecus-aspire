@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 interface ConfirmDeleteModalProps {
   title?: string;
@@ -20,10 +20,10 @@ export interface ConfirmDeleteModalRef {
 const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalProps>(
   (
     {
-      title = "削除の確認",
-      message = "このアイテムを削除してもよろしいですか？",
-      confirmText = "削除",
-      cancelText = "キャンセル",
+      title = '削除の確認',
+      message = 'このアイテムを削除してもよろしいですか？',
+      confirmText = '削除',
+      cancelText = 'キャンセル',
       requireCodeConfirmation = true,
       onConfirm,
       onCancel,
@@ -32,8 +32,8 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
   ) => {
     const [modalId] = useState(() => `modal-${Math.random().toString(36).substr(2, 9)}`);
     const [_isOpen, setIsOpen] = useState(false);
-    const [generatedCode, setGeneratedCode] = useState<string>("");
-    const [inputValue, setInputValue] = useState<string>("");
+    const [generatedCode, setGeneratedCode] = useState<string>('');
+    const [inputValue, setInputValue] = useState<string>('');
     const [mismatch, setMismatch] = useState<boolean>(false);
     const overlayRef = useRef<HTMLDivElement>(null);
     const hsOverlayRef = useRef<any>(null);
@@ -46,18 +46,18 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
           try {
             hsOverlayRef.current.open();
           } catch (error) {
-            console.error("Error opening modal:", error);
+            console.error('Error opening modal:', error);
             // Fallback: 手動でクラスを変更
             const element = document.getElementById(modalId);
             if (element) {
-              element.classList.remove("hidden");
+              element.classList.remove('hidden');
             }
           }
         } else {
           // Fallback: 手動でクラスを変更
           const element = document.getElementById(modalId);
           if (element) {
-            element.classList.remove("hidden");
+            element.classList.remove('hidden');
           }
         }
 
@@ -66,9 +66,9 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
           const code = generateRandomCode();
           setGeneratedCode(code);
         } else {
-          setGeneratedCode("");
+          setGeneratedCode('');
         }
-        setInputValue("");
+        setInputValue('');
         setMismatch(false);
       },
       close: () => {
@@ -78,18 +78,18 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
           try {
             hsOverlayRef.current.close();
           } catch (error) {
-            console.error("Error closing modal:", error);
+            console.error('Error closing modal:', error);
             // Fallback: 手動でクラスを変更
             const element = document.getElementById(modalId);
             if (element) {
-              element.classList.add("hidden");
+              element.classList.add('hidden');
             }
           }
         } else {
           // Fallback: 手動でクラスを変更
           const element = document.getElementById(modalId);
           if (element) {
-            element.classList.add("hidden");
+            element.classList.add('hidden');
           }
         }
         onCancel?.();
@@ -99,7 +99,7 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
     useEffect(() => {
       // HSOverlay.autoInit() が呼ばれた後、インスタンスを取得する
       const getOverlayInstance = () => {
-        if (typeof window !== "undefined" && window.HSOverlay) {
+        if (typeof window !== 'undefined' && window.HSOverlay) {
           // overlayRef.current を優先的に使用（React管理の要素）
           const element = overlayRef.current || document.getElementById(modalId);
 
@@ -108,12 +108,12 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
               // 新しいHSOverlayインスタンスを作成
               hsOverlayRef.current = new window.HSOverlay(element);
             } catch (error) {
-              console.error("Error creating HSOverlay instance:", error);
+              console.error('Error creating HSOverlay instance:', error);
             }
           } else {
             setTimeout(getOverlayInstance, 100);
           }
-        } else if (typeof window !== "undefined" && !window.HSOverlay) {
+        } else if (typeof window !== 'undefined' && !window.HSOverlay) {
           // HSOverlayがまだ読み込まれていない場合は再試行
           setTimeout(getOverlayInstance, 100);
         }
@@ -242,13 +242,13 @@ const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalP
   },
 );
 
-ConfirmDeleteModal.displayName = "ConfirmDeleteModal";
+ConfirmDeleteModal.displayName = 'ConfirmDeleteModal';
 
 export default ConfirmDeleteModal;
 
 // グローバル関数として公開（外部からモーダルを開くため）
 declare global {
   interface Window {
-    HSOverlay: typeof import("flyonui/flyonui").HSOverlay;
+    HSOverlay: typeof import('flyonui/flyonui').HSOverlay;
   }
 }

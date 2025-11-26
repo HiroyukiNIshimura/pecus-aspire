@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { updateWorkspace } from "@/actions/admin/workspace";
-import AdminFooter from "@/components/admin/AdminFooter";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
-import type { MasterGenreResponse, WorkspaceDetailResponse } from "@/connectors/api/pecus";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useNotify } from "@/hooks/useNotify";
-import { editWorkspaceSchema } from "@/schemas/editSchemas";
-import type { UserInfo } from "@/types/userInfo";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { updateWorkspace } from '@/actions/admin/workspace';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { MasterGenreResponse, WorkspaceDetailResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
+import { editWorkspaceSchema } from '@/schemas/editSchemas';
+import type { UserInfo } from '@/types/userInfo';
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -32,9 +32,9 @@ export default function EditWorkspaceClient({
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
-    name: workspaceDetail.name || "",
-    description: workspaceDetail.description || "",
-    genreId: (workspaceDetail as any).genreId ? String((workspaceDetail as any).genreId) : "",
+    name: workspaceDetail.name || '',
+    description: workspaceDetail.description || '',
+    genreId: (workspaceDetail as any).genreId ? String((workspaceDetail as any).genreId) : '',
     isActive: workspaceDetail.isActive ?? true,
   });
 
@@ -45,31 +45,31 @@ export default function EditWorkspaceClient({
       try {
         // rowVersion が存在しない場合はエラー
         if (!workspaceDetail.rowVersion) {
-          notify.error("ワークスペース情報の更新に必要なバージョン情報が取得できませんでした。");
+          notify.error('ワークスペース情報の更新に必要なバージョン情報が取得できませんでした。');
           return;
         }
 
         const result = await updateWorkspace(workspaceDetail.id!, {
           name: data.name,
           description: data.description || undefined,
-          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+          genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
           rowVersion: workspaceDetail.rowVersion,
         });
 
         if (result.success) {
-          notify.success("ワークスペースを更新しました。");
-          router.push("/admin/workspaces");
+          notify.success('ワークスペースを更新しました。');
+          router.push('/admin/workspaces');
         } else {
-          console.error("ワークスペースの更新に失敗しました:", result.error);
+          console.error('ワークスペースの更新に失敗しました:', result.error);
           notify.error(
             result.error
               ? `ワークスペースの更新中にエラーが発生しました。(${result.error})`
-              : "ワークスペースの更新中にエラーが発生しました。",
+              : 'ワークスペースの更新中にエラーが発生しました。',
           );
         }
       } catch (err: unknown) {
-        console.error("ワークスペースの更新中にエラーが発生しました:", err);
-        notify.error("ワークスペースの更新中にエラーが発生しました。");
+        console.error('ワークスペースの更新中にエラーが発生しました:', err);
+        notify.error('ワークスペースの更新中にエラーが発生しました。');
       }
     },
   });
@@ -86,7 +86,7 @@ export default function EditWorkspaceClient({
   };
 
   const handleCancel = () => {
-    router.push("/admin/workspaces");
+    router.push('/admin/workspaces');
   };
 
   return (
@@ -117,7 +117,7 @@ export default function EditWorkspaceClient({
                 <h1 className="text-3xl font-bold">ワークスペース編集</h1>
                 <p className="text-base-content/60 mt-2">ワークスペース情報を編集します</p>
               </div>
-              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/workspaces")}>
+              <button type="button" className="btn btn-outline" onClick={() => router.push('/admin/workspaces')}>
                 一覧に戻る
               </button>
             </div>
@@ -137,12 +137,12 @@ export default function EditWorkspaceClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">ワークスペース名</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.name || "-"}</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.name || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">コード</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.code || "-"}</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.code || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -165,15 +165,15 @@ export default function EditWorkspaceClient({
                       id="name"
                       name="name"
                       type="text"
-                      className={`input input-bordered w-full ${shouldShowError("name") ? "input-error" : ""}`}
+                      className={`input input-bordered w-full ${shouldShowError('name') ? 'input-error' : ''}`}
                       value={formData.name}
-                      onChange={(e) => handleFieldChange("name", e.target.value)}
+                      onChange={(e) => handleFieldChange('name', e.target.value)}
                       placeholder="ワークスペース名を入力"
                       disabled={isSubmitting}
                     />
-                    {shouldShowError("name") && (
+                    {shouldShowError('name') && (
                       <div className="label">
-                        <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                        <span className="label-text-alt text-error">{getFieldError('name')}</span>
                       </div>
                     )}
                   </div>
@@ -187,10 +187,10 @@ export default function EditWorkspaceClient({
                       id="description"
                       name="description"
                       className={`textarea textarea-bordered w-full ${
-                        shouldShowError("description") ? "textarea-error" : ""
+                        shouldShowError('description') ? 'textarea-error' : ''
                       }`}
                       value={formData.description}
-                      onChange={(e) => handleFieldChange("description", e.target.value)}
+                      onChange={(e) => handleFieldChange('description', e.target.value)}
                       placeholder="ワークスペースの説明を入力（任意）"
                       disabled={isSubmitting}
                       maxLength={500}
@@ -198,8 +198,8 @@ export default function EditWorkspaceClient({
                     />
                     <div className="label">
                       <span className="label-text-alt text-xs">{formData.description.length}/500 文字</span>
-                      {shouldShowError("description") && (
-                        <span className="label-text-alt text-error text-xs">{getFieldError("description")}</span>
+                      {shouldShowError('description') && (
+                        <span className="label-text-alt text-error text-xs">{getFieldError('description')}</span>
                       )}
                     </div>
                   </div>
@@ -213,9 +213,9 @@ export default function EditWorkspaceClient({
                       <select
                         id="genreId"
                         name="genreId"
-                        className={`select select-bordered w-full ${shouldShowError("genreId") ? "select-error" : ""}`}
+                        className={`select select-bordered w-full ${shouldShowError('genreId') ? 'select-error' : ''}`}
                         value={formData.genreId}
-                        onChange={(e) => handleFieldChange("genreId", e.target.value)}
+                        onChange={(e) => handleFieldChange('genreId', e.target.value)}
                         disabled={isSubmitting}
                       >
                         <option value="">選択してください</option>
@@ -225,9 +225,9 @@ export default function EditWorkspaceClient({
                           </option>
                         ))}
                       </select>
-                      {shouldShowError("genreId") && (
+                      {shouldShowError('genreId') && (
                         <div className="label">
-                          <span className="label-text-alt text-error">{getFieldError("genreId")}</span>
+                          <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
                         </div>
                       )}
                     </div>
@@ -242,7 +242,7 @@ export default function EditWorkspaceClient({
                         name="isActive"
                         className="checkbox checkbox-primary"
                         checked={formData.isActive}
-                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
+                        onChange={(e) => handleFieldChange('isActive', e.target.checked)}
                         disabled={isSubmitting}
                       />
                     </label>
@@ -260,7 +260,7 @@ export default function EditWorkspaceClient({
                           更新中...
                         </>
                       ) : (
-                        "更新"
+                        '更新'
                       )}
                     </button>
                   </div>
@@ -276,12 +276,12 @@ export default function EditWorkspaceClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">ワークスペースID</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.id || "-"}</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.id || '-'}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">所属組織</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.organization?.name || "-"}</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.organization?.name || '-'}</p>
                   </div>
 
                   <div>
@@ -292,14 +292,14 @@ export default function EditWorkspaceClient({
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
-                      {workspaceDetail.createdAt ? new Date(workspaceDetail.createdAt).toLocaleString("ja-JP") : "-"}
+                      {workspaceDetail.createdAt ? new Date(workspaceDetail.createdAt).toLocaleString('ja-JP') : '-'}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
-                      {workspaceDetail.updatedAt ? new Date(workspaceDetail.updatedAt).toLocaleString("ja-JP") : "-"}
+                      {workspaceDetail.updatedAt ? new Date(workspaceDetail.updatedAt).toLocaleString('ja-JP') : '-'}
                     </p>
                   </div>
                 </div>
@@ -329,11 +329,11 @@ export default function EditWorkspaceClient({
                             <td className="font-semibold">{member.username}</td>
                             <td>{member.email}</td>
                             <td>
-                              <span className="badge badge-outline">{member.workspaceRole || "Member"}</span>
+                              <span className="badge badge-outline">{member.workspaceRole || 'Member'}</span>
                             </td>
-                            <td>{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString("ja-JP") : ""}</td>
+                            <td>{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('ja-JP') : ''}</td>
                             <td>
-                              {member.lastAccessedAt ? new Date(member.lastAccessedAt).toLocaleString("ja-JP") : "未"}
+                              {member.lastAccessedAt ? new Date(member.lastAccessedAt).toLocaleString('ja-JP') : '未'}
                             </td>
                           </tr>
                         ))}

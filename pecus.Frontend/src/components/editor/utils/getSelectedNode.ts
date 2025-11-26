@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import { $isAtNodeEnd } from "@lexical/selection";
-import type { ElementNode, RangeSelection, TextNode } from "lexical";
+import { $isAtNodeEnd } from '@lexical/selection';
+import type { ElementNode, RangeSelection, TextNode } from 'lexical';
 
 export function getSelectedNode(selection: RangeSelection): TextNode | ElementNode {
   const anchor = selection.anchor;

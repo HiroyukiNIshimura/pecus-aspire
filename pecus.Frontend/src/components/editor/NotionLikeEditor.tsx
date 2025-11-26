@@ -5,28 +5,28 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-"use client";
+'use client';
 
-import "./Editor.css";
-import { $generateHtmlFromNodes } from "@lexical/html";
-import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
-import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
-import type { EditorState, LexicalEditor } from "lexical";
-import { $getRoot, defineExtension } from "lexical";
-import { useCallback, useMemo } from "react";
-import { useDebouncedCallback } from "use-debounce";
-import { INITIAL_SETTINGS } from "./appSettings";
-import { buildHTMLConfig } from "./buildHTMLConfig";
-import { FlashMessageContext } from "./context/FlashMessageContext";
-import { SettingsContext } from "./context/SettingsContext";
-import { SharedHistoryContext } from "./context/SharedHistoryContext";
-import { ToolbarContext } from "./context/ToolbarContext";
-import Editor from "./Editor";
-import NotionLikeEditorNodes from "./nodes/NotionLikeEditorNodes";
-import OnChangePlugin from "./plugins/OnChangePlugin";
-import { TableContext } from "./plugins/TablePlugin";
-import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
-import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
+import './Editor.css';
+import { $generateHtmlFromNodes } from '@lexical/html';
+import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
+import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
+import type { EditorState, LexicalEditor } from 'lexical';
+import { $getRoot, defineExtension } from 'lexical';
+import { useCallback, useMemo } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
+import { FlashMessageContext } from './context/FlashMessageContext';
+import { SettingsContext } from './context/SettingsContext';
+import { SharedHistoryContext } from './context/SharedHistoryContext';
+import { ToolbarContext } from './context/ToolbarContext';
+import Editor from './Editor';
+import NotionLikeEditorNodes from './nodes/NotionLikeEditorNodes';
+import OnChangePlugin from './plugins/OnChangePlugin';
+import { TableContext } from './plugins/TablePlugin';
+import TypingPerfPlugin from './plugins/TypingPerfPlugin';
+import NotionLikeEditorTheme from './themes/NotionLikeEditorTheme';
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -152,8 +152,8 @@ export default function NotionLikeEditor({
       defineExtension({
         $initialEditorState: initialEditorState,
         html: buildHTMLConfig(),
-        name: "pecus/NotionLikeEditor",
-        namespace: "NotionLikeEditor",
+        name: 'pecus/NotionLikeEditor',
+        namespace: 'NotionLikeEditor',
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
         // dependencies: [

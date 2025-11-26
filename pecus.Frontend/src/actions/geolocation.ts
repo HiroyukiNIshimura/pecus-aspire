@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import type { ApiResponse } from "./types";
+import type { ApiResponse } from './types';
 
 /**
  * Nominatim OpenStreetMap API から返されるレスポンス
@@ -67,27 +67,27 @@ export async function getLocationFromCoordinates(
 ): Promise<ApiResponse<LocationInfo>> {
   try {
     // 入力値の検証
-    if (typeof latitude !== "number" || typeof longitude !== "number") {
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
       return {
         success: false,
-        error: "validation",
-        message: "緯度と経度は数値である必要があります。",
+        error: 'validation',
+        message: '緯度と経度は数値である必要があります。',
       };
     }
 
     if (latitude < -90 || latitude > 90) {
       return {
         success: false,
-        error: "validation",
-        message: "緯度は-90から90の範囲内である必要があります。",
+        error: 'validation',
+        message: '緯度は-90から90の範囲内である必要があります。',
       };
     }
 
     if (longitude < -180 || longitude > 180) {
       return {
         success: false,
-        error: "validation",
-        message: "経度は-180から180の範囲内である必要があります。",
+        error: 'validation',
+        message: '経度は-180から180の範囲内である必要があります。',
       };
     }
 
@@ -96,11 +96,11 @@ export async function getLocationFromCoordinates(
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
 
     const response = await fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        Accept: "application/json",
+        Accept: 'application/json',
         // User-Agent を指定（Nominatim の利用規約で推奨）
-        "User-Agent": "pecus-aspire-location-service/1.0",
+        'User-Agent': 'pecus-aspire-location-service/1.0',
       },
       // Nominatim のレート制限対策：タイムアウトを設定
       signal: AbortSignal.timeout(2000),
@@ -110,7 +110,7 @@ export async function getLocationFromCoordinates(
       console.error(`Nominatim API error: ${response.status} ${response.statusText}`);
       return {
         success: false,
-        error: "server",
+        error: 'server',
         message: `位置情報の取得に失敗しました。(Status: ${response.status})`,
       };
     }
@@ -121,8 +121,8 @@ export async function getLocationFromCoordinates(
     if (!data.address || !data.display_name) {
       return {
         success: false,
-        error: "server",
-        message: "位置情報の取得に失敗しました。(Invalid response)",
+        error: 'server',
+        message: '位置情報の取得に失敗しました。(Invalid response)',
       };
     }
 
@@ -146,21 +146,21 @@ export async function getLocationFromCoordinates(
       data: locationInfo,
     };
   } catch (error: any) {
-    console.error("Failed to get location from coordinates:", error);
+    console.error('Failed to get location from coordinates:', error);
 
     // タイムアウトエラーの処理
-    if (error.name === "AbortError") {
+    if (error.name === 'AbortError') {
       return {
         success: false,
-        error: "server",
-        message: "位置情報の取得がタイムアウトしました。",
+        error: 'server',
+        message: '位置情報の取得がタイムアウトしました。',
       };
     }
 
     return {
       success: false,
-      error: "server",
-      message: error.message || "位置情報の取得中にエラーが発生しました。",
+      error: 'server',
+      message: error.message || '位置情報の取得中にエラーが発生しました。',
     };
   }
 }
@@ -184,8 +184,8 @@ export async function getLocationsFromCoordinates(
     if (!Array.isArray(coordinates) || coordinates.length === 0) {
       return {
         success: false,
-        error: "validation",
-        message: "座標情報の配列が空です。",
+        error: 'validation',
+        message: '座標情報の配列が空です。',
       };
     }
 
@@ -193,8 +193,8 @@ export async function getLocationsFromCoordinates(
     if (coordinates.length > 50) {
       return {
         success: false,
-        error: "validation",
-        message: "座標情報は最大50件までです。",
+        error: 'validation',
+        message: '座標情報は最大50件までです。',
       };
     }
 
@@ -213,8 +213,8 @@ export async function getLocationsFromCoordinates(
     if (locationInfos.length === 0) {
       return {
         success: false,
-        error: "server",
-        message: "位置情報を取得できませんでした。",
+        error: 'server',
+        message: '位置情報を取得できませんでした。',
       };
     }
 
@@ -223,11 +223,11 @@ export async function getLocationsFromCoordinates(
       data: locationInfos,
     };
   } catch (error: any) {
-    console.error("Failed to get locations from coordinates:", error);
+    console.error('Failed to get locations from coordinates:', error);
     return {
       success: false,
-      error: "server",
-      message: error.message || "複数の位置情報取得中にエラーが発生しました。",
+      error: 'server',
+      message: error.message || '複数の位置情報取得中にエラーが発生しました。',
     };
   }
 }

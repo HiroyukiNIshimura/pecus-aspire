@@ -1,4 +1,4 @@
-import { type DependencyList, useEffect, useRef } from "react";
+import { type DependencyList, useEffect, useRef } from 'react';
 
 /**
  * useEffect の初回マウント時実行スキップ版

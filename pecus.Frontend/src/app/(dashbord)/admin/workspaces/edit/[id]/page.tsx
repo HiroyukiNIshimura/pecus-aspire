@@ -1,11 +1,11 @@
-import { notFound, redirect } from "next/navigation";
-import { getWorkspaceDetail } from "@/actions/admin/workspace";
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { MasterGenreResponse, UserResponse } from "@/connectors/api/pecus";
-import { mapUserResponseToUserInfo } from "@/utils/userMapper";
-import EditWorkspaceClient from "./EditWorkspaceClient";
+import { notFound, redirect } from 'next/navigation';
+import { getWorkspaceDetail } from '@/actions/admin/workspace';
+import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { MasterGenreResponse, UserResponse } from '@/connectors/api/pecus';
+import { mapUserResponseToUserInfo } from '@/utils/userMapper';
+import EditWorkspaceClient from './EditWorkspaceClient';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function EditWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,15 +42,15 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
   } catch (error: any) {
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
-      redirect("/signin");
+      redirect('/signin');
     }
 
-    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || 'データの取得中にエラーが発生しました。';
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // UserResponse から UserInfo に変換

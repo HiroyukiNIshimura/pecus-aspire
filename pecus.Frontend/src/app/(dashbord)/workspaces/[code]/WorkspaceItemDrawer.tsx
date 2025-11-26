@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { updateWorkspaceItemAssignee } from "@/actions/workspaceItem";
-import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
-import { getDisplayIconUrl } from "@/utils/imageUrl";
+import { useState } from 'react';
+import { updateWorkspaceItemAssignee } from '@/actions/workspaceItem';
+import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface WorkspaceItemDrawerProps {
   item: WorkspaceItemDetailResponse;
@@ -42,11 +42,11 @@ export default function WorkspaceItemDrawer({
       if (result.success) {
         onAssigneeUpdate?.(result.data);
       } else {
-        setError(result.message || "担当者の更新に失敗しました。");
+        setError(result.message || '担当者の更新に失敗しました。');
         setSelectedAssigneeId(item.assigneeId || null);
       }
     } catch (err: any) {
-      setError(err.message || "担当者の更新に失敗しました。");
+      setError(err.message || '担当者の更新に失敗しました。');
       setSelectedAssigneeId(item.assigneeId || null);
     } finally {
       setIsUpdating(false);
@@ -79,7 +79,7 @@ export default function WorkspaceItemDrawer({
         className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
         onClick={onClose}
         style={{
-          animation: isClosing ? "fadeOut 0.25s ease-out" : "fadeIn 0.2s ease-out",
+          animation: isClosing ? 'fadeOut 0.25s ease-out' : 'fadeIn 0.2s ease-out',
         }}
       />
 
@@ -90,7 +90,7 @@ export default function WorkspaceItemDrawer({
         role="dialog"
         tabIndex={-1}
         style={{
-          animation: isClosing ? "slideOutRight 0.25s ease-in" : "slideInRight 0.3s ease-out",
+          animation: isClosing ? 'slideOutRight 0.25s ease-in' : 'slideInRight 0.3s ease-out',
         }}
       >
         {/* ヘッダー */}
@@ -116,7 +116,7 @@ export default function WorkspaceItemDrawer({
               <span className="label-text font-semibold">担当者</span>
             </div>
             <select
-              value={selectedAssigneeId || ""}
+              value={selectedAssigneeId || ''}
               onChange={(e) => handleAssigneeChange(e.target.value ? parseInt(e.target.value, 10) : null)}
               disabled={isUpdating}
               className="select select-bordered"
@@ -135,7 +135,7 @@ export default function WorkspaceItemDrawer({
                 {item.assigneeAvatarUrl ? (
                   <img
                     src={getDisplayIconUrl(item.assigneeAvatarUrl)}
-                    alt={item.assigneeUsername || "ユーザー"}
+                    alt={item.assigneeUsername || 'ユーザー'}
                     className="w-6 h-6 rounded-full object-cover"
                   />
                 ) : (
@@ -152,7 +152,7 @@ export default function WorkspaceItemDrawer({
               <div className="label">
                 <span className="label-text font-semibold">期限</span>
               </div>
-              <p className="text-sm">{new Date(item.dueDate).toLocaleDateString("ja-JP")}</p>
+              <p className="text-sm">{new Date(item.dueDate).toLocaleDateString('ja-JP')}</p>
             </div>
           )}
 

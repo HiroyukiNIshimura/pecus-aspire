@@ -6,11 +6,11 @@
  *
  */
 
-import { type Provider, TOGGLE_CONNECT_COMMAND } from "@lexical/yjs";
-import type { LexicalEditor } from "lexical";
-import { COMMAND_PRIORITY_LOW } from "lexical";
-import { useEffect, useState } from "react";
-import { type Transaction, Array as YArray, YArrayEvent, type YEvent, Map as YMap } from "yjs";
+import { type Provider, TOGGLE_CONNECT_COMMAND } from '@lexical/yjs';
+import type { LexicalEditor } from 'lexical';
+import { COMMAND_PRIORITY_LOW } from 'lexical';
+import { useEffect, useState } from 'react';
+import { type Transaction, Array as YArray, YArrayEvent, type YEvent, Map as YMap } from 'yjs';
 
 export type Comment = {
   author: string;
@@ -18,14 +18,14 @@ export type Comment = {
   deleted: boolean;
   id: string;
   timeStamp: number;
-  type: "comment";
+  type: 'comment';
 };
 
 export type Thread = {
   comments: Array<Comment>;
   id: string;
   quote: string;
-  type: "thread";
+  type: 'thread';
 };
 
 export type Comments = Array<Thread | Comment>;
@@ -33,7 +33,7 @@ export type Comments = Array<Thread | Comment>;
 function createUID(): string {
   return Math.random()
     .toString(36)
-    .replace(/[^a-z]+/g, "")
+    .replace(/[^a-z]+/g, '')
     .substring(0, 5);
 }
 
@@ -50,7 +50,7 @@ export function createComment(
     deleted: deleted === undefined ? false : deleted,
     id: id === undefined ? createUID() : id,
     timeStamp: timeStamp === undefined ? performance.timeOrigin + performance.now() : timeStamp,
-    type: "comment",
+    type: 'comment',
   };
 }
 
@@ -59,7 +59,7 @@ export function createThread(quote: string, comments: Array<Comment>, id?: strin
     comments,
     id: id === undefined ? createUID() : id,
     quote,
-    type: "thread",
+    type: 'thread',
   };
 }
 
@@ -68,18 +68,18 @@ function cloneThread(thread: Thread): Thread {
     comments: Array.from(thread.comments),
     id: thread.id,
     quote: thread.quote,
-    type: "thread",
+    type: 'thread',
   };
 }
 
 function markDeleted(comment: Comment): Comment {
   return {
     author: comment.author,
-    content: "[Deleted Comment]",
+    content: '[Deleted Comment]',
     deleted: true,
     id: comment.id,
     timeStamp: comment.timeStamp,
-    type: "comment",
+    type: 'comment',
   };
 }
 
@@ -117,15 +117,15 @@ export class CommentStore {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sharedCommentsArray: YArray<any> | null = this._getCollabComments();
 
-    if (thread !== undefined && commentOrThread.type === "comment") {
+    if (thread !== undefined && commentOrThread.type === 'comment') {
       for (let i = 0; i < nextComments.length; i++) {
         const comment = nextComments[i];
-        if (comment.type === "thread" && comment.id === thread.id) {
+        if (comment.type === 'thread' && comment.id === thread.id) {
           const newThread = cloneThread(comment);
           nextComments.splice(i, 1, newThread);
           const insertOffset = offset !== undefined ? offset : newThread.comments.length;
           if (this.isCollaborative() && sharedCommentsArray !== null) {
-            const parentSharedArray = sharedCommentsArray.get(i).get("comments");
+            const parentSharedArray = sharedCommentsArray.get(i).get('comments');
             this._withRemoteTransaction(() => {
               const sharedMap = this._createCollabSharedMap(commentOrThread);
               parentSharedArray.insert(insertOffset, [sharedMap]);
@@ -162,13 +162,13 @@ export class CommentStore {
     if (thread !== undefined) {
       for (let i = 0; i < nextComments.length; i++) {
         const nextComment = nextComments[i];
-        if (nextComment.type === "thread" && nextComment.id === thread.id) {
+        if (nextComment.type === 'thread' && nextComment.id === thread.id) {
           const newThread = cloneThread(nextComment);
           nextComments.splice(i, 1, newThread);
           const threadComments = newThread.comments;
           commentIndex = threadComments.indexOf(commentOrThread as Comment);
           if (this.isCollaborative() && sharedCommentsArray !== null) {
-            const parentSharedArray = sharedCommentsArray.get(i).get("comments");
+            const parentSharedArray = sharedCommentsArray.get(i).get('comments');
             this._withRemoteTransaction(() => {
               parentSharedArray.delete(commentIndex);
             });
@@ -189,7 +189,7 @@ export class CommentStore {
     this._comments = nextComments;
     triggerOnChange(this);
 
-    if (commentOrThread.type === "comment") {
+    if (commentOrThread.type === 'comment') {
       return {
         index: commentIndex as number,
         markedComment: markDeleted(commentOrThread),
@@ -233,7 +233,7 @@ export class CommentStore {
       // @ts-expect-error doc does exist
       const doc = provider.doc;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return doc.get("comments", YArray) as YArray<any>;
+      return doc.get('comments', YArray) as YArray<any>;
     }
     return null;
   }
@@ -243,21 +243,21 @@ export class CommentStore {
     const sharedMap = new YMap();
     const type = commentOrThread.type;
     const id = commentOrThread.id;
-    sharedMap.set("type", type);
-    sharedMap.set("id", id);
-    if (type === "comment") {
-      sharedMap.set("author", commentOrThread.author);
-      sharedMap.set("content", commentOrThread.content);
-      sharedMap.set("deleted", commentOrThread.deleted);
-      sharedMap.set("timeStamp", commentOrThread.timeStamp);
+    sharedMap.set('type', type);
+    sharedMap.set('id', id);
+    if (type === 'comment') {
+      sharedMap.set('author', commentOrThread.author);
+      sharedMap.set('content', commentOrThread.content);
+      sharedMap.set('deleted', commentOrThread.deleted);
+      sharedMap.set('timeStamp', commentOrThread.timeStamp);
     } else {
-      sharedMap.set("quote", commentOrThread.quote);
+      sharedMap.set('quote', commentOrThread.quote);
       const commentsArray = new YArray();
       commentOrThread.comments.forEach((comment, i) => {
         const sharedChildComment = this._createCollabSharedMap(comment);
         commentsArray.insert(i, [sharedChildComment]);
       });
-      sharedMap.set("comments", commentsArray);
+      sharedMap.set('comments', commentsArray);
     }
     return sharedMap;
   }
@@ -286,11 +286,11 @@ export class CommentStore {
 
           if (shouldConnect) {
             // eslint-disable-next-line no-console
-            console.log("Comments connected!");
+            console.log('Comments connected!');
             connect();
           } else {
             // eslint-disable-next-line no-console
-            console.log("Comments disconnected!");
+            console.log('Comments disconnected!');
             disconnect();
           }
         }
@@ -325,7 +325,7 @@ export class CommentStore {
                 target === sharedCommentsArray
                   ? undefined
                   : parent instanceof YMap &&
-                    (this._comments.find((t) => t.id === parent.get("id")) as Thread | undefined);
+                    (this._comments.find((t) => t.id === parent.get('id')) as Thread | undefined);
 
               if (Array.isArray(insert)) {
                 insert
@@ -333,41 +333,41 @@ export class CommentStore {
                   .reverse()
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .forEach((map: YMap<any>) => {
-                    const id = map.get("id");
-                    const type = map.get("type");
+                    const id = map.get('id');
+                    const type = map.get('type');
 
                     const commentOrThread =
-                      type === "thread"
+                      type === 'thread'
                         ? createThread(
-                            map.get("quote"),
+                            map.get('quote'),
                             map
-                              .get("comments")
+                              .get('comments')
                               .toArray()
                               .map((innerComment: Map<string, string | number | boolean>) =>
                                 createComment(
-                                  innerComment.get("content") as string,
-                                  innerComment.get("author") as string,
-                                  innerComment.get("id") as string,
-                                  innerComment.get("timeStamp") as number,
-                                  innerComment.get("deleted") as boolean,
+                                  innerComment.get('content') as string,
+                                  innerComment.get('author') as string,
+                                  innerComment.get('id') as string,
+                                  innerComment.get('timeStamp') as number,
+                                  innerComment.get('deleted') as boolean,
                                 ),
                               ),
                             id,
                           )
                         : createComment(
-                            map.get("content"),
-                            map.get("author"),
+                            map.get('content'),
+                            map.get('author'),
                             id,
-                            map.get("timeStamp"),
-                            map.get("deleted"),
+                            map.get('timeStamp'),
+                            map.get('deleted'),
                           );
                     this._withLocalTransaction(() => {
                       this.addComment(commentOrThread, parentThread as Thread, offset);
                     });
                   });
-              } else if (typeof retain === "number") {
+              } else if (typeof retain === 'number') {
                 offset += retain;
-              } else if (typeof del === "number") {
+              } else if (typeof del === 'number') {
                 for (let d = 0; d < del; d++) {
                   const commentOrThread =
                     parentThread === undefined || parentThread === false

@@ -6,7 +6,7 @@
  *
  */
 
-import { IS_CHROME } from "@lexical/utils";
+import { IS_CHROME } from '@lexical/utils';
 import {
   $createParagraphNode,
   $isElementNode,
@@ -17,10 +17,10 @@ import {
   type LexicalEditor,
   type LexicalNode,
   type RangeSelection,
-} from "lexical";
+} from 'lexical';
 
-import { $isCollapsibleContainerNode } from "./CollapsibleContainerNode";
-import { $isCollapsibleContentNode } from "./CollapsibleContentNode";
+import { $isCollapsibleContainerNode } from './CollapsibleContainerNode';
+import { $isCollapsibleContentNode } from './CollapsibleContentNode';
 
 export function $convertSummaryElement(_domNode: HTMLElement): DOMConversionOutput | null {
   const node = $createCollapsibleTitleNode();
@@ -33,7 +33,7 @@ export function $convertSummaryElement(_domNode: HTMLElement): DOMConversionOutp
 export class CollapsibleTitleNode extends ElementNode {
   /** @internal */
   $config() {
-    return this.config("collapsible-title", {
+    return this.config('collapsible-title', {
       $transform(node: CollapsibleTitleNode) {
         if (node.isEmpty()) {
           node.remove();
@@ -50,14 +50,14 @@ export class CollapsibleTitleNode extends ElementNode {
   }
 
   createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement {
-    const dom = document.createElement("summary");
-    dom.classList.add("Collapsible__title");
+    const dom = document.createElement('summary');
+    dom.classList.add('Collapsible__title');
     if (IS_CHROME) {
-      dom.addEventListener("click", () => {
+      dom.addEventListener('click', () => {
         editor.update(() => {
           const collapsibleContainer = this.getLatest().getParentOrThrow();
           if (!$isCollapsibleContainerNode(collapsibleContainer)) {
-            throw new Error("Expected parent node to be a CollapsibleContainerNode");
+            throw new Error('Expected parent node to be a CollapsibleContainerNode');
           }
           collapsibleContainer.toggleOpen();
         });
@@ -74,13 +74,13 @@ export class CollapsibleTitleNode extends ElementNode {
     const containerNode = this.getParentOrThrow();
 
     if (!$isCollapsibleContainerNode(containerNode)) {
-      throw new Error("CollapsibleTitleNode expects to be child of CollapsibleContainerNode");
+      throw new Error('CollapsibleTitleNode expects to be child of CollapsibleContainerNode');
     }
 
     if (containerNode.getOpen()) {
       const contentNode = this.getNextSibling();
       if (!$isCollapsibleContentNode(contentNode)) {
-        throw new Error("CollapsibleTitleNode expects to have CollapsibleContentNode sibling");
+        throw new Error('CollapsibleTitleNode expects to have CollapsibleContentNode sibling');
       }
 
       const firstChild = contentNode.getFirstChild();
