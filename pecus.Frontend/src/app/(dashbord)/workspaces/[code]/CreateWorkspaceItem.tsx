@@ -7,7 +7,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
 import type { EditorContextSettings } from '@/components/editor/appSettings';
-import NotionLikeEditor from '@/components/editor/NotionLikeEditor';
+import { PecusNotionLikeEditor } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -231,14 +231,13 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   <span className="label-text-alt text-xs">{formData.subject.length}/200 文字</span>
                 </div>
               </div>
-
               {/* 本文（WYSIWYGエディタ） */}
               <div className="form-control">
                 <div className="label">
                   <span className="label-text font-semibold">本文</span>
                 </div>
                 <div>
-                  <NotionLikeEditor
+                  <PecusNotionLikeEditor
                     onChange={handleEditorChange}
                     debounceMs={500}
                     autoFocus={false}
@@ -247,8 +246,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     onTempFileUploaded={editorSettings.onTempFileUploaded}
                   />
                 </div>
-              </div>
-
+              </div>{' '}
               {/* 期限日 */}
               <div className="form-control">
                 <label htmlFor="dueDate" className="label">
@@ -270,7 +268,6 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   </div>
                 )}
               </div>
-
               {/* 優先度 */}
               <div className="form-control">
                 <label htmlFor="priority" className="label">
@@ -295,7 +292,6 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   </div>
                 )}
               </div>
-
               {/* タグ */}
               <div className="form-control">
                 <label htmlFor="tags" className="label">
@@ -309,7 +305,6 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   disabled={isSubmitting}
                 />
               </div>
-
               {/* 下書きフラグ */}
               <div className="form-control">
                 <label className="label cursor-pointer justify-start gap-2">
@@ -324,7 +319,6 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   <span className="label-text">下書きとして保存</span>
                 </label>
               </div>
-
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
                 <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>

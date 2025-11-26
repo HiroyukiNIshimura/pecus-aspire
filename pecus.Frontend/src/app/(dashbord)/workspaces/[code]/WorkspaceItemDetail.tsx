@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useEffect, useState } from 'react';
 import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
-import NotionLikeViewer from '@/components/editor/NotionLikeViewer';
+import { PecusNotionLikeViewer } from '@/components/editor';
 import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
@@ -136,7 +136,7 @@ export default function WorkspaceItemDetail({
         {item.body && (
           <div className="mb-4">
             <h3 className="text-lg font-bold mb-2">本文</h3>
-            <NotionLikeViewer initialViewerState={item.body} />
+            <PecusNotionLikeViewer initialViewerState={item.body} />
           </div>
         )}
 

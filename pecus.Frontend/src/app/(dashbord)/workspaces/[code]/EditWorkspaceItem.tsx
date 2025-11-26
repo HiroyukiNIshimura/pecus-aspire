@@ -5,7 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
-import NotionLikeEditor from '@/components/editor/NotionLikeEditor';
+import { PecusNotionLikeEditor } from '@/components/editor';
 import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
@@ -296,7 +296,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                   </div>
                   <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
-                    <NotionLikeEditor
+                    <PecusNotionLikeEditor
                       key={editorInitKey}
                       initialEditorState={initialEditorState}
                       onChange={handleEditorChange}
