@@ -28,9 +28,7 @@ export default function DraggableBlockPlugin({
   const [editor] = useLexicalComposerContext();
   const menuRef = useRef<HTMLDivElement>(null);
   const targetLineRef = useRef<HTMLDivElement>(null);
-  const [draggableElement, setDraggableElement] = useState<HTMLElement | null>(
-    null,
-  );
+  const [draggableElement, setDraggableElement] = useState<HTMLElement | null>(null);
 
   function insertBlock(e: React.MouseEvent) {
     if (!draggableElement || !editor) {
@@ -60,18 +58,11 @@ export default function DraggableBlockPlugin({
       targetLineRef={targetLineRef}
       menuComponent={
         <div ref={menuRef} className="icon draggable-block-menu">
-          <button
-            type="button"
-            title="Click to add below"
-            className="icon icon-plus"
-            onClick={insertBlock}
-          />
+          <button type="button" title="Click to add below" className="icon icon-plus" onClick={insertBlock} />
           <div className="icon" />
         </div>
       }
-      targetLineComponent={
-        <div ref={targetLineRef} className="draggable-block-target-line" />
-      }
+      targetLineComponent={<div ref={targetLineRef} className="draggable-block-target-line" />}
       isOnMenu={isOnMenu}
       onElementChanged={setDraggableElement}
     />

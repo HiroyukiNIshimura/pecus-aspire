@@ -6,10 +6,8 @@
  *
  */
 
-import type { JSX } from "react";
-
 import katex from "katex";
-import * as React from "react";
+import type { JSX } from "react";
 import { useEffect, useRef } from "react";
 
 export default function KatexRenderer({
@@ -49,12 +47,7 @@ export default function KatexRenderer({
         height="0"
         alt=""
       />
-      <span
-        role="button"
-        tabIndex={-1}
-        onDoubleClick={onDoubleClick}
-        ref={katexElementRef}
-      />
+      <span role="button" tabIndex={-1} onDoubleClick={onDoubleClick} ref={katexElementRef} />
       <img
         src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         width="0"

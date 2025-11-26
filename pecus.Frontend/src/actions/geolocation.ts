@@ -107,9 +107,7 @@ export async function getLocationFromCoordinates(
     });
 
     if (!response.ok) {
-      console.error(
-        `Nominatim API error: ${response.status} ${response.statusText}`,
-      );
+      console.error(`Nominatim API error: ${response.status} ${response.statusText}`);
       return {
         success: false,
         error: "server",
@@ -200,18 +198,14 @@ export async function getLocationsFromCoordinates(
       };
     }
 
-    const locationPromises = coordinates.map((coord) =>
-      getLocationFromCoordinates(coord.latitude, coord.longitude),
-    );
+    const locationPromises = coordinates.map((coord) => getLocationFromCoordinates(coord.latitude, coord.longitude));
 
     const results = await Promise.all(locationPromises);
 
     // 失敗したリクエストをフィルタリング
     const locationInfos = results
       .filter(
-        (
-          result,
-        ): result is ApiResponse<LocationInfo> & { data: LocationInfo } =>
+        (result): result is ApiResponse<LocationInfo> & { data: LocationInfo } =>
           result.success && result.data !== undefined,
       )
       .map((result) => result.data);

@@ -1,16 +1,16 @@
 "use client";
 
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 import { useEffect, useState } from "react";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { updateWorkspaceSchema } from "@/schemas/workspaceSchemas";
 import { getWorkspaceDetail, updateWorkspace } from "@/actions/workspace";
 import type {
   MasterGenreResponse,
-  WorkspaceListItemResponse,
   WorkspaceFullDetailResponse,
+  WorkspaceListItemResponse,
 } from "@/connectors/api/pecus";
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { updateWorkspaceSchema } from "@/schemas/workspaceSchemas";
 
 interface EditWorkspaceModalProps {
   isOpen: boolean;
@@ -20,57 +20,37 @@ interface EditWorkspaceModalProps {
   genres: MasterGenreResponse[];
 }
 
-export default function EditWorkspaceModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  workspace,
-  genres,
-}: EditWorkspaceModalProps) {
-  const [serverErrors, setServerErrors] = useState<string[]>([]);
+export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspace, genres }: EditWorkspaceModalProps) {
+  const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [workspaceDetail, setWorkspaceDetail] =
-    useState<WorkspaceFullDetailResponse | null>(null);
+  const [workspaceDetail, setWorkspaceDetail] = useState<WorkspaceFullDetailResponse | null>(null);
 
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-    resetForm,
-  } = useFormValidation({
-    schema: updateWorkspaceSchema,
-    onSubmit: async (data) => {
-      if (!workspaceDetail) return;
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
+    useFormValidation({
+      schema: updateWorkspaceSchema,
+      onSubmit: async (data) => {
+        if (!workspaceDetail) return;
 
-      const result = await updateWorkspace(workspaceDetail.id, {
-        name: data.name,
-        description: data.description || undefined,
-        genreId:
-          typeof data.genreId === "string"
-            ? parseInt(data.genreId, 10)
-            : data.genreId,
-        rowVersion: workspaceDetail.rowVersion,
-      });
+        const result = await updateWorkspace(workspaceDetail.id, {
+          name: data.name,
+          description: data.description || undefined,
+          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+          rowVersion: workspaceDetail.rowVersion,
+        });
 
-      if (!result.success) {
-        if (result.error === "conflict") {
-          setServerErrors([
-            result.message || "別のユーザーが同時に更新しました。",
-          ]);
-        } else {
-          setServerErrors([result.message || "エラーが発生しました。"]);
+        if (!result.success) {
+          if (result.error === "conflict") {
+            setServerErrors([{ key: 0, message: result.message || "別のユーザーが同時に更新しました。" }]);
+          } else {
+            setServerErrors([{ key: 1, message: result.message || "エラーが発生しました。" }]);
+          }
+          return;
         }
-        return;
-      }
 
-      onSuccess();
-      onClose();
-    },
-  });
+        onSuccess();
+        onClose();
+      },
+    });
 
   // モーダルを開いた際にワークスペース詳細を取得
   useEffect(() => {
@@ -88,9 +68,7 @@ export default function EditWorkspaceModal({
       if (result.success) {
         setWorkspaceDetail(result.data);
       } else {
-        setServerErrors([
-          result.message || "ワークスペース情報の取得に失敗しました。",
-        ]);
+        setServerErrors([{ key: 2, message: result.message || "ワークスペースの詳細情報の取得に失敗しました。" }]);
       }
 
       setIsLoading(false);
@@ -113,11 +91,7 @@ export default function EditWorkspaceModal({
   return (
     <>
       {/* モーダル背景オーバーレイ */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true" />
 
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -170,8 +144,8 @@ export default function EditWorkspaceModal({
                 <div>
                   <h3 className="font-bold">エラーが発生しました</h3>
                   <ul className="list-disc list-inside mt-2">
-                    {serverErrors.map((error, idx) => (
-                      <li key={idx}>{error}</li>
+                    {serverErrors.map((error) => (
+                      <li key={error.key}>{error.message}</li>
                     ))}
                   </ul>
                 </div>
@@ -180,12 +154,7 @@ export default function EditWorkspaceModal({
 
             {/* フォーム */}
             {!isLoading && workspaceDetail && (
-              <form
-                ref={formRef}
-                onSubmit={handleSubmit}
-                className="space-y-4"
-                noValidate
-              >
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
                 {/* ワークスペース名 */}
                 <div className="form-control">
                   <label htmlFor="name" className="label">
@@ -199,18 +168,14 @@ export default function EditWorkspaceModal({
                     type="text"
                     defaultValue={workspaceDetail.name}
                     placeholder="例：プロジェクトA"
-                    className={`input input-bordered ${
-                      shouldShowError("name") ? "input-error" : ""
-                    }`}
+                    className={`input input-bordered ${shouldShowError("name") ? "input-error" : ""}`}
                     onBlur={(e) => validateField("name", e.target.value)}
                     disabled={isSubmitting}
                   />
                   {shouldShowError("name") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("name")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                    </div>
                   )}
                 </div>
 
@@ -231,11 +196,9 @@ export default function EditWorkspaceModal({
                     disabled={isSubmitting}
                   />
                   {shouldShowError("description") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("description")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                    </div>
                   )}
                 </div>
 
@@ -250,9 +213,7 @@ export default function EditWorkspaceModal({
                     id="genreId"
                     name="genreId"
                     defaultValue={workspaceDetail.genreId ?? ""}
-                    className={`select select-bordered ${
-                      shouldShowError("genreId") ? "select-error" : ""
-                    }`}
+                    className={`select select-bordered ${shouldShowError("genreId") ? "select-error" : ""}`}
                     disabled={isSubmitting || genres.length === 0}
                   >
                     <option value="">選択してください</option>
@@ -264,29 +225,18 @@ export default function EditWorkspaceModal({
                     ))}
                   </select>
                   {shouldShowError("genreId") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("genreId")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("genreId")}</span>
+                    </div>
                   )}
                 </div>
 
                 {/* ボタングループ */}
                 <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={onClose}
-                    disabled={isSubmitting}
-                  >
+                  <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
                     キャンセル
                   </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                  >
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <span className="loading loading-spinner loading-sm"></span>

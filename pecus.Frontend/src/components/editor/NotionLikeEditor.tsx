@@ -8,12 +8,16 @@
 "use client";
 
 import "./Editor.css";
+import { $generateHtmlFromNodes } from "@lexical/html";
+import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import type { EditorState, LexicalEditor } from "lexical";
-import { defineExtension } from "lexical";
+import { $getRoot, defineExtension } from "lexical";
 import { useCallback, useMemo } from "react";
-
+import { useDebouncedCallback } from "use-debounce";
+import { INITIAL_SETTINGS } from "./appSettings";
 import { buildHTMLConfig } from "./buildHTMLConfig";
+import { FlashMessageContext } from "./context/FlashMessageContext";
 import { SettingsContext } from "./context/SettingsContext";
 import { SharedHistoryContext } from "./context/SharedHistoryContext";
 import { ToolbarContext } from "./context/ToolbarContext";
@@ -23,12 +27,6 @@ import OnChangePlugin from "./plugins/OnChangePlugin";
 import { TableContext } from "./plugins/TablePlugin";
 import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
-import { FlashMessageContext } from "./context/FlashMessageContext";
-import { INITIAL_SETTINGS } from "./appSettings";
-import { $getRoot } from "lexical";
-import { $generateHtmlFromNodes } from "@lexical/html";
-import { $convertToMarkdownString, TRANSFORMERS } from "@lexical/markdown";
-import { useDebouncedCallback } from "use-debounce";
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -171,42 +169,33 @@ export default function NotionLikeEditor({
     }
   }, debounceMs);
 
-  const debouncedOnChangePlainText = useDebouncedCallback(
-    (editorState: EditorState) => {
-      if (onChangePlainText) {
-        editorState.read(() => {
-          const root = $getRoot();
-          const plainText = root.getTextContent();
-          onChangePlainText(plainText);
-        });
-      }
-    },
-    debounceMs,
-  );
+  const debouncedOnChangePlainText = useDebouncedCallback((editorState: EditorState) => {
+    if (onChangePlainText) {
+      editorState.read(() => {
+        const root = $getRoot();
+        const plainText = root.getTextContent();
+        onChangePlainText(plainText);
+      });
+    }
+  }, debounceMs);
 
-  const debouncedOnChangeHtml = useDebouncedCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
-      if (onChangeHtml) {
-        editorState.read(() => {
-          const html = $generateHtmlFromNodes(editor);
-          onChangeHtml(html);
-        });
-      }
-    },
-    debounceMs,
-  );
+  const debouncedOnChangeHtml = useDebouncedCallback((editorState: EditorState, editor: LexicalEditor) => {
+    if (onChangeHtml) {
+      editorState.read(() => {
+        const html = $generateHtmlFromNodes(editor);
+        onChangeHtml(html);
+      });
+    }
+  }, debounceMs);
 
-  const debouncedOnChangeMarkdown = useDebouncedCallback(
-    (editorState: EditorState) => {
-      if (onChangeMarkdown) {
-        editorState.read(() => {
-          const markdown = $convertToMarkdownString(TRANSFORMERS);
-          onChangeMarkdown(markdown);
-        });
-      }
-    },
-    debounceMs,
-  );
+  const debouncedOnChangeMarkdown = useDebouncedCallback((editorState: EditorState) => {
+    if (onChangeMarkdown) {
+      editorState.read(() => {
+        const markdown = $convertToMarkdownString(TRANSFORMERS);
+        onChangeMarkdown(markdown);
+      });
+    }
+  }, debounceMs);
 
   const handleChange = useCallback(
     (editorState: EditorState, editor: LexicalEditor) => {
@@ -215,12 +204,7 @@ export default function NotionLikeEditor({
       debouncedOnChangeHtml(editorState, editor);
       debouncedOnChangeMarkdown(editorState);
     },
-    [
-      debouncedOnChange,
-      debouncedOnChangePlainText,
-      debouncedOnChangeHtml,
-      debouncedOnChangeMarkdown,
-    ],
+    [debouncedOnChange, debouncedOnChangePlainText, debouncedOnChangeHtml, debouncedOnChangeMarkdown],
   );
 
   return (
@@ -234,10 +218,7 @@ export default function NotionLikeEditor({
                   <div className="editor-shell">
                     <Editor />
                   </div>
-                  {(onChange ||
-                    onChangePlainText ||
-                    onChangeHtml ||
-                    onChangeMarkdown) && (
+                  {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
                     <OnChangePlugin onChange={handleChange} />
                   )}
                   {measureTypingPerf && <TypingPerfPlugin />}

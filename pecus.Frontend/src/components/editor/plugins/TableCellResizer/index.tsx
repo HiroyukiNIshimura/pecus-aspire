@@ -24,16 +24,11 @@ import {
   TableNode,
 } from "@lexical/table";
 import { calculateZoomLevel, mergeRegister } from "@lexical/utils";
+import { $getNearestNodeFromDOMNode, isHTMLElement, SKIP_SCROLL_INTO_VIEW_TAG } from "lexical";
 import {
-  $getNearestNodeFromDOMNode,
-  isHTMLElement,
-  SKIP_SCROLL_INTO_VIEW_TAG,
-} from "lexical";
-import * as React from "react";
-import {
-  CSSProperties,
-  PointerEventHandler,
-  ReactPortal,
+  type CSSProperties,
+  type PointerEventHandler,
+  type ReactPortal,
   useCallback,
   useEffect,
   useMemo,
@@ -59,12 +54,10 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
   const [hasTable, setHasTable] = useState(false);
 
   const pointerStartPosRef = useRef<PointerPosition | null>(null);
-  const [pointerCurrentPos, updatePointerCurrentPos] =
-    useState<PointerPosition | null>(null);
+  const [pointerCurrentPos, updatePointerCurrentPos] = useState<PointerPosition | null>(null);
 
   const [activeCell, updateActiveCell] = useState<TableDOMCell | null>(null);
-  const [draggingDirection, updateDraggingDirection] =
-    useState<PointerDraggingDirection | null>(null);
+  const [draggingDirection, updateDraggingDirection] = useState<PointerDraggingDirection | null>(null);
 
   const resetState = useCallback(() => {
     updateActiveCell(null);
@@ -121,7 +114,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
         });
         return;
       }
-      if (resizerRef.current && resizerRef.current.contains(target)) {
+      if (resizerRef.current?.contains(target)) {
         return;
       }
 
@@ -137,12 +130,8 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
                 throw new Error("TableCellResizer: Table cell node not found.");
               }
 
-              const tableNode =
-                $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-              const tableElement = getTableElement(
-                tableNode,
-                editor.getElementByKey(tableNode.getKey()),
-              );
+              const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+              const tableElement = getTableElement(tableNode, editor.getElementByKey(tableNode.getKey()));
 
               if (!tableElement) {
                 throw new Error("TableCellResizer: Table element not found.");
@@ -172,14 +161,12 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       capture: true,
     });
 
-    const removeRootListener = editor.registerRootListener(
-      (rootElement, prevRootElement) => {
-        prevRootElement?.removeEventListener("pointermove", onPointerMove);
-        prevRootElement?.removeEventListener("pointerdown", onPointerDown);
-        rootElement?.addEventListener("pointermove", onPointerMove);
-        rootElement?.addEventListener("pointerdown", onPointerDown);
-      },
-    );
+    const removeRootListener = editor.registerRootListener((rootElement, prevRootElement) => {
+      prevRootElement?.removeEventListener("pointermove", onPointerMove);
+      prevRootElement?.removeEventListener("pointerdown", onPointerDown);
+      rootElement?.addEventListener("pointermove", onPointerMove);
+      rootElement?.addEventListener("pointerdown", onPointerDown);
+    });
 
     return () => {
       removeRootListener();
@@ -192,6 +179,11 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       return true;
     }
     return false;
+  };
+
+  const getCellNodeHeight = (cell: TableCellNode, activeEditor: LexicalEditor): number | undefined => {
+    const domCellNode = activeEditor.getElementByKey(cell.getKey());
+    return domCellNode?.clientHeight;
   };
 
   const updateRowHeight = useCallback(
@@ -208,18 +200,14 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
           }
 
           const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-          const baseRowIndex =
-            $getTableRowIndexFromTableCellNode(tableCellNode);
+          const baseRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
           const tableRows = tableNode.getChildren();
 
           // Determine if this is a full row merge by checking colspan
-          const isFullRowMerge =
-            tableCellNode.getColSpan() === tableNode.getColumnCount();
+          const isFullRowMerge = tableCellNode.getColSpan() === tableNode.getColumnCount();
 
           // For full row merges, apply to first row. For partial merges, apply to last row
-          const tableRowIndex = isFullRowMerge
-            ? baseRowIndex
-            : baseRowIndex + tableCellNode.getRowSpan() - 1;
+          const tableRowIndex = isFullRowMerge ? baseRowIndex : baseRowIndex + tableCellNode.getRowSpan() - 1;
 
           if (tableRowIndex >= tableRows.length || tableRowIndex < 0) {
             throw new Error("Expected table cell to be inside of table row.");
@@ -234,11 +222,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
           let height = tableRow.getHeight();
           if (height === undefined) {
             const rowCells = tableRow.getChildren<TableCellNode>();
-            height = Math.min(
-              ...rowCells.map(
-                (cell) => getCellNodeHeight(cell, editor) ?? Infinity,
-              ),
-            );
+            height = Math.min(...rowCells.map((cell) => getCellNodeHeight(cell, editor) ?? Infinity));
           }
 
           const newHeight = Math.max(height + heightChange, MIN_ROW_HEIGHT);
@@ -247,21 +231,10 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
         { tag: SKIP_SCROLL_INTO_VIEW_TAG },
       );
     },
-    [activeCell, editor],
+    [activeCell, editor, getCellNodeHeight],
   );
 
-  const getCellNodeHeight = (
-    cell: TableCellNode,
-    activeEditor: LexicalEditor,
-  ): number | undefined => {
-    const domCellNode = activeEditor.getElementByKey(cell.getKey());
-    return domCellNode?.clientHeight;
-  };
-
-  const getCellColumnIndex = (
-    tableCellNode: TableCellNode,
-    tableMap: TableMapType,
-  ) => {
+  const getCellColumnIndex = (tableCellNode: TableCellNode, tableMap: TableMapType) => {
     for (let row = 0; row < tableMap.length; row++) {
       for (let column = 0; column < tableMap[row].length; column++) {
         if (tableMap[row][column].cell === tableCellNode) {
@@ -284,11 +257,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
           }
 
           const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-          const [tableMap] = $computeTableMapSkipCellCheck(
-            tableNode,
-            null,
-            null,
-          );
+          const [tableMap] = $computeTableMapSkipCellCheck(tableNode, null, null);
           const columnIndex = getCellColumnIndex(tableCellNode, tableMap);
           if (columnIndex === undefined) {
             throw new Error("TableCellResizer: Table column not found.");
@@ -310,7 +279,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
         { tag: SKIP_SCROLL_INTO_VIEW_TAG },
       );
     },
-    [activeCell, editor],
+    [activeCell, editor, getCellColumnIndex],
   );
 
   const pointerUpHandler = useCallback(
@@ -345,13 +314,11 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       };
       return handler;
     },
-    [activeCell, resetState, updateColumnWidth, updateRowHeight],
+    [activeCell, resetState, updateColumnWidth, updateRowHeight, isHeightChanging],
   );
 
   const toggleResize = useCallback(
-    (
-      direction: PointerDraggingDirection,
-    ): PointerEventHandler<HTMLDivElement> =>
+    (direction: PointerDraggingDirection): PointerEventHandler<HTMLDivElement> =>
       (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -374,8 +341,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
 
   const getResizers = useCallback(() => {
     if (activeCell) {
-      const { height, width, top, left } =
-        activeCell.elem.getBoundingClientRect();
+      const { height, width, top, left } = activeCell.elem.getBoundingClientRect();
       const zoom = calculateZoomLevel(activeCell.elem);
       const zoneWidth = 16; // Pixel width of the zone where you can drag the edge
       const styles: Record<string, CSSProperties> = {
@@ -401,19 +367,13 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
 
       if (draggingDirection && pointerCurrentPos && tableRect) {
         if (isHeightChanging(draggingDirection)) {
-          styles[draggingDirection].left = `${
-            window.scrollX + tableRect.left
-          }px`;
-          styles[draggingDirection].top = `${
-            window.scrollY + pointerCurrentPos.y / zoom
-          }px`;
+          styles[draggingDirection].left = `${window.scrollX + tableRect.left}px`;
+          styles[draggingDirection].top = `${window.scrollY + pointerCurrentPos.y / zoom}px`;
           styles[draggingDirection].height = "3px";
           styles[draggingDirection].width = `${tableRect.width}px`;
         } else {
           styles[draggingDirection].top = `${window.scrollY + tableRect.top}px`;
-          styles[draggingDirection].left = `${
-            window.scrollX + pointerCurrentPos.x / zoom
-          }px`;
+          styles[draggingDirection].left = `${window.scrollX + pointerCurrentPos.x / zoom}px`;
           styles[draggingDirection].width = "3px";
           styles[draggingDirection].height = `${tableRect.height}px`;
         }
@@ -431,7 +391,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
       right: null,
       top: null,
     };
-  }, [activeCell, draggingDirection, pointerCurrentPos]);
+  }, [activeCell, draggingDirection, pointerCurrentPos, isHeightChanging]);
 
   const resizerStyles = getResizers();
 
@@ -460,10 +420,7 @@ export default function TableCellResizerPlugin(): null | ReactPortal {
   const isEditable = useLexicalEditable();
 
   return useMemo(
-    () =>
-      isEditable
-        ? createPortal(<TableCellResizer editor={editor} />, document.body)
-        : null,
+    () => (isEditable ? createPortal(<TableCellResizer editor={editor} />, document.body) : null),
     [editor, isEditable],
   );
 }

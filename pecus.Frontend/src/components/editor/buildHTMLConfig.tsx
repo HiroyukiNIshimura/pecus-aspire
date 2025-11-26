@@ -7,9 +7,9 @@
  */
 import {
   $isTextNode,
-  DOMConversionMap,
-  DOMExportOutputMap,
-  HTMLConfig,
+  type DOMConversionMap,
+  type DOMExportOutputMap,
+  type HTMLConfig,
   isBlockDomNode,
   isHTMLElement,
   ParagraphNode,
@@ -53,12 +53,7 @@ function buildImportMap(): DOMConversionMap {
         ...importer,
         conversion: (element) => {
           const output = importer.conversion(element);
-          if (
-            output === null ||
-            output.forChild === undefined ||
-            output.after !== undefined ||
-            output.node !== null
-          ) {
+          if (output === null || output.forChild === undefined || output.after !== undefined || output.node !== null) {
             return output;
           }
           const extraStyles = getExtraStyles(element);
@@ -97,10 +92,7 @@ function buildExportMap(): DOMExportOutputMap {
               if (after) {
                 generatedElement = after(generatedElement);
               }
-              if (
-                isHTMLElement(generatedElement) &&
-                generatedElement.tagName === "P"
-              ) {
+              if (isHTMLElement(generatedElement) && generatedElement.tagName === "P") {
                 for (const childNode of generatedElement.childNodes) {
                   if (isBlockDomNode(childNode)) {
                     const div = document.createElement("div");

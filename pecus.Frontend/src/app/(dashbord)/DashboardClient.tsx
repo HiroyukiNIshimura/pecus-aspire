@@ -10,28 +10,17 @@ interface DashboardClientProps {
   fetchError?: string | null;
 }
 
-export default function DashboardClient({
-  initialUser,
-  fetchError,
-}: DashboardClientProps) {
+export default function DashboardClient({ initialUser }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader
-        userInfo={userInfo}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <AppHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <DashboardSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isAdmin={userInfo?.isAdmin ?? false}
-        />
+        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (

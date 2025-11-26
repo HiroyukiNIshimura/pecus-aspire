@@ -13,10 +13,7 @@ import "./index.css";
 import { $isCodeHighlightNode } from "@lexical/code";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $getSelectionStyleValueForProperty,
-  $patchStyleText,
-} from "@lexical/selection";
+import { $getSelectionStyleValueForProperty, $patchStyleText } from "@lexical/selection";
 import { mergeRegister } from "@lexical/utils";
 import {
   $getSelection,
@@ -26,11 +23,10 @@ import {
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND,
   getDOMSelection,
-  LexicalEditor,
+  type LexicalEditor,
   SELECTION_CHANGE_COMMAND,
 } from "lexical";
-import { Dispatch, useCallback, useEffect, useRef, useState } from "react";
-import * as React from "react";
+import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import DropdownColorPicker from "../../ui/DropdownColorPicker";
@@ -112,10 +108,7 @@ function TextFormatFloatingToolbar({
   );
 
   function mouseMoveListener(e: MouseEvent) {
-    if (
-      popupCharStylesEditorRef?.current &&
-      (e.buttons === 1 || e.buttons === 3)
-    ) {
+    if (popupCharStylesEditorRef?.current && (e.buttons === 1 || e.buttons === 3)) {
       if (popupCharStylesEditorRef.current.style.pointerEvents !== "none") {
         const x = e.clientX;
         const y = e.clientY;
@@ -128,7 +121,7 @@ function TextFormatFloatingToolbar({
       }
     }
   }
-  function mouseUpListener(e: MouseEvent) {
+  function mouseUpListener(_e: MouseEvent) {
     if (popupCharStylesEditorRef?.current) {
       if (popupCharStylesEditorRef.current.style.pointerEvents !== "auto") {
         popupCharStylesEditorRef.current.style.pointerEvents = "auto";
@@ -146,7 +139,7 @@ function TextFormatFloatingToolbar({
         document.removeEventListener("mouseup", mouseUpListener);
       };
     }
-  }, [popupCharStylesEditorRef]);
+  }, [mouseMoveListener, mouseUpListener]);
 
   const $updateTextFormatFloatingToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -168,12 +161,7 @@ function TextFormatFloatingToolbar({
     ) {
       const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
 
-      setFloatingElemPosition(
-        rangeRect,
-        popupCharStylesEditorElem,
-        anchorElem,
-        isLink,
-      );
+      setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem, isLink);
     }
   }, [editor, anchorElem, isLink]);
 
@@ -230,7 +218,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
             }}
-            className={"popup-item spaced " + (isBold ? "active" : "")}
+            className={`popup-item spaced ${isBold ? "active" : ""}`}
             title="Bold"
             aria-label="Format text as bold"
           >
@@ -241,7 +229,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
             }}
-            className={"popup-item spaced " + (isItalic ? "active" : "")}
+            className={`popup-item spaced ${isItalic ? "active" : ""}`}
             title="Italic"
             aria-label="Format text as italics"
           >
@@ -252,7 +240,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
             }}
-            className={"popup-item spaced " + (isUnderline ? "active" : "")}
+            className={`popup-item spaced ${isUnderline ? "active" : ""}`}
             title="Underline"
             aria-label="Format text to underlined"
           >
@@ -263,7 +251,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
             }}
-            className={"popup-item spaced " + (isStrikethrough ? "active" : "")}
+            className={`popup-item spaced ${isStrikethrough ? "active" : ""}`}
             title="Strikethrough"
             aria-label="Format text with a strikethrough"
           >
@@ -274,7 +262,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "subscript");
             }}
-            className={"popup-item spaced " + (isSubscript ? "active" : "")}
+            className={`popup-item spaced ${isSubscript ? "active" : ""}`}
             title="Subscript"
             aria-label="Format Subscript"
           >
@@ -285,7 +273,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "superscript");
             }}
-            className={"popup-item spaced " + (isSuperscript ? "active" : "")}
+            className={`popup-item spaced ${isSuperscript ? "active" : ""}`}
             title="Superscript"
             aria-label="Format Superscript"
           >
@@ -296,7 +284,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "uppercase");
             }}
-            className={"popup-item spaced " + (isUppercase ? "active" : "")}
+            className={`popup-item spaced ${isUppercase ? "active" : ""}`}
             title="Uppercase"
             aria-label="Format text to uppercase"
           >
@@ -307,7 +295,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "lowercase");
             }}
-            className={"popup-item spaced " + (isLowercase ? "active" : "")}
+            className={`popup-item spaced ${isLowercase ? "active" : ""}`}
             title="Lowercase"
             aria-label="Format text to lowercase"
           >
@@ -318,7 +306,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "capitalize");
             }}
-            className={"popup-item spaced " + (isCapitalize ? "active" : "")}
+            className={`popup-item spaced ${isCapitalize ? "active" : ""}`}
             title="Capitalize"
             aria-label="Format text to capitalize"
           >
@@ -329,7 +317,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
             }}
-            className={"popup-item spaced " + (isCode ? "active" : "")}
+            className={`popup-item spaced ${isCode ? "active" : ""}`}
             title="Insert code block"
             aria-label="Insert code block"
           >
@@ -338,7 +326,7 @@ function TextFormatFloatingToolbar({
           <button
             type="button"
             onClick={insertLink}
-            className={"popup-item spaced " + (isLink ? "active" : "")}
+            className={`popup-item spaced ${isLink ? "active" : ""}`}
             title="Insert link"
             aria-label="Insert link"
           >
@@ -400,9 +388,7 @@ function useFloatingTextFormatToolbar(
 
       if (
         nativeSelection !== null &&
-        (!$isRangeSelection(selection) ||
-          rootElement === null ||
-          !rootElement.contains(nativeSelection.anchorNode))
+        (!$isRangeSelection(selection) || rootElement === null || !rootElement.contains(nativeSelection.anchorNode))
       ) {
         setIsText(false);
         return;
@@ -435,21 +421,10 @@ function useFloatingTextFormatToolbar(
       }
 
       // Update colors
-      setFontColor(
-        $getSelectionStyleValueForProperty(selection, "color", "#000"),
-      );
-      setBgColor(
-        $getSelectionStyleValueForProperty(
-          selection,
-          "background-color",
-          "#fff",
-        ),
-      );
+      setFontColor($getSelectionStyleValueForProperty(selection, "color", "#000"));
+      setBgColor($getSelectionStyleValueForProperty(selection, "background-color", "#fff"));
 
-      if (
-        !$isCodeHighlightNode(selection.anchor.getNode()) &&
-        selection.getTextContent() !== ""
-      ) {
+      if (!$isCodeHighlightNode(selection.anchor.getNode()) && selection.getTextContent() !== "") {
         setIsText($isTextNode(node) || $isParagraphNode(node));
       } else {
         setIsText(false);

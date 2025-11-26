@@ -31,9 +31,7 @@ export default function BadGatewayPage() {
 
         {/* エラータイトル */}
         <div className="mb-6">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            ゲートウェイエラー
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">ゲートウェイエラー</h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-md mx-auto">
             申し訳ございません。サーバーが一時的に応答できません。しばらく時間を置いてからもう一度お試しください。
           </p>
@@ -42,18 +40,8 @@ export default function BadGatewayPage() {
         {/* アイコン */}
         <div className="mb-10 flex justify-center">
           <div className="relative w-24 h-24">
-            <svg
-              className="w-full h-full text-purple-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
+            <svg className="w-full h-full text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
         </div>

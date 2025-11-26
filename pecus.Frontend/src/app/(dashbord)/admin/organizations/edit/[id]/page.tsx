@@ -30,10 +30,7 @@ export default async function EditOrganizationPage() {
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -48,11 +45,5 @@ export default async function EditOrganizationPage() {
     notFound();
   }
 
-  return (
-    <EditOrganizationClient
-      initialUser={user}
-      organizationDetail={organizationDetail}
-      fetchError={fetchError}
-    />
-  );
+  return <EditOrganizationClient initialUser={user} organizationDetail={organizationDetail} fetchError={fetchError} />;
 }

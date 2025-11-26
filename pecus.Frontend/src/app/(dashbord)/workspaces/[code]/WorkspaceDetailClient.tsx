@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import PersonIcon from "@mui/icons-material/Person";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
-import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
-import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
-import WorkspaceItemDetail from "./WorkspaceItemDetail";
-import CreateWorkspaceItem from "./CreateWorkspaceItem";
+import type { WorkspaceFullDetailResponse, WorkspaceListItemResponse } from "@/connectors/api/pecus";
 import type { UserInfo } from "@/types/userInfo";
-import type {
-  WorkspaceFullDetailResponse,
-  WorkspaceListItemResponse,
-} from "@/connectors/api/pecus";
 import { getDisplayIconUrl } from "@/utils/imageUrl";
+import CreateWorkspaceItem from "./CreateWorkspaceItem";
+import WorkspaceItemDetail from "./WorkspaceItemDetail";
+import type { WorkspaceItemsSidebarHandle } from "./WorkspaceItemsSidebar";
+import WorkspaceItemsSidebar from "./WorkspaceItemsSidebar";
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
@@ -30,7 +27,7 @@ export default function WorkspaceDetailClient({
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, _setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
@@ -47,7 +44,7 @@ export default function WorkspaceDetailClient({
     return 256;
   });
 
-  const handleBack = () => {
+  const _handleBack = () => {
     router.back();
   };
 
@@ -135,11 +132,7 @@ export default function WorkspaceDetailClient({
 
   return (
     <div className="flex h-screen overflow-hidden flex-col">
-      <AppHeader
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        userInfo={userInfo}
-      />
+      <AppHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} userInfo={userInfo} />
 
       {/* スマホ: ヘッダーのみ表示 */}
       <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">
@@ -196,34 +189,22 @@ export default function WorkspaceDetailClient({
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 py-4 border-y border-base-300 text-sm">
                   {/* ステータス */}
                   <div>
-                    <span className="text-xs text-base-content/70">
-                      ステータス
-                    </span>
-                    <p className="font-semibold">
-                      {workspaceDetail.isActive ? "アクティブ" : "非アクティブ"}
-                    </p>
+                    <span className="text-xs text-base-content/70">ステータス</span>
+                    <p className="font-semibold">{workspaceDetail.isActive ? "アクティブ" : "非アクティブ"}</p>
                   </div>
 
                   {/* 作成日時 */}
                   {workspaceDetail.createdAt && (
                     <div>
-                      <span className="text-xs text-base-content/70">
-                        作成日時
-                      </span>
-                      <p className="font-semibold">
-                        {new Date(workspaceDetail.createdAt).toLocaleString(
-                          "ja-JP",
-                        )}
-                      </p>
+                      <span className="text-xs text-base-content/70">作成日時</span>
+                      <p className="font-semibold">{new Date(workspaceDetail.createdAt).toLocaleString("ja-JP")}</p>
                     </div>
                   )}
 
                   {/* 作成者 */}
                   {workspaceDetail.createdBy?.userName && (
                     <div>
-                      <span className="text-xs text-base-content/70">
-                        作成者
-                      </span>
+                      <span className="text-xs text-base-content/70">作成者</span>
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.createdBy.identityIconUrl && (
                           <img
@@ -232,18 +213,14 @@ export default function WorkspaceDetailClient({
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
                         )}
-                        <p className="font-semibold truncate">
-                          {workspaceDetail.createdBy.userName}
-                        </p>
+                        <p className="font-semibold truncate">{workspaceDetail.createdBy.userName}</p>
                       </div>
                     </div>
                   )}
 
                   {/* メンバー数 */}
                   <div>
-                    <span className="text-xs text-base-content/70">
-                      メンバー数
-                    </span>
+                    <span className="text-xs text-base-content/70">メンバー数</span>
                     <p className="font-semibold flex items-center gap-2">
                       <PersonIcon className="w-4 h-4" />
                       {workspaceDetail.members?.length || 0}
@@ -253,15 +230,9 @@ export default function WorkspaceDetailClient({
                   {/* ジャンル */}
                   {workspaceDetail.genreName && (
                     <div>
-                      <span className="text-xs text-base-content/70">
-                        ジャンル
-                      </span>
+                      <span className="text-xs text-base-content/70">ジャンル</span>
                       <p className="font-semibold flex items-center gap-2">
-                        {workspaceDetail.genreIcon && (
-                          <span className="text-xl">
-                            {workspaceDetail.genreIcon}
-                          </span>
-                        )}
+                        {workspaceDetail.genreIcon && <span className="text-xl">{workspaceDetail.genreIcon}</span>}
                         {workspaceDetail.genreName}
                       </p>
                     </div>
@@ -270,23 +241,15 @@ export default function WorkspaceDetailClient({
                   {/* 更新日時 */}
                   {workspaceDetail.updatedAt && (
                     <div>
-                      <span className="text-xs text-base-content/70">
-                        更新日時
-                      </span>
-                      <p className="font-semibold">
-                        {new Date(workspaceDetail.updatedAt).toLocaleString(
-                          "ja-JP",
-                        )}
-                      </p>
+                      <span className="text-xs text-base-content/70">更新日時</span>
+                      <p className="font-semibold">{new Date(workspaceDetail.updatedAt).toLocaleString("ja-JP")}</p>
                     </div>
                   )}
 
                   {/* 更新者 */}
                   {workspaceDetail.updatedBy?.userName && (
                     <div>
-                      <span className="text-xs text-base-content/70">
-                        更新者
-                      </span>
+                      <span className="text-xs text-base-content/70">更新者</span>
                       <div className="flex items-center gap-2 mt-1">
                         {workspaceDetail.updatedBy.identityIconUrl && (
                           <img
@@ -295,47 +258,35 @@ export default function WorkspaceDetailClient({
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
                         )}
-                        <p className="font-semibold truncate">
-                          {workspaceDetail.updatedBy.userName}
-                        </p>
+                        <p className="font-semibold truncate">{workspaceDetail.updatedBy.userName}</p>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* メンバー一覧 */}
-                {workspaceDetail.members &&
-                  workspaceDetail.members.length > 0 && (
-                    <div className="mt-4">
-                      <h3 className="text-lg font-bold mb-3">メンバー一覧</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {workspaceDetail.members.map((member) => (
-                          <div
-                            key={member.id}
-                            className="flex items-center gap-2 p-2 bg-base-200 rounded"
-                          >
-                            {member.identityIconUrl && (
-                              <img
-                                src={getDisplayIconUrl(member.identityIconUrl)}
-                                alt={member.userName || "ユーザー"}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold truncate">
-                                {member.userName}
-                              </p>
-                              {!member.isActive && (
-                                <p className="text-xs text-base-content/50">
-                                  (非アクティブ)
-                                </p>
-                              )}
-                            </div>
+                {workspaceDetail.members && workspaceDetail.members.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-lg font-bold mb-3">メンバー一覧</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {workspaceDetail.members.map((member) => (
+                        <div key={member.id} className="flex items-center gap-2 p-2 bg-base-200 rounded">
+                          {member.identityIconUrl && (
+                            <img
+                              src={getDisplayIconUrl(member.identityIconUrl)}
+                              alt={member.userName || "ユーザー"}
+                              className="w-6 h-6 rounded-full object-cover"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold truncate">{member.userName}</p>
+                            {!member.isActive && <p className="text-xs text-base-content/50">(非アクティブ)</p>}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -360,10 +311,7 @@ export default function WorkspaceDetailClient({
         />
 
         {/* アイテム一覧 (スマホ) */}
-        <div
-          className="lg:hidden flex-shrink-0 border-t border-base-300"
-          style={{ height: "384px" }}
-        >
+        <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: "384px" }}>
           <WorkspaceItemsSidebar
             workspaceId={workspaceDetail.id}
             currentWorkspaceCode={workspaceCode}

@@ -10,7 +10,6 @@ import { usePathname } from "next/navigation";
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
   isAdmin: boolean;
 }
 
@@ -28,11 +27,7 @@ const adminItem = {
   icon: AdminPanelSettingsIcon,
 };
 
-export default function DashboardSidebar({
-  sidebarOpen,
-  setSidebarOpen,
-  isAdmin,
-}: DashboardSidebarProps) {
+export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSidebarProps) {
   const pathname = usePathname();
   const allMenuItems = isAdmin ? [...menuItems, adminItem] : menuItems;
 
@@ -54,11 +49,7 @@ export default function DashboardSidebar({
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span
-                  className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}
-                >
-                  {item.label}
-                </span>
+                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>
           );

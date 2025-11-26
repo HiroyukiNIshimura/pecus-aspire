@@ -1,17 +1,14 @@
 "use client";
 
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import type {
-  TagListItemResponse,
-  TagStatistics,
-} from "@/connectors/api/pecus";
+import type { TagListItemResponse, TagStatistics } from "@/connectors/api/pecus";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { tagNameFilterSchema } from "@/schemas/filterSchemas";
@@ -41,9 +38,7 @@ export default function AdminTagsClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<TagStatistics | null>(
-    initialStatistics || null,
-  );
+  const [statistics, setStatistics] = useState<TagStatistics | null>(initialStatistics || null);
 
   // フィルター状態
   const [filterName, setFilterName] = useState<string>("");
@@ -56,35 +51,33 @@ export default function AdminTagsClient({
   const { showLoading, withDelayedLoading } = useDelayedLoading();
 
   // ページ変更処理
-  const handlePageChange = withDelayedLoading(
-    async ({ selected }: { selected: number }) => {
-      try {
-        const page = selected + 1; // react-paginateは0-based
-        const params = new URLSearchParams();
-        params.append("page", page.toString());
-        if (filterIsActive !== null) {
-          params.append("IsActive", filterIsActive.toString());
-        }
-        if (filterUnusedOnly) {
-          params.append("UnusedOnly", "true");
-        }
-        if (filterName) {
-          params.append("Name", filterName);
-        }
-        const response = await fetch(`/api/admin/tags?${params.toString()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTags(data.data || []);
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
-          setStatistics(data.summary || null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch tags:", error);
+  const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
+    try {
+      const page = selected + 1; // react-paginateは0-based
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      if (filterIsActive !== null) {
+        params.append("IsActive", filterIsActive.toString());
       }
-    },
-  );
+      if (filterUnusedOnly) {
+        params.append("UnusedOnly", "true");
+      }
+      if (filterName) {
+        params.append("Name", filterName);
+      }
+      const response = await fetch(`/api/admin/tags?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTags(data.data || []);
+        setCurrentPage(data.currentPage || 1);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || 0);
+        setStatistics(data.summary || null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch tags:", error);
+    }
+  });
 
   // フィルター変更処理
   const handleFilterChange = useCallback(async () => {
@@ -150,19 +143,11 @@ export default function AdminTagsClient({
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader
-        userInfo={userInfo}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        loading={false}
-      />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -197,7 +182,9 @@ export default function AdminTagsClient({
 
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">タグ管理</h1>
-              <button className="btn btn-primary">新規作成</button>
+              <button type="button" className="btn btn-primary">
+                新規作成
+              </button>
             </div>
 
             {/* Filter Section */}
@@ -222,21 +209,9 @@ export default function AdminTagsClient({
                     viewBox="0 0 24 24"
                   >
                     {filterOpen ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 12H4"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     ) : (
-                      <>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     )}
                   </svg>
                 </div>
@@ -263,19 +238,17 @@ export default function AdminTagsClient({
                           }}
                         />
                         {nameValidation.error && (
-                          <label className="label">
-                            <span className="label-text-alt text-error">
-                              {nameValidation.error}
-                            </span>
-                          </label>
+                          <div className="label">
+                            <span className="label-text-alt text-error">{nameValidation.error}</span>
+                          </div>
                         )}
                       </div>
 
                       {/* アクティブ状態フィルター */}
                       <div className="form-control">
-                        <label className="label">
+                        <div className="label">
                           <span className="label-text">ステータス</span>
-                        </label>
+                        </div>
                         <div className="flex gap-4 items-center h-12">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -312,9 +285,9 @@ export default function AdminTagsClient({
 
                       {/* 未使用フィルター */}
                       <div className="form-control">
-                        <label className="label">
+                        <div className="label">
                           <span className="label-text">使用状況</span>
-                        </label>
+                        </div>
                         <div className="flex items-center h-12">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -322,9 +295,7 @@ export default function AdminTagsClient({
                               type="checkbox"
                               className="checkbox"
                               checked={filterUnusedOnly}
-                              onChange={(e) =>
-                                setFilterUnusedOnly(e.target.checked)
-                              }
+                              onChange={(e) => setFilterUnusedOnly(e.target.checked)}
                             />
                             <span className="text-sm">未使用のみ</span>
                           </label>
@@ -360,9 +331,7 @@ export default function AdminTagsClient({
                               params.append("page", "1");
                               params.append("IsActive", "true"); // デフォルト: アクティブのみ
 
-                              const response = await fetch(
-                                `/api/admin/tags?${params.toString()}`,
-                              );
+                              const response = await fetch(`/api/admin/tags?${params.toString()}`);
                               if (response.ok) {
                                 const data = await response.json();
                                 setTags(data.data || []);
@@ -371,9 +340,7 @@ export default function AdminTagsClient({
                                 setTotalCount(data.totalCount || 0);
                                 setStatistics(data.summary || null);
                               } else {
-                                const errorData = await response
-                                  .json()
-                                  .catch(() => ({}));
+                                const errorData = await response.json().catch(() => ({}));
                                 console.error("Reset API error:", {
                                   status: response.status,
                                   error: errorData?.error,
@@ -381,10 +348,7 @@ export default function AdminTagsClient({
                                 });
                               }
                             } catch (error) {
-                              console.error(
-                                "Failed to fetch tags after reset:",
-                                error,
-                              );
+                              console.error("Failed to fetch tags after reset:", error);
                             }
                           })();
                         }}
@@ -421,14 +385,10 @@ export default function AdminTagsClient({
                         <tr key={tag.id}>
                           <td className="font-semibold">{tag.name}</td>
                           <td>
-                            <span className="badge badge-info">
-                              {tag.itemCount ?? 0}個
-                            </span>
+                            <span className="badge badge-info">{tag.itemCount ?? 0}個</span>
                           </td>
                           <td>
-                            <div
-                              className={`badge ${tag.isActive ? "badge-success" : "badge-neutral"}`}
-                            >
+                            <div className={`badge ${tag.isActive ? "badge-success" : "badge-neutral"}`}>
                               {tag.isActive ? "アクティブ" : "非アクティブ"}
                             </div>
                           </td>
@@ -438,16 +398,11 @@ export default function AdminTagsClient({
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline"
-                                onClick={() =>
-                                  router.push(`/admin/tags/edit/${tag.id}`)
-                                }
+                                onClick={() => router.push(`/admin/tags/edit/${tag.id}`)}
                               >
                                 編集
                               </button>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline btn-error"
-                              >
+                              <button type="button" className="btn btn-sm btn-outline btn-error">
                                 削除
                               </button>
                             </div>
@@ -459,11 +414,7 @@ export default function AdminTagsClient({
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
               </div>
             </div>
 
@@ -477,12 +428,8 @@ export default function AdminTagsClient({
                       <h3 className="card-title text-base">総タグ数</h3>
                       <span className="badge badge-primary badge-sm">全体</span>
                     </div>
-                    <div className="text-3xl font-bold text-primary mb-1">
-                      {statistics.totalTags ?? 0}
-                    </div>
-                    <div className="text-xs text-base-content opacity-70">
-                      登録済みタグ
-                    </div>
+                    <div className="text-3xl font-bold text-primary mb-1">{statistics.totalTags ?? 0}</div>
+                    <div className="text-xs text-base-content opacity-70">登録済みタグ</div>
                   </div>
                 </div>
 
@@ -494,12 +441,8 @@ export default function AdminTagsClient({
                       <span className="badge badge-success badge-sm">有効</span>
                     </div>
                     <div className="flex items-baseline gap-2 mb-1">
-                      <div className="text-3xl font-bold text-success">
-                        {statistics.activeTags ?? 0}
-                      </div>
-                      <span className="text-xs text-base-content opacity-70">
-                        / {statistics.totalTags ?? 0}
-                      </span>
+                      <div className="text-3xl font-bold text-success">{statistics.activeTags ?? 0}</div>
+                      <span className="text-xs text-base-content opacity-70">/ {statistics.totalTags ?? 0}</span>
                     </div>
                     <div className="text-xs text-base-content opacity-70">
                       {(statistics.totalTags ?? 0) > 0
@@ -517,12 +460,8 @@ export default function AdminTagsClient({
                       <span className="badge badge-warning badge-sm">無効</span>
                     </div>
                     <div className="flex items-baseline gap-2 mb-1">
-                      <div className="text-3xl font-bold text-warning">
-                        {statistics.inactiveTags ?? 0}
-                      </div>
-                      <span className="text-xs text-base-content opacity-70">
-                        / {statistics.totalTags ?? 0}
-                      </span>
+                      <div className="text-3xl font-bold text-warning">{statistics.inactiveTags ?? 0}</div>
+                      <span className="text-xs text-base-content opacity-70">/ {statistics.totalTags ?? 0}</span>
                     </div>
                     <div className="text-xs text-base-content opacity-70">
                       {(statistics.totalTags ?? 0) > 0
@@ -539,12 +478,8 @@ export default function AdminTagsClient({
                       <h3 className="card-title text-base">未使用タグ</h3>
                       <span className="badge badge-error badge-sm">0個</span>
                     </div>
-                    <div className="text-3xl font-bold text-error mb-1">
-                      {statistics.unusedTags?.length ?? 0}
-                    </div>
-                    <div className="text-xs text-base-content opacity-70">
-                      利用されていないタグ
-                    </div>
+                    <div className="text-3xl font-bold text-error mb-1">{statistics.unusedTags?.length ?? 0}</div>
+                    <div className="text-xs text-base-content opacity-70">利用されていないタグ</div>
                   </div>
                 </div>
 
@@ -555,31 +490,19 @@ export default function AdminTagsClient({
                       <h3 className="card-title text-base">人気タグ TOP5</h3>
                       <span className="badge badge-info badge-sm">利用数</span>
                     </div>
-                    {statistics.topUsedTags &&
-                    statistics.topUsedTags.length > 0 ? (
+                    {statistics.topUsedTags && statistics.topUsedTags.length > 0 ? (
                       <div className="space-y-2">
-                        {statistics.topUsedTags
-                          .slice(0, 5)
-                          .map((tag, index) => (
-                            <div
-                              key={tag.id ?? index}
-                              className="flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="badge badge-neutral badge-sm">
-                                  {index + 1}
-                                </span>
-                                <span className="text-sm font-medium">
-                                  {tag.name}
-                                </span>
-                              </div>
+                        {statistics.topUsedTags.slice(0, 5).map((tag, index) => (
+                          <div key={tag.id ?? index} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="badge badge-neutral badge-sm">{index + 1}</span>
+                              <span className="text-sm font-medium">{tag.name}</span>
                             </div>
-                          ))}
+                          </div>
+                        ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-base-content opacity-70">
-                        データがありません
-                      </p>
+                      <p className="text-sm text-base-content opacity-70">データがありません</p>
                     )}
                   </div>
                 </div>

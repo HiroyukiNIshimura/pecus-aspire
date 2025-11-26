@@ -7,15 +7,11 @@ import EditSkillClient from "./EditSkillClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditSkillPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditSkillPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const skillId = parseInt(id, 10);
 
-  if (isNaN(skillId) || skillId <= 0) {
+  if (Number.isNaN(skillId) || skillId <= 0) {
     notFound();
   }
 
@@ -41,10 +37,7 @@ export default async function EditSkillPage({
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -59,11 +52,5 @@ export default async function EditSkillPage({
     notFound();
   }
 
-  return (
-    <EditSkillClient
-      initialUser={user}
-      skillDetail={skillDetail}
-      fetchError={fetchError}
-    />
-  );
+  return <EditSkillClient initialUser={user} skillDetail={skillDetail} fetchError={fetchError} />;
 }

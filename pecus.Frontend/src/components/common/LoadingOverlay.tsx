@@ -11,10 +11,7 @@ interface LoadingOverlayProps {
  * @param isLoading - ローディング状態
  * @param message - 表示するメッセージ（デフォルト: "読み込み中..."）
  */
-export default function LoadingOverlay({
-  isLoading,
-  message = "読み込み中...",
-}: LoadingOverlayProps) {
+export default function LoadingOverlay({ isLoading, message = "読み込み中..." }: LoadingOverlayProps) {
   if (!isLoading) return null;
 
   return (

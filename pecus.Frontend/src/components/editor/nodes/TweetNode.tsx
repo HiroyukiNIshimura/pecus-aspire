@@ -6,6 +6,8 @@
  *
  */
 
+import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
+import { DecoratorBlockNode, type SerializedDecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
 import type {
   DOMConversionMap,
   DOMConversionOutput,
@@ -18,13 +20,6 @@ import type {
   Spread,
 } from "lexical";
 import type { JSX } from "react";
-
-import { BlockWithAlignableContents } from "@lexical/react/LexicalBlockWithAlignableContents";
-import {
-  DecoratorBlockNode,
-  SerializedDecoratorBlockNode,
-} from "@lexical/react/LexicalDecoratorBlockNode";
-import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const WIDGET_SCRIPT_URL = "https://platform.twitter.com/widgets.js";
@@ -42,9 +37,7 @@ type TweetComponentProps = Readonly<{
   tweetID: string;
 }>;
 
-function $convertTweetElement(
-  domNode: HTMLDivElement,
-): DOMConversionOutput | null {
+function $convertTweetElement(domNode: HTMLDivElement): DOMConversionOutput | null {
   const id = domNode.getAttribute("data-lexical-tweet-id");
   if (id) {
     const node = $createTweetNode(id);
@@ -111,16 +104,9 @@ function TweetComponent({
   }, [createTweet, onError, tweetID]);
 
   return (
-    <BlockWithAlignableContents
-      className={className}
-      format={format}
-      nodeKey={nodeKey}
-    >
+    <BlockWithAlignableContents className={className} format={format} nodeKey={nodeKey}>
       {isTweetLoading ? loadingComponent : null}
-      <div
-        style={{ display: "inline-block", width: "550px" }}
-        ref={containerRef}
-      />
+      <div style={{ display: "inline-block", width: "550px" }} ref={containerRef} />
     </BlockWithAlignableContents>
   );
 }
@@ -185,14 +171,11 @@ export class TweetNode extends DecoratorBlockNode {
     return this.__id;
   }
 
-  getTextContent(
-    _includeInert?: boolean | undefined,
-    _includeDirectionless?: false | undefined,
-  ): string {
+  getTextContent(_includeInert?: boolean | undefined, _includeDirectionless?: false | undefined): string {
     return `https://x.com/i/web/status/${this.__id}`;
   }
 
-  decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
+  decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element {
     const embedBlockTheme = config.theme.embedBlock || {};
     const className = {
       base: embedBlockTheme.base || "",
@@ -214,8 +197,6 @@ export function $createTweetNode(tweetID: string): TweetNode {
   return new TweetNode(tweetID);
 }
 
-export function $isTweetNode(
-  node: TweetNode | LexicalNode | null | undefined,
-): node is TweetNode {
+export function $isTweetNode(node: TweetNode | LexicalNode | null | undefined): node is TweetNode {
   return node instanceof TweetNode;
 }

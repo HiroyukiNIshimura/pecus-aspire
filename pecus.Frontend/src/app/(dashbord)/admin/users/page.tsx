@@ -1,8 +1,8 @@
+import { redirect } from "next/navigation";
 import { getAllSkills } from "@/actions/admin/skills";
 import { getUsers } from "@/actions/admin/user";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminUsersClient from "./AdminUsersClient";
 
@@ -51,7 +51,7 @@ export default async function AdminUsers() {
     const usersResult = await getUsers(1, undefined, true); // 全ユーザー取得（アクティブ・非アクティブ両方）
     if (usersResult.success) {
       const responseData = usersResult.data;
-      if (responseData && responseData.data) {
+      if (responseData?.data) {
         users = responseData.data.map((user: any) => ({
           id: user.id ?? 0,
           username: user.username ?? "",
@@ -77,18 +77,14 @@ export default async function AdminUsers() {
       }));
     }
   } catch (error: any) {
-    console.error(
-      "AdminUsers: failed to fetch users, user info, or skills",
-      error,
-    );
+    console.error("AdminUsers: failed to fetch users, user info, or skills", error);
 
     // 認証エラーの場合はサインインページへリダイレクト
     if (error.status === 401) {
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

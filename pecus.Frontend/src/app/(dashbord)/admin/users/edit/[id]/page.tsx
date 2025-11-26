@@ -9,15 +9,11 @@ import EditUserClient from "./EditUserClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditUserPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const userId = parseInt(id, 10);
 
-  if (isNaN(userId) || userId <= 0) {
+  if (Number.isNaN(userId) || userId <= 0) {
     notFound();
   }
 
@@ -55,10 +51,7 @@ export default async function EditUserPage({
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

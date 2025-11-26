@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import { requestEmailChange } from "@/actions/profile";
+import type { PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import { useFormValidation } from "@/hooks/useFormValidation";
 import { updateEmailFormSchema } from "@/schemas/profileSchemas";
 
@@ -27,24 +27,12 @@ export default function EmailChangeTab({
   setIsLoading,
 }: EmailChangeTabProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(
-    initialPendingEmailChange?.newEmail || null,
-  );
+  const [pendingEmail, setPendingEmail] = useState<string | null>(initialPendingEmailChange?.newEmail || null);
   const [pendingExpiresAt, setPendingExpiresAt] = useState<Date | null>(
-    initialPendingEmailChange
-      ? new Date(initialPendingEmailChange.expiresAt)
-      : null,
+    initialPendingEmailChange ? new Date(initialPendingEmailChange.expiresAt) : null,
   );
 
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-  } = useFormValidation({
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: updateEmailFormSchema,
     onSubmit: async (data) => {
       if (data.newEmail === currentEmail) {
@@ -68,9 +56,7 @@ export default function EmailChangeTab({
           setPendingExpiresAt(new Date(result.data.expiresAt));
           formRef.current?.reset();
         } else {
-          notify.error(
-            result.message || "メールアドレス変更リクエストに失敗しました",
-          );
+          notify.error(result.message || "メールアドレス変更リクエストに失敗しました");
         }
       } catch (error) {
         console.error("Email change error:", error);
@@ -109,17 +95,13 @@ export default function EmailChangeTab({
             />
           </svg>
           <div>
-            <h3 className="font-bold">
-              確認待ちのメールアドレス変更があります
-            </h3>
+            <h3 className="font-bold">確認待ちのメールアドレス変更があります</h3>
             <div className="text-sm">
               <p>
                 新しいメールアドレス: <strong>{pendingEmail}</strong>
               </p>
               <p>有効期限: {pendingExpiresAt.toLocaleString("ja-JP")}</p>
-              <p className="mt-1">
-                メールに記載されたリンクをクリックして変更を完了してください。
-              </p>
+              <p className="mt-1">メールに記載されたリンクをクリックして変更を完了してください。</p>
             </div>
           </div>
         </div>
@@ -148,9 +130,7 @@ export default function EmailChangeTab({
       {/* 現在のメールアドレス */}
       <div className="form-control">
         <label htmlFor="currentEmail" className="label">
-          <span className="label-text font-semibold text-base-content">
-            現在のメールアドレス
-          </span>
+          <span className="label-text font-semibold text-base-content">現在のメールアドレス</span>
         </label>
         <input
           id="currentEmail"
@@ -175,19 +155,15 @@ export default function EmailChangeTab({
           name="newEmail"
           type="email"
           placeholder="new-email@example.com"
-          className={`input input-bordered ${
-            shouldShowError("newEmail") ? "input-error" : ""
-          }`}
+          className={`input input-bordered ${shouldShowError("newEmail") ? "input-error" : ""}`}
           onChange={(e) => handleFieldChange("newEmail", e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
         {shouldShowError("newEmail") && (
-          <label className="label">
-            <span className="label-text-alt text-error">
-              {getFieldError("newEmail")}
-            </span>
-          </label>
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError("newEmail")}</span>
+          </div>
         )}
       </div>
 
@@ -204,19 +180,15 @@ export default function EmailChangeTab({
           name="currentPassword"
           type={showPassword ? "text" : "password"}
           placeholder="現在のパスワードを入力"
-          className={`input input-bordered ${
-            shouldShowError("currentPassword") ? "input-error" : ""
-          }`}
+          className={`input input-bordered ${shouldShowError("currentPassword") ? "input-error" : ""}`}
           onChange={(e) => handleFieldChange("currentPassword", e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
         {shouldShowError("currentPassword") && (
-          <label className="label">
-            <span className="label-text-alt text-error">
-              {getFieldError("currentPassword")}
-            </span>
-          </label>
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError("currentPassword")}</span>
+          </div>
         )}
       </div>
 
@@ -237,19 +209,10 @@ export default function EmailChangeTab({
 
       {/* ボタングループ */}
       <div className="flex justify-end gap-2 pt-4">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="btn btn-outline"
-          disabled={isLoading || isSubmitting}
-        >
+        <button type="button" onClick={handleReset} className="btn btn-outline" disabled={isLoading || isSubmitting}>
           クリア
         </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isLoading || isSubmitting}
-        >
+        <button type="submit" className="btn btn-primary" disabled={isLoading || isSubmitting}>
           {isSubmitting ? (
             <>
               <span className="loading loading-spinner loading-sm"></span>

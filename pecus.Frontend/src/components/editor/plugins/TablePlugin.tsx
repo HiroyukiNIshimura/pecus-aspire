@@ -6,16 +6,10 @@
  *
  */
 
-import type { JSX } from "react";
-
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  INSERT_TABLE_COMMAND,
-  TableCellNode,
-  TableNode,
-  TableRowNode,
-} from "@lexical/table";
-import { EditorThemeClasses, Klass, LexicalEditor, LexicalNode } from "lexical";
+import { INSERT_TABLE_COMMAND, TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+import type { EditorThemeClasses, Klass, LexicalEditor, LexicalNode } from "lexical";
+import type { JSX } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import Button from "../ui/Button";
@@ -31,10 +25,7 @@ export type InsertTableCommandPayload = Readonly<{
 export type CellContextShape = {
   cellEditorConfig: null | CellEditorConfig;
   cellEditorPlugins: null | JSX.Element | Array<JSX.Element>;
-  set: (
-    cellEditorConfig: null | CellEditorConfig,
-    cellEditorPlugins: null | JSX.Element | Array<JSX.Element>,
-  ) => void;
+  set: (cellEditorConfig: null | CellEditorConfig, cellEditorPlugins: null | JSX.Element | Array<JSX.Element>) => void;
 };
 
 export type CellEditorConfig = Readonly<{
@@ -147,9 +138,7 @@ export function TablePlugin({
   const cellContext = useContext(CellContext);
   useEffect(() => {
     if (!editor.hasNodes([TableNode, TableRowNode, TableCellNode])) {
-      throw new Error(
-        "TablePlugin: TableNode, TableRowNode, or TableCellNode is not registered on editor",
-      );
+      throw new Error("TablePlugin: TableNode, TableRowNode, or TableCellNode is not registered on editor");
     }
   }, [editor]);
   useEffect(() => {

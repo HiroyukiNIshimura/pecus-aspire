@@ -10,10 +10,7 @@ import type { z } from "zod";
 export async function validateWithSchema<T>(
   schema: z.ZodSchema<T>,
   data: unknown,
-): Promise<
-  | { success: true; data: T; errors?: undefined }
-  | { success: false; errors: string[]; data?: undefined }
-> {
+): Promise<{ success: true; data: T; errors?: undefined } | { success: false; errors: string[]; data?: undefined }> {
   const result = await schema.safeParseAsync(data);
 
   if (result.success) {

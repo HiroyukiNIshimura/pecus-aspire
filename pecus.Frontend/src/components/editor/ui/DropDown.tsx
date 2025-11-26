@@ -6,18 +6,10 @@
  *
  */
 
-import type { JSX } from "react";
-
 import { isDOMNode } from "lexical";
+import type { JSX } from "react";
 import * as React from "react";
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { focusNearestDescendant, isKeyboardInput } from "../utils/focusUtils";
@@ -52,19 +44,13 @@ export function DropDownItem({
   const { registerItem } = dropDownContext;
 
   useEffect(() => {
-    if (ref && ref.current) {
+    if (ref?.current) {
       registerItem(ref);
     }
-  }, [ref, registerItem]);
+  }, [registerItem]);
 
   return (
-    <button
-      className={className}
-      onClick={onClick}
-      ref={ref}
-      title={title}
-      type="button"
-    >
+    <button className={className} onClick={onClick} ref={ref} title={title} type="button">
       {children}
     </button>
   );
@@ -81,17 +67,12 @@ function DropDownItems({
   onClose: () => void;
   autofocus: boolean;
 }) {
-  const [items, setItems] =
-    useState<React.RefObject<null | HTMLButtonElement>[]>();
-  const [highlightedItem, setHighlightedItem] =
-    useState<React.RefObject<null | HTMLButtonElement>>();
+  const [items, setItems] = useState<React.RefObject<null | HTMLButtonElement>[]>();
+  const [highlightedItem, setHighlightedItem] = useState<React.RefObject<null | HTMLButtonElement>>();
 
-  const registerItem = useCallback(
-    (itemRef: React.RefObject<null | HTMLButtonElement>) => {
-      setItems((prev) => (prev ? [...prev, itemRef] : [itemRef]));
-    },
-    [setItems],
-  );
+  const registerItem = useCallback((itemRef: React.RefObject<null | HTMLButtonElement>) => {
+    setItems((prev) => (prev ? [...prev, itemRef] : [itemRef]));
+  }, []);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const key = event.key;
@@ -138,7 +119,7 @@ function DropDownItems({
       setHighlightedItem(items[0]);
     }
 
-    if (highlightedItem && highlightedItem.current) {
+    if (highlightedItem?.current) {
       highlightedItem.current.focus();
     }
   }, [items, highlightedItem]);
@@ -151,11 +132,7 @@ function DropDownItems({
 
   return (
     <DropDownContext.Provider value={contextValue}>
-      <div
-        className="notion-like-editor dropdown"
-        ref={dropDownRef}
-        onKeyDown={handleKeyDown}
-      >
+      <div className="notion-like-editor dropdown" ref={dropDownRef} onKeyDown={handleKeyDown}>
         {children}
       </div>
     </DropDownContext.Provider>
@@ -186,7 +163,7 @@ export default function DropDown({
 
   const handleClose = () => {
     setShowDropDown(false);
-    if (buttonRef && buttonRef.current) {
+    if (buttonRef?.current) {
       buttonRef.current.focus();
     }
   };
@@ -198,12 +175,9 @@ export default function DropDown({
     if (showDropDown && button !== null && dropDown !== null) {
       const { top, left } = button.getBoundingClientRect();
       dropDown.style.top = `${top + button.offsetHeight + dropDownPadding}px`;
-      dropDown.style.left = `${Math.min(
-        left,
-        window.innerWidth - dropDown.offsetWidth - 20,
-      )}px`;
+      dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
     }
-  }, [dropDownRef, buttonRef, showDropDown]);
+  }, [showDropDown]);
 
   useEffect(() => {
     const button = buttonRef.current;
@@ -215,8 +189,7 @@ export default function DropDown({
           return;
         }
 
-        const targetIsDropDownItem =
-          dropDownRef.current && dropDownRef.current.contains(target);
+        const targetIsDropDownItem = dropDownRef.current?.contains(target);
         if (stopCloseOnClickSelf && targetIsDropDownItem) {
           return;
         }
@@ -235,7 +208,7 @@ export default function DropDown({
         document.removeEventListener("click", handle);
       };
     }
-  }, [dropDownRef, buttonRef, showDropDown, stopCloseOnClickSelf]);
+  }, [showDropDown, stopCloseOnClickSelf]);
 
   useEffect(() => {
     const handleButtonPositionUpdate = () => {
@@ -257,7 +230,7 @@ export default function DropDown({
     return () => {
       document.removeEventListener("scroll", handleButtonPositionUpdate);
     };
-  }, [buttonRef, dropDownRef, showDropDown]);
+  }, [showDropDown]);
 
   const handleOnClick = (e: React.MouseEvent) => {
     setShowDropDown(!showDropDown);
@@ -275,19 +248,13 @@ export default function DropDown({
         ref={buttonRef}
       >
         {buttonIconClassName && <span className={buttonIconClassName} />}
-        {buttonLabel && (
-          <span className="text dropdown-button-text">{buttonLabel}</span>
-        )}
+        {buttonLabel && <span className="text dropdown-button-text">{buttonLabel}</span>}
         <i className="chevron-down" />
       </button>
 
       {showDropDown &&
         createPortal(
-          <DropDownItems
-            dropDownRef={dropDownRef}
-            onClose={handleClose}
-            autofocus={shouldAutofocus}
-          >
+          <DropDownItems dropDownRef={dropDownRef} onClose={handleClose} autofocus={shouldAutofocus}>
             {children}
           </DropDownItems>,
           document.body,

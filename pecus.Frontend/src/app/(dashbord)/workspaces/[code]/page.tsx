@@ -2,13 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type {
-  UserResponse,
-  WorkspaceFullDetailResponse,
-} from "@/connectors/api/pecus";
+import type { UserResponse, WorkspaceFullDetailResponse } from "@/connectors/api/pecus";
+import type { UserInfo } from "@/types/userInfo";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import WorkspaceDetailClient from "./WorkspaceDetailClient";
-import type { UserInfo } from "@/types/userInfo";
 
 interface WorkspaceDetailPageProps {
   params: Promise<{
@@ -16,9 +13,7 @@ interface WorkspaceDetailPageProps {
   }>;
 }
 
-export default async function WorkspaceDetailPage({
-  params,
-}: WorkspaceDetailPageProps) {
+export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPageProps) {
   const { code } = await params;
 
   // ユーザー情報取得
@@ -37,12 +32,7 @@ export default async function WorkspaceDetailPage({
 
     // ワークスペース一覧取得（切り替え用）
     try {
-      workspacesList = await api.workspace.getApiWorkspaces(
-        1,
-        true,
-        undefined,
-        undefined,
-      );
+      workspacesList = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
     } catch (err) {
       console.warn("Failed to fetch workspaces list:", err);
       // ワークスペース一覧取得失敗時は空配列を渡す

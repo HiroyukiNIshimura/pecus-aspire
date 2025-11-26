@@ -6,12 +6,11 @@
  *
  */
 
-import type { JSX } from "react";
+import { type JSX, useState } from "react";
 
 import "./Input.css";
 
-import * as React from "react";
-import { HTMLInputTypeAttribute } from "react";
+import type { HTMLInputTypeAttribute } from "react";
 
 type Props = Readonly<{
   "data-test-id"?: string;
@@ -21,6 +20,10 @@ type Props = Readonly<{
   value: string;
   type?: HTMLInputTypeAttribute;
 }>;
+//ユニークなinputのID生成
+function generateId(label: string): string {
+  return `input-${label.replace(/\s+/g, "-").toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
+}
 
 export default function TextInput({
   label,
@@ -30,10 +33,15 @@ export default function TextInput({
   "data-test-id": dataTestId,
   type = "text",
 }: Props): JSX.Element {
+  const [inputId, _setInputId] = useState(generateId(label));
+
   return (
     <div className="Input__wrapper">
-      <label className="Input__label">{label}</label>
+      <label className="Input__label" htmlFor={inputId}>
+        {label}
+      </label>
       <input
+        id={inputId}
         type={type}
         className="Input__input"
         placeholder={placeholder}

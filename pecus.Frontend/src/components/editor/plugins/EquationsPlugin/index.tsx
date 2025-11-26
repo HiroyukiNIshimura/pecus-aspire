@@ -18,11 +18,10 @@ import {
   $isRootOrShadowRoot,
   COMMAND_PRIORITY_EDITOR,
   createCommand,
-  LexicalCommand,
-  LexicalEditor,
+  type LexicalCommand,
+  type LexicalEditor,
 } from "lexical";
 import { useCallback, useEffect } from "react";
-import * as React from "react";
 
 import { $createEquationNode, EquationNode } from "../../nodes/EquationNode";
 import KatexEquationAlterer from "../../ui/KatexEquationAlterer";
@@ -32,8 +31,7 @@ type CommandPayload = {
   inline: boolean;
 };
 
-export const INSERT_EQUATION_COMMAND: LexicalCommand<CommandPayload> =
-  createCommand("INSERT_EQUATION_COMMAND");
+export const INSERT_EQUATION_COMMAND: LexicalCommand<CommandPayload> = createCommand("INSERT_EQUATION_COMMAND");
 
 export function InsertEquationDialog({
   activeEditor,
@@ -61,9 +59,7 @@ export default function EquationsPlugin(): JSX.Element | null {
 
   useEffect(() => {
     if (!editor.hasNodes([EquationNode])) {
-      throw new Error(
-        "EquationsPlugins: EquationsNode not registered on editor",
-      );
+      throw new Error("EquationsPlugins: EquationsNode not registered on editor");
     }
 
     return editor.registerCommand<CommandPayload>(

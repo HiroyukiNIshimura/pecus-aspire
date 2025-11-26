@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { updateUserPassword } from "@/actions/profile";
-import { updatePasswordFormSchema } from "@/schemas/profileSchemas";
+import PasswordRequirementIndicator, { isPasswordValid } from "@/components/common/PasswordRequirementIndicator";
 import { useFormValidation } from "@/hooks/useFormValidation";
-import PasswordRequirementIndicator, {
-  isPasswordValid,
-} from "@/components/common/PasswordRequirementIndicator";
+import { updatePasswordFormSchema } from "@/schemas/profileSchemas";
 
 interface PasswordChangeTabProps {
   notify: {
@@ -19,23 +17,11 @@ interface PasswordChangeTabProps {
   setIsLoading: (loading: boolean) => void;
 }
 
-export default function PasswordChangeTab({
-  notify,
-  isLoading,
-  setIsLoading,
-}: PasswordChangeTabProps) {
+export default function PasswordChangeTab({ notify, isLoading, setIsLoading }: PasswordChangeTabProps) {
   const [showPasswords, setShowPasswords] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>("");
 
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-  } = useFormValidation({
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: updatePasswordFormSchema,
     onSubmit: async (data) => {
       setIsLoading(true);
@@ -92,19 +78,15 @@ export default function PasswordChangeTab({
           name="currentPassword"
           type={showPasswords ? "text" : "password"}
           placeholder="現在のパスワードを入力"
-          className={`input input-bordered ${
-            shouldShowError("currentPassword") ? "input-error" : ""
-          }`}
+          className={`input input-bordered ${shouldShowError("currentPassword") ? "input-error" : ""}`}
           onChange={(e) => handleFieldChange("currentPassword", e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
         {shouldShowError("currentPassword") && (
-          <label className="label">
-            <span className="label-text-alt text-error">
-              {getFieldError("currentPassword")}
-            </span>
-          </label>
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError("currentPassword")}</span>
+          </div>
         )}
       </div>
 
@@ -121,19 +103,15 @@ export default function PasswordChangeTab({
           name="newPassword"
           type={showPasswords ? "text" : "password"}
           placeholder="新しいパスワードを入力"
-          className={`input input-bordered ${
-            shouldShowError("newPassword") ? "input-error" : ""
-          }`}
+          className={`input input-bordered ${shouldShowError("newPassword") ? "input-error" : ""}`}
           onChange={(e) => handleFieldChange("newPassword", e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
         {shouldShowError("newPassword") && (
-          <label className="label">
-            <span className="label-text-alt text-error">
-              {getFieldError("newPassword")}
-            </span>
-          </label>
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError("newPassword")}</span>
+          </div>
         )}
         {/* パスワード要件インジケーター */}
         <PasswordRequirementIndicator password={newPassword} />
@@ -152,19 +130,15 @@ export default function PasswordChangeTab({
           name="confirmPassword"
           type={showPasswords ? "text" : "password"}
           placeholder="パスワードを再入力"
-          className={`input input-bordered ${
-            shouldShowError("confirmPassword") ? "input-error" : ""
-          }`}
+          className={`input input-bordered ${shouldShowError("confirmPassword") ? "input-error" : ""}`}
           onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
           disabled={isLoading || isSubmitting}
           required
         />
         {shouldShowError("confirmPassword") && (
-          <label className="label">
-            <span className="label-text-alt text-error">
-              {getFieldError("confirmPassword")}
-            </span>
-          </label>
+          <div className="label">
+            <span className="label-text-alt text-error">{getFieldError("confirmPassword")}</span>
+          </div>
         )}
       </div>
 
@@ -185,19 +159,10 @@ export default function PasswordChangeTab({
 
       {/* ボタングループ */}
       <div className="flex justify-end gap-2 pt-4">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="btn btn-outline"
-          disabled={isLoading || isSubmitting}
-        >
+        <button type="button" onClick={handleReset} className="btn btn-outline" disabled={isLoading || isSubmitting}>
           クリア
         </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isLoading || isSubmitting || !allRequirementsMet}
-        >
+        <button type="submit" className="btn btn-primary" disabled={isLoading || isSubmitting || !allRequirementsMet}>
           {isSubmitting ? (
             <>
               <span className="loading loading-spinner loading-sm"></span>

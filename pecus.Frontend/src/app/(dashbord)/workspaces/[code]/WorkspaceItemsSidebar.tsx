@@ -1,24 +1,13 @@
 "use client";
 
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
 import HomeIcon from "@mui/icons-material/Home";
-import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
+import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from "@/connectors/api/pecus";
 import WorkspaceSwitcher from "./WorkspaceSwitcher";
-import type {
-  WorkspaceItemListResponse,
-  WorkspaceListItemResponse,
-} from "@/connectors/api/pecus";
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
@@ -34,10 +23,7 @@ export interface WorkspaceItemsSidebarHandle {
   refreshItems: (selectItemId?: number) => Promise<void>;
 }
 
-const WorkspaceItemsSidebar = forwardRef<
-  WorkspaceItemsSidebarHandle,
-  WorkspaceItemsSidebarProps
->(
+const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceItemsSidebarProps>(
   (
     {
       workspaceId,
@@ -50,9 +36,7 @@ const WorkspaceItemsSidebar = forwardRef<
     },
     ref,
   ) => {
-    const [selectedItemId, setSelectedItemId] = useState<
-      "home" | "new" | number | null
-    >("home");
+    const [selectedItemId, setSelectedItemId] = useState<"home" | "new" | number | null>("home");
     const [searchQuery, setSearchQuery] = useState("");
     const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -73,9 +57,7 @@ const WorkspaceItemsSidebar = forwardRef<
         try {
           setIsLoading(true);
           setError(null);
-          const response = await fetch(
-            `/api/workspaces/${workspaceId}/items?page=1`,
-          );
+          const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
 
           if (!response.ok) {
             throw new Error("Failed to fetch items");
@@ -93,9 +75,7 @@ const WorkspaceItemsSidebar = forwardRef<
             setSelectedItemId(selectItemId);
           }
         } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch items",
-          );
+          setError(err instanceof Error ? err.message : "Failed to fetch items");
         } finally {
           setIsLoading(false);
         }
@@ -106,7 +86,7 @@ const WorkspaceItemsSidebar = forwardRef<
     // 初期ロード
     useEffect(() => {
       refreshItems();
-    }, [workspaceId, refreshItems]);
+    }, [refreshItems]);
 
     // imperative handle で refreshItems を公開
     useImperativeHandle(
@@ -121,9 +101,7 @@ const WorkspaceItemsSidebar = forwardRef<
       const nextPage = currentPageRef.current + 1;
 
       try {
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/items?page=${nextPage}`,
-        );
+        const response = await fetch(`/api/workspaces/${workspaceId}/items?page=${nextPage}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch items");
@@ -135,18 +113,14 @@ const WorkspaceItemsSidebar = forwardRef<
         // 重複を除外してアイテムを追加
         setItems((prev) => {
           const existingIds = new Set(prev.map((item) => item.id));
-          const uniqueNewItems = newItems.filter(
-            (item: WorkspaceItemListResponse) => !existingIds.has(item.id),
-          );
+          const uniqueNewItems = newItems.filter((item: WorkspaceItemListResponse) => !existingIds.has(item.id));
           return [...prev, ...uniqueNewItems];
         });
 
         setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load more items",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load more items");
       }
     }, [workspaceId]);
 
@@ -155,11 +129,7 @@ const WorkspaceItemsSidebar = forwardRef<
       if (!searchQuery.trim()) {
         return items;
       }
-      return items.filter(
-        (item) =>
-          item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-          false,
-      );
+      return items.filter((item) => item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     }, [items, searchQuery]);
 
     return (
@@ -168,10 +138,7 @@ const WorkspaceItemsSidebar = forwardRef<
         <div className="bg-base-200 border-b border-base-300 p-4 flex-shrink-0">
           {/* ワークスペース切り替え */}
           <div className="mb-4">
-            <WorkspaceSwitcher
-              workspaces={workspaces}
-              currentWorkspaceCode={currentWorkspaceCode}
-            />
+            <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceCode={currentWorkspaceCode} />
           </div>
 
           {/* ワークスペースHomeボタン */}
@@ -210,9 +177,7 @@ const WorkspaceItemsSidebar = forwardRef<
             </button>
           </div>
           <p className="text-xs text-base-content/70 mb-3">
-            {searchQuery
-              ? `${filteredItems.length} 件（全 ${totalCount} 件中）`
-              : `${totalCount} 件`}
+            {searchQuery ? `${filteredItems.length} 件（全 ${totalCount} 件中）` : `${totalCount} 件`}
           </p>
 
           {/* 検索ボックス */}
@@ -249,18 +214,10 @@ const WorkspaceItemsSidebar = forwardRef<
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">
-            <p className="text-sm">
-              {searchQuery
-                ? "該当するアイテムがありません"
-                : "アイテムがありません"}
-            </p>
+            <p className="text-sm">{searchQuery ? "該当するアイテムがありません" : "アイテムがありません"}</p>
           </div>
         ) : (
-          <div
-            id={scrollContainerId}
-            className="overflow-y-auto bg-base-200 flex-1"
-            style={{ maxHeight: "750px" }}
-          >
+          <div id={scrollContainerId} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: "750px" }}>
             <InfiniteScroll
               dataLength={filteredItems.length}
               next={loadMoreItems}

@@ -20,12 +20,8 @@ export class SessionManager {
   static async getSession(): Promise<SessionData | null> {
     try {
       const cookieStore = await cookies();
-      const accessToken = cookieStore.get(
-        SessionManager.ACCESS_TOKEN_KEY,
-      )?.value;
-      const refreshToken = cookieStore.get(
-        SessionManager.REFRESH_TOKEN_KEY,
-      )?.value;
+      const accessToken = cookieStore.get(SessionManager.ACCESS_TOKEN_KEY)?.value;
+      const refreshToken = cookieStore.get(SessionManager.REFRESH_TOKEN_KEY)?.value;
       const userStr = cookieStore.get(SessionManager.USER_KEY)?.value;
 
       if (!accessToken || !refreshToken || !userStr) {
@@ -65,16 +61,8 @@ export class SessionManager {
         maxAge: 60 * 60 * 24 * 7, // 7日間保持
       };
 
-      cookieStore.set(
-        SessionManager.ACCESS_TOKEN_KEY,
-        data.accessToken,
-        cookieOptions,
-      );
-      cookieStore.set(
-        SessionManager.REFRESH_TOKEN_KEY,
-        data.refreshToken,
-        cookieOptions,
-      );
+      cookieStore.set(SessionManager.ACCESS_TOKEN_KEY, data.accessToken, cookieOptions);
+      cookieStore.set(SessionManager.REFRESH_TOKEN_KEY, data.refreshToken, cookieOptions);
       cookieStore.set(SessionManager.USER_KEY, userString, cookieOptions);
 
       console.log("Server  Session saved successfully");

@@ -11,16 +11,10 @@ import { DRAG_DROP_PASTE } from "@lexical/rich-text";
 import { isMimeType, mediaFileReader } from "@lexical/utils";
 import { COMMAND_PRIORITY_LOW } from "lexical";
 import { useEffect } from "react";
-
-import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
 import { useEditorContext } from "../../context/SettingsContext";
+import { INSERT_IMAGE_COMMAND } from "../ImagesPlugin";
 
-const ACCEPTABLE_IMAGE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/webp",
-];
+const ACCEPTABLE_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 
 /**
  * 画像ファイルをバックエンドにアップロードしてプロキシURLを取得（既存アイテム用）
@@ -29,22 +23,15 @@ const ACCEPTABLE_IMAGE_TYPES = [
  * @param itemId アイテムID
  * @returns アップロード結果（成功時はURL、失敗時はnull）
  */
-async function uploadImageFile(
-  file: File,
-  workspaceId: number,
-  itemId: number,
-): Promise<string | null> {
+async function uploadImageFile(file: File, workspaceId: number, itemId: number): Promise<string | null> {
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(
-      `/api/workspaces/${workspaceId}/items/${itemId}/attachments`,
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
+    const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (response.ok) {
       const result = await response.json();
@@ -75,13 +62,10 @@ async function uploadTempImageFile(
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(
-      `/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`,
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
+    const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (response.ok) {
       const result = await response.json();
@@ -101,28 +85,20 @@ async function uploadTempImageFile(
 
 export default function DragDropPaste(): null {
   const [editor] = useLexicalComposerContext();
-  const { workspaceId, itemId, sessionId, onTempFileUploaded } =
-    useEditorContext();
+  const { workspaceId, itemId, sessionId, onTempFileUploaded } = useEditorContext();
 
   useEffect(() => {
     return editor.registerCommand(
       DRAG_DROP_PASTE,
       (files) => {
         (async () => {
-          const filesResult = await mediaFileReader(
-            files,
-            [ACCEPTABLE_IMAGE_TYPES].flatMap((x) => x),
-          );
+          const filesResult = await mediaFileReader(files, [ACCEPTABLE_IMAGE_TYPES].flat());
 
           for (const { file, result } of filesResult) {
             if (isMimeType(file, ACCEPTABLE_IMAGE_TYPES)) {
               // 既存アイテム編集時: workspaceId/itemId が設定されている場合
               if (workspaceId !== undefined && itemId !== undefined) {
-                const uploadedUrl = await uploadImageFile(
-                  file,
-                  workspaceId,
-                  itemId,
-                );
+                const uploadedUrl = await uploadImageFile(file, workspaceId, itemId);
 
                 if (uploadedUrl) {
                   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
@@ -139,18 +115,11 @@ export default function DragDropPaste(): null {
               }
               // 新規アイテム作成時: workspaceId/sessionId が設定されている場合
               else if (workspaceId !== undefined && sessionId !== undefined) {
-                const uploadResult = await uploadTempImageFile(
-                  file,
-                  workspaceId,
-                  sessionId,
-                );
+                const uploadResult = await uploadTempImageFile(file, workspaceId, sessionId);
 
                 if (uploadResult) {
                   // コールバックで一時ファイルIDを通知
-                  onTempFileUploaded?.(
-                    uploadResult.tempFileId,
-                    uploadResult.previewUrl,
-                  );
+                  onTempFileUploaded?.(uploadResult.tempFileId, uploadResult.previewUrl);
 
                   editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
                     altText: file.name,

@@ -6,9 +6,8 @@
  *
  */
 
-import type { EditorConfig, LexicalNode, SerializedTextNode } from "lexical";
-
 import { addClassNamesToElement } from "@lexical/utils";
+import type { EditorConfig, LexicalNode, SerializedTextNode } from "lexical";
 import { $applyNodeReplacement, TextNode } from "lexical";
 
 /** @noInheritDoc */
@@ -65,8 +64,6 @@ export function $createSpecialTextNode(text = ""): SpecialTextNode {
  * @param node - Node to check.
  * @returns True if the node is a SpecialTextNode.
  */
-export function $isSpecialTextNode(
-  node: LexicalNode | null | undefined,
-): node is SpecialTextNode {
+export function $isSpecialTextNode(node: LexicalNode | null | undefined): node is SpecialTextNode {
   return node instanceof SpecialTextNode;
 }

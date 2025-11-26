@@ -59,12 +59,7 @@ interface ConcurrencyDialogProps {
  *   onCancel={() => window.history.back()}
  * />
  */
-export function ConcurrencyDialog({
-  message,
-  latest,
-  onRetry,
-  onCancel,
-}: ConcurrencyDialogProps) {
+export function ConcurrencyDialog({ message, latest, onRetry, onCancel }: ConcurrencyDialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded shadow-lg max-w-lg w-full p-6">

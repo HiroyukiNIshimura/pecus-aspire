@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -26,19 +26,13 @@ export async function GET(
     // fileType のバリデーション
     const validFileTypes = ["avatar", "genre"];
     if (!validFileTypes.includes(fileType.toLowerCase())) {
-      return NextResponse.json(
-        { error: "Invalid file type" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
     }
 
     // resourceId のバリデーション
     const resourceIdNum = parseInt(resourceId, 10);
-    if (isNaN(resourceIdNum) || resourceIdNum <= 0) {
-      return NextResponse.json(
-        { error: "Invalid resource ID" },
-        { status: 400 },
-      );
+    if (Number.isNaN(resourceIdNum) || resourceIdNum <= 0) {
+      return NextResponse.json({ error: "Invalid resource ID" }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成
@@ -46,7 +40,7 @@ export async function GET(
 
     // バックエンドの新しいルートベースエンドポイントにアクセス
     const backendUrl = `/api/downloads/${fileType.toLowerCase()}/${resourceId}/${encodeURIComponent(fileName)}`;
-console.log("Fetching image from backend URL:", backendUrl);
+    console.log("Fetching image from backend URL:", backendUrl);
     const response = await axios.get(backendUrl, {
       params: useOriginal ? { useOriginal: true } : undefined,
       responseType: "arraybuffer",

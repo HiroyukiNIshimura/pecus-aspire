@@ -11,18 +11,18 @@ import {
   $getSiblingCaret,
   $isElementNode,
   $rewindSiblingCaret,
-  DOMConversionMap,
-  DOMConversionOutput,
-  DOMExportOutput,
-  EditorConfig,
+  type DOMConversionMap,
+  type DOMConversionOutput,
+  type DOMExportOutput,
+  type EditorConfig,
   ElementNode,
   isHTMLElement,
-  LexicalEditor,
-  LexicalNode,
-  NodeKey,
-  RangeSelection,
-  SerializedElementNode,
-  Spread,
+  type LexicalEditor,
+  type LexicalNode,
+  type NodeKey,
+  type RangeSelection,
+  type SerializedElementNode,
+  type Spread,
 } from "lexical";
 
 import { setDomHiddenUntilFound } from "./CollapsibleUtils";
@@ -34,9 +34,7 @@ type SerializedCollapsibleContainerNode = Spread<
   SerializedElementNode
 >;
 
-export function $convertDetailsElement(
-  domNode: HTMLDetailsElement,
-): DOMConversionOutput | null {
+export function $convertDetailsElement(domNode: HTMLDetailsElement): DOMConversionOutput | null {
   const isOpen = domNode.open !== undefined ? domNode.open : true;
   const node = $createCollapsibleContainerNode(isOpen);
   return {
@@ -64,7 +62,7 @@ export class CollapsibleContainerNode extends ElementNode {
     return true;
   }
 
-  collapseAtStart(selection: RangeSelection): boolean {
+  collapseAtStart(_selection: RangeSelection): boolean {
     // Unwrap the CollapsibleContainerNode by replacing it with the children
     // of its children (CollapsibleTitleNode, CollapsibleContentNode)
     const nodesToInsert: LexicalNode[] = [];
@@ -84,7 +82,7 @@ export class CollapsibleContainerNode extends ElementNode {
     return true;
   }
 
-  createDOM(config: EditorConfig, editor: LexicalEditor): HTMLElement {
+  createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement {
     // details is not well supported in Chrome #5582
     let dom: HTMLElement;
     if (IS_CHROME) {
@@ -132,7 +130,7 @@ export class CollapsibleContainerNode extends ElementNode {
 
   static importDOM(): DOMConversionMap<HTMLDetailsElement> | null {
     return {
-      details: (domNode: HTMLDetailsElement) => {
+      details: (_domNode: HTMLDetailsElement) => {
         return {
           conversion: $convertDetailsElement,
           priority: 1,
@@ -141,12 +139,8 @@ export class CollapsibleContainerNode extends ElementNode {
     };
   }
 
-  static importJSON(
-    serializedNode: SerializedCollapsibleContainerNode,
-  ): CollapsibleContainerNode {
-    return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(
-      serializedNode,
-    );
+  static importJSON(serializedNode: SerializedCollapsibleContainerNode): CollapsibleContainerNode {
+    return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(serializedNode);
   }
 
   exportDOM(): DOMExportOutput {
@@ -177,14 +171,10 @@ export class CollapsibleContainerNode extends ElementNode {
   }
 }
 
-export function $createCollapsibleContainerNode(
-  isOpen: boolean,
-): CollapsibleContainerNode {
+export function $createCollapsibleContainerNode(isOpen: boolean): CollapsibleContainerNode {
   return new CollapsibleContainerNode(isOpen);
 }
 
-export function $isCollapsibleContainerNode(
-  node: LexicalNode | null | undefined,
-): node is CollapsibleContainerNode {
+export function $isCollapsibleContainerNode(node: LexicalNode | null | undefined): node is CollapsibleContainerNode {
   return node instanceof CollapsibleContainerNode;
 }

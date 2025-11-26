@@ -10,6 +10,7 @@
 
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
 import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
@@ -17,9 +18,11 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
 import { CAN_USE_DOM } from "@lexical/utils";
-import { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useSettings } from "./context/SettingsContext";
+import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
+import CodeHighlightPrismPlugin from "./plugins/CodeHighlightPrismPlugin";
+import CodeHighlightShikiPlugin from "./plugins/CodeHighlightShikiPlugin";
 import CollapsiblePlugin from "./plugins/CollapsiblePlugin";
 import EquationsPlugin from "./plugins/EquationsPlugin";
 import FigmaPlugin from "./plugins/FigmaPlugin";
@@ -33,10 +36,6 @@ import TableCellResizer from "./plugins/TableCellResizer";
 import TableOfContentsPlugin from "./plugins/TableOfContentsPlugin";
 import TwitterPlugin from "./plugins/TwitterPlugin";
 import YouTubePlugin from "./plugins/YouTubePlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import CodeHighlightShikiPlugin from "./plugins/CodeHighlightShikiPlugin";
-import CodeHighlightPrismPlugin from "./plugins/CodeHighlightPrismPlugin";
-import CodeActionMenuPlugin from "./plugins/CodeActionMenuPlugin";
 
 export default function Viewer() {
   const {
@@ -53,10 +52,8 @@ export default function Viewer() {
       listStrictIndent,
     },
   } = useSettings();
-  const [isSmallWidthViewport, setIsSmallWidthViewport] =
-    useState<boolean>(false);
-  const [floatingAnchorElem, setFloatingAnchorElem] =
-    useState<HTMLDivElement | null>(null);
+  const [isSmallWidthViewport, setIsSmallWidthViewport] = useState<boolean>(false);
+  const [floatingAnchorElem, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -66,8 +63,7 @@ export default function Viewer() {
 
   useEffect(() => {
     const updateViewPortWidth = () => {
-      const isNextSmallWidthViewport =
-        CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
+      const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
 
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
@@ -82,55 +78,43 @@ export default function Viewer() {
   }, [isSmallWidthViewport]);
 
   return (
-    <>
-      <div className="editor-container">
-        <RichTextPlugin
-          contentEditable={
-            <div className="editor-scroller">
-              <div className="editor" ref={onRef}>
-                <ContentEditable />
-              </div>
+    <div className="editor-container">
+      <RichTextPlugin
+        contentEditable={
+          <div className="editor-scroller">
+            <div className="editor" ref={onRef}>
+              <ContentEditable />
             </div>
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        {isCodeHighlighted &&
-          (isCodeShiki ? (
-            <CodeHighlightShikiPlugin />
-          ) : (
-            <CodeHighlightPrismPlugin />
-          ))}
-        <ListPlugin hasStrictIndent={listStrictIndent} />
-        <CheckListPlugin />
-        <TablePlugin
-          hasCellMerge={tableCellMerge}
-          hasCellBackgroundColor={tableCellBackgroundColor}
-          hasHorizontalScroll={tableHorizontalScroll}
-          hasTabHandler={hasTabHandler}
-        />
-        <TableCellResizer />
-        <ImagesPlugin />
-        <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
-        <TwitterPlugin />
-        <YouTubePlugin />
-        <FigmaPlugin />
-        <ClickableLinkPlugin disabled={false} />
-        <HorizontalRulePlugin />
-        <EquationsPlugin />
-        <TabFocusPlugin />
-        <TabIndentationPlugin maxIndent={7} />
-        <CollapsiblePlugin />
-        <PageBreakPlugin />
-        <LayoutPlugin />
-        {floatingAnchorElem && (
-          <CodeActionMenuPlugin
-            anchorElem={floatingAnchorElem}
-            showOnlyCopy={true}
-          />
-        )}
-        <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
-        {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
-      </div>
-    </>
+          </div>
+        }
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      {isCodeHighlighted && (isCodeShiki ? <CodeHighlightShikiPlugin /> : <CodeHighlightPrismPlugin />)}
+      <ListPlugin hasStrictIndent={listStrictIndent} />
+      <CheckListPlugin />
+      <TablePlugin
+        hasCellMerge={tableCellMerge}
+        hasCellBackgroundColor={tableCellBackgroundColor}
+        hasHorizontalScroll={tableHorizontalScroll}
+        hasTabHandler={hasTabHandler}
+      />
+      <TableCellResizer />
+      <ImagesPlugin />
+      <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
+      <TwitterPlugin />
+      <YouTubePlugin />
+      <FigmaPlugin />
+      <ClickableLinkPlugin disabled={false} />
+      <HorizontalRulePlugin />
+      <EquationsPlugin />
+      <TabFocusPlugin />
+      <TabIndentationPlugin maxIndent={7} />
+      <CollapsiblePlugin />
+      <PageBreakPlugin />
+      <LayoutPlugin />
+      {floatingAnchorElem && <CodeActionMenuPlugin anchorElem={floatingAnchorElem} showOnlyCopy={true} />}
+      <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
+      {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
+    </div>
   );
 }

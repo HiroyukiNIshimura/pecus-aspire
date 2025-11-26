@@ -1,19 +1,14 @@
 "use server";
 
-import {
-  createPecusApiClients,
-  detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
-import type {
-  WorkspaceItemDetailResponse,
-  WorkspaceItemResponse,
-  UpdateWorkspaceItemAssigneeRequest,
-} from "@/connectors/api/pecus";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import type {
   CreateWorkspaceItemRequest,
+  UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemRequest,
+  WorkspaceItemDetailResponse,
+  WorkspaceItemResponse,
 } from "@/connectors/api/pecus";
-import type { ApiResponse, ConflictResponse } from "./types";
+import type { ApiResponse } from "./types";
 
 /**
  * Server Action: 最新のワークスペースアイテムを取得
@@ -24,10 +19,7 @@ export async function fetchLatestWorkspaceItem(
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.getApiWorkspacesItems1(
-      workspaceId,
-      itemId,
-    );
+    const response = await api.workspaceItem.getApiWorkspacesItems1(workspaceId, itemId);
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to fetch workspace item:", error);
@@ -46,10 +38,7 @@ export async function fetchLatestWorkspaceItem(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "アイテムの取得に失敗しました。",
+      message: error.body?.message || error.message || "アイテムの取得に失敗しました。",
     };
   }
 }
@@ -63,10 +52,7 @@ export async function createWorkspaceItem(
 ): Promise<ApiResponse<WorkspaceItemResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.postApiWorkspacesItems(
-      workspaceId,
-      request,
-    );
+    const response = await api.workspaceItem.postApiWorkspacesItems(workspaceId, request);
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to create workspace item:", error);
@@ -100,10 +86,7 @@ export async function createWorkspaceItem(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "アイテムの作成に失敗しました。",
+      message: error.body?.message || error.message || "アイテムの作成に失敗しました。",
     };
   }
 }
@@ -118,11 +101,7 @@ export async function updateWorkspaceItem(
 ): Promise<ApiResponse<WorkspaceItemResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItems(
-      workspaceId,
-      itemId,
-      request,
-    );
+    const response = await api.workspaceItem.patchApiWorkspacesItems(workspaceId, itemId, request);
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to update workspace item:", error);
@@ -169,10 +148,7 @@ export async function updateWorkspaceItem(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "アイテムの更新に失敗しました。",
+      message: error.body?.message || error.message || "アイテムの更新に失敗しました。",
     };
   }
 }
@@ -187,11 +163,7 @@ export async function updateWorkspaceItemAssignee(
 ): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspaceItem.patchApiWorkspacesItemsAssignee(
-      workspaceId,
-      itemId,
-      request,
-    );
+    const response = await api.workspaceItem.patchApiWorkspacesItemsAssignee(workspaceId, itemId, request);
 
     // レスポンスからアイテムデータを取得
     if (response.workspaceItem) {
@@ -219,12 +191,10 @@ export async function updateWorkspaceItemAssignee(
         error: "conflict",
         message: concurrency.message,
         latest:
-          concurrency.payload.current &&
-          typeof concurrency.payload.current === "object"
+          concurrency.payload.current && typeof concurrency.payload.current === "object"
             ? {
                 type: "workspaceItem",
-                data: concurrency.payload
-                  .current as WorkspaceItemDetailResponse,
+                data: concurrency.payload.current as WorkspaceItemDetailResponse,
               }
             : undefined,
       };
@@ -256,8 +226,7 @@ export async function updateWorkspaceItemAssignee(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "作業者の更新に失敗しました。",
+      message: error.body?.message || error.message || "作業者の更新に失敗しました。",
     };
   }
 }

@@ -6,8 +6,6 @@
  *
  */
 
-import type { JSX } from "react";
-
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
@@ -25,6 +23,7 @@ import {
   type LexicalNode,
   PASTE_COMMAND,
 } from "lexical";
+import type { JSX } from "react";
 import { useMemo } from "react";
 
 export default function ContextMenuPlugin(): JSX.Element {
@@ -48,9 +47,7 @@ export default function ContextMenuPlugin(): JSX.Element {
           editor.dispatchCommand(CUT_COMMAND, null);
         },
         disabled: false,
-        icon: (
-          <i className="NotionLikeEditorTheme__contextMenuItemIcon page-break" />
-        ),
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon page-break" />,
       }),
       new NodeContextMenuOption(`Copy`, {
         $onSelect: () => {
@@ -61,7 +58,7 @@ export default function ContextMenuPlugin(): JSX.Element {
       }),
       new NodeContextMenuOption(`Paste`, {
         $onSelect: () => {
-          navigator.clipboard.read().then(async function (...args) {
+          navigator.clipboard.read().then(async (..._args) => {
             const data = new DataTransfer();
 
             const readClipboardItems = await navigator.clipboard.read();
@@ -89,13 +86,11 @@ export default function ContextMenuPlugin(): JSX.Element {
           });
         },
         disabled: false,
-        icon: (
-          <i className="NotionLikeEditorTheme__contextMenuItemIcon paste" />
-        ),
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon paste" />,
       }),
       new NodeContextMenuOption(`Paste as Plain Text`, {
         $onSelect: () => {
-          navigator.clipboard.read().then(async function (...args) {
+          navigator.clipboard.read().then(async (..._args) => {
             const permission = await navigator.permissions.query({
               // @ts-expect-error These types are incorrect.
               name: "clipboard-read",
@@ -125,9 +120,7 @@ export default function ContextMenuPlugin(): JSX.Element {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
             const currentNode = selection.anchor.getNode();
-            const ancestorNodeWithRootAsParent = currentNode
-              .getParents()
-              .at(-2);
+            const ancestorNodeWithRootAsParent = currentNode.getParents().at(-2);
 
             ancestorNodeWithRootAsParent?.remove();
           } else if ($isNodeSelection(selection)) {
@@ -140,9 +133,7 @@ export default function ContextMenuPlugin(): JSX.Element {
           }
         },
         disabled: false,
-        icon: (
-          <i className="NotionLikeEditorTheme__contextMenuItemIcon clear" />
-        ),
+        icon: <i className="NotionLikeEditorTheme__contextMenuItemIcon clear" />,
       }),
     ];
   }, [editor]);

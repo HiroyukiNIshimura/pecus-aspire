@@ -2,12 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import {
-  requestPasswordReset,
-  setUserActiveStatus,
-  setUserRoles,
-  setUserSkills,
-} from "@/actions/admin/user";
+import { requestPasswordReset, setUserActiveStatus, setUserRoles, setUserSkills } from "@/actions/admin/user";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
@@ -50,14 +45,10 @@ export default function EditUserClient({
   // 変更検知フラグで「更新ボタンの有効/無効」を制御している
   const [isActive, setIsActive] = useState(userDetail.isActive ?? true);
   const [selectedSkillIds, setSelectedSkillIds] = useState<number[]>(
-    userDetail.skills
-      ?.map((s) => s.id)
-      .filter((id): id is number => id !== undefined) || [],
+    userDetail.skills?.map((s) => s.id).filter((id): id is number => id !== undefined) || [],
   );
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(
-    userDetail.roles
-      ?.map((r) => r.id)
-      .filter((id): id is number => id !== undefined) || [],
+    userDetail.roles?.map((r) => r.id).filter((id): id is number => id !== undefined) || [],
   );
 
   // === 変更検知: 元の値と現在の値を比較 ===
@@ -67,23 +58,16 @@ export default function EditUserClient({
   // 3. 実際の更新（Promise.all）で「どの操作を実行するか」を判定
   const isActiveChanged = isActive !== (userDetail.isActive ?? true);
   const skillsChanged = (() => {
-    const currentSkillIds =
-      userDetail.skills
-        ?.map((s) => s.id)
-        .filter((id): id is number => id !== undefined) || [];
+    const currentSkillIds = userDetail.skills?.map((s) => s.id).filter((id): id is number => id !== undefined) || [];
     return (
       selectedSkillIds.length !== currentSkillIds.length ||
       !selectedSkillIds.every((id) => currentSkillIds.includes(id))
     );
   })();
   const rolesChanged = (() => {
-    const currentRoleIds =
-      userDetail.roles
-        ?.map((r) => r.id)
-        .filter((id): id is number => id !== undefined) || [];
+    const currentRoleIds = userDetail.roles?.map((r) => r.id).filter((id): id is number => id !== undefined) || [];
     return (
-      selectedRoleIds.length !== currentRoleIds.length ||
-      !selectedRoleIds.every((id) => currentRoleIds.includes(id))
+      selectedRoleIds.length !== currentRoleIds.length || !selectedRoleIds.every((id) => currentRoleIds.includes(id))
     );
   })();
 
@@ -113,26 +97,16 @@ export default function EditUserClient({
         updatePromises.push(
           setUserActiveStatus(userDetail.id!, isActive).then((result) => {
             if (!result.success) {
-              throw new Error(
-                result.error || "アクティブ状態の更新に失敗しました。",
-              );
+              throw new Error(result.error || "アクティブ状態の更新に失敗しました。");
             }
-            updateMessages.push(
-              isActive
-                ? "ユーザーを有効化しました"
-                : "ユーザーを無効化しました",
-            );
+            updateMessages.push(isActive ? "ユーザーを有効化しました" : "ユーザーを無効化しました");
           }),
         );
       }
 
       if (skillsChanged) {
         updatePromises.push(
-          setUserSkills(
-            userDetail.id!,
-            selectedSkillIds,
-            userDetail.rowVersion!,
-          ).then((result) => {
+          setUserSkills(userDetail.id!, selectedSkillIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
               throw new Error(result.error || "スキルの更新に失敗しました。");
             }
@@ -143,11 +117,7 @@ export default function EditUserClient({
 
       if (rolesChanged) {
         updatePromises.push(
-          setUserRoles(
-            userDetail.id!,
-            selectedRoleIds,
-            userDetail.rowVersion!,
-          ).then((result) => {
+          setUserRoles(userDetail.id!, selectedRoleIds, userDetail.rowVersion!).then((result) => {
             if (!result.success) {
               throw new Error(result.error || "ロールの更新に失敗しました。");
             }
@@ -185,19 +155,11 @@ export default function EditUserClient({
   // リアクティブに selected* 配列を更新し、変更検知が自動的に isXxxChanged フラグを更新する
 
   const toggleSkill = (skillId: number) => {
-    setSelectedSkillIds((prev) =>
-      prev.includes(skillId)
-        ? prev.filter((id) => id !== skillId)
-        : [...prev, skillId],
-    );
+    setSelectedSkillIds((prev) => (prev.includes(skillId) ? prev.filter((id) => id !== skillId) : [...prev, skillId]));
   };
 
   const toggleRole = (roleId: number) => {
-    setSelectedRoleIds((prev) =>
-      prev.includes(roleId)
-        ? prev.filter((id) => id !== roleId)
-        : [...prev, roleId],
-    );
+    setSelectedRoleIds((prev) => (prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]));
   };
 
   const handleRequestPasswordReset = async () => {
@@ -209,9 +171,7 @@ export default function EditUserClient({
       if (result.success) {
         notify.success("パスワードリセットメールを送信しました。");
       } else {
-        notify.error(
-          result.error || "パスワードリセットの送信に失敗しました。",
-        );
+        notify.error(result.error || "パスワードリセットの送信に失敗しました。");
       }
     } catch (err: unknown) {
       console.error("パスワードリセット送信中にエラーが発生:", err);
@@ -233,19 +193,11 @@ export default function EditUserClient({
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader
-        userInfo={initialUser}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        loading={false}
-      />
+      <AdminHeader userInfo={initialUser} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -262,15 +214,9 @@ export default function EditUserClient({
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold">ユーザー編集</h1>
-                <p className="text-base-content/60 mt-2">
-                  ユーザーのアクティブ状態、スキル、ロールを編集します
-                </p>
+                <p className="text-base-content/60 mt-2">ユーザーのアクティブ状態、スキル、ロールを編集します</p>
               </div>
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={() => router.push("/admin/users")}
-              >
+              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/users")}>
                 一覧に戻る
               </button>
             </div>
@@ -290,37 +236,24 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザー名</p>
-                    <p className="text-lg font-semibold">
-                      {userDetail.username || "-"}
-                    </p>
+                    <p className="text-lg font-semibold">{userDetail.username || "-"}</p>
                   </div>
 
                   <div>
-                    <p className="text-sm text-base-content/60">
-                      メールアドレス
-                    </p>
-                    <p className="text-lg font-semibold">
-                      {userDetail.email || "-"}
-                    </p>
+                    <p className="text-sm text-base-content/60">メールアドレス</p>
+                    <p className="text-lg font-semibold">{userDetail.email || "-"}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">ログインID</p>
-                    <p className="text-lg font-semibold">
-                      {userDetail.loginId || "-"}
-                    </p>
+                    <p className="text-lg font-semibold">{userDetail.loginId || "-"}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* 編集フォーム */}
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              noValidate
-              className="mb-6"
-            >
+            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -337,9 +270,7 @@ export default function EditUserClient({
                         disabled={isSubmitting}
                       />
                       <div>
-                        <span className="label-text font-semibold text-base">
-                          アクティブ状態
-                        </span>
+                        <span className="label-text font-semibold text-base">アクティブ状態</span>
                         <p className="text-sm text-base-content/60">
                           無効にすると、このユーザーはログインできなくなります
                         </p>
@@ -348,9 +279,7 @@ export default function EditUserClient({
                     {isActiveChanged && (
                       <div className="alert alert-info mt-2">
                         <span className="text-sm">
-                          {isActive
-                            ? "✓ ユーザーを有効化します"
-                            : "✗ ユーザーを無効化します"}
+                          {isActive ? "✓ ユーザーを有効化します" : "✗ ユーザーを無効化します"}
                         </span>
                       </div>
                     )}
@@ -359,15 +288,12 @@ export default function EditUserClient({
                   {/* スキル編集 */}
                   <div className="divider my-4"></div>
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-semibold text-base">
-                        スキル
-                      </span>
+                    <div className="label">
+                      <span className="label-text font-semibold text-base">スキル</span>
                       <span className="label-text-alt">
-                        {selectedSkillIds.length} / {availableSkills.length}{" "}
-                        個選択中
+                        {selectedSkillIds.length} / {availableSkills.length} 個選択中
                       </span>
-                    </label>
+                    </div>
                     <details className="dropdown w-full">
                       <summary className="btn btn-outline w-full justify-start">
                         {selectedSkillIds.length > 0
@@ -376,9 +302,7 @@ export default function EditUserClient({
                       </summary>
                       <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                         {availableSkills.length === 0 ? (
-                          <li className="text-center text-base-content/60 py-4">
-                            利用可能なスキルがありません
-                          </li>
+                          <li className="text-center text-base-content/60 py-4">利用可能なスキルがありません</li>
                         ) : (
                           availableSkills.map((skill) => (
                             <li key={skill.id}>
@@ -389,9 +313,7 @@ export default function EditUserClient({
                                   onChange={() => toggleSkill(skill.id)}
                                   className="checkbox checkbox-primary checkbox-sm"
                                 />
-                                <span className="label-text flex-1">
-                                  {skill.name}
-                                </span>
+                                <span className="label-text flex-1">{skill.name}</span>
                               </label>
                             </li>
                           ))
@@ -402,14 +324,9 @@ export default function EditUserClient({
                     {selectedSkillIds.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
                         {selectedSkillIds.map((skillId) => {
-                          const skill = availableSkills.find(
-                            (s) => s.id === skillId,
-                          );
+                          const skill = availableSkills.find((s) => s.id === skillId);
                           return (
-                            <div
-                              key={skillId}
-                              className="badge badge-primary gap-2"
-                            >
+                            <div key={skillId} className="badge badge-primary gap-2">
                               {skill?.name || `スキルID: ${skillId}`}
                               <button
                                 type="button"
@@ -427,9 +344,7 @@ export default function EditUserClient({
 
                     {skillsChanged && (
                       <div className="alert alert-info mt-3">
-                        <span className="text-sm">
-                          ✓ スキルが変更されています
-                        </span>
+                        <span className="text-sm">✓ スキルが変更されています</span>
                       </div>
                     )}
                   </div>
@@ -437,15 +352,12 @@ export default function EditUserClient({
                   {/* ロール編集 */}
                   <div className="divider my-4"></div>
                   <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-semibold text-base">
-                        ロール
-                      </span>
+                    <div className="label">
+                      <span className="label-text font-semibold text-base">ロール</span>
                       <span className="label-text-alt">
-                        {selectedRoleIds.length} / {availableRoles.length}{" "}
-                        個選択中
+                        {selectedRoleIds.length} / {availableRoles.length} 個選択中
                       </span>
-                    </label>
+                    </div>
                     <details className="dropdown w-full">
                       <summary className="btn btn-outline w-full justify-start">
                         {selectedRoleIds.length > 0
@@ -454,9 +366,7 @@ export default function EditUserClient({
                       </summary>
                       <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                         {availableRoles.length === 0 ? (
-                          <li className="text-center text-base-content/60 py-4">
-                            利用可能なロールがありません
-                          </li>
+                          <li className="text-center text-base-content/60 py-4">利用可能なロールがありません</li>
                         ) : (
                           availableRoles.map((role) => (
                             <li key={role.id}>
@@ -467,9 +377,7 @@ export default function EditUserClient({
                                   onChange={() => toggleRole(role.id)}
                                   className="checkbox checkbox-primary checkbox-sm"
                                 />
-                                <span className="label-text flex-1">
-                                  {role.name}
-                                </span>
+                                <span className="label-text flex-1">{role.name}</span>
                               </label>
                             </li>
                           ))
@@ -480,14 +388,9 @@ export default function EditUserClient({
                     {selectedRoleIds.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
                         {selectedRoleIds.map((roleId) => {
-                          const role = availableRoles.find(
-                            (r) => r.id === roleId,
-                          );
+                          const role = availableRoles.find((r) => r.id === roleId);
                           return (
-                            <div
-                              key={roleId}
-                              className="badge badge-secondary gap-2"
-                            >
+                            <div key={roleId} className="badge badge-secondary gap-2">
                               {role?.name || `ロールID: ${roleId}`}
                               <button
                                 type="button"
@@ -505,28 +408,17 @@ export default function EditUserClient({
 
                     {rolesChanged && (
                       <div className="alert alert-info mt-3">
-                        <span className="text-sm">
-                          ✓ ロールが変更されています
-                        </span>
+                        <span className="text-sm">✓ ロールが変更されています</span>
                       </div>
                     )}
                   </div>
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6 gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={handleCancel}
-                      disabled={isSubmitting}
-                    >
+                    <button type="button" className="btn btn-ghost" onClick={handleCancel} disabled={isSubmitting}>
                       キャンセル
                     </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={isSubmitting || !hasChanges}
-                    >
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || !hasChanges}>
                       {isSubmitting ? (
                         <>
                           <span className="loading loading-spinner"></span>
@@ -553,23 +445,17 @@ export default function EditUserClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">ユーザーID</p>
-                    <p className="text-lg font-semibold">
-                      {userDetail.id || "-"}
-                    </p>
+                    <p className="text-lg font-semibold">{userDetail.id || "-"}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">
-                      {formatDate(userDetail.createdAt)}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDate(userDetail.createdAt)}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">管理者権限</p>
-                    <p className="text-lg font-semibold">
-                      {userDetail.isAdmin ? "有効" : "なし"}
-                    </p>
+                    <p className="text-lg font-semibold">{userDetail.isAdmin ? "有効" : "なし"}</p>
                   </div>
                 </div>
               </div>
@@ -580,11 +466,7 @@ export default function EditUserClient({
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">その他の操作</h2>
 
-                <button
-                  type="button"
-                  className="btn btn-outline w-full"
-                  onClick={handleRequestPasswordReset}
-                >
+                <button type="button" className="btn btn-outline w-full" onClick={handleRequestPasswordReset}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

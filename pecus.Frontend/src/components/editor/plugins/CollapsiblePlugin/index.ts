@@ -9,11 +9,7 @@
 import "./Collapsible.css";
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $findMatchingParent,
-  $insertNodeToNearestRoot,
-  mergeRegister,
-} from "@lexical/utils";
+import { $findMatchingParent, $insertNodeToNearestRoot, mergeRegister } from "@lexical/utils";
 import {
   $createParagraphNode,
   $getSelection,
@@ -38,27 +34,15 @@ import {
   $isCollapsibleContentNode,
   CollapsibleContentNode,
 } from "./CollapsibleContentNode";
-import {
-  $createCollapsibleTitleNode,
-  $isCollapsibleTitleNode,
-  CollapsibleTitleNode,
-} from "./CollapsibleTitleNode";
+import { $createCollapsibleTitleNode, $isCollapsibleTitleNode, CollapsibleTitleNode } from "./CollapsibleTitleNode";
 
-export const INSERT_COLLAPSIBLE_COMMAND = createCommand<void>(
-  "INSERT_COLLAPSIBLE_COMMAND",
-);
+export const INSERT_COLLAPSIBLE_COMMAND = createCommand<void>("INSERT_COLLAPSIBLE_COMMAND");
 
 export default function CollapsiblePlugin(): null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    if (
-      !editor.hasNodes([
-        CollapsibleContainerNode,
-        CollapsibleTitleNode,
-        CollapsibleContentNode,
-      ])
-    ) {
+    if (!editor.hasNodes([CollapsibleContainerNode, CollapsibleTitleNode, CollapsibleContentNode])) {
       throw new Error(
         "CollapsiblePlugin: CollapsibleContainerNode, CollapsibleTitleNode, or CollapsibleContentNode not registered on editor",
       );
@@ -66,15 +50,8 @@ export default function CollapsiblePlugin(): null {
 
     const $onEscapeUp = () => {
       const selection = $getSelection();
-      if (
-        $isRangeSelection(selection) &&
-        selection.isCollapsed() &&
-        selection.anchor.offset === 0
-      ) {
-        const container = $findMatchingParent(
-          selection.anchor.getNode(),
-          $isCollapsibleContainerNode,
-        );
+      if ($isRangeSelection(selection) && selection.isCollapsed() && selection.anchor.offset === 0) {
+        const container = $findMatchingParent(selection.anchor.getNode(), $isCollapsibleContainerNode);
 
         if ($isCollapsibleContainerNode(container)) {
           const parent = container.getParent();
@@ -94,10 +71,7 @@ export default function CollapsiblePlugin(): null {
     const $onEscapeDown = () => {
       const selection = $getSelection();
       if ($isRangeSelection(selection) && selection.isCollapsed()) {
-        const container = $findMatchingParent(
-          selection.anchor.getNode(),
-          $isCollapsibleContainerNode,
-        );
+        const container = $findMatchingParent(selection.anchor.getNode(), $isCollapsibleContainerNode);
 
         if ($isCollapsibleContainerNode(container)) {
           const parent = container.getParent();
@@ -108,8 +82,7 @@ export default function CollapsiblePlugin(): null {
             if (
               (contentParagraph !== null &&
                 selection.anchor.key === contentParagraph.getKey() &&
-                selection.anchor.offset ===
-                  contentParagraph.getTextContentSize()) ||
+                selection.anchor.offset === contentParagraph.getTextContentSize()) ||
               (titleParagraph !== null &&
                 selection.anchor.key === titleParagraph.getKey() &&
                 selection.anchor.offset === titleParagraph.getTextContentSize())
@@ -148,11 +121,7 @@ export default function CollapsiblePlugin(): null {
 
       editor.registerNodeTransform(CollapsibleContainerNode, (node) => {
         const children = node.getChildren();
-        if (
-          children.length !== 2 ||
-          !$isCollapsibleTitleNode(children[0]) ||
-          !$isCollapsibleContentNode(children[1])
-        ) {
+        if (children.length !== 2 || !$isCollapsibleTitleNode(children[0]) || !$isCollapsibleContentNode(children[1])) {
           for (const child of children) {
             node.insertBefore(child);
           }
@@ -164,33 +133,17 @@ export default function CollapsiblePlugin(): null {
       // below it to allow adding more content. It's similar what $insertBlockNode
       // (mainly for decorators), except it'll always be possible to continue adding
       // new content even if trailing paragraph is accidentally deleted
-      editor.registerCommand(
-        KEY_ARROW_DOWN_COMMAND,
-        $onEscapeDown,
-        COMMAND_PRIORITY_LOW,
-      ),
+      editor.registerCommand(KEY_ARROW_DOWN_COMMAND, $onEscapeDown, COMMAND_PRIORITY_LOW),
 
-      editor.registerCommand(
-        KEY_ARROW_RIGHT_COMMAND,
-        $onEscapeDown,
-        COMMAND_PRIORITY_LOW,
-      ),
+      editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, $onEscapeDown, COMMAND_PRIORITY_LOW),
 
       // When collapsible is the first child pressing up/left arrow will insert paragraph
       // above it to allow adding more content. It's similar what $insertBlockNode
       // (mainly for decorators), except it'll always be possible to continue adding
       // new content even if leading paragraph is accidentally deleted
-      editor.registerCommand(
-        KEY_ARROW_UP_COMMAND,
-        $onEscapeUp,
-        COMMAND_PRIORITY_LOW,
-      ),
+      editor.registerCommand(KEY_ARROW_UP_COMMAND, $onEscapeUp, COMMAND_PRIORITY_LOW),
 
-      editor.registerCommand(
-        KEY_ARROW_LEFT_COMMAND,
-        $onEscapeUp,
-        COMMAND_PRIORITY_LOW,
-      ),
+      editor.registerCommand(KEY_ARROW_LEFT_COMMAND, $onEscapeUp, COMMAND_PRIORITY_LOW),
 
       // Enter goes from Title to Content rather than a new line inside Title
       editor.registerCommand(
@@ -198,10 +151,7 @@ export default function CollapsiblePlugin(): null {
         () => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            const titleNode = $findMatchingParent(
-              selection.anchor.getNode(),
-              (node) => $isCollapsibleTitleNode(node),
-            );
+            const titleNode = $findMatchingParent(selection.anchor.getNode(), (node) => $isCollapsibleTitleNode(node));
 
             if ($isCollapsibleTitleNode(titleNode)) {
               const container = titleNode.getParent();

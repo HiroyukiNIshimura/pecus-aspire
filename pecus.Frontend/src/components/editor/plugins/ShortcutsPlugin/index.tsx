@@ -7,7 +7,7 @@
  */
 
 import { TOGGLE_LINK_COMMAND } from "@lexical/link";
-import { HeadingTagType } from "@lexical/rich-text";
+import type { HeadingTagType } from "@lexical/rich-text";
 import {
   COMMAND_PRIORITY_NORMAL,
   FORMAT_ELEMENT_COMMAND,
@@ -15,10 +15,10 @@ import {
   INDENT_CONTENT_COMMAND,
   isModifierMatch,
   KEY_DOWN_COMMAND,
-  LexicalEditor,
+  type LexicalEditor,
   OUTDENT_CONTENT_COMMAND,
 } from "lexical";
-import { Dispatch, useEffect } from "react";
+import { type Dispatch, useEffect } from "react";
 
 import { useToolbarState } from "../../context/ToolbarContext";
 import { sanitizeUrl } from "../../utils/url";
@@ -31,8 +31,8 @@ import {
   formatNumberedList,
   formatParagraph,
   formatQuote,
-  updateFontSize,
   UpdateFontSizeType,
+  updateFontSize,
 } from "../ToolbarPlugin/utils";
 import {
   isCapitalize,
@@ -118,17 +118,9 @@ export default function ShortcutsPlugin({
       } else if (isInsertCodeBlock(event)) {
         editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
       } else if (isIncreaseFontSize(event)) {
-        updateFontSize(
-          editor,
-          UpdateFontSizeType.increment,
-          toolbarState.fontSizeInputValue,
-        );
+        updateFontSize(editor, UpdateFontSizeType.increment, toolbarState.fontSizeInputValue);
       } else if (isDecreaseFontSize(event)) {
-        updateFontSize(
-          editor,
-          UpdateFontSizeType.decrement,
-          toolbarState.fontSizeInputValue,
-        );
+        updateFontSize(editor, UpdateFontSizeType.decrement, toolbarState.fontSizeInputValue);
       } else if (isClearFormatting(event)) {
         clearFormatting(editor);
       } else if (isInsertLink(event)) {
@@ -143,18 +135,8 @@ export default function ShortcutsPlugin({
       return true;
     };
 
-    return editor.registerCommand(
-      KEY_DOWN_COMMAND,
-      keyboardShortcutsHandler,
-      COMMAND_PRIORITY_NORMAL,
-    );
-  }, [
-    editor,
-    toolbarState.isLink,
-    toolbarState.blockType,
-    toolbarState.fontSizeInputValue,
-    setIsLinkEditMode,
-  ]);
+    return editor.registerCommand(KEY_DOWN_COMMAND, keyboardShortcutsHandler, COMMAND_PRIORITY_NORMAL);
+  }, [editor, toolbarState.isLink, toolbarState.blockType, toolbarState.fontSizeInputValue, setIsLinkEditMode]);
 
   return null;
 }

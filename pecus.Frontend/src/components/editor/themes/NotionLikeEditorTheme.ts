@@ -101,8 +101,7 @@ const theme: EditorThemeClasses = {
   },
   tableCell: "NotionLikeEditorTheme__tableCell",
   tableCellActionButton: "NotionLikeEditorTheme__tableCellActionButton",
-  tableCellActionButtonContainer:
-    "NotionLikeEditorTheme__tableCellActionButtonContainer",
+  tableCellActionButtonContainer: "NotionLikeEditorTheme__tableCellActionButtonContainer",
   tableCellHeader: "NotionLikeEditorTheme__tableCellHeader",
   tableCellResizer: "NotionLikeEditorTheme__tableCellResizer",
   tableCellSelected: "NotionLikeEditorTheme__tableCellSelected",

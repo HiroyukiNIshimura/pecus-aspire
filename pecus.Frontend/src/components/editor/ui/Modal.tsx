@@ -6,13 +6,12 @@
  *
  */
 
-import type { JSX } from "react";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { isDOMNode } from "lexical";
-import * as React from "react";
-import { ReactNode, useEffect, useRef } from "react";
+import type { JSX } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import CloseIcon from "@mui/icons-material/Close";
 
 function PortalImpl({
   onClose,
@@ -42,12 +41,7 @@ function PortalImpl({
     };
     const clickOutsideHandler = (event: MouseEvent) => {
       const target = event.target;
-      if (
-        modalRef.current !== null &&
-        isDOMNode(target) &&
-        !modalRef.current.contains(target) &&
-        closeOnClickOutside
-      ) {
+      if (modalRef.current !== null && isDOMNode(target) && !modalRef.current.contains(target) && closeOnClickOutside) {
         onClose();
       }
     };
@@ -74,17 +68,11 @@ function PortalImpl({
       <div className="fixed inset-0 bg-black/50 z-50" role="dialog" />
 
       {/* モーダルコンテンツ */}
-      <div
-        className="fixed inset-0 z-60 flex items-center justify-center p-4"
-        tabIndex={-1}
-        ref={modalRef}
-      >
+      <div className="fixed inset-0 z-60 flex items-center justify-center p-4" tabIndex={-1} ref={modalRef}>
         <div className="bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              {title}
-            </h2>
+            <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
             <button
               type="button"
               className="btn btn-ghost btn-sm btn-circle ms-2"
@@ -113,11 +101,7 @@ export default function Modal({
   title: string;
 }): JSX.Element {
   return createPortal(
-    <PortalImpl
-      onClose={onClose}
-      title={title}
-      closeOnClickOutside={closeOnClickOutside}
-    >
+    <PortalImpl onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside}>
       {children}
     </PortalImpl>,
     document.body,

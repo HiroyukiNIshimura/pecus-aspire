@@ -54,8 +54,6 @@ export function toProxyImageUrl(url: string | null | undefined): string {
  * @param identityIconUrl - バックエンドから返されるidentityIconUrl
  * @returns 表示用のURL
  */
-export function getDisplayIconUrl(
-  identityIconUrl: string | null | undefined,
-): string {
+export function getDisplayIconUrl(identityIconUrl: string | null | undefined): string {
   return toProxyImageUrl(identityIconUrl);
 }

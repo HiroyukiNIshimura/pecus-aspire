@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -13,8 +13,7 @@ function getSafeFileName(originalName: string): string {
   // 拡張子を取得
   const lastDotIndex = originalName.lastIndexOf(".");
   const extension = lastDotIndex > 0 ? originalName.slice(lastDotIndex) : "";
-  const baseName =
-    lastDotIndex > 0 ? originalName.slice(0, lastDotIndex) : originalName;
+  const baseName = lastDotIndex > 0 ? originalName.slice(0, lastDotIndex) : originalName;
 
   // ASCII文字のみかチェック（制御文字も除外）
   // eslint-disable-next-line no-control-regex
@@ -35,26 +34,17 @@ function getSafeFileName(originalName: string): string {
  * 一時ファイルアップロードAPIルート（新規アイテム作成用）
  * POST /api/workspaces/{id}/temp-attachments/{sessionId}
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; sessionId: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string; sessionId: string }> }) {
   try {
     const { id, sessionId } = await params;
     const workspaceId = parseInt(id, 10);
 
-    if (isNaN(workspaceId)) {
-      return NextResponse.json(
-        { error: "無効なワークスペースIDです。" },
-        { status: 400 },
-      );
+    if (Number.isNaN(workspaceId)) {
+      return NextResponse.json({ error: "無効なワークスペースIDです。" }, { status: 400 });
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json(
-        { error: "無効なセッションIDです。" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "無効なセッションIDです。" }, { status: 400 });
     }
 
     // FormData からファイルを取得
@@ -62,10 +52,7 @@ export async function POST(
     const file = clientFormData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "ファイルが指定されていません。" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ファイルが指定されていません。" }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成
@@ -88,15 +75,11 @@ export async function POST(
     });
 
     // バックエンドの一時ファイルアップロードAPIを呼び出し
-    const response = await axios.post(
-      `/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`,
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-        },
+    const response = await axios.post(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, formData, {
+      headers: {
+        ...formData.getHeaders(),
       },
-    );
+    });
 
     // バックエンドからのレスポンスをプロキシURL形式に変換
     const backendPreviewUrl = response.data.previewUrl as string | undefined;
@@ -130,25 +113,16 @@ export async function POST(
     }
 
     if (status === 403) {
-      return NextResponse.json(
-        { error: "アクセス権限がありません。" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "アクセス権限がありません。" }, { status: 403 });
     }
 
     if (status === 404) {
-      return NextResponse.json(
-        { error: "ワークスペースが見つかりません。" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "ワークスペースが見つかりません。" }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error:
-          error.response?.data?.message ||
-          error.message ||
-          "一時ファイルのアップロードに失敗しました。",
+        error: error.response?.data?.message || error.message || "一時ファイルのアップロードに失敗しました。",
       },
       { status: status || 500 },
     );
@@ -167,27 +141,19 @@ export async function DELETE(
     const { id, sessionId } = await params;
     const workspaceId = parseInt(id, 10);
 
-    if (isNaN(workspaceId)) {
-      return NextResponse.json(
-        { error: "無効なワークスペースIDです。" },
-        { status: 400 },
-      );
+    if (Number.isNaN(workspaceId)) {
+      return NextResponse.json({ error: "無効なワークスペースIDです。" }, { status: 400 });
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json(
-        { error: "無効なセッションIDです。" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "無効なセッションIDです。" }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成
     const axios = await createAuthenticatedAxios();
 
     // バックエンドの一時ファイルクリーンアップAPIを呼び出し
-    await axios.delete(
-      `/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`,
-    );
+    await axios.delete(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`);
 
     return new NextResponse(null, { status: 204 });
   } catch (error: any) {
@@ -200,25 +166,16 @@ export async function DELETE(
     }
 
     if (status === 403) {
-      return NextResponse.json(
-        { error: "アクセス権限がありません。" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "アクセス権限がありません。" }, { status: 403 });
     }
 
     if (status === 404) {
-      return NextResponse.json(
-        { error: "ワークスペースが見つかりません。" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "ワークスペースが見つかりません。" }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error:
-          error.response?.data?.message ||
-          error.message ||
-          "一時ファイルのクリーンアップに失敗しました。",
+        error: error.response?.data?.message || error.message || "一時ファイルのクリーンアップに失敗しました。",
       },
       { status: status || 500 },
     );

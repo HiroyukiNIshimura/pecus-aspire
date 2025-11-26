@@ -31,19 +31,16 @@ export default function ErrorTestPage() {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">エラーページテスト</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                下記からエラータイプを選択してプレビューを確認できます
-              </p>
+              <p className="text-sm text-gray-500 mt-1">下記からエラータイプを選択してプレビューを確認できます</p>
             </div>
 
             <div className="flex gap-2 flex-wrap">
               {(["404", "500", "502"] as const).map((errorType) => (
                 <button
+                  type="button"
                   key={errorType}
                   onClick={() => setSelectedError(errorType)}
-                  className={`btn btn-sm ${
-                    selectedError === errorType ? "btn-primary" : "btn-outline"
-                  }`}
+                  className={`btn btn-sm ${selectedError === errorType ? "btn-primary" : "btn-outline"}`}
                 >
                   {errorType} エラー
                 </button>
@@ -60,14 +57,9 @@ export default function ErrorTestPage() {
       <div className="bg-base-100 border-t border-base-300 py-4 px-4">
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
           <p>
-            現在表示中:{" "}
-            <span className="font-bold text-primary">
-              {selectedError} エラーページ
-            </span>
+            現在表示中: <span className="font-bold text-primary">{selectedError} エラーページ</span>
           </p>
-          <p className="mt-2">
-            ✅ このページはテスト用です。本番環境では存在しません。
-          </p>
+          <p className="mt-2">✅ このページはテスト用です。本番環境では存在しません。</p>
         </div>
       </div>
     </div>

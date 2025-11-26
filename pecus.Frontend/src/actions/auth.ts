@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type { LoginResponse, SuccessResponse } from "@/connectors/api/pecus";
+import type { LoginResponse } from "@/connectors/api/pecus";
 import type { DeviceType } from "@/connectors/api/pecus/models/DeviceType";
 import type { OSPlatform } from "@/connectors/api/pecus/models/OSPlatform";
 import { type SessionData, SessionManager } from "@/libs/session";
@@ -65,9 +65,7 @@ export async function login(request: {
         id: response.userId || 0,
         name: response.username || "",
         email: response.email || "",
-        roles: response.roles
-          ? response.roles.map((role: any) => role.name || "")
-          : [],
+        roles: response.roles ? response.roles.map((role: any) => role.name || "") : [],
       },
     };
 
@@ -91,9 +89,7 @@ export async function login(request: {
  * - ログイン済みならユーザー情報を返す
  * - 未認証なら null を返す
  */
-export async function getCurrentUser(): Promise<
-  ApiResponse<SessionData["user"] | null>
-> {
+export async function getCurrentUser(): Promise<ApiResponse<SessionData["user"] | null>> {
   try {
     const session = await SessionManager.getSession();
 

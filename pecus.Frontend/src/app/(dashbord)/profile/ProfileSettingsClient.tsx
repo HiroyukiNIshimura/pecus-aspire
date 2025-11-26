@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import AppHeader from "@/components/common/AppHeader";
-import type {
-  MasterSkillResponse,
-  PendingEmailChangeResponse,
-} from "@/connectors/api/pecus";
+import type { MasterSkillResponse, PendingEmailChangeResponse } from "@/connectors/api/pecus";
 import { useNotify } from "@/hooks/useNotify";
 import type { UserInfo } from "@/types/userInfo";
 import BasicInfoTab from "./BasicInfoTab";
-import SkillsTab from "./SkillsTab";
 import SecurityTab from "./SecurityTab";
+import SkillsTab from "./SkillsTab";
 
 interface ProfileSettingsClientProps {
   initialUser: UserInfo;
@@ -25,13 +22,13 @@ export default function ProfileSettingsClient({
   initialUser,
   initialPendingEmailChange,
   masterSkills,
-  fetchError,
 }: ProfileSettingsClientProps) {
   const notify = useNotify();
   const [activeTab, setActiveTab] = useState<TabType>("basic");
   const [user, setUser] = useState<UserInfo>(initialUser);
-  const [pendingEmailChange, setPendingEmailChange] =
-    useState<PendingEmailChangeResponse | null>(initialPendingEmailChange);
+  const [pendingEmailChange, _setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(
+    initialPendingEmailChange,
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const tabs: { id: TabType; label: string }[] = [
@@ -42,19 +39,12 @@ export default function ProfileSettingsClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader
-        userInfo={user}
-        sidebarOpen={false}
-        setSidebarOpen={() => {}}
-        hideProfileMenu={true}
-      />
+      <AppHeader userInfo={user} sidebarOpen={false} setSidebarOpen={() => {}} hideProfileMenu={true} />
       <main className="flex-1 p-6 bg-base-100">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">プロフィール設定</h1>
-            <p className="text-base-content/70">
-              アカウント情報とセキュリティ設定を管理してください
-            </p>
+            <p className="text-base-content/70">アカウント情報とセキュリティ設定を管理してください</p>
           </div>
           <div className="mb-6">
             <div className="flex border-b border-base-300">

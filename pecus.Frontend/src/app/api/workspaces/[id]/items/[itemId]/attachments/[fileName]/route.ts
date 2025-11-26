@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -9,28 +9,20 @@ export const dynamic = "force-dynamic";
  * エディタ内の画像表示に使用
  */
 export async function GET(
-  request: NextRequest,
-  {
-    params,
-  }: { params: Promise<{ id: string; itemId: string; fileName: string }> },
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string; itemId: string; fileName: string }> },
 ) {
   try {
     const { id, itemId, fileName } = await params;
     const workspaceId = parseInt(id, 10);
     const workspaceItemId = parseInt(itemId, 10);
 
-    if (isNaN(workspaceId) || isNaN(workspaceItemId)) {
-      return NextResponse.json(
-        { error: "無効なワークスペースIDまたはアイテムIDです" },
-        { status: 400 },
-      );
+    if (Number.isNaN(workspaceId) || Number.isNaN(workspaceItemId)) {
+      return NextResponse.json({ error: "無効なワークスペースIDまたはアイテムIDです" }, { status: 400 });
     }
 
     if (!fileName) {
-      return NextResponse.json(
-        { error: "ファイル名が指定されていません" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ファイル名が指定されていません" }, { status: 400 });
     }
 
     // 認証済みAxiosでバックエンドから画像を取得
@@ -43,8 +35,7 @@ export async function GET(
     );
 
     // Content-Type を取得（デフォルトは application/octet-stream）
-    const contentType =
-      response.headers["content-type"] || "application/octet-stream";
+    const contentType = response.headers["content-type"] || "application/octet-stream";
 
     // 画像データをそのまま返却
     return new NextResponse(response.data, {
@@ -59,19 +50,13 @@ export async function GET(
 
     const err = error as { response?: { status?: number } };
     if (err.response?.status === 404) {
-      return NextResponse.json(
-        { error: "添付ファイルが見つかりません" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "添付ファイルが見つかりません" }, { status: 404 });
     }
 
     if (err.response?.status === 401) {
       return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
     }
 
-    return NextResponse.json(
-      { error: "添付ファイルの取得に失敗しました" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "添付ファイルの取得に失敗しました" }, { status: 500 });
   }
 }

@@ -9,7 +9,6 @@ import { usePathname } from "next/navigation";
 
 interface AdminSidebarProps {
   sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
 }
 
 const menuItems = [
@@ -20,10 +19,7 @@ const menuItems = [
   { href: "/admin/tags", label: "タグ", icon: LocalOfferIcon },
 ];
 
-export default function AdminSidebar({
-  sidebarOpen,
-  setSidebarOpen,
-}: AdminSidebarProps) {
+export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -44,11 +40,7 @@ export default function AdminSidebar({
                 title={item.label}
               >
                 <IconComponent sx={{ fontSize: 20 }} />
-                <span
-                  className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}
-                >
-                  {item.label}
-                </span>
+                <span className={`${sidebarOpen ? "block" : "hidden"} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>
           );

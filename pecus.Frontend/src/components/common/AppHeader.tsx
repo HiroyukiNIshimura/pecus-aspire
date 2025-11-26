@@ -34,14 +34,9 @@ export default function AppHeader({
     changeTheme(newTheme);
     // ドロップダウンを閉じる
     setTimeout(() => {
-      const themeDropdown = document.querySelector(
-        ".navbar-end > .dropdown:first-of-type",
-      ) as HTMLElement;
+      const themeDropdown = document.querySelector(".navbar-end > .dropdown:first-of-type") as HTMLElement;
       if (themeDropdown && (window as any).HSDropdown) {
-        const { element } = (window as any).HSDropdown.getInstance(
-          themeDropdown,
-          true,
-        );
+        const { element } = (window as any).HSDropdown.getInstance(themeDropdown, true);
         if (element) {
           element.close();
         }
@@ -67,11 +62,7 @@ export default function AppHeader({
             Pecus
           </a>
           <div className="md:hidden mt-2">
-            <button
-              type="button"
-              className="p-2"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
+            <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
               <span className="icon-[tabler--menu-2] size-5"></span>
             </button>
           </div>
@@ -97,19 +88,10 @@ export default function AppHeader({
           {/* Theme Selector */}
           {mounted && (
             <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end] mr-2">
-              <button
-                type="button"
-                className="dropdown-toggle bg-transparent hover:bg-transparent before:hidden p-2"
-              >
-                {theme === "light" && (
-                  <span className="icon-[tabler--sun] size-5"></span>
-                )}
-                {theme === "dark" && (
-                  <span className="icon-[tabler--moon] size-5"></span>
-                )}
-                {theme === "auto" && (
-                  <span className="icon-[tabler--brightness-auto] size-5"></span>
-                )}
+              <button type="button" className="dropdown-toggle bg-transparent hover:bg-transparent before:hidden p-2">
+                {theme === "light" && <span className="icon-[tabler--sun] size-5"></span>}
+                {theme === "dark" && <span className="icon-[tabler--moon] size-5"></span>}
+                {theme === "auto" && <span className="icon-[tabler--brightness-auto] size-5"></span>}
               </button>
               <ul className="dropdown-menu dropdown-open:opacity-100 hidden min-w-32">
                 <li>
@@ -148,17 +130,11 @@ export default function AppHeader({
 
           {/* User Menu */}
           <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end]">
-            <button
-              type="button"
-              className="dropdown-toggle p-0 bg-transparent hover:bg-transparent border-none"
-            >
+            <button type="button" className="dropdown-toggle p-0 bg-transparent hover:bg-transparent border-none">
               <div className="avatar">
                 <div className="size-10 rounded-full ring-0 hover:ring-2 hover:ring-primary transition-all">
                   {userInfo?.identityIconUrl ? (
-                    <img
-                      src={getDisplayIconUrl(userInfo.identityIconUrl)}
-                      alt={userInfo.name || "User Avatar"}
-                    />
+                    <img src={getDisplayIconUrl(userInfo.identityIconUrl)} alt={userInfo.name || "User Avatar"} />
                   ) : (
                     <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content font-bold">
                       {userInfo?.name?.charAt(0).toUpperCase() || "U"}
@@ -181,11 +157,7 @@ export default function AppHeader({
                 </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  className="dropdown-item w-full text-left"
-                  onClick={handleLogout}
-                >
+                <button type="button" className="dropdown-item w-full text-left" onClick={handleLogout}>
                   ログアウト
                 </button>
               </li>

@@ -7,15 +7,11 @@ import EditTagClient from "./EditTagClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditTagPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditTagPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const tagId = parseInt(id, 10);
 
-  if (isNaN(tagId) || tagId <= 0) {
+  if (Number.isNaN(tagId) || tagId <= 0) {
     notFound();
   }
 
@@ -41,10 +37,7 @@ export default async function EditTagPage({
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -59,11 +52,5 @@ export default async function EditTagPage({
     notFound();
   }
 
-  return (
-    <EditTagClient
-      initialUser={user}
-      tagDetail={tagDetail}
-      fetchError={fetchError}
-    />
-  );
+  return <EditTagClient initialUser={user} tagDetail={tagDetail} fetchError={fetchError} />;
 }

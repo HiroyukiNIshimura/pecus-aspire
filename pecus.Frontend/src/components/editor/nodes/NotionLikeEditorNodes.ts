@@ -6,9 +6,8 @@
  *
  */
 
-import type { Klass, LexicalNode } from "lexical";
-
 import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { HorizontalRuleNode } from "@lexical/extension";
 import { HashtagNode } from "@lexical/hashtag";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { ListItemNode, ListNode } from "@lexical/list";
@@ -16,7 +15,7 @@ import { MarkNode } from "@lexical/mark";
 import { OverflowNode } from "@lexical/overflow";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-
+import type { Klass, LexicalNode } from "lexical";
 import { CollapsibleContainerNode } from "../plugins/CollapsiblePlugin/CollapsibleContainerNode";
 import { CollapsibleContentNode } from "../plugins/CollapsiblePlugin/CollapsibleContentNode";
 import { CollapsibleTitleNode } from "../plugins/CollapsiblePlugin/CollapsibleTitleNode";
@@ -35,7 +34,6 @@ import { SpecialTextNode } from "./SpecialTextNode";
 import { StickyNode } from "./StickyNode";
 import { TweetNode } from "./TweetNode";
 import { YouTubeNode } from "./YouTubeNode";
-import { HorizontalRuleNode } from "@lexical/extension";
 
 const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   HeadingNode,

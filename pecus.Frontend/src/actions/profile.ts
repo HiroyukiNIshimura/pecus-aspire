@@ -1,27 +1,20 @@
 "use server";
 
 import {
-  createPecusApiClients,
   createAuthenticatedAxios,
+  createPecusApiClients,
   detectConcurrencyError,
 } from "@/connectors/api/PecusApiClient";
 import type {
   AvatarType,
-  UserResponse,
-  MessageResponse,
-  SuccessResponse,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
-  PendingEmailChangeResponse,
+  MessageResponse,
+  SuccessResponse,
+  UserResponse,
 } from "@/connectors/api/pecus";
-import type { UserInfo } from "@/types/userInfo";
+import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from "@/schemas/profileSchemas";
 import type { ApiResponse } from "./types";
-import type {
-  UpdateEmailFormInput,
-  UpdatePasswordFormInput,
-  UpdateProfileFormInput,
-  UpdateSkillsFormInput,
-} from "@/schemas/profileSchemas";
 
 /**
  * Server Action: プロフィールを更新（ユーザー名、アバター）
@@ -67,8 +60,7 @@ export async function updateProfile(request: {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "Failed to update profile",
+      message: error.body?.message || error.message || "Failed to update profile",
     };
   }
 }
@@ -93,10 +85,7 @@ export async function requestEmailChange(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "メールアドレス変更リクエストに失敗しました",
+      message: error.body?.message || error.message || "メールアドレス変更リクエストに失敗しました",
     };
   }
 }
@@ -105,9 +94,7 @@ export async function requestEmailChange(
  * Server Action: メールアドレス変更を確認（トークン検証）
  * @param token 確認トークン
  */
-export async function verifyEmailChange(
-  token: string,
-): Promise<ApiResponse<EmailChangeVerifyResponse>> {
+export async function verifyEmailChange(token: string): Promise<ApiResponse<EmailChangeVerifyResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profileEmail.getApiProfileEmailVerify(token);
@@ -118,10 +105,7 @@ export async function verifyEmailChange(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "メールアドレス変更の確認に失敗しました",
+      message: error.body?.message || error.message || "メールアドレス変更の確認に失敗しました",
     };
   }
 }
@@ -130,9 +114,7 @@ export async function verifyEmailChange(
  * Server Action: パスワードを変更
  * @param input クライアント側で Zod 検証済みのデータ
  */
-export async function updateUserPassword(
-  input: UpdatePasswordFormInput,
-): Promise<ApiResponse<MessageResponse>> {
+export async function updateUserPassword(input: UpdatePasswordFormInput): Promise<ApiResponse<MessageResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.patchApiProfilePassword({
@@ -146,8 +128,7 @@ export async function updateUserPassword(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "パスワード変更に失敗しました",
+      message: error.body?.message || error.message || "パスワード変更に失敗しました",
     };
   }
 }
@@ -156,9 +137,7 @@ export async function updateUserPassword(
  * Server Action: スキルを設定（洗い替え）
  * @param input クライアント側で Zod 検証済みのデータ
  */
-export async function setUserSkills(
-  input: UpdateSkillsFormInput,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function setUserSkills(input: UpdateSkillsFormInput): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfileSkills({
@@ -182,8 +161,7 @@ export async function setUserSkills(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキル設定に失敗しました",
+      message: error.body?.message || error.message || "スキル設定に失敗しました",
     };
   }
 }
@@ -247,10 +225,7 @@ export async function uploadAvatarFile(fileData: {
     return {
       success: false,
       error: "server",
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "アップロードに失敗しました",
+      message: error.response?.data?.message || error.message || "アップロードに失敗しました",
     };
   }
 }
@@ -265,11 +240,7 @@ export async function deleteAvatarFile(fileData: {
 }): Promise<ApiResponse<MessageResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.file.deleteApiDownloadsIcons(
-      "Avatar",
-      fileData.resourceId,
-      fileData.fileName,
-    );
+    const response = await api.file.deleteApiDownloadsIcons("Avatar", fileData.resourceId, fileData.fileName);
 
     return { success: true, data: response };
   } catch (error: any) {

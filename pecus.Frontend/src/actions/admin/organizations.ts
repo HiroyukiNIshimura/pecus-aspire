@@ -1,18 +1,13 @@
 "use server";
 
-import {
-  createPecusApiClients,
-  detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import type { OrganizationResponse } from "@/connectors/api/pecus";
 import type { ApiResponse } from "../types";
 
 /**
  * Server Action: 自組織の詳細情報を取得
  */
-export async function getOrganizationDetail(): Promise<
-  ApiResponse<OrganizationResponse>
-> {
+export async function getOrganizationDetail(): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminOrganization.getApiAdminOrganization();
@@ -22,8 +17,7 @@ export async function getOrganizationDetail(): Promise<
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "組織情報の取得に失敗しました",
+      message: error.body?.message || error.message || "組織情報の取得に失敗しました",
     };
   }
 }
@@ -44,8 +38,7 @@ export async function updateOrganization(request: {
 }): Promise<ApiResponse<OrganizationResponse>> {
   try {
     const api = createPecusApiClients();
-    const response =
-      await api.adminOrganization.putApiAdminOrganization(request);
+    const response = await api.adminOrganization.putApiAdminOrganization(request);
     return { success: true, data: response };
   } catch (error: any) {
     // 409 Conflict: 並行更新による競合を検出
@@ -68,8 +61,7 @@ export async function updateOrganization(request: {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "組織情報の更新に失敗しました",
+      message: error.body?.message || error.message || "組織情報の更新に失敗しました",
     };
   }
 }
@@ -78,8 +70,6 @@ export async function updateOrganization(request: {
  * Server Action: 組織情報を取得（getOrganizationDetail() のエイリアス）
  * 互換性のための別名関数
  */
-export async function getOrganization(): Promise<
-  ApiResponse<OrganizationResponse>
-> {
+export async function getOrganization(): Promise<ApiResponse<OrganizationResponse>> {
   return getOrganizationDetail();
 }

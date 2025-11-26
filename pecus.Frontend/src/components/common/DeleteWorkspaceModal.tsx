@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import WarningIcon from "@mui/icons-material/Warning";
-import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import WarningIcon from "@mui/icons-material/Warning";
+import { useEffect, useState } from "react";
 import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
 
 interface DeleteWorkspaceModalProps {
@@ -13,12 +13,7 @@ interface DeleteWorkspaceModalProps {
   workspace: WorkspaceListItemResponse | null;
 }
 
-export default function DeleteWorkspaceModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  workspace,
-}: DeleteWorkspaceModalProps) {
+export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, workspace }: DeleteWorkspaceModalProps) {
   const [confirmCode, setConfirmCode] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -58,11 +53,7 @@ export default function DeleteWorkspaceModal({
   return (
     <>
       {/* モーダル背景オーバーレイ */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} aria-hidden="true" />
 
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -77,12 +68,8 @@ export default function DeleteWorkspaceModal({
                 <WarningIcon className="w-6 h-6 text-error" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-error">
-                  ワークスペースの削除
-                </h2>
-                <p className="text-sm text-base-content/70">
-                  この操作は取り消せません
-                </p>
+                <h2 className="text-xl font-bold text-error">ワークスペースの削除</h2>
+                <p className="text-sm text-base-content/70">この操作は取り消せません</p>
               </div>
             </div>
             <button
@@ -103,9 +90,7 @@ export default function DeleteWorkspaceModal({
               <WarningIcon className="w-5 h-5" />
               <div>
                 <p className="font-semibold">重要な警告</p>
-                <p className="text-sm">
-                  このワークスペースとそのすべてのデータが完全に削除されます。
-                </p>
+                <p className="text-sm">このワークスペースとそのすべてのデータが完全に削除されます。</p>
               </div>
             </div>
 
@@ -113,9 +98,7 @@ export default function DeleteWorkspaceModal({
             <div className="bg-base-200 rounded-lg p-4 mb-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-base-content/70">
-                    ワークスペース名
-                  </span>
+                  <span className="text-sm text-base-content/70">ワークスペース名</span>
                   <span className="font-semibold">{workspace.name}</span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -124,12 +107,8 @@ export default function DeleteWorkspaceModal({
                 </div>
                 {workspace.memberCount !== undefined && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-base-content/70">
-                      メンバー数
-                    </span>
-                    <span className="font-semibold">
-                      {workspace.memberCount}
-                    </span>
+                    <span className="text-sm text-base-content/70">メンバー数</span>
+                    <span className="font-semibold">{workspace.memberCount}</span>
                   </div>
                 )}
               </div>
@@ -140,9 +119,7 @@ export default function DeleteWorkspaceModal({
               <label htmlFor="confirmCode" className="label">
                 <span className="label-text font-semibold">
                   削除を確認するため、ワークスペースコード
-                  <code className="mx-1 badge badge-ghost badge-sm">
-                    {workspace.code}
-                  </code>
+                  <code className="mx-1 badge badge-ghost badge-sm">{workspace.code}</code>
                   を入力してください
                 </span>
               </label>
@@ -150,32 +127,22 @@ export default function DeleteWorkspaceModal({
                 id="confirmCode"
                 type="text"
                 placeholder={`${workspace.code} を入力`}
-                className={`input input-bordered ${
-                  confirmCode && !isConfirmValid ? "input-error" : ""
-                }`}
+                className={`input input-bordered ${confirmCode && !isConfirmValid ? "input-error" : ""}`}
                 value={confirmCode}
                 onChange={(e) => setConfirmCode(e.target.value)}
                 disabled={isDeleting}
                 autoComplete="off"
-                autoFocus
               />
               {confirmCode && !isConfirmValid && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    ワークスペースコードが一致しません
-                  </span>
-                </label>
+                <div className="label">
+                  <span className="label-text-alt text-error">ワークスペースコードが一致しません</span>
+                </div>
               )}
             </div>
 
             {/* ボタングループ */}
             <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={handleClose}
-                disabled={isDeleting}
-              >
+              <button type="button" className="btn btn-outline" onClick={handleClose} disabled={isDeleting}>
                 キャンセル
               </button>
               <button

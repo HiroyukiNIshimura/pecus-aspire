@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { MasterSkillResponse } from "@/connectors/api/pecus";
 import { setUserSkills } from "@/actions/profile";
+import type { MasterSkillResponse } from "@/connectors/api/pecus";
 
 interface SkillsTabProps {
   initialSkillIds: number[];
@@ -17,16 +17,8 @@ interface SkillsTabProps {
   setIsLoading: (loading: boolean) => void;
 }
 
-export default function SkillsTab({
-  initialSkillIds,
-  masterSkills,
-  notify,
-  isLoading,
-  setIsLoading,
-}: SkillsTabProps) {
-  const [selectedSkillIds, setSelectedSkillIds] = useState<Set<number>>(
-    new Set(initialSkillIds),
-  );
+export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoading, setIsLoading }: SkillsTabProps) {
+  const [selectedSkillIds, setSelectedSkillIds] = useState<Set<number>>(new Set(initialSkillIds));
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSkillToggle = (skillId: number) => {
@@ -61,19 +53,15 @@ export default function SkillsTab({
     }
   };
 
-  const selectedSkills = masterSkills.filter((skill) =>
-    selectedSkillIds.has(skill.id),
-  );
+  const selectedSkills = masterSkills.filter((skill) => selectedSkillIds.has(skill.id));
 
   return (
     <div className="space-y-6 bg-base-100">
       {/* スキル選択ドロップダウン */}
       <div className="form-control">
-        <label className="label">
-          <span className="label-text font-semibold text-base-content">
-            スキル選択
-          </span>
-        </label>
+        <div className="label">
+          <span className="label-text font-semibold text-base-content">スキル選択</span>
+        </div>
         <div className="dropdown w-full">
           <button
             type="button"
@@ -82,24 +70,15 @@ export default function SkillsTab({
             disabled={isLoading}
           >
             <span className="flex-1 text-left">
-              {selectedSkillIds.size > 0
-                ? `${selectedSkillIds.size}個のスキルを選択`
-                : "スキルを選択"}
+              {selectedSkillIds.size > 0 ? `${selectedSkillIds.size}個のスキルを選択` : "スキルを選択"}
             </span>
             <svg
-              className={`w-5 h-5 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
+              className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </button>
           {isOpen && (
@@ -132,10 +111,7 @@ export default function SkillsTab({
           <p className="text-sm font-semibold">選択されたスキル:</p>
           <div className="flex flex-wrap gap-2">
             {selectedSkills.map((skill) => (
-              <div
-                key={skill.id}
-                className="badge badge-lg badge-primary flex items-center gap-2"
-              >
+              <div key={skill.id} className="badge badge-lg badge-primary flex items-center gap-2">
                 <span>{skill.name}</span>
                 <button
                   type="button"
@@ -154,12 +130,7 @@ export default function SkillsTab({
 
       {/* 保存ボタン */}
       <div className="flex justify-end mt-6">
-        <button
-          type="button"
-          onClick={handleSkillsSubmit}
-          className="btn btn-primary"
-          disabled={isLoading}
-        >
+        <button type="button" onClick={handleSkillsSubmit} className="btn btn-primary" disabled={isLoading}>
           {isLoading ? (
             <>
               <span className="loading loading-spinner loading-sm"></span>

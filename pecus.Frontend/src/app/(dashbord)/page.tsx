@@ -1,6 +1,6 @@
+import { redirect } from "next/navigation";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 import type { UserResponse } from "@/connectors/api/pecus";
-import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import DashboardClient from "./DashboardClient";
 
@@ -24,10 +24,7 @@ export default async function Dashboard() {
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "ユーザー情報の取得に失敗しました";
+    fetchError = error.body?.message || error.message || "ユーザー情報の取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

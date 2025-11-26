@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import { useEffect, useState } from "react";
 import { createWorkspace } from "@/actions/workspace";
 import type { MasterGenreResponse } from "@/connectors/api/pecus";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { createWorkspaceSchema } from "@/schemas/workspaceSchemas";
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
@@ -15,49 +15,33 @@ interface CreateWorkspaceModalProps {
   genres: MasterGenreResponse[];
 }
 
-export default function CreateWorkspaceModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  genres,
-}: CreateWorkspaceModalProps) {
-  const [serverErrors, setServerErrors] = useState<string[]>([]);
+export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genres }: CreateWorkspaceModalProps) {
+  const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
 
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-    resetForm,
-  } = useFormValidation({
-    schema: createWorkspaceSchema,
-    onSubmit: async (data) => {
-      setServerErrors([]);
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
+    useFormValidation({
+      schema: createWorkspaceSchema,
+      onSubmit: async (data) => {
+        setServerErrors([]);
 
-      // genreId が string の場合は number に変換
-      const requestData = {
-        ...data,
-        genreId:
-          typeof data.genreId === "string"
-            ? parseInt(data.genreId, 10)
-            : data.genreId,
-      };
+        // genreId が string の場合は number に変換
+        const requestData = {
+          ...data,
+          genreId: typeof data.genreId === "string" ? parseInt(data.genreId, 10) : data.genreId,
+        };
 
-      const result = await createWorkspace(requestData);
+        const result = await createWorkspace(requestData);
 
-      if (!result.success) {
-        setServerErrors([result.message]);
-        return;
-      }
+        if (!result.success) {
+          setServerErrors([{ key: 0, message: result.message }]);
+          return;
+        }
 
-      // 成功時はモーダルを閉じて親コンポーネントに通知
-      onSuccess();
-      onClose();
-    },
-  });
+        // 成功時はモーダルを閉じて親コンポーネントに通知
+        onSuccess();
+        onClose();
+      },
+    });
 
   // モーダルが閉じられたらエラーとフォームをクリア
   useEffect(() => {
@@ -72,11 +56,7 @@ export default function CreateWorkspaceModal({
   return (
     <>
       {/* モーダル背景オーバーレイ */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true" />
 
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -122,8 +102,8 @@ export default function CreateWorkspaceModal({
                 <div>
                   <h3 className="font-bold">エラーが発生しました</h3>
                   <ul className="list-disc list-inside mt-2">
-                    {serverErrors.map((error, idx) => (
-                      <li key={idx}>{error}</li>
+                    {serverErrors.map((error) => (
+                      <li key={error.key}>{error.message}</li>
                     ))}
                   </ul>
                 </div>
@@ -131,12 +111,7 @@ export default function CreateWorkspaceModal({
             )}
 
             {/* フォーム */}
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              className="space-y-4"
-              noValidate
-            >
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
               {/* ワークスペース名 */}
               <div className="form-control">
                 <label htmlFor="name" className="label">
@@ -149,18 +124,14 @@ export default function CreateWorkspaceModal({
                   name="name"
                   type="text"
                   placeholder="例：プロジェクトA"
-                  className={`input input-bordered ${
-                    shouldShowError("name") ? "input-error" : ""
-                  }`}
+                  className={`input input-bordered ${shouldShowError("name") ? "input-error" : ""}`}
                   onBlur={(e) => validateField("name", e.target.value)}
                   disabled={isSubmitting}
                 />
                 {shouldShowError("name") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("name")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("name")}</span>
+                  </div>
                 )}
               </div>
 
@@ -180,11 +151,9 @@ export default function CreateWorkspaceModal({
                   disabled={isSubmitting}
                 />
                 {shouldShowError("description") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("description")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("description")}</span>
+                  </div>
                 )}
               </div>
 
@@ -198,9 +167,7 @@ export default function CreateWorkspaceModal({
                 <select
                   id="genreId"
                   name="genreId"
-                  className={`select select-bordered ${
-                    shouldShowError("genreId") ? "select-error" : ""
-                  }`}
+                  className={`select select-bordered ${shouldShowError("genreId") ? "select-error" : ""}`}
                   disabled={isSubmitting || genres.length === 0}
                 >
                   <option value="">選択してください</option>
@@ -212,29 +179,18 @@ export default function CreateWorkspaceModal({
                   ))}
                 </select>
                 {shouldShowError("genreId") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("genreId")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("genreId")}</span>
+                  </div>
                 )}
               </div>
 
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                >
+                <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
                   キャンセル
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isSubmitting}
-                >
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>

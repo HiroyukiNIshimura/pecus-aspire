@@ -6,9 +6,8 @@
  *
  */
 
-import type { EditorState, LexicalEditor } from "lexical";
-
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import type { EditorState, LexicalEditor } from "lexical";
 import { useEffect } from "react";
 
 export default function OnChangePlugin({
@@ -23,20 +22,16 @@ export default function OnChangePlugin({
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    return editor.registerUpdateListener(
-      ({ editorState, dirtyElements, dirtyLeaves, prevEditorState, tags }) => {
-        if (
-          (ignoreSelectionChange &&
-            dirtyElements.size === 0 &&
-            dirtyLeaves.size === 0) ||
-          (ignoreHistoryMergeTagChange && tags.has("history-merge"))
-        ) {
-          return;
-        }
+    return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves, tags }) => {
+      if (
+        (ignoreSelectionChange && dirtyElements.size === 0 && dirtyLeaves.size === 0) ||
+        (ignoreHistoryMergeTagChange && tags.has("history-merge"))
+      ) {
+        return;
+      }
 
-        onChange(editorState, editor);
-      },
-    );
+      onChange(editorState, editor);
+    });
   }, [editor, ignoreHistoryMergeTagChange, ignoreSelectionChange, onChange]);
 
   return null;

@@ -35,13 +35,9 @@ export default function AdminClient({
 }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(initialUser);
-  const [organization, setOrganization] = useState<OrganizationData | null>(
-    initialOrganization,
-  );
-  const [clientError, setClientError] = useState<ApiErrorResponse | null>(
-    fetchError ? JSON.parse(fetchError) : null,
-  );
+  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser);
+  const [organization, _setOrganization] = useState<OrganizationData | null>(initialOrganization);
+  const [clientError, _setClientError] = useState<ApiErrorResponse | null>(fetchError ? JSON.parse(fetchError) : null);
 
   const { showLoading } = useDelayedLoading();
 
@@ -64,10 +60,7 @@ export default function AdminClient({
       />
 
       <div className="flex flex-1">
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -85,9 +78,7 @@ export default function AdminClient({
               <div className="alert alert-error mb-4">
                 <div>
                   <span>組織情報の取得に失敗しました: </span>
-                  <span className="font-mono">
-                    {clientError.message || `エラーコード: ${clientError.code}`}
-                  </span>
+                  <span className="font-mono">{clientError.message || `エラーコード: ${clientError.code}`}</span>
                 </div>
               </div>
             ) : (
@@ -116,9 +107,7 @@ export default function AdminClient({
 
                     <div className="form-control">
                       <label htmlFor="org-code" className="label">
-                        <span className="label-text font-semibold">
-                          組織コード
-                        </span>
+                        <span className="label-text font-semibold">組織コード</span>
                       </label>
                       <div id="org-code" className="text-lg">
                         {organization?.code ?? "未設定"}
@@ -127,9 +116,7 @@ export default function AdminClient({
 
                     <div className="form-control">
                       <label htmlFor="org-status" className="label">
-                        <span className="label-text font-semibold">
-                          ステータス
-                        </span>
+                        <span className="label-text font-semibold">ステータス</span>
                       </label>
                       <div
                         id="org-status"
@@ -145,18 +132,14 @@ export default function AdminClient({
                       </label>
                       <div id="org-created" className="text-lg">
                         {organization?.createdAt
-                          ? new Date(organization.createdAt).toLocaleDateString(
-                              "ja-JP",
-                            )
+                          ? new Date(organization.createdAt).toLocaleDateString("ja-JP")
                           : "未設定"}
                       </div>
                     </div>
 
                     <div className="form-control">
                       <label htmlFor="org-users" className="label">
-                        <span className="label-text font-semibold">
-                          所属ユーザー数 (非アクティブを含む)
-                        </span>
+                        <span className="label-text font-semibold">所属ユーザー数 (非アクティブを含む)</span>
                       </label>
                       <div id="org-users" className="text-lg">
                         {organization?.userCount ?? 0} 人
@@ -169,9 +152,7 @@ export default function AdminClient({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="form-control">
                       <label htmlFor="org-representative" className="label">
-                        <span className="label-text font-semibold">
-                          代表者名
-                        </span>
+                        <span className="label-text font-semibold">代表者名</span>
                       </label>
                       <div id="org-representative" className="text-lg">
                         {organization?.representativeName ?? "未設定"}
@@ -180,9 +161,7 @@ export default function AdminClient({
 
                     <div className="form-control">
                       <label htmlFor="org-phone" className="label">
-                        <span className="label-text font-semibold">
-                          電話番号
-                        </span>
+                        <span className="label-text font-semibold">電話番号</span>
                       </label>
                       <div id="org-phone" className="text-lg">
                         {organization?.phoneNumber ?? "未設定"}
@@ -191,9 +170,7 @@ export default function AdminClient({
 
                     <div className="form-control md:col-span-2">
                       <label htmlFor="org-email" className="label">
-                        <span className="label-text font-semibold">
-                          メールアドレス
-                        </span>
+                        <span className="label-text font-semibold">メールアドレス</span>
                       </label>
                       <div id="org-email" className="text-lg">
                         {organization?.email ?? "未設定"}
@@ -208,8 +185,7 @@ export default function AdminClient({
                       <span className="label-text font-semibold">説明</span>
                     </label>
                     <div id="org-description" className="text-base">
-                      {organization?.description ??
-                        "説明が設定されていません。"}
+                      {organization?.description ?? "説明が設定されていません。"}
                     </div>
                   </div>
 

@@ -18,21 +18,19 @@ import {
   COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_LOW,
   DecoratorNode,
-  DOMConversionMap,
-  DOMConversionOutput,
-  LexicalNode,
-  NodeKey,
-  SerializedLexicalNode,
+  type DOMConversionMap,
+  type DOMConversionOutput,
+  type LexicalNode,
+  type NodeKey,
+  type SerializedLexicalNode,
 } from "lexical";
-import * as React from "react";
 import { useEffect } from "react";
 
 export type SerializedPageBreakNode = SerializedLexicalNode;
 
 function PageBreakComponent({ nodeKey }: { nodeKey: NodeKey }) {
   const [editor] = useLexicalComposerContext();
-  const [isSelected, setSelected, clearSelection] =
-    useLexicalNodeSelection(nodeKey);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey);
 
   useEffect(() => {
     return mergeRegister(
@@ -83,7 +81,7 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
     return {
       figure: (domNode: HTMLElement) => {
         const tp = domNode.getAttribute("type");
-        if (tp !== this.getType()) {
+        if (tp !== PageBreakNode.getType()) {
           return null;
         }
 
@@ -127,8 +125,6 @@ export function $createPageBreakNode(): PageBreakNode {
   return new PageBreakNode();
 }
 
-export function $isPageBreakNode(
-  node: LexicalNode | null | undefined,
-): node is PageBreakNode {
+export function $isPageBreakNode(node: LexicalNode | null | undefined): node is PageBreakNode {
   return node instanceof PageBreakNode;
 }

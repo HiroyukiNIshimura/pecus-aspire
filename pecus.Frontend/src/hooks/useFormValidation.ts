@@ -26,7 +26,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldError>({});
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [_touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   /**
    * フィールド単位のZod検証（入力時用）
@@ -49,9 +49,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
           });
           return { isValid: true, errors: [] };
         } else {
-          const errors = result.error.issues.map(
-            (issue: $ZodIssueBase) => issue.message,
-          );
+          const errors = result.error.issues.map((issue: $ZodIssueBase) => issue.message);
           setFieldErrors((prev) => ({
             ...prev,
             [fieldName]: errors,
@@ -69,7 +67,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
   /**
    * フィールド接触時のマーク
    */
-  const markFieldAsTouched = useCallback((fieldName: string) => {
+  const _markFieldAsTouched = useCallback((fieldName: string) => {
     setTouchedFields((prev) => new Set([...prev, fieldName]));
   }, []);
 
@@ -95,10 +93,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
           Object.keys(shape).forEach((key) => {
             const fieldSchema = shape[key];
             // boolean 型フィールドの場合、未設定なら false を設定
-            if (
-              fieldSchema instanceof z.ZodBoolean ||
-              fieldSchema._def?.innerType instanceof z.ZodBoolean
-            ) {
+            if (fieldSchema instanceof z.ZodBoolean || fieldSchema._def?.innerType instanceof z.ZodBoolean) {
               if (!(key in data)) {
                 data[key] = false;
               } else {

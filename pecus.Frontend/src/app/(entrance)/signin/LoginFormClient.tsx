@@ -43,15 +43,7 @@ export default function LoginFormClient() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   // === Zod一本化フック ===
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-  } = useFormValidation({
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: loginSchema,
     onSubmit: async (data) => {
       // エラーをクリア
@@ -60,9 +52,7 @@ export default function LoginFormClient() {
       // === ログイン API 呼び出し ===
       try {
         if (!deviceInfo) {
-          setApiError(
-            "デバイス情報の取得に失敗しました。ページを再読み込みしてください。",
-          );
+          setApiError("デバイス情報の取得に失敗しました。ページを再読み込みしてください。");
           return;
         }
 
@@ -85,11 +75,7 @@ export default function LoginFormClient() {
         }
 
         // === ログイン失敗時のエラー表示 ===
-        setApiError(
-          result.error
-            ? `ログイン認証に失敗しました。(${result.error})`
-            : "ログイン認証に失敗しました。",
-        );
+        setApiError(result.error ? `ログイン認証に失敗しました。(${result.error})` : "ログイン認証に失敗しました。");
       } catch (err: unknown) {
         console.error("ログイン処理中にエラーが発生:", err);
         setApiError("ログイン処理中にエラーが発生しました。");
@@ -124,12 +110,7 @@ export default function LoginFormClient() {
           )}
 
           {/* === ログインフォーム === */}
-          <form
-            ref={formRef}
-            onSubmit={handleSubmit}
-            className="w-full"
-            noValidate
-          >
+          <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
             <div className="form-control w-full mb-4">
               <label htmlFor="loginIdentifier" className="label">
                 <span className="label-text font-semibold">
@@ -142,20 +123,14 @@ export default function LoginFormClient() {
                   id="loginIdentifier"
                   name="loginIdentifier"
                   placeholder="ログインIDまたはメールアドレス"
-                  className={`input input-bordered w-full ${
-                    shouldShowError("loginIdentifier") ? "input-error" : ""
-                  }`}
+                  className={`input input-bordered w-full ${shouldShowError("loginIdentifier") ? "input-error" : ""}`}
                   value={formData.loginIdentifier}
-                  onChange={(event) =>
-                    handleFieldChange("loginIdentifier", event.target.value)
-                  }
+                  onChange={(event) => handleFieldChange("loginIdentifier", event.target.value)}
                   disabled={isSubmitting}
                   required
                 />
                 {shouldShowError("loginIdentifier") && (
-                  <span className="label-text-alt text-error">
-                    {getFieldError("loginIdentifier")}
-                  </span>
+                  <span className="label-text-alt text-error">{getFieldError("loginIdentifier")}</span>
                 )}
               </div>
             </div>
@@ -172,30 +147,20 @@ export default function LoginFormClient() {
                   id="password"
                   name="password"
                   placeholder="パスワード"
-                  className={`input input-bordered w-full ${
-                    shouldShowError("password") ? "input-error" : ""
-                  }`}
+                  className={`input input-bordered w-full ${shouldShowError("password") ? "input-error" : ""}`}
                   value={formData.password}
-                  onChange={(event) =>
-                    handleFieldChange("password", event.target.value)
-                  }
+                  onChange={(event) => handleFieldChange("password", event.target.value)}
                   disabled={isSubmitting}
                   required
                 />
                 {shouldShowError("password") && (
-                  <span className="label-text-alt text-error">
-                    {getFieldError("password")}
-                  </span>
+                  <span className="label-text-alt text-error">{getFieldError("password")}</span>
                 )}
               </div>
             </div>
 
             <div className="w-full mt-6">
-              <button
-                className="btn btn-accent w-full"
-                type="submit"
-                disabled={isSubmitting}
-              >
+              <button className="btn btn-accent w-full" type="submit" disabled={isSubmitting}>
                 ログイン
               </button>
             </div>

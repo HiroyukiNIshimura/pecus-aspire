@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getWorkspaces } from "@/actions/admin/workspace";
 import { getGenres } from "@/actions/master";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
@@ -7,7 +8,6 @@ import type {
   WorkspaceListItemResponse,
   WorkspaceStatistics,
 } from "@/connectors/api/pecus";
-import { redirect } from "next/navigation";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminWorkspacesClient from "./AdminWorkspacesClient";
 
@@ -54,8 +54,7 @@ export default async function AdminWorkspaces() {
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト

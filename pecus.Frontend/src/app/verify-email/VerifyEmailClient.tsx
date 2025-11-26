@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { verifyEmailChange } from "@/actions/profile";
 
 type VerificationState = "verifying" | "success" | "error";
@@ -50,9 +50,7 @@ export default function VerifyEmailClient() {
           <>
             <span className="loading loading-spinner loading-lg text-primary"></span>
             <h2 className="card-title text-2xl mt-4">確認中...</h2>
-            <p className="text-base-content/70">
-              メールアドレス変更を確認しています。
-            </p>
+            <p className="text-base-content/70">メールアドレス変更を確認しています。</p>
           </>
         )}
 
@@ -76,17 +74,9 @@ export default function VerifyEmailClient() {
             </div>
             <h2 className="card-title text-2xl mt-4 text-success">変更完了</h2>
             <p className="text-base-content/70 mt-2">{message}</p>
-            {newEmail && (
-              <p className="text-base-content font-semibold mt-2">
-                新しいメールアドレス: {newEmail}
-              </p>
-            )}
+            {newEmail && <p className="text-base-content font-semibold mt-2">新しいメールアドレス: {newEmail}</p>}
             <div className="card-actions mt-6">
-              <button
-                type="button"
-                onClick={handleBackToProfile}
-                className="btn btn-primary"
-              >
+              <button type="button" onClick={handleBackToProfile} className="btn btn-primary">
                 プロフィールに戻る
               </button>
             </div>
@@ -114,11 +104,7 @@ export default function VerifyEmailClient() {
             <h2 className="card-title text-2xl mt-4 text-error">確認失敗</h2>
             <p className="text-base-content/70 mt-2">{message}</p>
             <div className="card-actions mt-6 flex-col gap-2 w-full">
-              <button
-                type="button"
-                onClick={handleBackToProfile}
-                className="btn btn-outline w-full"
-              >
+              <button type="button" onClick={handleBackToProfile} className="btn btn-outline w-full">
                 プロフィールに戻る
               </button>
             </div>

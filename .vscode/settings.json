@@ -4,6 +4,34 @@
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.formatOnSave": true
   },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": [
+      "quickfix.biome"
+    ]
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": [
+      "quickfix.biome"
+    ]
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": [
+      "quickfix.biome"
+    ]
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": [
+      "quickfix.biome"
+    ]
+  },
   "omnisharp.enableEditorConfigSupport": true,
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "github.copilot.chat.commitMessageGeneration.instructions": [

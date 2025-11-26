@@ -10,12 +10,7 @@ interface AdminHeaderProps {
   loading?: boolean;
 }
 
-export default function AdminHeader({
-  userInfo,
-  sidebarOpen,
-  setSidebarOpen,
-  loading = false,
-}: AdminHeaderProps) {
+export default function AdminHeader({ userInfo, sidebarOpen, setSidebarOpen, loading = false }: AdminHeaderProps) {
   return (
     <AppHeader
       userInfo={userInfo}

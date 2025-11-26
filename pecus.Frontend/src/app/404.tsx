@@ -22,9 +22,7 @@ export default function NotFound() {
 
           {/* メッセージ */}
           <div className="space-y-4 mb-8">
-            <h2 className="text-4xl sm:text-5xl font-bold text-white">
-              ページが見つかりません
-            </h2>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white">ページが見つかりません</h2>
             <p className="text-lg sm:text-xl text-gray-300">
               お探しのページは存在しないか、削除された可能性があります。
             </p>
@@ -33,12 +31,7 @@ export default function NotFound() {
           {/* アイコン */}
           <div className="mb-10 flex justify-center">
             <div className="relative w-24 h-24">
-              <svg
-                className="w-full h-full text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-full h-full text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

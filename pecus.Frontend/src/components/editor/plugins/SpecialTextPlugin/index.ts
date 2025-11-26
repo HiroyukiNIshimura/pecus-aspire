@@ -5,19 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import type { LexicalEditor } from "lexical";
-import type { JSX } from "react";
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import type { LexicalEditor } from "lexical";
 import { TextNode } from "lexical";
+import type { JSX } from "react";
 import { useEffect } from "react";
 
-import {
-  $createSpecialTextNode,
-  SpecialTextNode,
-} from "../../nodes/SpecialTextNode";
+import { $createSpecialTextNode, SpecialTextNode } from "../../nodes/SpecialTextNode";
 
-const BRACKETED_TEXT_REGEX = /\[([^\[\]]+)\]/; // eslint-disable-line
+const BRACKETED_TEXT_REGEX = /\[([^[\]]+)\]/; // eslint-disable-line
 
 function $findAndTransformText(node: TextNode): null | TextNode {
   const text = node.getTextContent();
@@ -27,7 +24,7 @@ function $findAndTransformText(node: TextNode): null | TextNode {
     const matchedText = match[1];
     const startIndex = match.index;
 
-    let targetNode;
+    let targetNode: TextNode;
     if (startIndex === 0) {
       [targetNode] = node.splitText(startIndex + match[0].length);
     } else {
@@ -57,9 +54,7 @@ function $textNodeTransform(node: TextNode): void {
 function useTextTransformation(editor: LexicalEditor): void {
   useEffect(() => {
     if (!editor.hasNodes([SpecialTextNode])) {
-      throw new Error(
-        "SpecialTextPlugin: SpecialTextNode not registered on editor",
-      );
+      throw new Error("SpecialTextPlugin: SpecialTextNode not registered on editor");
     }
 
     return editor.registerNodeTransform(TextNode, $textNodeTransform);

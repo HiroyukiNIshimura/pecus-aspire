@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedAxios } from "@/connectors/api/PecusApiClient";
 
 /**
@@ -16,10 +16,7 @@ export async function GET(request: NextRequest) {
     const useOriginal = searchParams.get("useOriginal") === "true";
 
     if (!fileType || !resourceId || !fileName) {
-      return NextResponse.json(
-        { error: "Missing required parameters" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
     // 認証済みAxiosインスタンスを作成

@@ -2,10 +2,7 @@
 
 import { z } from "zod";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import {
-  type RequestPasswordResetInput,
-  requestPasswordResetSchema,
-} from "@/schemas/signInSchemas";
+import { type RequestPasswordResetInput, requestPasswordResetSchema } from "@/schemas/signInSchemas";
 
 /**
  * パスワードリセットリクエスト実行
@@ -16,9 +13,7 @@ import {
  */
 export async function requestPasswordResetAction(
   input: RequestPasswordResetInput,
-): Promise<
-  { success: true; message: string } | { success: false; errors: string[] }
-> {
+): Promise<{ success: true; message: string } | { success: false; errors: string[] }> {
   try {
     // サーバーサイド検証（クライアント検証を信頼しない）
     const validatedData = await requestPasswordResetSchema.parseAsync(input);
@@ -27,16 +22,13 @@ export async function requestPasswordResetAction(
     const clients = await createPecusApiClients();
 
     // パスワードリセットリクエスト送信
-    const result =
-      await clients.entrancePassword.postApiEntrancePasswordRequestReset({
-        email: validatedData.email,
-      });
+    const result = await clients.entrancePassword.postApiEntrancePasswordRequestReset({
+      email: validatedData.email,
+    });
 
     return {
       success: true,
-      message:
-        result.message ||
-        "パスワードリセットメールを送信しました。メールを確認してください。",
+      message: result.message || "パスワードリセットメールを送信しました。メールを確認してください。",
     };
   } catch (error) {
     // Zodバリデーションエラー
@@ -51,9 +43,7 @@ export async function requestPasswordResetAction(
     if (error instanceof Error) {
       return {
         success: false,
-        errors: [
-          error.message || "パスワードリセットリクエストに失敗しました。",
-        ],
+        errors: [error.message || "パスワードリセットリクエストに失敗しました。"],
       };
     }
 

@@ -17,9 +17,7 @@ import type { UserInfo } from "@/types/userInfo";
  * const user = mapUserResponseToUserInfo(userResponse);
  * ```
  */
-export function mapUserResponseToUserInfo(
-  userResponse: UserResponse,
-): UserInfo {
+export function mapUserResponseToUserInfo(userResponse: UserResponse): UserInfo {
   return {
     id: userResponse.id,
     name: userResponse.username ?? null,

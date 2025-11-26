@@ -11,18 +11,14 @@ import type { JSX } from "react";
 
 import "./StickyNode.css";
 
-import { useCollaborationContext } from "@lexical/react/LexicalCollaborationContext";
-import { CollaborationPlugin } from "@lexical/react/LexicalCollaborationPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { calculateZoomLevel } from "@lexical/utils";
 import { $getNodeByKey } from "lexical";
-import * as React from "react";
-import { createPortal } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useSharedHistoryContext } from "../context/SharedHistoryContext";
 import StickyEditorTheme from "../themes/StickyEditorTheme";
@@ -38,14 +34,11 @@ type Positioning = {
   y: number;
 };
 
-function positionSticky(
-  stickyElem: HTMLElement,
-  positioning: Positioning,
-): void {
+function positionSticky(stickyElem: HTMLElement, positioning: Positioning): void {
   const style = stickyElem.style;
   // .editor-scroller 内での相対位置で配置
-  style.top = positioning.y + "px";
-  style.left = positioning.x + "px";
+  style.top = `${positioning.y}px`;
+  style.left = `${positioning.x}px`;
 }
 
 export default function StickyComponent({
@@ -63,9 +56,7 @@ export default function StickyComponent({
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const stickyContainerRef = useRef<null | HTMLDivElement>(null);
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
-    null,
-  );
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const positioningRef = useRef<Positioning>({
     isDragging: false,
     offsetX: 0,
@@ -135,16 +126,14 @@ export default function StickyComponent({
       }
     });
 
-    const removeRootListener = editor.registerRootListener(
-      (nextRootElem, prevRootElem) => {
-        if (prevRootElem !== null) {
-          resizeObserver.unobserve(prevRootElem);
-        }
-        if (nextRootElem !== null) {
-          resizeObserver.observe(nextRootElem);
-        }
-      },
-    );
+    const removeRootListener = editor.registerRootListener((nextRootElem, prevRootElem) => {
+      if (prevRootElem !== null) {
+        resizeObserver.unobserve(prevRootElem);
+      }
+      if (nextRootElem !== null) {
+        resizeObserver.observe(nextRootElem);
+      }
+    });
 
     const handleWindowResize = () => {
       const rootElement = editor.getRootElement();
@@ -181,10 +170,7 @@ export default function StickyComponent({
       // Delay adding transition so we don't trigger the
       // transition on load of the sticky.
       setTimeout(() => {
-        stickyContainer.style.setProperty(
-          "transition",
-          "top 0.3s ease 0s, left 0.3s ease 0s",
-        );
+        stickyContainer.style.setProperty("transition", "top 0.3s ease 0s, left 0.3s ease 0s");
       }, 500);
     }
   }, []);
@@ -194,12 +180,7 @@ export default function StickyComponent({
     const positioning = positioningRef.current;
     const rootElementRect = positioning.rootElementRect;
     const zoom = calculateZoomLevel(stickyContainer);
-    if (
-      stickyContainer !== null &&
-      positioning.isDragging &&
-      rootElementRect !== null &&
-      portalContainer !== null
-    ) {
+    if (stickyContainer !== null && positioning.isDragging && rootElementRect !== null && portalContainer !== null) {
       // portalContainer (.editor-scroller) の位置を基準に計算
       const portalRect = portalContainer.getBoundingClientRect();
 
@@ -227,7 +208,7 @@ export default function StickyComponent({
     }
   };
 
-  const handlePointerUp = (event: PointerEvent) => {
+  const handlePointerUp = (_event: PointerEvent) => {
     const stickyContainer = stickyContainerRef.current;
     const positioning = positioningRef.current;
     if (stickyContainer !== null) {
@@ -262,7 +243,7 @@ export default function StickyComponent({
     });
   };
 
-  const { historyState } = useSharedHistoryContext();
+  useSharedHistoryContext();
 
   const stickyContent = (
     <div ref={stickyContainerRef} className="sticky-note-container">
@@ -270,11 +251,7 @@ export default function StickyComponent({
         className={`sticky-note ${color}`}
         onPointerDown={(event) => {
           const stickyContainer = stickyContainerRef.current;
-          if (
-            stickyContainer == null ||
-            event.button === 2 ||
-            event.target !== stickyContainer.firstChild
-          ) {
+          if (stickyContainer == null || event.button === 2 || event.target !== stickyContainer.firstChild) {
             // Right click or click on editor should not work
             return;
           }
@@ -294,13 +271,7 @@ export default function StickyComponent({
           }
         }}
       >
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="delete"
-          aria-label="Delete sticky note"
-          title="Delete"
-        >
+        <button type="button" onClick={handleDelete} className="delete" aria-label="Delete sticky note" title="Delete">
           X
         </button>
         <button
@@ -312,10 +283,7 @@ export default function StickyComponent({
         >
           <i className="bucket" />
         </button>
-        <LexicalNestedComposer
-          initialEditor={caption}
-          initialTheme={StickyEditorTheme}
-        >
+        <LexicalNestedComposer initialEditor={caption} initialTheme={StickyEditorTheme}>
           <PlainTextPlugin
             contentEditable={
               <ContentEditable

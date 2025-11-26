@@ -7,9 +7,7 @@
  */
 
 import type { JSX } from "react";
-
 import { useCallback, useMemo, useState } from "react";
-import * as React from "react";
 
 import Modal from "../ui/Modal";
 
@@ -33,11 +31,7 @@ export default function useModal(): [
     }
     const { title, content, closeOnClickOutside } = modalContent;
     return (
-      <Modal
-        onClose={onClose}
-        title={title}
-        closeOnClickOutside={closeOnClickOutside}
-      >
+      <Modal onClose={onClose} title={title} closeOnClickOutside={closeOnClickOutside}>
         {content}
       </Modal>
     );

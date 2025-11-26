@@ -65,9 +65,7 @@ export function getErrorCodeFromStatus(statusCode: number): ErrorCode {
  */
 export function isApiError(error: unknown): error is ApiErrorResponse {
   return (
-    typeof error === "object" &&
-    error !== null &&
-    ("code" in error || "message" in error || "statusCode" in error)
+    typeof error === "object" && error !== null && ("code" in error || "message" in error || "statusCode" in error)
   );
 }
 
@@ -90,11 +88,7 @@ export function isAuthenticationError(error: unknown): boolean {
  */
 export function isAuthorizationError(error: unknown): boolean {
   if (isApiError(error)) {
-    return (
-      error.code === ErrorCode.FORBIDDEN ||
-      error.code === ErrorCode.PERMISSION_DENIED ||
-      error.statusCode === 403
-    );
+    return error.code === ErrorCode.FORBIDDEN || error.code === ErrorCode.PERMISSION_DENIED || error.statusCode === 403;
   }
   return false;
 }

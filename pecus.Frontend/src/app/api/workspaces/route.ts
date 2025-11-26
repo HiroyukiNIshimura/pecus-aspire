@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
 
 export const dynamic = "force-dynamic";
@@ -44,10 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (error.status === 403) {
-      return NextResponse.json(
-        { error: "アクセス権限がありません。" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "アクセス権限がありません。" }, { status: 403 });
     }
 
     return NextResponse.json(

@@ -6,18 +6,14 @@
  *
  */
 import { $createCodeNode } from "@lexical/code";
-import {
-  INSERT_CHECK_LIST_COMMAND,
-  INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
-} from "@lexical/list";
+import { INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list";
 import { $isDecoratorBlockNode } from "@lexical/react/LexicalDecoratorBlockNode";
 import {
   $createHeadingNode,
   $createQuoteNode,
   $isHeadingNode,
   $isQuoteNode,
-  HeadingTagType,
+  type HeadingTagType,
 } from "@lexical/rich-text";
 import { $patchStyleText, $setBlocksType } from "@lexical/selection";
 import { $isTableSelection } from "@lexical/table";
@@ -28,16 +24,12 @@ import {
   $getSelection,
   $isRangeSelection,
   $isTextNode,
-  LexicalEditor,
+  type LexicalEditor,
   SKIP_DOM_SELECTION_TAG,
   SKIP_SELECTION_FOCUS_TAG,
 } from "lexical";
 
-import {
-  DEFAULT_FONT_SIZE,
-  MAX_ALLOWED_FONT_SIZE,
-  MIN_ALLOWED_FONT_SIZE,
-} from "../../context/ToolbarContext";
+import { DEFAULT_FONT_SIZE, MAX_ALLOWED_FONT_SIZE, MIN_ALLOWED_FONT_SIZE } from "../../context/ToolbarContext";
 
 // eslint-disable-next-line no-shadow
 export enum UpdateFontSizeType {
@@ -51,10 +43,7 @@ export enum UpdateFontSizeType {
  * @param updateType - The type of change, either increment or decrement
  * @returns the next font size
  */
-export const calculateNextFontSize = (
-  currentFontSize: number,
-  updateType: UpdateFontSizeType | null,
-) => {
+export const calculateNextFontSize = (currentFontSize: number, updateType: UpdateFontSizeType | null) => {
   if (!updateType) {
     return currentFontSize;
   }
@@ -127,10 +116,7 @@ export const updateFontSizeInSelection = (
       prevFontSize = `${DEFAULT_FONT_SIZE}px`;
     }
     prevFontSize = prevFontSize.slice(0, -2);
-    const nextFontSize = calculateNextFontSize(
-      Number(prevFontSize),
-      updateType,
-    );
+    const nextFontSize = calculateNextFontSize(Number(prevFontSize), updateType);
     return `${nextFontSize}px`;
   };
 
@@ -157,12 +143,7 @@ export const updateFontSize = (
 ) => {
   if (inputValue !== "") {
     const nextFontSize = calculateNextFontSize(Number(inputValue), updateType);
-    updateFontSizeInSelection(
-      editor,
-      String(nextFontSize) + "px",
-      null,
-      skipRefocus,
-    );
+    updateFontSizeInSelection(editor, `${String(nextFontSize)}px`, null, skipRefocus);
   } else {
     updateFontSizeInSelection(editor, null, updateType, skipRefocus);
   }
@@ -176,11 +157,7 @@ export const formatParagraph = (editor: LexicalEditor) => {
   });
 };
 
-export const formatHeading = (
-  editor: LexicalEditor,
-  blockType: string,
-  headingSize: HeadingTagType,
-) => {
+export const formatHeading = (editor: LexicalEditor, blockType: string, headingSize: HeadingTagType) => {
   if (blockType !== headingSize) {
     editor.update(() => {
       $addUpdateTag(SKIP_SELECTION_FOCUS_TAG);
@@ -212,10 +189,7 @@ export const formatCheckList = (editor: LexicalEditor, blockType: string) => {
   }
 };
 
-export const formatNumberedList = (
-  editor: LexicalEditor,
-  blockType: string,
-) => {
+export const formatNumberedList = (editor: LexicalEditor, blockType: string) => {
   if (blockType !== "number") {
     editor.update(() => {
       $addUpdateTag(SKIP_SELECTION_FOCUS_TAG);
@@ -259,10 +233,7 @@ export const formatCode = (editor: LexicalEditor, blockType: string) => {
   }
 };
 
-export const clearFormatting = (
-  editor: LexicalEditor,
-  skipRefocus: boolean = false,
-) => {
+export const clearFormatting = (editor: LexicalEditor, skipRefocus: boolean = false) => {
   editor.update(() => {
     if (skipRefocus) {
       $addUpdateTag(SKIP_DOM_SELECTION_TAG);
@@ -309,8 +280,7 @@ export const clearFormatting = (
           if (textNode.__format !== 0) {
             textNode.setFormat(0);
           }
-          const nearestBlockElement =
-            $getNearestBlockElementAncestorOrThrow(textNode);
+          const nearestBlockElement = $getNearestBlockElementAncestorOrThrow(textNode);
           if (nearestBlockElement.__format !== 0) {
             nearestBlockElement.setFormat("");
           }

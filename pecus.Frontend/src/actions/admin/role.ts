@@ -17,10 +17,7 @@ export async function getAllRoles(): Promise<ApiResponse<RoleResponse[]>> {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "ロール一覧の取得に失敗しました",
+      message: error.body?.message || error.message || "ロール一覧の取得に失敗しました",
     };
   }
 }

@@ -1,20 +1,17 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import SaveIcon from "@mui/icons-material/Save";
-import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import type {
-  CreateWorkspaceItemRequest,
-  TaskPriority,
-} from "@/connectors/api/pecus";
-import TagInput from "@/components/common/TagInput";
+import CloseIcon from "@mui/icons-material/Close";
+import SaveIcon from "@mui/icons-material/Save";
+import { useCallback, useMemo, useState } from "react";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
-import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
+import TagInput from "@/components/common/TagInput";
 import type { EditorContextSettings } from "@/components/editor/appSettings";
+import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
+import type { CreateWorkspaceItemRequest, TaskPriority } from "@/connectors/api/pecus";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import type { CreateWorkspaceItemInput } from "@/schemas/editSchemas";
+import { createWorkspaceItemSchema } from "@/schemas/editSchemas";
 
 interface CreateWorkspaceItemProps {
   workspaceId: number;
@@ -23,12 +20,7 @@ interface CreateWorkspaceItemProps {
   onCreate?: (itemId: number) => void;
 }
 
-export default function CreateWorkspaceItem({
-  workspaceId,
-  isOpen,
-  onClose,
-  onCreate,
-}: CreateWorkspaceItemProps) {
+export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCreate }: CreateWorkspaceItemProps) {
   // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
@@ -48,17 +40,14 @@ export default function CreateWorkspaceItem({
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   // 一時ファイルアップロード完了時のコールバック
-  const handleTempFileUploaded = useCallback(
-    (tempFileId: string, _previewUrl: string) => {
-      setTempFileIds((prev) => {
-        if (!prev.includes(tempFileId)) {
-          return [...prev, tempFileId];
-        }
-        return prev;
-      });
-    },
-    [],
-  );
+  const handleTempFileUploaded = useCallback((tempFileId: string, _previewUrl: string) => {
+    setTempFileIds((prev) => {
+      if (!prev.includes(tempFileId)) {
+        return [...prev, tempFileId];
+      }
+      return prev;
+    });
+  }, []);
 
   // エディタに渡す設定（新規作成時はsessionIdを使用）
   const editorSettings: EditorContextSettings = useMemo(
@@ -74,7 +63,6 @@ export default function CreateWorkspaceItem({
   const {
     formRef,
     isSubmitting,
-    fieldErrors,
     handleSubmit: handleFormSubmit,
     validateField,
     shouldShowError,
@@ -118,9 +106,7 @@ export default function CreateWorkspaceItem({
           setGlobalError(result.message || "アイテムの作成に失敗しました");
         }
       } catch (err) {
-        setGlobalError(
-          err instanceof Error ? err.message : "エラーが発生しました",
-        );
+        setGlobalError(err instanceof Error ? err.message : "エラーが発生しました");
       }
     },
   });
@@ -171,11 +157,7 @@ export default function CreateWorkspaceItem({
   return (
     <>
       {/* モーダル背景オーバーレイ */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} aria-hidden="true" />
 
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
@@ -220,12 +202,7 @@ export default function CreateWorkspaceItem({
             )}
 
             {/* フォーム */}
-            <form
-              ref={formRef}
-              onSubmit={handleFormSubmit}
-              noValidate
-              className="space-y-4"
-            >
+            <form ref={formRef} onSubmit={handleFormSubmit} noValidate className="space-y-4">
               {/* 件名 */}
               <div className="form-control">
                 <label htmlFor="subject" className="label">
@@ -238,9 +215,7 @@ export default function CreateWorkspaceItem({
                   name="subject"
                   type="text"
                   placeholder="例：新しいタスクの件名"
-                  className={`input input-bordered w-full ${
-                    shouldShowError("subject") ? "input-error" : ""
-                  }`}
+                  className={`input input-bordered w-full ${shouldShowError("subject") ? "input-error" : ""}`}
                   value={formData.subject}
                   onChange={(e) => handleFieldChange("subject", e.target.value)}
                   onBlur={() => validateField("subject", formData.subject)}
@@ -248,24 +223,20 @@ export default function CreateWorkspaceItem({
                   maxLength={200}
                 />
                 {shouldShowError("subject") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("subject")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("subject")}</span>
+                  </div>
                 )}
-                <label className="label">
-                  <span className="label-text-alt text-xs">
-                    {formData.subject.length}/200 文字
-                  </span>
-                </label>
+                <div className="label">
+                  <span className="label-text-alt text-xs">{formData.subject.length}/200 文字</span>
+                </div>
               </div>
 
               {/* 本文（WYSIWYGエディタ） */}
               <div className="form-control">
-                <label className="label">
+                <div className="label">
                   <span className="label-text font-semibold">本文</span>
-                </label>
+                </div>
                 <div>
                   <NotionLikeEditor
                     onChange={handleEditorChange}
@@ -287,20 +258,16 @@ export default function CreateWorkspaceItem({
                   id="dueDate"
                   name="dueDate"
                   type="date"
-                  className={`input input-bordered w-full ${
-                    shouldShowError("dueDate") ? "input-error" : ""
-                  }`}
+                  className={`input input-bordered w-full ${shouldShowError("dueDate") ? "input-error" : ""}`}
                   value={formData.dueDate}
                   onChange={(e) => handleFieldChange("dueDate", e.target.value)}
                   onBlur={() => validateField("dueDate", formData.dueDate)}
                   disabled={isSubmitting}
                 />
                 {shouldShowError("dueDate") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("dueDate")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("dueDate")}</span>
+                  </div>
                 )}
               </div>
 
@@ -312,16 +279,9 @@ export default function CreateWorkspaceItem({
                 <select
                   id="priority"
                   name="priority"
-                  className={`select select-bordered w-full ${
-                    shouldShowError("priority") ? "select-error" : ""
-                  }`}
+                  className={`select select-bordered w-full ${shouldShowError("priority") ? "select-error" : ""}`}
                   value={formData.priority}
-                  onChange={(e) =>
-                    handleFieldChange(
-                      "priority",
-                      e.target.value as TaskPriority,
-                    )
-                  }
+                  onChange={(e) => handleFieldChange("priority", e.target.value as TaskPriority)}
                   disabled={isSubmitting}
                 >
                   <option value="Low">低</option>
@@ -330,11 +290,9 @@ export default function CreateWorkspaceItem({
                   <option value="Critical">緊急</option>
                 </select>
                 {shouldShowError("priority") && (
-                  <label className="label">
-                    <span className="label-text-alt text-error">
-                      {getFieldError("priority")}
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError("priority")}</span>
+                  </div>
                 )}
               </div>
 
@@ -342,9 +300,7 @@ export default function CreateWorkspaceItem({
               <div className="form-control">
                 <label htmlFor="tags" className="label">
                   <span className="label-text font-semibold">タグ</span>
-                  <span className="label-text-alt">
-                    Enterキーで追加、ドラッグで並び替え
-                  </span>
+                  <span className="label-text-alt">Enterキーで追加、ドラッグで並び替え</span>
                 </label>
                 <TagInput
                   tags={tags}
@@ -362,9 +318,7 @@ export default function CreateWorkspaceItem({
                     name="isDraft"
                     className="checkbox checkbox-primary"
                     checked={formData.isDraft}
-                    onChange={(e) =>
-                      handleFieldChange("isDraft", e.target.checked)
-                    }
+                    onChange={(e) => handleFieldChange("isDraft", e.target.checked)}
                     disabled={isSubmitting}
                   />
                   <span className="label-text">下書きとして保存</span>
@@ -373,19 +327,10 @@ export default function CreateWorkspaceItem({
 
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="btn btn-outline"
-                  disabled={isSubmitting}
-                >
+                <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
                   キャンセル
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isSubmitting}
-                >
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <span className="loading loading-spinner loading-sm"></span>

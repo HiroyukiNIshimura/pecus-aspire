@@ -1,9 +1,6 @@
-import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
-import type {
-  OrganizationResponse,
-  UserResponse,
-} from "@/connectors/api/pecus";
 import { redirect } from "next/navigation";
+import { createPecusApiClients } from "@/connectors/api/PecusApiClient";
+import type { OrganizationResponse, UserResponse } from "@/connectors/api/pecus";
 import { mapUserResponseToUserInfo } from "@/utils/userMapper";
 import AdminClient from "./AdminClient";
 
@@ -31,8 +28,7 @@ export default async function AdminPage() {
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message || error.message || "データの取得に失敗しました";
+    fetchError = error.body?.message || error.message || "データの取得に失敗しました";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -43,11 +39,5 @@ export default async function AdminPage() {
   // UserResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
-  return (
-    <AdminClient
-      initialOrganization={organization}
-      initialUser={user}
-      fetchError={fetchError}
-    />
-  );
+  return <AdminClient initialOrganization={organization} initialUser={user} fetchError={fetchError} />;
 }

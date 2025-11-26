@@ -6,11 +6,10 @@
  *
  */
 
-import type { LexicalEditor } from "lexical";
-import type { JSX } from "react";
-
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import type { LexicalEditor } from "lexical";
 import { TextNode } from "lexical";
+import type { JSX } from "react";
 import { useEffect } from "react";
 
 import { $createEmojiNode, EmojiNode } from "../../nodes/EmojiNode";
@@ -30,7 +29,7 @@ function $findAndTransformEmoji(node: TextNode): null | TextNode {
 
     if (emojiData !== undefined) {
       const [emojiStyle, emojiText] = emojiData;
-      let targetNode;
+      let targetNode: TextNode;
 
       if (i === 0) {
         [targetNode] = node.splitText(i + 2);

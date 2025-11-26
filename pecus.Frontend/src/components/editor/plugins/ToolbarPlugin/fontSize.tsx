@@ -8,20 +8,13 @@
 
 import "./fontSize.css";
 
-import { LexicalEditor } from "lexical";
+import type { LexicalEditor } from "lexical";
 import * as React from "react";
 
-import {
-  MAX_ALLOWED_FONT_SIZE,
-  MIN_ALLOWED_FONT_SIZE,
-} from "../../context/ToolbarContext";
+import { MAX_ALLOWED_FONT_SIZE, MIN_ALLOWED_FONT_SIZE } from "../../context/ToolbarContext";
 import { isKeyboardInput } from "../../utils/focusUtils";
 import { SHORTCUTS } from "../ShortcutsPlugin/shortcuts";
-import {
-  updateFontSize,
-  updateFontSizeInSelection,
-  UpdateFontSizeType,
-} from "./utils";
+import { UpdateFontSizeType, updateFontSize, updateFontSizeInSelection } from "./utils";
 
 function parseFontSize(input: string): [number, string] | null {
   const match = input.match(/^(\d+(?:\.\d+)?)(px|pt)$/);
@@ -33,9 +26,7 @@ function normalizeToPx(fontSize: number, unit: string): number {
 }
 
 function isValidFontSize(fontSizePx: number): boolean {
-  return (
-    fontSizePx >= MIN_ALLOWED_FONT_SIZE && fontSizePx <= MAX_ALLOWED_FONT_SIZE
-  );
+  return fontSizePx >= MIN_ALLOWED_FONT_SIZE && fontSizePx <= MAX_ALLOWED_FONT_SIZE;
 }
 
 export function parseFontSizeForToolbar(input: string): string {
@@ -79,7 +70,7 @@ export default function FontSize({
     if (e.key === "Tab") {
       return;
     }
-    if (["e", "E", "+", "-"].includes(e.key) || isNaN(inputValueNumber)) {
+    if (["e", "E", "+", "-"].includes(e.key) || Number.isNaN(inputValueNumber)) {
       e.preventDefault();
       setInputValue("");
       return;
@@ -101,14 +92,11 @@ export default function FontSize({
     }
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (_e: React.MouseEvent) => {
     setIsMouseMode(true);
   };
 
-  const updateFontSizeByInputValue = (
-    inputValueNumber: number,
-    skipRefocus: boolean = false,
-  ) => {
+  const updateFontSizeByInputValue = (inputValueNumber: number, skipRefocus: boolean = false) => {
     let updatedFontSize = inputValueNumber;
     if (inputValueNumber > MAX_ALLOWED_FONT_SIZE) {
       updatedFontSize = MAX_ALLOWED_FONT_SIZE;
@@ -117,12 +105,7 @@ export default function FontSize({
     }
 
     setInputValue(String(updatedFontSize));
-    updateFontSizeInSelection(
-      editor,
-      String(updatedFontSize) + "px",
-      null,
-      skipRefocus,
-    );
+    updateFontSizeInSelection(editor, `${String(updatedFontSize)}px`, null, skipRefocus);
     setInputChangeFlag(false);
   };
 
@@ -134,18 +117,9 @@ export default function FontSize({
     <>
       <button
         type="button"
-        disabled={
-          disabled ||
-          (selectionFontSize !== "" &&
-            Number(inputValue) <= MIN_ALLOWED_FONT_SIZE)
-        }
+        disabled={disabled || (selectionFontSize !== "" && Number(inputValue) <= MIN_ALLOWED_FONT_SIZE)}
         onClick={(e) => {
-          updateFontSize(
-            editor,
-            UpdateFontSizeType.decrement,
-            inputValue,
-            isKeyboardInput(e),
-          );
+          updateFontSize(editor, UpdateFontSizeType.decrement, inputValue, isKeyboardInput(e));
         }}
         className="toolbar-item font-decrement"
         aria-label="Decrease font size"
@@ -170,18 +144,9 @@ export default function FontSize({
 
       <button
         type="button"
-        disabled={
-          disabled ||
-          (selectionFontSize !== "" &&
-            Number(inputValue) >= MAX_ALLOWED_FONT_SIZE)
-        }
+        disabled={disabled || (selectionFontSize !== "" && Number(inputValue) >= MAX_ALLOWED_FONT_SIZE)}
         onClick={(e) => {
-          updateFontSize(
-            editor,
-            UpdateFontSizeType.increment,
-            inputValue,
-            isKeyboardInput(e),
-          );
+          updateFontSize(editor, UpdateFontSizeType.increment, inputValue, isKeyboardInput(e));
         }}
         className="toolbar-item font-increment"
         aria-label="Increase font size"

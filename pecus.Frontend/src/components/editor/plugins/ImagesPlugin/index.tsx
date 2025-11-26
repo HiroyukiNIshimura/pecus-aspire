@@ -6,20 +6,9 @@
  *
  */
 
-import type { JSX } from "react";
-
-import {
-  $isAutoLinkNode,
-  $isLinkNode,
-  LinkNode,
-  TOGGLE_LINK_COMMAND,
-} from "@lexical/link";
+import { $isAutoLinkNode, $isLinkNode, type LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $findMatchingParent,
-  $wrapNodeInElement,
-  mergeRegister,
-} from "@lexical/utils";
+import { $findMatchingParent, $wrapNodeInElement, mergeRegister } from "@lexical/utils";
 import {
   $createParagraphNode,
   $createRangeSelection,
@@ -37,19 +26,13 @@ import {
   DROP_COMMAND,
   getDOMSelectionFromTarget,
   isHTMLElement,
-  LexicalCommand,
-  LexicalEditor,
+  type LexicalCommand,
+  type LexicalEditor,
 } from "lexical";
+import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
-import * as React from "react";
-
-import {
-  $createImageNode,
-  $isImageNode,
-  ImageNode,
-  ImagePayload,
-} from "../../nodes/ImageNode";
 import { useEditorContext } from "../../context/SettingsContext";
+import { $createImageNode, $isImageNode, ImageNode, type ImagePayload } from "../../nodes/ImageNode";
 import Button from "../../ui/Button";
 import { DialogActions, DialogButtonsList } from "../../ui/Dialog";
 import FileInput from "../../ui/FileInput";
@@ -57,14 +40,9 @@ import TextInput from "../../ui/TextInput";
 
 export type InsertImagePayload = Readonly<ImagePayload>;
 
-export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
-  createCommand("INSERT_IMAGE_COMMAND");
+export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> = createCommand("INSERT_IMAGE_COMMAND");
 
-export function InsertImageUriDialogBody({
-  onClick,
-}: {
-  onClick: (payload: InsertImagePayload) => void;
-}) {
+export function InsertImageUriDialogBody({ onClick }: { onClick: (payload: InsertImagePayload) => void }) {
   const [src, setSrc] = useState("");
   const [altText, setAltText] = useState("");
 
@@ -87,11 +65,7 @@ export function InsertImageUriDialogBody({
         data-test-id="image-modal-alt-text-input"
       />
       <DialogActions>
-        <Button
-          data-test-id="image-modal-confirm-btn"
-          disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
-        >
+        <Button data-test-id="image-modal-confirm-btn" disabled={isDisabled} onClick={() => onClick({ altText, src })}>
           Confirm
         </Button>
       </DialogActions>
@@ -99,13 +73,8 @@ export function InsertImageUriDialogBody({
   );
 }
 
-export function InsertImageUploadedDialogBody({
-  onClick,
-}: {
-  onClick: (payload: InsertImagePayload) => void;
-}) {
-  const { workspaceId, itemId, sessionId, onTempFileUploaded } =
-    useEditorContext();
+export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: InsertImagePayload) => void }) {
+  const { workspaceId, itemId, sessionId, onTempFileUploaded } = useEditorContext();
   const [altText, setAltText] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -120,13 +89,13 @@ export function InsertImageUploadedDialogBody({
   const canUpload = canUploadToItem || canUploadToTemp;
 
   const handleFileSelect = (files: FileList | null) => {
-    if (files && files[0]) {
+    if (files?.[0]) {
       setSelectedFile(files[0]);
       setUploadError(null);
 
       // ローカルプレビュー用のデータURL生成
       const reader = new FileReader();
-      reader.onload = function () {
+      reader.onload = () => {
         if (typeof reader.result === "string") {
           setPreviewSrc(reader.result);
         }
@@ -155,13 +124,10 @@ export function InsertImageUploadedDialogBody({
 
       // 既存アイテム編集時: 通常のアップロード
       if (canUploadToItem) {
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/items/${itemId}/attachments`,
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
+        const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
+          method: "POST",
+          body: formData,
+        });
 
         if (response.ok) {
           const result = await response.json();
@@ -174,13 +140,10 @@ export function InsertImageUploadedDialogBody({
       }
       // 新規アイテム作成時: 一時領域にアップロード
       else if (canUploadToTemp) {
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`,
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
+        const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
+          method: "POST",
+          body: formData,
+        });
 
         if (response.ok) {
           const result = await response.json();
@@ -215,20 +178,14 @@ export function InsertImageUploadedDialogBody({
         value={altText}
         data-test-id="image-modal-alt-text-input"
       />
-      {uploadError && (
-        <div className="text-error text-sm mt-2">{uploadError}</div>
-      )}
+      {uploadError && <div className="text-error text-sm mt-2">{uploadError}</div>}
       {!canUpload && selectedFile && (
         <div className="text-warning text-sm mt-2">
           ワークスペース情報が未設定のため、ローカルプレビューモードで動作します
         </div>
       )}
       <DialogActions>
-        <Button
-          data-test-id="image-modal-file-upload-btn"
-          disabled={isDisabled}
-          onClick={handleConfirm}
-        >
+        <Button data-test-id="image-modal-file-upload-btn" disabled={isDisabled} onClick={handleConfirm}>
           {isUploading ? "アップロード中..." : "Confirm"}
         </Button>
       </DialogActions>
@@ -255,7 +212,7 @@ export function InsertImageDialog({
     return () => {
       document.removeEventListener("keydown", handler);
     };
-  }, [activeEditor]);
+  }, []);
 
   const onClick = (payload: InsertImagePayload) => {
     activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
@@ -266,16 +223,10 @@ export function InsertImageDialog({
     <>
       {!mode && (
         <DialogButtonsList>
-          <Button
-            data-test-id="image-modal-option-url"
-            onClick={() => setMode("url")}
-          >
+          <Button data-test-id="image-modal-option-url" onClick={() => setMode("url")}>
             URL
           </Button>
-          <Button
-            data-test-id="image-modal-option-file"
-            onClick={() => setMode("file")}
-          >
+          <Button data-test-id="image-modal-option-file" onClick={() => setMode("file")}>
             File
           </Button>
         </DialogButtonsList>
@@ -286,11 +237,7 @@ export function InsertImageDialog({
   );
 }
 
-export default function ImagesPlugin({
-  captionsEnabled,
-}: {
-  captionsEnabled?: boolean;
-}): JSX.Element | null {
+export default function ImagesPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -334,13 +281,12 @@ export default function ImagesPlugin({
         COMMAND_PRIORITY_HIGH,
       ),
     );
-  }, [captionsEnabled, editor]);
+  }, [editor]);
 
   return null;
 }
 
-const TRANSPARENT_IMAGE =
-  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const TRANSPARENT_IMAGE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 let img: HTMLImageElement | undefined;
 
 function getTransparentImage(): HTMLImageElement {
@@ -407,8 +353,7 @@ function $onDrop(event: DragEvent, editor: LexicalEditor): boolean {
   }
   const existingLink = $findMatchingParent(
     node,
-    (parent): parent is LinkNode =>
-      !$isAutoLinkNode(parent) && $isLinkNode(parent),
+    (parent): parent is LinkNode => !$isAutoLinkNode(parent) && $isLinkNode(parent),
   );
   event.preventDefault();
   if (canDropImage(event)) {
@@ -468,11 +413,24 @@ function canDropImage(event: DragEvent): boolean {
 }
 
 function getDragSelection(event: DragEvent): Range | null | undefined {
-  let range;
+  let range: Range | null | undefined;
   const domSelection = getDOMSelectionFromTarget(event.target);
-  if (document.caretRangeFromPoint) {
+
+  // 新しい標準API（Safari未対応の場合あり）
+  if (document.caretPositionFromPoint) {
+    const caretPosition = document.caretPositionFromPoint(event.clientX, event.clientY);
+    if (caretPosition) {
+      range = document.createRange();
+      range.setStart(caretPosition.offsetNode, caretPosition.offset);
+      range.collapse(true);
+    }
+  }
+  // フォールバック: 非推奨だが互換性のため残す
+  else if (document.caretRangeFromPoint) {
     range = document.caretRangeFromPoint(event.clientX, event.clientY);
-  } else if (event.rangeParent && domSelection !== null) {
+  }
+  // Firefox等の古いフォールバック
+  else if (event.rangeParent && domSelection !== null) {
     domSelection.collapse(event.rangeParent, event.rangeOffset || 0);
     range = domSelection.getRangeAt(0);
   } else {

@@ -10,7 +10,7 @@ import type { ConflictLatestData } from "@/connectors/api/ConflictDataTypes.gene
  *
  * @template T - エンティティの汎用型パラメータ（将来の拡張用）
  */
-export type ConflictResponse<T> = {
+export type ConflictResponse<_T> = {
   success: false;
   error: "conflict";
   message: string;
@@ -38,7 +38,4 @@ export type ErrorResponse = {
  * - conflict: 409 Conflict（並行更新による競合）
  * - error: その他のエラー（validation, server, not_found, forbidden）
  */
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | ConflictResponse<T>
-  | ErrorResponse;
+export type ApiResponse<T> = { success: true; data: T } | ConflictResponse<T> | ErrorResponse;

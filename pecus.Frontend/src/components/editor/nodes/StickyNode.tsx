@@ -16,9 +16,8 @@ import type {
   SerializedLexicalNode,
   Spread,
 } from "lexical";
-import type { JSX } from "react";
-
 import { $setSelection, createEditor, DecoratorNode } from "lexical";
+import type { JSX } from "react";
 import * as React from "react";
 
 const StickyComponent = React.lazy(() => import("./StickyComponent"));
@@ -46,25 +45,15 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
   }
 
   static clone(node: StickyNode): StickyNode {
-    return new StickyNode(
-      node.__x,
-      node.__y,
-      node.__color,
-      node.__caption,
-      node.__key,
-    );
+    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
   }
   static importJSON(serializedNode: SerializedStickyNode): StickyNode {
-    return new StickyNode(
-      serializedNode.xOffset,
-      serializedNode.yOffset,
-      serializedNode.color,
-    ).updateFromJSON(serializedNode);
+    return new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color).updateFromJSON(
+      serializedNode,
+    );
   }
 
-  updateFromJSON(
-    serializedNode: LexicalUpdateJSON<SerializedStickyNode>,
-  ): this {
+  updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedStickyNode>): this {
     const stickyNode = super.updateFromJSON(serializedNode);
     const caption = serializedNode.caption;
     const nestedEditor = stickyNode.__caption;
@@ -75,13 +64,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
     return stickyNode;
   }
 
-  constructor(
-    x: number,
-    y: number,
-    color: "pink" | "yellow",
-    caption?: LexicalEditor,
-    key?: NodeKey,
-  ) {
+  constructor(x: number, y: number, color: "pink" | "yellow", caption?: LexicalEditor, key?: NodeKey) {
     super(key);
     this.__x = x;
     this.__y = y;
@@ -99,7 +82,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
     };
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const div = document.createElement("div");
     div.style.display = "contents";
     return div;
@@ -121,7 +104,7 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
     writable.__color = writable.__color === "pink" ? "yellow" : "pink";
   }
 
-  decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
+  decorate(_editor: LexicalEditor, _config: EditorConfig): JSX.Element {
     return (
       <StickyComponent
         color={this.__color}
@@ -138,15 +121,10 @@ export class StickyNode extends DecoratorNode<JSX.Element> {
   }
 }
 
-export function $isStickyNode(
-  node: LexicalNode | null | undefined,
-): node is StickyNode {
+export function $isStickyNode(node: LexicalNode | null | undefined): node is StickyNode {
   return node instanceof StickyNode;
 }
 
-export function $createStickyNode(
-  xOffset: number,
-  yOffset: number,
-): StickyNode {
+export function $createStickyNode(xOffset: number, yOffset: number): StickyNode {
   return new StickyNode(xOffset, yOffset, "yellow");
 }

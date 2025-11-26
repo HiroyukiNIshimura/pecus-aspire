@@ -8,14 +8,14 @@
 
 import { IS_CHROME } from "@lexical/utils";
 import {
-  DOMConversionMap,
-  DOMConversionOutput,
-  DOMExportOutput,
-  EditorConfig,
+  type DOMConversionMap,
+  type DOMConversionOutput,
+  type DOMExportOutput,
+  type EditorConfig,
   ElementNode,
-  LexicalEditor,
-  LexicalNode,
-  SerializedElementNode,
+  type LexicalEditor,
+  type LexicalNode,
+  type SerializedElementNode,
 } from "lexical";
 
 import { $isCollapsibleContainerNode } from "./CollapsibleContainerNode";
@@ -23,9 +23,7 @@ import { domOnBeforeMatch, setDomHiddenUntilFound } from "./CollapsibleUtils";
 
 type SerializedCollapsibleContentNode = SerializedElementNode;
 
-export function $convertCollapsibleContentElement(
-  domNode: HTMLElement,
-): DOMConversionOutput | null {
+export function $convertCollapsibleContentElement(_domNode: HTMLElement): DOMConversionOutput | null {
   const node = $createCollapsibleContentNode();
   return {
     node,
@@ -41,16 +39,14 @@ export class CollapsibleContentNode extends ElementNode {
     return new CollapsibleContentNode(node.__key);
   }
 
-  createDOM(config: EditorConfig, editor: LexicalEditor): HTMLElement {
+  createDOM(_config: EditorConfig, editor: LexicalEditor): HTMLElement {
     const dom = document.createElement("div");
     dom.classList.add("Collapsible__content");
     if (IS_CHROME) {
       editor.getEditorState().read(() => {
         const containerNode = this.getParentOrThrow();
         if (!$isCollapsibleContainerNode(containerNode)) {
-          throw new Error(
-            "Expected parent node to be a CollapsibleContainerNode",
-          );
+          throw new Error("Expected parent node to be a CollapsibleContainerNode");
         }
         if (!containerNode.__open) {
           setDomHiddenUntilFound(dom);
@@ -60,9 +56,7 @@ export class CollapsibleContentNode extends ElementNode {
         editor.update(() => {
           const containerNode = this.getParentOrThrow().getLatest();
           if (!$isCollapsibleContainerNode(containerNode)) {
-            throw new Error(
-              "Expected parent node to be a CollapsibleContainerNode",
-            );
+            throw new Error("Expected parent node to be a CollapsibleContainerNode");
           }
           if (!containerNode.__open) {
             containerNode.toggleOpen();
@@ -73,7 +67,7 @@ export class CollapsibleContentNode extends ElementNode {
     return dom;
   }
 
-  updateDOM(prevNode: this, dom: HTMLElement): boolean {
+  updateDOM(_prevNode: this, _dom: HTMLElement): boolean {
     return false;
   }
 
@@ -98,9 +92,7 @@ export class CollapsibleContentNode extends ElementNode {
     return { element };
   }
 
-  static importJSON(
-    serializedNode: SerializedCollapsibleContentNode,
-  ): CollapsibleContentNode {
+  static importJSON(serializedNode: SerializedCollapsibleContentNode): CollapsibleContentNode {
     return $createCollapsibleContentNode().updateFromJSON(serializedNode);
   }
 
@@ -113,8 +105,6 @@ export function $createCollapsibleContentNode(): CollapsibleContentNode {
   return new CollapsibleContentNode();
 }
 
-export function $isCollapsibleContentNode(
-  node: LexicalNode | null | undefined,
-): node is CollapsibleContentNode {
+export function $isCollapsibleContentNode(node: LexicalNode | null | undefined): node is CollapsibleContentNode {
   return node instanceof CollapsibleContentNode;
 }

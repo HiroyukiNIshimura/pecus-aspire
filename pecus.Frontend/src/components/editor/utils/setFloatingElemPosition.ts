@@ -38,9 +38,7 @@ export function setFloatingElemPosition(
     const textNode = range.startContainer;
     if (textNode.nodeType === Node.ELEMENT_NODE || textNode.parentElement) {
       const textElement =
-        textNode.nodeType === Node.ELEMENT_NODE
-          ? (textNode as Element)
-          : (textNode.parentElement as Element);
+        textNode.nodeType === Node.ELEMENT_NODE ? (textNode as Element) : (textNode.parentElement as Element);
       const textAlign = window.getComputedStyle(textElement).textAlign;
 
       if (textAlign === "right" || textAlign === "end") {
@@ -52,10 +50,7 @@ export function setFloatingElemPosition(
 
   if (top < editorScrollerRect.top) {
     // adjusted height for link element if the element is at top
-    top +=
-      floatingElemRect.height +
-      targetRect.height +
-      verticalGap * (isLink ? 9 : 2);
+    top += floatingElemRect.height + targetRect.height + verticalGap * (isLink ? 9 : 2);
   }
 
   if (left + floatingElemRect.width > editorScrollerRect.right) {

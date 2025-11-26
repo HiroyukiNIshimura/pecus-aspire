@@ -1,14 +1,7 @@
 "use server";
 
-import {
-  createPecusApiClients,
-  detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
-import type {
-  SuccessResponse,
-  UserResponse,
-  UserResponseUserStatisticsPagedResponse,
-} from "@/connectors/api/pecus";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
+import type { SuccessResponse, UserResponse, UserResponseUserStatisticsPagedResponse } from "@/connectors/api/pecus";
 import type { ApiResponse } from "../types";
 
 /**
@@ -53,8 +46,7 @@ export async function createUserWithoutPassword(request: {
 }): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
-    const response =
-      await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
+    const response = await api.adminUser.postApiAdminUsersCreateWithoutPassword(request);
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to create user:", error);
@@ -69,9 +61,7 @@ export async function createUserWithoutPassword(request: {
 /**
  * Server Action: ユーザーを削除
  */
-export async function deleteUser(
-  userId: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteUser(userId: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.deleteApiAdminUsers(userId);
@@ -90,10 +80,7 @@ export async function deleteUser(
  * Server Action: ユーザーのアクティブ状態を設定
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function setUserActiveStatus(
-  userId: number,
-  isActive: boolean,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function setUserActiveStatus(userId: number, isActive: boolean): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.putApiAdminUsersActiveStatus(userId, {
@@ -119,10 +106,7 @@ export async function setUserActiveStatus(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "Failed to set user active status",
+      message: error.body?.message || error.message || "Failed to set user active status",
     };
   }
 }
@@ -130,23 +114,17 @@ export async function setUserActiveStatus(
 /**
  * Server Action: パスワードリセットをリクエスト
  */
-export async function requestPasswordReset(
-  userId: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function requestPasswordReset(userId: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
-    const response =
-      await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
+    const response = await api.adminUser.postApiAdminUsersRequestPasswordReset(userId);
     return { success: true, data: response };
   } catch (error: any) {
     console.error("Failed to request password reset:", error);
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "Failed to request password reset",
+      message: error.body?.message || error.message || "Failed to request password reset",
     };
   }
 }
@@ -154,9 +132,7 @@ export async function requestPasswordReset(
 /**
  * Server Action: ユーザー情報を取得
  */
-export async function getUserDetail(
-  userId: number,
-): Promise<ApiResponse<UserResponse>> {
+export async function getUserDetail(userId: number): Promise<ApiResponse<UserResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers(userId);
@@ -166,10 +142,7 @@ export async function getUserDetail(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "ユーザー情報の取得に失敗しました",
+      message: error.body?.message || error.message || "ユーザー情報の取得に失敗しました",
     };
   }
 }
@@ -211,10 +184,7 @@ export async function setUserSkills(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "ユーザースキルの更新に失敗しました",
+      message: error.body?.message || error.message || "ユーザースキルの更新に失敗しました",
     };
   }
 }
@@ -260,10 +230,7 @@ export async function setUserRoles(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "ユーザーロールの更新に失敗しました",
+      message: error.body?.message || error.message || "ユーザーロールの更新に失敗しました",
     };
   }
 }

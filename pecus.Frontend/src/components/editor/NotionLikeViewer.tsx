@@ -10,14 +10,13 @@
 import "./Editor.css";
 import { LexicalExtensionComposer } from "@lexical/react/LexicalExtensionComposer";
 import { defineExtension } from "lexical";
-import { useCallback, useMemo } from "react";
-
+import { useMemo } from "react";
+import { INITIAL_SETTINGS } from "./appSettings";
 import { buildHTMLConfig } from "./buildHTMLConfig";
 import { SettingsContext } from "./context/SettingsContext";
 import NotionLikeEditorNodes from "./nodes/NotionLikeEditorNodes";
 import { TableContext } from "./plugins/TablePlugin";
 import NotionLikeEditorTheme from "./themes/NotionLikeEditorTheme";
-import { INITIAL_SETTINGS } from "./appSettings";
 import Viewer from "./Viewer";
 
 export interface NotionLikeViewerProps {
@@ -32,10 +31,7 @@ export interface NotionLikeViewerProps {
   isCodeShiki?: boolean;
 }
 
-export default function NotionLikeViewer({
-  initialViewerState: initialViewerState,
-  isCodeShiki = false,
-}: NotionLikeViewerProps) {
+export default function NotionLikeViewer({ initialViewerState, isCodeShiki = false }: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
     () => ({

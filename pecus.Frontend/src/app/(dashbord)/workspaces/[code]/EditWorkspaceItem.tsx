@@ -1,19 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import EditIcon from "@mui/icons-material/Edit";
 import CloseIcon from "@mui/icons-material/Close";
-import type {
-  WorkspaceItemDetailResponse,
-  TaskPriority,
-} from "@/connectors/api/pecus";
-import {
-  updateWorkspaceItem,
-  fetchLatestWorkspaceItem,
-} from "@/actions/workspaceItem";
+import EditIcon from "@mui/icons-material/Edit";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchLatestWorkspaceItem, updateWorkspaceItem } from "@/actions/workspaceItem";
+import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
+import type { TaskPriority, WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 import { useNotify } from "@/hooks/useNotify";
 import { updateWorkspaceItemSchema } from "@/schemas/editSchemas";
-import NotionLikeEditor from "@/components/editor/NotionLikeEditor";
 
 interface EditWorkspaceItemProps {
   item: WorkspaceItemDetailResponse;
@@ -22,26 +16,18 @@ interface EditWorkspaceItemProps {
   onSave?: (updatedItem: WorkspaceItemDetailResponse) => void;
 }
 
-export default function EditWorkspaceItem({
-  item,
-  isOpen,
-  onClose,
-  onSave,
-}: EditWorkspaceItemProps) {
+export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: EditWorkspaceItemProps) {
   const notify = useNotify();
 
   // 最新アイテムデータ
-  const [latestItem, setLatestItem] =
-    useState<WorkspaceItemDetailResponse>(item);
+  const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
   const [isLoadingItem, setIsLoadingItem] = useState(false);
   const [itemLoadError, setItemLoadError] = useState<string | null>(null);
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
     subject: item.subject || "",
-    dueDate: item.dueDate
-      ? new Date(item.dueDate).toISOString().split("T")[0]
-      : "",
+    dueDate: item.dueDate ? new Date(item.dueDate).toISOString().split("T")[0] : "",
     priority: (item.priority || "Medium") as TaskPriority,
     isDraft: item.isDraft ?? false,
     isArchived: item.isArchived ?? false,
@@ -49,9 +35,7 @@ export default function EditWorkspaceItem({
   });
 
   // エディタ初期値（item.body）とユーザー入力値は分離して管理
-  const [initialEditorState, setInitialEditorState] = useState<string>(
-    item.body || "",
-  );
+  const [initialEditorState, setInitialEditorState] = useState<string>(item.body || "");
   const [editorValue, setEditorValue] = useState<string>(item.body || "");
   const [editorInitKey, setEditorInitKey] = useState<number>(0);
 
@@ -59,15 +43,9 @@ export default function EditWorkspaceItem({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
-  const shouldShowError = useCallback(
-    (fieldName: string) => !!fieldErrors[fieldName],
-    [fieldErrors],
-  );
+  const shouldShowError = useCallback((fieldName: string) => !!fieldErrors[fieldName], [fieldErrors]);
 
-  const getFieldError = useCallback(
-    (fieldName: string) => fieldErrors[fieldName]?.[0] || null,
-    [fieldErrors],
-  );
+  const getFieldError = useCallback((fieldName: string) => fieldErrors[fieldName]?.[0] || null, [fieldErrors]);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -104,9 +82,7 @@ export default function EditWorkspaceItem({
 
         // rowVersion が存在しない場合はエラー
         if (!latestItem.rowVersion) {
-          notify.error(
-            "アイテム情報の更新に必要なバージョン情報が取得できませんでした。",
-          );
+          notify.error("アイテム情報の更新に必要なバージョン情報が取得できませんでした。");
           setIsSubmitting(false);
           return;
         }
@@ -118,28 +94,21 @@ export default function EditWorkspaceItem({
           dueDateValue = date.toISOString();
         }
 
-        const updateResult = await updateWorkspaceItem(
-          latestItem.workspaceId || 0,
-          latestItem.id,
-          {
-            subject: result.data.subject,
-            body: editorValue || null,
-            dueDate: dueDateValue,
-            priority: result.data.priority as TaskPriority | undefined,
-            isDraft: result.data.isDraft,
-            isArchived: result.data.isArchived,
-            rowVersion: result.data.rowVersion,
-          },
-        );
+        const updateResult = await updateWorkspaceItem(latestItem.workspaceId || 0, latestItem.id, {
+          subject: result.data.subject,
+          body: editorValue || null,
+          dueDate: dueDateValue,
+          priority: result.data.priority as TaskPriority | undefined,
+          isDraft: result.data.isDraft,
+          isArchived: result.data.isArchived,
+          rowVersion: result.data.rowVersion,
+        });
 
         if (updateResult.success) {
           notify.success("アイテムを更新しました。");
 
           // 最新のアイテムデータを再取得（body を含む完全な情報を取得）
-          const fetchResult = await fetchLatestWorkspaceItem(
-            latestItem.workspaceId || 0,
-            latestItem.id,
-          );
+          const fetchResult = await fetchLatestWorkspaceItem(latestItem.workspaceId || 0, latestItem.id);
 
           if (fetchResult.success && onSave) {
             onSave(fetchResult.data);
@@ -148,13 +117,10 @@ export default function EditWorkspaceItem({
         } else if (updateResult.error === "conflict") {
           // 409 Conflict: 並行更新
           notify.error(
-            updateResult.message ||
-              "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
+            updateResult.message || "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
           );
         } else {
-          notify.error(
-            updateResult.message || "アイテムの更新に失敗しました。",
-          );
+          notify.error(updateResult.message || "アイテムの更新に失敗しました。");
         }
       } catch (err: unknown) {
         console.error("アイテム更新中にエラーが発生しました:", err);
@@ -163,7 +129,7 @@ export default function EditWorkspaceItem({
         setIsSubmitting(false);
       }
     },
-    [formData, editorValue, latestItem, onSave, onClose, notify],
+    [formData, editorValue, latestItem, onSave, onClose, notify, isSubmitting],
   );
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -177,19 +143,14 @@ export default function EditWorkspaceItem({
       setItemLoadError(null);
 
       try {
-        const result = await fetchLatestWorkspaceItem(
-          item.workspaceId || 0,
-          item.id,
-        );
+        const result = await fetchLatestWorkspaceItem(item.workspaceId || 0, item.id);
 
         if (result.success) {
           setLatestItem(result.data);
           // フォームデータを更新
           setFormData({
             subject: result.data.subject || "",
-            dueDate: result.data.dueDate
-              ? new Date(result.data.dueDate).toISOString().split("T")[0]
-              : "",
+            dueDate: result.data.dueDate ? new Date(result.data.dueDate).toISOString().split("T")[0] : "",
             priority: (result.data.priority || "Medium") as TaskPriority,
             isDraft: result.data.isDraft ?? false,
             isArchived: result.data.isArchived ?? false,
@@ -245,11 +206,7 @@ export default function EditWorkspaceItem({
   return (
     <>
       {/* モーダル背景オーバーレイ */}
-      <div
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} aria-hidden="true" />
 
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
@@ -302,12 +259,7 @@ export default function EditWorkspaceItem({
 
             {/* フォーム */}
             {!isLoadingItem && !itemLoadError && (
-              <form
-                ref={formRef}
-                onSubmit={handleSubmit}
-                noValidate
-                className="space-y-4"
-              >
+              <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
                 {/* 件名 */}
                 <div className="form-control">
                   <label htmlFor="subject" className="label">
@@ -320,35 +272,27 @@ export default function EditWorkspaceItem({
                     name="subject"
                     type="text"
                     placeholder="例：アイテムの件名"
-                    className={`input input-bordered w-full ${
-                      shouldShowError("subject") ? "input-error" : ""
-                    }`}
+                    className={`input input-bordered w-full ${shouldShowError("subject") ? "input-error" : ""}`}
                     value={formData.subject}
-                    onChange={(e) =>
-                      handleFieldChange("subject", e.target.value)
-                    }
+                    onChange={(e) => handleFieldChange("subject", e.target.value)}
                     disabled={isSubmitting}
                     maxLength={200}
                   />
                   {shouldShowError("subject") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("subject")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("subject")}</span>
+                    </div>
                   )}
-                  <label className="label">
-                    <span className="label-text-alt text-xs">
-                      {formData.subject.length}/200 文字
-                    </span>
-                  </label>
+                  <div className="label">
+                    <span className="label-text-alt text-xs">{formData.subject.length}/200 文字</span>
+                  </div>
                 </div>
 
                 {/* 本文（WYSIWYGエディタ） */}
                 <div className="form-control">
-                  <label className="label">
+                  <div className="label">
                     <span className="label-text font-semibold">本文</span>
-                  </label>
+                  </div>
                   <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
                     <NotionLikeEditor
@@ -372,21 +316,15 @@ export default function EditWorkspaceItem({
                     id="dueDate"
                     name="dueDate"
                     type="date"
-                    className={`input input-bordered w-full ${
-                      shouldShowError("dueDate") ? "input-error" : ""
-                    }`}
+                    className={`input input-bordered w-full ${shouldShowError("dueDate") ? "input-error" : ""}`}
                     value={formData.dueDate}
-                    onChange={(e) =>
-                      handleFieldChange("dueDate", e.target.value)
-                    }
+                    onChange={(e) => handleFieldChange("dueDate", e.target.value)}
                     disabled={isSubmitting}
                   />
                   {shouldShowError("dueDate") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("dueDate")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("dueDate")}</span>
+                    </div>
                   )}
                 </div>
 
@@ -398,16 +336,9 @@ export default function EditWorkspaceItem({
                   <select
                     id="priority"
                     name="priority"
-                    className={`select select-bordered w-full ${
-                      shouldShowError("priority") ? "select-error" : ""
-                    }`}
+                    className={`select select-bordered w-full ${shouldShowError("priority") ? "select-error" : ""}`}
                     value={formData.priority || "Medium"}
-                    onChange={(e) =>
-                      handleFieldChange(
-                        "priority",
-                        e.target.value as TaskPriority,
-                      )
-                    }
+                    onChange={(e) => handleFieldChange("priority", e.target.value as TaskPriority)}
                     disabled={isSubmitting}
                   >
                     <option value="Low">低</option>
@@ -416,11 +347,9 @@ export default function EditWorkspaceItem({
                     <option value="Critical">緊急</option>
                   </select>
                   {shouldShowError("priority") && (
-                    <label className="label">
-                      <span className="label-text-alt text-error">
-                        {getFieldError("priority")}
-                      </span>
-                    </label>
+                    <div className="label">
+                      <span className="label-text-alt text-error">{getFieldError("priority")}</span>
+                    </div>
                   )}
                 </div>
 
@@ -432,9 +361,7 @@ export default function EditWorkspaceItem({
                       name="isDraft"
                       className="checkbox checkbox-primary"
                       checked={formData.isDraft || false}
-                      onChange={(e) =>
-                        handleFieldChange("isDraft", e.target.checked)
-                      }
+                      onChange={(e) => handleFieldChange("isDraft", e.target.checked)}
                       disabled={isSubmitting}
                     />
                     <span className="label-text">下書き</span>
@@ -449,9 +376,7 @@ export default function EditWorkspaceItem({
                       name="isArchived"
                       className="checkbox checkbox-neutral"
                       checked={formData.isArchived || false}
-                      onChange={(e) =>
-                        handleFieldChange("isArchived", e.target.checked)
-                      }
+                      onChange={(e) => handleFieldChange("isArchived", e.target.checked)}
                       disabled={isSubmitting}
                     />
                     <span className="label-text">アーカイブ</span>
@@ -459,27 +384,14 @@ export default function EditWorkspaceItem({
                 </div>
 
                 {/* rowVersion（隠しフィールド） */}
-                <input
-                  type="hidden"
-                  name="rowVersion"
-                  value={formData.rowVersion}
-                />
+                <input type="hidden" name="rowVersion" value={formData.rowVersion} />
 
                 {/* ボタングループ */}
                 <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="btn btn-outline"
-                    disabled={isSubmitting}
-                  >
+                  <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
                     キャンセル
                   </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                  >
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <span className="loading loading-spinner loading-sm"></span>

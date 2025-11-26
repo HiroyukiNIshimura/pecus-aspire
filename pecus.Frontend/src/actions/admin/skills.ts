@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  createPecusApiClients,
-  detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import type {
   SkillDetailResponse,
   SkillListItemResponse,
@@ -29,10 +26,7 @@ export async function getSkills(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "スキル一覧の取得に失敗しました",
+      message: error.body?.message || error.message || "スキル一覧の取得に失敗しました",
     };
   }
 }
@@ -41,9 +35,7 @@ export async function getSkills(
  * Server Action: 全スキルを取得（フィルター用）
  * 複数ページを自動取得して結合
  */
-export async function getAllSkills(
-  isActive: boolean = true,
-): Promise<ApiResponse<SkillListItemResponse[]>> {
+export async function getAllSkills(isActive: boolean = true): Promise<ApiResponse<SkillListItemResponse[]>> {
   try {
     const api = createPecusApiClients();
     const allSkills: any[] = [];
@@ -51,10 +43,7 @@ export async function getAllSkills(
     let hasMore = true;
 
     while (hasMore) {
-      const response = await api.adminSkill.getApiAdminSkills(
-        currentPage,
-        isActive,
-      );
+      const response = await api.adminSkill.getApiAdminSkills(currentPage, isActive);
 
       if (response.data && response.data.length > 0) {
         allSkills.push(...response.data);
@@ -78,8 +67,7 @@ export async function getAllSkills(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "全スキルの取得に失敗しました",
+      message: error.body?.message || error.message || "全スキルの取得に失敗しました",
     };
   }
 }
@@ -87,9 +75,7 @@ export async function getAllSkills(
 /**
  * Server Action: スキル情報を取得
  */
-export async function getSkillDetail(
-  id: number,
-): Promise<ApiResponse<SkillDetailResponse>> {
+export async function getSkillDetail(id: number): Promise<ApiResponse<SkillDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.getApiAdminSkills1(id);
@@ -99,10 +85,7 @@ export async function getSkillDetail(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message ||
-        error.message ||
-        "スキル情報の取得に失敗しました",
+      message: error.body?.message || error.message || "スキル情報の取得に失敗しました",
     };
   }
 }
@@ -123,8 +106,7 @@ export async function createSkill(request: {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキルの作成に失敗しました",
+      message: error.body?.message || error.message || "スキルの作成に失敗しました",
     };
   }
 }
@@ -181,8 +163,7 @@ export async function updateSkill(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキルの更新に失敗しました",
+      message: error.body?.message || error.message || "スキルの更新に失敗しました",
     };
   }
 }
@@ -190,9 +171,7 @@ export async function updateSkill(
 /**
  * Server Action: スキルを削除
  */
-export async function deleteSkill(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.deleteApiAdminSkills(id);
@@ -202,8 +181,7 @@ export async function deleteSkill(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキルの削除に失敗しました",
+      message: error.body?.message || error.message || "スキルの削除に失敗しました",
     };
   }
 }
@@ -211,9 +189,7 @@ export async function deleteSkill(
 /**
  * Server Action: スキルを有効化
  */
-export async function activateSkill(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function activateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsActivate(id);
@@ -237,8 +213,7 @@ export async function activateSkill(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキルの有効化に失敗しました",
+      message: error.body?.message || error.message || "スキルの有効化に失敗しました",
     };
   }
 }
@@ -246,9 +221,7 @@ export async function activateSkill(
 /**
  * Server Action: スキルを無効化
  */
-export async function deactivateSkill(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateSkill(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.patchApiAdminSkillsDeactivate(id);
@@ -272,8 +245,7 @@ export async function deactivateSkill(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "スキルの無効化に失敗しました",
+      message: error.body?.message || error.message || "スキルの無効化に失敗しました",
     };
   }
 }

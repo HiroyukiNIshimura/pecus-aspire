@@ -6,15 +6,8 @@
  *
  */
 
-import type {
-  DOMConversionMap,
-  DOMConversionOutput,
-  EditorConfig,
-  LexicalNode,
-  SerializedElementNode,
-} from "lexical";
-
 import { addClassNamesToElement } from "@lexical/utils";
+import type { DOMConversionMap, DOMConversionOutput, EditorConfig, LexicalNode, SerializedElementNode } from "lexical";
 import { $isParagraphNode, ElementNode } from "lexical";
 
 export type SerializedLayoutItemNode = SerializedElementNode;
@@ -55,10 +48,7 @@ export class LayoutItemNode extends ElementNode {
 
   collapseAtStart(): boolean {
     const parent = this.getParentOrThrow();
-    if (
-      this.is(parent.getFirstChild()) &&
-      parent.getChildren().every($isEmptyLayoutItemNode)
-    ) {
+    if (this.is(parent.getFirstChild()) && parent.getChildren().every($isEmptyLayoutItemNode)) {
       parent.remove();
       return true;
     }
@@ -92,8 +82,6 @@ export function $createLayoutItemNode(): LayoutItemNode {
   return new LayoutItemNode();
 }
 
-export function $isLayoutItemNode(
-  node: LexicalNode | null | undefined,
-): node is LayoutItemNode {
+export function $isLayoutItemNode(node: LexicalNode | null | undefined): node is LayoutItemNode {
   return node instanceof LayoutItemNode;
 }

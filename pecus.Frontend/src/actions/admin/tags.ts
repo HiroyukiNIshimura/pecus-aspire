@@ -1,13 +1,9 @@
 "use server";
 
-import {
-  createPecusApiClients,
-  detectConcurrencyError,
-} from "@/connectors/api/PecusApiClient";
+import { createPecusApiClients, detectConcurrencyError } from "@/connectors/api/PecusApiClient";
 import type {
   SuccessResponse,
   TagDetailResponse,
-  TagListItemResponse,
   TagListItemResponseTagStatisticsPagedResponse,
   TagResponse,
 } from "@/connectors/api/pecus";
@@ -29,8 +25,7 @@ export async function getTags(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグ一覧の取得に失敗しました",
+      message: error.body?.message || error.message || "タグ一覧の取得に失敗しました",
     };
   }
 }
@@ -38,9 +33,7 @@ export async function getTags(
 /**
  * Server Action: タグ情報を取得
  */
-export async function getTagDetail(
-  id: number,
-): Promise<ApiResponse<TagDetailResponse>> {
+export async function getTagDetail(id: number): Promise<ApiResponse<TagDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags1(id);
@@ -50,8 +43,7 @@ export async function getTagDetail(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグ情報の取得に失敗しました",
+      message: error.body?.message || error.message || "タグ情報の取得に失敗しました",
     };
   }
 }
@@ -59,10 +51,7 @@ export async function getTagDetail(
 /**
  * Server Action: タグを作成
  */
-export async function createTag(request: {
-  name: string;
-  description?: string;
-}): Promise<ApiResponse<TagResponse>> {
+export async function createTag(request: { name: string; description?: string }): Promise<ApiResponse<TagResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.postApiAdminTags(request);
@@ -72,8 +61,7 @@ export async function createTag(request: {
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグの作成に失敗しました",
+      message: error.body?.message || error.message || "タグの作成に失敗しました",
     };
   }
 }
@@ -128,8 +116,7 @@ export async function updateTag(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグの更新に失敗しました",
+      message: error.body?.message || error.message || "タグの更新に失敗しました",
     };
   }
 }
@@ -137,9 +124,7 @@ export async function updateTag(
 /**
  * Server Action: タグを削除
  */
-export async function deleteTag(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deleteTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.deleteApiAdminTags(id);
@@ -149,8 +134,7 @@ export async function deleteTag(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグの削除に失敗しました",
+      message: error.body?.message || error.message || "タグの削除に失敗しました",
     };
   }
 }
@@ -158,9 +142,7 @@ export async function deleteTag(
 /**
  * Server Action: タグを有効化
  */
-export async function activateTag(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function activateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsActivate(id);
@@ -184,8 +166,7 @@ export async function activateTag(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグの有効化に失敗しました",
+      message: error.body?.message || error.message || "タグの有効化に失敗しました",
     };
   }
 }
@@ -193,9 +174,7 @@ export async function activateTag(
 /**
  * Server Action: タグを無効化
  */
-export async function deactivateTag(
-  id: number,
-): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateTag(id: number): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.patchApiAdminTagsDeactivate(id);
@@ -219,8 +198,7 @@ export async function deactivateTag(
     return {
       success: false,
       error: "server",
-      message:
-        error.body?.message || error.message || "タグの無効化に失敗しました",
+      message: error.body?.message || error.message || "タグの無効化に失敗しました",
     };
   }
 }

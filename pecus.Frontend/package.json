@@ -67,7 +67,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.0",
+    "@biomejs/biome": "2.3.7",
     "@iconify-json/tabler": "^1.2.23",
     "@iconify/tailwind4": "^1.0.6",
     "@tailwindcss/postcss": "^4",
@@ -75,6 +75,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-infinite-scroll-component": "^4.2.5",
+    "@types/yauzl": "^2.10.3",
     "form-data": "^4.0.4",
     "openapi-typescript-codegen": "^0.29.0",
     "prettier": "^3.6.2",

@@ -7,13 +7,7 @@
  */
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $getSelection,
-  $isRangeSelection,
-  $setSelection,
-  COMMAND_PRIORITY_LOW,
-  FOCUS_COMMAND,
-} from "lexical";
+import { $getSelection, $isRangeSelection, $setSelection, COMMAND_PRIORITY_LOW, FOCUS_COMMAND } from "lexical";
 import { useEffect } from "react";
 
 const TAB_TO_FOCUS_INTERVAL = 100;
@@ -48,10 +42,7 @@ export default function TabFocusPlugin(): null {
       (event: FocusEvent) => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          if (
-            lastTabKeyDownTimestamp + TAB_TO_FOCUS_INTERVAL >
-            event.timeStamp
-          ) {
+          if (lastTabKeyDownTimestamp + TAB_TO_FOCUS_INTERVAL > event.timeStamp) {
             $setSelection(selection.clone());
           }
         }

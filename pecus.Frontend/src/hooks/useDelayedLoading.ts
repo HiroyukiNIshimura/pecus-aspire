@@ -13,9 +13,7 @@ interface UseDelayedLoadingReturn {
   /**内部の処理中状態 */
   isLoading: boolean;
   /**async 関数をラップして遅延ロジックを適用 */
-  withDelayedLoading: <T extends any[], R>(
-    fn: (...args: T) => Promise<void>,
-  ) => (...args: T) => Promise<void>;
+  withDelayedLoading: <T extends any[], _R>(fn: (...args: T) => Promise<void>) => (...args: T) => Promise<void>;
 }
 
 /**
@@ -39,9 +37,7 @@ interface UseDelayedLoadingReturn {
  *   </>
  * );
  */
-export function useDelayedLoading(
-  options: UseDelayedLoadingOptions = {},
-): UseDelayedLoadingReturn {
+export function useDelayedLoading(options: UseDelayedLoadingOptions = {}): UseDelayedLoadingReturn {
   const { delayMs = 200, minDisplayTimeMs = 300 } = options;
   const [isLoading, setIsLoading] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
@@ -65,9 +61,7 @@ export function useDelayedLoading(
           // 最小表示時間を保証
           const elapsed = Date.now() - startTime;
           if (elapsed < minDisplayTimeMs) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, minDisplayTimeMs - elapsed),
-            );
+            await new Promise((resolve) => setTimeout(resolve, minDisplayTimeMs - elapsed));
           }
 
           clearTimeout(showLoadingTimer);

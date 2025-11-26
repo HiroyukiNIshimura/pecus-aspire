@@ -25,7 +25,7 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
 import { useLexicalEditable } from "@lexical/react/useLexicalEditable";
 import { CAN_USE_DOM } from "@lexical/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useSettings } from "./context/SettingsContext";
 import { useSharedHistoryContext } from "./context/SharedHistoryContext";
@@ -92,10 +92,8 @@ export default function Editor() {
   } = useSettings();
   const isEditable = useLexicalEditable();
   const placeholder = "Enter some rich text...";
-  const [floatingAnchorElem, setFloatingAnchorElem] =
-    useState<HTMLDivElement | null>(null);
-  const [isSmallWidthViewport, setIsSmallWidthViewport] =
-    useState<boolean>(false);
+  const [floatingAnchorElem, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
+  const [isSmallWidthViewport, setIsSmallWidthViewport] = useState<boolean>(false);
   const [editor] = useLexicalComposerContext();
   const [activeEditor, setActiveEditor] = useState(editor);
   const [isLinkEditMode, setIsLinkEditMode] = useState<boolean>(false);
@@ -108,8 +106,7 @@ export default function Editor() {
 
   useEffect(() => {
     const updateViewPortWidth = () => {
-      const isNextSmallWidthViewport =
-        CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
+      const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia("(max-width: 1025px)").matches;
 
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
@@ -133,12 +130,7 @@ export default function Editor() {
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      {showToolbar && (
-        <ShortcutsPlugin
-          editor={activeEditor}
-          setIsLinkEditMode={setIsLinkEditMode}
-        />
-      )}
+      {showToolbar && <ShortcutsPlugin editor={activeEditor} setIsLinkEditMode={setIsLinkEditMode} />}
       <div className="editor-container">
         {isMaxLength && <MaxLengthPlugin maxLength={30} />}
         <DragDropPaste />
@@ -158,22 +150,14 @@ export default function Editor() {
           contentEditable={
             <div className="editor-scroller">
               <div className="editor" ref={onRef}>
-                <ContentEditable
-                  placeholder={placeholder}
-                  placeholderClassName="editor-placeholder"
-                />
+                <ContentEditable placeholder={placeholder} placeholderClassName="editor-placeholder" />
               </div>
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
         <MarkdownShortcutPlugin />
-        {isCodeHighlighted &&
-          (isCodeShiki ? (
-            <CodeHighlightShikiPlugin />
-          ) : (
-            <CodeHighlightPrismPlugin />
-          ))}
+        {isCodeHighlighted && (isCodeShiki ? <CodeHighlightShikiPlugin /> : <CodeHighlightPrismPlugin />)}
         <ListPlugin hasStrictIndent={listStrictIndent} />
         <CheckListPlugin />
         <TablePlugin
@@ -203,10 +187,7 @@ export default function Editor() {
               isLinkEditMode={isLinkEditMode}
               setIsLinkEditMode={setIsLinkEditMode}
             />
-            <TableCellActionMenuPlugin
-              anchorElem={floatingAnchorElem}
-              cellMerge={true}
-            />
+            <TableCellActionMenuPlugin anchorElem={floatingAnchorElem} cellMerge={true} />
           </>
         )}
         {floatingAnchorElem && !isSmallWidthViewport && (
@@ -214,17 +195,11 @@ export default function Editor() {
             <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
             <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
             <TableHoverActionsPlugin anchorElem={floatingAnchorElem} />
-            <FloatingTextFormatToolbarPlugin
-              anchorElem={floatingAnchorElem}
-              setIsLinkEditMode={setIsLinkEditMode}
-            />
+            <FloatingTextFormatToolbarPlugin anchorElem={floatingAnchorElem} setIsLinkEditMode={setIsLinkEditMode} />
           </>
         )}
         {(isCharLimit || isCharLimitUtf8) && (
-          <CharacterLimitPlugin
-            charset={isCharLimit ? "UTF-16" : "UTF-8"}
-            maxLength={5}
-          />
+          <CharacterLimitPlugin charset={isCharLimit ? "UTF-16" : "UTF-8"} maxLength={5} />
         )}
         {isAutocomplete && <AutocompletePlugin />}
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>

@@ -1,39 +1,39 @@
 "use client";
 
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import GridViewIcon from "@mui/icons-material/GridView";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PersonIcon from "@mui/icons-material/Person";
+import PowerOffIcon from "@mui/icons-material/PowerOff";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import SearchIcon from "@mui/icons-material/Search";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { deleteWorkspace } from "@/actions/deleteWorkspace";
+import { toggleWorkspaceActive } from "@/actions/workspace";
 import AppHeader from "@/components/common/AppHeader";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import LoadingOverlay from "@/components/common/LoadingOverlay";
 import DeleteWorkspaceModal from "@/components/common/DeleteWorkspaceModal";
-import CreateWorkspaceModal from "./CreateWorkspaceModal";
-import EditWorkspaceModal from "./EditWorkspaceModal";
+import LoadingOverlay from "@/components/common/LoadingOverlay";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import type {
+  MasterGenreResponse,
   WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
-  MasterGenreResponse,
 } from "@/connectors/api/pecus";
-import { toggleWorkspaceActive } from "@/actions/workspace";
-import { deleteWorkspace } from "@/actions/deleteWorkspace";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useNotify } from "@/hooks/useNotify";
 import { useValidation } from "@/hooks/useValidation";
 import { workspaceNameFilterSchema } from "@/schemas/filterSchemas";
-import GridViewIcon from "@mui/icons-material/GridView";
-import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import PersonIcon from "@mui/icons-material/Person";
-import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
-import PowerOffIcon from "@mui/icons-material/PowerOff";
-import AddIcon from "@mui/icons-material/Add";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import type { UserInfo } from "@/types/userInfo";
+import CreateWorkspaceModal from "./CreateWorkspaceModal";
+import EditWorkspaceModal from "./EditWorkspaceModal";
 
 interface WorkspacesClientProps {
   initialUser?: UserInfo | null;
@@ -41,33 +41,23 @@ interface WorkspacesClientProps {
   genres: MasterGenreResponse[];
 }
 
-export default function WorkspacesClient({
-  initialUser,
-  fetchError,
-  genres,
-}: WorkspacesClientProps) {
+export default function WorkspacesClient({ initialUser, genres }: WorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(
-    initialUser || null,
-  );
-  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser || null);
+  const [_isLoading, setIsLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(
-    null,
-  );
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>("");
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingWorkspace, setEditingWorkspace] =
-    useState<WorkspaceListItemResponse | null>(null);
-  const [deletingWorkspace, setDeletingWorkspace] =
-    useState<WorkspaceListItemResponse | null>(null);
+  const [editingWorkspace, setEditingWorkspace] = useState<WorkspaceListItemResponse | null>(null);
+  const [deletingWorkspace, setDeletingWorkspace] = useState<WorkspaceListItemResponse | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
@@ -79,8 +69,7 @@ export default function WorkspacesClient({
       try {
         const response = await fetch("/api/workspaces?page=1&IsActive=true");
         if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
-            await response.json();
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -110,8 +99,7 @@ export default function WorkspacesClient({
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
-          await response.json();
+        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
         setWorkspaces((prev) => [...prev, ...(data.data || [])]);
         setCurrentPage(data.currentPage || nextPage);
         setTotalPages(data.totalPages || 1);
@@ -138,8 +126,7 @@ export default function WorkspacesClient({
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
-          await response.json();
+        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
         setWorkspaces(data.data || []);
         setCurrentPage(1);
         setTotalPages(data.totalPages || 1);
@@ -194,19 +181,12 @@ export default function WorkspacesClient({
     setOpenMenuId(null);
 
     try {
-      const result = await toggleWorkspaceActive(
-        workspace.id,
-        !workspace.isActive,
-      );
+      const result = await toggleWorkspaceActive(workspace.id, !workspace.isActive);
 
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
-        notify.success(
-          workspace.isActive
-            ? "ワークスペースを無効化しました"
-            : "ワークスペースを有効化しました",
-        );
+        notify.success(workspace.isActive ? "ワークスペースを無効化しました" : "ワークスペースを有効化しました");
       } else {
         // エラー表示
         notify.error(result.message || "状態の切り替えに失敗しました。");
@@ -245,19 +225,11 @@ export default function WorkspacesClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader
-        userInfo={userInfo}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <AppHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <DashboardSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isAdmin={userInfo?.isAdmin || false}
-        />
+        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin || false} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -268,11 +240,7 @@ export default function WorkspacesClient({
         )}
 
         {/* Main Content */}
-        <main
-          id="scrollableDiv"
-          className="flex-1 p-4 md:p-6 bg-base-100"
-          onClick={() => setOpenMenuId(null)}
-        >
+        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100" onClick={() => setOpenMenuId(null)}>
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
           {/* ページヘッダー */}
@@ -283,15 +251,9 @@ export default function WorkspacesClient({
                   <GridViewIcon />
                   マイワークスペース
                 </h1>
-                <p className="text-base-content/70 mt-1">
-                  アクセス可能なワークスペースの一覧
-                </p>
+                <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
               </div>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
+              <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
                 <AddIcon />
                 新規作成
               </button>
@@ -320,21 +282,9 @@ export default function WorkspacesClient({
                   viewBox="0 0 24 24"
                 >
                   {filterOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 12H4"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                   ) : (
-                    <>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   )}
                 </svg>
               </div>
@@ -345,9 +295,7 @@ export default function WorkspacesClient({
                     {/* 名前検索 */}
                     <div className="form-control">
                       <label htmlFor="filterName" className="label">
-                        <span className="label-text font-semibold">
-                          ワークスペース名
-                        </span>
+                        <span className="label-text font-semibold">ワークスペース名</span>
                       </label>
                       <input
                         id="filterName"
@@ -363,36 +311,24 @@ export default function WorkspacesClient({
                         }}
                       />
                       {nameValidation.error && (
-                        <label className="label">
-                          <span className="label-text-alt text-error">
-                            {nameValidation.error}
-                          </span>
-                        </label>
+                        <div className="label">
+                          <span className="label-text-alt text-error">{nameValidation.error}</span>
+                        </div>
                       )}
                     </div>
 
                     {/* ステータスフィルター */}
                     <div className="form-control">
                       <label htmlFor="filterIsActive" className="label">
-                        <span className="label-text font-semibold">
-                          ステータス
-                        </span>
+                        <span className="label-text font-semibold">ステータス</span>
                       </label>
                       <select
                         id="filterIsActive"
                         className="select select-bordered"
-                        value={
-                          filterIsActive === null
-                            ? ""
-                            : filterIsActive
-                              ? "true"
-                              : "false"
-                        }
+                        value={filterIsActive === null ? "" : filterIsActive ? "true" : "false"}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setFilterIsActive(
-                            value === "" ? null : value === "true",
-                          );
+                          setFilterIsActive(value === "" ? null : value === "true");
                         }}
                       >
                         <option value="">すべて</option>
@@ -404,11 +340,7 @@ export default function WorkspacesClient({
 
                   {/* ボタングループ */}
                   <div className="flex gap-2 justify-end">
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={handleReset}
-                    >
+                    <button type="button" className="btn btn-outline" onClick={handleReset}>
                       リセット
                     </button>
                     <button
@@ -438,9 +370,7 @@ export default function WorkspacesClient({
 
               {workspaces.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-base-content/70">
-                    ワークスペースが見つかりません
-                  </p>
+                  <p className="text-base-content/70">ワークスペースが見つかりません</p>
                 </div>
               ) : (
                 <InfiniteScroll
@@ -454,9 +384,7 @@ export default function WorkspacesClient({
                   }
                   endMessage={
                     <div className="text-center py-4">
-                      <p className="text-base-content/70">
-                        すべてのワークスペースを表示しました
-                      </p>
+                      <p className="text-base-content/70">すべてのワークスペースを表示しました</p>
                     </div>
                   }
                   scrollableTarget="scrollableDiv"
@@ -472,9 +400,7 @@ export default function WorkspacesClient({
                           <div className="mb-3">
                             {/* コード、ステータス、メニュー */}
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <code className="text-xs badge badge-ghost badge-sm">
-                                {workspace.code}
-                              </code>
+                              <code className="text-xs badge badge-ghost badge-sm">{workspace.code}</code>
                               <div className="flex items-center gap-2">
                                 {workspace.isActive ? (
                                   <div className="badge badge-success badge-sm">
@@ -579,24 +505,16 @@ export default function WorkspacesClient({
                           {/* メタ情報 */}
                           <div className="space-y-2 mb-3 flex-1">
                             <div className="flex items-center justify-between text-sm gap-2">
-                              <span className="text-base-content/70 flex-shrink-0">
-                                メンバー
-                              </span>
+                              <span className="text-base-content/70 flex-shrink-0">メンバー</span>
                               <div className="flex items-center gap-1 font-medium">
                                 <PersonIcon className="w-4 h-4" />
                                 {workspace.memberCount || 0}
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-sm gap-2">
-                              <span className="text-base-content/70 flex-shrink-0">
-                                作成日
-                              </span>
+                              <span className="text-base-content/70 flex-shrink-0">作成日</span>
                               <span className="font-medium">
-                                {workspace.createdAt
-                                  ? new Date(
-                                      workspace.createdAt,
-                                    ).toLocaleDateString("ja-JP")
-                                  : "-"}
+                                {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString("ja-JP") : "-"}
                               </span>
                             </div>
                           </div>
@@ -605,9 +523,7 @@ export default function WorkspacesClient({
                           {workspace.genreIcon && workspace.genreName && (
                             <div className="pt-3 border-t border-base-300 mt-auto">
                               <div className="flex items-center gap-2 text-sm text-base-content/70">
-                                <span className="text-lg">
-                                  {workspace.genreIcon}
-                                </span>
+                                <span className="text-lg">{workspace.genreIcon}</span>
                                 <span>{workspace.genreName}</span>
                               </div>
                             </div>
@@ -627,36 +543,28 @@ export default function WorkspacesClient({
               <div className="stats shadow">
                 <div className="stat">
                   <div className="stat-title">アクティブ</div>
-                  <div className="stat-value text-primary">
-                    {statistics.activeWorkspaceCount || 0}
-                  </div>
+                  <div className="stat-value text-primary">{statistics.activeWorkspaceCount || 0}</div>
                   <div className="stat-desc">利用中のワークスペース</div>
                 </div>
               </div>
               <div className="stats shadow">
                 <div className="stat">
                   <div className="stat-title">非アクティブ</div>
-                  <div className="stat-value text-secondary">
-                    {statistics.inactiveWorkspaceCount || 0}
-                  </div>
+                  <div className="stat-value text-secondary">{statistics.inactiveWorkspaceCount || 0}</div>
                   <div className="stat-desc">停止中のワークスペース</div>
                 </div>
               </div>
               <div className="stats shadow">
                 <div className="stat">
                   <div className="stat-title">総メンバー数</div>
-                  <div className="stat-value text-accent">
-                    {statistics.uniqueMemberCount || 0}
-                  </div>
+                  <div className="stat-value text-accent">{statistics.uniqueMemberCount || 0}</div>
                   <div className="stat-desc">全ワークスペース合計</div>
                 </div>
               </div>
               <div className="stats shadow">
                 <div className="stat">
                   <div className="stat-title">最近作成</div>
-                  <div className="stat-value text-info">
-                    {statistics.recentWorkspaceCount || 0}
-                  </div>
+                  <div className="stat-value text-info">{statistics.recentWorkspaceCount || 0}</div>
                   <div className="stat-desc">過去30日以内</div>
                 </div>
               </div>

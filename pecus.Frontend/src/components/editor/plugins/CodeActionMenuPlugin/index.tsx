@@ -10,16 +10,11 @@ import type { JSX } from "react";
 
 import "./index.css";
 
-import {
-  $isCodeNode,
-  CodeNode,
-  getLanguageFriendlyName,
-  normalizeCodeLang,
-} from "@lexical/code";
+import { $isCodeNode, CodeNode, normalizeCodeLang } from "@lexical/code";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $getNearestNodeFromDOMNode, isHTMLElement } from "lexical";
+import type * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import * as React from "react";
 import { createPortal } from "react-dom";
 
 import { CopyButton } from "./components/CopyButton";
@@ -68,8 +63,7 @@ function CodeActionMenuContainer({
 
   const [lang, setLang] = useState("");
   const [isShown, setShown] = useState<boolean>(false);
-  const [shouldListenMouseMove, setShouldListenMouseMove] =
-    useState<boolean>(false);
+  const [shouldListenMouseMove, setShouldListenMouseMove] = useState<boolean>(false);
   const [position, setPosition] = useState<Position>({
     right: "0",
     top: "0",
@@ -107,8 +101,7 @@ function CodeActionMenuContainer({
       });
 
       if (codeNode) {
-        const { y: editorElemY, right: editorElemRight } =
-          anchorElem.getBoundingClientRect();
+        const { y: editorElemY, right: editorElemRight } = anchorElem.getBoundingClientRect();
         const { y, right } = codeDOMNode.getBoundingClientRect();
         setLang(_lang);
         setShown(true);
@@ -164,9 +157,7 @@ function CodeActionMenuContainer({
 
   const normalizedLang = normalizeCodeLang(lang);
 
-  const handleLanguageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
+  const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = event.target.value;
     const codeDOMNode = getCodeDOMNode();
     if (!codeDOMNode) {
@@ -201,11 +192,7 @@ function CodeActionMenuContainer({
           )}
           <CopyButton editor={editor} getCodeDOMNode={getCodeDOMNode} />
           {!showOnlyCopy && canBePrettier(normalizedLang) ? (
-            <PrettierButton
-              editor={editor}
-              getCodeDOMNode={getCodeDOMNode}
-              lang={normalizedLang}
-            />
+            <PrettierButton editor={editor} getCodeDOMNode={getCodeDOMNode} lang={normalizedLang} />
           ) : null}
         </div>
       ) : null}
@@ -220,13 +207,8 @@ function getMouseInfo(event: MouseEvent): {
   const target = event.target;
 
   if (isHTMLElement(target)) {
-    const codeDOMNode = target.closest<HTMLElement>(
-      "code.NotionLikeEditorTheme__code",
-    );
-    const isOutside = !(
-      codeDOMNode ||
-      target.closest<HTMLElement>("div.code-action-menu-container")
-    );
+    const codeDOMNode = target.closest<HTMLElement>("code.NotionLikeEditorTheme__code");
+    const isOutside = !(codeDOMNode || target.closest<HTMLElement>("div.code-action-menu-container"));
 
     return { codeDOMNode, isOutside };
   } else {
@@ -241,11 +223,5 @@ export default function CodeActionMenuPlugin({
   anchorElem?: HTMLElement;
   showOnlyCopy?: boolean;
 }): React.ReactPortal | null {
-  return createPortal(
-    <CodeActionMenuContainer
-      anchorElem={anchorElem}
-      showOnlyCopy={showOnlyCopy}
-    />,
-    anchorElem,
-  );
+  return createPortal(<CodeActionMenuContainer anchorElem={anchorElem} showOnlyCopy={showOnlyCopy} />, anchorElem);
 }

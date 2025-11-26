@@ -13,10 +13,7 @@ declare module "pristinejs" {
     );
 
     validate(input?: HTMLInputElement | HTMLTextAreaElement): boolean;
-    addError(
-      input: HTMLInputElement | HTMLTextAreaElement,
-      message: string,
-    ): void;
+    addError(input: HTMLInputElement | HTMLTextAreaElement, message: string): void;
     reset(): void;
     destroy(): void;
   }

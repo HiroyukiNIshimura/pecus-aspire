@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 interface ConfirmDeleteModalProps {
   title?: string;
@@ -23,10 +17,7 @@ export interface ConfirmDeleteModalRef {
   close: () => void;
 }
 
-const ConfirmDeleteModal = forwardRef<
-  ConfirmDeleteModalRef,
-  ConfirmDeleteModalProps
->(
+const ConfirmDeleteModal = forwardRef<ConfirmDeleteModalRef, ConfirmDeleteModalProps>(
   (
     {
       title = "削除の確認",
@@ -39,10 +30,8 @@ const ConfirmDeleteModal = forwardRef<
     },
     ref,
   ) => {
-    const [modalId] = useState(
-      () => `modal-${Math.random().toString(36).substr(2, 9)}`,
-    );
-    const [isOpen, setIsOpen] = useState(false);
+    const [modalId] = useState(() => `modal-${Math.random().toString(36).substr(2, 9)}`);
+    const [_isOpen, setIsOpen] = useState(false);
     const [generatedCode, setGeneratedCode] = useState<string>("");
     const [inputValue, setInputValue] = useState<string>("");
     const [mismatch, setMismatch] = useState<boolean>(false);
@@ -112,8 +101,7 @@ const ConfirmDeleteModal = forwardRef<
       const getOverlayInstance = () => {
         if (typeof window !== "undefined" && window.HSOverlay) {
           // overlayRef.current を優先的に使用（React管理の要素）
-          const element =
-            overlayRef.current || document.getElementById(modalId);
+          const element = overlayRef.current || document.getElementById(modalId);
 
           if (element) {
             try {
@@ -207,15 +195,11 @@ const ConfirmDeleteModal = forwardRef<
                   <>
                     {/* ランダムコードの表示 */}
                     <div className="mt-2 text-sm text-base-content/70">
-                      削除コード:{" "}
-                      <span className="font-mono ml-1">{generatedCode}</span>
+                      削除コード: <span className="font-mono ml-1">{generatedCode}</span>
                     </div>
                     {/* 入力欄 */}
                     <div className="mt-2">
-                      <label
-                        htmlFor={`${modalId}-code-input`}
-                        className="label"
-                      >
+                      <label htmlFor={`${modalId}-code-input`} className="label">
                         削除コードを入力してください
                       </label>
                       <input
@@ -243,18 +227,10 @@ const ConfirmDeleteModal = forwardRef<
 
               {/* フッター */}
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-soft btn-secondary"
-                  onClick={handleCancel}
-                >
+                <button type="button" className="btn btn-soft btn-secondary" onClick={handleCancel}>
                   {cancelText}
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleConfirm}
-                >
+                <button type="button" className="btn btn-primary" onClick={handleConfirm}>
                   {confirmText}
                 </button>
               </div>

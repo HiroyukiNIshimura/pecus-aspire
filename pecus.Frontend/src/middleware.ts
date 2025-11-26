@@ -16,23 +16,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 認証不要なパス（公開ページ）
-  const publicPaths = [
-    "/signin",
-    "/signup",
-    "/forgot-password",
-    "/password-reset",
-    "/error-test",
-  ];
+  const publicPaths = ["/signin", "/signup", "/forgot-password", "/password-reset", "/error-test"];
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
   // 静的リソース・API Routesはスキップ
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".")
-  ) {
+  if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname.includes(".")) {
     return NextResponse.next();
   }
 
@@ -54,16 +44,12 @@ export async function middleware(request: NextRequest) {
 
     // 有効期限が5分以上残っている場合はそのまま通過
     if (expiresIn > 300) {
-      console.log(
-        `[Middleware] Access token valid for ${expiresIn}s, allowing access`,
-      );
+      console.log(`[Middleware] Access token valid for ${expiresIn}s, allowing access`);
       return NextResponse.next();
     }
 
     // 有効期限が5分未満の場合はリフレッシュを試行
-    console.log(
-      `[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`,
-    );
+    console.log(`[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`);
 
     const apiBaseUrl = process.env.API_BASE_URL || "https://localhost:7265";
     const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {

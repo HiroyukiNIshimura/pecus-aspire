@@ -6,14 +6,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
+    const page = parseInt(searchParams.get("page") || "1", 10);
     const isActiveParam = searchParams.get("IsActive");
-    const isActive =
-      isActiveParam === "true"
-        ? true
-        : isActiveParam === "false"
-          ? false
-          : undefined;
+    const isActive = isActiveParam === "true" ? true : isActiveParam === "false" ? false : undefined;
     const unusedOnlyParam = searchParams.get("UnusedOnly");
     const unusedOnly = unusedOnlyParam === "true" ? true : undefined;
     const name = searchParams.get("Name") || undefined;
@@ -36,12 +31,7 @@ export async function GET(request: NextRequest) {
       name,
     });
 
-    const response = await api.adminTag.getApiAdminTags(
-      page,
-      isActive,
-      unusedOnly,
-      name,
-    );
+    const response = await api.adminTag.getApiAdminTags(page, isActive, unusedOnly, name);
 
     console.log("Tags response received:", {
       dataLength: response.data?.length ?? 0,

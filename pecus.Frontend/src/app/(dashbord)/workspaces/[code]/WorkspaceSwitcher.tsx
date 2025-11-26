@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { WorkspaceListItemResponse } from "@/connectors/api/pecus";
 
 interface WorkspaceSwitcherProps {
@@ -15,18 +15,13 @@ interface WorkspaceSwitcherProps {
  * - Enterキーまたはクリックでドロップダウン展開
  * - ドロップダウンから任意のワークスペースを選択
  */
-export default function WorkspaceSwitcher({
-  workspaces,
-  currentWorkspaceCode,
-}: WorkspaceSwitcherProps) {
+export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: WorkspaceSwitcherProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 現在のワークスペースのインデックスを取得
-  const currentIndex = workspaces.findIndex(
-    (ws) => ws.code === currentWorkspaceCode,
-  );
+  const currentIndex = workspaces.findIndex((ws) => ws.code === currentWorkspaceCode);
 
   // 現在のワークスペース情報
   const currentWorkspace = workspaces[currentIndex];
@@ -65,10 +60,7 @@ export default function WorkspaceSwitcher({
   // ドロップダウン外クリックで閉じる
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -98,16 +90,10 @@ export default function WorkspaceSwitcher({
         title="Enterキーまたはクリックでワークスペースを選択"
       >
         <div className="flex-1 min-w-0">
-          <div className="text-xs text-base-content/70 mb-1">
-            ワークスペース
-          </div>
-          <div className="font-semibold text-sm truncate">
-            {currentWorkspace?.name || "ワークスペース"}
-          </div>
+          <div className="text-xs text-base-content/70 mb-1">ワークスペース</div>
+          <div className="font-semibold text-sm truncate">{currentWorkspace?.name || "ワークスペース"}</div>
           {currentWorkspace?.code && (
-            <code className="text-xs text-base-content/70 truncate block">
-              {currentWorkspace.code}
-            </code>
+            <code className="text-xs text-base-content/70 truncate block">{currentWorkspace.code}</code>
           )}
         </div>
         <KeyboardArrowDownIcon className="w-5 h-5 text-base-content/50 flex-shrink-0" />
@@ -115,30 +101,19 @@ export default function WorkspaceSwitcher({
 
       {/* ドロップダウンリスト */}
       {isOpen && (
-        <ul
-          className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-base-100 border border-base-300 rounded shadow-lg"
-          role="listbox"
-        >
+        <ul className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-base-100 border border-base-300 rounded shadow-lg">
           {workspaces.map((workspace) => (
-            <li
-              key={workspace.id}
-              role="option"
-              aria-selected={workspace.code === currentWorkspaceCode}
-            >
+            <li key={workspace.id} aria-selected={workspace.code === currentWorkspaceCode}>
               <button
                 type="button"
                 className={`w-full text-left px-3 py-2 hover:bg-base-200 transition-colors ${
-                  workspace.code === currentWorkspaceCode
-                    ? "bg-primary/10 font-semibold"
-                    : ""
+                  workspace.code === currentWorkspaceCode ? "bg-primary/10 font-semibold" : ""
                 }`}
                 onClick={() => workspace.code && switchWorkspace(workspace.code)}
               >
                 <div className="text-sm truncate">{workspace.name}</div>
                 {workspace.code && (
-                  <code className="text-xs text-base-content/70 truncate block">
-                    {workspace.code}
-                  </code>
+                  <code className="text-xs text-base-content/70 truncate block">{workspace.code}</code>
                 )}
                 {workspace.genreName && (
                   <div className="text-xs text-base-content/70 mt-1 flex items-center gap-1">

@@ -1,13 +1,13 @@
 "use client";
 
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminFooter from "@/components/admin/AdminFooter";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import LoadingOverlay from "@/components/common/LoadingOverlay";
 import Pagination from "@/components/common/Pagination";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 import { useValidation } from "@/hooks/useValidation";
 import { usernameFilterSchema } from "@/schemas/filterSchemas";
@@ -62,11 +62,9 @@ export default function AdminUsersClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
   const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<UserStatistics | null>(
-    initialStatistics || null,
-  );
+  const [statistics, setStatistics] = useState<UserStatistics | null>(initialStatistics || null);
   const [isLoading, setIsLoading] = useState(true);
-  const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
+  const [skills, _setSkills] = useState<Skill[]>(initialSkills || []);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterUsername, setFilterUsername] = useState<string>("");
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
@@ -83,7 +81,7 @@ export default function AdminUsersClient({
           const response = await fetch("/api/admin/users?page=1&IsActive=true");
           if (response.ok) {
             const data = await response.json();
-            if (data && data.data) {
+            if (data?.data) {
               const mappedUsers = data.data.map((user: any) => ({
                 id: user.id ?? 0,
                 username: user.username ?? "",
@@ -109,48 +107,46 @@ export default function AdminUsersClient({
     fetchInitialData();
   }, [initialUsers]);
 
-  const handlePageChange = withDelayedLoading(
-    async ({ selected }: { selected: number }) => {
-      try {
-        const page = selected + 1;
-        const params = new URLSearchParams();
-        params.append("page", page.toString());
-        if (filterIsActive !== null) {
-          params.append("IsActive", filterIsActive.toString());
-        }
-        if (filterUsername) {
-          params.append("Username", filterUsername);
-        }
-        if (filterSkillIds.length > 0) {
-          filterSkillIds.forEach((skillId) =>
-            params.append("SkillIds", skillId.toString()),
-          );
-          params.append("SkillFilterMode", filterSkillMode);
-        }
-        const response = await fetch(`/api/admin/users?${params.toString()}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.data) {
-            const mappedUsers = data.data.map((user: any) => ({
-              id: user.id ?? 0,
-              username: user.username ?? "",
-              email: user.email ?? "",
-              isActive: user.isActive ?? true,
-              createdAt: user.createdAt ?? new Date().toISOString(),
-              skills: user.skills ?? [],
-            }));
-            setUsers(mappedUsers);
-            setCurrentPage(data.currentPage || 1);
-            setTotalPages(data.totalPages || 1);
-            setTotalCount(data.totalCount || 0);
-            setStatistics(data.summary || null);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
+  const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
+    try {
+      const page = selected + 1;
+      const params = new URLSearchParams();
+      params.append("page", page.toString());
+      if (filterIsActive !== null) {
+        params.append("IsActive", filterIsActive.toString());
       }
-    },
-  );
+      if (filterUsername) {
+        params.append("Username", filterUsername);
+      }
+      if (filterSkillIds.length > 0) {
+        filterSkillIds.forEach((skillId) => {
+          params.append("SkillIds", skillId.toString());
+        });
+        params.append("SkillFilterMode", filterSkillMode);
+      }
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.data) {
+          const mappedUsers = data.data.map((user: any) => ({
+            id: user.id ?? 0,
+            username: user.username ?? "",
+            email: user.email ?? "",
+            isActive: user.isActive ?? true,
+            createdAt: user.createdAt ?? new Date().toISOString(),
+            skills: user.skills ?? [],
+          }));
+          setUsers(mappedUsers);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  });
 
   const handleFilterChange = useCallback(async () => {
     setCurrentPage(1);
@@ -165,15 +161,15 @@ export default function AdminUsersClient({
           params.append("Username", filterUsername);
         }
         if (filterSkillIds.length > 0) {
-          filterSkillIds.forEach((skillId) =>
-            params.append("SkillIds", skillId.toString()),
-          );
+          filterSkillIds.forEach((skillId) => {
+            params.append("SkillIds", skillId.toString());
+          });
           params.append("SkillFilterMode", filterSkillMode);
         }
         const response = await fetch(`/api/admin/users?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          if (data && data.data) {
+          if (data?.data) {
             const mappedUsers = data.data.map((user: any) => ({
               id: user.id ?? 0,
               username: user.username ?? "",
@@ -193,13 +189,7 @@ export default function AdminUsersClient({
         console.error("Failed to fetch users:", error);
       }
     })();
-  }, [
-    filterIsActive,
-    filterUsername,
-    filterSkillIds,
-    filterSkillMode,
-    withDelayedLoading,
-  ]);
+  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading]);
 
   const handleUsernameChange = async (value: string) => {
     setFilterUsername(value);
@@ -214,11 +204,7 @@ export default function AdminUsersClient({
   };
 
   const toggleSkillFilter = (skillId: number) => {
-    setFilterSkillIds((prev) =>
-      prev.includes(skillId)
-        ? prev.filter((id) => id !== skillId)
-        : [...prev, skillId],
-    );
+    setFilterSkillIds((prev) => (prev.includes(skillId) ? prev.filter((id) => id !== skillId) : [...prev, skillId]));
   };
 
   const handleReset = () => {
@@ -234,25 +220,14 @@ export default function AdminUsersClient({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <LoadingOverlay
-        isLoading={isLoading || showLoading}
-        message={isLoading ? "初期化中..." : "検索中..."}
-      />
+      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? "初期化中..." : "検索中..."} />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader
-        userInfo={userInfo}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        loading={isLoading}
-      />
+      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={isLoading} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -301,19 +276,9 @@ export default function AdminUsersClient({
                     viewBox="0 0 24 24"
                   >
                     {filterOpen ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20 12H4"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     ) : (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     )}
                   </svg>
                 </div>
@@ -334,28 +299,23 @@ export default function AdminUsersClient({
                           value={filterUsername}
                           onChange={(e) => handleUsernameChange(e.target.value)}
                           onKeyDown={(e) => {
-                            if (
-                              e.key === "Enter" &&
-                              usernameValidation.isValid
-                            ) {
+                            if (e.key === "Enter" && usernameValidation.isValid) {
                               handleSearch();
                             }
                           }}
                         />
                         {usernameValidation.error && (
-                          <label className="label">
-                            <span className="label-text-alt text-error">
-                              {usernameValidation.error}
-                            </span>
-                          </label>
+                          <div className="label">
+                            <span className="label-text-alt text-error">{usernameValidation.error}</span>
+                          </div>
                         )}
                       </div>
 
                       {/* Status Filter */}
                       <div className="form-control md:col-span-2">
-                        <label className="label">
+                        <div className="label">
                           <span className="label-text">ステータス</span>
-                        </label>
+                        </div>
                         <div className="flex gap-4 items-center h-12">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -400,14 +360,12 @@ export default function AdminUsersClient({
                     {/* Skill Filter */}
                     {skills.length > 0 && (
                       <div className="mb-4">
-                        <label className="label">
+                        <div className="label">
                           <span className="label-text">スキル</span>
-                        </label>
+                        </div>
                         <details className="dropdown w-full">
                           <summary className="btn btn-outline w-full justify-start">
-                            {filterSkillIds.length > 0
-                              ? `${filterSkillIds.length} 個選択中`
-                              : "スキルを選択"}
+                            {filterSkillIds.length > 0 ? `${filterSkillIds.length} 個選択中` : "スキルを選択"}
                           </summary>
                           <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
                             {skills.map((skill) => (
@@ -419,9 +377,7 @@ export default function AdminUsersClient({
                                     onChange={() => toggleSkillFilter(skill.id)}
                                     className="checkbox checkbox-primary checkbox-sm"
                                   />
-                                  <span className="label-text">
-                                    {skill.name}
-                                  </span>
+                                  <span className="label-text">{skill.name}</span>
                                 </label>
                               </li>
                             ))}
@@ -431,14 +387,9 @@ export default function AdminUsersClient({
                           <>
                             <div className="flex flex-wrap gap-2 mt-2">
                               {filterSkillIds.map((skillId) => {
-                                const skill = skills.find(
-                                  (s) => s.id === skillId,
-                                );
+                                const skill = skills.find((s) => s.id === skillId);
                                 return (
-                                  <div
-                                    key={skillId}
-                                    className="badge badge-primary gap-2"
-                                  >
+                                  <div key={skillId} className="badge badge-primary gap-2">
                                     {skill?.name}
                                     <button
                                       type="button"
@@ -459,16 +410,10 @@ export default function AdminUsersClient({
                                   name="skillFilterMode"
                                   value="and"
                                   checked={filterSkillMode === "and"}
-                                  onChange={(e) =>
-                                    setFilterSkillMode(
-                                      e.target.value as "and" | "or",
-                                    )
-                                  }
+                                  onChange={(e) => setFilterSkillMode(e.target.value as "and" | "or")}
                                   className="radio radio-primary radio-sm"
                                 />
-                                <span className="text-sm">
-                                  すべてのスキルを保有
-                                </span>
+                                <span className="text-sm">すべてのスキルを保有</span>
                               </label>
                               <label className="flex items-center cursor-pointer gap-2">
                                 <input
@@ -476,16 +421,10 @@ export default function AdminUsersClient({
                                   name="skillFilterMode"
                                   value="or"
                                   checked={filterSkillMode === "or"}
-                                  onChange={(e) =>
-                                    setFilterSkillMode(
-                                      e.target.value as "and" | "or",
-                                    )
-                                  }
+                                  onChange={(e) => setFilterSkillMode(e.target.value as "and" | "or")}
                                   className="radio radio-primary radio-sm"
                                 />
-                                <span className="text-sm">
-                                  いずれかのスキルを保有
-                                </span>
+                                <span className="text-sm">いずれかのスキルを保有</span>
                               </label>
                             </div>
                           </>
@@ -503,11 +442,7 @@ export default function AdminUsersClient({
                       >
                         検索
                       </button>
-                      <button
-                        type="button"
-                        onClick={handleReset}
-                        className="btn btn-outline btn-sm"
-                      >
+                      <button type="button" onClick={handleReset} className="btn btn-outline btn-sm">
                         リセット
                       </button>
                     </div>
@@ -546,52 +481,32 @@ export default function AdminUsersClient({
                               {user.skills && user.skills.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {user.skills.slice(0, 4).map((skill) => (
-                                    <span
-                                      key={skill.id}
-                                      className="badge badge-sm badge-outline"
-                                    >
+                                    <span key={skill.id} className="badge badge-sm badge-outline">
                                       {skill.name}
                                     </span>
                                   ))}
-                                  {user.skills.length > 4 && (
-                                    <span className="badge badge-sm badge-outline">
-                                      ...
-                                    </span>
-                                  )}
+                                  {user.skills.length > 4 && <span className="badge badge-sm badge-outline">...</span>}
                                 </div>
                               ) : (
-                                <span className="text-base-content opacity-50">
-                                  なし
-                                </span>
+                                <span className="text-base-content opacity-50">なし</span>
                               )}
                             </td>
                             <td>
-                              <div
-                                className={`badge ${user.isActive ? "badge-success" : "badge-neutral"}`}
-                              >
+                              <div className={`badge ${user.isActive ? "badge-success" : "badge-neutral"}`}>
                                 {user.isActive ? "アクティブ" : "非アクティブ"}
                               </div>
                             </td>
-                            <td>
-                              {new Date(user.createdAt).toLocaleDateString(
-                                "ja-JP",
-                              )}
-                            </td>
+                            <td>{new Date(user.createdAt).toLocaleDateString("ja-JP")}</td>
                             <td>
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   className="btn btn-sm btn-outline"
-                                  onClick={() =>
-                                    router.push(`/admin/users/edit/${user.id}`)
-                                  }
+                                  onClick={() => router.push(`/admin/users/edit/${user.id}`)}
                                 >
                                   編集
                                 </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline btn-error"
-                                >
+                                <button type="button" className="btn btn-sm btn-outline btn-error">
                                   削除
                                 </button>
                               </div>
@@ -600,10 +515,7 @@ export default function AdminUsersClient({
                         ))
                       ) : (
                         <tr>
-                          <td
-                            colSpan={6}
-                            className="text-center text-base-content opacity-70 py-8"
-                          >
+                          <td colSpan={6} className="text-center text-base-content opacity-70 py-8">
                             ユーザーデータがありません
                           </td>
                         </tr>
@@ -615,11 +527,7 @@ export default function AdminUsersClient({
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="mt-6 flex justify-center">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                   </div>
                 )}
 
@@ -627,71 +535,54 @@ export default function AdminUsersClient({
                 {statistics && (
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Skill Summary */}
-                    {statistics.skillCounts &&
-                      statistics.skillCounts.length > 0 && (
-                        <div className="card bg-base-100 border border-base-300">
-                          <div className="card-body">
-                            <h3 className="card-title text-lg">スキル別</h3>
-                            <div className="space-y-2">
-                              {/* 件数の多い順にソートして上位5件を表示 */}
-                              {[...statistics.skillCounts]
-                                .sort((a, b) => b.count - a.count)
-                                .slice(0, 5)
-                                .map((skill) => (
-                                  <div
-                                    key={skill.id}
-                                    className="flex justify-between items-center"
-                                  >
-                                    <span className="text-sm">
-                                      {skill.name}
-                                    </span>
-                                    <span className="badge badge-primary">
-                                      {skill.count}
-                                    </span>
-                                  </div>
-                                ))}
-                              {/* その他：上位5件以外の合計 */}
-                              {statistics.skillCounts.length > 5 && (
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm">(その他)</span>
-                                  <span className="badge badge-primary">
-                                    {[...statistics.skillCounts]
-                                      .sort((a, b) => b.count - a.count)
-                                      .slice(5)
-                                      .reduce(
-                                        (sum, skill) => sum + skill.count,
-                                        0,
-                                      )}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Role Summary */}
-                    {statistics.roleCounts &&
-                      statistics.roleCounts.length > 0 && (
-                        <div className="card bg-base-100 border border-base-300">
-                          <div className="card-body">
-                            <h3 className="card-title text-lg">ロール別</h3>
-                            <div className="space-y-2">
-                              {statistics.roleCounts.map((role) => (
-                                <div
-                                  key={role.id}
-                                  className="flex justify-between items-center"
-                                >
-                                  <span className="text-sm">{role.name}</span>
-                                  <span className="badge badge-primary">
-                                    {role.count}
-                                  </span>
+                    {statistics.skillCounts && statistics.skillCounts.length > 0 && (
+                      <div className="card bg-base-100 border border-base-300">
+                        <div className="card-body">
+                          <h3 className="card-title text-lg">スキル別</h3>
+                          <div className="space-y-2">
+                            {/* 件数の多い順にソートして上位5件を表示 */}
+                            {[...statistics.skillCounts]
+                              .sort((a, b) => b.count - a.count)
+                              .slice(0, 5)
+                              .map((skill) => (
+                                <div key={skill.id} className="flex justify-between items-center">
+                                  <span className="text-sm">{skill.name}</span>
+                                  <span className="badge badge-primary">{skill.count}</span>
                                 </div>
                               ))}
-                            </div>
+                            {/* その他：上位5件以外の合計 */}
+                            {statistics.skillCounts.length > 5 && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm">(その他)</span>
+                                <span className="badge badge-primary">
+                                  {[...statistics.skillCounts]
+                                    .sort((a, b) => b.count - a.count)
+                                    .slice(5)
+                                    .reduce((sum, skill) => sum + skill.count, 0)}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )}
+                      </div>
+                    )}
+
+                    {/* Role Summary */}
+                    {statistics.roleCounts && statistics.roleCounts.length > 0 && (
+                      <div className="card bg-base-100 border border-base-300">
+                        <div className="card-body">
+                          <h3 className="card-title text-lg">ロール別</h3>
+                          <div className="space-y-2">
+                            {statistics.roleCounts.map((role) => (
+                              <div key={role.id} className="flex justify-between items-center">
+                                <span className="text-sm">{role.name}</span>
+                                <span className="badge badge-primary">{role.count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Active Status */}
                     <div className="card bg-base-100 border border-base-300">
@@ -701,17 +592,13 @@ export default function AdminUsersClient({
                           {statistics.activeUserCount !== undefined && (
                             <div className="flex justify-between items-center">
                               <span className="text-sm">アクティブ</span>
-                              <span className="badge badge-success">
-                                {statistics.activeUserCount}
-                              </span>
+                              <span className="badge badge-success">{statistics.activeUserCount}</span>
                             </div>
                           )}
                           {statistics.inactiveUserCount !== undefined && (
                             <div className="flex justify-between items-center">
                               <span className="text-sm">非アクティブ</span>
-                              <span className="badge badge-neutral">
-                                {statistics.inactiveUserCount}
-                              </span>
+                              <span className="badge badge-neutral">{statistics.inactiveUserCount}</span>
                             </div>
                           )}
                         </div>
@@ -723,22 +610,16 @@ export default function AdminUsersClient({
                       <div className="card-body">
                         <h3 className="card-title text-lg">ワークスペース</h3>
                         <div className="space-y-2">
-                          {statistics.workspaceParticipationCount !==
-                            undefined && (
+                          {statistics.workspaceParticipationCount !== undefined && (
                             <div className="flex justify-between items-center">
                               <span className="text-sm">参加者</span>
-                              <span className="badge badge-info">
-                                {statistics.workspaceParticipationCount}
-                              </span>
+                              <span className="badge badge-info">{statistics.workspaceParticipationCount}</span>
                             </div>
                           )}
-                          {statistics.noWorkspaceParticipationCount !==
-                            undefined && (
+                          {statistics.noWorkspaceParticipationCount !== undefined && (
                             <div className="flex justify-between items-center">
                               <span className="text-sm">非参加者</span>
-                              <span className="badge badge-warning">
-                                {statistics.noWorkspaceParticipationCount}
-                              </span>
+                              <span className="badge badge-warning">{statistics.noWorkspaceParticipationCount}</span>
                             </div>
                           )}
                         </div>

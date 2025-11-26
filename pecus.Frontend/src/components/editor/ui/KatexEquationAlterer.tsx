@@ -11,7 +11,6 @@ import type { JSX } from "react";
 import "./KatexEquationAlterer.css";
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import * as React from "react";
 import { useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -23,10 +22,7 @@ type Props = {
   onConfirm: (equation: string, inline: boolean) => void;
 };
 
-export default function KatexEquationAlterer({
-  onConfirm,
-  initialEquation = "",
-}: Props): JSX.Element {
+export default function KatexEquationAlterer({ onConfirm, initialEquation = "" }: Props): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [equation, setEquation] = useState<string>(initialEquation);
   const [inline, setInline] = useState<boolean>(true);
@@ -37,7 +33,7 @@ export default function KatexEquationAlterer({
 
   const onCheckboxChange = useCallback(() => {
     setInline(!inline);
-  }, [setInline, inline]);
+  }, [inline]);
 
   return (
     <>
@@ -68,11 +64,7 @@ export default function KatexEquationAlterer({
       <div className="KatexEquationAlterer_defaultRow">Visualization </div>
       <div className="KatexEquationAlterer_centerRow">
         <ErrorBoundary onError={(e) => editor._onError(e)} fallback={null}>
-          <KatexRenderer
-            equation={equation}
-            inline={false}
-            onDoubleClick={() => null}
-          />
+          <KatexRenderer equation={equation} inline={false} onDoubleClick={() => null} />
         </ErrorBoundary>
       </div>
       <div className="KatexEquationAlterer_dialogActions">

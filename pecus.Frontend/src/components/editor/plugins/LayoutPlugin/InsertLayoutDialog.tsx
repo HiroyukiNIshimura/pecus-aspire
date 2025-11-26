@@ -6,10 +6,8 @@
  *
  */
 
+import type { LexicalEditor } from "lexical";
 import type { JSX } from "react";
-
-import { LexicalEditor } from "lexical";
-import * as React from "react";
 import { useState } from "react";
 
 import Button from "../../ui/Button";
@@ -41,16 +39,9 @@ export default function InsertLayoutDialog({
 
   return (
     <>
-      <DropDown
-        buttonClassName="toolbar-item dialog-dropdown"
-        buttonLabel={buttonLabel}
-      >
+      <DropDown buttonClassName="toolbar-item dialog-dropdown" buttonLabel={buttonLabel}>
         {LAYOUTS.map(({ label, value }) => (
-          <DropDownItem
-            key={value}
-            className="item"
-            onClick={() => setLayout(value)}
-          >
+          <DropDownItem key={value} className="item" onClick={() => setLayout(value)}>
             <span className="text">{label}</span>
           </DropDownItem>
         ))}

@@ -1,11 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type {
-  WorkspaceItemDetailResponse,
-  WorkspaceDetailUserResponse,
-} from "@/connectors/api/pecus";
 import { updateWorkspaceItemAssignee } from "@/actions/workspaceItem";
+import type { WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from "@/connectors/api/pecus";
 import { getDisplayIconUrl } from "@/utils/imageUrl";
 
 interface WorkspaceItemDrawerProps {
@@ -27,9 +24,7 @@ export default function WorkspaceItemDrawer({
 }: WorkspaceItemDrawerProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<number | null>(
-    item.assigneeId || null,
-  );
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<number | null>(item.assigneeId || null);
 
   if (!isOpen) return null;
 
@@ -39,14 +34,10 @@ export default function WorkspaceItemDrawer({
       setError(null);
       setSelectedAssigneeId(newAssigneeId);
 
-      const result = await updateWorkspaceItemAssignee(
-        item.workspaceId ?? 0,
-        item.id,
-        {
-          assigneeId: newAssigneeId,
-          rowVersion: item.rowVersion,
-        },
-      );
+      const result = await updateWorkspaceItemAssignee(item.workspaceId ?? 0, item.id, {
+        assigneeId: newAssigneeId,
+        rowVersion: item.rowVersion,
+      });
 
       if (result.success) {
         onAssigneeUpdate?.(result.data);
@@ -88,9 +79,7 @@ export default function WorkspaceItemDrawer({
         className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200"
         onClick={onClose}
         style={{
-          animation: isClosing
-            ? "fadeOut 0.25s ease-out"
-            : "fadeIn 0.2s ease-out",
+          animation: isClosing ? "fadeOut 0.25s ease-out" : "fadeIn 0.2s ease-out",
         }}
       />
 
@@ -101,20 +90,13 @@ export default function WorkspaceItemDrawer({
         role="dialog"
         tabIndex={-1}
         style={{
-          animation: isClosing
-            ? "slideOutRight 0.25s ease-in"
-            : "slideInRight 0.3s ease-out",
+          animation: isClosing ? "slideOutRight 0.25s ease-in" : "slideInRight 0.3s ease-out",
         }}
       >
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10">
           <h3 className="text-lg font-bold">詳細オプション</h3>
-          <button
-            type="button"
-            className="btn btn-ghost btn-circle btn-sm"
-            aria-label="Close"
-            onClick={onClose}
-          >
+          <button type="button" className="btn btn-ghost btn-circle btn-sm" aria-label="Close" onClick={onClose}>
             ✕
           </button>
         </div>
@@ -130,16 +112,12 @@ export default function WorkspaceItemDrawer({
 
           {/* 担当者設定 */}
           <div className="form-control">
-            <label className="label">
+            <div className="label">
               <span className="label-text font-semibold">担当者</span>
-            </label>
+            </div>
             <select
               value={selectedAssigneeId || ""}
-              onChange={(e) =>
-                handleAssigneeChange(
-                  e.target.value ? parseInt(e.target.value) : null,
-                )
-              }
+              onChange={(e) => handleAssigneeChange(e.target.value ? parseInt(e.target.value, 10) : null)}
               disabled={isUpdating}
               className="select select-bordered"
             >
@@ -161,13 +139,9 @@ export default function WorkspaceItemDrawer({
                     className="w-6 h-6 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">
-                    ？
-                  </div>
+                  <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">？</div>
                 )}
-                <span className="text-sm font-semibold">
-                  {item.assigneeUsername}
-                </span>
+                <span className="text-sm font-semibold">{item.assigneeUsername}</span>
               </div>
             )}
           </div>
@@ -175,12 +149,10 @@ export default function WorkspaceItemDrawer({
           {/* 期限 */}
           {item.dueDate && (
             <div className="form-control">
-              <label className="label">
+              <div className="label">
                 <span className="label-text font-semibold">期限</span>
-              </label>
-              <p className="text-sm">
-                {new Date(item.dueDate).toLocaleDateString("ja-JP")}
-              </p>
+              </div>
+              <p className="text-sm">{new Date(item.dueDate).toLocaleDateString("ja-JP")}</p>
             </div>
           )}
 

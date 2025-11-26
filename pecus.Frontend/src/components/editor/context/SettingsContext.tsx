@@ -6,24 +6,12 @@
  *
  */
 
-import type { SettingName, EditorContextSettings } from "../appSettings";
+import type * as React from "react";
 import type { JSX } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import type { EditorContextSettings, SettingName } from "../appSettings";
 
-import * as React from "react";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  DEFAULT_SETTINGS,
-  INITIAL_SETTINGS,
-  DEFAULT_EDITOR_CONTEXT_SETTINGS,
-} from "../appSettings";
+import { DEFAULT_EDITOR_CONTEXT_SETTINGS, DEFAULT_SETTINGS, INITIAL_SETTINGS } from "../appSettings";
 
 type SettingsContextShape = {
   setOption: (name: SettingName, value: boolean) => void;
@@ -33,7 +21,7 @@ type SettingsContextShape = {
 };
 
 const Context: React.Context<SettingsContextShape> = createContext({
-  setOption: (name: SettingName, value: boolean) => {
+  setOption: (_name: SettingName, _value: boolean) => {
     return;
   },
   settings: INITIAL_SETTINGS,

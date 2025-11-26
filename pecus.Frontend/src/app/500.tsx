@@ -31,9 +31,7 @@ export default function ServerErrorPage() {
 
         {/* エラータイトル */}
         <div className="mb-6">
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            サーバーエラーが発生しました
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">サーバーエラーが発生しました</h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-md mx-auto">
             申し訳ございません。予期しないエラーが発生しました。しばらく時間を置いてからもう一度お試しください。
           </p>
@@ -42,12 +40,7 @@ export default function ServerErrorPage() {
         {/* アイコン */}
         <div className="mb-10 flex justify-center">
           <div className="relative w-24 h-24">
-            <svg
-              className="w-full h-full text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-full h-full text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

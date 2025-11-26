@@ -7,15 +7,11 @@ import EditWorkspaceClient from "./EditWorkspaceClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditWorkspacePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const workspaceId = parseInt(id, 10);
 
-  if (isNaN(workspaceId) || workspaceId <= 0) {
+  if (Number.isNaN(workspaceId) || workspaceId <= 0) {
     notFound();
   }
 
@@ -49,10 +45,7 @@ export default async function EditWorkspacePage({
       redirect("/signin");
     }
 
-    fetchError =
-      error.body?.message ||
-      error.message ||
-      "データの取得中にエラーが発生しました。";
+    fetchError = error.body?.message || error.message || "データの取得中にエラーが発生しました。";
   }
 
   // エラーまたはユーザー情報が取得できない場合はリダイレクト
@@ -68,11 +61,6 @@ export default async function EditWorkspacePage({
   }
 
   return (
-    <EditWorkspaceClient
-      initialUser={user}
-      workspaceDetail={workspaceDetail}
-      genres={genres}
-      fetchError={fetchError}
-    />
+    <EditWorkspaceClient initialUser={user} workspaceDetail={workspaceDetail} genres={genres} fetchError={fetchError} />
   );
 }

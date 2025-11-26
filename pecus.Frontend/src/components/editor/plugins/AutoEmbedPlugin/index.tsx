@@ -6,17 +6,16 @@
  *
  */
 
-import type { LexicalEditor } from "lexical";
-import type { JSX } from "react";
-
 import {
   AutoEmbedOption,
-  EmbedConfig,
-  EmbedMatchResult,
+  type EmbedConfig,
+  type EmbedMatchResult,
   LexicalAutoEmbedPlugin,
   URL_MATCHER,
 } from "@lexical/react/LexicalAutoEmbedPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import type { LexicalEditor } from "lexical";
+import type { JSX } from "react";
 import { useMemo, useState } from "react";
 
 import useModal from "../../hooks/useModal";
@@ -59,8 +58,7 @@ export const YoutubeEmbedConfig: PlaygroundEmbedConfig = {
 
   // Determine if a given URL is a match and return url data.
   parseUrl: async (url: string) => {
-    const match =
-      /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/.exec(url);
+    const match = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/.exec(url);
 
     const id = match ? (match?.[2].length === 11 ? match[2] : null) : null;
 
@@ -96,10 +94,7 @@ export const TwitterEmbedConfig: PlaygroundEmbedConfig = {
 
   // Determine if a given URL is a match and return url data.
   parseUrl: (text: string) => {
-    const match =
-      /^https:\/\/(twitter|x)\.com\/(#!\/)?(\w+)\/status(es)*\/(\d+)/.exec(
-        text,
-      );
+    const match = /^https:\/\/(twitter|x)\.com\/(#!\/)?(\w+)\/status(es)*\/(\d+)/.exec(text);
 
     if (match != null) {
       return {
@@ -129,10 +124,7 @@ export const FigmaEmbedConfig: PlaygroundEmbedConfig = {
 
   // Determine if a given URL is a match and return url data.
   parseUrl: (text: string) => {
-    const match =
-      /https:\/\/([\w.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(?:\/.*)?$/.exec(
-        text,
-      );
+    const match = /https:\/\/([\w.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(?:\/.*)?$/.exec(text);
 
     if (match != null) {
       return {
@@ -147,11 +139,7 @@ export const FigmaEmbedConfig: PlaygroundEmbedConfig = {
   type: "figma",
 };
 
-export const EmbedConfigs = [
-  TwitterEmbedConfig,
-  YoutubeEmbedConfig,
-  FigmaEmbedConfig,
-];
+export const EmbedConfigs = [TwitterEmbedConfig, YoutubeEmbedConfig, FigmaEmbedConfig];
 
 const debounce = (callback: (text: string) => void, delay: number) => {
   let timeoutId: number;
@@ -179,11 +167,9 @@ export function AutoEmbedDialog({
       debounce((inputText: string) => {
         const urlMatch = URL_MATCHER.exec(inputText);
         if (embedConfig != null && inputText != null && urlMatch != null) {
-          Promise.resolve(embedConfig.parseUrl(inputText)).then(
-            (parseResult) => {
-              setEmbedResult(parseResult);
-            },
-          );
+          Promise.resolve(embedConfig.parseUrl(inputText)).then((parseResult) => {
+            setEmbedResult(parseResult);
+          });
         } else if (embedResult != null) {
           setEmbedResult(null);
         }
@@ -215,11 +201,7 @@ export function AutoEmbedDialog({
         />
       </div>
       <DialogActions>
-        <Button
-          disabled={!embedResult}
-          onClick={onClick}
-          data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}
-        >
+        <Button disabled={!embedResult} onClick={onClick} data-test-id={`${embedConfig.type}-embed-modal-submit-btn`}>
           Embed
         </Button>
       </DialogActions>
@@ -236,11 +218,7 @@ export default function AutoEmbedPlugin(): JSX.Element {
     ));
   };
 
-  const getMenuOptions = (
-    activeEmbedConfig: PlaygroundEmbedConfig,
-    embedFn: () => void,
-    dismissFn: () => void,
-  ) => {
+  const getMenuOptions = (activeEmbedConfig: PlaygroundEmbedConfig, embedFn: () => void, dismissFn: () => void) => {
     return [
       new AutoEmbedOption("Dismiss", {
         onSelect: dismissFn,
@@ -258,7 +236,7 @@ export default function AutoEmbedPlugin(): JSX.Element {
         embedConfigs={EmbedConfigs}
         onOpenEmbedModalForConfig={openEmbedModal}
         getMenuOptions={getMenuOptions}
-        menuRenderFn={(menuProps) => {
+        menuRenderFn={(_menuProps) => {
           return null;
         }} //TODO ???
       />

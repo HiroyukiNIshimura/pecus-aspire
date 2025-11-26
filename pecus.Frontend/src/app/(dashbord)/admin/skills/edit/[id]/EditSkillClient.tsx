@@ -19,11 +19,7 @@ interface EditSkillClientProps {
   fetchError: string | null;
 }
 
-export default function EditSkillClient({
-  initialUser,
-  skillDetail,
-  fetchError,
-}: EditSkillClientProps) {
+export default function EditSkillClient({ initialUser, skillDetail, fetchError }: EditSkillClientProps) {
   const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -36,23 +32,13 @@ export default function EditSkillClient({
   });
 
   // Zod一本化フック
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-  } = useFormValidation({
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: editSkillSchema,
     onSubmit: async (data) => {
       try {
         // rowVersion が存在しない場合はエラー
         if (!skillDetail.rowVersion) {
-          notify.error(
-            "スキル情報の更新に必要なバージョン情報が取得できませんでした。",
-          );
+          notify.error("スキル情報の更新に必要なバージョン情報が取得できませんでした。");
           return;
         }
 
@@ -101,19 +87,11 @@ export default function EditSkillClient({
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader
-        userInfo={initialUser}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        loading={false}
-      />
+      <AdminHeader userInfo={initialUser} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}
-        <AdminSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
@@ -130,15 +108,9 @@ export default function EditSkillClient({
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold">スキル編集</h1>
-                <p className="text-base-content/60 mt-2">
-                  スキル情報を編集します
-                </p>
+                <p className="text-base-content/60 mt-2">スキル情報を編集します</p>
               </div>
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={() => router.push("/admin/skills")}
-              >
+              <button type="button" className="btn btn-outline" onClick={() => router.push("/admin/skills")}>
                 一覧に戻る
               </button>
             </div>
@@ -151,12 +123,7 @@ export default function EditSkillClient({
             )}
 
             {/* 編集フォーム */}
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              noValidate
-              className="mb-6"
-            >
+            <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
               <div className="card bg-base-200 shadow-lg">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
@@ -171,21 +138,15 @@ export default function EditSkillClient({
                       id="input-skill-name"
                       name="name"
                       type="text"
-                      className={`input input-bordered w-full ${
-                        shouldShowError("name") ? "input-error" : ""
-                      }`}
+                      className={`input input-bordered w-full ${shouldShowError("name") ? "input-error" : ""}`}
                       value={formData.name}
-                      onChange={(e) =>
-                        handleFieldChange("name", e.target.value)
-                      }
+                      onChange={(e) => handleFieldChange("name", e.target.value)}
                       placeholder="スキル名を入力"
                       disabled={isSubmitting}
                       required
                     />
                     {shouldShowError("name") && (
-                      <span className="label-text-alt text-error">
-                        {getFieldError("name")}
-                      </span>
+                      <span className="label-text-alt text-error">{getFieldError("name")}</span>
                     )}
                   </div>
 
@@ -201,16 +162,12 @@ export default function EditSkillClient({
                       }`}
                       placeholder="スキルの説明を入力してください"
                       value={formData.description}
-                      onChange={(e) =>
-                        handleFieldChange("description", e.target.value)
-                      }
+                      onChange={(e) => handleFieldChange("description", e.target.value)}
                       disabled={isSubmitting}
                       rows={3}
                     ></textarea>
                     {shouldShowError("description") && (
-                      <span className="label-text-alt text-error">
-                        {getFieldError("description")}
-                      </span>
+                      <span className="label-text-alt text-error">{getFieldError("description")}</span>
                     )}
                   </div>
 
@@ -222,9 +179,7 @@ export default function EditSkillClient({
                         type="checkbox"
                         className="checkbox checkbox-primary"
                         checked={formData.isActive}
-                        onChange={(e) =>
-                          handleFieldChange("isActive", e.target.checked)
-                        }
+                        onChange={(e) => handleFieldChange("isActive", e.target.checked)}
                         disabled={isSubmitting}
                       />
                     </label>
@@ -233,19 +188,10 @@ export default function EditSkillClient({
                   {/* アクションボタン */}
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={handleCancel}
-                      disabled={isSubmitting}
-                    >
+                    <button type="button" className="btn btn-ghost" onClick={handleCancel} disabled={isSubmitting}>
                       キャンセル
                     </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={isSubmitting}
-                    >
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
                           <span className="loading loading-spinner"></span>
@@ -268,37 +214,25 @@ export default function EditSkillClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">スキルID</p>
-                    <p className="text-lg font-semibold">
-                      {skillDetail.id || "-"}
-                    </p>
+                    <p className="text-lg font-semibold">{skillDetail.id || "-"}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">保有者数</p>
-                    <p className="text-lg font-semibold">
-                      {skillDetail.userCount || 0} 人
-                    </p>
+                    <p className="text-lg font-semibold">{skillDetail.userCount || 0} 人</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
-                      {skillDetail.createdAt
-                        ? new Date(skillDetail.createdAt).toLocaleString(
-                            "ja-JP",
-                          )
-                        : "-"}
+                      {skillDetail.createdAt ? new Date(skillDetail.createdAt).toLocaleString("ja-JP") : "-"}
                     </p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
                     <p className="text-lg font-semibold">
-                      {skillDetail.updatedAt
-                        ? new Date(skillDetail.updatedAt).toLocaleString(
-                            "ja-JP",
-                          )
-                        : "-"}
+                      {skillDetail.updatedAt ? new Date(skillDetail.updatedAt).toLocaleString("ja-JP") : "-"}
                     </p>
                   </div>
                 </div>

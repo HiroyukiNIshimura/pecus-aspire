@@ -10,15 +10,7 @@ export default function ForgotPasswordFormClient() {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
-  const {
-    formRef,
-    isSubmitting,
-    fieldErrors,
-    handleSubmit,
-    validateField,
-    shouldShowError,
-    getFieldError,
-  } = useFormValidation({
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError } = useFormValidation({
     schema: requestPasswordResetSchema,
     onSubmit: async (data) => {
       const result = await requestPasswordResetAction(data);
@@ -38,9 +30,7 @@ export default function ForgotPasswordFormClient() {
   return (
     <div className="card w-full max-w-sm shadow-lg bg-base-100">
       <div className="card-body">
-        <h2 className="card-title text-center w-full mb-6">
-          パスワードをリセット
-        </h2>
+        <h2 className="card-title text-center w-full mb-6">パスワードをリセット</h2>
 
         {/* 成功メッセージ */}
         {successMessage && (
@@ -62,12 +52,7 @@ export default function ForgotPasswordFormClient() {
           </div>
         )}
 
-        <form
-          ref={formRef}
-          onSubmit={handleSubmit}
-          className="w-full"
-          noValidate
-        >
+        <form ref={formRef} onSubmit={handleSubmit} className="w-full" noValidate>
           {/* メールアドレス入力フィールド */}
           <div className="form-control w-full mb-4">
             <label htmlFor="email" className="label">
@@ -81,9 +66,7 @@ export default function ForgotPasswordFormClient() {
                 id="email"
                 name="email"
                 placeholder="example@example.com"
-                className={`input input-bordered w-full ${
-                  shouldShowError("email") ? "input-error" : ""
-                }`}
+                className={`input input-bordered w-full ${shouldShowError("email") ? "input-error" : ""}`}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -93,22 +76,16 @@ export default function ForgotPasswordFormClient() {
                 required
               />
               {shouldShowError("email") && (
-                <label className="label">
-                  <span className="label-text-alt text-error">
-                    {getFieldError("email")}
-                  </span>
-                </label>
+                <div className="label">
+                  <span className="label-text-alt text-error">{getFieldError("email")}</span>
+                </div>
               )}
             </div>
           </div>
 
           {/* 送信ボタン */}
           <div className="w-full mt-6">
-            <button
-              className="btn btn-accent w-full"
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <button className="btn btn-accent w-full" type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
