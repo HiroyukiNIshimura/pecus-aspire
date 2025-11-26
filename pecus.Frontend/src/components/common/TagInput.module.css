@@ -20,11 +20,11 @@
 }
 
 .tag-input-field input {
-  border: none;
-  outline: none;
-  box-shadow: none;
-  padding: 0.5rem 0;
-  background: transparent;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0 !important;
+  background: transparent !important;
 }
 
 .tag-list {
@@ -47,7 +47,7 @@
   font-weight: 500;
   transition: all 0.12s ease;
   cursor: move;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0,0,0,0.06);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -74,7 +74,7 @@
 .tag-item.tag-item-disabled {
   background-color: var(--flyon-base-200, #efefef);
   color: rgba(0, 0, 0, 0.6);
-  border-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0,0,0,0.04);
 }
 
 .tag-remove {
@@ -88,9 +88,7 @@
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
+  transition: background-color 0.12s ease, color 0.12s ease;
   padding: 0;
   color: currentColor;
   font-size: 1rem;

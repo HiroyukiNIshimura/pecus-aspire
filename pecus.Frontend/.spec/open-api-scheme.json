@@ -8,7 +8,9 @@
   "paths": {
     "/api/admin/organization": {
       "get": {
-        "tags": ["Admin - Organization"],
+        "tags": [
+          "Admin - Organization"
+        ],
         "summary": "自組織の情報を取得",
         "description": "ログイン中のユーザーが属する組織の詳細情報を取得します。",
         "responses": {
@@ -38,7 +40,9 @@
         }
       },
       "put": {
-        "tags": ["Admin - Organization"],
+        "tags": [
+          "Admin - Organization"
+        ],
         "summary": "自組織の情報を更新",
         "description": "ログイン中のユーザーが属する組織の情報を更新します。",
         "requestBody": {
@@ -109,7 +113,9 @@
     },
     "/api/admin/skills": {
       "post": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル登録",
         "requestBody": {
           "content": {
@@ -167,7 +173,9 @@
         }
       },
       "get": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル一覧取得（ページネーション）",
         "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
         "parameters": [
@@ -223,7 +231,9 @@
     },
     "/api/admin/skills/{id}": {
       "get": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル情報取得",
         "parameters": [
           {
@@ -263,7 +273,9 @@
         }
       },
       "put": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル更新",
         "parameters": [
           {
@@ -342,7 +354,9 @@
         }
       },
       "delete": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル削除",
         "parameters": [
           {
@@ -384,7 +398,9 @@
     },
     "/api/admin/skills/{id}/deactivate": {
       "patch": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル無効化",
         "parameters": [
           {
@@ -436,7 +452,9 @@
     },
     "/api/admin/skills/{id}/activate": {
       "patch": {
-        "tags": ["Admin - Skill"],
+        "tags": [
+          "Admin - Skill"
+        ],
         "summary": "スキル有効化",
         "parameters": [
           {
@@ -488,7 +506,9 @@
     },
     "/api/admin/tags": {
       "post": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ登録",
         "requestBody": {
           "content": {
@@ -546,7 +566,9 @@
         }
       },
       "get": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ一覧取得（ページネーション）",
         "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
         "parameters": [
@@ -606,7 +628,9 @@
     },
     "/api/admin/tags/{id}": {
       "get": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ情報取得",
         "parameters": [
           {
@@ -646,7 +670,9 @@
         }
       },
       "put": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ更新",
         "parameters": [
           {
@@ -725,7 +751,9 @@
         }
       },
       "delete": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ削除",
         "parameters": [
           {
@@ -767,7 +795,9 @@
     },
     "/api/admin/tags/{id}/deactivate": {
       "patch": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ無効化",
         "parameters": [
           {
@@ -819,7 +849,9 @@
     },
     "/api/admin/tags/{id}/activate": {
       "patch": {
-        "tags": ["Admin - Tag"],
+        "tags": [
+          "Admin - Tag"
+        ],
         "summary": "タグ有効化",
         "parameters": [
           {
@@ -871,7 +903,9 @@
     },
     "/api/admin/users/{id}": {
       "get": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "個別ユーザー情報を取得",
         "description": "指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。",
         "parameters": [
@@ -920,7 +954,9 @@
         }
       },
       "delete": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "ユーザーを削除",
         "description": "指定したユーザーを削除します。組織内のユーザーのみ操作可能です。",
         "parameters": [
@@ -971,7 +1007,9 @@
     },
     "/api/admin/users": {
       "get": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "組織内のユーザー一覧を取得（ページング）",
         "description": "ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。",
         "parameters": [
@@ -1062,7 +1100,9 @@
     },
     "/api/admin/users/{id}/active-status": {
       "put": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "ユーザーのアクティブ状態を設定",
         "description": "指定したユーザーのアクティブ状態を設定します。組織内のユーザーのみ操作可能です。",
         "parameters": [
@@ -1143,7 +1183,9 @@
     },
     "/api/admin/users/{id}/skills": {
       "put": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
         "description": "\r\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n            指定されたスキル以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\r\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
@@ -1224,7 +1266,9 @@
     },
     "/api/admin/users/create-without-password": {
       "post": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "パスワードなしでユーザーを作成",
         "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\r\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
         "requestBody": {
@@ -1283,7 +1327,9 @@
     },
     "/api/admin/users/{id}/request-password-reset": {
       "post": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "ユーザーのパスワードリセットをリクエスト",
         "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\r\nパスワードリセット用のメールがユーザーに送信されます。",
         "parameters": [
@@ -1334,7 +1380,9 @@
     },
     "/api/admin/users/{id}/roles": {
       "put": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
         "description": "\r\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n            指定されたロール以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\r\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
@@ -1415,7 +1463,9 @@
     },
     "/api/admin/users/roles": {
       "get": {
-        "tags": ["Admin - User"],
+        "tags": [
+          "Admin - User"
+        ],
         "summary": "全ロール一覧を取得",
         "description": "システム内の全ロール一覧を取得します。ユーザー設定画面で使用されます。",
         "responses": {
@@ -1437,7 +1487,9 @@
     },
     "/api/admin/workspaces": {
       "post": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース登録",
         "requestBody": {
           "content": {
@@ -1495,7 +1547,9 @@
         }
       },
       "get": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース一覧取得（ページネーション）",
         "parameters": [
           {
@@ -1551,7 +1605,9 @@
     },
     "/api/admin/workspaces/{id}": {
       "get": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース情報取得",
         "parameters": [
           {
@@ -1591,7 +1647,9 @@
         }
       },
       "put": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース更新",
         "parameters": [
           {
@@ -1670,7 +1728,9 @@
         }
       },
       "delete": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース削除",
         "parameters": [
           {
@@ -1712,7 +1772,9 @@
     },
     "/api/admin/workspaces/{id}/deactivate": {
       "patch": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース無効化",
         "parameters": [
           {
@@ -1786,7 +1848,9 @@
     },
     "/api/admin/workspaces/{id}/activate": {
       "patch": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペース有効化",
         "parameters": [
           {
@@ -1860,7 +1924,9 @@
     },
     "/api/admin/workspaces/{id}/users": {
       "post": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペースにユーザーを参加させる",
         "parameters": [
           {
@@ -1929,7 +1995,9 @@
         }
       },
       "get": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペースのメンバー一覧取得（ページネーション）",
         "parameters": [
           {
@@ -1979,7 +2047,9 @@
     },
     "/api/admin/workspaces/{id}/users/{userId}": {
       "delete": {
-        "tags": ["Admin - Workspace"],
+        "tags": [
+          "Admin - Workspace"
+        ],
         "summary": "ワークスペースからユーザーを削除",
         "parameters": [
           {
@@ -2030,7 +2100,9 @@
     },
     "/api/backend/genres": {
       "get": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンル一覧を取得",
         "parameters": [
           {
@@ -2115,7 +2187,9 @@
         }
       },
       "post": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンルを作成",
         "requestBody": {
           "description": "ジャンル作成リクエスト",
@@ -2203,7 +2277,9 @@
     },
     "/api/backend/genres/{id}": {
       "get": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンル詳細を取得",
         "parameters": [
           {
@@ -2281,7 +2357,9 @@
         }
       },
       "put": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンルを更新",
         "parameters": [
           {
@@ -2399,7 +2477,9 @@
         }
       },
       "delete": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンルを削除",
         "parameters": [
           {
@@ -2499,7 +2579,9 @@
     },
     "/api/backend/genres/{id}/active-status": {
       "put": {
-        "tags": ["Backend - Genre"],
+        "tags": [
+          "Backend - Genre"
+        ],
         "summary": "ジャンルのアクティブ状態を設定",
         "parameters": [
           {
@@ -2619,7 +2701,9 @@
     },
     "/api/backend/organizations/{id}": {
       "get": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織情報取得",
         "parameters": [
           {
@@ -2659,7 +2743,9 @@
         }
       },
       "put": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織更新",
         "parameters": [
           {
@@ -2728,7 +2814,9 @@
         }
       },
       "delete": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織削除",
         "parameters": [
           {
@@ -2799,7 +2887,9 @@
     },
     "/api/backend/organizations": {
       "get": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織一覧取得（ページネーション対応）",
         "parameters": [
           {
@@ -2839,7 +2929,9 @@
     },
     "/api/backend/organizations/{id}/users": {
       "get": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織の所属ユーザー取得",
         "parameters": [
           {
@@ -2874,7 +2966,9 @@
     },
     "/api/backend/organizations/{id}/active-status": {
       "put": {
-        "tags": ["Backend - Organization"],
+        "tags": [
+          "Backend - Organization"
+        ],
         "summary": "組織のアクティブ状態を設定",
         "parameters": [
           {
@@ -2937,7 +3031,9 @@
     },
     "/api/backend/permissions": {
       "post": {
-        "tags": ["Backend - Permission"],
+        "tags": [
+          "Backend - Permission"
+        ],
         "summary": "権限作成",
         "requestBody": {
           "content": {
@@ -2985,7 +3081,9 @@
         }
       },
       "get": {
-        "tags": ["Backend - Permission"],
+        "tags": [
+          "Backend - Permission"
+        ],
         "summary": "全権限取得",
         "responses": {
           "200": {
@@ -3009,7 +3107,9 @@
     },
     "/api/backend/permissions/{id}": {
       "get": {
-        "tags": ["Backend - Permission"],
+        "tags": [
+          "Backend - Permission"
+        ],
         "summary": "権限取得",
         "parameters": [
           {
@@ -3049,7 +3149,9 @@
         }
       },
       "delete": {
-        "tags": ["Backend - Permission"],
+        "tags": [
+          "Backend - Permission"
+        ],
         "summary": "権限削除",
         "parameters": [
           {
@@ -3091,7 +3193,9 @@
     },
     "/api/backend/permissions/category/{category}": {
       "get": {
-        "tags": ["Backend - Permission"],
+        "tags": [
+          "Backend - Permission"
+        ],
         "summary": "カテゴリで権限取得",
         "parameters": [
           {
@@ -3125,7 +3229,9 @@
     },
     "/api/backend/roles": {
       "post": {
-        "tags": ["Backend - Role"],
+        "tags": [
+          "Backend - Role"
+        ],
         "summary": "ロール作成",
         "requestBody": {
           "content": {
@@ -3173,7 +3279,9 @@
         }
       },
       "get": {
-        "tags": ["Backend - Role"],
+        "tags": [
+          "Backend - Role"
+        ],
         "summary": "全ロール取得",
         "responses": {
           "200": {
@@ -3197,7 +3305,9 @@
     },
     "/api/backend/roles/{id}": {
       "get": {
-        "tags": ["Backend - Role"],
+        "tags": [
+          "Backend - Role"
+        ],
         "summary": "ロール取得",
         "parameters": [
           {
@@ -3237,7 +3347,9 @@
         }
       },
       "delete": {
-        "tags": ["Backend - Role"],
+        "tags": [
+          "Backend - Role"
+        ],
         "summary": "ロール削除",
         "parameters": [
           {
@@ -3279,7 +3391,9 @@
     },
     "/api/backend/roles/{roleId}/permissions": {
       "put": {
-        "tags": ["Backend - Role"],
+        "tags": [
+          "Backend - Role"
+        ],
         "summary": "ロールに権限を設定（既存の権限を置き換える）",
         "parameters": [
           {
@@ -3350,7 +3464,9 @@
     },
     "/api/backend/specs/openapi": {
       "get": {
-        "tags": ["Backend - Specs"],
+        "tags": [
+          "Backend - Specs"
+        ],
         "summary": "OpenAPIスキーマ取得",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
         "responses": {
@@ -3389,7 +3505,9 @@
     },
     "/api/backend/specs/openapi/{documentName}": {
       "get": {
-        "tags": ["Backend - Specs"],
+        "tags": [
+          "Backend - Specs"
+        ],
         "summary": "OpenAPIスキーマ取得",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをJSON形式で取得します。",
         "parameters": [
@@ -3440,7 +3558,9 @@
     },
     "/api/backend/specs/openapi.yaml": {
       "get": {
-        "tags": ["Backend - Specs"],
+        "tags": [
+          "Backend - Specs"
+        ],
         "summary": "OpenAPIスキーマ取得（YAML形式）",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
         "responses": {
@@ -3479,7 +3599,9 @@
     },
     "/api/backend/specs/openapi/{documentName}.yaml": {
       "get": {
-        "tags": ["Backend - Specs"],
+        "tags": [
+          "Backend - Specs"
+        ],
         "summary": "OpenAPIスキーマ取得（YAML形式）",
         "description": "Swagger UIで生成されたOpenAPI 3.0スキーマをYAML形式で取得します。",
         "parameters": [
@@ -3530,7 +3652,9 @@
     },
     "/api/entrance/auth/login": {
       "post": {
-        "tags": ["Entrance - Auth"],
+        "tags": [
+          "Entrance - Auth"
+        ],
         "summary": "ログイン",
         "description": "EmailまたはLoginIdとパスワードでログインします",
         "requestBody": {
@@ -3581,7 +3705,9 @@
     },
     "/api/entrance/refresh": {
       "post": {
-        "tags": ["Entrance - Auth"],
+        "tags": [
+          "Entrance - Auth"
+        ],
         "summary": "リフレッシュトークンによるアクセストークン再発行",
         "description": "有効なリフレッシュトークンを使用して、新しいアクセストークンとリフレッシュトークンを取得します。",
         "requestBody": {
@@ -3633,7 +3759,9 @@
     },
     "/api/entrance/logout": {
       "post": {
-        "tags": ["Entrance - Auth"],
+        "tags": [
+          "Entrance - Auth"
+        ],
         "summary": "ログアウト（トークン無効化）",
         "description": "現在のアクセストークンとリフレッシュトークンを無効化します。",
         "requestBody": {
@@ -3668,7 +3796,9 @@
     },
     "/api/entrance/organizations": {
       "post": {
-        "tags": ["Entrance - Organization"],
+        "tags": [
+          "Entrance - Organization"
+        ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
         "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
@@ -3719,7 +3849,9 @@
     },
     "/api/entrance/password/set": {
       "post": {
-        "tags": ["Entrance - Password"],
+        "tags": [
+          "Entrance - Password"
+        ],
         "summary": "/// パスワードを設定",
         "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
         "requestBody": {
@@ -3768,7 +3900,9 @@
     },
     "/api/entrance/password/request-reset": {
       "post": {
-        "tags": ["Entrance - Password"],
+        "tags": [
+          "Entrance - Password"
+        ],
         "summary": "パスワードリセットをリクエスト",
         "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
         "requestBody": {
@@ -3807,7 +3941,9 @@
     },
     "/api/entrance/password/reset": {
       "post": {
-        "tags": ["Entrance - Password"],
+        "tags": [
+          "Entrance - Password"
+        ],
         "summary": "パスワードをリセット",
         "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
         "requestBody": {
@@ -3856,7 +3992,9 @@
     },
     "/api/downloads/{fileType}/{resourceId}/{fileName}": {
       "get": {
-        "tags": ["File"],
+        "tags": [
+          "File"
+        ],
         "summary": "ファイルを取得（ルートベース）",
         "description": "ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して\r\nルート末尾のすべての文字（ドットを含む）をキャプチャします。\r\nこれにより image.jpg のようなファイル名も正しく処理されます。",
         "parameters": [
@@ -3917,7 +4055,9 @@
     },
     "/api/downloads/icons": {
       "get": {
-        "tags": ["File"],
+        "tags": [
+          "File"
+        ],
         "summary": "アイコンファイルを取得（画像を返す）- クエリパラメータ版（後方互換性のため維持）",
         "parameters": [
           {
@@ -3978,7 +4118,9 @@
         }
       },
       "delete": {
-        "tags": ["File"],
+        "tags": [
+          "File"
+        ],
         "summary": "アイコンファイルを削除",
         "parameters": [
           {
@@ -4040,13 +4182,19 @@
     },
     "/api/files": {
       "post": {
-        "tags": ["File"],
+        "tags": [
+          "File"
+        ],
         "summary": "ファイルをアップロード",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
-                "required": ["File", "FileType", "ResourceId"],
+                "required": [
+                  "File",
+                  "FileType",
+                  "ResourceId"
+                ],
                 "type": "object",
                 "properties": {
                   "FileType": {
@@ -4129,7 +4277,9 @@
     },
     "/api/master/genres": {
       "get": {
-        "tags": ["Master"],
+        "tags": [
+          "Master"
+        ],
         "summary": "アクティブなジャンル一覧を取得",
         "responses": {
           "200": {
@@ -4153,7 +4303,9 @@
     },
     "/api/master/skills": {
       "get": {
-        "tags": ["Master"],
+        "tags": [
+          "Master"
+        ],
         "summary": "ログインユーザーの属する組織のアクティブなスキル一覧を取得",
         "responses": {
           "200": {
@@ -4187,7 +4339,9 @@
     },
     "/api/master/roles": {
       "get": {
-        "tags": ["Master"],
+        "tags": [
+          "Master"
+        ],
         "summary": "ロール一覧を取得",
         "responses": {
           "200": {
@@ -4211,7 +4365,9 @@
     },
     "/api/profile": {
       "get": {
-        "tags": ["Profile"],
+        "tags": [
+          "Profile"
+        ],
         "summary": "自分のプロフィール情報を取得",
         "description": "ユーザーの基本情報（ユーザー名、アバター、スキル、ロール等）を取得します。",
         "responses": {
@@ -4261,7 +4417,9 @@
         }
       },
       "put": {
-        "tags": ["Profile"],
+        "tags": [
+          "Profile"
+        ],
         "summary": "自分のプロフィール情報を更新",
         "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
         "requestBody": {
@@ -4373,7 +4531,9 @@
     },
     "/api/profile/skills": {
       "put": {
-        "tags": ["Profile"],
+        "tags": [
+          "Profile"
+        ],
         "summary": "自分のスキルを設定",
         "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
         "requestBody": {
@@ -4482,7 +4642,9 @@
     },
     "/api/profile/password": {
       "patch": {
-        "tags": ["Profile"],
+        "tags": [
+          "Profile"
+        ],
         "summary": "パスワードを変更",
         "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
         "requestBody": {
@@ -4574,7 +4736,9 @@
     },
     "/api/profile/devices": {
       "get": {
-        "tags": ["Profile - Device"],
+        "tags": [
+          "Profile - Device"
+        ],
         "summary": "自分の有効なデバイス情報の一覧を取得",
         "responses": {
           "200": {
@@ -4634,7 +4798,9 @@
     },
     "/api/profile/devices/{deviceId}": {
       "delete": {
-        "tags": ["Profile - Device"],
+        "tags": [
+          "Profile - Device"
+        ],
         "summary": "自分のデバイスを削除",
         "parameters": [
           {
@@ -4697,7 +4863,9 @@
     },
     "/api/profile/email/request-change": {
       "post": {
-        "tags": ["Profile - Email"],
+        "tags": [
+          "Profile - Email"
+        ],
         "summary": "メールアドレス変更をリクエスト",
         "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
         "requestBody": {
@@ -4789,7 +4957,9 @@
     },
     "/api/profile/email/verify": {
       "get": {
-        "tags": ["Profile - Email"],
+        "tags": [
+          "Profile - Email"
+        ],
         "summary": "メールアドレス変更を確認（トークン検証）",
         "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
         "parameters": [
@@ -4871,7 +5041,9 @@
     },
     "/api/profile/email/pending": {
       "get": {
-        "tags": ["Profile - Email"],
+        "tags": [
+          "Profile - Email"
+        ],
         "summary": "未使用のメールアドレス変更トークン情報を取得",
         "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
         "responses": {
@@ -4906,7 +5078,9 @@
     },
     "/api/tags": {
       "post": {
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "summary": "タグ作成",
         "requestBody": {
           "content": {
@@ -4964,7 +5138,9 @@
         }
       },
       "get": {
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "summary": "組織のタグ一覧取得",
         "responses": {
           "200": {
@@ -4998,7 +5174,9 @@
     },
     "/api/dev/email-test/templates": {
       "get": {
-        "tags": ["TestEmail"],
+        "tags": [
+          "TestEmail"
+        ],
         "summary": "利用可能なテンプレート一覧を返す",
         "responses": {
           "200": {
@@ -5035,7 +5213,9 @@
     },
     "/api/dev/email-test/send": {
       "post": {
-        "tags": ["TestEmail"],
+        "tags": [
+          "TestEmail"
+        ],
         "summary": "テスト送信（テンプレート名を指定）",
         "parameters": [
           {
@@ -5093,7 +5273,9 @@
     },
     "/api/dev/email-test/set-recipient": {
       "post": {
-        "tags": ["TestEmail"],
+        "tags": [
+          "TestEmail"
+        ],
         "summary": "テスト用受信先を設定する",
         "requestBody": {
           "content": {
@@ -5160,7 +5342,9 @@
     },
     "/api/workspaces": {
       "post": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースを新規作成する",
         "requestBody": {
           "description": "ワークスペース作成リクエスト",
@@ -5219,7 +5403,9 @@
         }
       },
       "get": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ログインユーザーがアクセス可能なワークスペース一覧を取得する（ページネーション）",
         "parameters": [
           {
@@ -5275,7 +5461,9 @@
     },
     "/api/workspaces/{id}": {
       "put": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
@@ -5356,7 +5544,9 @@
         }
       },
       "get": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースの詳細情報を取得する（ログインユーザーがアクセス可能なもののみ）",
         "parameters": [
           {
@@ -5397,7 +5587,9 @@
         }
       },
       "delete": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースを削除する（Admin権限が必要）",
         "parameters": [
           {
@@ -5433,7 +5625,9 @@
     },
     "/api/workspaces/code/{code}": {
       "get": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースの詳細情報を取得する（codeベース：ログインユーザーがアクセス可能なもののみ）",
         "parameters": [
           {
@@ -5475,7 +5669,9 @@
     },
     "/api/workspaces/{id}/items": {
       "get": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）",
         "parameters": [
           {
@@ -5529,7 +5725,9 @@
     },
     "/api/workspaces/{id}/members": {
       "post": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースにメンバーを追加する（Ownerのみ実行可能）",
         "parameters": [
           {
@@ -5602,7 +5800,9 @@
     },
     "/api/workspaces/{id}/members/{userId}": {
       "delete": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースからメンバーを削除する（Ownerまたは自分自身の場合のみ実行可能）",
         "parameters": [
           {
@@ -5658,7 +5858,9 @@
     },
     "/api/workspaces/{id}/activate": {
       "post": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
@@ -5744,7 +5946,9 @@
     },
     "/api/workspaces/{id}/deactivate": {
       "post": {
-        "tags": ["Workspace"],
+        "tags": [
+          "Workspace"
+        ],
         "summary": "ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
         "parameters": [
           {
@@ -5830,7 +6034,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムに添付ファイルをアップロード",
         "parameters": [
           {
@@ -5922,7 +6128,9 @@
         }
       },
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムの添付ファイル一覧を取得",
         "parameters": [
           {
@@ -5978,7 +6186,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments/{attachmentId}": {
       "delete": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "添付ファイルを削除",
         "parameters": [
           {
@@ -6054,7 +6264,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments/download/{fileName}": {
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "添付ファイルをダウンロード",
         "parameters": [
           {
@@ -6109,7 +6321,9 @@
     },
     "/api/workspaces/{workspaceId}/items": {
       "post": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム作成",
         "parameters": [
           {
@@ -6178,7 +6392,9 @@
         }
       },
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム一覧取得",
         "parameters": [
           {
@@ -6258,7 +6474,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}": {
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム取得",
         "parameters": [
           {
@@ -6307,7 +6525,9 @@
         }
       },
       "patch": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム更新",
         "parameters": [
           {
@@ -6395,7 +6615,9 @@
         }
       },
       "delete": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム削除",
         "parameters": [
           {
@@ -6456,7 +6678,9 @@
     },
     "/api/workspaces/{workspaceId}/items/code/{code}": {
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムをコードで取得",
         "parameters": [
           {
@@ -6506,7 +6730,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/status": {
       "patch": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムステータス更新",
         "parameters": [
           {
@@ -6596,7 +6822,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/assignee": {
       "patch": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテム作業者設定",
         "parameters": [
           {
@@ -6686,7 +6914,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/pin": {
       "post": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムにPINを追加",
         "parameters": [
           {
@@ -6747,7 +6977,9 @@
         }
       },
       "delete": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムからPINを削除",
         "parameters": [
           {
@@ -6810,7 +7042,9 @@
     },
     "/api/users/me/pinned-items": {
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ログインユーザーがPINしたアイテム一覧を取得",
         "parameters": [
           {
@@ -6854,7 +7088,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/relations": {
       "post": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムに関連を追加",
         "parameters": [
           {
@@ -6932,7 +7168,9 @@
         }
       },
       "get": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムの関連一覧を取得",
         "parameters": [
           {
@@ -6983,7 +7221,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/relations/{relationId}": {
       "delete": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムの関連を削除",
         "parameters": [
           {
@@ -7043,7 +7283,9 @@
     },
     "/api/workspaces/{workspaceId}/items/{itemId}/tags": {
       "put": {
-        "tags": ["WorkspaceItem"],
+        "tags": [
+          "WorkspaceItem"
+        ],
         "summary": "ワークスペースアイテムのタグを一括設定",
         "parameters": [
           {
@@ -7136,7 +7378,9 @@
     },
     "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}": {
       "post": {
-        "tags": ["WorkspaceItemTempAttachment"],
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
         "summary": "一時添付ファイルをアップロード（アイテム作成前用）",
         "parameters": [
           {
@@ -7244,7 +7488,9 @@
         }
       },
       "delete": {
-        "tags": ["WorkspaceItemTempAttachment"],
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
         "summary": "セッションの一時ファイルをすべて削除",
         "parameters": [
           {
@@ -7296,7 +7542,9 @@
     },
     "/api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{fileName}": {
       "get": {
-        "tags": ["WorkspaceItemTempAttachment"],
+        "tags": [
+          "WorkspaceItemTempAttachment"
+        ],
         "summary": "一時添付ファイルを取得（プレビュー用）",
         "parameters": [
           {
@@ -7359,7 +7607,9 @@
   "components": {
     "schemas": {
       "AddUserToWorkspaceRequest": {
-        "required": ["userId"],
+        "required": [
+          "userId"
+        ],
         "type": "object",
         "properties": {
           "userId": {
@@ -7378,7 +7628,9 @@
         "description": "ワークスペースにユーザーを参加させるリクエスト"
       },
       "AddWorkspaceItemRelationRequest": {
-        "required": ["toItemId"],
+        "required": [
+          "toItemId"
+        ],
         "type": "object",
         "properties": {
           "toItemId": {
@@ -7413,7 +7665,9 @@
         "description": "ワークスペースアイテム関連追加レスポンス"
       },
       "AdminUpdateOrganizationRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7452,11 +7706,17 @@
         "description": "組織更新リクエスト（管理者用）"
       },
       "AvatarType": {
-        "enum": ["Gravatar", "UserAvatar", "AutoGenerated"],
+        "enum": [
+          "Gravatar",
+          "UserAvatar",
+          "AutoGenerated"
+        ],
         "type": "string"
       },
       "BackendUpdateOrganizationRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7504,7 +7764,9 @@
         "description": "組織更新リクエスト（バックエンドサービス用）"
       },
       "CreateGenreRequest": {
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7537,7 +7799,12 @@
         "description": "ジャンル登録リクエスト"
       },
       "CreateOrganizationRequest": {
-        "required": ["adminEmail", "adminUsername", "name", "phoneNumber"],
+        "required": [
+          "adminEmail",
+          "adminUsername",
+          "name",
+          "phoneNumber"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7588,7 +7855,9 @@
         "description": "組織登録リクエスト"
       },
       "CreatePermissionRequest": {
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7611,7 +7880,9 @@
         "description": "権限作成リクエスト"
       },
       "CreateRoleRequest": {
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7629,7 +7900,9 @@
         "description": "ロール作成リクエスト"
       },
       "CreateSkillRequest": {
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7647,7 +7920,9 @@
         "description": "スキル作成リクエスト"
       },
       "CreateTagRequest": {
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7661,7 +7936,11 @@
         "description": "タグ作成リクエスト"
       },
       "CreateUserWithoutPasswordRequest": {
-        "required": ["email", "roles", "username"],
+        "required": [
+          "email",
+          "roles",
+          "username"
+        ],
         "type": "object",
         "properties": {
           "username": {
@@ -7687,7 +7966,9 @@
         "description": "パスワードなしユーザー登録リクエスト（管理者用）"
       },
       "CreateWorkspaceItemRequest": {
-        "required": ["subject"],
+        "required": [
+          "subject"
+        ],
         "type": "object",
         "properties": {
           "subject": {
@@ -7753,7 +8034,10 @@
         "description": "ワークスペースアイテム作成リクエスト"
       },
       "CreateWorkspaceRequest": {
-        "required": ["genreId", "name"],
+        "required": [
+          "genreId",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -7777,7 +8061,9 @@
         "description": "ワークスペース登録リクエスト"
       },
       "DeleteOrganizationRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "rowVersion": {
@@ -7789,7 +8075,9 @@
         "description": "組織削除リクエスト"
       },
       "DeviceResponse": {
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -7866,11 +8154,21 @@
         "description": "デバイス情報レスポンス"
       },
       "DeviceType": {
-        "enum": ["Browser", "MobileApp", "DesktopApp", "Other"],
+        "enum": [
+          "Browser",
+          "MobileApp",
+          "DesktopApp",
+          "Other"
+        ],
         "type": "string"
       },
       "EmailChangeRequestResponse": {
-        "required": ["expiresAt", "message", "newEmail", "token"],
+        "required": [
+          "expiresAt",
+          "message",
+          "newEmail",
+          "token"
+        ],
         "type": "object",
         "properties": {
           "message": {
@@ -7898,7 +8196,11 @@
         "description": "メールアドレス変更リクエスト完了レスポンス"
       },
       "EmailChangeVerifyResponse": {
-        "required": ["changedAt", "message", "newEmail"],
+        "required": [
+          "changedAt",
+          "message",
+          "newEmail"
+        ],
         "type": "object",
         "properties": {
           "message": {
@@ -7921,7 +8223,9 @@
         "description": "メールアドレス変更確認レスポンス"
       },
       "ErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -7944,7 +8248,10 @@
         "description": "エラーレスポンス"
       },
       "FileType": {
-        "enum": ["Avatar", "Genre"],
+        "enum": [
+          "Avatar",
+          "Genre"
+        ],
         "type": "string",
         "description": "ファイル種別"
       },
@@ -7985,7 +8292,11 @@
         "description": "ファイルアップロードレスポンス"
       },
       "GenreCount": {
-        "required": ["count", "genreId", "genreName"],
+        "required": [
+          "count",
+          "genreId",
+          "genreName"
+        ],
         "type": "object",
         "properties": {
           "genreId": {
@@ -8008,7 +8319,10 @@
         "description": "ジャンルごとのワークスペース数"
       },
       "GenreListItemResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8050,7 +8364,9 @@
         "description": "ジャンル一覧用レスポンス"
       },
       "GenreListItemResponsePagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -8093,7 +8409,11 @@
         "description": "ページネーション付きレスポンス"
       },
       "GenreResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8163,7 +8483,12 @@
         "description": "ジャンル基本レスポンス"
       },
       "LoginRequest": {
-        "required": ["deviceType", "loginIdentifier", "os", "password"],
+        "required": [
+          "deviceType",
+          "loginIdentifier",
+          "os",
+          "password"
+        ],
         "type": "object",
         "properties": {
           "loginIdentifier": {
@@ -8215,7 +8540,12 @@
         "description": "ログインリクエスト"
       },
       "LoginResponse": {
-        "required": ["accessToken", "email", "loginId", "username"],
+        "required": [
+          "accessToken",
+          "email",
+          "loginId",
+          "username"
+        ],
         "type": "object",
         "properties": {
           "accessToken": {
@@ -8290,7 +8620,10 @@
         "description": "ログインレスポンス"
       },
       "MasterGenreResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8323,7 +8656,10 @@
         "description": "マスターデータ用ジャンルレスポンス"
       },
       "MasterSkillResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8346,7 +8682,9 @@
         "description": "マスターデータ用スキルレスポンス"
       },
       "MessageResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "message": {
@@ -8359,11 +8697,21 @@
         "description": "メッセージレスポンス"
       },
       "OSPlatform": {
-        "enum": ["Unknown", "Windows", "MacOS", "Linux", "iOS", "Android"],
+        "enum": [
+          "Unknown",
+          "Windows",
+          "MacOS",
+          "Linux",
+          "iOS",
+          "Android"
+        ],
         "type": "string"
       },
       "OrganizationInfoResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8386,7 +8734,11 @@
         "description": "組織情報レスポンス（簡易版）"
       },
       "OrganizationListItemResponse": {
-        "required": ["id", "name", "phoneNumber"],
+        "required": [
+          "id",
+          "name",
+          "phoneNumber"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8438,7 +8790,9 @@
         "description": "組織リスト項目レスポンス"
       },
       "OrganizationListItemResponsePagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -8481,7 +8835,12 @@
         "description": "ページネーション付きレスポンス"
       },
       "OrganizationResponse": {
-        "required": ["id", "name", "phoneNumber", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "phoneNumber",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8549,7 +8908,9 @@
         "description": "組織情報レスポンス"
       },
       "OrganizationResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -8575,7 +8936,10 @@
         "description": "競合エラーレスポンス（409 Conflict）"
       },
       "OrganizationWithAdminResponse": {
-        "required": ["adminUser", "organization"],
+        "required": [
+          "adminUser",
+          "organization"
+        ],
         "type": "object",
         "properties": {
           "organization": {
@@ -8589,7 +8953,11 @@
         "description": "組織登録レスポンス（管理者ユーザー情報含む）"
       },
       "PendingEmailChangeResponse": {
-        "required": ["createdAt", "expiresAt", "newEmail"],
+        "required": [
+          "createdAt",
+          "expiresAt",
+          "newEmail"
+        ],
         "type": "object",
         "properties": {
           "newEmail": {
@@ -8612,7 +8980,10 @@
         "description": "未使用メールアドレス変更トークン情報レスポンス"
       },
       "PermissionDetailInfoResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8640,7 +9011,11 @@
         "description": "権限詳細情報レスポンス"
       },
       "PermissionDetailResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8686,7 +9061,10 @@
         "description": "権限詳細レスポンス（ロールを含む）"
       },
       "PermissionListItemResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8724,7 +9102,10 @@
         "description": "権限リスト項目レスポンス"
       },
       "PermissionResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8781,7 +9162,7 @@
             "nullable": true
           }
         },
-        "additionalProperties": {}
+        "additionalProperties": { }
       },
       "RecipientRequest": {
         "type": "object",
@@ -8794,7 +9175,9 @@
         "additionalProperties": false
       },
       "RefreshRequest": {
-        "required": ["refreshToken"],
+        "required": [
+          "refreshToken"
+        ],
         "type": "object",
         "properties": {
           "refreshToken": {
@@ -8808,7 +9191,10 @@
         "description": "リフレッシュトークン交換 / ログアウト用リクエスト"
       },
       "RefreshResponse": {
-        "required": ["accessToken", "refreshToken"],
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ],
         "type": "object",
         "properties": {
           "accessToken": {
@@ -8905,7 +9291,10 @@
         "type": "string"
       },
       "RequestEmailChangeRequest": {
-        "required": ["currentPassword", "newEmail"],
+        "required": [
+          "currentPassword",
+          "newEmail"
+        ],
         "type": "object",
         "properties": {
           "newEmail": {
@@ -8926,7 +9315,9 @@
         "description": "メールアドレス変更リクエスト"
       },
       "RequestPasswordResetRequest": {
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "type": "object",
         "properties": {
           "email": {
@@ -8940,7 +9331,10 @@
         "description": "パスワードリセットリクエスト"
       },
       "ResetPasswordRequest": {
-        "required": ["password", "token"],
+        "required": [
+          "password",
+          "token"
+        ],
         "type": "object",
         "properties": {
           "token": {
@@ -8958,7 +9352,11 @@
         "description": "パスワードリセット実行リクエスト"
       },
       "RoleDetailResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -8999,7 +9397,10 @@
         "description": "ロール詳細レスポンス（権限を含む）"
       },
       "RoleInfoResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9017,7 +9418,10 @@
         "description": "ロール情報レスポンス（簡易版）"
       },
       "RoleListItemResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9050,7 +9454,10 @@
         "description": "ロールリスト項目レスポンス"
       },
       "RoleResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9078,7 +9485,11 @@
         "description": "ロール情報レスポンス"
       },
       "RoleUserCountResponse": {
-        "required": ["count", "id", "name"],
+        "required": [
+          "count",
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9101,7 +9512,9 @@
         "description": "ロールごとのユーザー数"
       },
       "SetActiveStatusRequest": {
-        "required": ["isActive"],
+        "required": [
+          "isActive"
+        ],
         "type": "object",
         "properties": {
           "isActive": {
@@ -9113,7 +9526,10 @@
         "description": "アクティブ状態設定リクエスト（レガシー用）"
       },
       "SetOrganizationActiveStatusRequest": {
-        "required": ["isActive", "rowVersion"],
+        "required": [
+          "isActive",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "isActive": {
@@ -9187,7 +9603,9 @@
         "description": "Request DTO for setting all tags on a workspace item"
       },
       "SetUserActiveStatusRequest": {
-        "required": ["isActive"],
+        "required": [
+          "isActive"
+        ],
         "type": "object",
         "properties": {
           "isActive": {
@@ -9198,7 +9616,10 @@
         "description": "ユーザーのアクティブ状態設定リクエスト"
       },
       "SetUserPasswordRequest": {
-        "required": ["password", "token"],
+        "required": [
+          "password",
+          "token"
+        ],
         "type": "object",
         "properties": {
           "token": {
@@ -9220,7 +9641,9 @@
         "description": "ユーザーパスワード設定リクエスト"
       },
       "SetUserRolesRequest": {
-        "required": ["roles"],
+        "required": [
+          "roles"
+        ],
         "type": "object",
         "properties": {
           "roles": {
@@ -9240,7 +9663,9 @@
         "description": "ユーザーロール設定リクエスト"
       },
       "SetUserSkillsRequest": {
-        "required": ["skillIds"],
+        "required": [
+          "skillIds"
+        ],
         "type": "object",
         "properties": {
           "skillIds": {
@@ -9260,7 +9685,11 @@
         "description": "ユーザーのスキル設定リクエスト"
       },
       "SkillDetailResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9325,7 +9754,9 @@
         "description": "スキル詳細レスポンス"
       },
       "SkillDetailResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -9351,7 +9782,10 @@
         "description": "競合エラーレスポンス（409 Conflict）"
       },
       "SkillListItemResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9408,7 +9842,9 @@
         "description": "スキル一覧アイテムレスポンス"
       },
       "SkillListItemResponseSkillStatisticsPagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -9454,7 +9890,9 @@
         "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "SkillResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "success": {
@@ -9517,7 +9955,10 @@
         "description": "スキル利用統計のレスポンス"
       },
       "SkillUsageItem": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9535,7 +9976,11 @@
         "description": "スキル利用アイテム（ID と名前）"
       },
       "SkillUserCountResponse": {
-        "required": ["count", "id", "name"],
+        "required": [
+          "count",
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9558,7 +10003,9 @@
         "description": "スキルごとのユーザー数"
       },
       "SuccessResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -9576,7 +10023,10 @@
         "description": "成功メッセージレスポンス"
       },
       "TagDetailResponse": {
-        "required": ["id", "rowVersion"],
+        "required": [
+          "id",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9635,7 +10085,9 @@
         "description": "タグ詳細レスポンス"
       },
       "TagDetailResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -9661,7 +10113,9 @@
         "description": "競合エラーレスポンス（409 Conflict）"
       },
       "TagInfoResponse": {
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9679,7 +10133,9 @@
         "description": "タグ情報レスポンス"
       },
       "TagListItemResponse": {
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9717,7 +10173,9 @@
         "description": "タグリストアイテムレスポンス"
       },
       "TagListItemResponseTagStatisticsPagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -9825,7 +10283,10 @@
         "description": "タグ利用統計のレスポンス"
       },
       "TagUsageItem": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -9843,7 +10304,12 @@
         "description": "タグ利用アイテム（ID と名前）"
       },
       "TaskPriority": {
-        "enum": ["Low", "Medium", "High", "Critical"],
+        "enum": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
         "type": "string"
       },
       "TempAttachmentResponse": {
@@ -9892,7 +10358,9 @@
         "description": "一時添付ファイルのレスポンス"
       },
       "UpdateGenreRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -9936,7 +10404,10 @@
         "description": "ジャンル更新リクエスト"
       },
       "UpdatePasswordRequest": {
-        "required": ["currentPassword", "newPassword"],
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
         "type": "object",
         "properties": {
           "currentPassword": {
@@ -9955,7 +10426,9 @@
         "description": "パスワード変更リクエスト"
       },
       "UpdateProfileRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "username": {
@@ -9988,7 +10461,9 @@
         "description": "プロフィール更新リクエスト"
       },
       "UpdateSkillRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -10014,7 +10489,10 @@
         "description": "スキル更新リクエスト"
       },
       "UpdateTagRequest": {
-        "required": ["name", "rowVersion"],
+        "required": [
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -10038,7 +10516,9 @@
         "description": "タグ更新リクエスト"
       },
       "UpdateWorkspaceItemAssigneeRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "assigneeId": {
@@ -10057,7 +10537,9 @@
         "description": "ワークスペースアイテム作業者更新リクエスト"
       },
       "UpdateWorkspaceItemRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "subject": {
@@ -10117,7 +10599,9 @@
         "description": "ワークスペースアイテム更新リクエスト"
       },
       "UpdateWorkspaceItemStatusRequest": {
-        "required": ["rowVersion"],
+        "required": [
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "isDraft": {
@@ -10140,7 +10624,11 @@
         "description": "ワークスペースアイテムステータス更新リクエスト"
       },
       "UpdateWorkspaceRequest": {
-        "required": ["genreId", "name", "rowVersion"],
+        "required": [
+          "genreId",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "name": {
@@ -10168,7 +10656,12 @@
         "description": "ワークスペース更新リクエスト"
       },
       "UserListItemResponse": {
-        "required": ["email", "id", "loginId", "username"],
+        "required": [
+          "email",
+          "id",
+          "loginId",
+          "username"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10309,7 +10802,9 @@
         "description": "ユーザー情報レスポンス"
       },
       "UserResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -10335,7 +10830,9 @@
         "description": "競合エラーレスポンス（409 Conflict）"
       },
       "UserResponseUserStatisticsPagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -10381,7 +10878,10 @@
         "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "UserRoleResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10399,7 +10899,10 @@
         "description": "ユーザーロール情報レスポンス"
       },
       "UserSkillResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10466,7 +10969,11 @@
         "description": "ユーザー統計情報レスポンス"
       },
       "WorkspaceDetailResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10558,7 +11065,9 @@
         "description": "ワークスペース詳細情報レスポンス（管理者用）"
       },
       "WorkspaceDetailResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -10610,7 +11119,11 @@
         "description": "ワークスペース詳細取得用ユーザー情報"
       },
       "WorkspaceFullDetailResponse": {
-        "required": ["id", "name", "rowVersion"],
+        "required": [
+          "id",
+          "name",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10688,7 +11201,9 @@
         "description": "ワークスペース詳細情報（一般ユーザー用）"
       },
       "WorkspaceItemAttachmentResponse": {
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10751,7 +11266,10 @@
         "description": "ワークスペースアイテム添付ファイルレスポンス"
       },
       "WorkspaceItemDetailResponse": {
-        "required": ["id", "rowVersion"],
+        "required": [
+          "id",
+          "rowVersion"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -10893,7 +11411,9 @@
         "description": "ワークスペースアイテム詳細レスポンス"
       },
       "WorkspaceItemDetailResponseConcurrencyErrorResponse": {
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "type": "object",
         "properties": {
           "statusCode": {
@@ -10919,7 +11439,9 @@
         "description": "競合エラーレスポンス（409 Conflict）"
       },
       "WorkspaceItemDetailResponsePagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -11028,7 +11550,9 @@
         "description": "ワークスペースアイテム一覧レスポンス（ページング対応）"
       },
       "WorkspaceItemRelationResponse": {
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -11136,7 +11660,10 @@
         "description": "ワークスペースアイテム操作レスポンス"
       },
       "WorkspaceListItemResponse": {
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -11223,7 +11750,9 @@
         "description": "ワークスペースリストアイテムレスポンス"
       },
       "WorkspaceListItemResponseWorkspaceStatisticsPagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -11390,7 +11919,9 @@
         "description": "ワークスペースユーザー詳細レスポンス"
       },
       "WorkspaceUserDetailResponseObjectPagedResponse": {
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -11467,7 +11998,7 @@
   },
   "security": [
     {
-      "bearerAuth": []
+      "bearerAuth": [ ]
     }
   ]
 }

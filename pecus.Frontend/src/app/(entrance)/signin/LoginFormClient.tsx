@@ -46,6 +46,7 @@ export default function LoginFormClient() {
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

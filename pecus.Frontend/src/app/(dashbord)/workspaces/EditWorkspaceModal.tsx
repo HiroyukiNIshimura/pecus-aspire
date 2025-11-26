@@ -35,6 +35,7 @@ export default function EditWorkspaceModal({
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

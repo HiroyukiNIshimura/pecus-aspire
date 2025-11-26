@@ -26,6 +26,7 @@ export default function CreateWorkspaceModal({
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

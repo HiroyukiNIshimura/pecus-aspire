@@ -6,14 +6,11 @@
  * src/connectors/api/ConflictDataTypes.generated.ts を生成します。
  */
 
-const fs = require("node:fs");
-const path = require("node:path");
+const fs = require('fs');
+const path = require('path');
 
-const openApiSpecPath = path.join(__dirname, "../.spec/open-api-scheme.json");
-const outputPath = path.join(
-  __dirname,
-  "../src/connectors/api/ConflictDataTypes.generated.ts",
-);
+const openApiSpecPath = path.join(__dirname, '../.spec/open-api-scheme.json');
+const outputPath = path.join(__dirname, '../src/connectors/api/ConflictDataTypes.generated.ts');
 
 /**
  * OpenAPI定義から409 Conflict対応の型を抽出
@@ -24,7 +21,7 @@ function extractConflictTypesFromOpenAPI(spec) {
   const conflictTypes = new Map();
 
   if (!spec.paths) {
-    console.warn("⚠️  No paths found in OpenAPI spec");
+    console.warn('⚠️  No paths found in OpenAPI spec');
     return conflictTypes;
   }
 
@@ -32,35 +29,33 @@ function extractConflictTypesFromOpenAPI(spec) {
   Object.entries(spec.paths).forEach(([pathName, pathItem]) => {
     // get, post, put, delete, patch等のメソッドをスキャン
     Object.entries(pathItem).forEach(([method, operation]) => {
-      if (typeof operation !== "object" || !operation.responses) {
+      if (typeof operation !== 'object' || !operation.responses) {
         return;
       }
 
       // 409 Conflictレスポンスを探す
-      const conflictResponse = operation.responses["409"];
+      const conflictResponse = operation.responses['409'];
       if (!conflictResponse) {
         return;
       }
 
       // レスポンスのスキーマを取得
-      const schema = conflictResponse.content?.["application/json"]?.schema;
+      const schema = conflictResponse.content?.['application/json']?.schema;
       if (!schema) {
-        console.warn(
-          `⚠️  No schema found for 409 response at ${method.toUpperCase()} ${pathName}`,
-        );
+        console.warn(`⚠️  No schema found for 409 response at ${method.toUpperCase()} ${pathName}`);
         return;
       }
 
       // $ref形式の場合（例: "#/components/schemas/OrganizationResponseConcurrencyErrorResponse"）
       if (schema.$ref) {
-        const schemaName = schema.$ref.split("/").pop();
+        const schemaName = schema.$ref.split('/').pop();
         processConcurrencyErrorSchema(schemaName, spec, conflictTypes);
       }
       // allOf形式の場合
       else if (schema.allOf) {
-        schema.allOf.forEach((item) => {
+        schema.allOf.forEach(item => {
           if (item.$ref) {
-            const schemaName = item.$ref.split("/").pop();
+            const schemaName = item.$ref.split('/').pop();
             processConcurrencyErrorSchema(schemaName, spec, conflictTypes);
           }
         });
@@ -79,7 +74,7 @@ function extractConflictTypesFromOpenAPI(spec) {
  */
 function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
   // ConcurrencyErrorResponse スキーマかどうか確認
-  if (!schemaName.includes("ConcurrencyErrorResponse")) {
+  if (!schemaName.includes('ConcurrencyErrorResponse')) {
     return;
   }
 
@@ -100,19 +95,17 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
   let currentTypeName = null;
 
   if (currentSchema.$ref) {
-    currentTypeName = currentSchema.$ref.split("/").pop();
+    currentTypeName = currentSchema.$ref.split('/').pop();
   } else if (currentSchema.allOf) {
     // allOf 形式の場合、最初の $ref を取得
-    const refItem = currentSchema.allOf.find((item) => item.$ref);
+    const refItem = currentSchema.allOf.find(item => item.$ref);
     if (refItem) {
-      currentTypeName = refItem.$ref.split("/").pop();
+      currentTypeName = refItem.$ref.split('/').pop();
     }
   }
 
   if (!currentTypeName) {
-    console.warn(
-      `⚠️  Could not extract type from current field in ${schemaName}`,
-    );
+    console.warn(`⚠️  Could not extract type from current field in ${schemaName}`);
     return;
   }
 
@@ -121,7 +114,7 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
 
   if (entityName) {
     // 既に登録されている場合は、より詳細な型を優先
-    if (!conflictTypes.has(entityName) || currentTypeName.includes("Detail")) {
+    if (!conflictTypes.has(entityName) || currentTypeName.includes('Detail')) {
       conflictTypes.set(entityName, currentTypeName);
       console.log(`  ✓ ${entityName}: ${currentTypeName}`);
     }
@@ -143,7 +136,9 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
  */
 function inferEntityName(typeName) {
   // 接尾辞を削除
-  const name = typeName.replace(/DetailResponse$/, "").replace(/Response$/, "");
+  let name = typeName
+    .replace(/DetailResponse$/, '')
+    .replace(/Response$/, '');
 
   if (!name) {
     return null;
@@ -164,7 +159,9 @@ function generateConflictTypesFile(conflictTypes) {
     .filter((value, index, self) => self.indexOf(value) === index) // 重複排除
     .sort();
 
-  const imports = typeNames.map((type) => `  ${type},`).join("\n");
+  const imports = typeNames
+    .map(type => `  ${type},`)
+    .join('\n');
 
   // Union型を生成（エンティティ名でソート）
   const unionTypes = Array.from(conflictTypes.entries())
@@ -175,7 +172,7 @@ function generateConflictTypesFile(conflictTypes) {
       data: ${typeName};
     }`;
     })
-    .join("\n");
+    .join('\n');
 
   const code = `/**
  * 409 Conflict レスポンスで返される最新データの型定義
@@ -245,19 +242,19 @@ ${unionTypes};
  */
 async function main() {
   try {
-    console.log("🔍 OpenAPI スキーマを読み込み中...");
+    console.log('🔍 OpenAPI スキーマを読み込み中...');
 
     if (!fs.existsSync(openApiSpecPath)) {
       throw new Error(`OpenAPI スキーマが見つかりません: ${openApiSpecPath}`);
     }
 
-    const openApiSpec = JSON.parse(fs.readFileSync(openApiSpecPath, "utf-8"));
+    const openApiSpec = JSON.parse(fs.readFileSync(openApiSpecPath, 'utf-8'));
 
-    console.log("\n📊 409 Conflict レスポンス型を抽出中...");
+    console.log('\n📊 409 Conflict レスポンス型を抽出中...');
     const conflictTypes = extractConflictTypesFromOpenAPI(openApiSpec);
 
     if (conflictTypes.size === 0) {
-      console.warn("⚠️  409 Conflict レスポンスが見つかりませんでした");
+      console.warn('⚠️  409 Conflict レスポンスが見つかりませんでした');
       process.exit(1);
     }
 
@@ -266,7 +263,7 @@ async function main() {
       console.log(`   • ${entity}: ${type}`);
     });
 
-    console.log("\n✍️  ファイルを生成中...");
+    console.log('\n✍️  ファイルを生成中...');
     const code = generateConflictTypesFile(conflictTypes);
 
     // 出力ディレクトリが存在することを確認
@@ -275,12 +272,13 @@ async function main() {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    fs.writeFileSync(outputPath, code, "utf-8");
+    fs.writeFileSync(outputPath, code, 'utf-8');
 
     console.log(`✅ 生成完了: ${outputPath}`);
     console.log(`   ファイルサイズ: ${fs.statSync(outputPath).size} bytes`);
+
   } catch (error) {
-    console.error("❌ エラーが発生しました:");
+    console.error('❌ エラーが発生しました:');
     console.error(`   ${error.message}`);
     process.exit(1);
   }

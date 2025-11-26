@@ -30,6 +30,7 @@ export default function PasswordChangeTab({
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,

@@ -3,14 +3,10 @@
   "extends": "//",
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!src/connectors"]
-  },
-  "css": {
-    "linter": {
-      "enabled": false
-    }
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"]
   },
   "linter": {
+    "includes": ["**", "!src/connectors", "!src/components/editor.bak"],
     "rules": {
       "suspicious": {
         "noUnknownAtRules": "off",
@@ -32,13 +28,10 @@
         "noUnusedVariables": "warn",
         "noUnusedFunctionParameters": "off",
         "useExhaustiveDependencies": "warn",
-        "noInvalidUseBeforeDeclaration": "off",
-        "noUnknownProperty": "off",
-        "noInvalidPositionAtImportRule": "off"
+        "noInvalidUseBeforeDeclaration": "off"
       },
       "style": {
-        "noNonNullAssertion": "off",
-        "useNodejsImportProtocol": "off"
+        "noNonNullAssertion": "off"
       },
       "performance": {
         "noImgElement": "off"

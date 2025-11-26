@@ -39,6 +39,7 @@ export default function EditSkillClient({
   const {
     formRef,
     isSubmitting,
+    fieldErrors,
     handleSubmit,
     validateField,
     shouldShowError,
