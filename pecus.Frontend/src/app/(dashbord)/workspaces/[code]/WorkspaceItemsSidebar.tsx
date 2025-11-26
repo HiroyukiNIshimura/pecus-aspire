@@ -6,7 +6,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { ErrorResponse, WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 interface WorkspaceItemsSidebarProps {
@@ -75,7 +75,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             setSelectedItemId(selectItemId);
           }
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch items');
+          setError((err as ErrorResponse).message || 'アイテムの取得に失敗しました');
         } finally {
           setIsLoading(false);
         }
@@ -120,7 +120,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load more items');
+        setError((err as ErrorResponse).message || 'アイテムの追加読み込みに失敗しました');
       }
     }, [workspaceId]);
 

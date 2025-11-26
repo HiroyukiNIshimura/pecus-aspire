@@ -1,11 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError, type RouterErrorType } from '@/app/api/routerError';
-import {
-  createAuthenticatedAxios,
-  detect401ValidationError,
-  detect404ValidationError,
-  parseErrorResponse,
-} from '@/connectors/api/PecusApiClient';
+import { parseRouterError } from '@/app/api/routerError';
+import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,21 +106,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
   } catch (error) {
     console.error('Failed to upload temp file:', error);
-
-    // 認証エラーの場合は401を返す
-    const noAuthError = detect401ValidationError(error);
-    if (noAuthError) {
-      return NextResponse.json({ error: noAuthError.message }, { status: 401 });
-    }
-
-    const notFound = detect404ValidationError(error);
-    if (notFound) {
-      return NextResponse.json({ error: notFound.message }, { status: 404 });
-    }
-
-    const errorRes = parseErrorResponse(error, 'ファイルのアップロードに失敗しました');
-    const errorResponse: RouterErrorType = { error: errorRes.message, status: 500 };
-    return NextResponse.json(errorResponse);
+    return parseRouterError(error, 'ファイルのアップロードに失敗しました');
   }
 }
 
