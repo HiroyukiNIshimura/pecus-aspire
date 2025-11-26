@@ -2185,4 +2185,147 @@ export async function updateOrganization(request: { name?: string; description?:
 - `ApiResponse<T>` の `T` はフロントエンド側の自動生成型です。Server Action 内で `any` を使うのは簡便ですが、可能な限り厳密な型を指定してください。
 - フロントエンドの `services/*` 実装に合わせてエラー形状を揃えると、UI 側でのハンドリングが一貫します。
 
+## フロントエンドのエラーハンドリング統一方針
 
+### Server Actions のエラーレスポンス（`src/actions/`）
+
+Server Actions は統一されたエラーレスポンス形式を返します。ヘルパー関数は `src/actions/types.ts` に定義されています。
+
+**エラー型定義**:
+```typescript
+export type ErrorResponse = {
+  success: false;
+  error: 'validation' | 'server' | 'not_found' | 'forbidden';
+  message: string;
+};
+```
+
+**ヘルパー関数**:
+| 関数 | 用途 | エラータイプ |
+|------|------|-------------|
+| `validationError<T>(message)` | 入力値バリデーションエラー | `validation` |
+| `serverError<T>(message)` | API レスポンスエラー（非例外） | `server` |
+| `notFoundError<T>(message)` | リソースが見つからない | `not_found` |
+| `forbiddenError<T>(message)` | 権限不足 | `forbidden` |
+| `parseErrorResponse<T>(error, defaultMessage)` | catch で捕捉した例外を解析 | 状況による |
+
+**実装例**:
+```typescript
+'use server';
+import { serverError, parseErrorResponse } from './types';
+
+export async function getUsers(): Promise<ApiResponse<UserResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminUser.getApiAdminUsers();
+    return { success: true, data: response };
+  } catch (error) {
+    return parseErrorResponse(error, 'ユーザー一覧の取得に失敗しました');
+  }
+}
+```
+
+### API ルーターのエラーレスポンス（`src/app/api/`）
+
+API ルーターは統一されたエラーレスポンス形式を返します。ヘルパー関数は `src/app/api/routerError.ts` に定義されています。
+
+**エラー型定義**:
+```typescript
+export type RouterErrorType = {
+  error: string;
+  status: number;
+};
+```
+
+**ヘルパー関数**:
+| 関数 | HTTP ステータス | 用途 |
+|------|----------------|------|
+| `badRequestError(message)` | 400 | パラメータ不正、入力値検証エラー |
+| `unauthorizedError(message)` | 401 | 認証エラー |
+| `forbiddenError(message)` | 403 | 権限エラー |
+| `notFoundError(message)` | 404 | リソースが見つからない |
+| `serverError(message)` | 500 | サーバーエラー |
+| `parseRouterError(error, defaultMessage)` | 状況による | catch で捕捉した例外を解析 |
+
+**実装例**:
+```typescript
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const workspaceId = parseInt(id, 10);
+
+    if (Number.isNaN(workspaceId)) {
+      return badRequestError('無効なワークスペースIDです。');
+    }
+
+    // ... 処理
+  } catch (error) {
+    return parseRouterError(error, 'データの取得に失敗しました');
+  }
+}
+```
+
+### 呼び出し側のエラーハンドリング
+
+**Server Actions の呼び出し側**:
+```typescript
+const result = await updateUser(request);
+
+if (result.success) {
+  // 成功時の処理
+  console.log(result.data);
+} else {
+  // エラー時の処理
+  // result.error: エラータイプ（'validation' | 'server' | 'not_found' | 'forbidden' | 'conflict'）
+  // result.message: ユーザー向けメッセージ
+  notify.error(result.message);
+}
+```
+
+**API ルーターの呼び出し側（クライアントコンポーネント）**:
+```typescript
+try {
+  const response = await fetch(`/api/workspaces/${workspaceId}/items`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch items');
+  }
+
+  const data = await response.json();
+  // 成功時の処理
+} catch (error) {
+  console.error('Failed to fetch items:', error);
+  notify.error('サーバーとの通信でエラーが発生しました。', true);
+}
+```
+
+### 通知の使い分け（`useNotify` フック）
+
+`src/hooks/useNotify.ts` の `error()` メソッドは第2引数で永続表示を制御できます。
+
+```typescript
+const notify = useNotify();
+
+// 通常のエラー（3秒で自動消去）
+notify.error('入力値が不正です。');
+
+// 永続エラー（クリックするまで表示）
+notify.error('サーバーとの通信でエラーが発生しました。', true);
+```
+
+**使い分けガイドライン**:
+| エラー種別 | `persistent` | 理由 |
+|-----------|--------------|------|
+| 通信エラー（fetch 失敗） | `true` | ユーザーがネットワーク状況を確認する必要がある |
+| バリデーションエラー | `false` | 入力を修正すれば解決するため、すぐ消えて良い |
+| Server Actions のエラー | `false` | 一時的なエラーが多く、再試行で解決することが多い |
+| 重大なエラー（データ消失等） | `true` | ユーザーに確実に認識させたい場合 |
+
+### 参照ファイル一覧
+
+- `src/actions/types.ts` — Server Actions のエラーヘルパー関数
+- `src/app/api/routerError.ts` — API ルーターのエラーヘルパー関数
+- `src/hooks/useNotify.ts` — 通知フック（Notyf ベース）
+- `src/connectors/api/PecusApiClient.ts` — API クライアント設定（`detectConcurrencyError` 等）
