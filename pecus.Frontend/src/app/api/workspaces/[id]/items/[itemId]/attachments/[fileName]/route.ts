@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -19,11 +19,11 @@ export async function GET(
     const workspaceItemId = parseInt(itemId, 10);
 
     if (Number.isNaN(workspaceId) || Number.isNaN(workspaceItemId)) {
-      return NextResponse.json({ error: '無効なワークスペースIDまたはアイテムIDです' }, { status: 400 });
+      return badRequestError('無効なワークスペースIDまたはアイテムIDです');
     }
 
     if (!fileName) {
-      return NextResponse.json({ error: 'ファイル名が指定されていません' }, { status: 400 });
+      return badRequestError('ファイル名が指定されていません');
     }
 
     // 認証済みAxiosでバックエンドから画像を取得

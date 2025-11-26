@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId) || workspaceId <= 0) {
-      return NextResponse.json({ error: 'Invalid workspace ID' }, { status: 400 });
+      return badRequestError('Invalid workspace ID');
     }
 
     const api = createPecusApiClients();

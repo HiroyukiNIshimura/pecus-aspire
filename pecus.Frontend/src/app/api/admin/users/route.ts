@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getUsers } from '@/actions/admin/user';
-import { parseRouterError } from '../../routerError';
+import { parseRouterError, serverError } from '../../routerError';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (result.success) {
       return NextResponse.json(result.data, { status: 200 });
     } else {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      return serverError(result.message);
     }
   } catch (error) {
     console.error('API Route Error:', error);

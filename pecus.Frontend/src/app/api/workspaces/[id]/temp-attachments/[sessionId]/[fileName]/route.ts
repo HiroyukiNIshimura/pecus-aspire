@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -17,15 +17,15 @@ export async function GET(
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: '無効なワークスペースIDです。' }, { status: 400 });
+      return badRequestError('無効なワークスペースIDです。');
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json({ error: '無効なセッションIDです。' }, { status: 400 });
+      return badRequestError('無効なセッションIDです。');
     }
 
     if (!fileName) {
-      return NextResponse.json({ error: 'ファイル名が指定されていません。' }, { status: 400 });
+      return badRequestError('ファイル名が指定されていません。');
     }
 
     // 認証済みAxiosインスタンスを作成

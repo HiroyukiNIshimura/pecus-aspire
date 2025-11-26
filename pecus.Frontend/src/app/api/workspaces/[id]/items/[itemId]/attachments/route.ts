@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const workspaceItemId = parseInt(itemId, 10);
 
     if (Number.isNaN(workspaceId) || Number.isNaN(workspaceItemId)) {
-      return NextResponse.json({ error: '無効なワークスペースIDまたはアイテムIDです。' }, { status: 400 });
+      return badRequestError('無効なワークスペースIDまたはアイテムIDです。');
     }
 
     // FormData からファイルを取得
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const file = clientFormData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'ファイルが指定されていません。' }, { status: 400 });
+      return badRequestError('ファイルが指定されていません。');
     }
 
     // 認証済みAxiosインスタンスを作成

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 
 interface RouteParams {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const page = request.nextUrl.searchParams.get('page') ? parseInt(request.nextUrl.searchParams.get('page')!, 10) : 1;
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: 'Invalid workspace ID' }, { status: 400 });
+      return badRequestError('Invalid workspace ID');
     }
 
     const api = createPecusApiClients();

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -27,13 +27,13 @@ export async function GET(
     // fileType のバリデーション
     const validFileTypes = ['avatar', 'genre'];
     if (!validFileTypes.includes(fileType.toLowerCase())) {
-      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
+      return badRequestError('Invalid file type');
     }
 
     // resourceId のバリデーション
     const resourceIdNum = parseInt(resourceId, 10);
     if (Number.isNaN(resourceIdNum) || resourceIdNum <= 0) {
-      return NextResponse.json({ error: 'Invalid resource ID' }, { status: 400 });
+      return badRequestError('Invalid resource ID');
     }
 
     // 認証済みAxiosインスタンスを作成

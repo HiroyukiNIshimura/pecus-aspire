@@ -6,7 +6,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import type { ErrorResponse, WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 interface WorkspaceItemsSidebarProps {
@@ -60,7 +60,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
 
           if (!response.ok) {
-            throw new Error('Failed to fetch items');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to fetch items');
           }
 
           const data = await response.json();
@@ -75,7 +76,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             setSelectedItemId(selectItemId);
           }
         } catch (err) {
-          setError((err as ErrorResponse).message || 'アイテムの取得に失敗しました');
+          setError(err instanceof Error ? err.message : 'アイテムの取得に失敗しました');
         } finally {
           setIsLoading(false);
         }
@@ -104,7 +105,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         const response = await fetch(`/api/workspaces/${workspaceId}/items?page=${nextPage}`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch items');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch items');
         }
 
         const data = await response.json();
@@ -120,7 +122,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        setError((err as ErrorResponse).message || 'アイテムの追加読み込みに失敗しました');
+        setError(err instanceof Error ? err.message : 'アイテムの追加読み込みに失敗しました');
       }
     }, [workspaceId]);
 

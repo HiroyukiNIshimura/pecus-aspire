@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { parseRouterError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createAuthenticatedAxios } from '@/connectors/api/PecusApiClient';
 
 export const dynamic = 'force-dynamic';
@@ -41,11 +41,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: '無効なワークスペースIDです。' }, { status: 400 });
+      return badRequestError('無効なワークスペースIDです。');
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json({ error: '無効なセッションIDです。' }, { status: 400 });
+      return badRequestError('無効なセッションIDです。');
     }
 
     // FormData からファイルを取得
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const file = clientFormData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'ファイルが指定されていません。' }, { status: 400 });
+      return badRequestError('ファイルが指定されていません。');
     }
 
     // 認証済みAxiosインスタンスを作成
@@ -123,11 +123,11 @@ export async function DELETE(
     const workspaceId = parseInt(id, 10);
 
     if (Number.isNaN(workspaceId)) {
-      return NextResponse.json({ error: '無効なワークスペースIDです。' }, { status: 400 });
+      return badRequestError('無効なワークスペースIDです。');
     }
 
     if (!sessionId || sessionId.length === 0 || sessionId.length > 50) {
-      return NextResponse.json({ error: '無効なセッションIDです。' }, { status: 400 });
+      return badRequestError('無効なセッションIDです。');
     }
 
     // 認証済みAxiosインスタンスを作成
