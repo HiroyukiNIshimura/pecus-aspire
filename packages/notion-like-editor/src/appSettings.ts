@@ -6,8 +6,6 @@
  *
  */
 
-import type { ImageUploader } from "./types";
-
 export const DEFAULT_SETTINGS = {
 	autoFocus: true,
 	disableBeforeInput: false,
@@ -48,10 +46,19 @@ export type Settings = typeof INITIAL_SETTINGS;
  * エディタコンテキスト設定（画像アップロード等で使用）
  */
 export type EditorContextSettings = {
-	/** 画像アップロード関数（実装側で注入） */
-	imageUploader?: ImageUploader;
+	/** ワークスペースID（画像アップロード用） */
+	workspaceId?: number;
+	/** アイテムID（画像アップロード用、既存アイテム編集時） */
+	itemId?: number;
+	/** セッションID（一時ファイルアップロード用、新規作成時） */
+	sessionId?: string;
+	/** 一時ファイルアップロード成功時のコールバック */
+	onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
 };
 
 export const DEFAULT_EDITOR_CONTEXT_SETTINGS: EditorContextSettings = {
-	imageUploader: undefined,
+	workspaceId: undefined,
+	itemId: undefined,
+	sessionId: undefined,
+	onTempFileUploaded: undefined,
 };

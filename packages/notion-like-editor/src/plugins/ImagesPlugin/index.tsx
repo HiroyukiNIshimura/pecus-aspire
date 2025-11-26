@@ -74,7 +74,7 @@ export function InsertImageUriDialogBody({ onClick }: { onClick: (payload: Inser
 }
 
 export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: InsertImagePayload) => void }) {
-	const { imageUploader } = useEditorContext();
+	const { workspaceId, itemId, sessionId, onTempFileUploaded } = useEditorContext();
 	const [altText, setAltText] = useState("");
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadError, setUploadError] = useState<string | null>(null);
@@ -82,7 +82,11 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
 	const [previewSrc, setPreviewSrc] = useState<string>("");
 
 	const isDisabled = !selectedFile || isUploading;
-	const canUpload = imageUploader !== undefined;
+	// 既存アイテム編集時
+	const canUploadToItem = workspaceId !== undefined && itemId !== undefined;
+	// 新規アイテム作成時（一時アップロード）
+	const canUploadToTemp = workspaceId !== undefined && sessionId !== undefined;
+	const canUpload = canUploadToItem || canUploadToTemp;
 
 	const handleFileSelect = (files: FileList | null) => {
 		if (files?.[0]) {
@@ -103,7 +107,7 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
 	const handleConfirm = async () => {
 		if (!selectedFile) return;
 
-		// imageUploader が未設定の場合はローカルプレビュー（既存動作）
+		// workspaceId が未設定の場合はローカルプレビュー（既存動作）
 		if (!canUpload) {
 			if (previewSrc) {
 				onClick({ altText, src: previewSrc });
@@ -115,10 +119,45 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
 		setUploadError(null);
 
 		try {
-			const result = await imageUploader(selectedFile);
-			onClick({ altText, src: result.url });
-		} catch (error) {
-			setUploadError(error instanceof Error ? error.message : "アップロード中にエラーが発生しました");
+			const formData = new FormData();
+			formData.append("file", selectedFile);
+
+			// 既存アイテム編集時: 通常のアップロード
+			if (canUploadToItem) {
+				const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
+					method: "POST",
+					body: formData,
+				});
+
+				if (response.ok) {
+					const result = await response.json();
+					console.log("Upload result:", result);
+					onClick({ altText, src: result.url });
+				} else {
+					const errorData = await response.json().catch(() => ({}));
+					setUploadError(errorData.error || "アップロードに失敗しました");
+				}
+			}
+			// 新規アイテム作成時: 一時領域にアップロード
+			else if (canUploadToTemp) {
+				const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
+					method: "POST",
+					body: formData,
+				});
+
+				if (response.ok) {
+					const result = await response.json();
+					console.log("Temp upload result:", result);
+					// コールバックで一時ファイルIDを通知
+					onTempFileUploaded?.(result.tempFileId, result.previewUrl);
+					onClick({ altText, src: result.previewUrl });
+				} else {
+					const errorData = await response.json().catch(() => ({}));
+					setUploadError(errorData.error || "アップロードに失敗しました");
+				}
+			}
+		} catch {
+			setUploadError("アップロード中にエラーが発生しました");
 		} finally {
 			setIsUploading(false);
 		}
@@ -142,7 +181,7 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
 			{uploadError && <div className="text-error text-sm mt-2">{uploadError}</div>}
 			{!canUpload && selectedFile && (
 				<div className="text-warning text-sm mt-2">
-					画像アップロード機能が未設定のため、ローカルプレビューモードで動作します
+					ワークスペース情報が未設定のため、ローカルプレビューモードで動作します
 				</div>
 			)}
 			<DialogActions>

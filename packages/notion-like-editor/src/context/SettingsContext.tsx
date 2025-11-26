@@ -16,7 +16,7 @@ import { DEFAULT_EDITOR_CONTEXT_SETTINGS, DEFAULT_SETTINGS, INITIAL_SETTINGS } f
 type SettingsContextShape = {
 	setOption: (name: SettingName, value: boolean) => void;
 	settings: Record<SettingName, boolean>;
-	/** エディタコンテキスト設定（画像アップロード等） */
+	/** エディタコンテキスト設定（画像アップロード用の workspaceId/itemId 等） */
 	editorContext: EditorContextSettings;
 };
 

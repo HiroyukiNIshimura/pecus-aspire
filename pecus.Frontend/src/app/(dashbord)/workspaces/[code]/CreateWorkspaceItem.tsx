@@ -3,10 +3,11 @@
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
+import type { EditorContextSettings } from "@pecus/notion-like-editor";
+import { NotionLikeEditor } from "@pecus/notion-like-editor";
 import { useCallback, useMemo, useState } from "react";
 import { createWorkspaceItem } from "@/actions/workspaceItem";
 import TagInput from "@/components/common/TagInput";
-import { PecusEditor } from "@/components/editor/PecusEditor";
 import type {
   CreateWorkspaceItemRequest,
   TaskPriority,
@@ -57,6 +58,16 @@ export default function CreateWorkspaceItem({
       });
     },
     [],
+  );
+
+  // エディタに渡す設定（新規作成時はsessionIdを使用）
+  const editorSettings: EditorContextSettings = useMemo(
+    () => ({
+      workspaceId,
+      sessionId,
+      onTempFileUploaded: handleTempFileUploaded,
+    }),
+    [workspaceId, sessionId, handleTempFileUploaded],
   );
 
   // フォーム検証フック
@@ -256,13 +267,13 @@ export default function CreateWorkspaceItem({
                   <span className="label-text font-semibold">本文</span>
                 </div>
                 <div>
-                  <PecusEditor
+                  <NotionLikeEditor
                     onChange={handleEditorChange}
                     debounceMs={500}
                     autoFocus={false}
-                    workspaceId={workspaceId}
-                    sessionId={sessionId}
-                    onTempFileUploaded={handleTempFileUploaded}
+                    workspaceId={editorSettings.workspaceId}
+                    sessionId={editorSettings.sessionId}
+                    onTempFileUploaded={editorSettings.onTempFileUploaded}
                   />
                 </div>
               </div>

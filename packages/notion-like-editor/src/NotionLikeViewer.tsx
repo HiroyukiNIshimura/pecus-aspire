@@ -46,7 +46,7 @@ export default function NotionLikeViewer({ initialViewerState, isCodeShiki = fal
 			defineExtension({
 				$initialEditorState: initialViewerState,
 				html: buildHTMLConfig(),
-				name: "notion-like-editor/Viewer",
+				name: "pecus/NotionLikeViewer",
 				namespace: "NotionLikeViewer",
 				nodes: NotionLikeEditorNodes,
 				theme: NotionLikeEditorTheme,
