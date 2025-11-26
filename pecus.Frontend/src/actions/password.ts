@@ -31,14 +31,6 @@ export async function requestPasswordResetAction(
       message: result.message || 'パスワードリセットメールを送信しました。メールを確認してください。',
     };
   } catch (error) {
-    // Zodバリデーションエラー
-    if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        errors: error.issues.map((issue) => issue.message),
-      };
-    }
-
     // API呼び出しエラー
     if (error instanceof Error) {
       return {
