@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 interface WorkspaceItemsSidebarProps {
@@ -43,7 +44,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+
+    const notify = useNotify();
 
     // currentPageの最新値を参照するためのref
     const currentPageRef = useRef(currentPage);
@@ -56,12 +58,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       async (selectItemId?: number) => {
         try {
           setIsLoading(true);
-          setError(null);
           const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Failed to fetch items');
+            throw new Error('Failed to fetch items');
           }
 
           const data = await response.json();
@@ -76,12 +76,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             setSelectedItemId(selectItemId);
           }
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'アイテムの取得に失敗しました');
+          console.error('Failed to fetch items:', err);
+          notify.error('サーバーとの通信でエラーが発生しました。', true);
         } finally {
           setIsLoading(false);
         }
       },
-      [workspaceId],
+      [workspaceId, notify],
     );
 
     // 初期ロード
@@ -105,8 +106,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         const response = await fetch(`/api/workspaces/${workspaceId}/items?page=${nextPage}`);
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Failed to fetch items');
+          throw new Error('Failed to fetch items');
         }
 
         const data = await response.json();
@@ -122,9 +122,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setCurrentPage(nextPage);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'アイテムの追加読み込みに失敗しました');
+        console.error('Failed to load more items:', err);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
-    }, [workspaceId]);
+    }, [workspaceId, notify]);
 
     // 検索フィルター
     const filteredItems = useMemo(() => {
@@ -206,11 +207,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         </div>
 
         {/* アイテムリスト */}
-        {error ? (
-          <div className="p-4 text-center text-error text-sm">
-            <p>{error}</p>
-          </div>
-        ) : isLoading && items.length === 0 ? (
+        {isLoading && items.length === 0 ? (
           <div className="flex justify-center items-center flex-1">
             <span className="loading loading-spinner loading-sm"></span>
           </div>

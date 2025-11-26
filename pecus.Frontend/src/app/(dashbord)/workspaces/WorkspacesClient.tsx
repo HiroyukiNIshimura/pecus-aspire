@@ -78,12 +78,13 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         }
       } catch (error) {
         console.error('Failed to fetch initial workspaces:', error);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
       setIsLoading(false);
     };
 
     fetchInitialData();
-  }, []);
+  }, [notify]);
 
   const loadMoreWorkspaces = async () => {
     try {
@@ -110,6 +111,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       }
     } catch (error) {
       console.error('Failed to load more workspaces:', error);
+      notify.error('サーバーとの通信でエラーが発生しました。', true);
     }
   };
 
@@ -135,6 +137,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       }
     } catch (error) {
       console.error('Failed to filter workspaces:', error);
+      notify.error('サーバーとの通信でエラーが発生しました。', true);
     }
   });
 

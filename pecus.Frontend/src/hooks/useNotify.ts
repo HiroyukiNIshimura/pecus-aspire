@@ -15,6 +15,7 @@ export function useNotify() {
     if (typeof window !== 'undefined' && !notyfRef.current) {
       notyfRef.current = new Notyf({
         duration: 3000,
+        dismissible: true,
         position: {
           x: 'right',
           y: 'top',
@@ -68,8 +69,22 @@ export function useNotify() {
     notyfRef.current?.success(message);
   };
 
-  const error = (message: string) => {
-    notyfRef.current?.error(message);
+  /**
+   * エラー通知を表示
+   * @param message エラーメッセージ
+   * @param persistent true の場合、クリックするまで表示し続ける（デフォルト: false）
+   */
+  const error = (message: string, persistent = false) => {
+    if (persistent) {
+      notyfRef.current?.open({
+        type: 'error',
+        message,
+        duration: 0, // 手動で閉じるまで表示
+        dismissible: true,
+      });
+    } else {
+      notyfRef.current?.error(message);
+    }
   };
 
   const warning = (message: string) => {

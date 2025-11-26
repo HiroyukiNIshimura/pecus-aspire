@@ -15,6 +15,7 @@ import type {
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
@@ -81,6 +82,7 @@ export default function AdminWorkspacesClient({
   // - スキーマ: workspaceNameFilterSchema (最大100文字)
   // - 戻り値: validate, errors, isValid, clearErrors, error, hasErrors
   const nameValidation = useValidation(workspaceNameFilterSchema);
+  const notify = useNotify();
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
 
@@ -99,13 +101,14 @@ export default function AdminWorkspacesClient({
           }
         } catch (error) {
           console.error('Failed to fetch initial workspaces:', error);
+          notify.error('サーバーとの通信でエラーが発生しました。', true);
         }
       }
       setIsLoading(false);
     };
 
     fetchInitialData();
-  }, [initialWorkspaces]);
+  }, [initialWorkspaces, notify]);
 
   // フィルター変更時の自動検索を削除（検索ボタン押下時のみ実行）
   // useEffectAfterMount(
@@ -140,6 +143,7 @@ export default function AdminWorkspacesClient({
       }
     } catch (error) {
       console.error('Failed to fetch workspaces:', error);
+      notify.error('サーバーとの通信でエラーが発生しました。', true);
     }
   });
 
@@ -169,11 +173,10 @@ export default function AdminWorkspacesClient({
         }
       } catch (error) {
         console.error('Failed to fetch workspaces:', error);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
     })();
-  }, [filterIsActive, filterGenreId, filterName, withDelayedLoading]);
-
-  // 【バリデーション実装例 1: リアルタイムバリデーション】
+  }, [filterIsActive, filterGenreId, filterName, withDelayedLoading, notify]); // 【バリデーション実装例 1: リアルタイムバリデーション】
   // 入力時に即座にバリデーションを実行してエラーを表示
   // - 非同期関数として実装（refine/transform対応）
   // - validate() の戻り値は使用せず、フックの状態を参照

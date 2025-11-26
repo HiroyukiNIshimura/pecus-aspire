@@ -10,6 +10,7 @@ import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import type { UserResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { usernameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
@@ -74,6 +75,7 @@ export default function AdminUsersClient({
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const usernameValidation = useValidation(usernameFilterSchema);
+  const notify = useNotify();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -100,13 +102,14 @@ export default function AdminUsersClient({
           }
         } catch (error) {
           console.error('Failed to fetch initial users:', error);
+          notify.error('サーバーとの通信でエラーが発生しました。', true);
         }
       }
       setIsLoading(false);
     };
 
     fetchInitialData();
-  }, [initialUsers]);
+  }, [initialUsers, notify]);
 
   const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
     try {
@@ -146,6 +149,7 @@ export default function AdminUsersClient({
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      notify.error('サーバーとの通信でエラーが発生しました。', true);
     }
   });
 
@@ -188,10 +192,10 @@ export default function AdminUsersClient({
         }
       } catch (error) {
         console.error('Failed to fetch users:', error);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
     })();
-  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading]);
-
+  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading, notify]);
   const handleUsernameChange = async (value: string) => {
     setFilterUsername(value);
     await usernameValidation.validate(value);
