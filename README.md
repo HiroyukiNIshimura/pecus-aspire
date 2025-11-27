@@ -73,6 +73,8 @@ cp .env.sample .env
 npm install
 ```
 
+※VSCodeのBiome拡張機能がモノレポ構成でBiomeバイナリを見つけられないため、現状`npm install -g @biomejs/biome`でBiomeをグローバルにインストールする必要あり
+
 **注:** `.env` ファイルには WebApi のベース URL などの環境変数が含まれます。`.env.sample` をコピーして必要に応じて値を調整してください。
 
 ### 3. アプリケーション起動
