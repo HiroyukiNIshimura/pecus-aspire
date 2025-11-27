@@ -232,35 +232,35 @@ public class DatabaseSeeder
             {
                 Name = "プロジェクト・開発", // 開発・IT部門の核となるカテゴリ
                 Description = "仕様書、設計書、進捗報告",
-                Icon = "Code", // 開発アイコン
+                Icon = "code", // 開発アイコン
                 DisplayOrder = 1,
             },
             new Genre
             {
                 Name = "企画・戦略", // 上位の意思決定や提案に関するカテゴリ
                 Description = "企画書、提案書、事業計画",
-                Icon = "Proposal", // 企画・提案アイコン
+                Icon = "proposal", // 企画・提案アイコン
                 DisplayOrder = 2,
             },
             new Genre
             {
                 Name = "営業・顧客管理", // 営業、マーケティングの一部を包含
                 Description = "営業報告、商談メモ、顧客リスト",
-                Icon = "Sales", // 営業アイコン
+                Icon = "sales", // 営業アイコン
                 DisplayOrder = 3,
             },
             new Genre
             {
                 Name = "マニュアル・手順", // 知識共有と教育に関するカテゴリ
                 Description = "業務手順書、操作マニュアル、FAQ",
-                Icon = "Manual", // マニュアルアイコン
+                Icon = "manual", // マニュアルアイコン
                 DisplayOrder = 4,
             },
             new Genre
             {
                 Name = "デザイン・クリエイティブ", // デザイン、広報、マーケティングの一部を包含
                 Description = "デザインガイドライン、ワイヤーフレーム、広報資料",
-                Icon = "Design", // デザインアイコン
+                Icon = "design", // デザインアイコン
                 DisplayOrder = 5,
             },
 
@@ -269,21 +269,21 @@ public class DatabaseSeeder
             {
                 Name = "会議・打合せ", // 最も汎用的なカテゴリの一つ
                 Description = "議事録、アジェンダ、決定事項",
-                Icon = "Minutes", // 議事録アイコン
+                Icon = "minutes", // 議事録アイコン
                 DisplayOrder = 6,
             },
             new Genre
             {
                 Name = "総務・人事・法務", // 管理部門系のドキュメント
                 Description = "稟議書、契約書、社内規定、就業規則",
-                Icon = "Admin", // 管理アイコン
+                Icon = "admin", // 管理アイコン
                 DisplayOrder = 7,
             },
             new Genre
             {
                 Name = "経理・財務",
                 Description = "予算申請書、請求書、経費精算",
-                Icon = "Finance", // 財務アイコン
+                Icon = "finance", // 財務アイコン
                 DisplayOrder = 8,
             },
 
@@ -292,7 +292,7 @@ public class DatabaseSeeder
             {
                 Name = "その他・個人メモ",
                 Description = "メモ、ToDoリスト、連絡・通知文書",
-                Icon = "General", // 一般アイコン
+                Icon = "general", // 一般アイコン
                 DisplayOrder = 99,
             },
         };
