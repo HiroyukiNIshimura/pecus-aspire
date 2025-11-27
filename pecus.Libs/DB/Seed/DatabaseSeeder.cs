@@ -484,8 +484,8 @@ public class DatabaseSeeder
     /// </summary>
     public async Task SeedUsersAsync()
     {
-        // admin ユーザーを作成
-        if (!await _context.Users.AnyAsync(u => u.LoginId == "admin"))
+        // admin ユーザーを作成（Email で存在チェック）
+        if (!await _context.Users.AnyAsync(u => u.Email == "admin@sample.com"))
         {
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
             var organization = await _context.Organizations.FirstOrDefaultAsync();
@@ -514,23 +514,24 @@ public class DatabaseSeeder
         }
 
         // 一般ユーザーを 200 名作成（ランダムな組織に割り当て）
-        var existingUsers = await _context.Users.Where(u => u.LoginId.StartsWith("user")).CountAsync();
-        if (existingUsers < 200)
+        // adminを除くユーザー数をカウント
+        var existingUserCount = await _context.Users.CountAsync(u => u.Email != "admin@sample.com");
+        var usersToCreate = 200 - existingUserCount;
+
+        if (usersToCreate > 0)
         {
             var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
             var organizations = await _context.Organizations.ToListAsync();
 
             if (organizations.Any())
             {
-                for (int i = 0; i < 200; i++)
+                int usersAdded = 0;
+
+                for (int i = 0; i < usersToCreate; i++)
                 {
                     var loginId = CodeGenerator.GenerateLoginId();
-
-                    // すでに存在するか確認
-                    if (await _context.Users.AnyAsync(u => u.LoginId == loginId))
-                    {
-                        continue;
-                    }
+                    // 一意なEmailを生成（連番 + GUID の一部を使用）
+                    var email = $"user{existingUserCount + i + 1}_{Guid.NewGuid():N}"[..30] + "@sample.com";
 
                     // ランダムな組織を選択
                     var organization = organizations[_random.Next(organizations.Count)];
@@ -539,7 +540,7 @@ public class DatabaseSeeder
                     {
                         LoginId = loginId,
                         Username = Name.FullName(),
-                        Email = Internet.Email(),
+                        Email = email,
                         PasswordHash = PasswordHasher.HashPassword("user123"),
                         OrganizationId = organization.Id,
                         IsActive = _random.Next(2) == 1,
@@ -547,11 +548,12 @@ public class DatabaseSeeder
                     };
 
                     _context.Users.Add(normalUser);
+                    usersAdded++;
 
-                    if ((i + 1) % 50 == 0)
+                    if (usersAdded % 50 == 0)
                     {
                         await _context.SaveChangesAsync();
-                        _logger.LogInformation("Added {Count} users", i + 1);
+                        _logger.LogInformation("Added {Count} users", usersAdded);
                     }
                 }
 
@@ -561,7 +563,7 @@ public class DatabaseSeeder
                 if (userRole != null)
                 {
                     var usersToUpdate = await _context.Users
-                        .Where(u => u.LoginId.StartsWith("user") && !u.Roles.Any())
+                        .Where(u => u.Email != "admin@sample.com" && !u.Roles.Any())
                         .ToListAsync();
 
                     foreach (var user in usersToUpdate)
@@ -572,8 +574,12 @@ public class DatabaseSeeder
                     await _context.SaveChangesAsync();
                 }
 
-                _logger.LogInformation("Added 200 normal users completed");
+                _logger.LogInformation("Added {Count} normal users completed (total: {Total})", usersAdded, existingUserCount + usersAdded);
             }
+        }
+        else
+        {
+            _logger.LogInformation("Skipping user seeding, already have {Count} users", existingUserCount);
         }
     }
 
