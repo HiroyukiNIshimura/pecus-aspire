@@ -28,7 +28,6 @@ export type { DeviceType } from './models/DeviceType';
 export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResponse';
 export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyResponse';
 export type { ErrorResponse } from './models/ErrorResponse';
-export type { FileDownloadRequest } from './models/FileDownloadRequest';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenreCount } from './models/GenreCount';
@@ -103,10 +102,10 @@ export type { UpdateWorkspaceItemAssigneeRequest } from './models/UpdateWorkspac
 export type { UpdateWorkspaceItemRequest } from './models/UpdateWorkspaceItemRequest';
 export type { UpdateWorkspaceItemStatusRequest } from './models/UpdateWorkspaceItemStatusRequest';
 export type { UpdateWorkspaceRequest } from './models/UpdateWorkspaceRequest';
-export type { UserListItemResponse } from './models/UserListItemResponse';
-export type { UserResponse } from './models/UserResponse';
-export type { UserResponseConcurrencyErrorResponse } from './models/UserResponseConcurrencyErrorResponse';
-export type { UserResponseUserStatisticsPagedResponse } from './models/UserResponseUserStatisticsPagedResponse';
+export type { UserDetailResponse } from './models/UserDetailResponse';
+export type { UserDetailResponseConcurrencyErrorResponse } from './models/UserDetailResponseConcurrencyErrorResponse';
+export type { UserDetailResponseUserStatisticsPagedResponse } from './models/UserDetailResponseUserStatisticsPagedResponse';
+export type { UserItem } from './models/UserItem';
 export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
@@ -125,11 +124,10 @@ export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelat
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
 export type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from './models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
-export type { WorkspaceResponse } from './models/WorkspaceResponse';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';
-export type { WorkspaceUserResponse } from './models/WorkspaceUserResponse';
+export type { WorkspaceUserItem } from './models/WorkspaceUserItem';
 
 export { AdminOrganizationService } from './services/AdminOrganizationService';
 export { AdminSkillService } from './services/AdminSkillService';

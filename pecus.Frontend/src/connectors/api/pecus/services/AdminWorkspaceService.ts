@@ -8,9 +8,8 @@ import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { WorkspaceDetailResponse } from '../models/WorkspaceDetailResponse';
 import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
-import type { WorkspaceResponse } from '../models/WorkspaceResponse';
+import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { WorkspaceUserDetailResponseObjectPagedResponse } from '../models/WorkspaceUserDetailResponseObjectPagedResponse';
-import type { WorkspaceUserResponse } from '../models/WorkspaceUserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -18,12 +17,12 @@ export class AdminWorkspaceService {
     /**
      * ワークスペース登録
      * @param requestBody
-     * @returns WorkspaceResponse OK
+     * @returns WorkspaceDetailResponse Created
      * @throws ApiError
      */
     public static postApiAdminWorkspaces(
         requestBody?: CreateWorkspaceRequest,
-    ): CancelablePromise<WorkspaceResponse> {
+    ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/admin/workspaces',
@@ -90,13 +89,13 @@ export class AdminWorkspaceService {
      * ワークスペース更新
      * @param id
      * @param requestBody
-     * @returns WorkspaceResponse OK
+     * @returns WorkspaceDetailResponse OK
      * @throws ApiError
      */
     public static putApiAdminWorkspaces(
         id: number,
         requestBody?: UpdateWorkspaceRequest,
-    ): CancelablePromise<WorkspaceResponse> {
+    ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/admin/workspaces/{id}',
@@ -190,13 +189,13 @@ export class AdminWorkspaceService {
      * ワークスペースにユーザーを参加させる
      * @param id
      * @param requestBody
-     * @returns WorkspaceUserResponse OK
+     * @returns WorkspaceUserDetailResponse Created
      * @throws ApiError
      */
     public static postApiAdminWorkspacesUsers(
         id: number,
         requestBody?: AddUserToWorkspaceRequest,
-    ): CancelablePromise<WorkspaceUserResponse> {
+    ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/admin/workspaces/{id}/users',

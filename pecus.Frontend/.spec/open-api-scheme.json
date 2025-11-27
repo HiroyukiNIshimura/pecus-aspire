@@ -177,7 +177,7 @@
           "Admin - Skill"
         ],
         "summary": "スキル一覧取得（ページネーション）",
-        "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
+        "description": "スキルの一覧をページネーションで取得します。\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -570,7 +570,7 @@
           "Admin - Tag"
         ],
         "summary": "タグ一覧取得（ページネーション）",
-        "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
+        "description": "タグの一覧をページネーションで取得します。\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -926,7 +926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               }
             }
@@ -1067,7 +1067,7 @@
           {
             "name": "SkillFilterMode",
             "in": "query",
-            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\r\nデフォルトは \"and\"",
+            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\nデフォルトは \"and\"",
             "schema": {
               "pattern": "^(and|or)$",
               "type": "string"
@@ -1080,7 +1080,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseUserStatisticsPagedResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseUserStatisticsPagedResponse"
                 }
               }
             }
@@ -1173,7 +1173,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1187,7 +1187,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
-        "description": "\r\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n            指定されたスキル以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\r\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
+        "description": "\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\n            指定されたスキル以外は削除されます。\n\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
           {
             "name": "id",
@@ -1256,7 +1256,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1270,7 +1270,7 @@
           "Admin - User"
         ],
         "summary": "パスワードなしでユーザーを作成",
-        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\r\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
+        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
         "requestBody": {
           "description": "ユーザー作成リクエスト",
           "content": {
@@ -1297,7 +1297,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               }
             }
@@ -1331,7 +1331,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのパスワードリセットをリクエスト",
-        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\r\nパスワードリセット用のメールがユーザーに送信されます。",
+        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\nパスワードリセット用のメールがユーザーに送信されます。",
         "parameters": [
           {
             "name": "id",
@@ -1384,7 +1384,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
-        "description": "\r\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n            指定されたロール以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\r\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
+        "description": "\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\n            指定されたロール以外は削除されます。\n\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
           {
             "name": "id",
@@ -1453,7 +1453,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -1511,12 +1511,12 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponse"
                 }
               }
             }
@@ -1687,7 +1687,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceResponse"
+                  "$ref": "#/components/schemas/WorkspaceDetailResponse"
                 }
               }
             }
@@ -1959,12 +1959,12 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceUserResponse"
+                  "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
                 }
               }
             }
@@ -2952,7 +2952,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserListItemResponse"
+                    "$ref": "#/components/schemas/UserItem"
                   }
                 }
               }
@@ -3800,7 +3800,7 @@
           "Entrance - Organization"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3853,7 +3853,7 @@
           "Entrance - Password"
         ],
         "summary": "/// パスワードを設定",
-        "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードを設定します。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワード設定リクエスト",
           "content": {
@@ -3904,7 +3904,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードリセットをリクエスト",
-        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
+        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\nパスワードリセット用のメールが送信されます。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -3945,7 +3945,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードをリセット",
-        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -3990,59 +3990,53 @@
         }
       }
     },
-    "/api/downloads/{fileType}/{resourceId}/{fileName}": {
+    "/api/downloads/{FileType}/{ResourceId}/{FileName}": {
       "get": {
         "tags": [
           "File"
         ],
         "summary": "ファイルを取得（ルートベース）",
-        "description": "ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して\r\nルート末尾のすべての文字（ドットを含む）をキャプチャします。\r\nこれにより image.jpg のようなファイル名も正しく処理されます。",
         "parameters": [
           {
-            "name": "fileType",
+            "name": "FileType",
             "in": "path",
+            "description": "ファイル種別（avatar, genre）",
             "required": true,
             "schema": {
+              "$ref": "#/components/schemas/FileType"
+            }
+          },
+          {
+            "name": "ResourceId",
+            "in": "path",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FileName",
+            "in": "path",
+            "description": "ファイル名（拡張子含む）。catch-allパラメータで受け取ります。",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
               "type": "string"
             }
           },
           {
-            "name": "resourceId",
-            "in": "path",
-            "required": true,
+            "name": "useOriginal",
+            "in": "query",
+            "description": "元画像（リサイズ前）を取得するかどうか（クエリパラメータ）",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "fileName",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           }
         ],
-        "requestBody": {
-          "description": "ファイル種別/リソースID/ファイル名/元画像フラグを含むリクエストDTO",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileDownloadRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileDownloadRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FileDownloadRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -4320,17 +4314,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               }
             }
@@ -4365,7 +4359,7 @@
           "Profile"
         ],
         "summary": "自分のプロフィール情報を更新",
-        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
+        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
         "requestBody": {
           "description": "更新情報",
           "content": {
@@ -4392,17 +4386,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/UserDetailResponse"
                 }
               }
             }
@@ -4452,17 +4446,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -4479,7 +4473,7 @@
           "Profile"
         ],
         "summary": "自分のスキルを設定",
-        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
         "requestBody": {
           "description": "スキルIDのリスト",
           "content": {
@@ -4566,17 +4560,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseConcurrencyErrorResponse"
+                  "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -4590,7 +4584,7 @@
           "Profile"
         ],
         "summary": "パスワードを変更",
-        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
+        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\n現在のパスワードの確認（古いパスワード）が必須です。",
         "requestBody": {
           "description": "変更情報",
           "content": {
@@ -4811,7 +4805,7 @@
           "Profile - Email"
         ],
         "summary": "メールアドレス変更をリクエスト",
-        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\n確認メールが送信され、24時間有効なトークンが発行されます。",
         "requestBody": {
           "description": "メールアドレス変更リクエスト",
           "content": {
@@ -4905,7 +4899,7 @@
           "Profile - Email"
         ],
         "summary": "メールアドレス変更を確認（トークン検証）",
-        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\nトークンは24時間有効で、一度のみ使用可能です。",
         "parameters": [
           {
             "name": "token",
@@ -4989,7 +4983,7 @@
           "Profile - Email"
         ],
         "summary": "未使用のメールアドレス変更トークン情報を取得",
-        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
         "responses": {
           "200": {
             "description": "トークン情報を取得しました（存在する場合）",
@@ -8191,37 +8185,6 @@
         "additionalProperties": false,
         "description": "エラーレスポンス"
       },
-      "FileDownloadRequest": {
-        "required": [
-          "fileName",
-          "fileType"
-        ],
-        "type": "object",
-        "properties": {
-          "fileType": {
-            "$ref": "#/components/schemas/FileType"
-          },
-          "resourceId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "description": "リソースID（ユーザーIDまたはジャンルID）",
-            "format": "int32"
-          },
-          "fileName": {
-            "maxLength": 255,
-            "minLength": 1,
-            "type": "string",
-            "description": "ファイル名（拡張子含む）。catch-allパラメータで受け取ります。"
-          },
-          "useOriginal": {
-            "type": "boolean",
-            "description": "元画像（リサイズ前）を取得するかどうか（クエリ）"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ファイルダウンロード用のリクエストDTO\r\nルートおよびクエリからのバインドを想定しています。"
-      },
       "FileType": {
         "enum": [
           "Avatar"
@@ -8920,7 +8883,7 @@
             "$ref": "#/components/schemas/OrganizationResponse"
           },
           "adminUser": {
-            "$ref": "#/components/schemas/UserResponse"
+            "$ref": "#/components/schemas/UserDetailResponse"
           }
         },
         "additionalProperties": false,
@@ -9228,7 +9191,7 @@
           },
           "direction": {
             "type": "string",
-            "description": "関連の方向（このアイテムから見て）\r\n\"from\": このアイテムが関連元\r\n\"to\": このアイテムが関連先",
+            "description": "関連の方向（このアイテムから見て）\n\"from\": このアイテムが関連元\n\"to\": このアイテムが関連先",
             "nullable": true
           },
           "ownerId": {
@@ -9526,12 +9489,12 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
             "nullable": true
           },
           "userRowVersion": {
             "type": "integer",
-            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "description": "ユーザーの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
             "format": "int32",
             "nullable": true
           }
@@ -9563,12 +9526,12 @@
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\r\n空のリストまたはnullの場合はすべてのタグを削除します。",
+            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。",
             "nullable": true
           },
           "itemRowVersion": {
             "type": "integer",
-            "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
+            "description": "アイテムの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
             "format": "int32",
             "nullable": true
           }
@@ -10629,7 +10592,166 @@
         "additionalProperties": false,
         "description": "ワークスペース更新リクエスト"
       },
-      "UserListItemResponse": {
+      "UserDetailResponse": {
+        "required": [
+          "email",
+          "id",
+          "identityIconUrl",
+          "isAdmin",
+          "loginId",
+          "roles",
+          "rowVersion",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "loginId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ログインID"
+          },
+          "username": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ユーザー名"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メールアドレス"
+          },
+          "avatarType": {
+            "$ref": "#/components/schemas/AvatarType"
+          },
+          "userAvatarPath": {
+            "type": "string",
+            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRoleResponse"
+            },
+            "description": "ユーザーのロール一覧"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSkillResponse"
+            },
+            "description": "ユーザーのスキル一覧",
+            "nullable": true
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "管理者権限を持つかどうか"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブなユーザーかどうか"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "ユーザーの楽観的ロック用RowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザー詳細レスポンス"
+      },
+      "UserDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/UserDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
+      "UserDetailResponseUserStatisticsPagedResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDetailResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/UserStatistics"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "UserItem": {
         "required": [
           "email",
           "id",
@@ -10690,166 +10812,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "ユーザーリスト項目レスポンス"
-      },
-      "UserResponse": {
-        "required": [
-          "email",
-          "id",
-          "identityIconUrl",
-          "isAdmin",
-          "loginId",
-          "roles",
-          "rowVersion",
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
-          "loginId": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ログインID"
-          },
-          "username": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "minLength": 1,
-            "type": "string",
-            "description": "メールアドレス"
-          },
-          "avatarType": {
-            "$ref": "#/components/schemas/AvatarType"
-          },
-          "userAvatarPath": {
-            "type": "string",
-            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\r\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
-            "nullable": true
-          },
-          "identityIconUrl": {
-            "minLength": 1,
-            "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\r\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserRoleResponse"
-            },
-            "description": "ユーザーのロール一覧"
-          },
-          "skills": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserSkillResponse"
-            },
-            "description": "ユーザーのスキル一覧",
-            "nullable": true
-          },
-          "isAdmin": {
-            "type": "boolean",
-            "description": "管理者権限を持つかどうか"
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブなユーザーかどうか"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "rowVersion": {
-            "type": "integer",
-            "description": "ユーザーの楽観的ロック用RowVersion",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ユーザー情報レスポンス"
-      },
-      "UserResponseConcurrencyErrorResponse": {
-        "required": [
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "description": "HTTPステータスコード",
-            "format": "int32"
-          },
-          "message": {
-            "minLength": 1,
-            "type": "string",
-            "description": "エラーメッセージ"
-          },
-          "details": {
-            "type": "string",
-            "description": "エラー詳細（オプション）",
-            "nullable": true
-          },
-          "current": {
-            "$ref": "#/components/schemas/UserResponse"
-          }
-        },
-        "additionalProperties": false,
-        "description": "競合エラーレスポンス（409 Conflict）"
-      },
-      "UserResponseUserStatisticsPagedResponse": {
-        "required": [
-          "data"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserResponse"
-            },
-            "description": "データのリスト"
-          },
-          "currentPage": {
-            "type": "integer",
-            "description": "現在のページ番号（1から始まる）",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "description": "1ページあたりのアイテム数",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "description": "総アイテム数",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "description": "総ページ数",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean",
-            "description": "前のページが存在するか"
-          },
-          "hasNextPage": {
-            "type": "boolean",
-            "description": "次のページが存在するか"
-          },
-          "summary": {
-            "$ref": "#/components/schemas/UserStatistics"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ページネーション付きレスポンス（統計情報付き）"
+        "description": "ユーザー一覧項目"
       },
       "UserRoleResponse": {
         "required": [
@@ -10970,6 +10933,14 @@
             "description": "ワークスペースの説明",
             "nullable": true
           },
+          "organizationId": {
+            "type": "integer",
+            "description": "組織ID",
+            "format": "int32"
+          },
+          "organization": {
+            "$ref": "#/components/schemas/OrganizationInfoResponse"
+          },
           "genreId": {
             "type": "integer",
             "description": "ジャンルID",
@@ -10999,10 +10970,22 @@
             "description": "作成日時",
             "format": "date-time"
           },
+          "createdByUserId": {
+            "type": "integer",
+            "description": "作成者ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
           "updatedAt": {
             "type": "string",
             "description": "更新日時",
             "format": "date-time",
+            "nullable": true
+          },
+          "updatedByUserId": {
+            "type": "integer",
+            "description": "更新者ユーザーID",
+            "format": "int32",
             "nullable": true
           },
           "isActive": {
@@ -11013,26 +10996,6 @@
             "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "int32"
-          },
-          "organizationId": {
-            "type": "integer",
-            "description": "組織ID",
-            "format": "int32"
-          },
-          "organization": {
-            "$ref": "#/components/schemas/OrganizationInfoResponse"
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "updatedByUserId": {
-            "type": "integer",
-            "description": "更新者ユーザーID",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -11149,11 +11112,17 @@
             "description": "作成日時",
             "format": "date-time"
           },
+          "createdBy": {
+            "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
+          },
           "updatedAt": {
             "type": "string",
             "description": "更新日時",
             "format": "date-time",
             "nullable": true
+          },
+          "updatedBy": {
+            "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
           },
           "isActive": {
             "type": "boolean",
@@ -11163,12 +11132,6 @@
             "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "int32"
-          },
-          "createdBy": {
-            "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
-          },
-          "updatedBy": {
-            "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
           }
         },
         "additionalProperties": false,
@@ -11714,7 +11677,7 @@
           "members": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
+              "$ref": "#/components/schemas/WorkspaceUserItem"
             },
             "description": "参加しているユーザー一覧",
             "nullable": true
@@ -11770,25 +11733,6 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
-      },
-      "WorkspaceResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "description": "成功フラグ"
-          },
-          "message": {
-            "type": "string",
-            "description": "メッセージ",
-            "nullable": true
-          },
-          "workspace": {
-            "$ref": "#/components/schemas/WorkspaceDetailResponse"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ワークスペース操作レスポンス"
       },
       "WorkspaceStatistics": {
         "required": [
@@ -11846,6 +11790,13 @@
         "description": "ワークスペース統計情報レスポンス"
       },
       "WorkspaceUserDetailResponse": {
+        "required": [
+          "email",
+          "identityIconUrl",
+          "userId",
+          "username",
+          "workspaceId"
+        ],
         "type": "object",
         "properties": {
           "workspaceId": {
@@ -11859,14 +11810,19 @@
             "format": "int32"
           },
           "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "ユーザー名",
-            "nullable": true
+            "description": "ユーザー名"
           },
           "email": {
+            "minLength": 1,
             "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
+            "description": "メールアドレス"
+          },
+          "identityIconUrl": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "type": "string",
@@ -11941,24 +11897,47 @@
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
       },
-      "WorkspaceUserResponse": {
+      "WorkspaceUserItem": {
+        "required": [
+          "email",
+          "identityIconUrl",
+          "userId",
+          "username"
+        ],
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "description": "成功フラグ"
+          "userId": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
           },
-          "message": {
+          "username": {
+            "minLength": 1,
             "type": "string",
-            "description": "メッセージ",
+            "description": "ユーザー名"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "メールアドレス"
+          },
+          "identityIconUrl": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+          },
+          "workspaceRole": {
+            "type": "string",
+            "description": "ワークスペース内での役割",
             "nullable": true
           },
-          "workspaceUser": {
-            "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
+          "isActive": {
+            "type": "boolean",
+            "description": "アクティブフラグ"
           }
         },
         "additionalProperties": false,
-        "description": "ワークスペースユーザー登録レスポンス"
+        "description": "ワークスペースユーザー一覧用DTO（軽量）"
       }
     },
     "securitySchemes": {

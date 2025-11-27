@@ -7,7 +7,7 @@ import {
   detectConcurrencyError,
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
-import type { WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type { WorkspaceDetailResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
 
@@ -90,7 +90,7 @@ export async function updateWorkspace(
         success: false,
         error: 'conflict',
         message: concurrency.message || '別のユーザーが同時に更新しました。',
-        latest: { type: 'workspace', data: concurrency.payload.current as WorkspaceFullDetailResponse },
+        latest: { type: 'workspace', data: concurrency.payload.current as WorkspaceDetailResponse },
       };
     }
 
@@ -152,7 +152,7 @@ export async function toggleWorkspaceActive(
         success: false,
         error: 'conflict',
         message: concurrency.message || '別のユーザーが同時に更新しました。',
-        latest: { type: 'workspace', data: concurrency.payload.current as WorkspaceFullDetailResponse },
+        latest: { type: 'workspace', data: concurrency.payload.current as WorkspaceDetailResponse },
       };
     }
 

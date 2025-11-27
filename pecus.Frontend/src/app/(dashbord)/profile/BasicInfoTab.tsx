@@ -51,7 +51,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
         });
 
         if (result.success) {
-          // UserResponseからUserInfoに変換して更新
+          // UserDetailResponseからUserInfoに変換して更新
           const updatedUserInfo: UserInfo = {
             ...user,
             username: result.data.username,

@@ -8,7 +8,7 @@ import type { OrganizationListItemResponsePagedResponse } from '../models/Organi
 import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { SetOrganizationActiveStatusRequest } from '../models/SetOrganizationActiveStatusRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
-import type { UserListItemResponse } from '../models/UserListItemResponse';
+import type { UserItem } from '../models/UserItem';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -112,12 +112,12 @@ export class BackendOrganizationService {
     /**
      * 組織の所属ユーザー取得
      * @param id
-     * @returns UserListItemResponse OK
+     * @returns UserItem OK
      * @throws ApiError
      */
     public static getApiBackendOrganizationsUsers(
         id: number,
-    ): CancelablePromise<Array<UserListItemResponse>> {
+    ): CancelablePromise<Array<UserItem>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/backend/organizations/{id}/users',

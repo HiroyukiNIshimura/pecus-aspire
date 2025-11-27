@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUsers } from '@/actions/admin/user';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { SkillListItemResponse, UserResponse } from '@/connectors/api/pecus';
+import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminUsersClient from './AdminUsersClient';
 
@@ -37,7 +37,7 @@ export default async function AdminUsers() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: UserStatistics | null = null;
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let skills: Skill[] = [];
   let fetchError: string | null = null;
 
@@ -52,7 +52,7 @@ export default async function AdminUsers() {
     if (usersResult.success) {
       const responseData = usersResult.data;
       if (responseData?.data) {
-        users = responseData.data.map((user: UserResponse) => ({
+        users = responseData.data.map((user: UserDetailResponse) => ({
           id: user.id ?? 0,
           username: user.username ?? '',
           email: user.email ?? '',
@@ -93,7 +93,7 @@ export default async function AdminUsers() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const userInfo = mapUserResponseToUserInfo(userResponse);
 
   return (

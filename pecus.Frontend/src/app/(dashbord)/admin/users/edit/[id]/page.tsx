@@ -3,7 +3,7 @@ import { getAllRoles } from '@/actions/admin/role';
 import { getAllSkills } from '@/actions/admin/skills';
 import { getUserDetail } from '@/actions/admin/user';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { RoleResponse, SkillListItemResponse, UserResponse } from '@/connectors/api/pecus';
+import type { RoleResponse, SkillListItemResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditUserClient from './EditUserClient';
 
@@ -17,7 +17,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     notFound();
   }
 
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let userDetail = null;
   let skills: SkillListItemResponse[] = [];
   let roles: RoleResponse[] = [];
@@ -60,7 +60,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   if (!userDetail) {

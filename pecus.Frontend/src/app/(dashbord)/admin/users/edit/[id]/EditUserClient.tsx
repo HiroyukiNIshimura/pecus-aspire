@@ -7,7 +7,7 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
-import type { UserResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -23,7 +23,7 @@ interface Role {
 
 interface EditUserClientProps {
   initialUser: UserInfo | null;
-  userDetail: UserResponse;
+  userDetail: UserDetailResponse;
   availableSkills: Skill[];
   availableRoles: Role[];
   fetchError: string | null;

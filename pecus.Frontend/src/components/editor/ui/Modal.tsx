@@ -68,7 +68,11 @@ function PortalImpl({
       <div className="notion-like-editor notion-like-modal-overlay fixed inset-0 bg-black/50 z-50" role="dialog" />
 
       {/* モーダルコンテンツ */}
-      <div className="notion-like-editor notion-like-modal-content fixed inset-0 z-60 flex items-center justify-center p-4" tabIndex={-1} ref={modalRef}>
+      <div
+        className="notion-like-editor notion-like-modal-content fixed inset-0 z-60 flex items-center justify-center p-4"
+        tabIndex={-1}
+        ref={modalRef}
+      >
         <div className="bg-base-100 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">

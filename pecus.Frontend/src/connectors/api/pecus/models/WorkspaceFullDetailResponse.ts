@@ -43,10 +43,12 @@ export type WorkspaceFullDetailResponse = {
      * 作成日時
      */
     createdAt?: string;
+    createdBy?: WorkspaceDetailUserResponse;
     /**
      * 更新日時
      */
     updatedAt?: string | null;
+    updatedBy?: WorkspaceDetailUserResponse;
     /**
      * アクティブフラグ
      */
@@ -55,7 +57,5 @@ export type WorkspaceFullDetailResponse = {
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;
-    createdBy?: WorkspaceDetailUserResponse;
-    updatedBy?: WorkspaceDetailUserResponse;
 };
 

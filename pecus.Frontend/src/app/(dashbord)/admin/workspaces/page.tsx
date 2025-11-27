@@ -4,7 +4,7 @@ import { getGenres } from '@/actions/master';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   MasterGenreResponse,
-  UserResponse,
+  UserDetailResponse,
   WorkspaceListItemResponse,
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
@@ -19,7 +19,7 @@ export default async function AdminWorkspaces() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: WorkspaceStatistics | null = null;
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let genres: MasterGenreResponse[] = [];
   let fetchError: string | null = null;
 
@@ -63,7 +63,7 @@ export default async function AdminWorkspaces() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return (

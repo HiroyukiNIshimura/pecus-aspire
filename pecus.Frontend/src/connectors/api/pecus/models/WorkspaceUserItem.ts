@@ -3,13 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * ワークスペースユーザー詳細レスポンス
+ * ワークスペースユーザー一覧用DTO（軽量）
  */
-export type WorkspaceUserDetailResponse = {
-    /**
-     * ワークスペースID
-     */
-    workspaceId: number;
+export type WorkspaceUserItem = {
     /**
      * ユーザーID
      */
@@ -31,14 +27,6 @@ export type WorkspaceUserDetailResponse = {
      * ワークスペース内での役割
      */
     workspaceRole?: string | null;
-    /**
-     * 参加日時
-     */
-    joinedAt?: string;
-    /**
-     * 最終アクセス日時
-     */
-    lastAccessedAt?: string | null;
     /**
      * アクティブフラグ
      */

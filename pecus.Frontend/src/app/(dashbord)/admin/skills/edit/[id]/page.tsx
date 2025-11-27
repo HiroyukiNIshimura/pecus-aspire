@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSkillDetail } from '@/actions/admin/skills';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditSkillClient from './EditSkillClient';
 
@@ -15,7 +15,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let skillDetail = null;
   let fetchError = null;
 
@@ -46,7 +46,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   if (!skillDetail) {

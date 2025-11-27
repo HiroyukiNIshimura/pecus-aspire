@@ -31,4 +31,3 @@ export { Editor } from './core';
 
 // Pecus固有エディタのエクスポート（デフォルト）
 export { PecusNotionLikeEditor, PecusNotionLikeViewer } from './pecus';
-

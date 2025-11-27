@@ -7,7 +7,7 @@ import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdatePasswordRequest } from '../models/UpdatePasswordRequest';
 import type { UpdateProfileRequest } from '../models/UpdateProfileRequest';
-import type { UserResponse } from '../models/UserResponse';
+import type { UserDetailResponse } from '../models/UserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -15,10 +15,10 @@ export class ProfileService {
     /**
      * 自分のプロフィール情報を取得
      * ユーザーの基本情報（ユーザー名、アバター、スキル、ロール等）を取得します。
-     * @returns UserResponse OK
+     * @returns UserDetailResponse OK
      * @throws ApiError
      */
-    public static getApiProfile(): CancelablePromise<UserResponse> {
+    public static getApiProfile(): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/profile',
@@ -33,12 +33,12 @@ export class ProfileService {
      * ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。
      * スキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。
      * @param requestBody 更新情報
-     * @returns UserResponse OK
+     * @returns UserDetailResponse OK
      * @throws ApiError
      */
     public static putApiProfile(
         requestBody?: UpdateProfileRequest,
-    ): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/profile',

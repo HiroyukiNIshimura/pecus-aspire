@@ -2,16 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserResponse } from './UserResponse';
+import type { UserDetailResponse } from './UserDetailResponse';
 import type { UserStatistics } from './UserStatistics';
 /**
  * ページネーション付きレスポンス（統計情報付き）
  */
-export type UserResponseUserStatisticsPagedResponse = {
+export type UserDetailResponseUserStatisticsPagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<UserResponse>;
+    data: Array<UserDetailResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

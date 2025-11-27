@@ -396,7 +396,7 @@ function TableCellResizer({ editor }: { editor: LexicalEditor }): JSX.Element {
   const resizerStyles = getResizers();
 
   return (
-    <div ref={resizerRef} className='notion-like-editor table-cell-resizer-container'>
+    <div ref={resizerRef} className="notion-like-editor table-cell-resizer-container">
       {activeCell != null && (
         <>
           <div

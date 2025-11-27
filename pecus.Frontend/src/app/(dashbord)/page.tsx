@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import DashboardClient from './DashboardClient';
 
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 // Server-side page (SSR). Fetch required data here and pass to client component.
 export default async function Dashboard() {
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -33,7 +33,7 @@ export default async function Dashboard() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return <DashboardClient initialUser={user} fetchError={fetchError} />;

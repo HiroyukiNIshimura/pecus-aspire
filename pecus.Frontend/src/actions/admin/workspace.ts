@@ -5,7 +5,6 @@ import type {
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
-  WorkspaceResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
 
@@ -49,7 +48,7 @@ export async function createWorkspace(request: {
   name: string;
   description?: string;
   genreId: number;
-}): Promise<ApiResponse<WorkspaceResponse>> {
+}): Promise<ApiResponse<WorkspaceDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.postApiAdminWorkspaces(request);
@@ -72,7 +71,7 @@ export async function updateWorkspace(
     genreId: number;
     rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
   },
-): Promise<ApiResponse<WorkspaceResponse | WorkspaceDetailResponse>> {
+): Promise<ApiResponse<WorkspaceDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.putApiAdminWorkspaces(workspaceId, request);

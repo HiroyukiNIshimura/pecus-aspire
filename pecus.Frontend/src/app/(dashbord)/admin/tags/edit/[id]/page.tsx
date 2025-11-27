@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getTagDetail } from '@/actions/admin/tags';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { UserResponse } from '@/connectors/api/pecus';
+import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditTagClient from './EditTagClient';
 
@@ -15,7 +15,7 @@ export default async function EditTagPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let tagDetail = null;
   let fetchError = null;
 
@@ -48,7 +48,7 @@ export default async function EditTagPage({ params }: { params: Promise<{ id: st
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   if (!tagDetail) {

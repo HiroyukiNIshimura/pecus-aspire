@@ -166,10 +166,10 @@ export default function DateTimeComponent({
   };
 
   const options: Intl.DateTimeFormatOptions = {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   };
 
   return (
@@ -199,10 +199,7 @@ export default function DateTimeComponent({
               >
                 <DayPicker mode="single" selected={selected} onSelect={handleDaySelect} />
                 <div className="includeTime">
-                  <label
-                    htmlFor="includeTime"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
+                  <label htmlFor="includeTime" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                     <input id="includeTime" type="checkbox" checked={includeTime} onChange={handleCheckboxChange} />
                     <span>Include time</span>
                   </label>

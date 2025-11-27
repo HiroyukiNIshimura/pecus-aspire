@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FileDownloadRequest } from '../models/FileDownloadRequest';
 import type { FileType } from '../models/FileType';
 import type { FileUploadResponse } from '../models/FileUploadResponse';
 import type { MessageResponse } from '../models/MessageResponse';
@@ -12,32 +11,30 @@ import { request as __request } from '../core/request';
 export class FileService {
     /**
      * ファイルを取得（ルートベース）
-     * ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して
-     * ルート末尾のすべての文字（ドットを含む）をキャプチャします。
-     * これにより image.jpg のようなファイル名も正しく処理されます。
-     * @param fileType
-     * @param resourceId
-     * @param fileName
-     * @param requestBody ファイル種別/リソースID/ファイル名/元画像フラグを含むリクエストDTO
+     * @param fileType ファイル種別（avatar, genre）
+     * @param resourceId リソースID（ユーザーIDまたはジャンルID）
+     * @param fileName ファイル名（拡張子含む）。catch-allパラメータで受け取ります。
+     * @param useOriginal 元画像（リサイズ前）を取得するかどうか（クエリパラメータ）
      * @returns any OK
      * @throws ApiError
      */
     public static getApiDownloads(
-        fileType: string,
-        resourceId: string,
+        fileType: FileType,
+        resourceId: number,
         fileName: string,
-        requestBody?: FileDownloadRequest,
+        useOriginal?: boolean,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/downloads/{fileType}/{resourceId}/{fileName}',
+            url: '/api/downloads/{FileType}/{ResourceId}/{FileName}',
             path: {
-                'fileType': fileType,
-                'resourceId': resourceId,
-                'fileName': fileName,
+                'FileType': fileType,
+                'ResourceId': resourceId,
+                'FileName': fileName,
             },
-            body: requestBody,
-            mediaType: 'application/json',
+            query: {
+                'useOriginal': useOriginal,
+            },
             errors: {
                 404: `Not Found`,
             },

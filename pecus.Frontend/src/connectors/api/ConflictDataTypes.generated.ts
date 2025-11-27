@@ -17,7 +17,7 @@ import type {
   OrganizationResponse,
   SkillDetailResponse,
   TagDetailResponse,
-  UserResponse,
+  UserDetailResponse,
   WorkspaceDetailResponse,
   WorkspaceItemDetailResponse,
 } from "./pecus";
@@ -74,7 +74,7 @@ export type ConflictLatestData =
     }
   | {
       type: 'user';
-      data: UserResponse;
+      data: UserDetailResponse;
     }
   | {
       type: 'workspace';

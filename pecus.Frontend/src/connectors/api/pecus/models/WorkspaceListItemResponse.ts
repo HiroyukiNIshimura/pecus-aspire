@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
+import type { WorkspaceUserItem } from './WorkspaceUserItem';
 /**
  * ワークスペースリストアイテムレスポンス
  */
@@ -66,6 +66,6 @@ export type WorkspaceListItemResponse = {
     /**
      * 参加しているユーザー一覧
      */
-    members?: Array<WorkspaceUserDetailResponse> | null;
+    members?: Array<WorkspaceUserItem> | null;
 };
 

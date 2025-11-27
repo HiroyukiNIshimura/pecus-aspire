@@ -32,12 +32,7 @@ export async function GET(request: NextRequest) {
     const clients = await createPecusApiClients();
 
     // ワークスペース一覧取得
-    const response = await clients.workspace.getApiWorkspaces(
-      page,
-      isActive,
-      genreId,
-      name,
-    );
+    const response = await clients.workspace.getApiWorkspaces(page, isActive, genreId, name);
 
     return NextResponse.json(response);
   } catch (error) {

@@ -7,7 +7,7 @@ import {
   detect404ValidationError,
 } from '@/connectors/api/PecusApiClient';
 import type {
-  UserResponse,
+  UserDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
 } from '@/connectors/api/pecus';
@@ -26,7 +26,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
 
   // ユーザー情報取得
   let userInfo: UserInfo | null = null;
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
   let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
 

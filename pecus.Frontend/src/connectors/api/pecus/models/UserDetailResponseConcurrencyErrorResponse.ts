@@ -2,11 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserResponse } from './UserResponse';
+import type { UserDetailResponse } from './UserDetailResponse';
 /**
  * 競合エラーレスポンス（409 Conflict）
  */
-export type UserResponseConcurrencyErrorResponse = {
+export type UserDetailResponseConcurrencyErrorResponse = {
     /**
      * HTTPステータスコード
      */
@@ -19,6 +19,6 @@ export type UserResponseConcurrencyErrorResponse = {
      * エラー詳細（オプション）
      */
     details?: string | null;
-    current?: UserResponse;
+    current?: UserDetailResponse;
 };
 

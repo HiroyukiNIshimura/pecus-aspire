@@ -6,9 +6,9 @@ import type { AvatarType } from './AvatarType';
 import type { UserRoleResponse } from './UserRoleResponse';
 import type { UserSkillResponse } from './UserSkillResponse';
 /**
- * ユーザー情報レスポンス
+ * ユーザー詳細レスポンス
  */
-export type UserResponse = {
+export type UserDetailResponse = {
     /**
      * ユーザーID
      */

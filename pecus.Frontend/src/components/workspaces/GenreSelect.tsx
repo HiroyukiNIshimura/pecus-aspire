@@ -33,7 +33,7 @@ export default function GenreSelect({
 
   const initialIcon = useMemo(() => {
     const gid = typeof defaultValue === 'number' ? defaultValue : null;
-    return gid ? genres.find((g) => g.id === gid)?.icon ?? null : null;
+    return gid ? (genres.find((g) => g.id === gid)?.icon ?? null) : null;
   }, [defaultValue, genres]);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function GenreSelect({
         onChange={(e) => {
           const val = e.target.value;
           const gid = val ? parseInt(val, 10) : null;
-          const icon = gid ? genres.find((g) => g.id === gid)?.icon ?? null : null;
+          const icon = gid ? (genres.find((g) => g.id === gid)?.icon ?? null) : null;
           setSelectedGenreIcon(icon);
           onChange?.(gid);
         }}

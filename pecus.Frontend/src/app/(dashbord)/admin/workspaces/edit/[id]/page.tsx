@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getWorkspaceDetail } from '@/actions/admin/workspace';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse, UserResponse } from '@/connectors/api/pecus';
+import type { MasterGenreResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import EditWorkspaceClient from './EditWorkspaceClient';
 
@@ -15,7 +15,7 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let workspaceDetail = null;
   let genres: MasterGenreResponse[] = [];
   let fetchError = null;
@@ -56,7 +56,7 @@ export default async function EditWorkspacePage({ params }: { params: Promise<{ 
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   if (!workspaceDetail) {

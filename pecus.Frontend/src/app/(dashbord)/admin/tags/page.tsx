@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTags } from '@/actions/admin/tags';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { TagListItemResponse, TagStatistics, UserResponse } from '@/connectors/api/pecus';
+import type { TagListItemResponse, TagStatistics, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminTagsClient from './AdminTagsClient';
 
@@ -13,7 +13,7 @@ export default async function AdminTags() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: TagStatistics | undefined;
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -50,7 +50,7 @@ export default async function AdminTags() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return (

@@ -126,15 +126,21 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
  *
  * "OrganizationResponse" → "organization"
  * "WorkspaceDetailResponse" → "workspace"
+ * "WorkspaceFullDetailResponse" → "workspaceFull"
  * "WorkspaceItemDetailResponse" → "workspaceItem"
  * "TagDetailResponse" → "tag"
  * "SkillDetailResponse" → "skill"
- * "UserResponse" → "user"
+ * "UserDetailResponse" → "user"
  *
  * @param {string} typeName 型名
  * @returns {string|null} エンティティ名（キャメルケース）
  */
 function inferEntityName(typeName) {
+  // WorkspaceFullDetailResponse は workspaceFull として区別する
+  if (typeName === 'WorkspaceFullDetailResponse') {
+    return 'workspaceFull';
+  }
+
   // 接尾辞を削除
   let name = typeName
     .replace(/DetailResponse$/, '')

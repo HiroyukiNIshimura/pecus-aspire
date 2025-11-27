@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * ユーザーリスト項目レスポンス
+ * ユーザー一覧項目
  */
-export type UserListItemResponse = {
+export type UserItem = {
     /**
      * ユーザーID
      */

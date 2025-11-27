@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { MasterGenreResponse, UserResponse } from '@/connectors/api/pecus';
+import type { MasterGenreResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import WorkspacesClient from './WorkspacesClient';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  * ログインユーザーがアクセス可能なワークスペースを表示
  */
 export default async function WorkspacesPage() {
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let genres: MasterGenreResponse[] = [];
   let fetchError: string | null = null;
 
@@ -37,7 +37,7 @@ export default async function WorkspacesPage() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return <WorkspacesClient initialUser={user} fetchError={fetchError} genres={genres} />;

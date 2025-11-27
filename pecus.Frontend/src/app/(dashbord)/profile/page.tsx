@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { MasterSkillResponse, PendingEmailChangeResponse, UserResponse } from '@/connectors/api/pecus';
+import type { MasterSkillResponse, PendingEmailChangeResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ProfileSettingsClient from './ProfileSettingsClient';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  * SSR で初期データを取得し、Client Component へプロップスで渡す
  */
 export default async function ProfileSettingsPage() {
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let masterSkills: MasterSkillResponse[] = [];
   let pendingEmailChange: PendingEmailChangeResponse | null = null;
   let fetchError: string | null = null;
@@ -49,7 +49,7 @@ export default async function ProfileSettingsPage() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return (

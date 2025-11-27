@@ -8,8 +8,8 @@ import type { SetUserActiveStatusRequest } from '../models/SetUserActiveStatusRe
 import type { SetUserRolesRequest } from '../models/SetUserRolesRequest';
 import type { SetUserSkillsRequest } from '../models/SetUserSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
-import type { UserResponse } from '../models/UserResponse';
-import type { UserResponseUserStatisticsPagedResponse } from '../models/UserResponseUserStatisticsPagedResponse';
+import type { UserDetailResponse } from '../models/UserDetailResponse';
+import type { UserDetailResponseUserStatisticsPagedResponse } from '../models/UserDetailResponseUserStatisticsPagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -18,12 +18,12 @@ export class AdminUserService {
      * 個別ユーザー情報を取得
      * 指定したユーザーの詳細情報を取得します。組織内のユーザーのみ取得可能です。
      * @param id ユーザーID
-     * @returns UserResponse ユーザー情報を返します
+     * @returns UserDetailResponse ユーザー情報を返します
      * @throws ApiError
      */
     public static getApiAdminUsers(
         id: number,
-    ): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/users/{id}',
@@ -68,7 +68,7 @@ export class AdminUserService {
      * @param skillIds スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
      * @param skillFilterMode スキルフィルターのモード（"and": すべてのスキルを保有、"or": いずれかのスキルを保有）
      * デフォルトは "and"
-     * @returns UserResponseUserStatisticsPagedResponse ユーザー一覧を返します
+     * @returns UserDetailResponseUserStatisticsPagedResponse ユーザー一覧を返します
      * @throws ApiError
      */
     public static getApiAdminUsers1(
@@ -78,7 +78,7 @@ export class AdminUserService {
         username?: string,
         skillIds?: Array<number>,
         skillFilterMode?: string,
-    ): CancelablePromise<UserResponseUserStatisticsPagedResponse> {
+    ): CancelablePromise<UserDetailResponseUserStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/users',
@@ -159,12 +159,12 @@ export class AdminUserService {
      * ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。
      * 作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。
      * @param requestBody ユーザー作成リクエスト
-     * @returns UserResponse ユーザーが作成されました
+     * @returns UserDetailResponse ユーザーが作成されました
      * @throws ApiError
      */
     public static postApiAdminUsersCreateWithoutPassword(
         requestBody?: CreateUserWithoutPasswordRequest,
-    ): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/admin/users/create-without-password',

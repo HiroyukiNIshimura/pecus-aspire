@@ -12,7 +12,7 @@ import type {
   EmailChangeVerifyResponse,
   MessageResponse,
   SuccessResponse,
-  UserResponse,
+  UserDetailResponse,
 } from '@/connectors/api/pecus';
 import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from '@/schemas/profileSchemas';
 import type { ApiResponse } from './types';
@@ -27,7 +27,7 @@ export async function updateProfile(request: {
   userAvatarPath?: string;
   skillIds?: number[];
   rowVersion: number; // 楽観的ロック用（PostgreSQL xmin）
-}): Promise<ApiResponse<UserResponse>> {
+}): Promise<ApiResponse<UserDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfile({
@@ -43,14 +43,14 @@ export async function updateProfile(request: {
     const concurrencyError = detectConcurrencyError(error);
     if (concurrencyError) {
       const payload = concurrencyError.payload ?? {};
-      const current = payload.current as UserResponse | undefined;
+      const current = payload.current as UserDetailResponse | undefined;
       return {
         success: false,
         error: 'conflict',
         message: concurrencyError.message,
         latest: {
           type: 'user',
-          data: current as UserResponse,
+          data: current as UserDetailResponse,
         },
       };
     }

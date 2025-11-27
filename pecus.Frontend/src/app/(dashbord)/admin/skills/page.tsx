@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSkills } from '@/actions/admin/skills';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { SkillListItemResponse, SkillStatistics, UserResponse } from '@/connectors/api/pecus';
+import type { SkillListItemResponse, SkillStatistics, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminSkillsClient from './AdminSkillsClient';
 
@@ -13,7 +13,7 @@ export default async function AdminSkills() {
   let totalCount: number = 0;
   let totalPages: number = 1;
   let statistics: SkillStatistics | undefined;
-  let userResponse: UserResponse | null = null;
+  let userResponse: UserDetailResponse | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -50,7 +50,7 @@ export default async function AdminSkills() {
     redirect('/signin');
   }
 
-  // UserResponse から UserInfo に変換
+  // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
   return (
