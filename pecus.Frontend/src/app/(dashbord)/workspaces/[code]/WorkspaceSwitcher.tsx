@@ -120,15 +120,18 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
                 }`}
                 onClick={() => workspace.code && switchWorkspace(workspace.code)}
               >
-                <div className="text-sm truncate">{workspace.name}</div>
+                <div className="text-sm truncate flex items-center gap-2">
+                  {workspace.genreIcon && (
+                    <img
+                      src={`/icons/genres/${workspace.genreIcon}.svg`}
+                      alt={workspace.genreName || 'ジャンルアイコン'}
+                      className="w-5 h-5 flex-shrink-0"
+                    />
+                  )}
+                  <span>{workspace.name}</span>
+                </div>
                 {workspace.code && (
                   <code className="text-xs text-base-content/70 truncate block">{workspace.code}</code>
-                )}
-                {workspace.genreName && (
-                  <div className="text-xs text-base-content/70 mt-1 flex items-center gap-1">
-                    {workspace.genreIcon && <span>{workspace.genreIcon}</span>}
-                    {workspace.genreName}
-                  </div>
                 )}
               </button>
             </li>
