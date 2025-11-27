@@ -46,7 +46,9 @@ export default function InsertLayoutDialog({
           </DropDownItem>
         ))}
       </DropDown>
-      <Button className='flex ms-2' onClick={onClick}>Insert</Button>
+      <div className="flex justify-end mt-2">
+        <Button onClick={onClick}>Insert</Button>
+      </div>
     </>
   );
 }

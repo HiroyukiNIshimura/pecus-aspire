@@ -599,7 +599,7 @@
   margin: 10px 0;
 }
 .NotionLikeEditorTheme__layoutItem {
-  border: 1px dashed var(--color-base-300);
+  border: 1px dashed var(--color-gray-400) !important;
   padding: 8px 16px;
   min-width: 0;
   max-width: 100%;

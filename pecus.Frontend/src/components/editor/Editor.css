@@ -1675,7 +1675,8 @@ i.bold {
 }
 
 .notion-like-editor .toolbar-item.dialog-dropdown {
-  background-color: var(--color-base-200) !important;
+  color: var(--color-neutral-50) !important;
+  background-color: var(--color-gray-700) !important;
   margin-bottom: 10px;
   width: 100%;
 }
@@ -1685,8 +1686,7 @@ i.bold {
   width: 16px;
   height: 16px;
   user-select: none;
-  background-image: url(/images/icons/chevron-down.svg);
-  background-color: var(--color-primary);
+  background-color: var(--color-secondary-content) !important;
   background-color: transparent;
   background-size: contain;
   display: inline-block;
