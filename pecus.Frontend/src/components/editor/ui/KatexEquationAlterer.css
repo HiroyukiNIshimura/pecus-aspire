@@ -35,7 +35,14 @@
 }
 
 .KatexEquationAlterer_textArea {
-  width: 100%;
-  resize: none;
-  padding: 7px;
+   display: flex;
+  flex: 2;
+  border: 1px solid #999;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  min-width: 0;
 }
