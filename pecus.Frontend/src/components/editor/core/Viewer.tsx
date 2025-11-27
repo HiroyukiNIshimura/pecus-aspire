@@ -12,7 +12,6 @@ import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { ClickableLinkPlugin } from '@lexical/react/LexicalClickableLinkPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
@@ -36,6 +35,7 @@ import TableCellResizer from '../plugins/TableCellResizer';
 import TableOfContentsPlugin from '../plugins/TableOfContentsPlugin';
 import TwitterPlugin from '../plugins/TwitterPlugin';
 import YouTubePlugin from '../plugins/YouTubePlugin';
+import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 
 export default function Viewer() {
   const {
