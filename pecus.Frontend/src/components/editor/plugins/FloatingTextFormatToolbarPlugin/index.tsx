@@ -210,7 +210,7 @@ function TextFormatFloatingToolbar({
   }, [editor, $updateTextFormatFloatingToolbar]);
 
   return (
-    <div ref={popupCharStylesEditorRef} className="floating-text-format-popup">
+    <div ref={popupCharStylesEditorRef} className="notion-like-editor floating-text-format-popup">
       {editor.isEditable() && (
         <>
           <button

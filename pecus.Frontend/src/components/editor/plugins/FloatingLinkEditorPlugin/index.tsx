@@ -254,7 +254,7 @@ function FloatingLinkEditor({
   };
 
   return (
-    <div ref={editorRef} className="link-editor">
+    <div ref={editorRef} className="notion-like-editor link-editor">
       {!isLink ? null : isLinkEditMode ? (
         <>
           <input

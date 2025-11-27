@@ -8,7 +8,7 @@
  */
 
 .dateTimePill {
-  background: #ddd;
+  background: var(--color-gray-500) !important;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 0px 4px 0px 4px;

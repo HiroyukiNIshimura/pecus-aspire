@@ -358,7 +358,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
         menuRenderFn={(anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) =>
           anchorElementRef.current && options.length
             ? ReactDOM.createPortal(
-                <div className="typeahead-popover component-picker-menu">
+                <div className="notion-like-editor typeahead-popover component-picker-menu">
                   <ul>
                     {options.map((option, i: number) => (
                       <ComponentPickerMenuItem

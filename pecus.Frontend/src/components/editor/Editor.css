@@ -227,7 +227,7 @@
   background-image: url(images/icons/download.svg);
 }
 
-.typeahead-popover.component-picker-menu {
+.notion-like-editor.typeahead-popover.component-picker-menu {
   z-index: 2000;
   background: var(--color-base-100);
   border-top-left-radius: 10px;
@@ -235,7 +235,7 @@
   position: relative;
 }
 
-.typeahead-popover.component-picker-menu ul {
+.notion-like-editor.typeahead-popover.component-picker-menu ul {
   padding: 0;
   list-style: none;
   margin: 0;
@@ -244,16 +244,16 @@
   overflow-y: scroll;
 }
 
-.typeahead-popover.component-picker-menu ul::-webkit-scrollbar {
+.notion-like-editor.typeahead-popover.component-picker-menu ul::-webkit-scrollbar {
   display: none;
 }
 
-.typeahead-popover.component-picker-menu ul {
+.notion-like-editor.typeahead-popover.component-picker-menu ul {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.typeahead-popover.component-picker-menu ul li {
+.notion-like-editor.typeahead-popover.component-picker-menu ul li {
   margin: 0;
   min-width: 180px;
   font-size: 14px;
@@ -262,11 +262,11 @@
   border-radius: 8px;
 }
 
-.typeahead-popover.component-picker-menu ul li.selected {
+.notion-like-editor.typeahead-popover.component-picker-menu ul li.selected {
   background: var(--color-info);
 }
 
-.typeahead-popover.component-picker-menu li {
+.notion-like-editor.typeahead-popover.component-picker-menu li {
   margin: 0 8px 0 8px;
   padding: 8px;
   color: var(--color-base-content);
@@ -282,33 +282,33 @@
   border: 0;
 }
 
-.typeahead-popover.component-picker-menu li.active {
+.notion-like-editor.typeahead-popover.component-picker-menu li.active {
   display: flex;
   width: 20px;
   height: 20px;
   background-size: contain;
 }
 
-.typeahead-popover.component-picker-menu li:first-child {
+.notion-like-editor.typeahead-popover.component-picker-menu li:first-child {
   border-radius: 8px 8px 0px 0px;
 }
 
-.typeahead-popover.component-picker-menu li:last-child {
+.notion-like-editor.typeahead-popover.component-picker-menu li:last-child {
   border-radius: 0px 0px 8px 8px;
 }
 
-.typeahead-popover.component-picker-menu li:hover {
+.notion-like-editor.typeahead-popover.component-picker-menu li:hover {
   background-color: var(--color-base-200);
 }
 
-.typeahead-popover.component-picker-menu li .text {
+.notion-like-editor.typeahead-popover.component-picker-menu li .text {
   display: flex;
   line-height: 20px;
   flex-grow: 1;
   min-width: 150px;
 }
 
-.typeahead-popover.component-picker-menu li .icon {
+.notion-like-editor.typeahead-popover.component-picker-menu li .icon {
   display: flex;
   width: 20px;
   height: 20px;
@@ -320,7 +320,7 @@
   background-position: center;
 }
 
-.typeahead-popover.component-picker-menu {
+.notion-like-editor.typeahead-popover.component-picker-menu {
   z-index: 2000;
   width: 250px;
 }
@@ -328,13 +328,11 @@
   background-image: url(images/icons/palette.svg);
 
 }
-
-.notion-like-editor i.bucket,
-.sticky-note-container i.bucket {
+.notion-like-editor i.bucket {
   background-image: url(images/icons/paint-bucket.svg);
 }
 
-.notion-like-editor i.bold {
+i.bold {
   background-image: url(images/icons/type-bold.svg);
 }
 
@@ -391,32 +389,32 @@
 }
 
 .notion-like-editor .icon.plus,
-.typeahead-popover.component-picker-menu i.icon.plus {
+ i.icon.plus {
   background-image: url(images/icons/plus.svg);
 }
 
 .notion-like-editor .icon.caret-right,
-.typeahead-popover.component-picker-menu i.icon.caret-right {
+.notion-like-editor i.icon.caret-right {
   background-image: url(images/icons/caret-right-fill.svg);
 }
 
 .notion-like-editor .icon.dropdown-more,
-.typeahead-popover.component-picker-menu i.icon.dropdown-more {
+.notion-like-editor i.icon.dropdown-more {
   background-image: url(images/icons/dropdown-more.svg);
 }
 
 .notion-like-editor .icon.font-color,
-.typeahead-popover.component-picker-menu i.icon.font-color {
+.notion-like-editor i.icon.font-color {
   background-image: url(images/icons/font-color.svg);
 }
 
 .notion-like-editor .icon.font-family,
-.typeahead-popover.component-picker-menu i.icon.font-family {
+.notion-like-editor i.icon.font-family {
   background-image: url(images/icons/font-family.svg);
 }
 
 .notion-like-editor .icon.bg-color,
-.typeahead-popover.component-picker-menu i.icon.bg-color {
+.notion-like-editor i.icon.bg-color {
   background-image: url(images/icons/bg-color.svg);
 }
 
@@ -431,191 +429,186 @@
 }
 
 .notion-like-editor i.image,
-.typeahead-popover.component-picker-menu i.icon.image {
+.notion-like-editor i.icon.image {
   background-image: url(images/icons/file-image.svg);
 }
 
 .notion-like-editor i.table,
-.typeahead-popover.component-picker-menu i.icon.table {
+.notion-like-editor i.icon.table {
   background-image: url(images/icons/table.svg);
   border-radius:0;
 }
 
 .notion-like-editor i.close,
-.typeahead-popover.component-picker-menu i.icon.close {
+.notion-like-editor i.icon.close {
   background-image: url(images/icons/close.svg);
 }
 
 .notion-like-editor i.figma,
-.typeahead-popover.component-picker-menu i.icon.figma {
+.notion-like-editor i.icon.figma {
   background-image: url(images/icons/figma.svg);
 }
 
 .notion-like-editor i.poll,
-.typeahead-popover.component-picker-menu i.icon.check {
+.notion-like-editor i.icon.check {
   background-image: url(images/icons/card-checklist.svg);
 }
 
 .notion-like-editor i.columns,
-.typeahead-popover.component-picker-menu i.icon.columns {
+.notion-like-editor i.icon.columns {
   background-image: url(images/icons/3-columns.svg);
 }
 
 .notion-like-editor i.x,
-.typeahead-popover.component-picker-menu i.icon.x {
+.notion-like-editor i.icon.x {
   background-image: url(images/icons/x.svg);
 }
 
 .notion-like-editor i.youtube,
-.typeahead-popover.component-picker-menu i.icon.youtube {
+.notion-like-editor i.icon.youtube {
   background-image: url(images/icons/youtube.svg);
 }
 
-.icon.left-align,
 .notion-like-editor i.left-align,
-.typeahead-popover.component-picker-menu i.icon.left-align {
+.notion-like-editor i.icon.left-align {
   background-image: url(images/icons/text-left.svg);
 }
 
-.icon.center-align,
 .notion-like-editor i.center-align,
-.typeahead-popover.component-picker-menu i.icon.center-align {
+.notion-like-editor i.icon.center-align {
   background-image: url(images/icons/text-center.svg);
 }
 
-.icon.right-align,
 .notion-like-editor i.right-align,
-.typeahead-popover.component-picker-menu i.icon.right-align {
+.notion-like-editor i.icon.right-align {
   background-image: url(images/icons/text-right.svg);
 }
 
-.icon.justify-align,
 .notion-like-editor i.justify-align,
-.typeahead-popover.component-picker-menu i.icon.justify-align {
+.notion-like-editor i.icon.justify-align {
   background-image: url(images/icons/justify.svg);
 }
 
-.icon.vertical-top,
+.notion-like-editor i.vertical-top,
 .notion-like-editor i.left-align,
-.typeahead-popover.component-picker-menu i.icon.vertical-top {
+.notion-like-editor i.icon.vertical-top {
   background-image: url(images/icons/vertical-top.svg);
 }
 
-.icon.vertical-middle,
+.notion-like-editor i.vertical-middle,
 .notion-like-editor i.center-align,
-.typeahead-popover.component-picker-menu i.icon.vertical-middle {
+.notion-like-editor i.icon.vertical-middle {
   background-image: url(images/icons/vertical-middle.svg);
 }
 
-.icon.vertical-bottom,
+.notion-like-editor i.vertical-bottom,
 .notion-like-editor i.right-align,
-.typeahead-popover.component-picker-menu i.icon.vertical-bottom {
+.notion-like-editor i.icon.vertical-bottom {
   background-image: url(images/icons/vertical-bottom.svg);
 }
 
 .notion-like-editor i.indent,
-.typeahead-popover.component-picker-menu i.icon.indent {
+.notion-like-editor i.icon.indent {
   background-image: url(images/icons/indent.svg);
 }
 
 .notion-like-editor i.markdown,
-.typeahead-popover.component-picker-menu i.icon.markdown {
+.notion-like-editor i.icon.markdown {
   background-image: url(images/icons/markdown.svg);
 }
 
 .notion-like-editor i.outdent,
-.typeahead-popover.component-picker-menu i.icon.outdent {
+.notion-like-editor i.icon.outdent {
   background-image: url(images/icons/outdent.svg);
 }
 
 .notion-like-editor i.undo,
-.typeahead-popover.component-picker-menu i.icon.undo {
+.notion-like-editor i.icon.undo {
   background-image: url(images/icons/arrow-counterclockwise.svg);
 }
 
 .notion-like-editor i.redo,
-.typeahead-popover.component-picker-menu i.icon.redo {
+.notion-like-editor i.icon.redo {
   background-image: url(images/icons/arrow-clockwise.svg);
 }
 
 .notion-like-editor i.sticky,
-.typeahead-popover.component-picker-menu i.icon.sticky {
+.notion-like-editor i.icon.sticky {
   background-image: url(images/icons/sticky.svg);
 }
 
 .notion-like-editor i.mic,
-.typeahead-popover.component-picker-menu i.icon.mic {
+.notion-like-editor i.icon.mic {
   background-image: url(images/icons/mic.svg);
 }
 
 .notion-like-editor i.import,
-.typeahead-popover.component-picker-menu i.icon.import {
+.notion-like-editor i.icon.import {
   background-image: url(images/icons/upload.svg);
 }
 
 .notion-like-editor i.export,
-.typeahead-popover.component-picker-menu i.icon.export {
+.notion-like-editor i.icon.export {
   background-image: url(images/icons/download.svg);
 }
 
 .notion-like-editor i.share,
-.typeahead-popover.component-picker-menu i.icon.share {
+.notion-like-editor i.icon.share {
   background-image: url(images/icons/send.svg);
 }
 
 .notion-like-editor i.diagram-2,
-.typeahead-popover.component-picker-menu i.icon.diagram-2 {
+.notion-like-editor i.icon.diagram-2 {
   background-image: url(images/icons/diagram-2.svg);
 }
 
 .notion-like-editor i.user,
-.typeahead-popover.component-picker-menu i.icon.user {
+.notion-like-editor i.icon.user {
   background-image: url(images/icons/user.svg);
 }
 
 .notion-like-editor i.equation,
-.typeahead-popover.component-picker-menu i.icon.equation {
+.notion-like-editor i.icon.equation {
   background-image: url(images/icons/plus-slash-minus.svg);
 }
 
 .notion-like-editor i.calendar,
-.typeahead-popover.component-picker-menu i.icon.calendar {
+.notion-like-editor i.icon.calendar {
   background-image: url(images/icons/calendar.svg);
 }
 
 .notion-like-editor i.gif,
-.typeahead-popover.component-picker-menu i.icon.gif {
+.notion-like-editor i.icon.gif {
   background-image: url(images/icons/filetype-gif.svg);
 }
 
-.code-action-menu-container i.copy,
-.typeahead-popover.component-picker-menu i.icon.copy {
+.notion-like-editor i.copy,
+.notion-like-editor i.icon.copy {
   background-image: url(images/icons/copy.svg);
 }
 
-.code-action-menu-container i.paste,
-.typeahead-popover.component-picker-menu i.icon.paste {
+.notion-like-editor i.paste,
+.notion-like-editor i.icon.paste {
   background-image: url(images/icons/clipboard.svg);
 }
 
-.code-action-menu-container i.success,
-.typeahead-popover.component-picker-menu i.icon.success {
+.notion-like-editor i.success,
+.notion-like-editor i.icon.success {
   background-image: url(images/icons/success.svg);
 }
 
-.code-action-menu-container i.prettier,
-.typeahead-popover.component-picker-menu i.icon.prettier {
+.notion-like-editor i.prettier,
+.notion-like-editor i.icon.prettier {
   background-image: url(images/icons/prettier.svg);
 }
 
-.code-action-menu-container i.prettier-error,
-.typeahead-popover.component-picker-menu i.icon.prettier-error {
+.notion-like-editor i.prettier-error,
+.notion-like-editor i.icon.prettier-error {
   background-image: url(images/icons/prettier-error.svg);
 }
 
-i.page-break,
-.notion-like-editor .icon.page-break,
-.typeahead-popover.component-picker-menu i.icon.page-break {
+.notion-like-editor i.page-break,
+.notion-like-editor i.icon.page-break {
   background-image: url(images/icons/scissors.svg);
 }
 
@@ -716,7 +709,7 @@ i.page-break,
   text-decoration: underline;
 }
 
-.link-editor .font-size-wrapper,
+.notion-like-editor .link-editor .font-size-wrapper,
 .notion-like-editor .link-editor .font-family-wrapper {
   display: flex;
   margin: 0 4px;
@@ -744,7 +737,7 @@ i.page-break,
   bottom: 5px;
 }
 
-.notion-like-editor .characters-limit.characters-limit-exceeded {
+.notion-like-editor.characters-limit.characters-limit-exceeded {
   color: red;
 }
 
@@ -847,83 +840,83 @@ i.page-break,
 }
 
 @media screen and (max-width: 1100px) {
-  .dropdown-button-text {
+  .notion-like-editor .dropdown-button-text {
     display: none !important;
   }
 
-  .dialog-dropdown > .dropdown-button-text {
+  .notion-like-editor.dialog-dropdown > .dropdown-button-text {
     display: flex !important;
   }
 
-  .font-size .dropdown-button-text {
+  .notion-like-editor .font-size .dropdown-button-text {
     display: flex !important;
   }
 
-  .code-language .dropdown-button-text {
+  .notion-like-editor.code-language .dropdown-button-text {
     display: flex !important;
   }
 }
 
 .notion-like-editor .icon.paragraph,
-.typeahead-popover.component-picker-menu i.icon.paragraph {
+.notion-like-editor i.icon.paragraph {
   background-image: url(images/icons/text-paragraph.svg);
 }
 
 .notion-like-editor .icon.h1,
-.typeahead-popover.component-picker-menu i.icon.h1 {
+.notion-like-editor i.icon.h1 {
   background-image: url(images/icons/type-h1.svg);
 }
 
 .notion-like-editor .icon.h2,
-.typeahead-popover.component-picker-menu i.icon.h2 {
+.notion-like-editor i.icon.h2 {
   background-image: url(images/icons/type-h2.svg);
 }
 
 .notion-like-editor .icon.h3,
-.typeahead-popover.component-picker-menu i.icon.h3 {
+.notion-like-editor i.icon.h3 {
   background-image: url(images/icons/type-h3.svg);
 }
 
 .notion-like-editor .icon.h4,
-.typeahead-popover.component-picker-menu i.icon.h4 {
+.notion-like-editor i.icon.h4 {
   background-image: url(images/icons/type-h4.svg);
 }
 
 .notion-like-editor .icon.h5,
-.typeahead-popover.component-picker-menu i.icon.h5 {
+.notion-like-editor i.icon.h5 {
   background-image: url(images/icons/type-h5.svg);
 }
 
 .notion-like-editor .icon.h6,
-.typeahead-popover.component-picker-menu i.icon.h6 {
+.notion-like-editor i.icon.h6 {
   background-image: url(images/icons/type-h6.svg);
 }
 
-.icon.bullet-list,
+.notion-like-editor .icon.bullet-list,
 .notion-like-editor .icon.bullet,
-.typeahead-popover.component-picker-menu i.icon.bullet {
+.notion-like-editor i.icon.bullet {
   background-image: url(images/icons/list-ul.svg);
 }
 
-.icon.check-list,
+.notion-like-editor .icon.check-list,
 .notion-like-editor .icon.check,
-.typeahead-popover.component-picker-menu i.icon.check-list {
+.notion-like-editor i.icon.check-list {
   background-image: url(images/icons/square-check.svg);
 }
 
-.icon.numbered-list,
+.notion-like-editor .icon.numbered-list,
 .notion-like-editor .icon.number,
-.typeahead-popover.component-picker-menu i.icon.number {
+.notion-like-editor i.icon.number {
   background-image: url(images/icons/list-ol.svg);
 }
 
 .notion-like-editor .icon.quote,
-.typeahead-popover.component-picker-menu i.icon.quote {
+.notion-like-editor i.icon.quote {
   background-image: url(images/icons/chat-square-quote.svg);
 }
 
 .notion-like-editor .icon.code,
-.typeahead-popover.component-picker-menu i.icon.code {
+.notion-like-editor i.icon.code {
   background-image: url(images/icons/code.svg);
 }
 
@@ -1304,12 +1297,12 @@ i.page-break,
   pointer-events: auto;
   opacity: 1;
 }
-.notion-like-editor .table-cell-action-button-container.table-cell-action-button-container--inactive {
+.table-cell-action-button-container.table-cell-action-button-container--inactive {
   pointer-events: none;
   opacity: 0;
 }
 
-.notion-like-editor .table-cell-action-button {
+.table-cell-action-button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1331,7 +1324,7 @@ i.page-break,
   width: 8px;
   background-image: url(images/icons/chevron-down.svg);
 }
-.table-cell-action-button.chevron-down i.chevron-down {
+.notion-like-editor .table-cell-action-button.chevron-down i.chevron-down {
   background-color: var(--color-secondary-content);
 }
 
@@ -1414,9 +1407,9 @@ i.page-break,
   opacity: 0.6;
 }
 
-button.toolbar-item:disabled .icon,
-button.toolbar-item:disabled .text,
-button.toolbar-item:disabled i.format,
+.notion-like-editor button.toolbar-item:disabled .icon,
+.notion-like-editor button.toolbar-item:disabled .text,
+.notion-like-editor button.toolbar-item:disabled i.format,
 .notion-like-editor button.toolbar-item:disabled .chevron-down {
   opacity: 0.2;
 }
@@ -1477,7 +1470,7 @@ button.toolbar-item:disabled i.format,
   background-size: contain;
 }
 
-.toolbar i.chevron-down,
+.notion-like-editor .toolbar i.chevron-down,
 .notion-like-editor .toolbar-item i.chevron-down {
   margin-top: 3px;
   width: 16px;
@@ -1502,18 +1495,18 @@ button.toolbar-item:disabled i.format,
   background-color: var(--color-neutral);
 }
 
-.typeahead-popover.component-picker-menu i.icon.horizontal-rule {
+.notion-like-editor i.icon.horizontal-rule {
   background-image: url(images/icons/vertical-middle.svg);
 }
 
-.sticky-note-container {
+.notion-like-editor .sticky-note-container {
   position: absolute;
   width: 120px;
   display: inline-block;
   z-index: 10;
 }
 
-.sticky-note-container .sticky-note {
+.notion-like-editor .sticky-note-container .sticky-note {
   line-height: 1;
   text-align: left;
   width: 120px;
@@ -1528,7 +1521,7 @@ button.toolbar-item:disabled i.format,
   cursor: move;
 }
 
-.sticky-note-container .sticky-note:after {
+.notion-like-editor .sticky-note-container .sticky-note:after {
   content: '';
   position: absolute;
   z-index: -1;
@@ -1541,21 +1534,21 @@ button.toolbar-item:disabled i.format,
   transform: matrix(-1, -0.1, 0, 1, 0, 0);
 }
 
-.sticky-note-container .sticky-note.yellow {
+.notion-like-editor .sticky-note-container .sticky-note.yellow {
   border-top: 1px solid var(--color-yellow-300);
   background: oklch(95% 0.08 90);
 }
 
-.sticky-note-container .sticky-note.pink {
+.notion-like-editor .sticky-note-container .sticky-note.pink {
   border-top: 1px solid var(--color-red-300);
   background: oklch(95% 0.08 0);
 }
 
-.sticky-note-container.dragging {
+.notion-like-editor .sticky-note-container.dragging {
   transition: none !important;
 }
 
-.sticky-note-container .sticky-note div {
+.notion-like-editor .sticky-note-container .sticky-note div {
   cursor: text;
   font-size: medium;
 }
@@ -1571,12 +1564,12 @@ button.toolbar-item:disabled i.format,
   opacity: 0.5;
 }
 
-.sticky-note-container .sticky-note .delete:hover {
+.notion-like-editor .sticky-note-container .sticky-note .delete:hover {
   font-weight: bold;
   opacity: 1;
 }
 
-.sticky-note-container .sticky-note .color {
+.notion-like-editor .sticky-note-container .sticky-note .color {
   border: 0;
   background: none;
   position: absolute;
@@ -1586,11 +1579,11 @@ button.toolbar-item:disabled i.format,
   opacity: 0.5;
 }
 
-.sticky-note-container .sticky-note .color:hover {
+.notion-like-editor .sticky-note-container .sticky-note .color:hover {
   opacity: 1;
 }
 
-.sticky-note-container .sticky-note .color i {
+.notion-like-editor .sticky-note-container .sticky-note .color i {
   display: block;
   width: 12px;
   height: 12px;
@@ -1604,7 +1597,7 @@ button.toolbar-item:disabled i.format,
   background-color: transparent;
 }
 
-.notion-like-editor .excalidraw-button.selected {
+.notion-like-editor.excalidraw-button.selected {
   outline: 2px solid var(--color-primary);
   user-select: none;
 }
@@ -1631,11 +1624,11 @@ button.toolbar-item:disabled i.format,
 }
 
 @media (max-width: 500px) {
-  .github-corner:hover .octo-arm {
+  .notion-like-editor .github-corner:hover .octo-arm {
     animation: none;
   }
 
-  .github-corner .octo-arm {
+  .notion-like-editor .github-corner .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
   }
 }
@@ -1665,7 +1658,7 @@ button.toolbar-item:disabled i.format,
   opacity: 1;
 }
 
-.notion-like-editor .TableNode__contentEditable {
+.TableNode__contentEditable {
   min-height: 20px;
   border: 0px;
   resize: none;
@@ -1681,10 +1674,22 @@ button.toolbar-item:disabled i.format,
   z-index: 3;
 }
 
-.notion-like-editor .dialog-dropdown {
+.notion-like-editor .toolbar-item.dialog-dropdown {
   background-color: var(--color-base-200) !important;
   margin-bottom: 10px;
   width: 100%;
+}
+
+.notion-like-editor .toolbar-item.dialog-dropdown i.chevron-down {
+  margin-left: 3px;
+  width: 16px;
+  height: 16px;
+  user-select: none;
+  background-image: url(/images/icons/chevron-down.svg);
+  background-color: var(--color-primary);
+  background-color: transparent;
+  background-size: contain;
+  display: inline-block;
 }
 
 .notion-like-editor .toolbar .block-controls {
@@ -1708,4 +1713,17 @@ button.toolbar-item:disabled i.format,
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   padding: 0px 6px 0px 10px;
+}
+
+.notion-like-editor .dateTimePill {
+  background: var(--color-success) !important;
+  border: 1px solid var(--color-success);
+  border-radius: 8px;
+  padding: 0px 4px 0px 4px;
+}
+/* .notion-like-editor .dateTimePill.selected {
+  outline: 2px solid rgb(60, 132, 244);
+} */
+.notion-like-editor .dateTimePill:hover {
+  background:  color-mix(in oklab, var(--color-success, var(--color-neutral)) 90%, #000) !important;
 }

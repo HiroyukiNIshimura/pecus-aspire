@@ -229,7 +229,7 @@ function TableHoverActionsContainer({ anchorElem }: { anchorElem: HTMLElement })
       {isShownRow && (
         <button
           type="button"
-          className={`${getTheme()?.tableAddRows}`}
+          className={`notion-like-editor ${getTheme()?.tableAddRows}`}
           style={{ ...position }}
           onClick={() => insertAction(true)}
         />
@@ -237,7 +237,7 @@ function TableHoverActionsContainer({ anchorElem }: { anchorElem: HTMLElement })
       {isShownColumn && (
         <button
           type="button"
-          className={`${getTheme()?.tableAddColumns}`}
+          className={`notion-like-editor ${getTheme()?.tableAddColumns}`}
           style={{ ...position }}
           onClick={() => insertAction(false)}
         />

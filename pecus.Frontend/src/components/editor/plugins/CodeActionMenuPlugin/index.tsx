@@ -175,7 +175,7 @@ function CodeActionMenuContainer({
   return (
     <>
       {isShown ? (
-        <div className="code-action-menu-container" style={{ ...position }}>
+        <div className="notion-like-editor code-action-menu-container" style={{ ...position }}>
           {!showOnlyCopy && (
             <select
               className="select select-xs max-w-sm"
