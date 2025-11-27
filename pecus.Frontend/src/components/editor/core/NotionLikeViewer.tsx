@@ -11,13 +11,14 @@ import './Editor.css';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
 import { useMemo } from 'react';
-import { INITIAL_SETTINGS } from '../appSettings';
-import { buildHTMLConfig } from '../buildHTMLConfig';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
 import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
 import Viewer from './Viewer';
+import { HorizontalRuleExtension } from '@lexical/extension';
 
 export interface NotionLikeViewerProps {
   /**
@@ -52,6 +53,7 @@ export default function NotionLikeViewer({ initialViewerState, isCodeShiki = fal
         theme: NotionLikeEditorTheme,
         editable: false,
         // dependencies: [
+        //   HorizontalRuleExtension
         // ],
       }),
     [initialViewerState],

@@ -16,8 +16,8 @@ import {
   TextNode,
 } from 'lexical';
 
-import { parseAllowedFontSize } from './plugins/ToolbarPlugin/fontSize';
-import { parseAllowedColor } from './ui/ColorPicker';
+import { parseAllowedFontSize } from '../plugins/ToolbarPlugin/fontSize';
+import { parseAllowedColor } from '../ui/ColorPicker';
 
 function getExtraStyles(element: HTMLElement): string {
   // Parse styles from pasted input, but only if they match exactly the

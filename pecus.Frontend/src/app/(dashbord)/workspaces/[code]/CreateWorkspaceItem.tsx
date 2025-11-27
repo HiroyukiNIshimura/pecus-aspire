@@ -6,7 +6,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
-import type { EditorContextSettings } from '@/components/editor/appSettings';
+import type { EditorContextSettings } from '@/components/editor/core/appSettings';
 import { PecusNotionLikeEditor } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';

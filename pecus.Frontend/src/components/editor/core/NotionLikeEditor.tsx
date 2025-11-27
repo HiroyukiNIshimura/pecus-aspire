@@ -15,8 +15,8 @@ import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
 import { useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { INITIAL_SETTINGS } from '../appSettings';
-import { buildHTMLConfig } from '../buildHTMLConfig';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
 import { FlashMessageContext } from '../context/FlashMessageContext';
 import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
@@ -27,6 +27,7 @@ import OnChangePlugin from '../plugins/OnChangePlugin';
 import { TableContext } from '../plugins/TablePlugin';
 import TypingPerfPlugin from '../plugins/TypingPerfPlugin';
 import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
+import { HorizontalRuleExtension } from '@lexical/extension';
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -157,6 +158,7 @@ export default function NotionLikeEditor({
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
         // dependencies: [
+        //   HorizontalRuleExtension
         // ],
       }),
     [initialEditorState],

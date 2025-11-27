@@ -7,7 +7,6 @@
  */
 
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
-import { HorizontalRuleNode } from '@lexical/extension';
 import { HashtagNode } from '@lexical/hashtag';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { ListItemNode, ListNode } from '@lexical/list';
@@ -34,6 +33,7 @@ import { SpecialTextNode } from './SpecialTextNode';
 import { StickyNode } from './StickyNode';
 import { TweetNode } from './TweetNode';
 import { YouTubeNode } from './YouTubeNode';
+import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 
 const NotionLikeEditorNodes: Array<Klass<LexicalNode>> = [
   HeadingNode,
