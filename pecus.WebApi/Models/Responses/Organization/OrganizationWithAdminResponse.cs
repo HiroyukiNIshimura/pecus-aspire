@@ -18,5 +18,5 @@ public class OrganizationWithAdminResponse
     /// 管理者ユーザー情報
     /// </summary>
     [Required]
-    public required UserResponse AdminUser { get; set; }
+    public required UserDetailResponse AdminUser { get; set; }
 }

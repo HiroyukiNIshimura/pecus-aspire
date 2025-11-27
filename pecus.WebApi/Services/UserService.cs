@@ -771,9 +771,9 @@ public class UserService
         {
             throw new NotFoundException("ユーザーが見つかりません。");
         }
-        throw new ConcurrencyException<UserResponse>(
+        throw new ConcurrencyException<UserDetailResponse>(
             "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-            new UserResponse
+            new UserDetailResponse
             {
                 Id = latestUser.Id,
                 LoginId = latestUser.LoginId,

@@ -118,12 +118,12 @@ public class BackendOrganizationController : BaseBackendController
     /// 組織の所属ユーザー取得
     /// </summary>
     [HttpGet("{id}/users")]
-    [ProducesResponseType(typeof(IEnumerable<UserListItemResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UserItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<IEnumerable<UserListItemResponse>>> GetOrganizationUsers(int id)
+    public async Task<Ok<IEnumerable<UserItem>>> GetOrganizationUsers(int id)
     {
         var users = await _organizationService.GetOrganizationUsersAsync(id);
-        var response = users.Select(u => new UserListItemResponse
+        var response = users.Select(u => new UserItem
         {
             Id = u.Id,
             LoginId = u.LoginId,

@@ -205,7 +205,7 @@ public class ProfileService
     /// </remarks>
     /// <param name="userId">ユーザーID</param>
     /// <returns>ユーザーレスポンス、見つからない場合は null</returns>
-    public async Task<UserResponse?> GetOwnProfileAsync(int userId)
+    public async Task<UserDetailResponse?> GetOwnProfileAsync(int userId)
     {
         var user = await _userService.GetUserByIdAsync(userId);
         if (user == null)
@@ -213,7 +213,7 @@ public class ProfileService
             return null;
         }
 
-        var response = new UserResponse
+        var response = new UserDetailResponse
         {
             Id = user.Id,
             LoginId = user.LoginId,

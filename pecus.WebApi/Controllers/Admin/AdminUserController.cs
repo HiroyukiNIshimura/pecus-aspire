@@ -67,10 +67,10 @@ public class AdminUserController : BaseAdminController
     /// <response code="403">他組織のユーザーは取得できません</response>
     /// <response code="404">ユーザーが見つかりません</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Ok<UserResponse>> GetUserById(int id)
+    public async Task<Ok<UserDetailResponse>> GetUserById(int id)
     {
         // 取得対象ユーザーが存在するか確認
         var targetUser = await _userService.GetUserByIdAsync(id);
@@ -86,7 +86,7 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        var response = new UserResponse
+        var response = new UserDetailResponse
         {
             Id = targetUser.Id,
             LoginId = targetUser.LoginId,
@@ -133,9 +133,9 @@ public class AdminUserController : BaseAdminController
     /// <response code="200">ユーザー一覧を返します</response>
     /// <response code="404">組織が見つかりません</response>
     [HttpGet]
-    [ProducesResponseType(typeof(PagedResponse<UserResponse, UserStatistics>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResponse<UserDetailResponse, UserStatistics>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Ok<PagedResponse<UserResponse, UserStatistics>>> GetUsers(
+    public async Task<Ok<PagedResponse<UserDetailResponse, UserStatistics>>> GetUsers(
         [FromQuery] GetUsersRequest request
     )
     {
@@ -159,7 +159,7 @@ public class AdminUserController : BaseAdminController
             skillFilterMode: request.SkillFilterMode
         );
 
-        var userResponses = users.Select(u => new UserResponse
+        var userResponses = users.Select(u => new UserDetailResponse
         {
             Id = u.Id,
             LoginId = u.LoginId,
@@ -225,7 +225,7 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserActiveStatus(
         int id,
         [FromBody] SetUserActiveStatusRequest request
@@ -323,7 +323,7 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserSkills(
         int id,
         [FromBody] SetUserSkillsRequest request
@@ -378,10 +378,10 @@ public class AdminUserController : BaseAdminController
     /// <response code="400">リクエストが無効です</response>
     /// <response code="404">組織が見つかりません</response>
     [HttpPost("create-without-password")]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(UserDetailResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Created<UserResponse>> CreateUserWithoutPassword(
+    public async Task<Created<UserDetailResponse>> CreateUserWithoutPassword(
         [FromBody] CreateUserWithoutPasswordRequest request
     )
     {
@@ -434,7 +434,7 @@ public class AdminUserController : BaseAdminController
             )
         );
 
-        var response = new UserResponse
+        var response = new UserDetailResponse
         {
             Id = user.Id,
             LoginId = user.LoginId,
@@ -560,7 +560,7 @@ public class AdminUserController : BaseAdminController
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetUserRoles(
         int id,
         [FromBody] SetUserRolesRequest request

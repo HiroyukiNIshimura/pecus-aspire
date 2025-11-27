@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
-/// ユーザーリスト項目レスポンス
+/// ユーザー一覧項目
 /// </summary>
-public class UserListItemResponse
+public class UserItem
 {
     /// <summary>
     /// ユーザーID

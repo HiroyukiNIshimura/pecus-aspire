@@ -115,7 +115,7 @@ public class EntranceOrganizationController : ControllerBase
                 CreatedAt = organization.CreatedAt,
                 RowVersion = organization.RowVersion!,
             },
-            AdminUser = new UserResponse
+            AdminUser = new UserDetailResponse
             {
                 Id = adminUser.Id,
                 LoginId = adminUser.LoginId,

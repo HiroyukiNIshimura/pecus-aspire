@@ -38,10 +38,10 @@ public class ProfileController : BaseSecureController
     /// ユーザーの基本情報（ユーザー名、アバター、スキル、ロール等）を取得します。
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<UserResponse>> GetProfile()
+    public async Task<Ok<UserDetailResponse>> GetProfile()
     {
         // CurrentUser は基底クラスで有効性チェック済み
         var response = await _profileService.GetOwnProfileAsync(CurrentUserId);
@@ -63,12 +63,12 @@ public class ProfileController : BaseSecureController
     /// <param name="request">更新情報</param>
     /// <returns>更新結果</returns>
     [HttpPut]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<UserResponse>> UpdateProfile(UpdateProfileRequest request)
+    public async Task<Ok<UserDetailResponse>> UpdateProfile(UpdateProfileRequest request)
     {
         // CurrentUser は基底クラスで有効性チェック済み
         // プロフィール情報を更新（ProfileService 経由）
@@ -104,7 +104,7 @@ public class ProfileController : BaseSecureController
     [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserDetailResponse>), StatusCodes.Status409Conflict)]
     public async Task<Ok<SuccessResponse>> SetOwnSkills(
         [FromBody] SetOwnSkillsRequest request
     )

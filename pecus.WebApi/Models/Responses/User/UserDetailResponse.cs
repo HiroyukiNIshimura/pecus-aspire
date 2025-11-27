@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
-/// ユーザー情報レスポンス
+/// ユーザー詳細レスポンス
 /// </summary>
-public class UserResponse : IConflictModel
+public class UserDetailResponse : IConflictModel
 {
     /// <summary>
     /// ユーザーID
