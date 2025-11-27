@@ -7,6 +7,7 @@ import { createWorkspace } from '@/actions/workspace';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
@@ -164,20 +165,15 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                     ジャンル <span className="text-error">*</span>
                   </span>
                 </label>
-                <select
+                <GenreSelect
                   id="genreId"
                   name="genreId"
+                  genres={genres}
                   className={`select select-bordered ${shouldShowError('genreId') ? 'select-error' : ''}`}
                   disabled={isSubmitting || genres.length === 0}
-                >
-                  <option value="">選択してください</option>
-                  {genres.map((genre) => (
-                    <option key={genre.id} value={genre.id}>
-                      {genre.icon && `${genre.icon} `}
-                      {genre.name}
-                    </option>
-                  ))}
-                </select>
+                  defaultValue=""
+                  onChange={(value) => validateField('genreId', value)}
+                />
                 {shouldShowError('genreId') && (
                   <div className="label">
                     <span className="label-text-alt text-error">{getFieldError('genreId')}</span>

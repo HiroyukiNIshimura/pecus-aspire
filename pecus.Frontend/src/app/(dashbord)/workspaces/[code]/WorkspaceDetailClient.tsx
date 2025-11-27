@@ -120,7 +120,16 @@ export default function WorkspaceDetailClient({
   const WorkspaceHeader = () => (
     <div className="flex items-start justify-between gap-2 mb-4">
       <div className="min-w-0 flex-1">
-        <h2 className="text-2xl font-bold truncate">{workspaceDetail.name}</h2>
+        <h2 className="text-2xl font-bold truncate flex items-center gap-2">
+          {workspaceDetail.genreIcon && (
+            <img
+              src={`/icons/genres/${workspaceDetail.genreIcon}.svg`}
+              alt={workspaceDetail.genreName || 'ジャンルアイコン'}
+              className="w-8 h-8 flex-shrink-0"
+            />
+          )}
+          <span>{workspaceDetail.name}</span>
+        </h2>
         {workspaceDetail.code && (
           <code className="text-sm badge badge-ghost badge-md mt-2 truncate max-w-full block">
             {workspaceDetail.code}

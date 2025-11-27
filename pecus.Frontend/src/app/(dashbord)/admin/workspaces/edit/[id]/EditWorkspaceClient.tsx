@@ -12,6 +12,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -210,21 +211,15 @@ export default function EditWorkspaceClient({
                       <label htmlFor="genreId" className="label">
                         <span className="label-text font-semibold">ジャンル</span>
                       </label>
-                      <select
+                      <GenreSelect
                         id="genreId"
                         name="genreId"
+                        genres={genres}
                         className={`select select-bordered w-full ${shouldShowError('genreId') ? 'select-error' : ''}`}
-                        value={formData.genreId}
-                        onChange={(e) => handleFieldChange('genreId', e.target.value)}
                         disabled={isSubmitting}
-                      >
-                        <option value="">選択してください</option>
-                        {genres.map((genre) => (
-                          <option key={genre.id} value={genre.id}>
-                            {genre.name}
-                          </option>
-                        ))}
-                      </select>
+                        defaultValue={formData.genreId ? Number(formData.genreId) : ''}
+                        onChange={(value) => handleFieldChange('genreId', value)}
+                      />
                       {shouldShowError('genreId') && (
                         <div className="label">
                           <span className="label-text-alt text-error">{getFieldError('genreId')}</span>

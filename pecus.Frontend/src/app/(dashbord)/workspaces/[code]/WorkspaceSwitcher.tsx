@@ -91,7 +91,16 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
       >
         <div className="flex-1 min-w-0">
           <div className="text-xs text-base-content/70 mb-1">ワークスペース</div>
-          <div className="font-semibold text-sm truncate">{currentWorkspace?.name || 'ワークスペース'}</div>
+          <div className="font-semibold text-sm truncate flex items-center gap-2">
+            {currentWorkspace?.genreIcon && (
+              <img
+                src={`/icons/genres/${currentWorkspace.genreIcon}.svg`}
+                alt={currentWorkspace.genreName || 'ジャンルアイコン'}
+                className="w-5 h-5 flex-shrink-0"
+              />
+            )}
+            <span>{currentWorkspace?.name || 'ワークスペース'}</span>
+          </div>
           {currentWorkspace?.code && (
             <code className="text-xs text-base-content/70 truncate block">{currentWorkspace.code}</code>
           )}

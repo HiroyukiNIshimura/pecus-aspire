@@ -3,6 +3,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { useEffect, useState } from 'react';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
 import type {
   MasterGenreResponse,
@@ -24,6 +25,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [workspaceDetail, setWorkspaceDetail] = useState<WorkspaceFullDetailResponse | null>(null);
+  const [selectedGenreIcon, setSelectedGenreIcon] = useState<string | null>(null);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -57,6 +59,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
     const fetchWorkspaceDetail = async () => {
       if (!isOpen || !workspace) {
         setWorkspaceDetail(null);
+        setSelectedGenreIcon(null);
         return;
       }
 
@@ -67,6 +70,8 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
 
       if (result.success) {
         setWorkspaceDetail(result.data);
+        const icon = genres.find((g) => g.id === (result.data.genreId ?? -1))?.icon ?? null;
+        setSelectedGenreIcon(icon ?? null);
       } else {
         setServerErrors([{ key: 2, message: result.message || 'ワークスペースの詳細情報の取得に失敗しました。' }]);
       }
@@ -75,7 +80,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
     };
 
     fetchWorkspaceDetail();
-  }, [isOpen, workspace]);
+  }, [isOpen, workspace, genres]);
 
   // モーダルを閉じる際にフォームをリセット
   useEffect(() => {
@@ -83,6 +88,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       resetForm();
       setServerErrors([]);
       setWorkspaceDetail(null);
+      setSelectedGenreIcon(null);
     }
   }, [isOpen, resetForm]);
 
@@ -209,21 +215,15 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                       ジャンル <span className="text-error">*</span>
                     </span>
                   </label>
-                  <select
+                  <GenreSelect
                     id="genreId"
                     name="genreId"
+                    genres={genres}
                     defaultValue={workspaceDetail.genreId ?? ''}
-                    className={`select select-bordered ${shouldShowError('genreId') ? 'select-error' : ''}`}
                     disabled={isSubmitting || genres.length === 0}
-                  >
-                    <option value="">選択してください</option>
-                    {genres.map((genre) => (
-                      <option key={genre.id} value={genre.id}>
-                        {genre.icon && `${genre.icon} `}
-                        {genre.name}
-                      </option>
-                    ))}
-                  </select>
+                    error={shouldShowError('genreId')}
+                    onChange={() => {}}
+                  />
                   {shouldShowError('genreId') && (
                     <div className="label">
                       <span className="label-text-alt text-error">{getFieldError('genreId')}</span>

@@ -491,8 +491,15 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                             {/* ワークスペース名 */}
                             <div>
                               <Link href={`/workspaces/${workspace.code}`}>
-                                <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words">
-                                  {workspace.name}
+                                <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words flex items-center gap-2">
+                                  {workspace.genreIcon && (
+                                    <img
+                                      src={`/icons/genres/${workspace.genreIcon}.svg`}
+                                      alt={workspace.genreName || 'ジャンルアイコン'}
+                                      className="w-6 h-6 flex-shrink-0"
+                                    />
+                                  )}
+                                  <span>{workspace.name}</span>
                                 </h3>
                               </Link>
                             </div>
