@@ -82,7 +82,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           setIsLoading(false);
         }
       },
-      [workspaceId, notify],
+      [workspaceId],
     );
 
     // 初期ロード

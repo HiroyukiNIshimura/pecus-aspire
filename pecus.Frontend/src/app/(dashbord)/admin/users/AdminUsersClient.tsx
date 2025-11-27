@@ -195,7 +195,7 @@ export default function AdminUsersClient({
         notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
     })();
-  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading, notify]);
+  }, [filterIsActive, filterUsername, filterSkillIds, filterSkillMode, withDelayedLoading]);
   const handleUsernameChange = async (value: string) => {
     setFilterUsername(value);
     await usernameValidation.validate(value);

@@ -176,7 +176,7 @@ export default function AdminWorkspacesClient({
         notify.error('サーバーとの通信でエラーが発生しました。', true);
       }
     })();
-  }, [filterIsActive, filterGenreId, filterName, withDelayedLoading, notify]); // 【バリデーション実装例 1: リアルタイムバリデーション】
+  }, [filterIsActive, filterGenreId, filterName, withDelayedLoading]); // 【バリデーション実装例 1: リアルタイムバリデーション】
   // 入力時に即座にバリデーションを実行してエラーを表示
   // - 非同期関数として実装（refine/transform対応）
   // - validate() の戻り値は使用せず、フックの状態を参照

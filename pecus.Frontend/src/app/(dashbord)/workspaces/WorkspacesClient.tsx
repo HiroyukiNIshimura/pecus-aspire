@@ -84,7 +84,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
     };
 
     fetchInitialData();
-  }, [notify]);
+  }, []);
 
   const loadMoreWorkspaces = async () => {
     try {
