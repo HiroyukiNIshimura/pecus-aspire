@@ -4,9 +4,6 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.Workspace;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Admin;
@@ -42,11 +39,11 @@ public class AdminWorkspaceController : BaseAdminController
     /// ワークスペース登録
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(WorkspaceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkspaceDetailResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<WorkspaceResponse>> CreateWorkspace(
+    public async Task<Created<WorkspaceDetailResponse>> CreateWorkspace(
         [FromBody] CreateWorkspaceRequest request
     )
     {
@@ -63,29 +60,24 @@ public class AdminWorkspaceController : BaseAdminController
             CurrentUserId
         );
 
-        var response = new WorkspaceResponse
+        var response = new WorkspaceDetailResponse
         {
-            Success = true,
-            Message = "ワークスペースが正常に作成されました。",
-            Workspace = new WorkspaceDetailResponse
-            {
-                Id = workspace.Id,
-                Name = workspace.Name,
-                Code = workspace.Code,
-                Description = workspace.Description,
-                OrganizationId = workspace.OrganizationId,
-                CreatedAt = workspace.CreatedAt,
-                CreatedByUserId = workspace.CreatedByUserId,
-                IsActive = workspace.IsActive,
-                GenreId = workspace.GenreId,
-                GenreName = workspace.Genre?.Name,
-                GenreIcon = workspace.Genre?.Icon,
-                UpdatedAt = workspace.UpdatedAt,
-                UpdatedByUserId = workspace.UpdatedByUserId,
-                RowVersion = workspace.RowVersion!,
-            },
+            Id = workspace.Id,
+            Name = workspace.Name,
+            Code = workspace.Code,
+            Description = workspace.Description,
+            OrganizationId = workspace.OrganizationId,
+            CreatedAt = workspace.CreatedAt,
+            CreatedByUserId = workspace.CreatedByUserId,
+            IsActive = workspace.IsActive,
+            GenreId = workspace.GenreId,
+            GenreName = workspace.Genre?.Name,
+            GenreIcon = workspace.Genre?.Icon,
+            UpdatedAt = workspace.UpdatedAt,
+            UpdatedByUserId = workspace.UpdatedByUserId,
+            RowVersion = workspace.RowVersion!,
         };
-        return TypedResults.Ok(response);
+        return TypedResults.Created($"/api/admin/workspaces/{response.Id}", response);
     }
 
     /// <summary>
@@ -116,7 +108,7 @@ public class AdminWorkspaceController : BaseAdminController
             OrganizationId = workspace.OrganizationId,
             Organization =
                 workspace.Organization != null
-                    ? new Models.Responses.Organization.OrganizationInfoResponse
+                    ? new OrganizationInfoResponse
                     {
                         Id = workspace.Organization.Id,
                         Name = workspace.Organization.Name,
@@ -134,6 +126,13 @@ public class AdminWorkspaceController : BaseAdminController
                     UserId = wu.UserId,
                     Username = wu.User!.Username,
                     Email = wu.User.Email,
+                    IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: wu.User.AvatarType,
+                        userId: wu.User.Id,
+                        username: wu.User.Username,
+                        email: wu.User.Email,
+                        avatarPath: wu.User.UserAvatarPath
+                    ),
                     WorkspaceRole = wu.WorkspaceRole,
                     JoinedAt = wu.JoinedAt,
                     LastAccessedAt = wu.LastAccessedAt,
@@ -219,15 +218,19 @@ public class AdminWorkspaceController : BaseAdminController
                 MemberCount = w.WorkspaceUsers?.Count ?? 0, // フィルタ済みコレクションの件数
                 Members = w.WorkspaceUsers?
                     .Where(wu => wu.User != null && wu.User.IsActive)
-                    .Select(wu => new WorkspaceUserDetailResponse
+                    .Select(wu => new WorkspaceUserItem
                     {
-                        WorkspaceId = wu.WorkspaceId,
                         UserId = wu.UserId,
                         Username = wu.User!.Username,
                         Email = wu.User.Email,
+                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: wu.User.AvatarType,
+                            userId: wu.User.Id,
+                            username: wu.User.Username,
+                            email: wu.User.Email,
+                            avatarPath: wu.User.UserAvatarPath
+                        ),
                         WorkspaceRole = wu.WorkspaceRole,
-                        JoinedAt = wu.JoinedAt,
-                        LastAccessedAt = wu.LastAccessedAt,
                         IsActive = wu.User.IsActive,
                     })
                     .ToList(),
@@ -251,12 +254,12 @@ public class AdminWorkspaceController : BaseAdminController
     /// ワークスペース更新
     /// </summary>
     [HttpPut("{id}")]
-    [ProducesResponseType(typeof(WorkspaceResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkspaceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<WorkspaceResponse>> UpdateWorkspace(
+    public async Task<Ok<WorkspaceDetailResponse>> UpdateWorkspace(
         int id,
         [FromBody] UpdateWorkspaceRequest request
     )
@@ -270,27 +273,22 @@ public class AdminWorkspaceController : BaseAdminController
 
         var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, CurrentUserId);
 
-        var response = new WorkspaceResponse
+        var response = new WorkspaceDetailResponse
         {
-            Success = true,
-            Message = "ワークスペースが正常に更新されました。",
-            Workspace = new WorkspaceDetailResponse
-            {
-                Id = workspace.Id,
-                Name = workspace.Name,
-                Code = workspace.Code,
-                Description = workspace.Description,
-                OrganizationId = workspace.OrganizationId,
-                GenreId = workspace.GenreId,
-                GenreName = workspace.Genre?.Name,
-                GenreIcon = workspace.Genre?.Icon,
-                CreatedAt = workspace.CreatedAt,
-                CreatedByUserId = workspace.CreatedByUserId,
-                UpdatedAt = workspace.UpdatedAt,
-                UpdatedByUserId = workspace.UpdatedByUserId,
-                IsActive = workspace.IsActive,
-                RowVersion = workspace.RowVersion!,
-            },
+            Id = workspace.Id,
+            Name = workspace.Name,
+            Code = workspace.Code,
+            Description = workspace.Description,
+            OrganizationId = workspace.OrganizationId,
+            GenreId = workspace.GenreId,
+            GenreName = workspace.Genre?.Name,
+            GenreIcon = workspace.Genre?.Icon,
+            CreatedAt = workspace.CreatedAt,
+            CreatedByUserId = workspace.CreatedByUserId,
+            UpdatedAt = workspace.UpdatedAt,
+            UpdatedByUserId = workspace.UpdatedByUserId,
+            IsActive = workspace.IsActive,
+            RowVersion = workspace.RowVersion!,
         };
         return TypedResults.Ok(response);
     }
@@ -399,11 +397,11 @@ public class AdminWorkspaceController : BaseAdminController
     /// ワークスペースにユーザーを参加させる
     /// </summary>
     [HttpPost("{id}/users")]
-    [ProducesResponseType(typeof(WorkspaceUserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkspaceUserDetailResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<WorkspaceUserResponse>> AddUserToWorkspace(
+    public async Task<Created<WorkspaceUserDetailResponse>> AddUserToWorkspace(
         int id,
         [FromBody] AddUserToWorkspaceRequest request
     )
@@ -420,23 +418,25 @@ public class AdminWorkspaceController : BaseAdminController
             CurrentUserId
         );
 
-        var response = new WorkspaceUserResponse
+        var response = new WorkspaceUserDetailResponse
         {
-            Success = true,
-            Message = "ユーザーがワークスペースに正常に参加しました。",
-            WorkspaceUser = new WorkspaceUserDetailResponse
-            {
-                WorkspaceId = workspaceUser.WorkspaceId,
-                UserId = workspaceUser.UserId,
-                Username = workspaceUser.User?.Username,
-                Email = workspaceUser.User?.Email,
-                WorkspaceRole = workspaceUser.WorkspaceRole,
-                JoinedAt = workspaceUser.JoinedAt,
-                LastAccessedAt = workspaceUser.LastAccessedAt,
-                IsActive = workspaceUser.User?.IsActive ?? false,
-            },
+            WorkspaceId = workspaceUser.WorkspaceId,
+            UserId = workspaceUser.UserId,
+            Username = workspaceUser.User?.Username ?? "",
+            Email = workspaceUser.User?.Email ?? "",
+            IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                iconType: workspaceUser.User?.AvatarType,
+                userId: workspaceUser.UserId,
+                username: workspaceUser.User?.Username ?? "",
+                email: workspaceUser.User?.Email ?? "",
+                avatarPath: workspaceUser.User?.UserAvatarPath
+            ),
+            WorkspaceRole = workspaceUser.WorkspaceRole,
+            JoinedAt = workspaceUser.JoinedAt,
+            LastAccessedAt = workspaceUser.LastAccessedAt,
+            IsActive = workspaceUser.User?.IsActive ?? false,
         };
-        return TypedResults.Ok(response);
+        return TypedResults.Created($"/api/admin/workspaces/{id}/users/{workspaceUser.UserId}", response);
     }
 
     /// <summary>
@@ -515,8 +515,15 @@ public class AdminWorkspaceController : BaseAdminController
             {
                 WorkspaceId = m.WorkspaceId,
                 UserId = m.UserId,
-                Username = m.User?.Username,
-                Email = m.User?.Email,
+                Username = m.User?.Username ?? "",
+                Email = m.User?.Email ?? "",
+                IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: m.User?.AvatarType,
+                    userId: m.UserId,
+                    username: m.User?.Username ?? "",
+                    email: m.User?.Email ?? "",
+                    avatarPath: m.User?.UserAvatarPath
+                ),
                 WorkspaceRole = m.WorkspaceRole,
                 JoinedAt = m.JoinedAt,
                 LastAccessedAt = m.LastAccessedAt,

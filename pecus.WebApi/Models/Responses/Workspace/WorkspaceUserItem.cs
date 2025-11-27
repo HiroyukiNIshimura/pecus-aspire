@@ -3,16 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
-/// ワークスペースユーザー詳細レスポンス
+/// ワークスペースユーザー一覧用DTO（軽量）
 /// </summary>
-public class WorkspaceUserDetailResponse
+public class WorkspaceUserItem
 {
-    /// <summary>
-    /// ワークスペースID
-    /// </summary>
-    [Required]
-    public required int WorkspaceId { get; set; }
-
     /// <summary>
     /// ユーザーID
     /// </summary>
@@ -42,16 +36,6 @@ public class WorkspaceUserDetailResponse
     /// ワークスペース内での役割
     /// </summary>
     public string? WorkspaceRole { get; set; }
-
-    /// <summary>
-    /// 参加日時
-    /// </summary>
-    public DateTime JoinedAt { get; set; }
-
-    /// <summary>
-    /// 最終アクセス日時
-    /// </summary>
-    public DateTime? LastAccessedAt { get; set; }
 
     /// <summary>
     /// アクティブフラグ

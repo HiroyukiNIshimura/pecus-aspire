@@ -716,7 +716,7 @@ public class WorkspaceService
     /// ワークスペース詳細情報を取得（DTO形式で、IdentityIconUrl を含む）
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
-    public async Task<WorkspaceDetailFullResponse> GetWorkspaceDetailAsync(int workspaceId)
+    public async Task<WorkspaceFullDetailResponse> GetWorkspaceDetailAsync(int workspaceId)
     {
         // ワークスペース基本情報を取得
         var workspace = await _context.Workspaces
@@ -784,17 +784,6 @@ public class WorkspaceService
             }
             : new WorkspaceDetailUserResponse { UserName = "Unknown" };
 
-        // Genre の構築
-        var genre = workspace.Genre != null
-            ? new WorkspaceGenreResponse
-            {
-                Id = workspace.Genre.Id,
-                Name = workspace.Genre.Name,
-                Description = workspace.Genre.Description,
-                Icon = workspace.Genre.Icon,
-            }
-            : null;
-
         // Members の構築
         var members = workspace.WorkspaceUsers
             .Where(wu => wu.User != null && wu.User.IsActive)
@@ -813,19 +802,22 @@ public class WorkspaceService
             })
             .ToList();
 
-        return new WorkspaceDetailFullResponse
+        return new WorkspaceFullDetailResponse
         {
             Id = workspace.Id,
             Name = workspace.Name,
             Code = workspace.Code ?? "",
             Description = workspace.Description,
+            GenreId = workspace.Genre?.Id,
+            GenreName = workspace.Genre?.Name,
+            GenreIcon = workspace.Genre?.Icon,
             CreatedAt = workspace.CreatedAt,
             CreatedBy = createdBy,
             UpdatedAt = workspace.UpdatedAt,
             UpdatedBy = updatedBy,
-            Genre = genre,
             Members = members,
-            RowVersion = workspace.RowVersion,
+            IsActive = workspace.IsActive,
+            RowVersion = workspace.RowVersion!,
         };
     }
 

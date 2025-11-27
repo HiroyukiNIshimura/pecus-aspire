@@ -1,14 +1,58 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Pecus.Models.Responses.Workspace;
 
 /// <summary>
 /// ワークスペース詳細情報（一般ユーザー用）
 /// </summary>
-public class WorkspaceFullDetailResponse : WorkspaceBaseResponse
+public class WorkspaceFullDetailResponse : IConflictModel
 {
+    /// <summary>
+    /// ワークスペースID
+    /// </summary>
+    [Required]
+    public required int Id { get; set; }
+
+    /// <summary>
+    /// ワークスペース名
+    /// </summary>
+    [Required]
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// ワークスペースコード
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// ワークスペースの説明
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// ジャンルID
+    /// </summary>
+    public int? GenreId { get; set; }
+
+    /// <summary>
+    /// ジャンル名
+    /// </summary>
+    public string? GenreName { get; set; }
+
+    /// <summary>
+    /// ジャンルアイコン
+    /// </summary>
+    public string? GenreIcon { get; set; }
+
     /// <summary>
     /// メンバー一覧
     /// </summary>
-    public new List<WorkspaceDetailUserResponse> Members { get; set; } = [];
+    public List<WorkspaceDetailUserResponse> Members { get; set; } = [];
+
+    /// <summary>
+    /// 作成日時
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// 作成ユーザー（無効なユーザーでも含む）
@@ -16,7 +60,23 @@ public class WorkspaceFullDetailResponse : WorkspaceBaseResponse
     public WorkspaceDetailUserResponse CreatedBy { get; set; } = null!;
 
     /// <summary>
+    /// 更新日時
+    /// </summary>
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
     /// 更新ユーザー（無効なユーザーでも含む）
     /// </summary>
     public WorkspaceDetailUserResponse UpdatedBy { get; set; } = null!;
+
+    /// <summary>
+    /// アクティブフラグ
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 楽観的ロック用のRowVersion
+    /// </summary>
+    [Required]
+    public required uint RowVersion { get; set; }
 }

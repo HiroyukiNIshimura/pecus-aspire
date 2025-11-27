@@ -61,25 +61,7 @@ public class WorkspaceController : BaseSecureController
         );
 
         // 作成されたワークスペースの詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id);
-
-        var response = new WorkspaceFullDetailResponse
-        {
-            Id = detail.Id,
-            Name = detail.Name,
-            Code = detail.Code,
-            Description = detail.Description,
-            GenreId = detail.Genre?.Id,
-            GenreName = detail.Genre?.Name,
-            GenreIcon = detail.Genre?.Icon,
-            CreatedAt = detail.CreatedAt,
-            CreatedBy = detail.CreatedBy,
-            UpdatedAt = detail.UpdatedAt,
-            UpdatedBy = detail.UpdatedBy,
-            Members = detail.Members,
-            IsActive = true,
-            RowVersion = detail.RowVersion,
-        };
+        var response = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id);
 
         return TypedResults.Created($"/api/workspaces/{response.Id}", response);
     }
@@ -112,25 +94,7 @@ public class WorkspaceController : BaseSecureController
         );
 
         // 更新後のワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
-
-        var response = new WorkspaceFullDetailResponse
-        {
-            Id = detail.Id,
-            Name = detail.Name,
-            Code = detail.Code,
-            Description = detail.Description,
-            GenreId = detail.Genre?.Id,
-            GenreName = detail.Genre?.Name,
-            GenreIcon = detail.Genre?.Icon,
-            CreatedAt = detail.CreatedAt,
-            CreatedBy = detail.CreatedBy,
-            UpdatedAt = detail.UpdatedAt,
-            UpdatedBy = detail.UpdatedBy,
-            Members = detail.Members,
-            IsActive = true,
-            RowVersion = detail.RowVersion,
-        };
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         return TypedResults.Ok(response);
     }
@@ -183,15 +147,19 @@ public class WorkspaceController : BaseSecureController
                 MemberCount = w.WorkspaceUsers?.Count ?? 0,
                 Members = w.WorkspaceUsers?
                     .Where(wu => wu.User != null && wu.User.IsActive)
-                    .Select(wu => new WorkspaceUserDetailResponse
+                    .Select(wu => new WorkspaceUserItem
                     {
-                        WorkspaceId = wu.WorkspaceId,
                         UserId = wu.UserId,
                         Username = wu.User!.Username,
                         Email = wu.User.Email,
+                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: wu.User.AvatarType,
+                            userId: wu.User.Id,
+                            username: wu.User.Username,
+                            email: wu.User.Email,
+                            avatarPath: wu.User.UserAvatarPath
+                        ),
                         WorkspaceRole = wu.WorkspaceRole,
-                        JoinedAt = wu.JoinedAt,
-                        LastAccessedAt = wu.LastAccessedAt,
                         IsActive = wu.User.IsActive,
                     })
                     .ToList(),
@@ -252,25 +220,7 @@ public class WorkspaceController : BaseSecureController
     private async Task<Ok<WorkspaceFullDetailResponse>> GetWorkspaceDetailResponseAsync(int workspaceId)
     {
         // ワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(workspaceId);
-
-        var response = new WorkspaceFullDetailResponse
-        {
-            Id = detail.Id,
-            Name = detail.Name,
-            Code = detail.Code,
-            Description = detail.Description,
-            GenreId = detail.Genre?.Id,
-            GenreName = detail.Genre?.Name,
-            GenreIcon = detail.Genre?.Icon,
-            CreatedAt = detail.CreatedAt,
-            CreatedBy = detail.CreatedBy,
-            UpdatedAt = detail.UpdatedAt,
-            UpdatedBy = detail.UpdatedBy,
-            Members = detail.Members,
-            IsActive = true,
-            RowVersion = detail.RowVersion,
-        };
+        var response = await _workspaceService.GetWorkspaceDetailAsync(workspaceId);
 
         return TypedResults.Ok(response);
     }
@@ -359,8 +309,15 @@ public class WorkspaceController : BaseSecureController
         {
             WorkspaceId = workspaceUser.WorkspaceId,
             UserId = workspaceUser.UserId,
-            Username = workspaceUser.User?.Username,
-            Email = workspaceUser.User?.Email,
+            Username = workspaceUser.User?.Username ?? "",
+            Email = workspaceUser.User?.Email ?? "",
+            IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                iconType: workspaceUser.User?.AvatarType,
+                userId: workspaceUser.UserId,
+                username: workspaceUser.User?.Username ?? "",
+                email: workspaceUser.User?.Email ?? "",
+                avatarPath: workspaceUser.User?.UserAvatarPath
+            ),
             WorkspaceRole = workspaceUser.WorkspaceRole,
             JoinedAt = workspaceUser.JoinedAt,
             LastAccessedAt = workspaceUser.LastAccessedAt,
@@ -442,25 +399,7 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
-
-        var response = new WorkspaceFullDetailResponse
-        {
-            Id = detail.Id,
-            Name = detail.Name,
-            Code = detail.Code,
-            Description = detail.Description,
-            GenreId = detail.Genre?.Id,
-            GenreName = detail.Genre?.Name,
-            GenreIcon = detail.Genre?.Icon,
-            CreatedAt = detail.CreatedAt,
-            CreatedBy = detail.CreatedBy,
-            UpdatedAt = detail.UpdatedAt,
-            UpdatedBy = detail.UpdatedBy,
-            Members = detail.Members,
-            IsActive = true,
-            RowVersion = detail.RowVersion,
-        };
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         return TypedResults.Ok(response);
     }
@@ -498,25 +437,7 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        var detail = await _workspaceService.GetWorkspaceDetailAsync(id);
-
-        var response = new WorkspaceFullDetailResponse
-        {
-            Id = detail.Id,
-            Name = detail.Name,
-            Code = detail.Code,
-            Description = detail.Description,
-            GenreId = detail.Genre?.Id,
-            GenreName = detail.Genre?.Name,
-            GenreIcon = detail.Genre?.Icon,
-            CreatedAt = detail.CreatedAt,
-            CreatedBy = detail.CreatedBy,
-            UpdatedAt = detail.UpdatedAt,
-            UpdatedBy = detail.UpdatedBy,
-            Members = detail.Members,
-            IsActive = false,
-            RowVersion = detail.RowVersion,
-        };
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
 
         return TypedResults.Ok(response);
     }
