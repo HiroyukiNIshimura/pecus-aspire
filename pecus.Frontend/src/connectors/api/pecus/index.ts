@@ -28,6 +28,7 @@ export type { DeviceType } from './models/DeviceType';
 export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResponse';
 export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyResponse';
 export type { ErrorResponse } from './models/ErrorResponse';
+export type { FileDownloadRequest } from './models/FileDownloadRequest';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenreCount } from './models/GenreCount';

@@ -12,7 +12,7 @@ public class FileUploadRequest
     /// </summary>
     [Required(ErrorMessage = "ファイルの種類は必須です。")]
     [EnumDataType(typeof(FileType), ErrorMessage = "ファイルの種類が無効です。")]
-    public required FileType FileType { get; set; }
+    public required FileType FileType { get; set; } = FileType.Avatar;
 
     /// <summary>
     /// リソースID（ユーザーIDまたはジャンルID）

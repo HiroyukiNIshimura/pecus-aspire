@@ -64,13 +64,9 @@ public class FileUploadController : BaseSecureController
                 throw new InvalidOperationException("指定されたリソースへのアクセス権限がありません。");
             }
         }
-        else if (request.FileType == FileType.Genre)
+        else
         {
-            // ジャンルの場合、リソースIDはジャンルIDであることを確認
-            if (!await _fileUploadService.ValidateGenreResourceAsync(request.ResourceId))
-            {
-                throw new InvalidOperationException("指定されたジャンルが見つかりません。");
-            }
+            throw new InvalidOperationException($"サポートされていないファイル種別です: {request.FileType.GetDisplayName()}");
         }
 
         // ファイルをアップロード（WebP変換後のファイルパスが返される）
@@ -85,12 +81,6 @@ public class FileUploadController : BaseSecureController
         if (request.FileType == FileType.Avatar && request.ResourceId == CurrentUserId)
         {
             await UpdateUserAvatarAsync(CurrentUserId, filePath);
-        }
-
-        // ジャンルの場合、ジャンル情報を更新
-        if (request.FileType == FileType.Genre)
-        {
-            await _genreService.UpdateGenreIconAsync(request.ResourceId, filePath, CurrentUserId);
         }
 
         var response = new FileUploadResponse

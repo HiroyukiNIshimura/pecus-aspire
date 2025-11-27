@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FileDownloadRequest } from '../models/FileDownloadRequest';
 import type { FileType } from '../models/FileType';
 import type { FileUploadResponse } from '../models/FileUploadResponse';
 import type { MessageResponse } from '../models/MessageResponse';
@@ -14,18 +15,18 @@ export class FileService {
      * ファイル名にはドット（.）が含まれるため、catch-all パラメータ（*fileName）を使用して
      * ルート末尾のすべての文字（ドットを含む）をキャプチャします。
      * これにより image.jpg のようなファイル名も正しく処理されます。
-     * @param fileType ファイル種別（avatar, genre）
-     * @param resourceId リソースID（ユーザーIDまたはジャンルID）
-     * @param fileName ファイル名
-     * @param useOriginal 元画像（リサイズ前）を取得するかどうか
+     * @param fileType
+     * @param resourceId
+     * @param fileName
+     * @param requestBody ファイル種別/リソースID/ファイル名/元画像フラグを含むリクエストDTO
      * @returns any OK
      * @throws ApiError
      */
     public static getApiDownloads(
         fileType: string,
-        resourceId: number,
+        resourceId: string,
         fileName: string,
-        useOriginal: boolean = false,
+        requestBody?: FileDownloadRequest,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -35,38 +36,8 @@ export class FileService {
                 'resourceId': resourceId,
                 'fileName': fileName,
             },
-            query: {
-                'useOriginal': useOriginal,
-            },
-            errors: {
-                404: `Not Found`,
-            },
-        });
-    }
-    /**
-     * アイコンファイルを取得（画像を返す）- クエリパラメータ版（後方互換性のため維持）
-     * @param fileType ファイルの種類（avatar, genre）
-     * @param resourceId リソースID（ユーザーIDまたはジャンルID）
-     * @param fileName ファイル名
-     * @param useOriginal 元画像（リサイズ前）を取得するかどうか
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static getApiDownloadsIcons(
-        fileType: FileType,
-        resourceId: number,
-        fileName: string,
-        useOriginal?: boolean,
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/downloads/icons',
-            query: {
-                'FileType': fileType,
-                'ResourceId': resourceId,
-                'FileName': fileName,
-                'UseOriginal': useOriginal,
-            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 404: `Not Found`,
             },

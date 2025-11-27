@@ -5,4 +5,4 @@
 /**
  * ファイル種別
  */
-export type FileType = 'Avatar' | 'Genre';
+export type FileType = 'Avatar';

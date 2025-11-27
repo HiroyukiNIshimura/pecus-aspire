@@ -41,7 +41,6 @@ export async function GET(
 
     // バックエンドの新しいルートベースエンドポイントにアクセス
     const backendUrl = `/api/downloads/${fileType.toLowerCase()}/${resourceId}/${encodeURIComponent(fileName)}`;
-    console.log('Fetching image from backend URL:', backendUrl);
     const response = await axios.get(backendUrl, {
       params: useOriginal ? { useOriginal: true } : undefined,
       responseType: 'arraybuffer',

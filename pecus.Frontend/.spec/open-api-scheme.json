@@ -4001,7 +4001,6 @@
           {
             "name": "fileType",
             "in": "path",
-            "description": "ファイル種別（avatar, genre）",
             "required": true,
             "schema": {
               "type": "string"
@@ -4010,32 +4009,40 @@
           {
             "name": "resourceId",
             "in": "path",
-            "description": "リソースID（ユーザーIDまたはジャンルID）",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "fileName",
-            "in": "path",
-            "description": "ファイル名",
             "required": true,
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "useOriginal",
-            "in": "query",
-            "description": "元画像（リサイズ前）を取得するかどうか",
+            "name": "fileName",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "description": "ファイル種別/リソースID/ファイル名/元画像フラグを含むリクエストDTO",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileDownloadRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileDownloadRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileDownloadRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -4054,69 +4061,6 @@
       }
     },
     "/api/downloads/icons": {
-      "get": {
-        "tags": [
-          "File"
-        ],
-        "summary": "アイコンファイルを取得（画像を返す）- クエリパラメータ版（後方互換性のため維持）",
-        "parameters": [
-          {
-            "name": "FileType",
-            "in": "query",
-            "description": "ファイルの種類（avatar, genre）",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/FileType"
-            }
-          },
-          {
-            "name": "ResourceId",
-            "in": "query",
-            "description": "リソースID（ユーザーIDまたはジャンルID）",
-            "required": true,
-            "schema": {
-              "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "FileName",
-            "in": "query",
-            "description": "ファイル名",
-            "required": true,
-            "schema": {
-              "maxLength": 255,
-              "minLength": 0,
-              "type": "string"
-            }
-          },
-          {
-            "name": "UseOriginal",
-            "in": "query",
-            "description": "元画像（リサイズ前）を取得するかどうか",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "File"
@@ -8247,10 +8191,40 @@
         "additionalProperties": false,
         "description": "エラーレスポンス"
       },
+      "FileDownloadRequest": {
+        "required": [
+          "fileName",
+          "fileType"
+        ],
+        "type": "object",
+        "properties": {
+          "fileType": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "resourceId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "リソースID（ユーザーIDまたはジャンルID）",
+            "format": "int32"
+          },
+          "fileName": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "description": "ファイル名（拡張子含む）。catch-allパラメータで受け取ります。"
+          },
+          "useOriginal": {
+            "type": "boolean",
+            "description": "元画像（リサイズ前）を取得するかどうか（クエリ）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ファイルダウンロード用のリクエストDTO\r\nルートおよびクエリからのバインドを想定しています。"
+      },
       "FileType": {
         "enum": [
-          "Avatar",
-          "Genre"
+          "Avatar"
         ],
         "type": "string",
         "description": "ファイル種別"

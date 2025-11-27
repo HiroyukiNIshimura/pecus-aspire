@@ -258,24 +258,6 @@ public class GenreService
         }
     }
 
-    /// <summary>
-    /// ジャンルのアイコンを更新
-    /// </summary>
-    public async Task UpdateGenreIconAsync(int id, string iconPath, int? updatedByUserId = null)
-    {
-        var genre = await _context.Genres.FindAsync(id);
-        if (genre == null)
-        {
-            throw new NotFoundException("ジャンルが見つかりません。");
-        }
-
-        genre.Icon = iconPath;
-        genre.UpdatedByUserId = updatedByUserId;
-        genre.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-    }
-
     private async Task RaiseConflictException(int id)
     {
         // 最新データを取得

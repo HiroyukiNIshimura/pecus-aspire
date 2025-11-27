@@ -10,7 +10,4 @@ public enum FileType
 {
     /// <summary>ユーザーアバター</summary>
     Avatar,
-
-    /// <summary>ジャンル画像</summary>
-    Genre
 }
