@@ -3,9 +3,90 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 interface CustomJwtPayload extends JwtPayload {
-  // 必要に応じてカスタムクレームを追加
-  userId?: number;
-  roles?: string[];
+  // JWTのクレームに対応（JwtBearerUtil.csで定義）
+  userId?: string; // number形式の文字列として格納
+  username?: string;
+  email?: string;
+  // rolesは複数のroleクレームとして格納されるため、jwt-decodeでは取得方法が異なる
+}
+
+/**
+ * リフレッシュトークンを使用してアクセストークンを再取得
+ * @param request NextRequest
+ * @param refreshToken リフレッシュトークン
+ * @param existingUserCookie 既存のuserクッキー（存在する場合）
+ */
+async function attemptRefresh(
+  request: NextRequest,
+  refreshToken: string,
+  existingUserCookie: string | undefined,
+): Promise<NextResponse> {
+  try {
+    const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+    const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!refreshResponse.ok) {
+      console.error('[Middleware] Refresh failed:', refreshResponse.status);
+
+      // リフレッシュトークンも無効な場合はクッキーをクリアしてログインページへ
+      const response = NextResponse.redirect(new URL('/signin', request.url));
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refreshToken');
+      response.cookies.delete('user');
+      return response;
+    }
+
+    const data = await refreshResponse.json();
+    console.log('[Middleware] Token refreshed successfully');
+
+    // 新しいトークンをクッキーに設定してリクエストを続行
+    const response = NextResponse.next();
+    const cookieOptions = {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'strict' as const,
+      secure: process.env.NODE_ENV === 'production',
+    };
+
+    response.cookies.set('accessToken', data.accessToken, cookieOptions);
+    response.cookies.set('refreshToken', data.refreshToken, cookieOptions);
+
+    // userクッキーが存在しない場合、アクセストークンからユーザー情報を復元
+    if (!existingUserCookie) {
+      try {
+        const decoded = jwtDecode<CustomJwtPayload>(data.accessToken);
+        // JWTのクレームからユーザー情報を構築
+        // userId は文字列として格納されているので数値に変換
+        const userInfo = {
+          id: decoded.userId ? Number.parseInt(decoded.userId, 10) : 0,
+          name: decoded.username ?? '',
+          email: decoded.email ?? '',
+          roles: [] as string[], // ロールはJWTから直接取得するのが複雑なため空配列で初期化
+        };
+        response.cookies.set('user', JSON.stringify(userInfo), cookieOptions);
+        console.log('[Middleware] User cookie restored from token');
+      } catch (decodeError) {
+        console.error('[Middleware] Failed to decode new access token:', decodeError);
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('[Middleware] Refresh error:', error);
+
+    // エラー時はクッキーをクリアしてログインページへ
+    const response = NextResponse.redirect(new URL('/signin', request.url));
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    response.cookies.delete('user');
+    return response;
+  }
 }
 /**
  * Next.js Middleware
@@ -34,11 +115,18 @@ export async function middleware(request: NextRequest) {
   // クッキーからトークンを取得
   const accessToken = request.cookies.get('accessToken')?.value;
   const refreshToken = request.cookies.get('refreshToken')?.value;
+  const userCookie = request.cookies.get('user')?.value;
 
   // トークンが存在しない場合はログインページへ
-  if (!accessToken || !refreshToken) {
-    console.log('[Middleware] No tokens found, redirecting to signin');
+  if (!refreshToken) {
+    console.log('[Middleware] No refresh token found, redirecting to signin');
     return NextResponse.redirect(new URL('/signin', request.url));
+  }
+
+  // アクセストークンがない場合はリフレッシュを試行
+  if (!accessToken) {
+    console.log('[Middleware] No access token found, attempting refresh with refresh token');
+    return await attemptRefresh(request, refreshToken, userCookie);
   }
 
   try {
@@ -55,50 +143,17 @@ export async function middleware(request: NextRequest) {
 
     // 有効期限が5分未満の場合はリフレッシュを試行
     console.log(`[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`);
-
-    const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
-    const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    if (!refreshResponse.ok) {
-      console.error('[Middleware] Refresh failed:', refreshResponse.status);
-
-      // リフレッシュトークンも無効な場合はクッキーをクリアしてログインページへ
-      const response = NextResponse.redirect(new URL('/signin', request.url));
-      response.cookies.delete('accessToken');
-      response.cookies.delete('refreshToken');
-      response.cookies.delete('user');
-      return response;
-    }
-
-    const data = await refreshResponse.json();
-    console.log('[Middleware] Token refreshed successfully');
-
-    // 新しいトークンをクッキーに設定してリクエストを続行
-    const response = NextResponse.next();
-    response.cookies.set('accessToken', data.accessToken, {
-      path: '/',
-      httpOnly: false,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production',
-    });
-    response.cookies.set('refreshToken', data.refreshToken, {
-      path: '/',
-      httpOnly: false,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    return response;
+    return await attemptRefresh(request, refreshToken, userCookie);
   } catch (error) {
     console.error('[Middleware] Token validation error:', error);
 
-    // トークンのデコードに失敗した場合はクッキーをクリア
+    // トークンのデコードに失敗した場合、リフレッシュを試行
+    if (refreshToken) {
+      console.log('[Middleware] Token decode failed, attempting refresh');
+      return await attemptRefresh(request, refreshToken, userCookie);
+    }
+
+    // リフレッシュトークンもない場合はクッキーをクリア
     const response = NextResponse.redirect(new URL('/signin', request.url));
     response.cookies.delete('accessToken');
     response.cookies.delete('refreshToken');
