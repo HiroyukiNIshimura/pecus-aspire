@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#6366F1"/>
+  <!-- ノート本体 -->
+  <rect x="16" y="12" width="32" height="40" rx="2" fill="white"/>
+  <!-- リング穴（上部） -->
+  <circle cx="22" cy="12" r="2" fill="#6366F1"/>
+  <circle cx="32" cy="12" r="2" fill="#6366F1"/>
+  <circle cx="42" cy="12" r="2" fill="#6366F1"/>
+  <!-- 議題（大きめの文字） -->
+  <rect x="20" y="18" width="24" height="3" rx="1.5" fill="#6366F1"/>
+  <!-- 箇条書き項目 -->
+  <circle cx="21" cy="26" r="1.5" fill="#6366F1"/>
+  <rect x="24" y="25" width="20" height="2" rx="1" fill="#C7D2FE"/>
+  <circle cx="21" cy="32" r="1.5" fill="#6366F1"/>
+  <rect x="24" y="31" width="18" height="2" rx="1" fill="#C7D2FE"/>
+  <circle cx="21" cy="38" r="1.5" fill="#6366F1"/>
+  <rect x="24" y="37" width="16" height="2" rx="1" fill="#C7D2FE"/>
+  <!-- ペンのアイコン（右下） -->
+  <g transform="translate(38, 42) rotate(-30)">
+    <rect x="0" y="0" width="2" height="10" fill="#F59E0B"/>
+    <path d="M -0.5 10 L 1 13 L 2.5 10 Z" fill="#64748B"/>
+  </g>
+</svg>

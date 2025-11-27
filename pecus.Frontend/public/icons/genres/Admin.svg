@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#64748B"/>
+  <!-- 書類（複数枚重ねた感じ） -->
+  <rect x="18" y="18" width="24" height="30" rx="2" fill="#E2E8F0"/>
+  <rect x="20" y="16" width="24" height="30" rx="2" fill="#F1F5F9"/>
+  <rect x="22" y="14" width="24" height="30" rx="2" fill="white"/>
+  <!-- 印鑑マーク（丸い朱肉） -->
+  <circle cx="38" cy="36" r="6" fill="#EF4444" opacity="0.7"/>
+  <text x="38" y="39" font-family="serif" font-size="7" fill="white" text-anchor="middle" font-weight="bold">印</text>
+  <!-- 書類の線（テキスト部分） -->
+  <line x1="26" y1="20" x2="40" y2="20" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="26" y1="24" x2="40" y2="24" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="26" y1="28" x2="36" y2="28" stroke="#64748B" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

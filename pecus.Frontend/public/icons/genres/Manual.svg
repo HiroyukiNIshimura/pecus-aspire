@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#F59E0B"/>
+  <!-- 本の表紙 -->
+  <rect x="16" y="14" width="32" height="36" rx="2" fill="white"/>
+  <!-- 本の背表紙 -->
+  <rect x="16" y="14" width="4" height="36" fill="#FCD34D"/>
+  <!-- ページの線 -->
+  <line x1="24" y1="24" x2="42" y2="24" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="29" x2="42" y2="29" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="34" x2="42" y2="34" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="39" x2="36" y2="39" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- ブックマーク（複数） -->
+  <rect x="26" y="8" width="3" height="12" fill="#EF4444"/>
+  <polygon points="27.5,20 26,18 29,18" fill="#EF4444"/>
+  <rect x="32" y="10" width="3" height="10" fill="#3B82F6"/>
+  <polygon points="33.5,20 32,18 35,18" fill="#3B82F6"/>
+  <rect x="38" y="9" width="3" height="11" fill="#10B981"/>
+  <polygon points="39.5,20 38,18 41,18" fill="#10B981"/>
+</svg>

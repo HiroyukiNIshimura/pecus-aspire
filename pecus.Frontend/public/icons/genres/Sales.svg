@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#10B981"/>
+  <!-- 棒グラフ（3本・右肩上がり） -->
+  <rect x="18" y="36" width="8" height="14" rx="1" fill="white"/>
+  <rect x="28" y="28" width="8" height="22" rx="1" fill="white"/>
+  <rect x="38" y="18" width="8" height="32" rx="1" fill="white"/>
+  <!-- 上昇矢印（シンプルな三角形+棒） -->
+  <rect x="48" y="18" width="3" height="20" fill="#FCD34D"/>
+  <path d="M 49.5 14 L 54 22 L 45 22 Z" fill="#FCD34D"/>
+</svg>
