@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * ワークスペース一覧取得APIルート
- * GET /api/workspaces?page={page}&IsActive={bool}&Name={string}
+ * GET /api/workspaces?page={page}&IsActive={bool}&Name={string}&GenreId={number}
  */
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const isActiveParam = searchParams.get('IsActive');
     const name = searchParams.get('Name') || undefined;
+    const genreIdParam = searchParams.get('GenreId');
 
     // クエリパラメータを整形
     const isActive =
@@ -25,6 +26,8 @@ export async function GET(request: NextRequest) {
             ? false
             : undefined;
 
+    const genreId = genreIdParam ? parseInt(genreIdParam, 10) : undefined;
+
     // API クライアント生成
     const clients = await createPecusApiClients();
 
@@ -32,7 +35,7 @@ export async function GET(request: NextRequest) {
     const response = await clients.workspace.getApiWorkspaces(
       page,
       isActive,
-      undefined, // genreId（現在未使用）
+      genreId,
       name,
     );
 

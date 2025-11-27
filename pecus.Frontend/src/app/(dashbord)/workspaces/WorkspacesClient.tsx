@@ -21,6 +21,7 @@ import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
@@ -52,6 +53,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>('');
+  const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -97,6 +99,9 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       if (filterName) {
         params.append('Name', filterName);
       }
+      if (filterGenreId !== null) {
+        params.append('GenreId', filterGenreId.toString());
+      }
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
@@ -124,6 +129,9 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       }
       if (filterName) {
         params.append('Name', filterName);
+      }
+      if (filterGenreId !== null) {
+        params.append('GenreId', filterGenreId.toString());
       }
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
@@ -156,6 +164,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   const handleReset = () => {
     setFilterName('');
     setFilterIsActive(true);
+    setFilterGenreId(null);
     nameValidation.clearErrors();
     handleFilterChange();
   };
@@ -273,7 +282,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                 <h2 className="card-title text-lg flex items-center gap-2">
                   <FilterListIcon />
                   <span
-                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? 'text-success' : ''}`}
+                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
                   >
                     フィルター
                   </span>
@@ -294,7 +303,21 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
 
               {filterOpen && (
                 <div className="space-y-4 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* ジャンルフィルター */}
+                    <div className="form-control">
+                      <label htmlFor="filterGenreId" className="label">
+                        <span className="label-text font-semibold">ジャンル</span>
+                      </label>
+                      <GenreSelect
+                        id="filterGenreId"
+                        name="filterGenreId"
+                        genres={genres}
+                        defaultValue={filterGenreId}
+                        onChange={(value) => setFilterGenreId(value)}
+                      />
+                    </div>
+
                     {/* 名前検索 */}
                     <div className="form-control">
                       <label htmlFor="filterName" className="label">
