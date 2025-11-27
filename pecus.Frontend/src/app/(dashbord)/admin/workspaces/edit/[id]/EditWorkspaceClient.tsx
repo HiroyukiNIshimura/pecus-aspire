@@ -7,12 +7,12 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 import type { MasterGenreResponse, WorkspaceDetailResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
-import GenreSelect from '@/components/workspaces/GenreSelect';
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -111,7 +111,7 @@ export default function EditWorkspaceClient({
 
         {/* Main Content */}
         <main className="flex-1 p-6 bg-base-100">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             {/* ページヘッダー */}
             <div className="mb-6 flex justify-between items-center">
               <div>

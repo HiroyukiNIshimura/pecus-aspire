@@ -37,10 +37,12 @@ public class OrganizationAccessHelper
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="includeMembers">メンバー情報を含めるかどうか（デフォルト: false）</param>
     /// <returns>アクセス可能な場合はtrueとワークスペース、不可能な場合はfalseとnull</returns>
     public async Task<(bool hasAccess, Workspace? workspace)> CheckWorkspaceAccessAsync(
         int userId,
-        int workspaceId
+        int workspaceId,
+        bool includeMembers = false
     )
     {
         var organizationId = await GetUserOrganizationIdAsync(userId);
@@ -49,9 +51,19 @@ public class OrganizationAccessHelper
             return (false, null);
         }
 
-        var workspace = await _context
-            .Workspaces.Include(w => w.Organization)
-            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+        var query = _context.Workspaces
+            .Include(w => w.Organization)
+            .Include(w => w.Genre)
+            .AsQueryable();
+
+        if (includeMembers)
+        {
+            query = query
+                .Include(w => w.WorkspaceUsers)
+                    .ThenInclude(wu => wu.User);
+        }
+
+        var workspace = await query.FirstOrDefaultAsync(w => w.Id == workspaceId);
 
         if (workspace == null || workspace.OrganizationId != organizationId.Value)
         {

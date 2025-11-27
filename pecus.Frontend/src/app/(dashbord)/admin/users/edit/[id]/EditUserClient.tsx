@@ -209,7 +209,7 @@ export default function EditUserClient({
 
         {/* Main Content */}
         <main className="flex-1 p-6 bg-base-100">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             {/* ページヘッダー */}
             <div className="mb-6 flex justify-between items-center">
               <div>
