@@ -20,10 +20,13 @@ src/components/editor/
 │   ├── PecusNotionLikeViewer.tsx   # core/NotionLikeViewer のラッパー
 │   └── index.ts                    # エクスポート
 ├── context/        # 共有コンテキスト
-├── plugins/        # エディタプラグイン
+├── plugins/        # エディタプラグイン（40+）
 ├── nodes/          # カスタムノード定義
 ├── themes/         # テーマ設定
-└── ui/             # UIコンポーネント
+├── ui/             # UIコンポーネント
+├── utils/          # ユーティリティ関数
+├── commenting/     # コメント機能
+└── images/         # エディタ内画像リソース
 ```
 
 ### 設計方針
@@ -97,7 +100,133 @@ function GenericEditorComponent() {
 
 ## 🔧 主要機能
 
-### エディタ機能
+### プラグイン一覧（40+）
+
+#### テキスト編集・フォーマット
+- `AutocompletePlugin` - テキスト自動補完
+- `AutoLinkPlugin` - URL自動リンク化
+- `CodeActionMenuPlugin` - コードブロックアクションメニュー
+- `CodeHighlightPrismPlugin` - Prismによるシンタックスハイライト
+- `CodeHighlightShikiPlugin` - Shikiによるシンタックスハイライト
+- `ComponentPickerPlugin` - スラッシュコマンド（/）でのコンポーネント挿入
+- `FloatingTextFormatToolbarPlugin` - フローティングテキストフォーマットツールバー
+- `MarkdownShortcutPlugin` - Markdownショートカット
+- `MarkdownTransformers` - Markdown変換ルール
+- `ToolbarPlugin` - メインツールバー
+
+#### コンテンツ埋め込み
+- `AutoEmbedPlugin` - 自動埋め込み（Twitter、YouTube、Figma）
+- `TwitterPlugin` - Twitterツイート埋め込み
+- `YouTubePlugin` - YouTube動画埋め込み
+- `FigmaPlugin` - Figmaデザイン埋め込み
+- `ImagesPlugin` - 画像挿入・管理
+
+#### レイアウト・構造
+- `LayoutPlugin` - カラムレイアウト（2〜4カラム）
+- `TablePlugin` - テーブル挿入・編集
+- `TableActionMenuPlugin` - テーブルアクションメニュー
+- `TableCellResizer` - テーブルセルリサイズ
+- `TableHoverActionsPlugin` - テーブルホバーアクション
+- `TableOfContentsPlugin` - 目次生成
+- `CollapsiblePlugin` - 折りたたみコンテナ
+- `PageBreakPlugin` - ページ区切り
+- `HorizontalRulePlugin` - 水平線
+
+#### インタラクティブ要素
+- `EmojiPickerPlugin` - 絵文字ピッカー
+- `EmojisPlugin` - 絵文字サポート
+- `MentionsPlugin` - メンション（@ユーザー名）
+- `StickyPlugin` - 付箋ノート
+- `DateTimePlugin` - 日時挿入
+
+#### 数式・特殊テキスト
+- `EquationsPlugin` - LaTeX数式
+- `SpecialTextPlugin` - 特殊テキスト（ハッシュタグ等）
+
+#### ドラッグ&ドロップ
+- `DragDropPastePlugin` - ドラッグ&ドロップ、ペースト処理
+- `DraggableBlockPlugin` - ブロックドラッグ移動
+
+#### UI/UX
+- `ContextMenuPlugin` - コンテキストメニュー
+- `FloatingLinkEditorPlugin` - フローティングリンクエディタ
+- `LinkPlugin` - リンク管理
+- `ShortcutsPlugin` - キーボードショートカット
+- `TabFocusPlugin` - Tabキーフォーカス制御
+- `MaxLengthPlugin` - 最大文字数制限
+
+#### 開発者ツール
+- `TypingPerfPlugin` - タイピングパフォーマンス測定
+- `OnChangePlugin` - エディタ状態変更検知
+
+### ノード一覧
+
+#### 標準ノード（Lexical組み込み）
+- Paragraph（段落）
+- Heading（見出し: H1〜H6）
+- List（リスト: 箇条書き、番号付き、チェックリスト）
+- Quote（引用）
+- Code（コードブロック）
+- Link（リンク）
+- Table（テーブル）
+
+#### カスタムノード
+- `AutocompleteNode` - 自動補完ノード
+- `DateTimeNode` - 日時ノード
+- `EmojiNode` - 絵文字ノード
+- `EquationNode` - 数式ノード
+- `FigmaNode` - Figma埋め込みノード
+- `ImageNode` - 画像ノード
+- `KeywordNode` - キーワードノード
+- `LayoutContainerNode` - レイアウトコンテナノード
+- `LayoutItemNode` - レイアウトアイテムノード
+- `MentionNode` - メンションノード
+- `PageBreakNode` - ページ区切りノード
+- `SpecialTextNode` - 特殊テキストノード
+- `StickyNode` - 付箋ノード
+- `TweetNode` - Twitterツイートノード
+- `YouTubeNode` - YouTube動画ノード
+
+### UI コンポーネント
+
+#### 入力・選択
+- `Button` - ボタン
+- `TextInput` - テキスト入力
+- `FileInput` - ファイル入力
+- `Select` - セレクトボックス
+- `Switch` - スイッチ
+- `ColorPicker` - カラーピッカー
+- `DropDown` - ドロップダウン
+- `DropdownColorPicker` - ドロップダウンカラーピッカー
+
+#### 表示・モーダル
+- `Dialog` - ダイアログ
+- `Modal` - モーダル
+- `FlashMessage` - フラッシュメッセージ
+- `ContentEditable` - 編集可能コンテンツ
+
+#### 専用UI
+- `EquationEditor` - 数式エディタ
+- `KatexEquationAlterer` - KaTeX数式編集
+- `KatexRenderer` - KaTeX数式レンダリング
+- `ImageResizer` - 画像リサイズ
+
+### ユーティリティ
+
+- `docSerialization` - ドキュメントシリアライズ
+- `emoji-list` - 絵文字一覧
+- `focusUtils` - フォーカス制御
+- `getDOMRangeRect` - DOM範囲の矩形取得
+- `getSelectedNode` - 選択ノード取得
+- `getThemeSelector` - テーマセレクタ取得
+- `isMobileWidth` - モバイル幅判定
+- `joinClasses` - CSSクラス結合
+- `setFloatingElemPosition` - フローティング要素配置
+- `setFloatingElemPositionForLinkEditor` - リンクエディタ配置
+- `swipe` - スワイプ処理
+- `url` - URL処理
+
+### エディタ機能まとめ
 - リッチテキスト編集（太字、斜体、下線、取り消し線）
 - 見出し（H1〜H6）
 - リスト（箇条書き、番号付き、チェックリスト）
