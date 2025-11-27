@@ -165,13 +165,20 @@ export default function DateTimeComponent({
     });
   };
 
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
   return (
     <div
       className={`dateTimePill ${isNodeSelected ? 'selected' : ''}`}
       ref={ref}
       style={{ cursor: 'pointer', width: 'fit-content' }}
     >
-      {dateTime?.toDateString() + (includeTime ? ` ${timeValue}` : '') || 'Invalid Date'}
+      {dateTime?.toLocaleDateString(undefined, options) + (includeTime ? ` ${timeValue}` : '') || 'Invalid Date'}
       {isOpen && (
         <FloatingPortal>
           <FloatingOverlay
@@ -192,9 +199,12 @@ export default function DateTimeComponent({
               >
                 <DayPicker mode="single" selected={selected} onSelect={handleDaySelect} />
                 <div className="includeTime">
-                  <label htmlFor="includeTime">
+                  <label
+                    htmlFor="includeTime"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
                     <input id="includeTime" type="checkbox" checked={includeTime} onChange={handleCheckboxChange} />
-                    Include time
+                    <span>Include time</span>
                   </label>
                 </div>
                 {includeTime && (
