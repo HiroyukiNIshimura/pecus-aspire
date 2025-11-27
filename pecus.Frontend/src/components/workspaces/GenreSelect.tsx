@@ -54,6 +54,7 @@ export default function GenreSelect({
         }
         :global(.genre-select option) {
           padding: 8px;
+          background-color: var(--color-base-200);
         }
         :global(.genre-select option img) {
           width: 20px;
