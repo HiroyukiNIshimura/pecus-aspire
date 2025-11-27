@@ -305,35 +305,25 @@ export default function EditWorkspaceClient({
             {workspaceDetail.members && workspaceDetail.members.length > 0 && (
               <div className="card bg-base-200 shadow-lg mt-6">
                 <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">メンバー</h2>
+                  <h2 className="card-title text-lg mb-4">メンバー一覧</h2>
 
-                  <div className="overflow-x-auto">
-                    <table className="table table-zebra w-full">
-                      <thead>
-                        <tr>
-                          <th>ユーザー名</th>
-                          <th>メールアドレス</th>
-                          <th>ロール</th>
-                          <th>参加日</th>
-                          <th>最終アクセス</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {workspaceDetail.members.map((member) => (
-                          <tr key={member.userId}>
-                            <td className="font-semibold">{member.username}</td>
-                            <td>{member.email}</td>
-                            <td>
-                              <span className="badge badge-outline">{member.workspaceRole || 'Member'}</span>
-                            </td>
-                            <td>{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('ja-JP') : ''}</td>
-                            <td>
-                              {member.lastAccessedAt ? new Date(member.lastAccessedAt).toLocaleString('ja-JP') : '未'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {workspaceDetail.members.map((member) => (
+                      <div key={member.userId} className="flex items-center gap-2 p-2 bg-base-100 rounded">
+                        <div className="avatar placeholder">
+                          <div className="bg-base-300 text-base-content rounded-full w-6 h-6">
+                            <span className="text-xs">{member.username?.charAt(0).toUpperCase() || '?'}</span>
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate">{member.username}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-outline badge-xs">{member.workspaceRole || 'Member'}</span>
+                            {!member.isActive && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
