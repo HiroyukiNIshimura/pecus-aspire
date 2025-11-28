@@ -8,6 +8,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
+import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type { MasterGenreResponse, WorkspaceDetailResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
@@ -287,52 +288,7 @@ export default function EditWorkspaceClient({
 
             {/* メンバー情報 */}
             {workspaceDetail.members && workspaceDetail.members.length > 0 && (
-              <div className="card bg-base-200 shadow-lg">
-                <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">メンバー一覧</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {[...workspaceDetail.members]
-                      .sort((a, b) => {
-                        // 権限の優先順位を定義: Owner > Member > Viewer
-                        const roleOrder: Record<string, number> = { Owner: 0, Member: 1, Viewer: 2 };
-                        const orderA = roleOrder[a.workspaceRole || ''] ?? 3;
-                        const orderB = roleOrder[b.workspaceRole || ''] ?? 3;
-                        return orderA - orderB;
-                      })
-                      .map((member) => {
-                        // 権限に応じた badge の色を決定
-                        const roleBadgeClass =
-                          member.workspaceRole === 'Owner'
-                            ? 'badge-warning'
-                            : member.workspaceRole === 'Member'
-                              ? 'badge-success'
-                              : 'badge-secondary';
-
-                        return (
-                          <div key={member.userId} className="flex items-center gap-2 p-2 bg-base-100 rounded">
-                            {member.identityIconUrl && (
-                              <img
-                                src={getDisplayIconUrl(member.identityIconUrl)}
-                                alt={member.username || 'ユーザー'}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold truncate">{member.username}</p>
-                              <div className="flex items-center gap-2">
-                                <span className={`badge badge-xs ${roleBadgeClass}`}>{member.workspaceRole}</span>
-                                {!member.isActive && (
-                                  <span className="text-xs text-base-content/50">(非アクティブ)</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
+              <WorkspaceMemberList members={workspaceDetail.members} />
             )}
 
             {/* ワークスペース詳細情報カード */}
