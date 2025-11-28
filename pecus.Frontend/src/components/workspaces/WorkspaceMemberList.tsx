@@ -31,6 +31,8 @@ interface WorkspaceMemberListProps {
   onRemoveMember?: (userId: number, userName: string) => void;
   /** ロール変更時のコールバック */
   onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
+  /** ハイライト表示するユーザーIDのセット（新規追加時など） */
+  highlightedUserIds?: Set<number>;
 }
 
 /**
@@ -44,6 +46,7 @@ export default function WorkspaceMemberList({
   onAddMember,
   onRemoveMember,
   onChangeRole,
+  highlightedUserIds,
 }: WorkspaceMemberListProps) {
   // 権限の優先順位でソート
   const sortedMembers = [...members].sort((a, b) => {
@@ -87,6 +90,7 @@ export default function WorkspaceMemberList({
                 editable={editable}
                 onRemove={onRemoveMember}
                 onChangeRole={onChangeRole}
+                isHighlighted={highlightedUserIds?.has(member.userId ?? 0) ?? false}
               />
             ))}
           </div>
@@ -104,9 +108,17 @@ interface WorkspaceMemberCardProps {
   editable: boolean;
   onRemove?: (userId: number, userName: string) => void;
   onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
+  /** ハイライト表示（新規追加時） */
+  isHighlighted?: boolean;
 }
 
-function WorkspaceMemberCard({ member, editable, onRemove, onChangeRole }: WorkspaceMemberCardProps) {
+function WorkspaceMemberCard({
+  member,
+  editable,
+  onRemove,
+  onChangeRole,
+  isHighlighted = false,
+}: WorkspaceMemberCardProps) {
   const isOwner = member.workspaceRole === 'Owner';
   const config = roleConfig[member.workspaceRole || 'Viewer'] || roleConfig.Viewer;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -144,7 +156,11 @@ function WorkspaceMemberCard({ member, editable, onRemove, onChangeRole }: Works
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-base-100 rounded">
+    <div
+      className={`flex items-center gap-3 p-3 rounded transition-all duration-500 ${
+        isHighlighted ? 'bg-primary/20 ring-2 ring-primary ring-offset-1 animate-pulse' : 'bg-base-100'
+      }`}
+    >
       {/* アイコン */}
       {member.identityIconUrl ? (
         <img

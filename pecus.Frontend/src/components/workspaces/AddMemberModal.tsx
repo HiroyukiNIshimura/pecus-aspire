@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { searchUsersForWorkspace, type UserSearchResult } from '@/actions/admin/user';
-import type { WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
+import { searchUsersForWorkspace } from '@/actions/admin/user';
+import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 
 interface AddMemberModalProps {
   /** モーダルの表示状態 */
@@ -12,7 +12,13 @@ interface AddMemberModalProps {
   /** モーダルを閉じるコールバック */
   onClose: () => void;
   /** メンバー追加確定時のコールバック */
-  onConfirm: (userId: number, userName: string, email: string, role: WorkspaceRole) => Promise<void>;
+  onConfirm: (
+    userId: number,
+    userName: string,
+    email: string,
+    role: WorkspaceRole,
+    identityIconUrl: string | null,
+  ) => Promise<void>;
 }
 
 /** ロール選択肢 */
@@ -31,11 +37,11 @@ const roleOptions: { value: WorkspaceRole; label: string }[] = [
 export default function AddMemberModal({ isOpen, existingMembers, onClose, onConfirm }: AddMemberModalProps) {
   // 検索状態
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<UserSearchResultResponse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // 選択状態
-  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResultResponse | null>(null);
   const [selectedRole, setSelectedRole] = useState<WorkspaceRole>('Member');
   const [isAdding, setIsAdding] = useState(false);
 
@@ -96,10 +102,9 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
     }
   };
 
-  const handleSelectUser = (user: UserSearchResult) => {
+  const handleSelectUser = (user: UserSearchResultResponse) => {
     setSelectedUser(user);
   };
-
   const handleClearSelection = () => {
     setSelectedUser(null);
   };
@@ -111,7 +116,13 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
 
     setIsAdding(true);
     try {
-      await onConfirm(selectedUser.id!, selectedUser.username!, selectedUser.email!, selectedRole);
+      await onConfirm(
+        selectedUser.id!,
+        selectedUser.username!,
+        selectedUser.email!,
+        selectedRole,
+        selectedUser.identityIconUrl ?? null,
+      );
     } finally {
       setIsAdding(false);
     }

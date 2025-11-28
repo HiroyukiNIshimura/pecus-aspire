@@ -49,6 +49,9 @@ export default function EditWorkspaceClient({
   // メンバー管理の状態
   const [members, setMembers] = useState<WorkspaceUserItem[]>(workspaceDetail.members || []);
 
+  // 新規追加されたメンバーのハイライト表示用（3秒間）
+  const [highlightedUserIds, setHighlightedUserIds] = useState<Set<number>>(new Set());
+
   // メンバー追加モーダルの状態
   const [addMemberModal, setAddMemberModal] = useState(false);
 
@@ -141,7 +144,13 @@ export default function EditWorkspaceClient({
   };
 
   /** メンバー追加を実行 */
-  const handleAddMemberConfirm = async (userId: number, userName: string, email: string, role: WorkspaceRole) => {
+  const handleAddMemberConfirm = async (
+    userId: number,
+    userName: string,
+    email: string,
+    role: WorkspaceRole,
+    identityIconUrl: string | null,
+  ) => {
     const result = await addWorkspaceMember(workspaceDetail.id!, userId, role);
 
     if (result.success) {
@@ -152,9 +161,20 @@ export default function EditWorkspaceClient({
         email,
         workspaceRole: role,
         isActive: true,
-        identityIconUrl: '',
+        identityIconUrl: identityIconUrl ?? '',
       };
       setMembers((prev) => [...prev, newMember]);
+
+      // 新規メンバーを3秒間ハイライト表示
+      setHighlightedUserIds((prev) => new Set([...prev, userId]));
+      setTimeout(() => {
+        setHighlightedUserIds((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+      }, 3000);
+
       notify.success(`${userName} をワークスペースに追加しました。`);
       handleAddMemberModalClose();
     } else {
@@ -439,6 +459,7 @@ export default function EditWorkspaceClient({
               onAddMember={handleAddMember}
               onRemoveMember={handleRemoveMember}
               onChangeRole={handleChangeRole}
+              highlightedUserIds={highlightedUserIds}
             />
 
             {/* ワークスペース詳細情報カード */}

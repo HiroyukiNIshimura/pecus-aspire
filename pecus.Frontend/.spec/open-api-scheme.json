@@ -1485,6 +1485,60 @@
         }
       }
     },
+    "/api/admin/users/search": {
+      "get": {
+        "tags": [
+          "Admin - User"
+        ],
+        "summary": "ユーザーをあいまい検索",
+        "description": "ユーザー名またはメールアドレスであいまい検索を行います。\npgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。\nワークスペースへのメンバー追加時などに使用します。",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "検索クエリ（2文字以上）",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "取得件数上限（デフォルト20、最大50）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "検索結果を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserSearchResultResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "検索クエリが短すぎます",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/workspaces": {
       "post": {
         "tags": [
@@ -11025,6 +11079,40 @@
         },
         "additionalProperties": false,
         "description": "ユーザーロール情報レスポンス"
+      },
+      "UserSearchResultResponse": {
+        "required": [
+          "email",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
+          },
+          "avatarType": {
+            "$ref": "#/components/schemas/AvatarType"
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザー検索結果レスポンス"
       },
       "UserSkillResponse": {
         "required": [

@@ -108,6 +108,7 @@ export type { UserDetailResponseConcurrencyErrorResponse } from './models/UserDe
 export type { UserDetailResponseUserStatisticsPagedResponse } from './models/UserDetailResponseUserStatisticsPagedResponse';
 export type { UserItem } from './models/UserItem';
 export type { UserRoleResponse } from './models/UserRoleResponse';
+export type { UserSearchResultResponse } from './models/UserSearchResultResponse';
 export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
