@@ -75,6 +75,21 @@ public class AdminWorkspaceController : BaseAdminController
             GenreIcon = workspace.Genre?.Icon,
             UpdatedAt = workspace.UpdatedAt,
             UpdatedByUserId = workspace.UpdatedByUserId,
+            Owner = workspace.Owner != null
+                ? new WorkspaceDetailUserResponse
+                {
+                    Id = workspace.Owner.Id,
+                    UserName = workspace.Owner.Username,
+                    IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: workspace.Owner.AvatarType,
+                        userId: workspace.Owner.Id,
+                        username: workspace.Owner.Username,
+                        email: workspace.Owner.Email,
+                        avatarPath: workspace.Owner.UserAvatarPath
+                    ),
+                    IsActive = workspace.Owner.IsActive,
+                }
+                : null,
             RowVersion = workspace.RowVersion!,
         };
         return TypedResults.Created($"/api/admin/workspaces/{response.Id}", response);
@@ -144,6 +159,21 @@ public class AdminWorkspaceController : BaseAdminController
             UpdatedAt = workspace.UpdatedAt,
             UpdatedByUserId = workspace.UpdatedByUserId,
             IsActive = workspace.IsActive,
+            Owner = workspace.Owner != null
+                ? new WorkspaceDetailUserResponse
+                {
+                    Id = workspace.Owner.Id,
+                    UserName = workspace.Owner.Username,
+                    IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: workspace.Owner.AvatarType,
+                        userId: workspace.Owner.Id,
+                        username: workspace.Owner.Username,
+                        email: workspace.Owner.Email,
+                        avatarPath: workspace.Owner.UserAvatarPath
+                    ),
+                    IsActive = workspace.Owner.IsActive,
+                }
+                : null,
             RowVersion = workspace.RowVersion!,
         };
 
@@ -234,6 +264,22 @@ public class AdminWorkspaceController : BaseAdminController
                         IsActive = wu.User.IsActive,
                     })
                     .ToList(),
+                Owner = w.Owner != null
+                    ? new WorkspaceUserItem
+                    {
+                        UserId = w.Owner.Id,
+                        Username = w.Owner.Username,
+                        Email = w.Owner.Email,
+                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: w.Owner.AvatarType,
+                            userId: w.Owner.Id,
+                            username: w.Owner.Username,
+                            email: w.Owner.Email,
+                            avatarPath: w.Owner.UserAvatarPath
+                        ),
+                        IsActive = w.Owner.IsActive,
+                    }
+                    : null,
             })
             .ToList();
 
@@ -288,6 +334,21 @@ public class AdminWorkspaceController : BaseAdminController
             UpdatedAt = workspace.UpdatedAt,
             UpdatedByUserId = workspace.UpdatedByUserId,
             IsActive = workspace.IsActive,
+            Owner = workspace.Owner != null
+                ? new WorkspaceDetailUserResponse
+                {
+                    Id = workspace.Owner.Id,
+                    UserName = workspace.Owner.Username,
+                    IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                        iconType: workspace.Owner.AvatarType,
+                        userId: workspace.Owner.Id,
+                        username: workspace.Owner.Username,
+                        email: workspace.Owner.Email,
+                        avatarPath: workspace.Owner.UserAvatarPath
+                    ),
+                    IsActive = workspace.Owner.IsActive,
+                }
+                : null,
             RowVersion = workspace.RowVersion!,
         };
         return TypedResults.Ok(response);

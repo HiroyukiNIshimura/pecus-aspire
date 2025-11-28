@@ -83,4 +83,10 @@ public class WorkspaceListItemResponse
     /// 参加しているユーザー一覧
     /// </summary>
     public List<WorkspaceUserItem>? Members { get; set; }
+
+    /// <summary>
+    /// オーナー情報
+    /// </summary>
+    /// <value></value>
+    public WorkspaceUserItem? Owner { get; set; }
 }

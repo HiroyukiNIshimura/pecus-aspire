@@ -161,6 +161,7 @@ public class WorkspaceService
         var query = _context
             .Workspaces.Include(w => w.Organization)
             .Include(w => w.Genre)
+            .Include(w => w.Owner)
             .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
@@ -513,6 +514,7 @@ public class WorkspaceService
             .Workspaces
             .Include(w => w.Organization)
             .Include(w => w.Genre)
+            .Include(w => w.Owner)
             .Include(w => w.WorkspaceUsers.Where(wu => wu.User != null && wu.User.IsActive))
                 .ThenInclude(wu => wu.User)
             .Include(w => w.WorkspaceItems)
@@ -724,6 +726,7 @@ public class WorkspaceService
         var workspace = await _context.Workspaces
             .AsNoTracking()
             .Include(w => w.Genre)
+            .Include(w => w.Owner)
             .Include(w => w.WorkspaceUsers)
                 .ThenInclude(wu => wu.User)
             .Where(w => w.Id == workspaceId)
@@ -804,6 +807,23 @@ public class WorkspaceService
             })
             .ToList();
 
+        // Owner の構築
+        var owner = workspace.Owner != null
+            ? new WorkspaceDetailUserResponse
+            {
+                Id = workspace.Owner.Id,
+                UserName = workspace.Owner.Username,
+                IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: workspace.Owner.AvatarType,
+                    userId: workspace.Owner.Id,
+                    username: workspace.Owner.Username,
+                    email: workspace.Owner.Email,
+                    avatarPath: workspace.Owner.UserAvatarPath
+                ),
+                IsActive = workspace.Owner.IsActive,
+            }
+            : null;
+
         return new WorkspaceFullDetailResponse
         {
             Id = workspace.Id,
@@ -818,6 +838,7 @@ public class WorkspaceService
             UpdatedAt = workspace.UpdatedAt,
             UpdatedBy = updatedBy,
             Members = members,
+            Owner = owner,
             IsActive = workspace.IsActive,
             RowVersion = workspace.RowVersion!,
         };

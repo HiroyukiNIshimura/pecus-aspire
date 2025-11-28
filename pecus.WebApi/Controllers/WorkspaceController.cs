@@ -163,6 +163,22 @@ public class WorkspaceController : BaseSecureController
                         IsActive = wu.User.IsActive,
                     })
                     .ToList(),
+                Owner = w.Owner != null
+                    ? new WorkspaceUserItem
+                    {
+                        UserId = w.Owner.Id,
+                        Username = w.Owner.Username,
+                        Email = w.Owner.Email,
+                        IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                            iconType: w.Owner.AvatarType,
+                            userId: w.Owner.Id,
+                            username: w.Owner.Username,
+                            email: w.Owner.Email,
+                            avatarPath: w.Owner.UserAvatarPath
+                        ),
+                        IsActive = w.Owner.IsActive,
+                    }
+                    : null,
             })
             .ToList();
 

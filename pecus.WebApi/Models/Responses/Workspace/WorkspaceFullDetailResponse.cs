@@ -50,6 +50,12 @@ public class WorkspaceFullDetailResponse : IConflictModel
     public List<WorkspaceDetailUserResponse> Members { get; set; } = [];
 
     /// <summary>
+    /// オーナー情報
+    /// </summary>
+    /// <value></value>
+    public WorkspaceDetailUserResponse? Owner { get; set; }
+
+    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }
