@@ -593,9 +593,9 @@ public class DatabaseSeeder
             var organizations = await _context.Organizations.ToListAsync();
             var genres = await _context.Genres.ToListAsync();
 
-            // 組織ごとのユーザーを事前に取得
+            // 組織ごとのアクティブなユーザーを事前に取得（オーナー候補）
             var usersByOrganization = await _context.Users
-                .Where(u => u.OrganizationId != null)
+                .Where(u => u.OrganizationId != null && u.IsActive)
                 .GroupBy(u => u.OrganizationId!.Value)
                 .ToDictionaryAsync(g => g.Key, g => g.ToList());
 
