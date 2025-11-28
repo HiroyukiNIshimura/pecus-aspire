@@ -41,7 +41,7 @@ export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoa
       });
 
       if (result.success) {
-        notify.success('スキルが更新されました');
+        notify.success('スキルを更新しました。');
       } else {
         notify.error(result.message || 'スキル更新に失敗しました');
       }

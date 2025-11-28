@@ -63,7 +63,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
           onUpdate(updatedUserInfo);
           setUploadedFileUrl(result.data.userAvatarPath || null);
           setAvatarPreviewUrl(null);
-          notify.success('基本情報が更新されました');
+          notify.success('プロフィールを更新しました。');
         } else {
           notify.error(result.message || '更新に失敗しました');
         }
@@ -140,7 +140,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
 
       if (uploadResult.success) {
         setUploadedFileUrl(uploadResult.data?.fileUrl || null);
-        notify.success('画像をアップロードしました');
+        notify.success('画像をアップロードしました。');
       } else {
         notify.error(uploadResult.message || 'アップロードに失敗しました');
         setAvatarPreviewUrl(null);
@@ -205,7 +205,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
           });
 
           if (result.success) {
-            notify.success('アップロード済みファイルを削除しました');
+            notify.success('アップロード済みファイルを削除しました。');
           } else {
             notify.error(result.message || '削除に失敗しました');
           }

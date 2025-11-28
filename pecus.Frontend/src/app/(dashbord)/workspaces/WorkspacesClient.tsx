@@ -198,7 +198,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
-        notify.success(workspace.isActive ? 'ワークスペースを無効化しました' : 'ワークスペースを有効化しました');
+        notify.success(workspace.isActive ? 'ワークスペースを無効化しました。' : 'ワークスペースを有効化しました。');
       } else {
         // エラー表示
         notify.error(result.message || '状態の切り替えに失敗しました。');
@@ -224,7 +224,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
       if (result.success) {
         // 一覧を再取得
         await handleFilterChange();
-        notify.success('ワークスペースを削除しました');
+        notify.success('ワークスペースを削除しました。');
       } else {
         // エラー表示
         notify.error(result.message || 'ワークスペースの削除に失敗しました。');

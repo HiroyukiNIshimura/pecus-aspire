@@ -33,7 +33,7 @@ export default function PasswordChangeTab({ notify, isLoading, setIsLoading }: P
         });
 
         if (result.success) {
-          notify.success('パスワードが変更されました');
+          notify.success('パスワードを変更しました。');
           formRef.current?.reset();
           setNewPassword('');
         } else {
