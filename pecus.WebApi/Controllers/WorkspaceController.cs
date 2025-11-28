@@ -61,7 +61,7 @@ public class WorkspaceController : BaseSecureController
         );
 
         // 作成されたワークスペースの詳細情報を取得
-        var response = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id);
+        var response = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id, CurrentUserId);
 
         return TypedResults.Created($"/api/workspaces/{response.Id}", response);
     }
@@ -235,8 +235,8 @@ public class WorkspaceController : BaseSecureController
     /// </summary>
     private async Task<Ok<WorkspaceFullDetailResponse>> GetWorkspaceDetailResponseAsync(int workspaceId)
     {
-        // ワークスペース詳細情報を取得
-        var response = await _workspaceService.GetWorkspaceDetailAsync(workspaceId);
+        // ワークスペース詳細情報を取得（ログインユーザーのロールも含む）
+        var response = await _workspaceService.GetWorkspaceDetailAsync(workspaceId, CurrentUserId);
 
         return TypedResults.Ok(response);
     }
@@ -415,7 +415,7 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id, CurrentUserId);
 
         return TypedResults.Ok(response);
     }
@@ -453,7 +453,7 @@ public class WorkspaceController : BaseSecureController
         }
 
         // 更新後のワークスペース詳細情報を取得
-        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id, CurrentUserId);
 
         return TypedResults.Ok(response);
     }

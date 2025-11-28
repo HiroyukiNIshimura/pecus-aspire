@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Workspace;
@@ -79,6 +80,11 @@ public class WorkspaceFullDetailResponse : IConflictModel
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// ログインユーザーのこのワークスペースに対するロール
+    /// </summary>
+    public WorkspaceRole? CurrentUserRole { get; set; }
 
     /// <summary>
     /// 楽観的ロック用のRowVersion

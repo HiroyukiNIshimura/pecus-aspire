@@ -746,7 +746,8 @@ public class WorkspaceService
     /// ワークスペース詳細情報を取得（DTO形式で、IdentityIconUrl を含む）
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
-    public async Task<WorkspaceFullDetailResponse> GetWorkspaceDetailAsync(int workspaceId)
+    /// <param name="currentUserId">ログインユーザーID（ロール取得用）</param>
+    public async Task<WorkspaceFullDetailResponse> GetWorkspaceDetailAsync(int workspaceId, int? currentUserId = null)
     {
         // ワークスペース基本情報を取得
         var workspace = await _context.Workspaces
@@ -850,6 +851,15 @@ public class WorkspaceService
             }
             : null;
 
+        // ログインユーザーのロールを取得
+        WorkspaceRole? currentUserRole = null;
+        if (currentUserId.HasValue)
+        {
+            var currentUserWorkspace = workspace.WorkspaceUsers
+                .FirstOrDefault(wu => wu.UserId == currentUserId.Value);
+            currentUserRole = currentUserWorkspace?.WorkspaceRole;
+        }
+
         return new WorkspaceFullDetailResponse
         {
             Id = workspace.Id,
@@ -866,6 +876,7 @@ public class WorkspaceService
             Members = members,
             Owner = owner,
             IsActive = workspace.IsActive,
+            CurrentUserRole = currentUserRole,
             RowVersion = workspace.RowVersion!,
         };
     }

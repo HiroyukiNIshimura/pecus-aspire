@@ -39,8 +39,16 @@
 - `CheckWorkspaceMemberOrOwnerAsync` - Member 以上（更新系）
 - `CheckWorkspaceOwnerAsync` - Owner のみ（有効化/無効化・メンバー管理）
 
+## レスポンスの CurrentUserRole
+
+ワークスペース詳細取得 API (`WorkspaceFullDetailResponse`) のレスポンスには `currentUserRole` フィールドが含まれます。
+これはログインユーザーのそのワークスペースに対するロール（`Viewer` / `Member` / `Owner`）を返します。
+
+フロントエンドではこの値を使って、更新ボタンやメンバー管理ボタンの表示/非表示を制御できます。
+
 ## 関連ファイル
 
 - `pecus.WebApi/Controllers/WorkspaceController.cs`
 - `pecus.WebApi/Services/WorkspaceService.cs`
+- `pecus.WebApi/Models/Responses/Workspace/WorkspaceFullDetailResponse.cs`
 - `pecus.Libs/DB/Models/Enums/WorkspaceRole.cs`
