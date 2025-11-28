@@ -1,8 +1,29 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
+import type { WorkspaceRole } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+
+/**
+ * メンバー情報の共通インターフェース
+ * WorkspaceUserItem と WorkspaceDetailUserResponse の両方を受け入れ可能
+ */
+export interface MemberItem {
+  /** ユーザーID (userId または id) */
+  userId?: number;
+  id?: number;
+  /** ユーザー名 (username または userName) */
+  username?: string;
+  userName?: string | null;
+  /** メールアドレス */
+  email?: string | null;
+  /** アイデンティティアイコンURL */
+  identityIconUrl?: string | null;
+  /** ワークスペースロール */
+  workspaceRole?: WorkspaceRole;
+  /** アクティブフラグ */
+  isActive?: boolean;
+}
 
 /**
  * ロールの表示設定
@@ -20,11 +41,19 @@ const roleOptions: { value: WorkspaceRole; label: string }[] = [
   { value: 'Viewer', label: '閲覧者' },
 ];
 
+/** メンバー情報からユーザーIDを取得 */
+const getMemberId = (member: MemberItem): number => member.userId ?? member.id ?? 0;
+
+/** メンバー情報からユーザー名を取得 */
+const getMemberName = (member: MemberItem): string => member.username ?? member.userName ?? '';
+
 interface WorkspaceMemberListProps {
   /** メンバー一覧 */
-  members: WorkspaceUserItem[];
+  members: MemberItem[];
   /** 編集モード（メンバー追加/削除/ロール変更を許可） */
   editable?: boolean;
+  /** ワークスペース作成者（オーナー）のユーザーID（この人は削除/ロール変更不可） */
+  ownerId?: number;
   /** メンバー追加ボタンクリック時のコールバック */
   onAddMember?: () => void;
   /** メンバー削除ボタンクリック時のコールバック */
@@ -43,6 +72,7 @@ interface WorkspaceMemberListProps {
 export default function WorkspaceMemberList({
   members,
   editable = false,
+  ownerId,
   onAddMember,
   onRemoveMember,
   onChangeRole,
@@ -85,12 +115,13 @@ export default function WorkspaceMemberList({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {sortedMembers.map((member) => (
               <WorkspaceMemberCard
-                key={member.userId}
+                key={getMemberId(member)}
                 member={member}
                 editable={editable}
+                isWorkspaceOwner={ownerId !== undefined && getMemberId(member) === ownerId}
                 onRemove={onRemoveMember}
                 onChangeRole={onChangeRole}
-                isHighlighted={highlightedUserIds?.has(member.userId ?? 0) ?? false}
+                isHighlighted={highlightedUserIds?.has(getMemberId(member)) ?? false}
               />
             ))}
           </div>
@@ -104,8 +135,10 @@ export default function WorkspaceMemberList({
  * メンバーカードコンポーネント
  */
 interface WorkspaceMemberCardProps {
-  member: WorkspaceUserItem;
+  member: MemberItem;
   editable: boolean;
+  /** このメンバーがワークスペース作成者（スペシャルオーナー）かどうか */
+  isWorkspaceOwner: boolean;
   onRemove?: (userId: number, userName: string) => void;
   onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
   /** ハイライト表示（新規追加時） */
@@ -115,11 +148,13 @@ interface WorkspaceMemberCardProps {
 function WorkspaceMemberCard({
   member,
   editable,
+  isWorkspaceOwner,
   onRemove,
   onChangeRole,
   isHighlighted = false,
 }: WorkspaceMemberCardProps) {
-  const isOwner = member.workspaceRole === 'Owner';
+  const memberId = getMemberId(member);
+  const memberName = getMemberName(member);
   const config = roleConfig[member.workspaceRole || 'Viewer'] || roleConfig.Viewer;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -142,15 +177,15 @@ function WorkspaceMemberCard({
   }, [isMenuOpen]);
 
   const handleRoleChange = (newRole: WorkspaceRole) => {
-    if (onChangeRole && member.userId && newRole !== member.workspaceRole) {
-      onChangeRole(member.userId, member.username || '', newRole);
+    if (onChangeRole && memberId && newRole !== member.workspaceRole) {
+      onChangeRole(memberId, memberName, newRole);
     }
     setIsMenuOpen(false);
   };
 
   const handleRemove = () => {
-    if (onRemove && member.userId) {
-      onRemove(member.userId, member.username || '');
+    if (onRemove && memberId) {
+      onRemove(memberId, memberName);
     }
     setIsMenuOpen(false);
   };
@@ -165,7 +200,7 @@ function WorkspaceMemberCard({
       {member.identityIconUrl ? (
         <img
           src={getDisplayIconUrl(member.identityIconUrl)}
-          alt={member.username || 'ユーザー'}
+          alt={memberName || 'ユーザー'}
           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
         />
       ) : (
@@ -189,7 +224,7 @@ function WorkspaceMemberCard({
 
       {/* ユーザー情報 */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold truncate">{member.username}</p>
+        <p className="text-sm font-semibold truncate">{memberName}</p>
         <div className="flex items-center gap-2 flex-wrap mt-1">
           {/* ロールバッジ */}
           <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
@@ -198,14 +233,14 @@ function WorkspaceMemberCard({
         </div>
       </div>
 
-      {/* 3点メニュー（オーナー以外、編集モード時のみ） */}
-      {editable && !isOwner && (
+      {/* 3点メニュー（ワークスペース作成者以外、編集モード時のみ） */}
+      {editable && !isWorkspaceOwner && (
         <div className="relative" ref={menuRef}>
           <button
             type="button"
             className="btn btn-ghost btn-xs btn-square"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={`${member.username}のメニューを開く`}
+            aria-label={`${memberName}のメニューを開く`}
             aria-haspopup="true"
             aria-expanded={isMenuOpen}
           >

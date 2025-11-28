@@ -7,7 +7,12 @@ import {
   detectConcurrencyError,
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
-import type { WorkspaceDetailResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
+import type {
+  WorkspaceDetailResponse,
+  WorkspaceFullDetailResponse,
+  WorkspaceRole,
+  WorkspaceUserDetailResponse,
+} from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
 
@@ -169,5 +174,95 @@ export async function toggleWorkspaceActive(
     }
 
     return parseErrorResponse(error, 'ワークスペースの状態変更に失敗しました。');
+  }
+}
+
+// ===== メンバー管理（一般ユーザー用 - Owner権限が必要） =====
+
+/**
+ * Server Action: ワークスペースにメンバーを追加（Owner権限が必要）
+ */
+export async function addMemberToWorkspace(
+  workspaceId: number,
+  userId: number,
+  workspaceRole: WorkspaceRole,
+): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.postApiWorkspacesMembers(workspaceId, {
+      userId,
+      workspaceRole,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to add member to workspace:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'メンバーの追加に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースからメンバーを削除（Owner権限または自分自身）
+ */
+export async function removeMemberFromWorkspace(workspaceId: number, userId: number): Promise<ApiResponse<void>> {
+  try {
+    const api = createPecusApiClients();
+    await api.workspace.deleteApiWorkspacesMembers(workspaceId, userId);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('Failed to remove member from workspace:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'メンバーの削除に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースメンバーのロールを変更（Owner権限が必要）
+ */
+export async function updateMemberRoleInWorkspace(
+  workspaceId: number,
+  userId: number,
+  newRole: WorkspaceRole,
+): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.patchApiWorkspacesMembersRole(workspaceId, userId, {
+      workspaceRole: newRole,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to update member role:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'ロールの変更に失敗しました');
   }
 }

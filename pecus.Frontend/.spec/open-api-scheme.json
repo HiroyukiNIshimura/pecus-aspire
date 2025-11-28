@@ -11324,10 +11324,18 @@
             "description": "ユーザー名",
             "nullable": true
           },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
+          },
           "identityIconUrl": {
             "type": "string",
             "description": "アイデンティティアイコン URL",
             "nullable": true
+          },
+          "workspaceRole": {
+            "$ref": "#/components/schemas/WorkspaceRole"
           },
           "isActive": {
             "type": "boolean",

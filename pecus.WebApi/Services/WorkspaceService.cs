@@ -869,6 +869,7 @@ public class WorkspaceService
             {
                 Id = wu.User!.Id,
                 UserName = wu.User.Username,
+                Email = wu.User.Email,
                 IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
                     iconType: wu.User.AvatarType,
                     userId: wu.User.Id,
@@ -876,6 +877,7 @@ public class WorkspaceService
                     email: wu.User.Email,
                     avatarPath: wu.User.UserAvatarPath
                 ),
+                WorkspaceRole = wu.WorkspaceRole,
                 IsActive = wu.User.IsActive,
             })
             .ToList();

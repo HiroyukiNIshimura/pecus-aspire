@@ -456,6 +456,7 @@ export default function EditWorkspaceClient({
             <WorkspaceMemberList
               members={members}
               editable={true}
+              ownerId={workspaceDetail.owner?.id}
               onAddMember={handleAddMember}
               onRemoveMember={handleRemoveMember}
               onChangeRole={handleChangeRole}

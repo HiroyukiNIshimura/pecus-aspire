@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceRole } from './WorkspaceRole';
 /**
  * ワークスペース詳細取得用ユーザー情報
  */
@@ -15,9 +16,14 @@ export type WorkspaceDetailUserResponse = {
      */
     userName?: string | null;
     /**
+     * メールアドレス
+     */
+    email?: string | null;
+    /**
      * アイデンティティアイコン URL
      */
     identityIconUrl?: string | null;
+    workspaceRole?: WorkspaceRole;
     /**
      * アクティブフラグ
      */

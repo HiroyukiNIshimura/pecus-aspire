@@ -3,8 +3,19 @@
 import PersonIcon from '@mui/icons-material/Person';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { addMemberToWorkspace, removeMemberFromWorkspace, updateMemberRoleInWorkspace } from '@/actions/workspace';
 import AppHeader from '@/components/common/AppHeader';
-import type { WorkspaceFullDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import AddMemberModal from '@/components/workspaces/AddMemberModal';
+import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
+import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
+import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
+import type {
+  WorkspaceDetailUserResponse,
+  WorkspaceFullDetailResponse,
+  WorkspaceListItemResponse,
+  WorkspaceRole,
+} from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
@@ -26,6 +37,7 @@ export default function WorkspaceDetailClient({
   userInfo,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
+  const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -34,6 +46,36 @@ export default function WorkspaceDetailClient({
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // ===== メンバー管理の状態 =====
+  // ログインユーザーがOwnerかどうか
+  const isOwner = workspaceDetail.currentUserRole === 'Owner';
+
+  // メンバー一覧（状態管理）
+  const [members, setMembers] = useState<WorkspaceDetailUserResponse[]>(workspaceDetail.members || []);
+
+  // 新規追加されたメンバーのハイライト表示用（3秒間）
+  const [highlightedUserIds, setHighlightedUserIds] = useState<Set<number>>(new Set());
+
+  // メンバー追加モーダルの状態
+  const [addMemberModal, setAddMemberModal] = useState(false);
+
+  // 削除モーダルの状態
+  const [removeMemberModal, setRemoveMemberModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    userName: string;
+    email: string;
+  }>({ isOpen: false, userId: 0, userName: '', email: '' });
+
+  // ロール変更モーダルの状態
+  const [changeRoleModal, setChangeRoleModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    userName: string;
+    currentRole: WorkspaceRole;
+    newRole: WorkspaceRole;
+  }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
   // ローカルストレージからサイドバー幅を取得（初期値: 256px）
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -47,6 +89,130 @@ export default function WorkspaceDetailClient({
   const _handleBack = () => {
     router.back();
   };
+
+  // ===== メンバー管理のコールバック（Owner専用） =====
+
+  /** メンバー追加モーダルを開く */
+  const handleAddMember = () => {
+    setAddMemberModal(true);
+  };
+
+  /** メンバー追加モーダルを閉じる */
+  const handleAddMemberModalClose = () => {
+    setAddMemberModal(false);
+  };
+
+  /** メンバー追加を実行 */
+  const handleAddMemberConfirm = async (
+    userId: number,
+    userName: string,
+    email: string,
+    role: WorkspaceRole,
+    identityIconUrl: string | null,
+  ) => {
+    const result = await addMemberToWorkspace(workspaceDetail.id, userId, role);
+
+    if (result.success) {
+      // メンバー一覧に追加
+      const newMember: WorkspaceDetailUserResponse = {
+        id: userId,
+        userName,
+        email,
+        workspaceRole: role,
+        isActive: true,
+        identityIconUrl: identityIconUrl ?? undefined,
+      };
+      setMembers((prev) => [...prev, newMember]);
+
+      // 新規メンバーを3秒間ハイライト表示
+      setHighlightedUserIds((prev) => new Set([...prev, userId]));
+      setTimeout(() => {
+        setHighlightedUserIds((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+      }, 3000);
+
+      notify.success(`${userName} をワークスペースに追加しました。`);
+      handleAddMemberModalClose();
+    } else {
+      notify.error(result.message || 'メンバーの追加に失敗しました。');
+    }
+  };
+
+  /** メンバー削除モーダルを開く */
+  const handleRemoveMember = (userId: number, userName: string) => {
+    const member = members.find((m) => m.id === userId);
+    const email = member?.email || '';
+    setRemoveMemberModal({ isOpen: true, userId, userName, email });
+  };
+
+  /** メンバー削除モーダルを閉じる */
+  const handleRemoveMemberModalClose = () => {
+    setRemoveMemberModal({ isOpen: false, userId: 0, userName: '', email: '' });
+  };
+
+  /** メンバー削除を実行 */
+  const handleRemoveMemberConfirm = async () => {
+    const { userId, userName } = removeMemberModal;
+    const result = await removeMemberFromWorkspace(workspaceDetail.id, userId);
+
+    if (result.success) {
+      setMembers((prev) => prev.filter((m) => m.id !== userId));
+      notify.success(`${userName} をワークスペースから削除しました。`);
+    } else {
+      notify.error(result.message || 'メンバーの削除に失敗しました。');
+    }
+
+    handleRemoveMemberModalClose();
+  };
+
+  /** ロール変更モーダルを開く */
+  const handleChangeRole = (userId: number, userName: string, newRole: WorkspaceRole) => {
+    const member = members.find((m) => m.id === userId);
+    const currentRole = member?.workspaceRole || 'Member';
+
+    if (currentRole === newRole) {
+      return;
+    }
+
+    setChangeRoleModal({
+      isOpen: true,
+      userId,
+      userName,
+      currentRole,
+      newRole,
+    });
+  };
+
+  /** ロール変更モーダルを閉じる */
+  const handleChangeRoleModalClose = () => {
+    setChangeRoleModal({
+      isOpen: false,
+      userId: 0,
+      userName: '',
+      currentRole: 'Member',
+      newRole: 'Member',
+    });
+  };
+
+  /** ロール変更を実行 */
+  const handleChangeRoleConfirm = async () => {
+    const { userId, userName, newRole } = changeRoleModal;
+    const result = await updateMemberRoleInWorkspace(workspaceDetail.id, userId, newRole);
+
+    if (result.success) {
+      setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, workspaceRole: newRole } : m)));
+      notify.success(`${userName} のロールを変更しました。`);
+    } else {
+      notify.error(result.message || 'ロールの変更に失敗しました。');
+    }
+
+    handleChangeRoleModalClose();
+  };
+
+  // ===== ワークスペースアイテム関連のコールバック =====
 
   // ワークスペースHome選択ハンドラ
   const handleHomeSelect = useCallback(() => {
@@ -210,19 +376,19 @@ export default function WorkspaceDetailClient({
                     </div>
                   )}
 
-                  {/* 作成者 */}
-                  {workspaceDetail.createdBy?.userName && (
+                  {/* オーナー */}
+                  {workspaceDetail.owner?.userName && (
                     <div>
-                      <span className="text-xs text-base-content/70">作成者</span>
+                      <span className="text-xs text-base-content/70">オーナー</span>
                       <div className="flex items-center gap-2 mt-1">
-                        {workspaceDetail.createdBy.identityIconUrl && (
+                        {workspaceDetail.owner.identityIconUrl && (
                           <img
-                            src={getDisplayIconUrl(workspaceDetail.createdBy.identityIconUrl)}
-                            alt={workspaceDetail.createdBy.userName}
+                            src={getDisplayIconUrl(workspaceDetail.owner.identityIconUrl)}
+                            alt={workspaceDetail.owner.userName}
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
                         )}
-                        <p className="font-semibold truncate">{workspaceDetail.createdBy.userName}</p>
+                        <p className="font-semibold truncate">{workspaceDetail.owner.userName}</p>
                       </div>
                     </div>
                   )}
@@ -232,7 +398,7 @@ export default function WorkspaceDetailClient({
                     <span className="text-xs text-base-content/70">メンバー数</span>
                     <p className="font-semibold flex items-center gap-2">
                       <PersonIcon className="w-4 h-4" />
-                      {workspaceDetail.members?.length || 0}
+                      {members.length}
                     </p>
                   </div>
 
@@ -273,29 +439,18 @@ export default function WorkspaceDetailClient({
                   )}
                 </div>
 
-                {/* メンバー一覧 */}
-                {workspaceDetail.members && workspaceDetail.members.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-lg font-bold mb-3">メンバー一覧</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {workspaceDetail.members.map((member) => (
-                        <div key={member.id} className="flex items-center gap-2 p-2 bg-base-200 rounded">
-                          {member.identityIconUrl && (
-                            <img
-                              src={getDisplayIconUrl(member.identityIconUrl)}
-                              alt={member.userName || 'ユーザー'}
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">{member.userName}</p>
-                            {!member.isActive && <p className="text-xs text-base-content/50">(非アクティブ)</p>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* メンバー一覧 - WorkspaceMemberList コンポーネントを使用 */}
+                <div className="mt-4">
+                  <WorkspaceMemberList
+                    members={members}
+                    editable={isOwner}
+                    ownerId={workspaceDetail.owner?.id}
+                    onAddMember={isOwner ? handleAddMember : undefined}
+                    onRemoveMember={isOwner ? handleRemoveMember : undefined}
+                    onChangeRole={isOwner ? handleChangeRole : undefined}
+                    highlightedUserIds={highlightedUserIds}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -306,10 +461,44 @@ export default function WorkspaceDetailClient({
               workspaceId={workspaceDetail.id}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
-              members={workspaceDetail.members || []}
+              members={members}
             />
           )}
         </main>
+
+        {/* メンバー追加モーダル */}
+        <AddMemberModal
+          isOpen={addMemberModal}
+          onClose={handleAddMemberModalClose}
+          onConfirm={handleAddMemberConfirm}
+          existingMembers={members.map((m) => ({
+            userId: m.id ?? 0,
+            username: m.userName ?? '',
+            email: m.email ?? '',
+            identityIconUrl: m.identityIconUrl ?? '',
+            workspaceRole: m.workspaceRole,
+            isActive: m.isActive,
+          }))}
+        />
+
+        {/* メンバー削除モーダル */}
+        <RemoveMemberModal
+          isOpen={removeMemberModal.isOpen}
+          onClose={handleRemoveMemberModalClose}
+          onConfirm={handleRemoveMemberConfirm}
+          userName={removeMemberModal.userName}
+          email={removeMemberModal.email}
+        />
+
+        {/* ロール変更モーダル */}
+        <ChangeRoleModal
+          isOpen={changeRoleModal.isOpen}
+          onClose={handleChangeRoleModalClose}
+          onConfirm={handleChangeRoleConfirm}
+          userName={changeRoleModal.userName}
+          currentRole={changeRoleModal.currentRole}
+          newRole={changeRoleModal.newRole}
+        />
 
         {/* 新規アイテム作成モーダル */}
         <CreateWorkspaceItem
