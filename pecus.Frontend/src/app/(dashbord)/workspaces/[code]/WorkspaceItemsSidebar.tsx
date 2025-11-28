@@ -192,12 +192,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <SearchIcon className="absolute left-2.5 top-2.5 w-4 h-4 text-base-content/50 pointer-events-none" />
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50 pointer-events-none" />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-base-content/50 hover:text-base-content transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content transition-colors"
                 title="クリア"
               >
                 <ClearIcon className="w-4 h-4" />
