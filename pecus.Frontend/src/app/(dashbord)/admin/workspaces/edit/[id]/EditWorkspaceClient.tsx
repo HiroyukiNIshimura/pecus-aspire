@@ -2,11 +2,17 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { removeWorkspaceMember, updateWorkspace, updateWorkspaceMemberRole } from '@/actions/admin/workspace';
+import {
+  addWorkspaceMember,
+  removeWorkspaceMember,
+  updateWorkspace,
+  updateWorkspaceMemberRole,
+} from '@/actions/admin/workspace';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
@@ -42,6 +48,9 @@ export default function EditWorkspaceClient({
 
   // メンバー管理の状態
   const [members, setMembers] = useState<WorkspaceUserItem[]>(workspaceDetail.members || []);
+
+  // メンバー追加モーダルの状態
+  const [addMemberModal, setAddMemberModal] = useState(false);
 
   // 削除モーダルの状態
   const [removeMemberModal, setRemoveMemberModal] = useState<{
@@ -121,10 +130,36 @@ export default function EditWorkspaceClient({
 
   // ===== メンバー管理のコールバック =====
 
-  /** メンバー追加モーダルを開く（Phase 4 で実装） */
+  /** メンバー追加モーダルを開く */
   const handleAddMember = () => {
-    // TODO: Phase 4 でモーダル表示を実装
-    notify.info('メンバー追加機能は準備中です。');
+    setAddMemberModal(true);
+  };
+
+  /** メンバー追加モーダルを閉じる */
+  const handleAddMemberModalClose = () => {
+    setAddMemberModal(false);
+  };
+
+  /** メンバー追加を実行 */
+  const handleAddMemberConfirm = async (userId: number, userName: string, email: string, role: WorkspaceRole) => {
+    const result = await addWorkspaceMember(workspaceDetail.id!, userId, role);
+
+    if (result.success) {
+      // メンバー一覧に追加
+      const newMember: WorkspaceUserItem = {
+        userId,
+        username: userName,
+        email,
+        workspaceRole: role,
+        isActive: true,
+        identityIconUrl: '',
+      };
+      setMembers((prev) => [...prev, newMember]);
+      notify.success(`${userName} をワークスペースに追加しました。`);
+      handleAddMemberModalClose();
+    } else {
+      notify.error(result.message || 'メンバーの追加に失敗しました。');
+    }
   };
 
   /** メンバー削除モーダルを開く */
@@ -452,6 +487,14 @@ export default function EditWorkspaceClient({
         newRole={changeRoleModal.newRole}
         onConfirm={handleChangeRoleConfirm}
         onClose={handleChangeRoleModalClose}
+      />
+
+      {/* メンバー追加モーダル */}
+      <AddMemberModal
+        isOpen={addMemberModal}
+        existingMembers={members}
+        onConfirm={handleAddMemberConfirm}
+        onClose={handleAddMemberModalClose}
       />
     </div>
   );

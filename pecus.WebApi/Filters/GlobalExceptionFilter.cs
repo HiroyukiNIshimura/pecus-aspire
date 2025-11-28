@@ -35,6 +35,7 @@ public class GlobalExceptionFilter : IExceptionFilter
         var result = context.Exception switch
         {
             NotFoundException ex => HandleNotFoundException(ex, context),
+            BadRequestException ex => HandleBadRequestException(ex, context),
             DuplicateException ex => HandleDuplicateException(ex, context),
             InvalidOperationException ex => HandleInvalidOperationException(ex, context),
             _ => HandleUnexpectedException(context.Exception, context),
@@ -87,6 +88,28 @@ public class GlobalExceptionFilter : IExceptionFilter
         )
         {
             StatusCode = StatusCodes.Status404NotFound,
+        };
+    }
+
+    /// <summary>
+    /// BadRequestException: 400 Bad Request （不正なリクエスト）
+    /// </summary>
+    private IActionResult HandleBadRequestException(BadRequestException ex, ExceptionContext context)
+    {
+        _logger.LogWarning(
+            "Bad Request Exception: {Message}",
+            ex.Message
+        );
+
+        return new ObjectResult(
+            new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = ex.Message,
+            }
+        )
+        {
+            StatusCode = StatusCodes.Status400BadRequest,
         };
     }
 

@@ -51,6 +51,17 @@ internal class DbInitializer(
             throw; // 再スローしてサービスを停止させる
         }
 
+        // pgroonga 拡張とインデックスを有効化
+        try
+        {
+            await EnablePgroongaAsync(dbContext, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "pgroonga extension setup failed. Fuzzy search will use fallback ILIKE.");
+            // pgroonga が利用できなくてもアプリケーションは動作するため、例外は再スローしない
+        }
+
         try
         {
             await SeedAsync(seeder, cancellationToken);
@@ -75,5 +86,29 @@ internal class DbInitializer(
         await seeder.SeedAllAsync(isDevelopment);
 
         logger.LogInformation("Database seeding completed");
+    }
+
+    /// <summary>
+    /// pgroonga 拡張とインデックスを有効化
+    /// </summary>
+    private async Task EnablePgroongaAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Enabling pgroonga extension and creating indexes...");
+
+        // pgroonga 拡張を有効化
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "CREATE EXTENSION IF NOT EXISTS pgroonga;",
+            cancellationToken
+        );
+
+        // Users テーブルに pgroonga インデックスを作成（既存の場合はスキップ）
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS idx_users_pgroonga
+              ON ""Users""
+              USING pgroonga ((ARRAY[""Username"", ""Email""]));",
+            cancellationToken
+        );
+
+        logger.LogInformation("pgroonga extension and indexes enabled successfully");
     }
 }

@@ -475,8 +475,7 @@ public class AdminWorkspaceController : BaseAdminController
 
         var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
             id,
-            request,
-            CurrentUserId
+            request
         );
 
         var response = new WorkspaceUserDetailResponse

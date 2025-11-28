@@ -626,4 +626,71 @@ public class AdminUserController : BaseAdminController
 
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// ユーザーをあいまい検索
+    /// </summary>
+    /// <remarks>
+    /// ユーザー名またはメールアドレスであいまい検索を行います。
+    /// pgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。
+    /// ワークスペースへのメンバー追加時などに使用します。
+    /// </remarks>
+    /// <param name="q">検索クエリ（2文字以上）</param>
+    /// <param name="limit">取得件数上限（デフォルト20、最大50）</param>
+    /// <response code="200">検索結果を返します</response>
+    /// <response code="400">検索クエリが短すぎます</response>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(List<UserSearchResultResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<Ok<List<UserSearchResultResponse>>> SearchUsers(
+        [FromQuery] string q,
+        [FromQuery] int limit = 20
+    )
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        {
+            throw new BadRequestException("検索クエリは2文字以上で入力してください。");
+        }
+
+        // 上限を制限
+        var validatedLimit = Math.Min(Math.Max(limit, 1), 50);
+
+        List<User> users;
+        try
+        {
+            // pgroonga を使用したあいまい検索
+            users = await _userService.SearchUsersWithPgroongaAsync(
+                organizationId: CurrentUser!.OrganizationId!.Value,
+                searchQuery: q,
+                limit: validatedLimit
+            );
+        }
+        catch (Exception ex)
+        {
+            // pgroonga が利用できない場合はフォールバック
+            _logger.LogWarning(ex, "pgroonga 検索に失敗しました。ILIKE フォールバックを使用します。");
+            users = await _userService.SearchUsersFallbackAsync(
+                organizationId: CurrentUser!.OrganizationId!.Value,
+                searchQuery: q,
+                limit: validatedLimit
+            );
+        }
+
+        var response = users.Select(u => new UserSearchResultResponse
+        {
+            Id = u.Id,
+            Username = u.Username,
+            Email = u.Email,
+            AvatarType = u.AvatarType,
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: u.AvatarType,
+                userId: u.Id,
+                username: u.Username,
+                email: u.Email,
+                avatarPath: u.UserAvatarPath
+            ),
+        }).ToList();
+
+        return TypedResults.Ok(response);
+    }
 }

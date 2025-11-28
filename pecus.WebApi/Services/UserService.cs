@@ -799,4 +799,87 @@ public class UserService
             }
         );
     }
+
+    /// <summary>
+    /// pgroonga を使用したあいまいユーザー検索
+    /// </summary>
+    /// <remarks>
+    /// ワークスペースへのメンバー追加時など、ユーザー名またはメールアドレスで
+    /// あいまい検索を行う場合に使用します。
+    /// 日本語の漢字のゆらぎ（斎藤/斉藤など）やタイポにも対応します。
+    /// </remarks>
+    /// <param name="organizationId">組織ID（同一組織内のユーザーのみ検索）</param>
+    /// <param name="searchQuery">検索クエリ（ユーザー名またはメールアドレスの一部）</param>
+    /// <param name="limit">取得件数上限（デフォルト20件）</param>
+    /// <returns>検索にヒットしたユーザー一覧</returns>
+    public async Task<List<User>> SearchUsersWithPgroongaAsync(
+        int organizationId,
+        string searchQuery,
+        int limit = 20
+    )
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery.Length < 2)
+        {
+            return new List<User>();
+        }
+
+        // pgroonga のあいまい検索を使用
+        // &@~ 演算子：類似検索（タイポ許容）
+        // ARRAY[Username, Email] @@ query：複数カラムに対する全文検索
+        var users = await _context.Users
+            .FromSqlInterpolated($@"
+                SELECT * FROM ""Users""
+                WHERE ""OrganizationId"" = {organizationId}
+                  AND ""IsActive"" = true
+                  AND ARRAY[""Username"", ""Email""] &@~ {searchQuery}
+                ORDER BY pgroonga_score(tableoid, ctid) DESC
+                LIMIT {limit}
+            ")
+            .Include(u => u.Roles)
+            .Include(u => u.UserSkills)
+                .ThenInclude(us => us.Skill)
+            .AsSplitQuery()
+            .ToListAsync();
+
+        return users;
+    }
+
+    /// <summary>
+    /// ILIKE を使用したユーザー検索（pgroonga が使えない場合のフォールバック）
+    /// </summary>
+    /// <remarks>
+    /// pgroonga が利用できない環境でのフォールバック用メソッドです。
+    /// 部分一致検索のみ対応し、あいまい検索は行いません。
+    /// </remarks>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="searchQuery">検索クエリ</param>
+    /// <param name="limit">取得件数上限</param>
+    /// <returns>検索にヒットしたユーザー一覧</returns>
+    public async Task<List<User>> SearchUsersFallbackAsync(
+        int organizationId,
+        string searchQuery,
+        int limit = 20
+    )
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery.Length < 2)
+        {
+            return new List<User>();
+        }
+
+        var users = await _context.Users
+            .Where(u => u.OrganizationId == organizationId && u.IsActive)
+            .Where(u =>
+                EF.Functions.ILike(u.Username, $"%{searchQuery}%") ||
+                EF.Functions.ILike(u.Email, $"%{searchQuery}%")
+            )
+            .OrderBy(u => u.Username)
+            .Take(limit)
+            .Include(u => u.Roles)
+            .Include(u => u.UserSkills)
+                .ThenInclude(us => us.Skill)
+            .AsSplitQuery()
+            .ToListAsync();
+
+        return users;
+    }
 }

@@ -211,3 +211,24 @@ export async function updateWorkspaceMemberRole(
     return parseErrorResponse(error, 'ロールの変更に失敗しました');
   }
 }
+
+/**
+ * Server Action: ワークスペースにメンバーを追加
+ */
+export async function addWorkspaceMember(
+  workspaceId: number,
+  userId: number,
+  workspaceRole: 'Owner' | 'Member' | 'Viewer',
+): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminWorkspace.postApiAdminWorkspacesUsers(workspaceId, {
+      userId,
+      workspaceRole,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to add workspace member:', error);
+    return parseErrorResponse(error, 'メンバーの追加に失敗しました');
+  }
+}

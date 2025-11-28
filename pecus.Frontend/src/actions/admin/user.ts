@@ -206,3 +206,37 @@ export async function setUserRoles(
     return parseErrorResponse(error, 'ユーザーロールの更新に失敗しました');
   }
 }
+
+/**
+ * ユーザー検索結果の型（API自動生成前の暫定型）
+ */
+export interface UserSearchResult {
+  id: number;
+  username: string;
+  email: string;
+  avatarType?: string | null;
+  identityIconUrl?: string | null;
+}
+
+/**
+ * Server Action: ワークスペースメンバー追加用のユーザー検索
+ * pgroonga を使用したあいまい検索で、日本語の漢字のゆらぎやタイポにも対応
+ */
+export async function searchUsersForWorkspace(
+  query: string,
+  limit: number = 20,
+): Promise<ApiResponse<UserSearchResult[]>> {
+  try {
+    if (!query || query.length < 2) {
+      return { success: true, data: [] };
+    }
+
+    const api = createPecusApiClients();
+    // APIクライアント自動生成後は api.adminUser.getApiAdminUsersSearch(query, limit) に置き換え
+    const response = await api.adminUser.getApiAdminUsersSearch(query, limit);
+    return { success: true, data: response as UserSearchResult[] };
+  } catch (error) {
+    console.error('Failed to search users:', error);
+    return parseErrorResponse(error, 'ユーザー検索に失敗しました');
+  }
+}

@@ -18,7 +18,8 @@ try
 
     var postgres = builder
         .AddPostgres("postgres", userName: username, password: password, port: 5432)
-        .WithDataVolume(isReadOnly: false);
+        .WithImage("groonga/pgroonga", "latest-debian-18")
+        .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
     var dbManager = builder
