@@ -77,14 +77,19 @@ export default function WorkspaceDetailClient({
     newRole: WorkspaceRole;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
-  // ローカルストレージからサイドバー幅を取得（初期値: 256px）
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('workspaceSidebarWidth');
-      return saved ? parseInt(saved, 10) : 256;
+  // サイドバー幅（初期値: 256px、クライアントサイドでローカルストレージから復元）
+  const [sidebarWidth, setSidebarWidth] = useState(256);
+
+  // クライアントサイドでローカルストレージから幅を復元
+  useEffect(() => {
+    const saved = localStorage.getItem('workspaceSidebarWidth');
+    if (saved) {
+      const width = parseInt(saved, 10);
+      if (!Number.isNaN(width) && width >= 200 && width <= 600) {
+        setSidebarWidth(width);
+      }
     }
-    return 256;
-  });
+  }, []);
 
   const _handleBack = () => {
     router.back();
