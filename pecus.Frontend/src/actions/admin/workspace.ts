@@ -5,6 +5,7 @@ import type {
   SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
+  WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
 
@@ -171,5 +172,42 @@ export async function deactivateWorkspace(workspaceId: number): Promise<ApiRespo
 
     console.error('Failed to deactivate workspace:', error);
     return parseErrorResponse(error, 'ワークスペースの無効化に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースからメンバーを削除
+ */
+export async function removeWorkspaceMember(
+  workspaceId: number,
+  userId: number,
+): Promise<ApiResponse<SuccessResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminWorkspace.deleteApiAdminWorkspacesUsers(workspaceId, userId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to remove workspace member:', error);
+    return parseErrorResponse(error, 'メンバーの削除に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースメンバーのロールを変更
+ */
+export async function updateWorkspaceMemberRole(
+  workspaceId: number,
+  userId: number,
+  workspaceRole: 'Owner' | 'Member' | 'Viewer',
+): Promise<ApiResponse<WorkspaceUserDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesUsersRole(workspaceId, userId, {
+      workspaceRole,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to update workspace member role:', error);
+    return parseErrorResponse(error, 'ロールの変更に失敗しました');
   }
 }

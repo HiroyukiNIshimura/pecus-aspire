@@ -2,12 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { updateWorkspace } from '@/actions/admin/workspace';
+import { removeWorkspaceMember, updateWorkspace, updateWorkspaceMemberRole } from '@/actions/admin/workspace';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import GenreSelect from '@/components/workspaces/GenreSelect';
+import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type {
   MasterGenreResponse,
@@ -40,6 +42,23 @@ export default function EditWorkspaceClient({
 
   // メンバー管理の状態
   const [members, setMembers] = useState<WorkspaceUserItem[]>(workspaceDetail.members || []);
+
+  // 削除モーダルの状態
+  const [removeMemberModal, setRemoveMemberModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    userName: string;
+    email: string;
+  }>({ isOpen: false, userId: 0, userName: '', email: '' });
+
+  // ロール変更モーダルの状態
+  const [changeRoleModal, setChangeRoleModal] = useState<{
+    isOpen: boolean;
+    userId: number;
+    userName: string;
+    currentRole: WorkspaceRole;
+    newRole: WorkspaceRole;
+  }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
@@ -108,18 +127,80 @@ export default function EditWorkspaceClient({
     notify.info('メンバー追加機能は準備中です。');
   };
 
-  /** メンバー削除（Phase 2 で実装） */
+  /** メンバー削除モーダルを開く */
   const handleRemoveMember = (userId: number, userName: string) => {
-    // TODO: Phase 2 で確認モーダル表示 → 削除処理を実装
-    console.log('Remove member:', { userId, userName });
-    notify.info(`${userName} の削除機能は準備中です。`);
+    // membersからユーザー情報を取得してemailを設定
+    const member = members.find((m) => m.userId === userId);
+    const email = member?.email || '';
+    setRemoveMemberModal({ isOpen: true, userId, userName, email });
   };
 
-  /** ロール変更（Phase 3 で実装） */
+  /** メンバー削除モーダルを閉じる */
+  const handleRemoveMemberModalClose = () => {
+    setRemoveMemberModal({ isOpen: false, userId: 0, userName: '', email: '' });
+  };
+
+  /** メンバー削除を実行 */
+  const handleRemoveMemberConfirm = async () => {
+    const { userId, userName } = removeMemberModal;
+    const result = await removeWorkspaceMember(workspaceDetail.id!, userId);
+
+    if (result.success) {
+      // メンバー一覧から削除
+      setMembers((prev) => prev.filter((m) => m.userId !== userId));
+      notify.success(`${userName} をワークスペースから削除しました。`);
+    } else {
+      notify.error(result.message || 'メンバーの削除に失敗しました。');
+    }
+
+    handleRemoveMemberModalClose();
+  };
+
+  /** ロール変更モーダルを開く */
   const handleChangeRole = (userId: number, userName: string, newRole: WorkspaceRole) => {
-    // TODO: Phase 3 で確認モーダル表示 → 変更処理を実装
-    console.log('Change role:', { userId, userName, newRole });
-    notify.info(`${userName} のロール変更機能は準備中です。`);
+    // 現在のロールを取得
+    const member = members.find((m) => m.userId === userId);
+    const currentRole = member?.workspaceRole || 'Member';
+
+    // 同じロールの場合は何もしない
+    if (currentRole === newRole) {
+      return;
+    }
+
+    setChangeRoleModal({
+      isOpen: true,
+      userId,
+      userName,
+      currentRole,
+      newRole,
+    });
+  };
+
+  /** ロール変更モーダルを閉じる */
+  const handleChangeRoleModalClose = () => {
+    setChangeRoleModal({
+      isOpen: false,
+      userId: 0,
+      userName: '',
+      currentRole: 'Member',
+      newRole: 'Member',
+    });
+  };
+
+  /** ロール変更を実行 */
+  const handleChangeRoleConfirm = async () => {
+    const { userId, userName, newRole } = changeRoleModal;
+    const result = await updateWorkspaceMemberRole(workspaceDetail.id!, userId, newRole);
+
+    if (result.success) {
+      // メンバー一覧のロールを更新
+      setMembers((prev) => prev.map((m) => (m.userId === userId ? { ...m, workspaceRole: newRole } : m)));
+      notify.success(`${userName} のロールを変更しました。`);
+    } else {
+      notify.error(result.message || 'ロールの変更に失敗しました。');
+    }
+
+    handleChangeRoleModalClose();
   };
 
   return (
@@ -353,6 +434,25 @@ export default function EditWorkspaceClient({
 
       {/* Footer */}
       <AdminFooter />
+
+      {/* メンバー削除確認モーダル */}
+      <RemoveMemberModal
+        isOpen={removeMemberModal.isOpen}
+        userName={removeMemberModal.userName}
+        email={removeMemberModal.email}
+        onConfirm={handleRemoveMemberConfirm}
+        onClose={handleRemoveMemberModalClose}
+      />
+
+      {/* ロール変更確認モーダル */}
+      <ChangeRoleModal
+        isOpen={changeRoleModal.isOpen}
+        userName={changeRoleModal.userName}
+        currentRole={changeRoleModal.currentRole}
+        newRole={changeRoleModal.newRole}
+        onConfirm={handleChangeRoleConfirm}
+        onClose={handleChangeRoleModalClose}
+      />
     </div>
   );
 }
