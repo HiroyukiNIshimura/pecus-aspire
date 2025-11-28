@@ -67,7 +67,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペース情報を更新する（Member以上の権限が必要）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="request">ワークスペース更新リクエスト</param>
@@ -83,8 +83,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースアクセス権限チェック
-        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペース編集権限チェック（Member以上）
+        await _workspaceService.CheckWorkspaceMemberOrOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを更新
         await _workspaceService.UpdateWorkspaceAsync(
@@ -383,7 +383,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペースを有効化する（Ownerのみ実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
@@ -399,8 +399,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースアクセス権限チェック
-        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースオーナー権限チェック
+        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを有効化
         var result = await _workspaceService.ActivateWorkspaceAsync(
@@ -421,7 +421,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+    /// ワークスペースを無効化する（Ownerのみ実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
     /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
@@ -437,8 +437,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースアクセス権限チェック
-        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースオーナー権限チェック
+        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
         // ワークスペースを無効化
         var result = await _workspaceService.DeactivateWorkspaceAsync(

@@ -693,6 +693,32 @@ public class WorkspaceService
     }
 
     /// <summary>
+    /// ワークスペースの編集権限をチェック（Member または Owner のみ許可）
+    /// Viewer は更新権限がないため拒否されます。
+    /// </summary>
+    public async Task CheckWorkspaceMemberOrOwnerAsync(int workspaceId, int userId)
+    {
+        var workspaceUser = await _context.WorkspaceUsers
+            .AsNoTracking()
+            .Include(wu => wu.User)
+            .FirstOrDefaultAsync(wu =>
+                wu.WorkspaceId == workspaceId &&
+                wu.UserId == userId
+            );
+
+        if (workspaceUser == null || workspaceUser.User == null || !workspaceUser.User.IsActive)
+        {
+            throw new NotFoundException("ワークスペースにアクセスできません。");
+        }
+
+        // Viewer は更新権限なし
+        if (workspaceUser.WorkspaceRole == WorkspaceRole.Viewer)
+        {
+            throw new InvalidOperationException("この操作を実行する権限がありません。Member以上の権限が必要です。");
+        }
+    }
+
+    /// <summary>
     /// ワークスペースのオーナー権限をチェック（ユーザーがワークスペースのOwnerか確認）
     /// </summary>
     public async Task CheckWorkspaceOwnerAsync(int workspaceId, int userId)
