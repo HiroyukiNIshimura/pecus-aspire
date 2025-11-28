@@ -325,6 +325,7 @@ export default function WorkspaceItemDetail({
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onSave={handleEditSave}
+          currentUserId={currentUserId}
         />
       )}
 

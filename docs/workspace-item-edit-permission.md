@@ -48,7 +48,33 @@
 ## 実装箇所
 
 - **フロントエンド**: `pecus.Frontend/src/app/(dashbord)/workspaces/[code]/WorkspaceItemDetail.tsx`
+- **編集モーダル**: `pecus.Frontend/src/app/(dashbord)/workspaces/[code]/EditWorkspaceItem.tsx`
 - **担当者変更UI**: `pecus.Frontend/src/app/(dashbord)/workspaces/[code]/WorkspaceItemDrawer.tsx`
+
+## 編集モーダル内の項目表示権限
+
+編集モーダル内の一部の項目は、ユーザーの役割によって表示/非表示が切り替わります。
+
+### 項目表示マトリクス
+
+| 項目 | オーナー | 担当者 | その他 |
+|------|---------|--------|--------|
+| 件名 | ✅ 表示 | ✅ 表示 | ✅ 表示 |
+| 本文 | ✅ 表示 | ✅ 表示 | ✅ 表示 |
+| 期限日 | ✅ 表示 | ✅ 表示 | ✅ 表示 |
+| 優先度 | ✅ 表示 | ✅ 表示 | ✅ 表示 |
+| **下書き** | ✅ 表示 | ❌ 非表示 | ❌ 非表示 |
+| **アーカイブ** | ✅ 表示 | ✅ 表示 | ❌ 非表示 |
+
+### 下書きスイッチ（オーナーのみ）
+
+- **表示条件**: `currentUserId === item.ownerId`
+- **理由**: 下書き状態はオーナーが公開タイミングを制御するための機能であり、他のユーザーが変更すべきではない
+
+### アーカイブスイッチ（オーナーまたは担当者）
+
+- **表示条件**: `currentUserId === item.ownerId || currentUserId === item.assigneeId`
+- **理由**: アーカイブは作業完了を示すフラグであり、実際に作業を行うオーナーまたは担当者が操作すべき
 
 ## 設計意図
 

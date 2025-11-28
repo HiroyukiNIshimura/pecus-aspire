@@ -15,9 +15,10 @@ interface EditWorkspaceItemProps {
   isOpen: boolean;
   onClose: () => void;
   onSave?: (updatedItem: WorkspaceItemDetailResponse) => void;
+  currentUserId?: number;
 }
 
-export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: EditWorkspaceItemProps) {
+export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, currentUserId }: EditWorkspaceItemProps) {
   const notify = useNotify();
 
   // 最新アイテムデータ
@@ -354,35 +355,42 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave }: Edi
                   )}
                 </div>
 
-                {/* ステータス */}
-                <div className="form-control">
-                  <label className="label cursor-pointer justify-start gap-2">
+                {/* ステータス（オーナーのみ表示） */}
+                {currentUserId !== undefined && latestItem.ownerId === currentUserId && (
+                  <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
+                      id="isDraft"
                       name="isDraft"
-                      className="checkbox checkbox-primary"
+                      className="switch switch-outline switch-warning"
                       checked={formData.isDraft || false}
                       onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
                       disabled={isSubmitting}
                     />
-                    <span className="label-text">下書き</span>
-                  </label>
-                </div>
+                    <label htmlFor="isDraft" className="label-text cursor-pointer">
+                      下書き
+                    </label>
+                  </div>
+                )}
 
-                {/* アーカイブフラグ */}
-                <div className="form-control">
-                  <label className="label cursor-pointer justify-start gap-2">
-                    <input
-                      type="checkbox"
-                      name="isArchived"
-                      className="checkbox checkbox-neutral"
-                      checked={formData.isArchived || false}
-                      onChange={(e) => handleFieldChange('isArchived', e.target.checked)}
-                      disabled={isSubmitting}
-                    />
-                    <span className="label-text">アーカイブ</span>
-                  </label>
-                </div>
+                {/* アーカイブフラグ（オーナーまたは担当者のみ表示） */}
+                {currentUserId !== undefined &&
+                  (latestItem.ownerId === currentUserId || latestItem.assigneeId === currentUserId) && (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isArchived"
+                        name="isArchived"
+                        className="switch switch-outline switch-neutral"
+                        checked={formData.isArchived || false}
+                        onChange={(e) => handleFieldChange('isArchived', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <label htmlFor="isArchived" className="label-text cursor-pointer">
+                        アーカイブ
+                      </label>
+                    </div>
+                  )}
 
                 {/* rowVersion（隠しフィールド） */}
                 <input type="hidden" name="rowVersion" value={formData.rowVersion} />
