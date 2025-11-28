@@ -1,73 +1,273 @@
 'use client';
 
-import type { WorkspaceUserItem } from '@/connectors/api/pecus';
+import { useEffect, useRef, useState } from 'react';
+import type { WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
+/**
+ * ロールの表示設定
+ */
+const roleConfig: Record<WorkspaceRole, { label: string; badgeClass: string; order: number }> = {
+  Owner: { label: 'オーナー', badgeClass: 'badge-outline badge-warning', order: 0 },
+  Member: { label: 'メンバー', badgeClass: 'badge-outline badge-success', order: 1 },
+  Viewer: { label: '閲覧者', badgeClass: 'badge-outline badge-light', order: 2 },
+};
+
+/** ロール変更の選択肢 */
+const roleOptions: { value: WorkspaceRole; label: string }[] = [
+  { value: 'Owner', label: 'オーナー' },
+  { value: 'Member', label: 'メンバー' },
+  { value: 'Viewer', label: '閲覧者' },
+];
+
 interface WorkspaceMemberListProps {
+  /** メンバー一覧 */
   members: WorkspaceUserItem[];
+  /** 編集モード（メンバー追加/削除/ロール変更を許可） */
+  editable?: boolean;
+  /** メンバー追加ボタンクリック時のコールバック */
+  onAddMember?: () => void;
+  /** メンバー削除ボタンクリック時のコールバック */
+  onRemoveMember?: (userId: number, userName: string) => void;
+  /** ロール変更時のコールバック */
+  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
 }
 
 /**
  * ワークスペースメンバー一覧コンポーネント
  * - Owner → Member → Viewer の順にソート
- * - 権限に応じた badge の色分け
+ * - 編集モードでは3点メニューからロール変更・削除が可能
  */
-export default function WorkspaceMemberList({ members }: WorkspaceMemberListProps) {
-  if (!members || members.length === 0) {
-    return null;
-  }
-
-  // 権限の優先順位を定義: Owner > Member > Viewer
-  const roleOrder: Record<string, number> = { Owner: 0, Member: 1, Viewer: 2 };
-
+export default function WorkspaceMemberList({
+  members,
+  editable = false,
+  onAddMember,
+  onRemoveMember,
+  onChangeRole,
+}: WorkspaceMemberListProps) {
+  // 権限の優先順位でソート
   const sortedMembers = [...members].sort((a, b) => {
-    const orderA = roleOrder[a.workspaceRole || ''] ?? 3;
-    const orderB = roleOrder[b.workspaceRole || ''] ?? 3;
+    const orderA = roleConfig[a.workspaceRole || 'Viewer']?.order ?? 3;
+    const orderB = roleConfig[b.workspaceRole || 'Viewer']?.order ?? 3;
     return orderA - orderB;
   });
-
-  /**
-   * 権限に応じた badge の色を取得
-   */
-  const getRoleBadgeClass = (role: string | undefined): string => {
-    switch (role) {
-      case 'Owner':
-        return 'badge-warning';
-      case 'Member':
-        return 'badge-success';
-      default:
-        return 'badge-secondary';
-    }
-  };
 
   return (
     <div className="card bg-base-200 shadow-lg">
       <div className="card-body">
-        <h2 className="card-title text-lg mb-4">メンバー一覧</h2>
+        {/* ヘッダー */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="card-title text-lg">メンバー一覧</h2>
+          {editable && onAddMember && (
+            <button type="button" className="btn btn-primary btn-sm" onClick={onAddMember}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              メンバー追加
+            </button>
+          )}
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-          {sortedMembers.map((member) => (
-            <div key={member.userId} className="flex items-center gap-2 p-2 bg-base-100 rounded">
-              {member.identityIconUrl && (
-                <img
-                  src={getDisplayIconUrl(member.identityIconUrl)}
-                  alt={member.username || 'ユーザー'}
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold truncate">{member.username}</p>
-                <div className="flex items-center gap-2">
-                  <span className={`badge badge-xs ${getRoleBadgeClass(member.workspaceRole)}`}>
-                    {member.workspaceRole}
-                  </span>
-                  {!member.isActive && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
-                </div>
-              </div>
-            </div>
-          ))}
+        {/* メンバーが0件の場合 */}
+        {members.length === 0 ? (
+          <div className="text-center py-8 text-base-content/60">メンバーが登録されていません</div>
+        ) : (
+          /* メンバーグリッド */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {sortedMembers.map((member) => (
+              <WorkspaceMemberCard
+                key={member.userId}
+                member={member}
+                editable={editable}
+                onRemove={onRemoveMember}
+                onChangeRole={onChangeRole}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * メンバーカードコンポーネント
+ */
+interface WorkspaceMemberCardProps {
+  member: WorkspaceUserItem;
+  editable: boolean;
+  onRemove?: (userId: number, userName: string) => void;
+  onChangeRole?: (userId: number, userName: string, newRole: WorkspaceRole) => void;
+}
+
+function WorkspaceMemberCard({ member, editable, onRemove, onChangeRole }: WorkspaceMemberCardProps) {
+  const isOwner = member.workspaceRole === 'Owner';
+  const config = roleConfig[member.workspaceRole || 'Viewer'] || roleConfig.Viewer;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // メニュー外クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
+  const handleRoleChange = (newRole: WorkspaceRole) => {
+    if (onChangeRole && member.userId && newRole !== member.workspaceRole) {
+      onChangeRole(member.userId, member.username || '', newRole);
+    }
+    setIsMenuOpen(false);
+  };
+
+  const handleRemove = () => {
+    if (onRemove && member.userId) {
+      onRemove(member.userId, member.username || '');
+    }
+    setIsMenuOpen(false);
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-3 bg-base-100 rounded">
+      {/* アイコン */}
+      {member.identityIconUrl ? (
+        <img
+          src={getDisplayIconUrl(member.identityIconUrl)}
+          alt={member.username || 'ユーザー'}
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center flex-shrink-0">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-base-content/40"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        </div>
+      )}
+
+      {/* ユーザー情報 */}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold truncate">{member.username}</p>
+        <div className="flex items-center gap-2 flex-wrap mt-1">
+          {/* ロールバッジ */}
+          <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
+          {/* 非アクティブ表示 */}
+          {member.isActive === false && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
         </div>
       </div>
+
+      {/* 3点メニュー（オーナー以外、編集モード時のみ） */}
+      {editable && !isOwner && (
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-square"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={`${member.username}のメニューを開く`}
+            aria-haspopup="true"
+            aria-expanded={isMenuOpen}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+              />
+            </svg>
+          </button>
+
+          {/* ドロップダウンメニュー */}
+          {isMenuOpen && (
+            <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-base-100 rounded-lg shadow-lg border border-base-300">
+              {/* ロール変更セクション */}
+              <div className="px-3 py-2 border-b border-base-300">
+                <p className="text-xs text-base-content/60 mb-1">ロールを変更</p>
+                {roleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-base-200 flex items-center justify-between whitespace-nowrap ${
+                      member.workspaceRole === option.value ? 'bg-base-200 font-medium' : ''
+                    }`}
+                    onClick={() => handleRoleChange(option.value)}
+                  >
+                    <span>{option.label}</span>
+                    {member.workspaceRole === option.value && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-success"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* 削除アクション */}
+              <div className="p-1">
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/10 rounded flex items-center gap-2 whitespace-nowrap"
+                  onClick={handleRemove}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  メンバーから削除
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

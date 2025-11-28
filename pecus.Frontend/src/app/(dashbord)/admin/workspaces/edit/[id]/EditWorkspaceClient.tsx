@@ -9,7 +9,12 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
-import type { MasterGenreResponse, WorkspaceDetailResponse } from '@/connectors/api/pecus';
+import type {
+  MasterGenreResponse,
+  WorkspaceDetailResponse,
+  WorkspaceRole,
+  WorkspaceUserItem,
+} from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
@@ -32,6 +37,9 @@ export default function EditWorkspaceClient({
   const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // メンバー管理の状態
+  const [members, setMembers] = useState<WorkspaceUserItem[]>(workspaceDetail.members || []);
 
   // フォーム状態（スキーマの型に合わせる）
   const [formData, setFormData] = useState({
@@ -90,6 +98,28 @@ export default function EditWorkspaceClient({
 
   const handleCancel = () => {
     router.push('/admin/workspaces');
+  };
+
+  // ===== メンバー管理のコールバック =====
+
+  /** メンバー追加モーダルを開く（Phase 4 で実装） */
+  const handleAddMember = () => {
+    // TODO: Phase 4 でモーダル表示を実装
+    notify.info('メンバー追加機能は準備中です。');
+  };
+
+  /** メンバー削除（Phase 2 で実装） */
+  const handleRemoveMember = (userId: number, userName: string) => {
+    // TODO: Phase 2 で確認モーダル表示 → 削除処理を実装
+    console.log('Remove member:', { userId, userName });
+    notify.info(`${userName} の削除機能は準備中です。`);
+  };
+
+  /** ロール変更（Phase 3 で実装） */
+  const handleChangeRole = (userId: number, userName: string, newRole: WorkspaceRole) => {
+    // TODO: Phase 3 で確認モーダル表示 → 変更処理を実装
+    console.log('Change role:', { userId, userName, newRole });
+    notify.info(`${userName} のロール変更機能は準備中です。`);
   };
 
   return (
@@ -287,9 +317,13 @@ export default function EditWorkspaceClient({
             </form>
 
             {/* メンバー情報 */}
-            {workspaceDetail.members && workspaceDetail.members.length > 0 && (
-              <WorkspaceMemberList members={workspaceDetail.members} />
-            )}
+            <WorkspaceMemberList
+              members={members}
+              editable={true}
+              onAddMember={handleAddMember}
+              onRemoveMember={handleRemoveMember}
+              onChangeRole={handleChangeRole}
+            />
 
             {/* ワークスペース詳細情報カード */}
             <div className="card bg-base-200 shadow-lg mt-6">
