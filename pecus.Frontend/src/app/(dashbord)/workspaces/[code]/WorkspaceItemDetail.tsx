@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
 import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceItemDrawer from './WorkspaceItemDrawer';
@@ -15,6 +16,7 @@ interface WorkspaceItemDetailProps {
   itemId: number;
   onItemSelect: (itemId: number) => void;
   members?: WorkspaceDetailUserResponse[];
+  currentUserId?: number;
 }
 
 export default function WorkspaceItemDetail({
@@ -22,7 +24,9 @@ export default function WorkspaceItemDetail({
   itemId,
   onItemSelect,
   members = [],
+  currentUserId,
 }: WorkspaceItemDetailProps) {
+  const notify = useNotify();
   const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +75,24 @@ export default function WorkspaceItemDetail({
     setItem(updatedItem);
   };
 
+  // 編集ボタンクリック時の権限チェック
+  const handleEditClick = () => {
+    if (!item) return;
+
+    // オーナーまたは担当者かどうかをチェック
+    const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
+    const isAssignee = currentUserId !== undefined && item.assigneeId === currentUserId;
+
+    if (!isOwner && !isAssignee) {
+      notify.warning(
+        'アイテムを編集するにはオーナーまたは担当者である必要があります。編集するには担当者になってください。',
+      );
+      return;
+    }
+
+    setIsEditModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -112,7 +134,7 @@ export default function WorkspaceItemDetail({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={handleEditClick}
               className="btn btn-primary btn-sm gap-2"
               title="アイテムを編集"
             >

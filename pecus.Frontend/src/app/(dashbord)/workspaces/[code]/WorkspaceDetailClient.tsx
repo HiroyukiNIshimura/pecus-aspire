@@ -462,6 +462,7 @@ export default function WorkspaceDetailClient({
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
               members={members}
+              currentUserId={userInfo?.id}
             />
           )}
         </main>
