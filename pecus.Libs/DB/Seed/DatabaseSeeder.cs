@@ -593,6 +593,12 @@ public class DatabaseSeeder
             var organizations = await _context.Organizations.ToListAsync();
             var genres = await _context.Genres.ToListAsync();
 
+            // 組織ごとのユーザーを事前に取得
+            var usersByOrganization = await _context.Users
+                .Where(u => u.OrganizationId != null)
+                .GroupBy(u => u.OrganizationId!.Value)
+                .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
             if (organizations.Any() && genres.Any())
             {
                 for (int i = 0; i < 100; i++)
@@ -600,6 +606,13 @@ public class DatabaseSeeder
                     // ランダムな組織とジャンルを選択
                     var organization = organizations[_random.Next(organizations.Count)];
                     var genre = genres[_random.Next(genres.Count)];
+
+                    // この組織に属するユーザーからOwnerを選択
+                    int? ownerId = null;
+                    if (usersByOrganization.TryGetValue(organization.Id, out var orgUsers) && orgUsers.Any())
+                    {
+                        ownerId = orgUsers[_random.Next(orgUsers.Count)].Id;
+                    }
 
                     var workspace = new Workspace
                     {
@@ -609,6 +622,8 @@ public class DatabaseSeeder
                         OrganizationId = organization.Id,
                         GenreId = genre.Id,
                         IsActive = _random.Next(2) == 1,
+                        OwnerId = ownerId,
+                        CreatedByUserId = ownerId,
                     };
 
                     _context.Workspaces.Add(workspace);
@@ -672,12 +687,24 @@ public class DatabaseSeeder
             // 全ユーザーをメンバーに追加
             foreach (var user in organizationUsers)
             {
+                // WorkspaceRole を決定: Owner なら Owner、それ以外は Member か Viewer
+                WorkspaceRole role;
+                if (workspace.OwnerId == user.Id)
+                {
+                    role = WorkspaceRole.Owner;
+                }
+                else
+                {
+                    // Member か Viewer をランダムに割り当て
+                    role = _random.Next(2) == 0 ? WorkspaceRole.Member : WorkspaceRole.Viewer;
+                }
+
                 var workspaceUser = new WorkspaceUser
                 {
                     WorkspaceId = workspace.Id,
                     UserId = user.Id,
                     JoinedAt = DateTime.UtcNow,
-                    WorkspaceRole = WorkspaceRole.Member,
+                    WorkspaceRole = role,
                 };
 
                 _context.WorkspaceUsers.Add(workspaceUser);
@@ -686,14 +713,6 @@ public class DatabaseSeeder
 
             // ワークスペースごとに保存
             await _context.SaveChangesAsync();
-
-            // 先頭のメンバーの ID でワークスペースの CreatedByUserId を更新
-            if (organizationUsers.Any())
-            {
-                workspace.CreatedByUserId = organizationUsers.First().Id;
-                _context.Workspaces.Update(workspace);
-                await _context.SaveChangesAsync();
-            }
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
