@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Workspace;
@@ -35,7 +36,7 @@ public class WorkspaceUserItem
     /// <summary>
     /// ワークスペース内での役割
     /// </summary>
-    public string? WorkspaceRole { get; set; }
+    public WorkspaceRole? WorkspaceRole { get; set; }
 
     /// <summary>
     /// アクティブフラグ

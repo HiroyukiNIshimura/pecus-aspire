@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -26,9 +28,9 @@ public class WorkspaceUser
     public User User { get; set; } = null!;
 
     /// <summary>
-    /// ワークスペース内での役割(例: Owner, Member, Guest)
+    /// ワークスペース内での役割(Owner, Member, Viewer)
     /// </summary>
-    public string? WorkspaceRole { get; set; }
+    public WorkspaceRole? WorkspaceRole { get; set; }
 
     /// <summary>
     /// 参加日時

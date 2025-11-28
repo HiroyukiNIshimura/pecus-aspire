@@ -677,7 +677,7 @@ public class DatabaseSeeder
                     WorkspaceId = workspace.Id,
                     UserId = user.Id,
                     JoinedAt = DateTime.UtcNow,
-                    WorkspaceRole = "Member",
+                    WorkspaceRole = WorkspaceRole.Member,
                 };
 
                 _context.WorkspaceUsers.Add(workspaceUser);

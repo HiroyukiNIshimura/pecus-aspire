@@ -4,6 +4,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Utils;
 using Pecus.Models.Requests;
 using Pecus.Models.Responses.Workspace;
@@ -69,7 +70,7 @@ public class WorkspaceService
                 {
                     WorkspaceId = workspace.Id,
                     UserId = createdByUserId.Value,
-                    WorkspaceRole = "Owner",
+                    WorkspaceRole = WorkspaceRole.Owner,
                     JoinedAt = DateTime.UtcNow,
                 };
                 _context.WorkspaceUsers.Add(workspaceUser);
@@ -373,7 +374,7 @@ public class WorkspaceService
         {
             WorkspaceId = workspaceId,
             UserId = request.UserId,
-            WorkspaceRole = request.WorkspaceRole ?? "Member",
+            WorkspaceRole = request.WorkspaceRole ?? WorkspaceRole.Member,
             JoinedAt = DateTime.UtcNow,
         };
 
@@ -707,7 +708,7 @@ public class WorkspaceService
             throw new NotFoundException("ワークスペースにアクセスできません。");
         }
 
-        if (workspaceUser.WorkspaceRole != "Owner")
+        if (workspaceUser.WorkspaceRole != WorkspaceRole.Owner)
         {
             throw new InvalidOperationException("この操作を実行する権限がありません。Ownerのみが実行できます。");
         }

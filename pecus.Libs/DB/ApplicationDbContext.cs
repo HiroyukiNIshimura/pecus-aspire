@@ -254,7 +254,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<WorkspaceUser>(entity =>
         {
             entity.HasKey(wu => new { wu.WorkspaceId, wu.UserId });
-            entity.Property(wu => wu.WorkspaceRole).HasMaxLength(50);
 
             // WorkspaceUser と Workspace の多対一リレーションシップ
             entity
