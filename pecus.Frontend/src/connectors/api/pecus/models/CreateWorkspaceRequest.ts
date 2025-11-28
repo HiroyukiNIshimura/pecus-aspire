@@ -9,5 +9,9 @@ export type CreateWorkspaceRequest = {
     name: string;
     description?: string | null;
     genreId: number;
+    /**
+     * オーナーユーザーID（任意）
+     */
+    ownerId?: number | null;
 };
 

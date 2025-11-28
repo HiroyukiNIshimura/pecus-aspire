@@ -124,6 +124,7 @@ export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelat
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
 export type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from './models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
+export type { WorkspaceRole } from './models/WorkspaceRole';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';

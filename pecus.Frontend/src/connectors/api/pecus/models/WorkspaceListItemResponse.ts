@@ -67,5 +67,6 @@ export type WorkspaceListItemResponse = {
      * 参加しているユーザー一覧
      */
     members?: Array<WorkspaceUserItem> | null;
+    owner?: WorkspaceUserItem;
 };
 

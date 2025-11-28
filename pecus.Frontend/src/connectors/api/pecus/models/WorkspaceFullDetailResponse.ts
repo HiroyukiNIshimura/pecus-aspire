@@ -39,6 +39,7 @@ export type WorkspaceFullDetailResponse = {
      * メンバー一覧
      */
     members?: Array<WorkspaceDetailUserResponse> | null;
+    owner?: WorkspaceDetailUserResponse;
     /**
      * 作成日時
      */
