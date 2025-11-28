@@ -13,6 +13,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -135,15 +136,15 @@ export default function EditWorkspaceClient({
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">基本情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-base-content/60">ワークスペース名</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.name || '-'}</p>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-base-content/60">コード</p>
                     <p className="text-lg font-semibold">{workspaceDetail.code || '-'}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-base-content/60">メンバー数</p>
+                    <p className="text-lg font-semibold">{workspaceDetail.members?.length || 0} 人</p>
                   </div>
                 </div>
               </div>
@@ -263,27 +264,42 @@ export default function EditWorkspaceClient({
               </div>
             </form>
 
+            {/* メンバー情報 */}
+            {workspaceDetail.members && workspaceDetail.members.length > 0 && (
+              <div className="card bg-base-200 shadow-lg">
+                <div className="card-body">
+                  <h2 className="card-title text-lg mb-4">メンバー一覧</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {workspaceDetail.members.map((member) => (
+                      <div key={member.userId} className="flex items-center gap-2 p-2 bg-base-100 rounded">
+                        {member.identityIconUrl && (
+                          <img
+                            src={getDisplayIconUrl(member.identityIconUrl)}
+                            alt={member.username || 'ユーザー'}
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate">{member.username}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="badge badge-outline badge-xs">{member.workspaceRole || 'Member'}</span>
+                            {!member.isActive && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ワークスペース詳細情報カード */}
-            <div className="card bg-base-200 shadow-lg">
+            <div className="card bg-base-200 shadow-lg mt-6">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-sm text-base-content/60">ワークスペースID</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.id || '-'}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-base-content/60">所属組織</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.organization?.name || '-'}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-base-content/60">メンバー数</p>
-                    <p className="text-lg font-semibold">{workspaceDetail.members?.length || 0} 人</p>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
                     <p className="text-lg font-semibold">
@@ -300,34 +316,6 @@ export default function EditWorkspaceClient({
                 </div>
               </div>
             </div>
-
-            {/* メンバー情報 */}
-            {workspaceDetail.members && workspaceDetail.members.length > 0 && (
-              <div className="card bg-base-200 shadow-lg mt-6">
-                <div className="card-body">
-                  <h2 className="card-title text-lg mb-4">メンバー一覧</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {workspaceDetail.members.map((member) => (
-                      <div key={member.userId} className="flex items-center gap-2 p-2 bg-base-100 rounded">
-                        <div className="avatar placeholder">
-                          <div className="bg-base-300 text-base-content rounded-full w-6 h-6">
-                            <span className="text-xs">{member.username?.charAt(0).toUpperCase() || '?'}</span>
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold truncate">{member.username}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="badge badge-outline badge-xs">{member.workspaceRole || 'Member'}</span>
-                            {!member.isActive && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </main>
       </div>
