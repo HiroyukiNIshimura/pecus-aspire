@@ -64,7 +64,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペース情報を更新する（Member以上の権限が必要）
      * @param id ワークスペースID
      * @param requestBody ワークスペース更新リクエスト
      * @returns WorkspaceFullDetailResponse OK
@@ -231,7 +231,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペースを有効化する（Ownerのみ実行可能）
      * @param id ワークスペースID
      * @param requestBody 楽観的ロック用のバージョン番号
      * @returns WorkspaceFullDetailResponse OK
@@ -258,7 +258,7 @@ export class WorkspaceService {
         });
     }
     /**
-     * ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）
+     * ワークスペースを無効化する（Ownerのみ実行可能）
      * @param id ワークスペースID
      * @param requestBody 楽観的ロック用のバージョン番号
      * @returns WorkspaceFullDetailResponse OK

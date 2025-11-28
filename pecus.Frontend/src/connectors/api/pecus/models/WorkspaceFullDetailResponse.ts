@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
+import type { WorkspaceRole } from './WorkspaceRole';
 /**
  * ワークスペース詳細情報（一般ユーザー用）
  */
@@ -54,6 +55,7 @@ export type WorkspaceFullDetailResponse = {
      * アクティブフラグ
      */
     isActive?: boolean;
+    currentUserRole?: WorkspaceRole;
     /**
      * 楽観的ロック用のRowVersion
      */

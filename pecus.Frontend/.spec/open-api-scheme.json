@@ -5402,7 +5402,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペース情報を更新する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペース情報を更新する（Member以上の権限が必要）",
         "parameters": [
           {
             "name": "id",
@@ -5799,7 +5799,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを有効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペースを有効化する（Ownerのみ実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -5887,7 +5887,7 @@
         "tags": [
           "Workspace"
         ],
-        "summary": "ワークスペースを無効化する（ワークスペースにアクセスできるメンバーなら誰でも実行可能）",
+        "summary": "ワークスペースを無効化する（Ownerのみ実行可能）",
         "parameters": [
           {
             "name": "id",
@@ -11139,6 +11139,9 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "currentUserRole": {
+            "$ref": "#/components/schemas/WorkspaceRole"
           },
           "rowVersion": {
             "type": "integer",
