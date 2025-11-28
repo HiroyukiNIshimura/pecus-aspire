@@ -226,8 +226,17 @@ function WorkspaceMemberCard({
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold truncate">{memberName}</p>
         <div className="flex items-center gap-2 flex-wrap mt-1">
-          {/* ロールバッジ */}
-          <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
+          {/* ロールバッジ（ワークスペース作成者は星マークを表示） */}
+          {isWorkspaceOwner ? (
+            <div className="indicator">
+              <span className="indicator-item indicator-end bg-warning size-3 rounded-full flex items-center justify-center">
+                <span className="icon-[tabler--star-filled] text-warning-content size-2" />
+              </span>
+              <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
+            </div>
+          ) : (
+            <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
+          )}
           {/* 非アクティブ表示 */}
           {member.isActive === false && <span className="text-xs text-base-content/50">(非アクティブ)</span>}
         </div>

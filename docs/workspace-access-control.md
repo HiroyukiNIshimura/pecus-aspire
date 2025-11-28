@@ -91,10 +91,57 @@
 
 フロントエンドではこの値を使って、更新ボタンやメンバー管理ボタンの表示/非表示を制御できます。
 
+## フロントエンドでの Owner 判定
+
+### ワークスペース作成者（スペシャルオーナー）とオーナーロールの区別
+
+ワークスペースには2種類の「オーナー」概念があります：
+
+| 概念 | 判定方法 | 説明 |
+|------|----------|------|
+| **ワークスペース作成者** | `workspaceDetail.owner?.id` | ワークスペースを作成したユーザー。`Workspace.OwnerId` に対応。削除・ロール変更不可。 |
+| **オーナーロール** | `member.workspaceRole === 'Owner'` | `WorkspaceRole` が `Owner` のユーザー。複数人存在可能。 |
+
+### メンバー管理UIでの制御
+
+`WorkspaceMemberList` コンポーネントでは、以下のように制御しています：
+
+```typescript
+// メンバー追加/削除/ロール変更の権限判定（CurrentUserRole で判定）
+const isOwner = workspaceDetail.currentUserRole === 'Owner';
+
+// メンバーカードの3点メニュー表示制御（ownerId で判定）
+<WorkspaceMemberList
+  members={members}
+  editable={isOwner}
+  ownerId={workspaceDetail.owner?.id}  // ワークスペース作成者のID
+  onAddMember={...}
+  onRemoveMember={...}
+  onChangeRole={...}
+/>
+```
+
+- **`editable`**: ログインユーザーがオーナーロールを持っているかで判定
+- **`ownerId`**: ワークスペース作成者のIDを渡し、その人のカードには3点メニューを表示しない
+
+### 理由
+
+- ワークスペース作成者（`Workspace.OwnerId`）は、ワークスペースの管理権限を保証するため削除・ロール変更が禁止されています
+- オーナーロールを持つ他のユーザー（追加されたオーナー）は、削除・ロール変更が可能です
+- フロントエンドでも同様の制約をUIに反映し、操作不可のメニューを非表示にしています
+
 ## 関連ファイル
+
+### バックエンド
 
 - `pecus.WebApi/Controllers/WorkspaceController.cs`
 - `pecus.WebApi/Controllers/Admin/AdminWorkspaceController.cs`
 - `pecus.WebApi/Services/WorkspaceService.cs`
 - `pecus.WebApi/Models/Responses/Workspace/WorkspaceFullDetailResponse.cs`
 - `pecus.Libs/DB/Models/Enums/WorkspaceRole.cs`
+
+### フロントエンド
+
+- `pecus.Frontend/src/components/workspaces/WorkspaceMemberList.tsx` - メンバー一覧コンポーネント（`ownerId` による制御）
+- `pecus.Frontend/src/app/(dashbord)/workspaces/[code]/WorkspaceDetailClient.tsx` - 一般ユーザー向けワークスペース詳細
+- `pecus.Frontend/src/app/(dashbord)/admin/workspaces/edit/[id]/EditWorkspaceClient.tsx` - 管理者向けワークスペース編集
