@@ -333,8 +333,7 @@ public class WorkspaceService
     /// </summary>
     public async Task<WorkspaceUser> AddUserToWorkspaceAsync(
         int workspaceId,
-        AddUserToWorkspaceRequest request,
-        int? invitedByUserId = null
+        AddUserToWorkspaceRequest request
     )
     {
         // ワークスペースの存在確認
@@ -405,6 +404,53 @@ public class WorkspaceService
         _context.WorkspaceUsers.Remove(workspaceUser);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>
+    /// ワークスペースメンバーのロールを変更
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <param name="newRole">新しいロール</param>
+    /// <returns>更新後のワークスペースユーザー情報</returns>
+    public async Task<WorkspaceUser> UpdateWorkspaceUserRoleAsync(
+        int workspaceId,
+        int userId,
+        WorkspaceRole newRole
+    )
+    {
+        // ワークスペースの存在確認とオーナー情報取得
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ワークスペースユーザーの存在確認
+        var workspaceUser = await _context.WorkspaceUsers
+            .Include(wu => wu.User)
+            .FirstOrDefaultAsync(wu =>
+                wu.WorkspaceId == workspaceId && wu.UserId == userId
+            );
+
+        if (workspaceUser == null)
+        {
+            throw new NotFoundException("指定されたユーザーはワークスペースのメンバーではありません。");
+        }
+
+        // Workspace.OwnerId のユーザーを Owner 以外に変更しようとした場合はエラー
+        if (workspace.OwnerId == userId && newRole != WorkspaceRole.Owner)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのオーナーのロールを Owner 以外に変更することはできません。"
+            );
+        }
+
+        // ロールを更新
+        workspaceUser.WorkspaceRole = newRole;
+        await _context.SaveChangesAsync();
+
+        return workspaceUser;
     }
 
     /// <summary>

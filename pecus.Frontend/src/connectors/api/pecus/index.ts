@@ -102,6 +102,7 @@ export type { UpdateWorkspaceItemAssigneeRequest } from './models/UpdateWorkspac
 export type { UpdateWorkspaceItemRequest } from './models/UpdateWorkspaceItemRequest';
 export type { UpdateWorkspaceItemStatusRequest } from './models/UpdateWorkspaceItemStatusRequest';
 export type { UpdateWorkspaceRequest } from './models/UpdateWorkspaceRequest';
+export type { UpdateWorkspaceUserRoleRequest } from './models/UpdateWorkspaceUserRoleRequest';
 export type { UserDetailResponse } from './models/UserDetailResponse';
 export type { UserDetailResponseConcurrencyErrorResponse } from './models/UserDetailResponseConcurrencyErrorResponse';
 export type { UserDetailResponseUserStatisticsPagedResponse } from './models/UserDetailResponseUserStatisticsPagedResponse';

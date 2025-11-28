@@ -6,6 +6,7 @@ import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequ
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
+import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { WorkspaceDetailResponse } from '../models/WorkspaceDetailResponse';
 import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
@@ -258,6 +259,37 @@ export class AdminWorkspaceService {
                 'userId': userId,
             },
             errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースメンバーのロールを変更
+     * 組織に属するユーザーであれば実行可能です。
+     * ただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。
+     * @param id ワークスペースID
+     * @param userId 対象ユーザーID
+     * @param requestBody ロール変更リクエスト
+     * @returns WorkspaceUserDetailResponse OK
+     * @throws ApiError
+     */
+    public static patchApiAdminWorkspacesUsersRole(
+        id: number,
+        userId: number,
+        requestBody?: UpdateWorkspaceUserRoleRequest,
+    ): CancelablePromise<WorkspaceUserDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/admin/workspaces/{id}/users/{userId}/role',
+            path: {
+                'id': id,
+                'userId': userId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
                 404: `Not Found`,
                 500: `Internal Server Error`,
             },

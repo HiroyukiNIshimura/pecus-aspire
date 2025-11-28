@@ -531,6 +531,63 @@ public class AdminWorkspaceController : BaseAdminController
     }
 
     /// <summary>
+    /// ワークスペースメンバーのロールを変更
+    /// </summary>
+    /// <remarks>
+    /// 組織に属するユーザーであれば実行可能です。
+    /// ただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。
+    /// </remarks>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <param name="request">ロール変更リクエスト</param>
+    [HttpPatch("{id}/users/{userId}/role")]
+    [ProducesResponseType(typeof(WorkspaceUserDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceUserDetailResponse>> UpdateWorkspaceUserRole(
+        int id,
+        int userId,
+        [FromBody] UpdateWorkspaceUserRoleRequest request
+    )
+    {
+        // 組織アクセス権限チェック
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, id);
+        if (!hasAccess || workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ロール変更実行
+        var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(
+            workspaceId: id,
+            userId: userId,
+            newRole: request.WorkspaceRole
+        );
+
+        var response = new WorkspaceUserDetailResponse
+        {
+            WorkspaceId = workspaceUser.WorkspaceId,
+            UserId = workspaceUser.UserId,
+            Username = workspaceUser.User?.Username ?? "",
+            Email = workspaceUser.User?.Email ?? "",
+            IdentityIconUrl = Libs.IdentityIconHelper.GetIdentityIconUrl(
+                iconType: workspaceUser.User?.AvatarType,
+                userId: workspaceUser.UserId,
+                username: workspaceUser.User?.Username ?? "",
+                email: workspaceUser.User?.Email ?? "",
+                avatarPath: workspaceUser.User?.UserAvatarPath
+            ),
+            WorkspaceRole = workspaceUser.WorkspaceRole,
+            JoinedAt = workspaceUser.JoinedAt,
+            LastAccessedAt = workspaceUser.LastAccessedAt,
+            IsActive = workspaceUser.User?.IsActive ?? false,
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// ワークスペースのメンバー一覧取得（ページネーション）
     /// </summary>
     /// <param name="id">ワークスペースID</param>

@@ -317,8 +317,7 @@ public class WorkspaceController : BaseSecureController
         // メンバーを追加
         var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
             workspaceId: id,
-            request: request,
-            invitedByUserId: CurrentUserId
+            request: request
         );
 
         var response = new WorkspaceUserDetailResponse
@@ -380,6 +379,60 @@ public class WorkspaceController : BaseSecureController
         }
 
         return TypedResults.NoContent();
+    }
+
+    /// <summary>
+    /// ワークスペースメンバーのロールを変更する（Ownerのみ実行可能）
+    /// </summary>
+    /// <remarks>
+    /// ワークスペースの Owner ロールを持つユーザーのみ実行可能です。
+    /// ただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。
+    /// </remarks>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="userId">対象ユーザーID</param>
+    /// <param name="request">ロール変更リクエスト</param>
+    [HttpPatch("{id:int}/members/{userId:int}/role")]
+    [ProducesResponseType(typeof(WorkspaceUserDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceUserDetailResponse>> UpdateWorkspaceMemberRole(
+        int id,
+        int userId,
+        [FromBody] UpdateWorkspaceUserRoleRequest request
+    )
+    {
+        // CurrentUser は基底クラスで有効性チェック済み
+        // ワークスペースオーナー権限チェック
+        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+
+        // ロール変更実行
+        var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(
+            workspaceId: id,
+            userId: userId,
+            newRole: request.WorkspaceRole
+        );
+
+        var response = new WorkspaceUserDetailResponse
+        {
+            WorkspaceId = workspaceUser.WorkspaceId,
+            UserId = workspaceUser.UserId,
+            Username = workspaceUser.User?.Username ?? "",
+            Email = workspaceUser.User?.Email ?? "",
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                iconType: workspaceUser.User?.AvatarType,
+                userId: workspaceUser.UserId,
+                username: workspaceUser.User?.Username ?? "",
+                email: workspaceUser.User?.Email ?? "",
+                avatarPath: workspaceUser.User?.UserAvatarPath
+            ),
+            WorkspaceRole = workspaceUser.WorkspaceRole,
+            JoinedAt = workspaceUser.JoinedAt,
+            LastAccessedAt = workspaceUser.LastAccessedAt,
+            IsActive = workspaceUser.User?.IsActive ?? false,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
