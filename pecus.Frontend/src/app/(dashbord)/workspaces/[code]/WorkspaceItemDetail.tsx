@@ -87,10 +87,24 @@ export default function WorkspaceItemDetail({
       notify.warning(
         'アイテムを編集するにはオーナーまたは担当者である必要があります。編集するには担当者になってください。',
       );
+      // ドローワーを開いて担当者を変更できるようにする
+      openDrawer();
       return;
     }
 
     setIsEditModalOpen(true);
+  };
+
+  // 下書き時はオーナー以外は編集不可
+  const isOwner = item && currentUserId !== undefined && item.ownerId === currentUserId;
+  const isDraftAndNotOwner = item?.isDraft && !isOwner;
+
+  // 編集ボタンのツールチップを決定
+  const getEditButtonTooltip = () => {
+    if (isDraftAndNotOwner) {
+      return 'オーナーが下書き中です';
+    }
+    return 'アイテムを編集';
   };
 
   if (isLoading) {
@@ -136,7 +150,9 @@ export default function WorkspaceItemDetail({
               type="button"
               onClick={handleEditClick}
               className="btn btn-primary btn-sm gap-2"
-              title="アイテムを編集"
+              title={getEditButtonTooltip()}
+              style={{ pointerEvents: 'auto' }}
+              disabled={isDraftAndNotOwner}
             >
               <EditIcon fontSize="small" />
               編集
