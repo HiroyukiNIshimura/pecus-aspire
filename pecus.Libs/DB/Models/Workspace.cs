@@ -38,6 +38,16 @@ public class Workspace
     public Organization Organization { get; set; } = null!;
 
     /// <summary>
+    /// オーナーユーザーID
+    /// </summary>
+    public int? OwnerId { get; set; }
+
+    /// <summary>
+    /// オーナーユーザー
+    /// </summary>
+    public User? Owner { get; set; }
+
+    /// <summary>
     /// ジャンルID
     /// </summary>
     public int? GenreId { get; set; }

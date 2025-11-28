@@ -53,6 +53,7 @@ public class WorkspaceService
                 Description = request.Description,
                 GenreId = request.GenreId,
                 OrganizationId = organizationId,
+                OwnerId = request.OwnerId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = createdByUserId,
                 IsActive = true,

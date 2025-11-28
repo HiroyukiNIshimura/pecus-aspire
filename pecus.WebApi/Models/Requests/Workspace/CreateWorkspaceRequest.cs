@@ -17,4 +17,10 @@ public class CreateWorkspaceRequest
     [Required(ErrorMessage = "ジャンルは必須です。")]
     [Range(1, int.MaxValue, ErrorMessage = "有効なジャンルIDを指定してください。")]
     public required int GenreId { get; set; }
+
+    /// <summary>
+    /// オーナーユーザーID（任意）
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "有効なユーザーIDを指定してください。")]
+    public int? OwnerId { get; set; }
 }

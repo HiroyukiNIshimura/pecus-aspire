@@ -241,6 +241,13 @@ public class ApplicationDbContext : DbContext
                 .WithMany(g => g.Workspaces)
                 .HasForeignKey(w => w.GenreId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Workspace と User (Owner) の多対一リレーションシップ
+            entity
+                .HasOne(w => w.Owner)
+                .WithMany()
+                .HasForeignKey(w => w.OwnerId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // WorkspaceUserエンティティの設定
