@@ -53,16 +53,19 @@ export const serverError = (message: string): NextResponse<RouterErrorType> => {
 export const parseRouterError = (error: unknown, defaultMessage: string): NextResponse<RouterErrorType> => {
   const noAuthError = detect401ValidationError(error);
   if (noAuthError) {
+    console.error('Unauthorized error detected:', noAuthError.message);
     return NextResponse.json({ error: noAuthError.message, status: 401 }, { status: 401 });
   }
 
   const forbiddenError = detect403ValidationError(error);
   if (forbiddenError) {
+    console.error('Forbidden error detected:', forbiddenError.message);
     return NextResponse.json({ error: forbiddenError.message, status: 403 }, { status: 403 });
   }
 
   const notFound = detect404ValidationError(error);
   if (notFound) {
+    console.error('Not Found error detected:', notFound.message);
     return NextResponse.json({ error: notFound.message, status: 404 }, { status: 404 });
   }
 

@@ -335,7 +335,7 @@ export class WorkspaceItemService {
         });
     }
     /**
-     * ワークスペースアイテム作業者設定
+     * ワークスペースアイテム担当者設定
      * @param workspaceId
      * @param itemId
      * @param requestBody

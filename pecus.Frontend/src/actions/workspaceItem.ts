@@ -117,7 +117,7 @@ export async function updateWorkspaceItem(
 }
 
 /**
- * Server Action: ワークスペースアイテムの作業者を更新
+ * Server Action: ワークスペースアイテムの担当者を更新
  */
 export async function updateWorkspaceItemAssignee(
   workspaceId: number,

@@ -286,7 +286,7 @@ public class WorkspaceItemController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースアイテム作業者設定
+    /// ワークスペースアイテム担当者設定
     /// </summary>
     [HttpPatch("{itemId}/assignee")]
     [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
@@ -312,7 +312,7 @@ public class WorkspaceItemController : BaseSecureController
         if (!isMember)
         {
             throw new InvalidOperationException(
-                "ワークスペースのメンバーのみがアイテムの作業者を変更できます。"
+                "ワークスペースのメンバーのみがアイテムの担当者を変更できます。"
             );
         }
 
@@ -326,7 +326,7 @@ public class WorkspaceItemController : BaseSecureController
         var response = new WorkspaceItemResponse
         {
             Success = true,
-            Message = "ワークスペースアイテムの作業者を更新しました。",
+            Message = "ワークスペースアイテムの担当者を更新しました。",
             WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
         };
 

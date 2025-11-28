@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * ワークスペースアイテム作業者更新リクエスト
+ * ワークスペースアイテム担当者更新リクエスト
  */
 export type UpdateWorkspaceItemAssigneeRequest = {
     /**
-     * 作業者ユーザーID（NULL で割り当て解除）
+     * 担当者ユーザーID（NULL で割り当て解除）
      */
     assigneeId?: number | null;
     /**

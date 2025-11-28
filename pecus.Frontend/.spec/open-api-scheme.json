@@ -6989,7 +6989,7 @@
         "tags": [
           "WorkspaceItem"
         ],
-        "summary": "ワークスペースアイテム作業者設定",
+        "summary": "ワークスペースアイテム担当者設定",
         "parameters": [
           {
             "name": "workspaceId",
@@ -10692,7 +10692,7 @@
         "properties": {
           "assigneeId": {
             "type": "integer",
-            "description": "作業者ユーザーID（NULL で割り当て解除）",
+            "description": "担当者ユーザーID（NULL で割り当て解除）",
             "format": "int32",
             "nullable": true
           },
@@ -10703,7 +10703,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "ワークスペースアイテム作業者更新リクエスト"
+        "description": "ワークスペースアイテム担当者更新リクエスト"
       },
       "UpdateWorkspaceItemRequest": {
         "required": [

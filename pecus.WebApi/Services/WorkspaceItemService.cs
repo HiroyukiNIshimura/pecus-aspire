@@ -66,7 +66,7 @@ public class WorkspaceItemService
                 if (!isAssigneeMember)
                 {
                     throw new InvalidOperationException(
-                        "作業者はワークスペースのメンバーである必要があります。"
+                        "担当者はワークスペースのメンバーである必要があります。"
                     );
                 }
             }
@@ -449,11 +449,11 @@ public class WorkspaceItemService
             throw new InvalidOperationException("アーカイブ済みのアイテムは更新できません。");
         }
 
-        // 更新権限チェック（オーナーまたは作業者のみ）
+        // 更新権限チェック（オーナーまたは担当者のみ）
         if (item.OwnerId != userId && item.AssigneeId != userId)
         {
             throw new InvalidOperationException(
-                "オーナーまたは作業者のみがアイテムを更新できます。"
+                "オーナーまたは担当者のみがアイテムを更新できます。"
             );
         }
 
@@ -478,7 +478,7 @@ public class WorkspaceItemService
             if (!isAssigneeMember)
             {
                 throw new InvalidOperationException(
-                    "作業者はワークスペースのメンバーである必要があります。"
+                    "担当者はワークスペースのメンバーである必要があります。"
                 );
             }
             item.AssigneeId = request.AssigneeId.Value;
@@ -554,7 +554,7 @@ public class WorkspaceItemService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        // 下書き→公開の場合、オーナーまたは作業者のみ
+        // 下書き→公開の場合、オーナーまたは担当者のみ
         if (
             request.IsDraft.HasValue
             && !request.IsDraft.Value
@@ -564,7 +564,7 @@ public class WorkspaceItemService
         )
         {
             throw new InvalidOperationException(
-                "オーナーまたは作業者のみがアイテムを公開できます。"
+                "オーナーまたは担当者のみがアイテムを公開できます。"
             );
         }
 
@@ -623,7 +623,7 @@ public class WorkspaceItemService
     }
 
     /// <summary>
-    /// ワークスペースアイテムの作業者を更新
+    /// ワークスペースアイテムの担当者を更新
     /// </summary>
     public async Task<WorkspaceItem> UpdateWorkspaceItemAssigneeAsync(
         int workspaceId,
@@ -641,7 +641,7 @@ public class WorkspaceItemService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        // 作業者が指定されている場合、ワークスペースメンバーであることを確認
+        // 担当者が指定されている場合、ワークスペースメンバーであることを確認
         if (request.AssigneeId.HasValue)
         {
             var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(

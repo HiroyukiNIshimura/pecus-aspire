@@ -6,6 +6,11 @@ import {
 import Axios from "axios";
 import type { ConcurrencyErrorResponseBody } from "./ConflictDataTypes.generated";
 import { ErrorResponse } from "@/actions/types";
+import { ApiError } from "./pecus/core/ApiError";
+
+const isApiError = (error: unknown): error is ApiError=> {
+  return error instanceof ApiError;
+};
 
 /**
  * 並行更新による競合エラー（汎用型）
@@ -62,26 +67,31 @@ export class ConcurrencyError<T = ConcurrencyErrorResponseBody> extends Error {
  * }
  */
 export function detectConcurrencyError(error: unknown): ConcurrencyError<ConcurrencyErrorResponseBody> | null {
-  // Axios エラーの場合、status が 409 かをチェック
-  if (Axios.isAxiosError(error) && error.response?.status === 409) {
-    const body = error.response.data ?? {};
-
-    // レスポンスボディから message を抽出
-    const message =
-      (typeof body === "object" &&
-      body !== null &&
-      "message" in body
-        ? (body as Record<string, unknown>).message
-        : null) || "別のユーザーにより変更されました。";
-
-    return new ConcurrencyError<ConcurrencyErrorResponseBody>(String(message), body as ConcurrencyErrorResponseBody);
+  let body;
+  if (isApiError(error) && error.status === 409) {
+    body = error.body ?? {};
+  } else if (Axios.isAxiosError(error) && error.response?.status === 409) {
+    body = error.response.data ?? {};
+  } else {
+    return null;
   }
 
-  return  null;
+  // レスポンスボディから message を抽出
+  const message =
+    (typeof body === "object" &&
+    body !== null &&
+    "message" in body
+      ? (body as Record<string, unknown>).message
+      : null) || "別のユーザーにより変更されました。";
+
+  console.error('Concurrency error detected:', message);
+  return new ConcurrencyError<ConcurrencyErrorResponseBody>(String(message), body as ConcurrencyErrorResponseBody);
 }
 
+
 export function detect401ValidationError(error: unknown): ErrorResponse | undefined {
-  if (Axios.isAxiosError(error) && error.response?.status === 401) {
+  if ((isApiError(error) && error.status === 401) ||
+      (Axios.isAxiosError(error) && error.response?.status === 401)) {
     return {
       success: false,
       error: 'unauthorized',
@@ -92,27 +102,34 @@ export function detect401ValidationError(error: unknown): ErrorResponse | undefi
 }
 
 export function detect400ValidationError(error: unknown): ErrorResponse | undefined {
-  if (Axios.isAxiosError(error) && error.response?.status === 400) {
-    const body = error.response.data ?? {};
-    // レスポンスボディから message を抽出
-    const message =
-      (typeof body === "object" &&
-      body !== null &&
-      "message" in body
-        ? (body as Record<string, unknown>).message
-        : null) || '入力内容に誤りがあります。';
-
-    return {
-      success: false,
-      error: 'validation',
-      message: String(message),
-    };
+  let body;
+  if (isApiError(error) && error.status === 400) {
+    body = error.body ?? {};
+  } else if (Axios.isAxiosError(error) && error.response?.status === 400) {
+    body = error.response.data ?? {};
+  } else {
+    return undefined;
   }
-  return undefined;
+
+  const message =
+    (typeof body === "object" &&
+    body !== null &&
+    "message" in body
+      ? (body as Record<string, unknown>).message
+      : null) || '入力内容に誤りがあります。';
+
+  console.error('Validation error detected:', message);
+  return {
+    success: false,
+    error: 'validation',
+    message: String(message),
+  };
 }
 
 export function detect404ValidationError(error: unknown): ErrorResponse | undefined {
-  if (Axios.isAxiosError(error) && error.response?.status === 404) {
+  if ((Axios.isAxiosError(error) && error.response?.status === 404)||
+    Axios.isAxiosError(error) && error.response?.status === 404) {
+    console.error('Not Found error detected:', error.message);
     return {
       success: false,
       error: 'not_found',
@@ -123,7 +140,9 @@ export function detect404ValidationError(error: unknown): ErrorResponse | undefi
 }
 
 export function detect403ValidationError(error: unknown): ErrorResponse | undefined {
-  if (Axios.isAxiosError(error) && error.response?.status === 403) {
+  if ((isApiError(error) && error.status === 403) ||
+    (Axios.isAxiosError(error) && error.response?.status === 403)) {
+    console.error('Forbidden error detected:', error.message);
     return {
       success: false,
       error: 'forbidden',
