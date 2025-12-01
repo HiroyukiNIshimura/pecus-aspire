@@ -340,6 +340,15 @@ public class WorkspaceItemService
     /// <summary>
     /// ワークスペースアイテム一覧を取得
     /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="page">ページ番号（1から開始）</param>
+    /// <param name="pageSize">ページサイズ</param>
+    /// <param name="isDraft">下書きフィルタ</param>
+    /// <param name="isArchived">アーカイブフィルタ</param>
+    /// <param name="assigneeId">担当者IDフィルタ</param>
+    /// <param name="priority">優先度フィルタ</param>
+    /// <param name="pinnedByUserId">PINしているユーザーIDフィルタ</param>
+    /// <param name="searchQuery">あいまい検索クエリ（Subject, RawBody を対象、pgroonga 使用）</param>
     public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsAsync(
         int workspaceId,
         int page = 1,
@@ -348,9 +357,26 @@ public class WorkspaceItemService
         bool? isArchived = null,
         int? assigneeId = null,
         TaskPriority? priority = null,
-        int? pinnedByUserId = null
+        int? pinnedByUserId = null,
+        string? searchQuery = null
     )
     {
+        // あいまい検索が指定されている場合は pgroonga を使用
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            return await GetWorkspaceItemsWithPgroongaAsync(
+                workspaceId: workspaceId,
+                page: page,
+                pageSize: pageSize,
+                isDraft: isDraft,
+                isArchived: isArchived,
+                assigneeId: assigneeId,
+                priority: priority,
+                pinnedByUserId: pinnedByUserId,
+                searchQuery: searchQuery
+            );
+        }
+
         var query = _context
             .WorkspaceItems.Include(wi => wi.Workspace)
             .Include(wi => wi.Owner)
@@ -393,9 +419,133 @@ public class WorkspaceItemService
 
         // ページネーション
         var items = await query
+            .AsSplitQuery()
             .OrderByDescending(wi => wi.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    /// <summary>
+    /// pgroonga を使用してワークスペースアイテムをあいまい検索
+    /// Subject と RawBody を対象に日本語のゆらぎやタイポにも対応した検索を行う
+    /// </summary>
+    private async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsWithPgroongaAsync(
+        int workspaceId,
+        int page,
+        int pageSize,
+        bool? isDraft,
+        bool? isArchived,
+        int? assigneeId,
+        TaskPriority? priority,
+        int? pinnedByUserId,
+        string searchQuery
+    )
+    {
+        // 動的にWHERE句を構築
+        var whereClauses = new List<string>
+        {
+            @"""WorkspaceId"" = {0}",
+            @"ARRAY[""Subject"", ""RawBody""] &@~ {1}"
+        };
+        var parameters = new List<object> { workspaceId, searchQuery };
+        var paramIndex = 2;
+
+        if (isDraft.HasValue)
+        {
+            whereClauses.Add($@"""IsDraft"" = {{{paramIndex}}}");
+            parameters.Add(isDraft.Value);
+            paramIndex++;
+        }
+
+        if (isArchived.HasValue)
+        {
+            whereClauses.Add($@"""IsArchived"" = {{{paramIndex}}}");
+            parameters.Add(isArchived.Value);
+            paramIndex++;
+        }
+
+        if (assigneeId.HasValue)
+        {
+            whereClauses.Add($@"""AssigneeId"" = {{{paramIndex}}}");
+            parameters.Add(assigneeId.Value);
+            paramIndex++;
+        }
+
+        if (priority.HasValue)
+        {
+            whereClauses.Add($@"""Priority"" = {{{paramIndex}}}");
+            parameters.Add((int)priority.Value);
+            paramIndex++;
+        }
+
+        var whereClause = string.Join(" AND ", whereClauses);
+
+        // カウント用クエリを実行
+        var countSql = $@"SELECT COUNT(*) FROM ""WorkspaceItems"" WHERE {whereClause}";
+        var totalCount = await _context.Database
+            .SqlQueryRaw<int>(countSql, parameters.ToArray())
+            .FirstOrDefaultAsync();
+
+        // PIN フィルタがある場合は別途処理（サブクエリが必要）
+        IQueryable<WorkspaceItem> query;
+
+        if (pinnedByUserId.HasValue)
+        {
+            // PIN フィルタがある場合、まず pgroonga で検索してから PIN フィルタを適用
+            var offset = (page - 1) * pageSize;
+            var mainSql = $@"
+                SELECT wi.* FROM ""WorkspaceItems"" wi
+                INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
+                WHERE {whereClause} AND wip.""UserId"" = {{{paramIndex}}}
+                ORDER BY pgroonga_score(wi.tableoid, wi.ctid) DESC
+                LIMIT {{{paramIndex + 1}}} OFFSET {{{paramIndex + 2}}}";
+
+            parameters.Add(pinnedByUserId.Value);
+            parameters.Add(pageSize);
+            parameters.Add(offset);
+
+            query = _context.WorkspaceItems
+                .FromSqlRaw(mainSql, parameters.ToArray());
+
+            // PIN フィルタ適用時のカウントを再計算
+            var countWithPinSql = $@"
+                SELECT COUNT(*) FROM ""WorkspaceItems"" wi
+                INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
+                WHERE {whereClause} AND wip.""UserId"" = {{{paramIndex - 3}}}";
+            var countParams = parameters.Take(paramIndex - 2).Append(pinnedByUserId.Value).ToArray();
+            totalCount = await _context.Database
+                .SqlQueryRaw<int>(countWithPinSql, countParams)
+                .FirstOrDefaultAsync();
+        }
+        else
+        {
+            var offset = (page - 1) * pageSize;
+            var mainSql = $@"
+                SELECT * FROM ""WorkspaceItems""
+                WHERE {whereClause}
+                ORDER BY pgroonga_score(tableoid, ctid) DESC
+                LIMIT {{{paramIndex}}} OFFSET {{{paramIndex + 1}}}";
+
+            parameters.Add(pageSize);
+            parameters.Add(offset);
+
+            query = _context.WorkspaceItems
+                .FromSqlRaw(mainSql, parameters.ToArray());
+        }
+
+        // ナビゲーションプロパティをロード
+        var items = await query
+            .Include(wi => wi.Workspace)
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
+            .AsSplitQuery()
             .ToListAsync();
 
         return (items, totalCount);

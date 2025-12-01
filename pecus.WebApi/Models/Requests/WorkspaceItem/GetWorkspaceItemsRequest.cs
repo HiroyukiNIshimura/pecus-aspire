@@ -17,4 +17,11 @@ public class GetWorkspaceItemsRequest
     public TaskPriority? Priority { get; set; }
 
     public bool? Pinned { get; set; }
+
+    /// <summary>
+    /// あいまい検索クエリ（Subject, RawBody を対象）
+    /// pgroonga を使用して日本語のゆらぎやタイポにも対応
+    /// </summary>
+    [StringLength(200, ErrorMessage = "検索クエリは200文字以内で入力してください。")]
+    public string? SearchQuery { get; set; }
 }

@@ -170,6 +170,8 @@ export class WorkspaceItemService {
      * @param assigneeId
      * @param priority
      * @param pinned
+     * @param searchQuery あいまい検索クエリ（Subject, RawBody を対象）
+     * pgroonga を使用して日本語のゆらぎやタイポにも対応
      * @returns WorkspaceItemDetailResponsePagedResponse OK
      * @throws ApiError
      */
@@ -181,6 +183,7 @@ export class WorkspaceItemService {
         assigneeId?: number,
         priority?: TaskPriority,
         pinned?: boolean,
+        searchQuery?: string,
     ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -195,6 +198,7 @@ export class WorkspaceItemService {
                 'AssigneeId': assigneeId,
                 'Priority': priority,
                 'Pinned': pinned,
+                'SearchQuery': searchQuery,
             },
             errors: {
                 500: `Internal Server Error`,

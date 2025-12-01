@@ -165,14 +165,15 @@ public class WorkspaceItemController : BaseSecureController
 
         var pageSize = _config.Pagination.DefaultPageSize;
         var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
-            workspaceId,
-            request.Page,
-            pageSize,
-            request.IsDraft,
-            request.IsArchived,
-            request.AssigneeId,
-            request.Priority,
-            pinnedByUserId
+            workspaceId: workspaceId,
+            page: request.Page,
+            pageSize: pageSize,
+            isDraft: request.IsDraft,
+            isArchived: request.IsArchived,
+            assigneeId: request.AssigneeId,
+            priority: request.Priority,
+            pinnedByUserId: pinnedByUserId,
+            searchQuery: request.SearchQuery
         );
 
         var itemResponses = items
