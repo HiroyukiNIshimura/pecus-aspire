@@ -1,34 +1,207 @@
 'use client';
 
-import { useState } from 'react';
-import type { WorkspaceDetailUserResponse } from '@/connectors/api/pecus';
+import { useEffect, useState } from 'react';
+import { searchUsersForWorkspace } from '@/actions/admin/user';
+import BooleanFilterGroup from '@/components/common/BooleanFilterGroup';
+import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import type { TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 export interface WorkspaceItemFilters {
+  /** 担当者ID */
   assigneeId?: number | null;
-  status?: string | null;
-  priority?: string | null;
-  dueDateFrom?: string | null;
-  dueDateTo?: string | null;
+  /** オーナーID */
+  ownerId?: number | null;
+  /** コミッターID（最後にコミットしたユーザー） */
+  committerId?: number | null;
+  /** 優先度 */
+  priority?: TaskPriority | null;
+  /** 下書きかどうか */
+  isDraft?: boolean | null;
+  /** アーカイブ済みかどうか */
+  isArchived?: boolean | null;
+  /** ピン留めされているかどうか */
+  pinned?: boolean | null;
+}
+
+/** 選択されたユーザー情報 */
+interface SelectedUser {
+  id: number;
+  username: string;
+  email: string;
+  identityIconUrl: string | null;
+}
+
+/** 現在のユーザー情報（自分を選択するために必要） */
+interface CurrentUser {
+  id: number;
+  username: string;
+  email: string;
+  identityIconUrl: string | null;
 }
 
 interface WorkspaceItemFilterDrawerProps {
   isOpen: boolean;
   isClosing: boolean;
   onClose: () => void;
-  members?: WorkspaceDetailUserResponse[];
   currentFilters: WorkspaceItemFilters;
   onApplyFilters: (filters: WorkspaceItemFilters) => void;
+  /** 現在ログイン中のユーザー（「自分」リンク用） */
+  currentUser?: CurrentUser | null;
+}
+
+/** 優先度の選択肢 */
+const priorityOptions: { value: TaskPriority | ''; label: string }[] = [
+  { value: '', label: 'すべて' },
+  { value: 'Low', label: '低' },
+  { value: 'Medium', label: '中' },
+  { value: 'High', label: '高' },
+  { value: 'Critical', label: '緊急' },
+];
+
+/** ユーザー検索フィルターのProps */
+interface UserSearchFilterProps {
+  label: string;
+  id: string;
+  selectedUser: SelectedUser | null;
+  searchResults: UserSearchResultResponse[];
+  isSearching: boolean;
+  showDropdown: boolean;
+  onSearch: (query: string) => void;
+  onSelectUser: (user: UserSearchResultResponse) => void;
+  onClear: () => void;
+  onFocus: () => void;
+  onBlur: () => void;
+  /** 現在ログイン中のユーザー（「自分」リンク用） */
+  currentUser?: CurrentUser | null;
+  /** 「自分」をクリックしたときのコールバック */
+  onSelectSelf?: () => void;
+}
+
+/** ユーザー検索フィルターコンポーネント */
+function UserSearchFilter({
+  label,
+  id,
+  selectedUser,
+  searchResults,
+  isSearching,
+  showDropdown,
+  onSearch,
+  onSelectUser,
+  onClear,
+  onFocus,
+  onBlur,
+  currentUser,
+  onSelectSelf,
+}: UserSearchFilterProps) {
+  return (
+    <div className="form-control">
+      <div className="flex flex-row items-center justify-between py-1">
+        <span className="label-text font-semibold">{label}</span>
+        {currentUser && onSelectSelf && (
+          <button type="button" className="link link-primary text-xs" onClick={onSelectSelf}>
+            （自分）
+          </button>
+        )}
+      </div>
+      {selectedUser ? (
+        <div className="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
+          <img
+            src={getDisplayIconUrl(selectedUser.identityIconUrl)}
+            alt={selectedUser.username}
+            className="w-6 h-6 rounded-full object-cover"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{selectedUser.username}</p>
+            <p className="text-xs text-base-content/60 truncate">{selectedUser.email}</p>
+          </div>
+          <button type="button" className="btn btn-ghost btn-xs btn-circle" onClick={onClear} aria-label="選択解除">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <DebouncedSearchInput
+            onSearch={onSearch}
+            placeholder="名前またはメールで検索..."
+            debounceMs={300}
+            size="sm"
+            isLoading={isSearching}
+            showSearchIcon={true}
+            showClearButton={true}
+          />
+          <div onFocus={onFocus} onBlur={onBlur} className="absolute inset-0 pointer-events-none" />
+          {showDropdown && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+              {searchResults.map((user) => (
+                <button
+                  key={user.id}
+                  type="button"
+                  className="w-full flex items-center gap-2 p-2 hover:bg-base-200 transition-colors text-left"
+                  onClick={() => onSelectUser(user)}
+                >
+                  <img
+                    src={getDisplayIconUrl(user.identityIconUrl)}
+                    alt={user.username || 'User'}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{user.username}</p>
+                    <p className="text-xs text-base-content/60 truncate">{user.email}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          {showDropdown && !isSearching && searchResults.length === 0 && (
+            <div className="text-xs text-base-content/50 mt-1">2文字以上で検索</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function WorkspaceItemFilterDrawer({
   isOpen,
   isClosing,
   onClose,
-  members = [],
   currentFilters,
   onApplyFilters,
+  currentUser,
 }: WorkspaceItemFilterDrawerProps) {
   const [filters, setFilters] = useState<WorkspaceItemFilters>(currentFilters);
+
+  // ユーザー検索の状態（担当者用）
+  const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
+  const [isSearchingAssignee, setIsSearchingAssignee] = useState(false);
+  const [selectedAssignee, setSelectedAssignee] = useState<SelectedUser | null>(null);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+
+  // ユーザー検索の状態（オーナー用）
+  const [ownerSearchResults, setOwnerSearchResults] = useState<UserSearchResultResponse[]>([]);
+  const [isSearchingOwner, setIsSearchingOwner] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<SelectedUser | null>(null);
+  const [showOwnerDropdown, setShowOwnerDropdown] = useState(false);
+
+  // ユーザー検索の状態（コミッター用）
+  const [committerSearchResults, setCommitterSearchResults] = useState<UserSearchResultResponse[]>([]);
+  const [isSearchingCommitter, setIsSearchingCommitter] = useState(false);
+  const [selectedCommitter, setSelectedCommitter] = useState<SelectedUser | null>(null);
+  const [showCommitterDropdown, setShowCommitterDropdown] = useState(false);
+
+  // currentFiltersが変更されたらfiltersを更新
+  useEffect(() => {
+    setFilters(currentFilters);
+  }, [currentFilters]);
 
   if (!isOpen) return null;
 
@@ -40,13 +213,19 @@ export default function WorkspaceItemFilterDrawer({
   const handleReset = () => {
     const resetFilters: WorkspaceItemFilters = {
       assigneeId: null,
-      status: null,
+      ownerId: null,
+      committerId: null,
       priority: null,
-      dueDateFrom: null,
-      dueDateTo: null,
+      isDraft: null,
+      isArchived: null,
+      pinned: null,
     };
     setFilters(resetFilters);
+    setSelectedAssignee(null);
+    setSelectedOwner(null);
+    setSelectedCommitter(null);
     onApplyFilters(resetFilters);
+    onClose();
   };
 
   const activeFilterCount = Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length;
@@ -117,49 +296,198 @@ export default function WorkspaceItemFilterDrawer({
         </div>
 
         {/* ボディ */}
-        <div className="flex-1 p-4 space-y-4">
-          {/* 担当者フィルター */}
-          <div className="form-control">
-            <label htmlFor="filter-assignee" className="label">
-              <span className="label-text font-semibold">担当者</span>
-            </label>
-            <select
-              id="filter-assignee"
-              value={filters.assigneeId ?? ''}
-              onChange={(e) =>
-                setFilters({ ...filters, assigneeId: e.target.value ? parseInt(e.target.value, 10) : null })
+        <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+          {/* 担当者フィルター（ユーザー検索） */}
+          <UserSearchFilter
+            label="担当者"
+            id="filter-assignee"
+            selectedUser={selectedAssignee}
+            searchResults={assigneeSearchResults}
+            isSearching={isSearchingAssignee}
+            showDropdown={showAssigneeDropdown}
+            onSearch={async (query) => {
+              setShowAssigneeDropdown(true);
+              if (!query.trim() || query.length < 2) {
+                setAssigneeSearchResults([]);
+                return;
               }
-              className="select select-bordered select-sm"
-            >
-              <option value="">すべて</option>
-              <option value="-1">未割当</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.userName}
-                </option>
-              ))}
-            </select>
-          </div>
+              setIsSearchingAssignee(true);
+              try {
+                const result = await searchUsersForWorkspace(query);
+                if (result.success && result.data) {
+                  setAssigneeSearchResults(result.data);
+                } else {
+                  setAssigneeSearchResults([]);
+                }
+              } catch {
+                setAssigneeSearchResults([]);
+              } finally {
+                setIsSearchingAssignee(false);
+              }
+            }}
+            onSelectUser={(user) => {
+              setSelectedAssignee({
+                id: user.id!,
+                username: user.username!,
+                email: user.email!,
+                identityIconUrl: user.identityIconUrl ?? null,
+              });
+              setFilters({ ...filters, assigneeId: user.id! });
+              setShowAssigneeDropdown(false);
+              setAssigneeSearchResults([]);
+            }}
+            onClear={() => {
+              setSelectedAssignee(null);
+              setFilters({ ...filters, assigneeId: null });
+            }}
+            onFocus={() => setShowAssigneeDropdown(true)}
+            onBlur={() => {
+              // 少し遅延させてクリックイベントを処理できるようにする
+              setTimeout(() => setShowAssigneeDropdown(false), 200);
+            }}
+            currentUser={currentUser}
+            onSelectSelf={
+              currentUser
+                ? () => {
+                    setSelectedAssignee({
+                      id: currentUser.id,
+                      username: currentUser.username,
+                      email: currentUser.email,
+                      identityIconUrl: currentUser.identityIconUrl,
+                    });
+                    setFilters({ ...filters, assigneeId: currentUser.id });
+                  }
+                : undefined
+            }
+          />
 
-          {/* ステータスフィルター */}
-          <div className="form-control">
-            <label htmlFor="filter-status" className="label">
-              <span className="label-text font-semibold">ステータス</span>
-            </label>
-            <select
-              id="filter-status"
-              value={filters.status ?? ''}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value || null })}
-              className="select select-bordered select-sm"
-            >
-              <option value="">すべて</option>
-              <option value="open">オープン</option>
-              <option value="in_progress">進行中</option>
-              <option value="review">レビュー中</option>
-              <option value="done">完了</option>
-              <option value="closed">クローズ</option>
-            </select>
-          </div>
+          {/* オーナーフィルター（ユーザー検索） */}
+          <UserSearchFilter
+            label="オーナー"
+            id="filter-owner"
+            selectedUser={selectedOwner}
+            searchResults={ownerSearchResults}
+            isSearching={isSearchingOwner}
+            showDropdown={showOwnerDropdown}
+            onSearch={async (query) => {
+              setShowOwnerDropdown(true);
+              if (!query.trim() || query.length < 2) {
+                setOwnerSearchResults([]);
+                return;
+              }
+              setIsSearchingOwner(true);
+              try {
+                const result = await searchUsersForWorkspace(query);
+                if (result.success && result.data) {
+                  setOwnerSearchResults(result.data);
+                } else {
+                  setOwnerSearchResults([]);
+                }
+              } catch {
+                setOwnerSearchResults([]);
+              } finally {
+                setIsSearchingOwner(false);
+              }
+            }}
+            onSelectUser={(user) => {
+              setSelectedOwner({
+                id: user.id!,
+                username: user.username!,
+                email: user.email!,
+                identityIconUrl: user.identityIconUrl ?? null,
+              });
+              setFilters({ ...filters, ownerId: user.id! });
+              setShowOwnerDropdown(false);
+              setOwnerSearchResults([]);
+            }}
+            onClear={() => {
+              setSelectedOwner(null);
+              setFilters({ ...filters, ownerId: null });
+            }}
+            onFocus={() => setShowOwnerDropdown(true)}
+            onBlur={() => {
+              setTimeout(() => setShowOwnerDropdown(false), 200);
+            }}
+            currentUser={currentUser}
+            onSelectSelf={
+              currentUser
+                ? () => {
+                    setSelectedOwner({
+                      id: currentUser.id,
+                      username: currentUser.username,
+                      email: currentUser.email,
+                      identityIconUrl: currentUser.identityIconUrl,
+                    });
+                    setFilters({ ...filters, ownerId: currentUser.id });
+                  }
+                : undefined
+            }
+          />
+
+          {/* コミッターフィルター（ユーザー検索） */}
+          <UserSearchFilter
+            label="コミッター"
+            id="filter-committer"
+            selectedUser={selectedCommitter}
+            searchResults={committerSearchResults}
+            isSearching={isSearchingCommitter}
+            showDropdown={showCommitterDropdown}
+            onSearch={async (query) => {
+              setShowCommitterDropdown(true);
+              if (!query.trim() || query.length < 2) {
+                setCommitterSearchResults([]);
+                return;
+              }
+              setIsSearchingCommitter(true);
+              try {
+                const result = await searchUsersForWorkspace(query);
+                if (result.success && result.data) {
+                  setCommitterSearchResults(result.data);
+                } else {
+                  setCommitterSearchResults([]);
+                }
+              } catch {
+                setCommitterSearchResults([]);
+              } finally {
+                setIsSearchingCommitter(false);
+              }
+            }}
+            onSelectUser={(user) => {
+              setSelectedCommitter({
+                id: user.id!,
+                username: user.username!,
+                email: user.email!,
+                identityIconUrl: user.identityIconUrl ?? null,
+              });
+              setFilters({ ...filters, committerId: user.id! });
+              setShowCommitterDropdown(false);
+              setCommitterSearchResults([]);
+            }}
+            onClear={() => {
+              setSelectedCommitter(null);
+              setFilters({ ...filters, committerId: null });
+            }}
+            onFocus={() => setShowCommitterDropdown(true)}
+            onBlur={() => {
+              setTimeout(() => setShowCommitterDropdown(false), 200);
+            }}
+            currentUser={currentUser}
+            onSelectSelf={
+              currentUser
+                ? () => {
+                    setSelectedCommitter({
+                      id: currentUser.id,
+                      username: currentUser.username,
+                      email: currentUser.email,
+                      identityIconUrl: currentUser.identityIconUrl,
+                    });
+                    setFilters({ ...filters, committerId: currentUser.id });
+                  }
+                : undefined
+            }
+          />
+
+          <div className="divider my-2">優先度・ステータス</div>
 
           {/* 優先度フィルター */}
           <div className="form-control">
@@ -169,46 +497,42 @@ export default function WorkspaceItemFilterDrawer({
             <select
               id="filter-priority"
               value={filters.priority ?? ''}
-              onChange={(e) => setFilters({ ...filters, priority: e.target.value || null })}
+              onChange={(e) => setFilters({ ...filters, priority: (e.target.value as TaskPriority) || null })}
               className="select select-bordered select-sm"
             >
-              <option value="">すべて</option>
-              <option value="low">低</option>
-              <option value="medium">中</option>
-              <option value="high">高</option>
-              <option value="critical">緊急</option>
+              {priorityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="divider my-2">期限</div>
+          <div className="divider my-2">フラグ</div>
 
-          {/* 期限（開始） */}
-          <div className="form-control">
-            <label htmlFor="filter-due-from" className="label">
-              <span className="label-text font-semibold">期限（開始）</span>
-            </label>
-            <input
-              id="filter-due-from"
-              type="date"
-              value={filters.dueDateFrom ?? ''}
-              onChange={(e) => setFilters({ ...filters, dueDateFrom: e.target.value || null })}
-              className="input input-bordered input-sm"
-            />
-          </div>
+          {/* 下書きフィルター */}
+          <BooleanFilterGroup
+            label="下書き"
+            name="filter-draft"
+            value={filters.isDraft}
+            onChange={(value) => setFilters({ ...filters, isDraft: value })}
+          />
 
-          {/* 期限（終了） */}
-          <div className="form-control">
-            <label htmlFor="filter-due-to" className="label">
-              <span className="label-text font-semibold">期限（終了）</span>
-            </label>
-            <input
-              id="filter-due-to"
-              type="date"
-              value={filters.dueDateTo ?? ''}
-              onChange={(e) => setFilters({ ...filters, dueDateTo: e.target.value || null })}
-              className="input input-bordered input-sm"
-            />
-          </div>
+          {/* アーカイブフィルター */}
+          <BooleanFilterGroup
+            label="アーカイブ済み"
+            name="filter-archived"
+            value={filters.isArchived}
+            onChange={(value) => setFilters({ ...filters, isArchived: value })}
+          />
+
+          {/* ピン留めフィルター */}
+          <BooleanFilterGroup
+            label="ピン留め"
+            name="filter-pinned"
+            value={filters.pinned}
+            onChange={(value) => setFilters({ ...filters, pinned: value })}
+          />
         </div>
 
         {/* フッター */}

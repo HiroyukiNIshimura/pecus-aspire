@@ -6,11 +6,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import type {
-  WorkspaceDetailUserResponse,
-  WorkspaceItemDetailResponse,
-  WorkspaceListItemResponse,
-} from '@/connectors/api/pecus';
+import type { WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
@@ -19,11 +15,17 @@ interface WorkspaceItemsSidebarProps {
   workspaceId: number;
   currentWorkspaceCode: string;
   workspaces: WorkspaceListItemResponse[];
-  members?: WorkspaceDetailUserResponse[];
   scrollContainerId?: string;
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number) => void;
   onCreateNew?: () => void;
+  /** 現在ログイン中のユーザー情報（フィルターの「自分」選択用） */
+  currentUser?: {
+    id: number;
+    username: string;
+    email: string;
+    identityIconUrl: string | null;
+  } | null;
 }
 
 export interface WorkspaceItemsSidebarHandle {
@@ -36,11 +38,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       workspaceId,
       currentWorkspaceCode,
       workspaces,
-      members = [],
       scrollContainerId = 'itemsScrollableDiv',
       onHomeSelect,
       onItemSelect,
       onCreateNew,
+      currentUser,
     },
     ref,
   ) => {
@@ -75,15 +77,63 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       searchQueryRef.current = searchQuery;
     }, [searchQuery]);
 
+    // フィルターの最新値を参照するためのref
+    const filtersRef = useRef(filters);
+    useEffect(() => {
+      filtersRef.current = filters;
+    }, [filters]);
+
+    // URLにフィルターパラメータを追加するヘルパー関数
+    const buildFilterParams = useCallback((baseUrl: string, appliedFilters: WorkspaceItemFilters, query?: string) => {
+      const params = new URLSearchParams();
+      const urlParts = baseUrl.split('?');
+      const baseUrlWithoutParams = urlParts[0];
+      if (urlParts[1]) {
+        // 既存のパラメータを追加
+        const existingParams = new URLSearchParams(urlParts[1]);
+        existingParams.forEach((value, key) => {
+          params.set(key, value);
+        });
+      }
+
+      if (query) {
+        params.set('searchQuery', query);
+      }
+      if (appliedFilters.assigneeId !== null && appliedFilters.assigneeId !== undefined) {
+        params.set('assigneeId', String(appliedFilters.assigneeId));
+      }
+      if (appliedFilters.ownerId !== null && appliedFilters.ownerId !== undefined) {
+        params.set('ownerId', String(appliedFilters.ownerId));
+      }
+      if (appliedFilters.committerId !== null && appliedFilters.committerId !== undefined) {
+        params.set('committerId', String(appliedFilters.committerId));
+      }
+      if (appliedFilters.priority !== null && appliedFilters.priority !== undefined) {
+        params.set('priority', appliedFilters.priority);
+      }
+      if (appliedFilters.isDraft !== null && appliedFilters.isDraft !== undefined) {
+        params.set('isDraft', String(appliedFilters.isDraft));
+      }
+      if (appliedFilters.isArchived !== null && appliedFilters.isArchived !== undefined) {
+        params.set('isArchived', String(appliedFilters.isArchived));
+      }
+      if (appliedFilters.pinned !== null && appliedFilters.pinned !== undefined) {
+        params.set('pinned', String(appliedFilters.pinned));
+      }
+
+      const queryString = params.toString();
+      return queryString ? `${baseUrlWithoutParams}?${queryString}` : baseUrlWithoutParams;
+    }, []);
+
     // アイテムをリロードするメソッド
     const refreshItems = useCallback(
-      async (selectItemId?: number, query?: string) => {
+      async (selectItemId?: number, query?: string, appliedFilters?: WorkspaceItemFilters) => {
         try {
           setIsLoading(true);
           const searchParam = query !== undefined ? query : searchQueryRef.current;
-          const url = searchParam
-            ? `/api/workspaces/${workspaceId}/items?page=1&searchQuery=${encodeURIComponent(searchParam)}`
-            : `/api/workspaces/${workspaceId}/items?page=1`;
+          const currentFilters = appliedFilters !== undefined ? appliedFilters : filtersRef.current;
+          const baseUrl = `/api/workspaces/${workspaceId}/items?page=1`;
+          const url = buildFilterParams(baseUrl, currentFilters, searchParam || undefined);
           const response = await fetch(url);
 
           if (!response.ok) {
@@ -108,7 +158,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           setIsLoading(false);
         }
       },
-      [workspaceId],
+      [workspaceId, buildFilterParams],
     );
 
     // refreshItemsの最新値を参照するためのref（初期値を設定）
@@ -133,11 +183,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const loadMoreItems = useCallback(async () => {
       const nextPage = currentPageRef.current + 1;
       const currentSearchQuery = searchQueryRef.current;
+      const currentFilters = filtersRef.current;
 
       try {
-        const url = currentSearchQuery
-          ? `/api/workspaces/${workspaceId}/items?page=${nextPage}&searchQuery=${encodeURIComponent(currentSearchQuery)}`
-          : `/api/workspaces/${workspaceId}/items?page=${nextPage}`;
+        const baseUrl = `/api/workspaces/${workspaceId}/items?page=${nextPage}`;
+        const url = buildFilterParams(baseUrl, currentFilters, currentSearchQuery || undefined);
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -160,7 +210,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         console.error('Failed to load more items:', err);
         notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
       }
-    }, [workspaceId]);
+    }, [workspaceId, buildFilterParams]);
 
     // 検索クエリ変更時のハンドラー
     const handleSearch = useCallback((query: string) => {
@@ -177,11 +227,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       }, 250);
     }, []);
 
-    // フィルター適用ハンドラー（UIサンプル用・実際のフィルタリングは未実装）
+    // フィルター適用ハンドラー
     const handleApplyFilters = useCallback((newFilters: WorkspaceItemFilters) => {
       setFilters(newFilters);
-      // TODO: フィルターを適用してアイテムを再取得する
-      console.log('Applied filters:', newFilters);
+      // フィルターを適用してアイテムを再取得する
+      refreshItemsRef.current(undefined, undefined, newFilters);
     }, []);
 
     return (
@@ -310,9 +360,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           isOpen={isFilterDrawerOpen}
           isClosing={isFilterDrawerClosing}
           onClose={handleCloseFilterDrawer}
-          members={members}
           currentFilters={filters}
           onApplyFilters={handleApplyFilters}
+          currentUser={currentUser}
         />
       </aside>
     );

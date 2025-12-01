@@ -329,6 +329,16 @@ export default function WorkspaceDetailClient({
             onItemSelect={handleItemSelect}
             onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-desktop"
+            currentUser={
+              userInfo
+                ? {
+                    id: userInfo.id,
+                    username: userInfo.username || userInfo.name,
+                    email: userInfo.email,
+                    identityIconUrl: userInfo.identityIconUrl,
+                  }
+                : null
+            }
           />
 
           {/* リサイズハンドル */}
@@ -518,6 +528,16 @@ export default function WorkspaceDetailClient({
             onItemSelect={handleItemSelect}
             onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-mobile"
+            currentUser={
+              userInfo
+                ? {
+                    id: userInfo.id,
+                    username: userInfo.username || userInfo.name,
+                    email: userInfo.email,
+                    identityIconUrl: userInfo.identityIconUrl,
+                  }
+                : null
+            }
           />
         </div>
       </div>
