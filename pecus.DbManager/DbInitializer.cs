@@ -105,7 +105,15 @@ internal class DbInitializer(
         await dbContext.Database.ExecuteSqlRawAsync(
             @"CREATE INDEX IF NOT EXISTS idx_users_pgroonga
               ON ""Users""
-              USING pgroonga ((ARRAY[""Username"", ""Email""]));",
+              USING pgroonga ((ARRAY[""Username"", ""Email""])) WITH (tokenizer=""TokenMecab"");",
+            cancellationToken
+        );
+
+        // WorkspaceItem テーブルに pgroonga インデックスを作成（既存の場合はスキップ）
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS idx_workspaceitems_pgroonga
+              ON ""WorkspaceItems""
+              USING pgroonga ((ARRAY[""Subject"", ""RawBody""])) WITH (tokenizer=""TokenMecab"");",
             cancellationToken
         );
 
