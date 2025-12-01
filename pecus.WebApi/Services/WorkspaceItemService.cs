@@ -1,10 +1,11 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Lexical;
+using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
@@ -22,13 +23,15 @@ public class WorkspaceItemService
     private readonly PecusConfig _config;
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly WorkspaceItemTempAttachmentService _tempAttachmentService;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public WorkspaceItemService(
         ApplicationDbContext context,
         ILogger<WorkspaceItemService> logger,
         PecusConfig config,
         OrganizationAccessHelper accessHelper,
-        WorkspaceItemTempAttachmentService tempAttachmentService
+        WorkspaceItemTempAttachmentService tempAttachmentService,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _context = context;
@@ -36,6 +39,7 @@ public class WorkspaceItemService
         _config = config;
         _accessHelper = accessHelper;
         _tempAttachmentService = tempAttachmentService;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -47,8 +51,6 @@ public class WorkspaceItemService
         int ownerId
     )
     {
-        var rowBody = LexicalTextExtractor.ExtractText(request.Body);
-
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -105,7 +107,7 @@ public class WorkspaceItemService
                 Code = code,
                 Subject = request.Subject,
                 Body = request.Body,
-                RawBody = rowBody,
+                RawBody = string.Empty, // Hangfire ジョブで非同期更新
                 OwnerId = ownerId,
                 AssigneeId = request.AssigneeId,
                 Priority = request.Priority,
@@ -260,6 +262,12 @@ public class WorkspaceItemService
             await _context.Entry(item).Collection(wi => wi.WorkspaceItemTags).LoadAsync();
 
             await transaction.CommitAsync();
+
+            // RawBody 更新ジョブをエンキュー
+            _backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
+                x.UpdateRawBodyAsync(item.Id, item.RowVersion)
+            );
+
             return item;
         }
         catch
@@ -470,7 +478,7 @@ public class WorkspaceItemService
         if (request.Body != null)
         {
             item.Body = request.Body;
-            item.RawBody = LexicalTextExtractor.ExtractText(request.Body);
+            // RawBody は Hangfire ジョブで非同期更新（SaveChanges 後にエンキュー）
         }
 
         if (request.AssigneeId.HasValue)
@@ -523,6 +531,14 @@ public class WorkspaceItemService
         catch (DbUpdateConcurrencyException)
         {
             await RaiseConflictException(itemId);
+        }
+
+        // Body が更新された場合、RawBody 更新ジョブをエンキュー
+        if (request.Body != null)
+        {
+            _backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
+                x.UpdateRawBodyAsync(item.Id, item.RowVersion)
+            );
         }
 
         // ナビゲーションプロパティをロード

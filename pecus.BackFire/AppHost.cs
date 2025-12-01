@@ -34,6 +34,7 @@ builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<CleanupTasks>();
 builder.Services.AddScoped<UploadsCleanupTasks>();
+builder.Services.AddScoped<WorkspaceItemTasks>();
 
 //ここでは何もしないHangfireクライアントとジョブを実行するサーバーを登録する
 builder.Services.AddHangfire(
