@@ -291,7 +291,7 @@ export default function AdminUsersClient({
 
                 {filterOpen && (
                   <div className="pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 mb-4">
                       {/* Username Filter */}
                       <div className="form-control">
                         <label htmlFor="filter-username" className="label">

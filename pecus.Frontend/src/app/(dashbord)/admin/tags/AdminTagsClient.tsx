@@ -219,7 +219,7 @@ export default function AdminTagsClient({
 
                 {filterOpen && (
                   <div className="pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-4 mb-4">
                       {/* タグ名検索 */}
                       <div className="form-control">
                         <label htmlFor="filter-name" className="label">
@@ -258,18 +258,16 @@ export default function AdminTagsClient({
                         <div className="label">
                           <span className="label-text">使用状況</span>
                         </div>
-                        <div className="flex items-center h-12">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              id="filter-unused"
-                              type="checkbox"
-                              className="checkbox"
-                              checked={filterUnusedOnly}
-                              onChange={(e) => setFilterUnusedOnly(e.target.checked)}
-                            />
-                            <span className="text-sm">未使用のみ</span>
-                          </label>
-                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            id="filter-unused"
+                            type="checkbox"
+                            className="checkbox checkbox-sm"
+                            checked={filterUnusedOnly}
+                            onChange={(e) => setFilterUnusedOnly(e.target.checked)}
+                          />
+                          <span className="text-sm">未使用のみ</span>
+                        </label>
                       </div>
                     </div>
 
