@@ -1612,14 +1612,7 @@
                     ]
                 },
                 {
-                    "children": [
-                        {
-                            "type": "equation",
-                            "version": 1,
-                            "equation": "e=mc^2",
-                            "inline": true
-                        }
-                    ],
+                    "children": [],
                     "direction": null,
                     "format": "",
                     "indent": 0,
@@ -1627,75 +1620,6 @@
                     "version": 1,
                     "textFormat": 0,
                     "textStyle": ""
-                },
-                {
-                    "children": [
-                        {
-                            "type": "datetime",
-                            "version": 1,
-                            "dateTime": "2025-11-30T15:00:00.000Z"
-                        }
-                    ],
-                    "direction": null,
-                    "format": "",
-                    "indent": 0,
-                    "type": "paragraph",
-                    "version": 1,
-                    "textFormat": 0,
-                    "textStyle": ""
-                },
-                {
-                    "type": "sticky",
-                    "version": 1,
-                    "caption": {
-                        "editorState": {
-                            "root": {
-                                "children": [
-                                    {
-                                        "children": [
-                                            {
-                                                "detail": 0,
-                                                "format": 0,
-                                                "mode": "normal",
-                                                "style": "",
-                                                "text": "Note ! asdasdas",
-                                                "type": "text",
-                                                "version": 1
-                                            },
-                                            {
-                                                "type": "linebreak",
-                                                "version": 1
-                                            },
-                                            {
-                                                "detail": 0,
-                                                "format": 0,
-                                                "mode": "normal",
-                                                "style": "",
-                                                "text": "ああああ",
-                                                "type": "text",
-                                                "version": 1
-                                            }
-                                        ],
-                                        "direction": null,
-                                        "format": "",
-                                        "indent": 0,
-                                        "type": "paragraph",
-                                        "version": 1,
-                                        "textFormat": 0,
-                                        "textStyle": ""
-                                    }
-                                ],
-                                "direction": null,
-                                "format": "",
-                                "indent": 0,
-                                "type": "root",
-                                "version": 1
-                            }
-                        }
-                    },
-                    "color": "yellow",
-                    "xOffset": 187,
-                    "yOffset": 196
                 }
             ],
             "direction": null,
@@ -1705,7 +1629,7 @@
             "version": 1
         }
     },
-    "lastSaved": 1764553423808,
+    "lastSaved": 1764552801445,
     "source": "Playground",
     "version": "0.38.2"
 }

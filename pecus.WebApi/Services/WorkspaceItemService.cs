@@ -4,6 +4,7 @@ using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Lexical;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceItem;
@@ -46,6 +47,8 @@ public class WorkspaceItemService
         int ownerId
     )
     {
+        var rowBody = LexicalTextExtractor.ExtractText(request.Body);
+
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -102,6 +105,7 @@ public class WorkspaceItemService
                 Code = code,
                 Subject = request.Subject,
                 Body = request.Body,
+                RawBody = rowBody,
                 OwnerId = ownerId,
                 AssigneeId = request.AssigneeId,
                 Priority = request.Priority,
@@ -466,6 +470,7 @@ public class WorkspaceItemService
         if (request.Body != null)
         {
             item.Body = request.Body;
+            item.RawBody = LexicalTextExtractor.ExtractText(request.Body);
         }
 
         if (request.AssigneeId.HasValue)
