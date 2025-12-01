@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Lexical;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -811,6 +813,10 @@ public class DatabaseSeeder
                 return;
             }
 
+            // playground.json を読み込み
+            var playgroundJson = await LoadPlaygroundJsonAsync();
+            var rawBody = LexicalTextExtractor.ExtractText(playgroundJson);
+
             int totalItemsAdded = 0;
 
             foreach (var workspace in workspaces)
@@ -837,7 +843,8 @@ public class DatabaseSeeder
                         WorkspaceId = workspace.Id,
                         Code = GenerateUniqueCode(),
                         Subject = Lorem.Sentence(_random.Next(3, 8)), // 3-7単語の文
-                        Body = null, // NULLのまま
+                        Body = playgroundJson, // playground.json の内容
+                        RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
                         OwnerId = ownerId,
                         AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
                         Priority = _random.Next(4) switch
@@ -872,6 +879,40 @@ public class DatabaseSeeder
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} workspace items in total", totalItemsAdded);
         }
+    }
+
+    /// <summary>
+    /// playground.json ファイルを読み込む
+    /// </summary>
+    /// <returns>JSON 文字列</returns>
+    private static async Task<string> LoadPlaygroundJsonAsync()
+    {
+        // アセンブリの場所を基準にファイルパスを取得
+        var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+        var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? string.Empty;
+
+        // 開発時とビルド時で異なるパスを試行
+        var possiblePaths = new[]
+        {
+            // ビルド出力からの相対パス
+            Path.Combine(assemblyDirectory, "DB", "Seed", "playground.json"),
+            // プロジェクトルートからの相対パス（開発時）
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "playground.json"),
+            // 直接参照（開発時のホットリロード用）
+            Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "playground.json")),
+        };
+
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                return await File.ReadAllTextAsync(path);
+            }
+        }
+
+        throw new FileNotFoundException(
+            $"playground.json not found. Tried paths: {string.Join(", ", possiblePaths)}"
+        );
     }
 
     /// <summary>

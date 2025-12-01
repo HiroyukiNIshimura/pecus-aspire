@@ -431,6 +431,12 @@ public class WorkspaceItemService
     /// <summary>
     /// pgroonga を使用してワークスペースアイテムをあいまい検索
     /// Subject と RawBody を対象に日本語のゆらぎやタイポにも対応した検索を行う
+    /// <para>
+    /// 検索クエリの書式:
+    /// - スペース区切り → AND検索（例: "aaa bbb" → aaa AND bbb）
+    /// - パイプ(|)区切り → OR検索（例: "aaa|bbb" → aaa OR bbb）
+    /// - 混合 → AND + OR（例: "aaa bbb|ccc" → aaa AND (bbb OR ccc)）
+    /// </para>
     /// </summary>
     private async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsWithPgroongaAsync(
         int workspaceId,
@@ -444,13 +450,16 @@ public class WorkspaceItemService
         string searchQuery
     )
     {
+        // ユーザー入力を pgroonga クエリに変換（SQLインジェクション対策済み）
+        var pgroongaQuery = PgroongaQueryBuilder.BuildQuery(searchQuery);
+
         // 動的にWHERE句を構築
         var whereClauses = new List<string>
         {
             @"""WorkspaceId"" = {0}",
             @"ARRAY[""Subject"", ""RawBody""] &@~ {1}"
         };
-        var parameters = new List<object> { workspaceId, searchQuery };
+        var parameters = new List<object> { workspaceId, pgroongaQuery };
         var paramIndex = 2;
 
         if (isDraft.HasValue)
