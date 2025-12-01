@@ -655,26 +655,11 @@ public class AdminUserController : BaseAdminController
         // 上限を制限
         var validatedLimit = Math.Min(Math.Max(limit, 1), 50);
 
-        List<User> users;
-        try
-        {
-            // pgroonga を使用したあいまい検索
-            users = await _userService.SearchUsersWithPgroongaAsync(
+        List<User> users = await _userService.SearchUsersWithPgroongaAsync(
                 organizationId: CurrentUser!.OrganizationId!.Value,
                 searchQuery: q,
                 limit: validatedLimit
             );
-        }
-        catch (Exception ex)
-        {
-            // pgroonga が利用できない場合はフォールバック
-            _logger.LogWarning(ex, "pgroonga 検索に失敗しました。ILIKE フォールバックを使用します。");
-            users = await _userService.SearchUsersFallbackAsync(
-                organizationId: CurrentUser!.OrganizationId!.Value,
-                searchQuery: q,
-                limit: validatedLimit
-            );
-        }
 
         var response = users.Select(u => new UserSearchResultResponse
         {
