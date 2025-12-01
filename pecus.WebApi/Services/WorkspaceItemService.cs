@@ -483,8 +483,8 @@ public class WorkspaceItemService
 
         var whereClause = string.Join(" AND ", whereClauses);
 
-        // カウント用クエリを実行
-        var countSql = $@"SELECT COUNT(*) FROM ""WorkspaceItems"" WHERE {whereClause}";
+        // カウント用クエリを実行（SqlQueryRaw<int> は "Value" カラムを期待する）
+        var countSql = $@"SELECT COUNT(*)::int AS ""Value"" FROM ""WorkspaceItems"" WHERE {whereClause}";
         var totalCount = await _context.Database
             .SqlQueryRaw<int>(countSql, parameters.ToArray())
             .FirstOrDefaultAsync();
@@ -496,8 +496,9 @@ public class WorkspaceItemService
         {
             // PIN フィルタがある場合、まず pgroonga で検索してから PIN フィルタを適用
             var offset = (page - 1) * pageSize;
+            // xmin はシステムカラムなので SELECT * では含まれない。明示的に指定する必要がある
             var mainSql = $@"
-                SELECT wi.* FROM ""WorkspaceItems"" wi
+                SELECT wi.*, wi.xmin FROM ""WorkspaceItems"" wi
                 INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
                 WHERE {whereClause} AND wip.""UserId"" = {{{paramIndex}}}
                 ORDER BY pgroonga_score(wi.tableoid, wi.ctid) DESC
@@ -510,9 +511,9 @@ public class WorkspaceItemService
             query = _context.WorkspaceItems
                 .FromSqlRaw(mainSql, parameters.ToArray());
 
-            // PIN フィルタ適用時のカウントを再計算
+            // PIN フィルタ適用時のカウントを再計算（SqlQueryRaw<int> は "Value" カラムを期待する）
             var countWithPinSql = $@"
-                SELECT COUNT(*) FROM ""WorkspaceItems"" wi
+                SELECT COUNT(*)::int AS ""Value"" FROM ""WorkspaceItems"" wi
                 INNER JOIN ""WorkspaceItemPins"" wip ON wi.""Id"" = wip.""WorkspaceItemId""
                 WHERE {whereClause} AND wip.""UserId"" = {{{paramIndex - 3}}}";
             var countParams = parameters.Take(paramIndex - 2).Append(pinnedByUserId.Value).ToArray();
@@ -523,8 +524,9 @@ public class WorkspaceItemService
         else
         {
             var offset = (page - 1) * pageSize;
+            // xmin はシステムカラムなので SELECT * では含まれない。明示的に指定する必要がある
             var mainSql = $@"
-                SELECT * FROM ""WorkspaceItems""
+                SELECT *, xmin FROM ""WorkspaceItems""
                 WHERE {whereClause}
                 ORDER BY pgroonga_score(tableoid, ctid) DESC
                 LIMIT {{{paramIndex}}} OFFSET {{{paramIndex + 1}}}";

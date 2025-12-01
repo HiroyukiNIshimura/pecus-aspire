@@ -119,8 +119,6 @@ export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAtta
 export type { WorkspaceItemDetailResponse } from './models/WorkspaceItemDetailResponse';
 export type { WorkspaceItemDetailResponseConcurrencyErrorResponse } from './models/WorkspaceItemDetailResponseConcurrencyErrorResponse';
 export type { WorkspaceItemDetailResponsePagedResponse } from './models/WorkspaceItemDetailResponsePagedResponse';
-export type { WorkspaceItemListPagedResponse } from './models/WorkspaceItemListPagedResponse';
-export type { WorkspaceItemListResponse } from './models/WorkspaceItemListResponse';
 export type { WorkspaceItemRelationResponse } from './models/WorkspaceItemRelationResponse';
 export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelationsResponse';
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';

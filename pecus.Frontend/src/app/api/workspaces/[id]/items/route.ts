@@ -10,20 +10,31 @@ interface RouteParams {
 
 /**
  * ワークスペースアイテム一覧取得 API Route
- * GET /api/workspaces/[id]/items?page=1
+ * GET /api/workspaces/[id]/items?page=1&searchQuery=xxx
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const workspaceId = parseInt(id, 10);
     const page = request.nextUrl.searchParams.get('page') ? parseInt(request.nextUrl.searchParams.get('page')!, 10) : 1;
+    const searchQuery = request.nextUrl.searchParams.get('searchQuery') || undefined;
 
     if (Number.isNaN(workspaceId)) {
       return badRequestError('Invalid workspace ID');
     }
 
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspacesItems(workspaceId, page);
+    // WorkspaceItemService を使用（pgroonga によるあいまい検索対応）
+    const response = await api.workspaceItem.getApiWorkspacesItems(
+      workspaceId,
+      page,
+      undefined, // isDraft
+      undefined, // isArchived
+      undefined, // assigneeId
+      undefined, // priority
+      undefined, // pinned
+      searchQuery,
+    );
 
     return NextResponse.json(response);
   } catch (error) {

@@ -4,9 +4,9 @@ import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import type { WorkspaceItemListResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
@@ -39,13 +39,17 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
   ) => {
     const [selectedItemId, setSelectedItemId] = useState<'home' | 'new' | number | null>('home');
     const [searchQuery, setSearchQuery] = useState('');
-    const [items, setItems] = useState<WorkspaceItemListResponse[]>([]);
+    const [items, setItems] = useState<WorkspaceItemDetailResponse[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
     const notify = useNotify();
+    const notifyRef = useRef(notify);
+    useEffect(() => {
+      notifyRef.current = notify;
+    }, [notify]);
 
     // currentPageの最新値を参照するためのref
     const currentPageRef = useRef(currentPage);
@@ -53,12 +57,22 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       currentPageRef.current = currentPage;
     }, [currentPage]);
 
+    // 検索クエリの最新値を参照するためのref
+    const searchQueryRef = useRef(searchQuery);
+    useEffect(() => {
+      searchQueryRef.current = searchQuery;
+    }, [searchQuery]);
+
     // アイテムをリロードするメソッド
     const refreshItems = useCallback(
-      async (selectItemId?: number) => {
+      async (selectItemId?: number, query?: string) => {
         try {
           setIsLoading(true);
-          const response = await fetch(`/api/workspaces/${workspaceId}/items?page=1`);
+          const searchParam = query !== undefined ? query : searchQueryRef.current;
+          const url = searchParam
+            ? `/api/workspaces/${workspaceId}/items?page=1&searchQuery=${encodeURIComponent(searchParam)}`
+            : `/api/workspaces/${workspaceId}/items?page=1`;
+          const response = await fetch(url);
 
           if (!response.ok) {
             throw new Error('Failed to fetch items');
@@ -77,7 +91,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           }
         } catch (err) {
           console.error('Failed to fetch items:', err);
-          notify.error('サーバーとの通信でエラーが発生しました。', true);
+          notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
         } finally {
           setIsLoading(false);
         }
@@ -85,10 +99,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       [workspaceId],
     );
 
+    // refreshItemsの最新値を参照するためのref（初期値を設定）
+    const refreshItemsRef = useRef<typeof refreshItems>(refreshItems);
+    refreshItemsRef.current = refreshItems;
+
     // 初期ロード
     useEffect(() => {
       refreshItems();
-    }, [refreshItems]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [workspaceId]);
 
     // imperative handle で refreshItems を公開
     useImperativeHandle(
@@ -101,9 +120,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
 
     const loadMoreItems = useCallback(async () => {
       const nextPage = currentPageRef.current + 1;
+      const currentSearchQuery = searchQueryRef.current;
 
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/items?page=${nextPage}`);
+        const url = currentSearchQuery
+          ? `/api/workspaces/${workspaceId}/items?page=${nextPage}&searchQuery=${encodeURIComponent(currentSearchQuery)}`
+          : `/api/workspaces/${workspaceId}/items?page=${nextPage}`;
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error('Failed to fetch items');
@@ -115,7 +138,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         // 重複を除外してアイテムを追加
         setItems((prev) => {
           const existingIds = new Set(prev.map((item) => item.id));
-          const uniqueNewItems = newItems.filter((item: WorkspaceItemListResponse) => !existingIds.has(item.id));
+          const uniqueNewItems = newItems.filter((item: WorkspaceItemDetailResponse) => !existingIds.has(item.id));
           return [...prev, ...uniqueNewItems];
         });
 
@@ -123,17 +146,36 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error('Failed to load more items:', err);
-        notify.error('サーバーとの通信でエラーが発生しました。', true);
+        notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
       }
-    }, [workspaceId, notify]);
+    }, [workspaceId]);
 
-    // 検索フィルター
-    const filteredItems = useMemo(() => {
-      if (!searchQuery.trim()) {
-        return items;
+    // デバウンス用タイマーref
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // 検索クエリ変更時にデバウンスしてAPIを呼び出す
+    const handleSearchChange = useCallback((value: string) => {
+      setSearchQuery(value);
+
+      // 既存のタイマーをクリア
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-      return items.filter((item) => item.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-    }, [items, searchQuery]);
+
+      // 300ms後にAPIを呼び出す
+      debounceTimerRef.current = setTimeout(() => {
+        refreshItemsRef.current(undefined, value);
+      }, 300);
+    }, []);
+
+    // クリーンアップ
+    useEffect(() => {
+      return () => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+      };
+    }, []);
 
     return (
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
@@ -180,23 +222,30 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             </button>
           </div>
           <p className="text-xs text-base-content/70 mb-3">
-            {searchQuery ? `${filteredItems.length} 件（全 ${totalCount} 件中）` : `${totalCount} 件`}
+            {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
           </p>
 
           {/* 検索ボックス */}
           <div className="relative">
             <input
               type="text"
-              placeholder="検索..."
+              placeholder="あいまい検索..."
               className="input input-bordered input-sm w-full pl-9 pr-9"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
             />
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50 pointer-events-none" />
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  // タイマーをクリアして即座に全件取得
+                  if (debounceTimerRef.current) {
+                    clearTimeout(debounceTimerRef.current);
+                  }
+                  refreshItemsRef.current(undefined, '');
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content transition-colors"
                 title="クリア"
               >
@@ -211,16 +260,16 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           <div className="flex justify-center items-center flex-1">
             <span className="loading loading-spinner loading-sm"></span>
           </div>
-        ) : filteredItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">
             <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
           </div>
         ) : (
           <div id={scrollContainerId} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
             <InfiniteScroll
-              dataLength={filteredItems.length}
+              dataLength={items.length}
               next={loadMoreItems}
-              hasMore={!searchQuery && currentPage < totalPages}
+              hasMore={currentPage < totalPages}
               loader={
                 <div className="text-center py-4">
                   <span className="loading loading-spinner loading-sm"></span>
@@ -234,7 +283,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               scrollableTarget={scrollContainerId}
             >
               <ul className="space-y-1 p-2">
-                {filteredItems.map((item) => (
+                {items.map((item) => (
                   <li key={item.id}>
                     <button
                       type="button"

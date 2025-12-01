@@ -5745,62 +5745,6 @@
         }
       }
     },
-    "/api/workspaces/{id}/items": {
-      "get": {
-        "tags": [
-          "Workspace"
-        ],
-        "summary": "ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ワークスペースID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "Page",
-            "in": "query",
-            "description": "ページ番号（1から始まる）",
-            "schema": {
-              "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceItemListPagedResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/api/workspaces/{id}/members": {
       "post": {
         "tags": [
@@ -11725,72 +11669,6 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
-      },
-      "WorkspaceItemListPagedResponse": {
-        "type": "object",
-        "properties": {
-          "currentPage": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WorkspaceItemListResponse"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "ワークスペースアイテム一覧ページングレスポンス"
-      },
-      "WorkspaceItemListResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "code": {
-            "type": "string",
-            "nullable": true
-          },
-          "subject": {
-            "type": "string",
-            "nullable": true
-          },
-          "priority": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "isDraft": {
-            "type": "boolean"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "isAssigned": {
-            "type": "boolean"
-          },
-          "owner": {
-            "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ワークスペースアイテム一覧レスポンス（ページング対応）"
       },
       "WorkspaceItemRelationResponse": {
         "required": [

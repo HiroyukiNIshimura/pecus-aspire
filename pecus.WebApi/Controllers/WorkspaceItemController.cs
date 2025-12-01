@@ -139,7 +139,7 @@ public class WorkspaceItemController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse>>> GetWorkspaceItems(
         int workspaceId,
-        [FromQuery] Models.Requests.WorkspaceItem.GetWorkspaceItemsRequest request
+        [FromQuery] GetWorkspaceItemsRequest request
     )
     {
         // ワークスペースへのアクセス権限をチェック

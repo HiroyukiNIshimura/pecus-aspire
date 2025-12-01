@@ -7,7 +7,6 @@ import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
-import type { WorkspaceItemListPagedResponse } from '../models/WorkspaceItemListPagedResponse';
 import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -147,32 +146,6 @@ export class WorkspaceService {
             url: '/api/workspaces/code/{code}',
             path: {
                 'code': code,
-            },
-            errors: {
-                404: `Not Found`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）
-     * @param id ワークスペースID
-     * @param page ページ番号（1から始まる）
-     * @returns WorkspaceItemListPagedResponse OK
-     * @throws ApiError
-     */
-    public static getApiWorkspacesItems(
-        id: number,
-        page?: number,
-    ): CancelablePromise<WorkspaceItemListPagedResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/workspaces/{id}/items',
-            path: {
-                'id': id,
-            },
-            query: {
-                'Page': page,
             },
             errors: {
                 404: `Not Found`,

@@ -242,60 +242,6 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペース内のアイテム一覧を取得する（有効なアイテムのみ、ページング対応）
-    /// </summary>
-    /// <param name="id">ワークスペースID</param>
-    /// <param name="request">ページネーションリクエスト</param>
-    [HttpGet("{id:int}/items")]
-    [ProducesResponseType(typeof(WorkspaceItemListPagedResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<WorkspaceItemListPagedResponse>> GetWorkspaceItems(
-        int id,
-        [FromQuery] Models.Requests.Workspace.GetWorkspaceItemsRequest request
-    )
-    {
-        // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースアクセス権限チェック
-        await _workspaceService.CheckWorkspaceAccessAsync(workspaceId: id, userId: CurrentUserId);
-
-        var validatedPage = PaginationHelper.ValidatePageNumber(request.Page);
-        var pageSize = _config.Pagination.DefaultPageSize;
-
-        // ワークスペース内のアイテム一覧を取得
-        (var items, int totalCount) = await _workspaceService.GetWorkspaceItemsAsync(
-            workspaceId: id,
-            page: validatedPage,
-            pageSize: pageSize
-        );
-
-        var data = items
-            .Select(item => new WorkspaceItemListResponse
-            {
-                Id = item.Id,
-                Code = item.Code,
-                Subject = item.Subject,
-                Priority = item.Priority,
-                IsDraft = item.IsDraft,
-                IsArchived = item.IsArchived,
-                CreatedAt = item.CreatedAt,
-                IsAssigned = item.IsAssigned,
-                Owner = item.Owner,
-            })
-            .ToList();
-
-        var response = new WorkspaceItemListPagedResponse
-        {
-            CurrentPage = validatedPage,
-            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
-            TotalCount = totalCount,
-            Data = data,
-        };
-
-        return TypedResults.Ok(response);
-    }
-
-    /// <summary>
     /// ワークスペースにメンバーを追加する（Ownerのみ実行可能）
     /// </summary>
     /// <param name="id">ワークスペースID</param>
