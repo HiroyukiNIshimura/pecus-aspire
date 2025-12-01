@@ -18,7 +18,7 @@ public static class SerilogHelper
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)
+            //.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Query", LogEventLevel.Debug)
             .MinimumLevel.Override("Aspire.Hosting.Dcp", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()

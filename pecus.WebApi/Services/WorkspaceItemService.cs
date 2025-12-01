@@ -616,10 +616,10 @@ public class WorkspaceItemService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
-        // アーカイブ済みの場合は更新不可
-        if (item.IsArchived)
+        // アーカイブ済みの場合は、アーカイブ解除以外の更新は不可
+        if (item.IsArchived && request.IsArchived != false)
         {
-            throw new InvalidOperationException("アーカイブ済みのアイテムは更新できません。");
+            throw new InvalidOperationException("アーカイブ済みのアイテムは更新できません。アーカイブを解除してから更新してください。");
         }
 
         // 更新権限チェック（オーナーまたは担当者のみ）
