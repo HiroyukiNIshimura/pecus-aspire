@@ -74,6 +74,11 @@ public class WorkspaceItem
     public int? CommitterId { get; set; }
 
     /// <summary>
+    /// 最終更新者ユーザーID（外部キー、NULL可）
+    /// </summary>
+    public int? UpdatedByUserId { get; set; }
+
+    /// <summary>
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
@@ -108,6 +113,11 @@ public class WorkspaceItem
     /// コミッターユーザー（ナビゲーションプロパティ）
     /// </summary>
     public User? Committer { get; set; }
+
+    /// <summary>
+    /// 最終更新者ユーザー（ナビゲーションプロパティ）
+    /// </summary>
+    public User? UpdatedByUser { get; set; }
 
     /// <summary>
     /// このアイテムに付与されているタグとの関連（多対多）

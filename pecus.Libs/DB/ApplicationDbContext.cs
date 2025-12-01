@@ -322,11 +322,19 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(wi => wi.CommitterId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // WorkspaceItem と UpdatedByUser(User) の多対一リレーションシップ
+            entity
+                .HasOne(wi => wi.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(wi => wi.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // インデックス
             entity.HasIndex(wi => new { wi.WorkspaceId, wi.Code }).IsUnique();
             entity.HasIndex(wi => wi.OwnerId);
             entity.HasIndex(wi => wi.AssigneeId);
             entity.HasIndex(wi => wi.CommitterId);
+            entity.HasIndex(wi => wi.UpdatedByUserId);
             entity.HasIndex(wi => wi.DueDate);
             entity.HasIndex(wi => wi.Priority);
             entity.HasIndex(wi => wi.IsArchived);

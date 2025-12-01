@@ -171,6 +171,8 @@ public class WorkspaceItemController : BaseSecureController
             isDraft: request.IsDraft,
             isArchived: request.IsArchived,
             assigneeId: request.AssigneeId,
+            ownerId: request.OwnerId,
+            committerId: request.CommitterId,
             priority: request.Priority,
             pinnedByUserId: pinnedByUserId,
             searchQuery: request.SearchQuery

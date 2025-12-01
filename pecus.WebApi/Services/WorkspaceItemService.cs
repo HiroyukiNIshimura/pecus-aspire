@@ -115,6 +115,7 @@ public class WorkspaceItemService
                 IsDraft = request.IsDraft,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                UpdatedByUserId = ownerId,
                 IsActive = true,
             };
 
@@ -346,6 +347,8 @@ public class WorkspaceItemService
     /// <param name="isDraft">下書きフィルタ</param>
     /// <param name="isArchived">アーカイブフィルタ</param>
     /// <param name="assigneeId">担当者IDフィルタ</param>
+    /// <param name="ownerId">オーナーIDフィルタ</param>
+    /// <param name="committerId">コミッターIDフィルタ</param>
     /// <param name="priority">優先度フィルタ</param>
     /// <param name="pinnedByUserId">PINしているユーザーIDフィルタ</param>
     /// <param name="searchQuery">あいまい検索クエリ（Subject, RawBody を対象、pgroonga 使用）</param>
@@ -356,6 +359,8 @@ public class WorkspaceItemService
         bool? isDraft = null,
         bool? isArchived = null,
         int? assigneeId = null,
+        int? ownerId = null,
+        int? committerId = null,
         TaskPriority? priority = null,
         int? pinnedByUserId = null,
         string? searchQuery = null
@@ -371,6 +376,8 @@ public class WorkspaceItemService
                 isDraft: isDraft,
                 isArchived: isArchived,
                 assigneeId: assigneeId,
+                ownerId: ownerId,
+                committerId: committerId,
                 priority: priority,
                 pinnedByUserId: pinnedByUserId,
                 searchQuery: searchQuery
@@ -401,6 +408,16 @@ public class WorkspaceItemService
         if (assigneeId.HasValue)
         {
             query = query.Where(wi => wi.AssigneeId == assigneeId.Value);
+        }
+
+        if (ownerId.HasValue)
+        {
+            query = query.Where(wi => wi.OwnerId == ownerId.Value);
+        }
+
+        if (committerId.HasValue)
+        {
+            query = query.Where(wi => wi.CommitterId == committerId.Value);
         }
 
         if (priority.HasValue)
@@ -445,6 +462,8 @@ public class WorkspaceItemService
         bool? isDraft,
         bool? isArchived,
         int? assigneeId,
+        int? ownerId,
+        int? committerId,
         TaskPriority? priority,
         int? pinnedByUserId,
         string searchQuery
@@ -480,6 +499,20 @@ public class WorkspaceItemService
         {
             whereClauses.Add($@"""AssigneeId"" = {{{paramIndex}}}");
             parameters.Add(assigneeId.Value);
+            paramIndex++;
+        }
+
+        if (ownerId.HasValue)
+        {
+            whereClauses.Add($@"""OwnerId"" = {{{paramIndex}}}");
+            parameters.Add(ownerId.Value);
+            paramIndex++;
+        }
+
+        if (committerId.HasValue)
+        {
+            whereClauses.Add($@"""CommitterId"" = {{{paramIndex}}}");
+            parameters.Add(committerId.Value);
             paramIndex++;
         }
 
@@ -739,6 +772,7 @@ public class WorkspaceItemService
         }
 
         item.UpdatedAt = DateTime.UtcNow;
+        item.UpdatedByUserId = userId;
 
         try
         {
@@ -834,6 +868,7 @@ public class WorkspaceItemService
         }
 
         item.UpdatedAt = DateTime.UtcNow;
+        item.UpdatedByUserId = userId;
 
         try
         {
@@ -899,6 +934,7 @@ public class WorkspaceItemService
             item.AssigneeId = request.AssigneeId;
             item.RowVersion = request.RowVersion;
             item.UpdatedAt = DateTime.UtcNow;
+            item.UpdatedByUserId = userId;
 
             await _context.SaveChangesAsync();
         }
