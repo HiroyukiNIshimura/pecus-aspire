@@ -91,10 +91,6 @@ export default function WorkspaceDetailClient({
     }
   }, []);
 
-  const _handleBack = () => {
-    router.back();
-  };
-
   // ===== メンバー管理のコールバック（Owner専用） =====
 
   /** メンバー追加モーダルを開く */

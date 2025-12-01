@@ -1,18 +1,25 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import HomeIcon from '@mui/icons-material/Home';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import type { WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type {
+  WorkspaceDetailUserResponse,
+  WorkspaceItemDetailResponse,
+  WorkspaceListItemResponse,
+} from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
   currentWorkspaceCode: string;
   workspaces: WorkspaceListItemResponse[];
+  members?: WorkspaceDetailUserResponse[];
   scrollContainerId?: string;
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number) => void;
@@ -29,6 +36,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       workspaceId,
       currentWorkspaceCode,
       workspaces,
+      members = [],
       scrollContainerId = 'itemsScrollableDiv',
       onHomeSelect,
       onItemSelect,
@@ -43,6 +51,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+
+    // フィルタードローワーの状態
+    const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+    const [isFilterDrawerClosing, setIsFilterDrawerClosing] = useState(false);
+    const [filters, setFilters] = useState<WorkspaceItemFilters>({});
 
     const notify = useNotify();
     const notifyRef = useRef(notify);
@@ -155,6 +168,22 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       refreshItemsRef.current(undefined, query);
     }, []);
 
+    // フィルタードローワーを閉じるハンドラー
+    const handleCloseFilterDrawer = useCallback(() => {
+      setIsFilterDrawerClosing(true);
+      setTimeout(() => {
+        setIsFilterDrawerOpen(false);
+        setIsFilterDrawerClosing(false);
+      }, 250);
+    }, []);
+
+    // フィルター適用ハンドラー（UIサンプル用・実際のフィルタリングは未実装）
+    const handleApplyFilters = useCallback((newFilters: WorkspaceItemFilters) => {
+      setFilters(newFilters);
+      // TODO: フィルターを適用してアイテムを再取得する
+      console.log('Applied filters:', newFilters);
+    }, []);
+
     return (
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
         {/* ヘッダー */}
@@ -205,6 +234,21 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
 
           {/* 検索ボックス */}
           <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
+
+          {/* 詳細フィルターリンク */}
+          <button
+            type="button"
+            onClick={() => setIsFilterDrawerOpen(true)}
+            className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
+          >
+            <FilterListIcon className="w-3 h-3" />
+            <span>詳細フィルター</span>
+            {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
+              <span className="badge badge-primary badge-xs">
+                {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* アイテムリスト */}
@@ -260,6 +304,16 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             </InfiniteScroll>
           </div>
         )}
+
+        {/* フィルタードローワー */}
+        <WorkspaceItemFilterDrawer
+          isOpen={isFilterDrawerOpen}
+          isClosing={isFilterDrawerClosing}
+          onClose={handleCloseFilterDrawer}
+          members={members}
+          currentFilters={filters}
+          onApplyFilters={handleApplyFilters}
+        />
       </aside>
     );
   },
