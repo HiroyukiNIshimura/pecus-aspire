@@ -1,7 +1,6 @@
 'use client';
 
 import PersonIcon from '@mui/icons-material/Person';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { addMemberToWorkspace, removeMemberFromWorkspace, updateMemberRoleInWorkspace } from '@/actions/workspace';
 import AppHeader from '@/components/common/AppHeader';
@@ -36,7 +35,6 @@ export default function WorkspaceDetailClient({
   workspaces,
   userInfo,
 }: WorkspaceDetailClientProps) {
-  const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
