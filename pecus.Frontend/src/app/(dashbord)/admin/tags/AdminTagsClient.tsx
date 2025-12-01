@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus';
@@ -218,7 +219,7 @@ export default function AdminTagsClient({
 
                 {filterOpen && (
                   <div className="pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       {/* タグ名検索 */}
                       <div className="form-control">
                         <label htmlFor="filter-name" className="label">
@@ -244,44 +245,13 @@ export default function AdminTagsClient({
                         )}
                       </div>
 
-                      {/* アクティブ状態フィルター */}
-                      <div className="form-control">
-                        <div className="label">
-                          <span className="label-text">ステータス</span>
-                        </div>
-                        <div className="flex gap-4 items-center h-12">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === true}
-                              onChange={() => setFilterIsActive(true)}
-                            />
-                            <span className="text-sm">アクティブ</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === false}
-                              onChange={() => setFilterIsActive(false)}
-                            />
-                            <span className="text-sm">非アクティブ</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === null}
-                              onChange={() => setFilterIsActive(null)}
-                            />
-                            <span className="text-sm">すべて</span>
-                          </label>
-                        </div>
-                      </div>
+                      {/* ActiveStatusFilter */}
+                      <ActiveStatusFilter
+                        name="tag-status"
+                        value={filterIsActive}
+                        onChange={setFilterIsActive}
+                        size="xs"
+                      />
 
                       {/* 未使用フィルター */}
                       <div className="form-control">
@@ -304,7 +274,7 @@ export default function AdminTagsClient({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2 border-t border-base-300">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-base-300">
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"

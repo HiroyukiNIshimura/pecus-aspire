@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import type { UserDetailResponse } from '@/connectors/api/pecus';
@@ -316,50 +317,13 @@ export default function AdminUsersClient({
                         )}
                       </div>
 
-                      {/* Status Filter */}
-                      <div className="form-control md:col-span-2">
-                        <div className="label">
-                          <span className="label-text">ステータス</span>
-                        </div>
-                        <div className="flex gap-4 items-center h-12">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === true}
-                              onChange={() => {
-                                setFilterIsActive(true);
-                              }}
-                            />
-                            <span className="text-sm">アクティブのみ</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === false}
-                              onChange={() => {
-                                setFilterIsActive(false);
-                              }}
-                            />
-                            <span className="text-sm">非アクティブのみ</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="status"
-                              className="radio radio-sm"
-                              checked={filterIsActive === null}
-                              onChange={() => {
-                                setFilterIsActive(null);
-                              }}
-                            />
-                            <span className="text-sm">すべて</span>
-                          </label>
-                        </div>
-                      </div>
+                      {/* ActiveStatusFilter */}
+                      <ActiveStatusFilter
+                        name="user-status"
+                        value={filterIsActive}
+                        onChange={setFilterIsActive}
+                        size="xs"
+                      />
                     </div>
 
                     {/* Skill Filter */}
@@ -438,7 +402,7 @@ export default function AdminUsersClient({
                     )}
 
                     {/* Buttons */}
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex justify-end gap-2 mt-4">
                       <button
                         type="button"
                         onClick={handleSearch}
