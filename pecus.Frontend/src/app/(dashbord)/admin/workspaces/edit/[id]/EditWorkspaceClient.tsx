@@ -419,17 +419,20 @@ export default function EditWorkspaceClient({
 
                   {/* アクティブ状態 */}
                   <div className="form-control mt-4">
-                    <label className="label cursor-pointer">
-                      <span className="label-text font-semibold">アクティブ状態</span>
+                    <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
+                        id="isActive"
                         name="isActive"
-                        className="checkbox checkbox-primary"
+                        className="switch switch-outline switch-warning"
                         checked={formData.isActive}
                         onChange={(e) => handleFieldChange('isActive', e.target.checked)}
                         disabled={isSubmitting}
                       />
-                    </label>
+                      <label htmlFor="isActive" className="label-text font-semibold cursor-pointer">
+                        有効
+                      </label>
+                    </div>
                   </div>
 
                   {/* アクションボタン */}

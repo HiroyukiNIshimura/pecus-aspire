@@ -261,21 +261,24 @@ export default function EditUserClient({
                   {/* アクティブ状態 */}
                   <div className="divider my-2"></div>
                   <div className="form-control">
-                    <label className="label cursor-pointer justify-start gap-3">
+                    <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        className="checkbox checkbox-primary"
+                        id="isActive"
+                        className="switch switch-outline switch-warning"
                         checked={isActive}
                         onChange={(e) => setIsActive(e.target.checked)}
                         disabled={isSubmitting}
                       />
                       <div>
-                        <span className="label-text font-semibold text-base">アクティブ状態</span>
+                        <label htmlFor="isActive" className="label-text font-semibold text-base cursor-pointer">
+                          有効
+                        </label>
                         <p className="text-sm text-base-content/60">
                           無効にすると、このユーザーはログインできなくなります
                         </p>
                       </div>
-                    </label>
+                    </div>
                     {isActiveChanged && (
                       <div className="alert alert-info mt-2">
                         <span className="text-sm">
