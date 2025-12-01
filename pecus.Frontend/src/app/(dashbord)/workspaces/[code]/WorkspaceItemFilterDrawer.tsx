@@ -62,7 +62,6 @@ const priorityOptions: { value: TaskPriority | ''; label: string }[] = [
 /** ユーザー検索フィルターのProps */
 interface UserSearchFilterProps {
   label: string;
-  id: string;
   selectedUser: SelectedUser | null;
   searchResults: UserSearchResultResponse[];
   isSearching: boolean;
@@ -81,7 +80,6 @@ interface UserSearchFilterProps {
 /** ユーザー検索フィルターコンポーネント */
 function UserSearchFilter({
   label,
-  id,
   selectedUser,
   searchResults,
   isSearching,
@@ -300,7 +298,6 @@ export default function WorkspaceItemFilterDrawer({
           {/* 担当者フィルター（ユーザー検索） */}
           <UserSearchFilter
             label="担当者"
-            id="filter-assignee"
             selectedUser={selectedAssignee}
             searchResults={assigneeSearchResults}
             isSearching={isSearchingAssignee}
@@ -364,7 +361,6 @@ export default function WorkspaceItemFilterDrawer({
           {/* オーナーフィルター（ユーザー検索） */}
           <UserSearchFilter
             label="オーナー"
-            id="filter-owner"
             selectedUser={selectedOwner}
             searchResults={ownerSearchResults}
             isSearching={isSearchingOwner}
@@ -427,7 +423,6 @@ export default function WorkspaceItemFilterDrawer({
           {/* コミッターフィルター（ユーザー検索） */}
           <UserSearchFilter
             label="コミッター"
-            id="filter-committer"
             selectedUser={selectedCommitter}
             searchResults={committerSearchResults}
             isSearching={isSearchingCommitter}
