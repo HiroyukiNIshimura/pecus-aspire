@@ -1,11 +1,10 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
-import ClearIcon from '@mui/icons-material/Clear';
 import HomeIcon from '@mui/icons-material/Home';
-import SearchIcon from '@mui/icons-material/Search';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import type { WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
@@ -150,31 +149,10 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       }
     }, [workspaceId]);
 
-    // デバウンス用タイマーref
-    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // 検索クエリ変更時にデバウンスしてAPIを呼び出す
-    const handleSearchChange = useCallback((value: string) => {
-      setSearchQuery(value);
-
-      // 既存のタイマーをクリア
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-
-      // 300ms後にAPIを呼び出す
-      debounceTimerRef.current = setTimeout(() => {
-        refreshItemsRef.current(undefined, value);
-      }, 300);
-    }, []);
-
-    // クリーンアップ
-    useEffect(() => {
-      return () => {
-        if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current);
-        }
-      };
+    // 検索クエリ変更時のハンドラー
+    const handleSearch = useCallback((query: string) => {
+      setSearchQuery(query);
+      refreshItemsRef.current(undefined, query);
     }, []);
 
     return (
@@ -226,33 +204,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           </p>
 
           {/* 検索ボックス */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="あいまい検索..."
-              className="input input-bordered input-sm w-full pl-9 pr-9"
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50 pointer-events-none" />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  // タイマーをクリアして即座に全件取得
-                  if (debounceTimerRef.current) {
-                    clearTimeout(debounceTimerRef.current);
-                  }
-                  refreshItemsRef.current(undefined, '');
-                }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content transition-colors"
-                title="クリア"
-              >
-                <ClearIcon className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
         </div>
 
         {/* アイテムリスト */}

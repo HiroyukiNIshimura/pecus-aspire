@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
+import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface AddMemberModalProps {
   /** モーダルの表示状態 */
@@ -56,6 +58,8 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
 
   // デバウンス付き検索
   const performSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -76,15 +80,6 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
       setIsSearching(false);
     }
   }, []);
-
-  // デバウンス処理
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      performSearch(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, performSearch]);
 
   // モーダルクローズ時にリセット
   useEffect(() => {
@@ -142,138 +137,127 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
         <h3 className="font-bold text-lg">メンバーを追加</h3>
 
         {/* メインコンテンツ */}
-        <>
-          {/* 選択済みユーザー表示 */}
-          {selectedUser ? (
-            <div className="bg-base-200 rounded-lg p-4 my-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="avatar placeholder">
-                    <div className="bg-primary text-primary-content rounded-full w-10">
-                      <span className="text-sm">{selectedUser.username?.charAt(0).toUpperCase()}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-semibold">{selectedUser.username}</p>
-                    <p className="text-sm text-base-content/70">{selectedUser.email}</p>
-                  </div>
+        {/* 選択済みユーザー表示 */}
+        {selectedUser ? (
+          <div className="bg-base-200 rounded-lg p-4 my-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src={getDisplayIconUrl(selectedUser.identityIconUrl)}
+                  alt={selectedUser.username || 'User Avatar'}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+                <div>
+                  <p className="font-semibold">{selectedUser.username}</p>
+                  <p className="text-sm text-base-content/70">{selectedUser.email}</p>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm btn-circle"
-                  onClick={handleClearSelection}
-                  aria-label="選択解除"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
-
-              {/* ロール選択 */}
-              <div className="form-control mt-4">
-                <label htmlFor="roleSelect" className="label">
-                  <span className="label-text font-semibold">ロールを選択</span>
-                </label>
-                <select
-                  id="roleSelect"
-                  className="select select-bordered w-full"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as WorkspaceRole)}
-                  disabled={isAdding}
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm btn-circle"
+                onClick={handleClearSelection}
+                aria-label="選択解除"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  {roleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* ロール選択 */}
+            <div className="form-control mt-4">
+              <label htmlFor="roleSelect" className="label">
+                <span className="label-text font-semibold">ロールを選択</span>
+              </label>
+              <select
+                id="roleSelect"
+                className="select select-bordered w-full"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as WorkspaceRole)}
+                disabled={isAdding}
+              >
+                {roleOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ) : (
+          /* ユーザー検索 */
+          <div className="my-4 flex flex-col flex-1 min-h-0">
+            <div className="form-control">
+              <label htmlFor="userSearch" className="label">
+                <span className="label-text font-semibold">ユーザーを検索</span>
+              </label>
+              <DebouncedSearchInput
+                onSearch={performSearch}
+                placeholder="名前またはメールアドレスで検索..."
+                debounceMs={300}
+                size="md"
+                isLoading={isSearching}
+              />
+              <div className="label">
+                <span className="label-text-alt text-base-content/60">2文字以上入力すると検索します</span>
               </div>
             </div>
-          ) : (
-            /* ユーザー検索 */
-            <div className="my-4 flex flex-col flex-1 min-h-0">
-              <div className="form-control">
-                <label htmlFor="userSearch" className="label">
-                  <span className="label-text font-semibold">ユーザーを検索</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="userSearch"
-                    type="text"
-                    placeholder="名前またはメールアドレスで検索..."
-                    className="input input-bordered w-full pr-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoComplete="off"
-                  />
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <span className="loading loading-spinner loading-sm" />
-                    </div>
-                  )}
+
+            {/* 検索結果一覧 */}
+            <div className="flex-1 overflow-y-auto border border-base-300 rounded-lg min-h-[200px] max-h-[300px]">
+              {!searchQuery.trim() ? (
+                <div className="flex items-center justify-center h-full text-base-content/50">
+                  ユーザー名またはメールアドレスを入力してください
                 </div>
-                <div className="label">
-                  <span className="label-text-alt text-base-content/60">2文字以上入力すると検索します</span>
+              ) : isSearching ? (
+                <div className="flex items-center justify-center h-full">
+                  <span className="loading loading-spinner loading-md" />
+                  <span className="ml-2">検索中...</span>
                 </div>
-              </div>
+              ) : availableResults.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-base-content/50">
+                  該当するユーザーが見つかりません
+                </div>
+              ) : (
+                <ul className="divide-y divide-base-300">
+                  {availableResults.map((user) => (
+                    <li key={user.id}>
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-base-200 transition-colors text-left"
+                        onClick={() => handleSelectUser(user)}
+                      >
+                        {/* アバター */}
+                        <img
+                          src={getDisplayIconUrl(user.identityIconUrl)}
+                          alt={user.username || 'User Avatar'}
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
 
-              {/* 検索結果一覧 */}
-              <div className="flex-1 overflow-y-auto border border-base-300 rounded-lg min-h-[200px] max-h-[300px]">
-                {!searchQuery.trim() ? (
-                  <div className="flex items-center justify-center h-full text-base-content/50">
-                    ユーザー名またはメールアドレスを入力してください
-                  </div>
-                ) : isSearching ? (
-                  <div className="flex items-center justify-center h-full">
-                    <span className="loading loading-spinner loading-md" />
-                    <span className="ml-2">検索中...</span>
-                  </div>
-                ) : availableResults.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-base-content/50">
-                    該当するユーザーが見つかりません
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-base-300">
-                    {availableResults.map((user) => (
-                      <li key={user.id}>
-                        <button
-                          type="button"
-                          className="w-full flex items-center gap-3 p-3 hover:bg-base-200 transition-colors text-left"
-                          onClick={() => handleSelectUser(user)}
-                        >
-                          {/* アバター */}
-                          <div className="avatar placeholder flex-shrink-0">
-                            <div className="bg-primary text-primary-content rounded-full w-10">
-                              <span className="text-sm">{user.username?.charAt(0).toUpperCase()}</span>
-                            </div>
-                          </div>
-
-                          {/* ユーザー情報 */}
-                          <div className="min-w-0 flex-1">
-                            <p className="font-semibold truncate">{user.username || '(名前なし)'}</p>
-                            <p className="text-sm text-base-content/70 truncate">{user.email}</p>
-                          </div>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* 件数表示 */}
-              {availableResults.length > 0 && (
-                <div className="text-xs text-base-content/50 mt-2">{availableResults.length} 件ヒット</div>
+                        {/* ユーザー情報 */}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold truncate">{user.username || '(名前なし)'}</p>
+                          <p className="text-sm text-base-content/70 truncate">{user.email}</p>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
-          )}
-        </>
+
+            {/* 件数表示 */}
+            {availableResults.length > 0 && (
+              <div className="text-xs text-base-content/50 mt-2">{availableResults.length} 件ヒット</div>
+            )}
+          </div>
+        )}
 
         {/* ボタン */}
         <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-base-300">

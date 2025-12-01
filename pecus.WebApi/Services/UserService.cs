@@ -826,20 +826,40 @@ public class UserService
         // pgroonga のあいまい検索を使用
         // &@~ 演算子：類似検索（タイポ許容）
         // ARRAY[Username, Email] @@ query：複数カラムに対する全文検索
+        // 注意: xmin は PostgreSQL のシステムカラムのため、SELECT * では取得されない
+        //       EF Core の RowVersion プロパティ用に明示的に xmin を SELECT する
         var users = await _context.Users
             .FromSqlInterpolated($@"
-                SELECT * FROM ""Users""
+                SELECT *, xmin FROM ""Users""
                 WHERE ""OrganizationId"" = {organizationId}
                   AND ""IsActive"" = true
                   AND ARRAY[""Username"", ""Email""] &@~ {searchQuery}
                 ORDER BY pgroonga_score(tableoid, ctid) DESC
                 LIMIT {limit}
             ")
-            .Include(u => u.Roles)
-            .Include(u => u.UserSkills)
-                .ThenInclude(us => us.Skill)
-            .AsSplitQuery()
             .ToListAsync();
+
+        // Include はサブクエリで処理するため、別途取得
+        if (users.Any())
+        {
+            var userIds = users.Select(u => u.Id).ToList();
+
+            // Roles と UserSkills を別クエリで取得
+            var usersWithIncludes = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .Include(u => u.Roles)
+                .Include(u => u.UserSkills)
+                    .ThenInclude(us => us.Skill)
+                .AsSplitQuery()
+                .ToListAsync();
+
+            // pgroonga のスコア順を維持するため、元のリストの順序でマッピング
+            var userDict = usersWithIncludes.ToDictionary(u => u.Id);
+            return users
+                .Where(u => userDict.ContainsKey(u.Id))
+                .Select(u => userDict[u.Id])
+                .ToList();
+        }
 
         return users;
     }
