@@ -165,11 +165,13 @@ export class WorkspaceItemService {
      * ワークスペースアイテム一覧取得
      * @param workspaceId
      * @param page
-     * @param isDraft
-     * @param isArchived
-     * @param assigneeId
-     * @param priority
-     * @param pinned
+     * @param isDraft 下書きかどうか
+     * @param isArchived アーカイブ済みかどうか
+     * @param assigneeId 担当者ID
+     * @param ownerId オーナーID
+     * @param committerId コミッターID（最後にコミットしたユーザー）
+     * @param priority 優先度
+     * @param pinned ピン留めされているかどうか
      * @param searchQuery あいまい検索クエリ（Subject, RawBody を対象）
      * pgroonga を使用して日本語のゆらぎやタイポにも対応
      * @returns WorkspaceItemDetailResponsePagedResponse OK
@@ -181,6 +183,8 @@ export class WorkspaceItemService {
         isDraft?: boolean,
         isArchived?: boolean,
         assigneeId?: number,
+        ownerId?: number,
+        committerId?: number,
         priority?: TaskPriority,
         pinned?: boolean,
         searchQuery?: string,
@@ -196,6 +200,8 @@ export class WorkspaceItemService {
                 'IsDraft': isDraft,
                 'IsArchived': isArchived,
                 'AssigneeId': assigneeId,
+                'OwnerId': ownerId,
+                'CommitterId': committerId,
                 'Priority': priority,
                 'Pinned': pinned,
                 'SearchQuery': searchQuery,
