@@ -57,10 +57,7 @@ export default function TagInput({
     // イベントリスナー登録
     tagifyRef.current.on('change', handleChange as EventListener);
 
-    // 初期値を設定
-    if (tags.length > 0) {
-      tagifyRef.current.addTags(tags);
-    }
+    // 初期値は別の useEffect で設定（ここでは設定しない）
 
     return () => {
       if (tagifyRef.current) {

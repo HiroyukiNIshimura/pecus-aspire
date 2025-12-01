@@ -10712,6 +10712,14 @@
             "description": "アクティブフラグ",
             "nullable": true
           },
+          "tagNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）",
+            "nullable": true
+          },
           "rowVersion": {
             "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",

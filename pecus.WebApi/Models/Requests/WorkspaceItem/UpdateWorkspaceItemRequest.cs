@@ -55,6 +55,12 @@ public class UpdateWorkspaceItemRequest
     public bool? IsActive { get; set; }
 
     /// <summary>
+    /// タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）
+    /// </summary>
+    [Validation.StringListItems(50)]
+    public List<string>? TagNames { get; set; }
+
+    /// <summary>
     /// アイテムの楽観的ロック用のRowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

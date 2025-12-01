@@ -247,6 +247,17 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   />
                 </div>
               </div>{' '}
+              {/* タグ */}
+              <div className="form-control">
+                <label htmlFor="tags" className="label">
+                  <span className="label-text font-semibold">タグ</span>
+                </label>
+                <TagInput tags={tags} onChange={setTags} placeholder="タグを入力..." disabled={isSubmitting} />
+                <div className="label">
+                  <span className="label-text-alt text-xs">タグを入力してEnterで追加。タグは50文字以内で入力してください。</span>
+                </div>
+              </div>
+
               {/* 期限日 */}
               <div className="form-control">
                 <label htmlFor="dueDate" className="label">
@@ -291,13 +302,6 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     <span className="label-text-alt text-error">{getFieldError('priority')}</span>
                   </div>
                 )}
-              </div>
-              {/* タグ */}
-              <div className="form-control">
-                <label htmlFor="tags" className="label">
-                  <span className="label-text font-semibold">タグ</span>
-                </label>
-                <TagInput tags={tags} onChange={setTags} placeholder="タグを入力..." disabled={isSubmitting} />
               </div>
               {/* 下書きフラグ */}
               <div className="form-control">

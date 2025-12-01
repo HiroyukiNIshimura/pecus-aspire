@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
+import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
 import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
@@ -40,6 +41,11 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
   const [initialEditorState, setInitialEditorState] = useState<string>(item.body || '');
   const [editorValue, setEditorValue] = useState<string>(item.body || '');
   const [editorInitKey, setEditorInitKey] = useState<number>(0);
+
+  // タグ状態管理
+  const [tagNames, setTagNames] = useState<string[]>(
+    item.tags?.map((t) => t.name).filter((name): name is string => !!name) || [],
+  );
 
   // 手動フォーム検証とサブミット（useFormValidation ではなく、状態管理値を直接使用）
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,6 +109,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
           priority: result.data.priority as TaskPriority | undefined,
           isDraft: result.data.isDraft,
           isArchived: result.data.isArchived,
+          tagNames: tagNames,
           rowVersion: result.data.rowVersion,
         });
 
@@ -131,7 +138,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
         setIsSubmitting(false);
       }
     },
-    [formData, editorValue, latestItem, onSave, onClose, notify, isSubmitting],
+    [formData, editorValue, tagNames, latestItem, onSave, onClose, notify, isSubmitting],
   );
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -162,6 +169,8 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
           setInitialEditorState(result.data.body || '');
           setEditorValue(result.data.body || '');
           setEditorInitKey((k) => k + 1); // 強制再マウント
+          // タグを初期化
+          setTagNames(result.data.tags?.map((t) => t.name).filter((name): name is string => !!name) || []);
         } else {
           setItemLoadError(result.message || 'アイテムの取得に失敗しました。');
         }
@@ -306,6 +315,24 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                       workspaceId={latestItem.workspaceId}
                       itemId={latestItem.id}
                     />
+                  </div>
+                </div>
+
+                {/* タグ */}
+                <div className="form-control">
+                  <label htmlFor="tagNames" className="label">
+                    <span className="label-text font-semibold">タグ</span>
+                  </label>
+                  <TagInput
+                    tags={tagNames}
+                    onChange={setTagNames}
+                    disabled={isSubmitting}
+                    placeholder="タグを入力..."
+                  />
+                  <div className="label">
+                    <span className="label-text-alt text-xs">
+                      タグを入力してEnterで追加。タグは50文字以内で入力してください。
+                    </span>
                   </div>
                 </div>
 

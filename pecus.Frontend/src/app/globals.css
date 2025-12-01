@@ -6,7 +6,6 @@
 @import "flyonui/src/vendor/notyf.css";
 @source "./node_modules/flyonui/dist/index.js";
 @plugin "@iconify/tailwind4";
-@import "../components/common/TagInput.module.css";
 @import "react-day-picker/style.css";
 
 /* テーブルホバーボタン用のスペースを確保 */

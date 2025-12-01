@@ -41,6 +41,10 @@ export type UpdateWorkspaceItemRequest = {
      */
     isActive?: boolean | null;
     /**
+     * タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）
+     */
+    tagNames?: Array<string> | null;
+    /**
      * アイテムの楽観的ロック用のRowVersion
      */
     rowVersion: number;

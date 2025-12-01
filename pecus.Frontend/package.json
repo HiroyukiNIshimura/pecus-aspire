@@ -71,6 +71,7 @@
     "@iconify-json/tabler": "^1.2.23",
     "@iconify/tailwind4": "^1.0.6",
     "@tailwindcss/postcss": "^4",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -674,6 +674,61 @@ public class WorkspaceItemService
             item.IsActive = request.IsActive.Value;
         }
 
+        // タグの処理（TagNames が null でなければ更新、null の場合は変更なし）
+        if (request.TagNames != null)
+        {
+            // ワークスペースの組織IDを取得
+            var workspace = await _context.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId);
+            if (workspace == null)
+            {
+                throw new NotFoundException("ワークスペースが見つかりません。");
+            }
+            var organizationId = workspace.OrganizationId;
+
+            // 既存のタグを削除
+            var existingTags = await _context.WorkspaceItemTags
+                .Where(wit => wit.WorkspaceItemId == itemId)
+                .ToListAsync();
+            _context.WorkspaceItemTags.RemoveRange(existingTags);
+
+            // 新しいタグを追加
+            foreach (var tagName in request.TagNames.Distinct())
+            {
+                if (string.IsNullOrWhiteSpace(tagName))
+                    continue;
+
+                // タグが存在するか確認
+                var tag = await _context.Tags.FirstOrDefaultAsync(t =>
+                    t.OrganizationId == organizationId && t.Name == tagName
+                );
+
+                // タグが存在しない場合は作成
+                if (tag == null)
+                {
+                    tag = new Tag
+                    {
+                        OrganizationId = organizationId,
+                        Name = tagName,
+                        CreatedByUserId = userId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+                    _context.Tags.Add(tag);
+                    await _context.SaveChangesAsync();
+                }
+
+                // アイテムとタグを関連付け
+                var workspaceItemTag = new WorkspaceItemTag
+                {
+                    WorkspaceItemId = item.Id,
+                    TagId = tag.Id,
+                    CreatedByUserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                _context.WorkspaceItemTags.Add(workspaceItemTag);
+            }
+        }
+
         item.UpdatedAt = DateTime.UtcNow;
 
         try
