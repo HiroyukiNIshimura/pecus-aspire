@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
-import type { Tag } from 'react-tag-input';
-import { WithContext as ReactTags } from 'react-tag-input';
+import Tagify from '@yaireo/tagify';
+import '@yaireo/tagify/dist/tagify.css';
+import './TagInput.css';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface TagInputProps {
   tags: string[];
@@ -16,79 +17,82 @@ interface TagInputProps {
 export default function TagInput({
   tags,
   onChange,
-  placeholder = 'タグを入力してEnterキーを押す...',
+  placeholder = 'タグを入力...',
   disabled = false,
   maxTags,
   allowDuplicates = false,
 }: TagInputProps) {
-  // react-tag-input用の形式に変換
-  const tagObjects: Tag[] = tags.map((tag) => ({
-    id: tag,
-    text: tag,
-    className: '',
-  }));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const tagifyRef = useRef<Tagify | null>(null);
 
-  const handleDelete = useCallback(
-    (index: number) => {
-      if (disabled) return;
-      const newTags = tags.filter((_, i) => i !== index);
+  // タグ変更時のコールバック
+  const handleChange = useCallback(
+    (e: CustomEvent) => {
+      const newTags = e.detail.tagify.value.map((tag: { value: string }) => tag.value);
       onChange(newTags);
     },
-    [tags, onChange, disabled],
+    [onChange],
   );
 
-  const handleAddition = useCallback(
-    (tag: Tag) => {
-      if (disabled) return;
+  // Tagify 初期化
+  useEffect(() => {
+    if (!inputRef.current) return;
 
-      const newTagText = tag.text.trim();
+    // 既存インスタンスを破棄
+    if (tagifyRef.current) {
+      tagifyRef.current.destroy();
+    }
 
-      // 空のタグは追加しない
-      if (!newTagText) return;
+    // Tagify インスタンス作成
+    tagifyRef.current = new Tagify(inputRef.current, {
+      placeholder,
+      duplicates: allowDuplicates,
+      maxTags: maxTags || Infinity,
+      editTags: false,
+      dropdown: {
+        enabled: 0, // サジェストは無効化
+      },
+    });
 
-      // 重複チェック
-      if (!allowDuplicates && tags.includes(newTagText)) {
-        return;
+    // イベントリスナー登録
+    tagifyRef.current.on('change', handleChange as EventListener);
+
+    // 初期値を設定
+    if (tags.length > 0) {
+      tagifyRef.current.addTags(tags);
+    }
+
+    return () => {
+      if (tagifyRef.current) {
+        tagifyRef.current.off('change', handleChange as EventListener);
+        tagifyRef.current.destroy();
+        tagifyRef.current = null;
       }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placeholder, allowDuplicates, maxTags]);
 
-      // 最大タグ数チェック
-      if (maxTags && tags.length >= maxTags) {
-        return;
+  // disabled 状態の更新
+  useEffect(() => {
+    if (tagifyRef.current) {
+      tagifyRef.current.setDisabled(disabled);
+    }
+  }, [disabled]);
+
+  // 外部からの tags 変更を反映
+  useEffect(() => {
+    if (!tagifyRef.current) return;
+
+    const currentTags = tagifyRef.current.value.map((tag: { value: string }) => tag.value);
+    const tagsChanged = tags.length !== currentTags.length || tags.some((tag, i) => tag !== currentTags[i]);
+
+    if (tagsChanged) {
+      tagifyRef.current.removeAllTags();
+      if (tags.length > 0) {
+        tagifyRef.current.addTags(tags);
       }
+    }
+  }, [tags]);
 
-      onChange([...tags, newTagText]);
-    },
-    [tags, onChange, disabled, allowDuplicates, maxTags],
-  );
-
-  return (
-    <div className="tag-input-wrapper">
-      {(() => {
-        return (
-          <ReactTags
-            autofocus={false}
-            tags={tagObjects}
-            handleDelete={handleDelete}
-            handleAddition={handleAddition}
-            placeholder={placeholder}
-            classNames={{
-              tags: 'tag-input-container tag-input-inline',
-              tagInput: 'tag-input-field',
-              tagInputField: disabled
-                ? 'input input-bordered w-full opacity-50 cursor-not-allowed'
-                : 'input input-bordered w-full focus:input-primary',
-              selected: 'tag-list',
-              // Use FlyonUI utility classes so colors come from the design system
-              tag: disabled
-                ? 'tag-item tag-item-disabled bg-base-200 text-base-content/60'
-                : 'tag-item bg-accent text-accent-content',
-              remove: 'tag-remove',
-              suggestions: 'tag-suggestions',
-              activeSuggestion: 'tag-suggestion-active',
-            }}
-          />
-        );
-      })()}
-    </div>
-  );
+  return <input ref={inputRef} className="input input-bordered w-full" disabled={disabled} defaultValue="" />;
 }

@@ -111,6 +111,9 @@ export function detect400ValidationError(error: unknown): ErrorResponse | undefi
     return undefined;
   }
 
+  // デバッグ用: body全体を出力
+  console.error('400 Bad Request body:', JSON.stringify(body, null, 2));
+
   const message =
     (typeof body === "object" &&
     body !== null &&

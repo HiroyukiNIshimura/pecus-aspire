@@ -18,7 +18,7 @@ public class CreateWorkspaceItemRequest
     /// <summary>
     /// 本文（WYSIWYGのノードデータをJSON形式で保存）
     /// </summary>
-    public string Body { get; set; } = string.Empty;
+    public string? Body { get; set; }
 
     /// <summary>
     /// 作業中のユーザーID（NULL可）

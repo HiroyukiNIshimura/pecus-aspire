@@ -6,8 +6,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
-import type { EditorContextSettings } from '@/components/editor/core/appSettings';
 import { PecusNotionLikeEditor } from '@/components/editor';
+import type { EditorContextSettings } from '@/components/editor/core/appSettings';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -32,7 +32,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     subject: '',
     dueDate: '',
     priority: 'Medium',
-    isDraft: true,
+    isDraft: false,
   });
 
   const [editorState, setEditorState] = useState<string>('');
@@ -81,14 +81,14 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
 
         const request: CreateWorkspaceItemRequest = {
           subject: data.subject.trim(),
-          body: editorState || null,
+          body: editorState || undefined,
           dueDate: dueDateValue,
           priority: data.priority as TaskPriority | undefined,
           isDraft: data.isDraft,
-          tagNames: tags.length > 0 ? tags : null,
+          tagNames: tags.length > 0 ? tags : undefined,
           // 一時ファイル情報を追加
-          tempSessionId: tempFileIds.length > 0 ? sessionId : null,
-          tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : null,
+          tempSessionId: tempFileIds.length > 0 ? sessionId : undefined,
+          tempAttachmentIds: tempFileIds.length > 0 ? tempFileIds : undefined,
         };
 
         const result = await createWorkspaceItem(workspaceId, request);
@@ -296,28 +296,25 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
               <div className="form-control">
                 <label htmlFor="tags" className="label">
                   <span className="label-text font-semibold">タグ</span>
-                  <span className="label-text-alt">Enterキーで追加、ドラッグで並び替え</span>
                 </label>
-                <TagInput
-                  tags={tags}
-                  onChange={setTags}
-                  placeholder="タグを入力してEnterキーを押す..."
-                  disabled={isSubmitting}
-                />
+                <TagInput tags={tags} onChange={setTags} placeholder="タグを入力..." disabled={isSubmitting} />
               </div>
               {/* 下書きフラグ */}
               <div className="form-control">
-                <label className="label cursor-pointer justify-start gap-2">
+                <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
+                    id="isDraft"
                     name="isDraft"
-                    className="checkbox checkbox-primary"
+                    className="switch switch-outline switch-warning"
                     checked={formData.isDraft}
                     onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
                     disabled={isSubmitting}
                   />
-                  <span className="label-text">下書きとして保存</span>
-                </label>
+                  <label htmlFor="isDraft" className="label-text cursor-pointer">
+                    下書き
+                  </label>
+                </div>
               </div>
               {/* ボタングループ */}
               <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
