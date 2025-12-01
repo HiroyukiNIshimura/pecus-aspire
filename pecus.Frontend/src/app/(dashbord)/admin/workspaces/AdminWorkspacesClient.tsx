@@ -222,9 +222,6 @@ export default function AdminWorkspacesClient({
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">ワークスペース管理</h1>
-              <button type="button" className="btn btn-primary">
-                新規作成
-              </button>
             </div>
 
             {/* Filter Section */}
