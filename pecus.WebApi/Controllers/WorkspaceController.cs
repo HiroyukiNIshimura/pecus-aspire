@@ -481,4 +481,48 @@ public class WorkspaceController : BaseSecureController
 
         return TypedResults.NoContent();
     }
+
+    /// <summary>
+    /// ワークスペースのスキルを設定する（Member以上の権限が必要）
+    /// </summary>
+    /// <remarks>
+    /// ワークスペースが必要とするスキルを設定します（洗い替え）。
+    /// 指定されたスキル以外のスキルは削除されます。
+    /// </remarks>
+    /// <param name="id">ワークスペースID</param>
+    /// <param name="request">スキルIDのリスト</param>
+    /// <response code="200">スキルを設定しました</response>
+    /// <response code="400">リクエストが無効です</response>
+    /// <response code="404">ワークスペースが見つかりません</response>
+    /// <response code="409">競合: ワークスペース情報が別のユーザーにより更新されています</response>
+    [HttpPut("{id:int}/skills")]
+    [ProducesResponseType(typeof(SuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceDetailResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<SuccessResponse>> SetWorkspaceSkills(
+        int id,
+        [FromBody] SetWorkspaceSkillsRequest request
+    )
+    {
+        // CurrentUser は基底クラスで有効性チェック済み
+        // ワークスペース編集権限チェック（Member以上）
+        await _workspaceService.CheckWorkspaceMemberOrOwnerAsync(workspaceId: id, userId: CurrentUserId);
+
+        // スキルを設定
+        var result = await _workspaceService.SetWorkspaceSkillsAsync(
+            workspaceId: id,
+            skillIds: request.SkillIds,
+            rowVersion: request.RowVersion,
+            updatedByUserId: CurrentUserId
+        );
+
+        if (!result)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
+    }
 }

@@ -4,6 +4,8 @@
 /* eslint-disable */
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
+import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
+import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
@@ -285,6 +287,35 @@ export class WorkspaceService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースのスキルを設定する（Member以上の権限が必要）
+     * ワークスペースが必要とするスキルを設定します（洗い替え）。
+     * 指定されたスキル以外のスキルは削除されます。
+     * @param id ワークスペースID
+     * @param requestBody スキルIDのリスト
+     * @returns SuccessResponse スキルを設定しました
+     * @throws ApiError
+     */
+    public static putApiWorkspacesSkills(
+        id: number,
+        requestBody?: SetWorkspaceSkillsRequest,
+    ): CancelablePromise<SuccessResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/workspaces/{id}/skills',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `リクエストが無効です`,
+                404: `ワークスペースが見つかりません`,
+                409: `競合: ワークスペース情報が別のユーザーにより更新されています`,
                 500: `Internal Server Error`,
             },
         });

@@ -928,4 +928,72 @@ public class WorkspaceService
             RowVersion = workspace.RowVersion!,
         };
     }
+
+    /// <summary>
+    /// ワークスペースのスキルを設定（洗い替え、楽観的ロック対応）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="skillIds">スキルIDのリスト</param>
+    /// <param name="rowVersion">ワークスペースの楽観的ロック用RowVersion</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <returns>スキル更新の成功フラグ</returns>
+    public async Task<bool> SetWorkspaceSkillsAsync(
+        int workspaceId,
+        List<int>? skillIds,
+        uint rowVersion,
+        int? updatedByUserId = null
+    )
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var workspace = await _context
+                .Workspaces.Include(w => w.WorkspaceSkills)
+                .FirstOrDefaultAsync(w => w.Id == workspaceId);
+
+            if (workspace == null)
+            {
+                return false;
+            }
+
+            // 楽観的ロック：RowVersionが一致しない場合は競合エラー
+            if (workspace.RowVersion != rowVersion)
+            {
+                await RaiseConflictException(workspaceId);
+            }
+
+            // 既存のスキルをすべて削除
+            _context.WorkspaceSkills.RemoveRange(workspace.WorkspaceSkills);
+            await _context.SaveChangesAsync();
+
+            // 新しいスキルを追加
+            if (skillIds != null && skillIds.Any())
+            {
+                foreach (var skillId in skillIds)
+                {
+                    var workspaceSkill = new WorkspaceSkill
+                    {
+                        WorkspaceId = workspaceId,
+                        SkillId = skillId,
+                        AddedAt = DateTime.UtcNow,
+                        AddedByUserId = updatedByUserId,
+                    };
+                    _context.WorkspaceSkills.Add(workspaceSkill);
+                }
+            }
+
+            // 更新時刻を設定
+            workspace.UpdatedAt = DateTime.UtcNow;
+            workspace.UpdatedByUserId = updatedByUserId;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

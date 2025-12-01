@@ -6144,6 +6144,92 @@
         }
       }
     },
+    "/api/workspaces/{id}/skills": {
+      "put": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ワークスペースのスキルを設定する（Member以上の権限が必要）",
+        "description": "ワークスペースが必要とするスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "スキルIDのリスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWorkspaceSkillsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWorkspaceSkillsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWorkspaceSkillsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "スキルを設定しました",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが無効です",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ワークスペースが見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "競合: ワークスペース情報が別のユーザーにより更新されています",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetailResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/attachments": {
       "post": {
         "tags": [
@@ -9837,6 +9923,30 @@
         },
         "additionalProperties": false,
         "description": "ユーザーのスキル設定リクエスト"
+      },
+      "SetWorkspaceSkillsRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "skillIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "ワークスペースの楽観的ロック用RowVersion。\n競合検出に使用されます。",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペーススキル設定リクエスト"
       },
       "SkillDetailResponse": {
         "required": [

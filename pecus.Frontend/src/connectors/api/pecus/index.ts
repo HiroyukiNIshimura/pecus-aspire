@@ -74,6 +74,7 @@ export type { SetUserActiveStatusRequest } from './models/SetUserActiveStatusReq
 export type { SetUserPasswordRequest } from './models/SetUserPasswordRequest';
 export type { SetUserRolesRequest } from './models/SetUserRolesRequest';
 export type { SetUserSkillsRequest } from './models/SetUserSkillsRequest';
+export type { SetWorkspaceSkillsRequest } from './models/SetWorkspaceSkillsRequest';
 export type { SkillDetailResponse } from './models/SkillDetailResponse';
 export type { SkillDetailResponseConcurrencyErrorResponse } from './models/SkillDetailResponseConcurrencyErrorResponse';
 export type { SkillListItemResponse } from './models/SkillListItemResponse';
