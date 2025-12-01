@@ -58,6 +58,11 @@ public class Skill
     public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
 
     /// <summary>
+    /// このスキルを必要とするワークスペースとの関連
+    /// </summary>
+    public ICollection<WorkspaceSkill> WorkspaceSkills { get; set; } = new List<WorkspaceSkill>();
+
+    /// <summary>
     /// 作成者
     /// </summary>
     public User? CreatedByUser { get; set; }

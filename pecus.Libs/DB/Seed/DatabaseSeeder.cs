@@ -72,6 +72,7 @@ public class DatabaseSeeder
         await SeedUsersAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
+        await SeedWorkspaceSkillsAsync();
         await SeedWorkspaceItemsAsync();
         await SeedWorkspaceItemRelationsAsync();
 
@@ -718,6 +719,84 @@ public class DatabaseSeeder
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
+    }
+
+    /// <summary>
+    /// ワークスペースに必要なスキルを割り当て
+    /// </summary>
+    private async Task SeedWorkspaceSkillsAsync()
+    {
+        // キャッシュをクリアして再度読み込み
+        _context.ChangeTracker.Clear();
+
+        // admin ユーザーを取得
+        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.LoginId == "admin");
+        if (adminUser == null)
+        {
+            _logger.LogWarning("Admin user not found for seeding workspace skills");
+            return;
+        }
+
+        var workspaces = await _context.Workspaces.ToListAsync();
+
+        if (!workspaces.Any())
+        {
+            _logger.LogWarning("No workspaces found for seeding skills");
+            return;
+        }
+
+        int totalWorkspaceSkillsAdded = 0;
+
+        foreach (var workspace in workspaces)
+        {
+            // このワークスペースの組織に属するスキルを取得
+            var organizationSkills = await _context.Skills
+                .Where(s => s.OrganizationId == workspace.OrganizationId && s.IsActive)
+                .ToListAsync();
+
+            if (!organizationSkills.Any())
+            {
+                continue;
+            }
+
+            // すでにスキルが割り当てられているかチェック
+            var existingSkillCount = await _context.WorkspaceSkills
+                .Where(ws => ws.WorkspaceId == workspace.Id)
+                .CountAsync();
+
+            if (existingSkillCount > 0)
+            {
+                continue;
+            }
+
+            // ランダムに1〜5個のスキルを割り当て
+            var skillCount = _random.Next(1, 6);
+            var selectedSkills = organizationSkills.OrderBy(x => _random.Next()).Take(skillCount).ToList();
+
+            foreach (var skill in selectedSkills)
+            {
+                var workspaceSkill = new WorkspaceSkill
+                {
+                    WorkspaceId = workspace.Id,
+                    SkillId = skill.Id,
+                    AddedAt = DateTime.UtcNow,
+                    AddedByUserId = adminUser.Id,
+                };
+
+                _context.WorkspaceSkills.Add(workspaceSkill);
+                totalWorkspaceSkillsAdded++;
+            }
+
+            // ワークスペースごとに保存
+            if (totalWorkspaceSkillsAdded % 50 == 0)
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Added {Count} workspace skills", totalWorkspaceSkillsAdded);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} workspace skills in total", totalWorkspaceSkillsAdded);
     }
 
     /// <summary>
