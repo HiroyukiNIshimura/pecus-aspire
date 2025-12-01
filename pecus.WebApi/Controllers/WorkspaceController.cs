@@ -483,7 +483,7 @@ public class WorkspaceController : BaseSecureController
     }
 
     /// <summary>
-    /// ワークスペースのスキルを設定する（Member以上の権限が必要）
+    /// ワークスペースのスキルを設定する（Ownerのみ実行可能）
     /// </summary>
     /// <remarks>
     /// ワークスペースが必要とするスキルを設定します（洗い替え）。
@@ -507,8 +507,8 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペース編集権限チェック（Member以上）
-        await _workspaceService.CheckWorkspaceMemberOrOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースOwner権限チェック
+        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
         // スキルを設定
         var result = await _workspaceService.SetWorkspaceSkillsAsync(
