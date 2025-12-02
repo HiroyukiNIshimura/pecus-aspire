@@ -62,9 +62,9 @@ export default function AppHeader({
         <div className="navbar-start flex flex-col">
           <a href="/" className="flex items-end gap-1 text-sm font-bold">
             <img
-              src={resolvedTheme === 'dark' ? '/logo-dark.png' : '/logo-light.png'}
+              src={resolvedTheme === 'dark' ? '/logo-dark.webp' : '/logo-light.webp'}
               alt="Coati Logo"
-              className="h-14 w-auto"
+              className="h-16 w-auto"
             />
             <span className="pb-2">COATI TRACKING</span>
           </a>
