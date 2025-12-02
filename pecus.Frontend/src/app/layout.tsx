@@ -1,16 +1,32 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Noto_Sans_JP } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import FlyonuiScript from '@/libs/flyon/FlyonuiScript';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const notoSansJP = Noto_Sans_JP({
   subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+// HackGen フォントの設定(localFont を使用)
+const hackGen = localFont({
+  src: [
+    {
+      path: '../fonts/HackGen-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../fonts/HackGen-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-hackgen',
+  display: 'swap',
+  fallback: ['Source Han Code JP', 'Noto Sans Mono CJK JP', 'monospace'],
 });
 
 export const metadata: Metadata = {
@@ -25,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${notoSansJP.className} ${hackGen.variable} antialiased`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
