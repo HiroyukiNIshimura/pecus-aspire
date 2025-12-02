@@ -27,7 +27,6 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [workspaceDetail, setWorkspaceDetail] = useState<WorkspaceFullDetailResponse | null>(null);
-  const [selectedGenreIcon, setSelectedGenreIcon] = useState<string | null>(null);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -62,7 +61,6 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
     const fetchWorkspaceDetail = async () => {
       if (!isOpen || !workspace) {
         setWorkspaceDetail(null);
-        setSelectedGenreIcon(null);
         return;
       }
 
@@ -73,8 +71,6 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
 
       if (result.success) {
         setWorkspaceDetail(result.data);
-        const icon = genres.find((g) => g.id === (result.data.genreId ?? -1))?.icon ?? null;
-        setSelectedGenreIcon(icon ?? null);
       } else {
         setServerErrors([{ key: 2, message: result.message || 'ワークスペースの詳細情報の取得に失敗しました。' }]);
       }
@@ -91,7 +87,6 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       resetForm();
       setServerErrors([]);
       setWorkspaceDetail(null);
-      setSelectedGenreIcon(null);
     }
   }, [isOpen, resetForm]);
 
