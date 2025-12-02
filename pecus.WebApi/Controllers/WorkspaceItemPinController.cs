@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Models.Config;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.WorkspaceItem;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -62,7 +59,7 @@ public class WorkspaceItemPinController : BaseSecureController
             throw new InvalidOperationException("ワークスペースのメンバーのみがアイテムをPINできます。");
         }
 
-        var pin = await _pinService.AddPinToItemAsync(workspaceId, itemId, CurrentUserId);
+        await _pinService.AddPinToItemAsync(workspaceId, itemId, CurrentUserId);
 
         // 更新後のアイテムを取得
         var item = await _workspaceItemService.GetWorkspaceItemAsync(workspaceId, itemId);

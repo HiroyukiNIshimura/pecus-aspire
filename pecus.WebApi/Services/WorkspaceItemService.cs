@@ -631,6 +631,67 @@ public class WorkspaceItemService
     }
 
     /// <summary>
+    /// ログインユーザーに関連するワークスペースアイテム一覧を取得（ワークスペース横断）
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="relation">関連タイプ（All, Owner, Assignee, Committer, Pinned）</param>
+    /// <param name="page">ページ番号（1から開始）</param>
+    /// <param name="pageSize">ページサイズ</param>
+    public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetMyItemsAsync(
+        int userId,
+        MyItemRelationType? relation = null,
+        int page = 1,
+        int pageSize = 20
+    )
+    {
+        var relationType = relation ?? MyItemRelationType.All;
+
+        var query = _context
+            .WorkspaceItems.Include(wi => wi.Workspace)
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .Include(wi => wi.WorkspaceItemTags)
+            .ThenInclude(wit => wit.Tag)
+            .Include(wi => wi.WorkspaceItemPins)
+            .AsQueryable();
+
+        // 関連タイプに応じたフィルタリング
+        query = relationType switch
+        {
+            MyItemRelationType.Owner => query.Where(wi => wi.OwnerId == userId),
+            MyItemRelationType.Assignee => query.Where(wi => wi.AssigneeId == userId),
+            MyItemRelationType.Committer => query.Where(wi => wi.CommitterId == userId),
+            MyItemRelationType.Pinned => query.Where(wi => wi.WorkspaceItemPins.Any(wip => wip.UserId == userId)),
+            // All: オーナー OR 担当者 OR コミッター OR PIN済み
+            _ => query.Where(wi =>
+                wi.OwnerId == userId ||
+                wi.AssigneeId == userId ||
+                wi.CommitterId == userId ||
+                wi.WorkspaceItemPins.Any(wip => wip.UserId == userId)
+            ),
+        };
+
+        // 下書きは除外（自分がオーナーの下書きのみ表示）
+        query = query.Where(wi => !wi.IsDraft || wi.OwnerId == userId);
+
+        // アーカイブ済みは除外
+        query = query.Where(wi => !wi.IsArchived);
+
+        var totalCount = await query.CountAsync();
+
+        // ページネーション（更新日時の降順）
+        var items = await query
+            .AsSplitQuery()
+            .OrderByDescending(wi => wi.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    /// <summary>
     /// ワークスペースアイテムを更新
     /// </summary>
     public async Task<WorkspaceItem> UpdateWorkspaceItemAsync(

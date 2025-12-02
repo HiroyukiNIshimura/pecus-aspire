@@ -2,8 +2,10 @@
 
 import EditIcon from '@mui/icons-material/Edit';
 import MenuIcon from '@mui/icons-material/Menu';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { useEffect, useState } from 'react';
-import { fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
+import { addWorkspaceItemPin, fetchLatestWorkspaceItem, removeWorkspaceItemPin } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
 import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
@@ -33,6 +35,7 @@ export default function WorkspaceItemDetail({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDrawerClosing, setIsDrawerClosing] = useState(false);
+  const [isPinLoading, setIsPinLoading] = useState(false);
 
   useEffect(() => {
     const fetchItemDetail = async () => {
@@ -73,6 +76,29 @@ export default function WorkspaceItemDetail({
 
   const handleEditSave = (updatedItem: WorkspaceItemDetailResponse) => {
     setItem(updatedItem);
+  };
+
+  // PIN操作ハンドラー
+  const handlePinToggle = async () => {
+    if (!item) return;
+
+    setIsPinLoading(true);
+    try {
+      const result = item.isPinned
+        ? await removeWorkspaceItemPin(workspaceId, itemId)
+        : await addWorkspaceItemPin(workspaceId, itemId);
+
+      if (result.success) {
+        setItem(result.data);
+        notify.success(result.data.isPinned ? 'PINを追加しました。' : 'PINを解除しました。');
+      } else {
+        notify.error(result.message || 'PIN操作に失敗しました。');
+      }
+    } catch (err) {
+      notify.error('PIN操作中にエラーが発生しました。');
+    } finally {
+      setIsPinLoading(false);
+    }
   };
 
   // 編集ボタンクリック時の権限チェック
@@ -146,6 +172,23 @@ export default function WorkspaceItemDetail({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* PINボタン */}
+            <button
+              type="button"
+              onClick={handlePinToggle}
+              className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : 'btn-ghost'}`}
+              title={item.isPinned ? 'PINを解除' : 'PINを追加'}
+              disabled={isPinLoading}
+            >
+              {isPinLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : item.isPinned ? (
+                <PushPinIcon fontSize="small" />
+              ) : (
+                <PushPinOutlinedIcon fontSize="small" />
+              )}
+              {item.pinCount !== undefined && item.pinCount > 0 && <span className="text-xs">{item.pinCount}</span>}
+            </button>
             <button
               type="button"
               onClick={handleEditClick}
@@ -167,7 +210,12 @@ export default function WorkspaceItemDetail({
         <div className="flex flex-wrap gap-2 mb-4">
           {item.isDraft && <span className="badge badge-warning">下書き</span>}
           {item.isArchived && <span className="badge badge-neutral">アーカイブ済み</span>}
-          {item.isPinned && <span className="badge badge-info">📌 ピン留め</span>}
+          {item.isPinned && (
+            <span className="badge badge-info gap-1">
+              <PushPinIcon style={{ fontSize: '0.875rem' }} />
+              PIN済み
+            </span>
+          )}
         </div>
 
         {/* 本文  */}

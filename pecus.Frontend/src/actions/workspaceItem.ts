@@ -117,6 +117,78 @@ export async function updateWorkspaceItem(
 }
 
 /**
+ * Server Action: ワークスペースアイテムにPINを追加
+ */
+export async function addWorkspaceItemPin(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.postApiWorkspacesItemsPin(workspaceId, itemId);
+
+    if (response.workspaceItem) {
+      return {
+        success: true,
+        data: response.workspaceItem,
+      };
+    }
+
+    return serverError('PIN操作の結果取得に失敗しました。');
+  } catch (error) {
+    console.error('Failed to add pin to workspace item:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'PINの追加に失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムからPINを削除
+ */
+export async function removeWorkspaceItemPin(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.deleteApiWorkspacesItemsPin(workspaceId, itemId);
+
+    if (response.workspaceItem) {
+      return {
+        success: true,
+        data: response.workspaceItem,
+      };
+    }
+
+    return serverError('PIN操作の結果取得に失敗しました。');
+  } catch (error) {
+    console.error('Failed to remove pin from workspace item:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'PINの削除に失敗しました。');
+  }
+}
+
+/**
  * Server Action: ワークスペースアイテムの担当者を更新
  */
 export async function updateWorkspaceItemAssignee(
