@@ -5,17 +5,22 @@ type ThemeType = 'light' | 'dark' | 'auto';
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>('auto');
   const [mounted, setMounted] = useState(false);
+  // 実際に適用されているテーマ（auto の場合はシステム設定を反映）
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  const getResolvedTheme = (selectedTheme: ThemeType): 'light' | 'dark' => {
+    if (selectedTheme === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return prefersDark ? 'dark' : 'light';
+    }
+    return selectedTheme;
+  };
 
   const applyTheme = (selectedTheme: ThemeType) => {
     const html = document.documentElement;
-
-    if (selectedTheme === 'auto') {
-      // システム設定を監視
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
-      html.setAttribute('data-theme', selectedTheme);
-    }
+    const resolved = getResolvedTheme(selectedTheme);
+    html.setAttribute('data-theme', resolved);
+    setResolvedTheme(resolved);
   };
 
   // マウント時に localStorage から復元
@@ -30,7 +35,20 @@ export function useTheme() {
       applyTheme('auto');
     }
     setMounted(true);
-  }, [applyTheme]);
+  }, []);
+
+  // システム設定の変更を監視（auto モードの場合）
+  useEffect(() => {
+    if (theme !== 'auto') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      applyTheme('auto');
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
 
   const changeTheme = (newTheme: ThemeType) => {
     setTheme(newTheme);
@@ -47,5 +65,5 @@ export function useTheme() {
     return current as 'light' | 'dark';
   };
 
-  return { theme, changeTheme, mounted, currentTheme };
+  return { theme, changeTheme, mounted, currentTheme, resolvedTheme };
 }
