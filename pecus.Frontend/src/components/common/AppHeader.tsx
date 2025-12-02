@@ -60,8 +60,9 @@ export default function AppHeader({
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
       <nav className="navbar">
         <div className="navbar-start flex flex-col">
-          <a href="/" className="text-3xl font-bold">
-            Coati
+          <a href="/" className="flex items-end gap-1 text-sm font-bold">
+            <img src="/logo.svg" alt="Coati Logo" className="size-17" />
+            <span className="pb-2">COATI TRACKING</span>
           </a>
           <div className="md:hidden mt-2">
             <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
