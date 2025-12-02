@@ -4387,6 +4387,60 @@
         }
       }
     },
+    "/api/users/me/items": {
+      "get": {
+        "tags": [
+          "MyItem"
+        ],
+        "summary": "マイアイテム一覧を取得\r\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から開始）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Relation",
+            "in": "query",
+            "description": "関連タイプ（All, Owner, Assignee, Committer, Pinned）",
+            "schema": {
+              "$ref": "#/components/schemas/MyItemRelationType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/profile": {
       "get": {
         "tags": [
@@ -8935,6 +8989,16 @@
         },
         "additionalProperties": false,
         "description": "メッセージレスポンス"
+      },
+      "MyItemRelationType": {
+        "enum": [
+          "All",
+          "Owner",
+          "Assignee",
+          "Committer",
+          "Pinned"
+        ],
+        "type": "string"
       },
       "OSPlatform": {
         "enum": [

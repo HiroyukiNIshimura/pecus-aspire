@@ -7,12 +7,12 @@ using Pecus.Services;
 namespace Pecus.Controllers;
 
 /// <summary>
-/// マイアイテムコントローラー
+/// マイワークスペースアイテムコントローラー
 /// ログインユーザーに関連するワークスペースアイテムを横断的に取得
 /// </summary>
-[Route("api/users/me/items")]
+[Route("api/my/workspace-items")]
 [Produces("application/json")]
-[Tags("MyItem")]
+[Tags("MyWorkspaceItem")]
 public class MyItemController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;
