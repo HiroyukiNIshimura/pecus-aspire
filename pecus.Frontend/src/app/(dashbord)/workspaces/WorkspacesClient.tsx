@@ -10,6 +10,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import AppHeader from '@/components/common/AppHeader';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -147,12 +148,33 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setFilterName('');
     setFilterIsActive(true);
     setFilterGenreId(null);
     nameValidation.clearErrors();
-    handleFilterChange();
+
+    // リセット後の値で直接検索を実行（stateの非同期更新を待たない）
+    await withDelayedLoading(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true'); // リセット後のデフォルト値
+
+        const response = await fetch(`/api/workspaces?${params.toString()}`);
+        if (response.ok) {
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          setWorkspaces(data.data || []);
+          setCurrentPage(1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to reset workspaces:', error);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
+      }
+    })();
   };
 
   const handleCreateSuccess = () => {
@@ -227,18 +249,18 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
               </div>
 
               {filterOpen && (
-                <div className="space-y-4 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
                     {/* ジャンルフィルター */}
                     <div className="form-control">
                       <label htmlFor="filterGenreId" className="label">
-                        <span className="label-text font-semibold">ジャンル</span>
+                        <span className="label-text">ジャンル</span>
                       </label>
                       <GenreSelect
                         id="filterGenreId"
                         name="filterGenreId"
                         genres={genres}
-                        defaultValue={filterGenreId}
+                        value={filterGenreId}
                         onChange={(value) => setFilterGenreId(value)}
                       />
                     </div>
@@ -246,13 +268,13 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                     {/* 名前検索 */}
                     <div className="form-control">
                       <label htmlFor="filterName" className="label">
-                        <span className="label-text font-semibold">ワークスペース名</span>
+                        <span className="label-text">ワークスペース名</span>
                       </label>
                       <input
                         id="filterName"
                         type="text"
                         placeholder="検索名を入力..."
-                        className={`input input-bordered ${nameValidation.hasErrors ? 'input-error' : ''}`}
+                        className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
                         value={filterName}
                         onChange={(e) => handleNameChange(e.target.value)}
                         onKeyDown={(e) => {
@@ -269,24 +291,12 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                     </div>
 
                     {/* ステータスフィルター */}
-                    <div className="form-control">
-                      <label htmlFor="filterIsActive" className="label">
-                        <span className="label-text font-semibold">ステータス</span>
-                      </label>
-                      <select
-                        id="filterIsActive"
-                        className="select select-bordered"
-                        value={filterIsActive === null ? '' : filterIsActive ? 'true' : 'false'}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFilterIsActive(value === '' ? null : value === 'true');
-                        }}
-                      >
-                        <option value="">すべて</option>
-                        <option value="true">アクティブ</option>
-                        <option value="false">非アクティブ</option>
-                      </select>
-                    </div>
+                    <ActiveStatusFilter
+                      name="workspace-status"
+                      value={filterIsActive}
+                      onChange={setFilterIsActive}
+                      size="xs"
+                    />
                   </div>
 
                   {/* ボタングループ */}
@@ -354,13 +364,9 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                               <code className="text-xs badge badge-ghost badge-sm">{workspace.code}</code>
                               <div className="flex items-center gap-2">
                                 {workspace.isActive ? (
-                                  <div className="badge badge-success badge-sm">
-                                    <PowerSettingsNewIcon className="w-4 h-4" />
-                                  </div>
+                                  <PowerSettingsNewIcon className="w-4 h-4 text-success" />
                                 ) : (
-                                  <div className="badge badge-neutral badge-sm">
-                                    <PowerOffIcon className="w-4 h-4" />
-                                  </div>
+                                  <PowerOffIcon className="w-4 h-4 text-base-content/50" />
                                 )}
                               </div>
                             </div>

@@ -7,6 +7,9 @@ export interface GenreSelectProps {
   id?: string;
   name?: string;
   genres: MasterGenreResponse[];
+  /** 制御コンポーネント用の値（優先） */
+  value?: number | null;
+  /** 非制御コンポーネント用の初期値 */
   defaultValue?: number | '' | null;
   disabled?: boolean;
   error?: boolean;
@@ -18,27 +21,35 @@ export interface GenreSelectProps {
  * ジャンル選択セレクト（アイコン表示対応）
  * - option 内に SVG を表示
  * - 選択済み表示にも背景アイコンを表示
+ * - value を指定すると制御コンポーネントとして動作
  */
 export default function GenreSelect({
   id = 'genreId',
   name = 'genreId',
   genres,
+  value,
   defaultValue = '',
   disabled,
   error,
   className,
   onChange,
 }: GenreSelectProps) {
+  // value が指定されている場合は制御コンポーネントとして動作
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : undefined;
+
   const [selectedGenreIcon, setSelectedGenreIcon] = useState<string | null>(null);
 
-  const initialIcon = useMemo(() => {
-    const gid = typeof defaultValue === 'number' ? defaultValue : null;
-    return gid ? (genres.find((g) => g.id === gid)?.icon ?? null) : null;
-  }, [defaultValue, genres]);
+  // 制御コンポーネントの場合は value から、非制御の場合は defaultValue からアイコンを取得
+  const iconValue = isControlled ? value : typeof defaultValue === 'number' ? defaultValue : null;
+
+  const currentIcon = useMemo(() => {
+    return iconValue ? (genres.find((g) => g.id === iconValue)?.icon ?? null) : null;
+  }, [iconValue, genres]);
 
   useEffect(() => {
-    setSelectedGenreIcon(initialIcon);
-  }, [initialIcon]);
+    setSelectedGenreIcon(currentIcon);
+  }, [currentIcon]);
 
   return (
     <>
@@ -56,6 +67,9 @@ export default function GenreSelect({
           padding: 8px;
           background-color: var(--color-base-200);
         }
+        :global(.genre-select option:hover) {
+          background-color: var(--color-base-300);
+        }
         :global(.genre-select option img) {
           width: 20px;
           height: 20px;
@@ -72,12 +86,16 @@ export default function GenreSelect({
           align-items: center;
           padding: 8px 12px;
         }
+        :global(::picker(select) option:hover) {
+          background-color: var(--color-base-300);
+        }
       `}</style>
 
       <select
         id={id}
         name={name}
-        defaultValue={defaultValue ?? ''}
+        value={isControlled ? (currentValue ?? '') : undefined}
+        defaultValue={isControlled ? undefined : (defaultValue ?? '')}
         className={`select select-bordered genre-select ${error ? 'select-error' : ''} ${className ?? ''}`}
         disabled={disabled || genres.length === 0}
         onChange={(e) => {

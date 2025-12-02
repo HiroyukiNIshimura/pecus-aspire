@@ -213,15 +213,45 @@ export default function AdminUsersClient({
     setFilterSkillIds((prev) => (prev.includes(skillId) ? prev.filter((id) => id !== skillId) : [...prev, skillId]));
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // 状態をリセット
     setFilterUsername('');
     setFilterIsActive(true);
     setFilterSkillIds([]);
     setFilterSkillMode('and');
     usernameValidation.clearErrors();
     setCurrentPage(1);
-    // リセット後、初期フィルター条件で検索実行
-    handleFilterChange();
+    // setStateは非同期のため、リセット値を直接使ってAPIを呼び出す
+    await withDelayedLoading(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true');
+        // ユーザー名とスキルはリセット時は空なので追加しない
+        const response = await fetch(`/api/admin/users?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.data) {
+            const mappedUsers = data.data.map((user: UserDetailResponse) => ({
+              id: user.id ?? 0,
+              username: user.username ?? '',
+              email: user.email ?? '',
+              isActive: user.isActive ?? true,
+              createdAt: user.createdAt ?? new Date().toISOString(),
+              skills: user.skills ?? [],
+            }));
+            setUsers(mappedUsers);
+            setCurrentPage(data.currentPage || 1);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
+            setStatistics(data.summary || null);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        notify.error('サーバーとの通信でエラーが発生しました。', true);
+      }
+    })();
   };
 
   return (
