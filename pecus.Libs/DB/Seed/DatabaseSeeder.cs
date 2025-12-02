@@ -729,8 +729,8 @@ public class DatabaseSeeder
         // キャッシュをクリアして再度読み込み
         _context.ChangeTracker.Clear();
 
-        // admin ユーザーを取得
-        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.LoginId == "admin");
+        // admin ユーザーを取得（Email で検索）
+        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "admin@sample.com");
         if (adminUser == null)
         {
             _logger.LogWarning("Admin user not found for seeding workspace skills");
@@ -807,15 +807,15 @@ public class DatabaseSeeder
         // キャッシュをクリアして再度読み込み
         _context.ChangeTracker.Clear();
 
-        // admin ユーザーを取得
-        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.LoginId == "admin");
+        // admin ユーザーを取得（Email で検索）
+        var adminUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "admin@sample.com");
         if (adminUser == null)
         {
             _logger.LogWarning("Admin user not found for seeding user skills");
             return;
         }
 
-        var users = await _context.Users.Where(u => u.LoginId != "admin").ToListAsync();
+        var users = await _context.Users.Where(u => u.Email != "admin@sample.com").ToListAsync();
 
         if (!users.Any())
         {
