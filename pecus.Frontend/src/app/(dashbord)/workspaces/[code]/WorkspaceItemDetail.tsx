@@ -94,7 +94,7 @@ export default function WorkspaceItemDetail({
       } else {
         notify.error(result.message || 'PIN操作に失敗しました。');
       }
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       notify.error('PIN操作中にエラーが発生しました。');
     } finally {
       setIsPinLoading(false);
