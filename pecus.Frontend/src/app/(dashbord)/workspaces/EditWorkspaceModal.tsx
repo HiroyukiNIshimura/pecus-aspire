@@ -116,7 +116,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
             </h2>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-secondary btn-sm btn-circle"
               onClick={onClose}
               disabled={isSubmitting || isLoading}
               aria-label="閉じる"

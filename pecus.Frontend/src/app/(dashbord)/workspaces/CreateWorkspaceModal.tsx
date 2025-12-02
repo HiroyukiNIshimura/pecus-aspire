@@ -4,10 +4,10 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
 import { createWorkspace } from '@/actions/workspace';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
-import GenreSelect from '@/components/workspaces/GenreSelect';
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
@@ -73,7 +73,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
             </h2>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-secondary btn-sm btn-circle"
               onClick={onClose}
               disabled={isSubmitting}
               aria-label="閉じる"

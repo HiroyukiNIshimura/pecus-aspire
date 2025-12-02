@@ -113,7 +113,7 @@ function UserSearchFilter({
             <p className="text-sm font-medium truncate">{selectedUser.username}</p>
             <p className="text-xs text-base-content/60 truncate">{selectedUser.email}</p>
           </div>
-          <button type="button" className="btn btn-ghost btn-xs btn-circle" onClick={onClear} aria-label="選択解除">
+          <button type="button" className="btn btn-secondary btn-xs btn-circle" onClick={onClear} aria-label="選択解除">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-4 w-4"
@@ -288,7 +288,7 @@ export default function WorkspaceItemFilterDrawer({
             <h3 className="text-lg font-bold">詳細フィルター</h3>
             {activeFilterCount > 0 && <span className="badge badge-primary badge-sm">{activeFilterCount}</span>}
           </div>
-          <button type="button" className="btn btn-ghost btn-circle btn-sm" aria-label="閉じる" onClick={onClose}>
+          <button type="button" className="btn btn-secondary btn-circle btn-sm" aria-label="閉じる" onClick={onClose}>
             ✕
           </button>
         </div>

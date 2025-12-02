@@ -72,7 +72,9 @@ export default function RemoveMemberModal({ isOpen, userName, email, onClose, on
           </div>
           <div className="flex flex-col gap-1 mt-2">
             <span className="text-sm text-base-content/70">メールアドレス</span>
-            <code className="badge badge-ghost text-xs break-all whitespace-normal h-auto py-1">{email}</code>
+            <code className="badge badge-soft badge-accent text-xs break-all whitespace-normal h-auto py-1">
+              {email}
+            </code>
           </div>
         </div>
 
@@ -104,7 +106,7 @@ export default function RemoveMemberModal({ isOpen, userName, email, onClose, on
 
         {/* ボタン */}
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={isDeleting}>
+          <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isDeleting}>
             キャンセル
           </button>
           <button

@@ -79,7 +79,7 @@ function PortalImpl({
             <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle ms-2"
+              className="btn btn-secondary btn-sm btn-circle ms-2"
               onClick={onClose}
               aria-label="閉じる"
             >

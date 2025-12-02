@@ -254,7 +254,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
                 selectedItemId === 'home'
                   ? 'bg-primary text-primary-content font-semibold'
-                  : 'hover:bg-base-300 text-base-content'
+                  : 'hover:bg-base-200 text-base-content'
               }`}
               title="ワークスペースHome"
             >
@@ -342,7 +342,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                       className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
                         selectedItemId === item.id
                           ? 'bg-primary text-primary-content font-semibold'
-                          : 'hover:bg-base-300 text-base-content'
+                          : 'hover:bg-base-100 text-base-content'
                       }`}
                       title={item.subject || '（未設定）'}
                     >

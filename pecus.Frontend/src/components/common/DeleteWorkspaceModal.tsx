@@ -74,7 +74,7 @@ export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, works
             </div>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-secondary btn-sm btn-circle"
               onClick={handleClose}
               disabled={isDeleting}
               aria-label="閉じる"
@@ -103,7 +103,7 @@ export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, works
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-base-content/70">コード</span>
-                  <code className="badge badge-ghost">{workspace.code}</code>
+                  <code className="badge badge-soft badge-accent">{workspace.code}</code>
                 </div>
                 {workspace.memberCount !== undefined && (
                   <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, works
               <label htmlFor="confirmCode" className="label">
                 <span className="label-text font-semibold">
                   削除を確認するため、ワークスペースコード
-                  <code className="mx-1 badge badge-ghost badge-sm">{workspace.code}</code>
+                  <code className="mx-1 badge badge-soft badge-accent badge-sm">{workspace.code}</code>
                   を入力してください
                 </span>
               </label>

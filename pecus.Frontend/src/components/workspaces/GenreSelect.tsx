@@ -68,7 +68,7 @@ export default function GenreSelect({
           background-color: var(--color-base-200);
         }
         :global(.genre-select option:hover) {
-          background-color: var(--color-base-300);
+          background-color: var(--color-base-100);
         }
         :global(.genre-select option img) {
           width: 20px;
@@ -87,7 +87,7 @@ export default function GenreSelect({
           padding: 8px 12px;
         }
         :global(::picker(select) option:hover) {
-          background-color: var(--color-base-300);
+          background-color: var(--color-base-100);
         }
       `}</style>
 

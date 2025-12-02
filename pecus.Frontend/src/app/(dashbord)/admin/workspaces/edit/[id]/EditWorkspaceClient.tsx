@@ -437,7 +437,7 @@ export default function EditWorkspaceClient({
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6">
-                    <button type="button" className="btn btn-ghost" onClick={handleCancel} disabled={isSubmitting}>
+                    <button type="button" className="btn btn-secondary" onClick={handleCancel} disabled={isSubmitting}>
                       キャンセル
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting}>

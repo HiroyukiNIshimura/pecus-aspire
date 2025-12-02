@@ -100,7 +100,7 @@ export default function WorkspaceItemDrawer({
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10">
           <h3 className="text-lg font-bold">詳細オプション</h3>
-          <button type="button" className="btn btn-ghost btn-circle btn-sm" aria-label="Close" onClick={onClose}>
+          <button type="button" className="btn btn-secondary btn-circle btn-sm" aria-label="Close" onClick={onClose}>
             ✕
           </button>
         </div>

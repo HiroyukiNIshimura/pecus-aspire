@@ -244,7 +244,7 @@ export default function AddMemberModal({
               </div>
               <button
                 type="button"
-                className="btn btn-ghost btn-sm btn-circle"
+                className="btn btn-secondary btn-sm btn-circle"
                 onClick={handleClearSelection}
                 aria-label="選択解除"
               >
@@ -319,7 +319,7 @@ export default function AddMemberModal({
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {skillMatchResult.extraSkills.map((skill) => (
-                        <span key={skill.id} className="badge badge-ghost badge-sm">
+                        <span key={skill.id} className="badge badge-soft badge-accent badge-sm">
                           {skill.name}
                         </span>
                       ))}
@@ -436,7 +436,9 @@ export default function AddMemberModal({
                                 </span>
                               ))}
                               {user.skills.length > 5 && (
-                                <span className="badge badge-ghost badge-xs">+{user.skills.length - 5}</span>
+                                <span className="badge badge-soft badge-accent badge-xs">
+                                  +{user.skills.length - 5}
+                                </span>
                               )}
                             </div>
                           )}
@@ -457,7 +459,7 @@ export default function AddMemberModal({
 
         {/* ボタン */}
         <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-base-300">
-          <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={isAdding}>
+          <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isAdding}>
             キャンセル
           </button>
           <button

@@ -93,7 +93,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
       {/* メインボタン */}
       <button
         type="button"
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-base-100 hover:bg-base-300 border border-base-300 rounded transition-colors text-left"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-base-100 hover:bg-base-200 border border-base-300 rounded transition-colors text-left"
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"

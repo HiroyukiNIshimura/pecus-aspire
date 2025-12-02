@@ -170,7 +170,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
             </h2>
             <button
               type="button"
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-secondary btn-sm btn-circle"
               onClick={handleClose}
               disabled={isSubmitting}
               aria-label="閉じる"

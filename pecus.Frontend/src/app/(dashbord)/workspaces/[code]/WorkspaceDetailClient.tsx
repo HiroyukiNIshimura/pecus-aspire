@@ -442,7 +442,7 @@ export default function WorkspaceDetailClient({
           <span>{currentWorkspaceDetail.name}</span>
         </h2>
         {currentWorkspaceDetail.code && (
-          <code className="text-sm badge badge-ghost badge-md mt-2 truncate max-w-full block">
+          <code className="text-sm badge badge-soft badge-accent badge-md mt-2 truncate max-w-full block">
             {currentWorkspaceDetail.code}
           </code>
         )}
@@ -452,7 +452,7 @@ export default function WorkspaceDetailClient({
         <div className="relative flex-shrink-0">
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
+            className="btn btn-secondary btn-sm"
             onClick={(e) => {
               e.stopPropagation();
               handleActionMenuToggle();

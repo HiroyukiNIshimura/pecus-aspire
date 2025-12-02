@@ -394,7 +394,7 @@ export default function AdminUsersClient({
                                     <button
                                       type="button"
                                       onClick={() => toggleSkillFilter(skillId)}
-                                      className="btn btn-ghost btn-xs no-animation"
+                                      className="btn btn-secondary btn-xs no-animation"
                                     >
                                       ✕
                                     </button>

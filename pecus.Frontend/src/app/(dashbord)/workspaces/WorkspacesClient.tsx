@@ -361,7 +361,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                           <div className="mb-3">
                             {/* コード、ステータス、メニュー */}
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <code className="text-xs badge badge-ghost badge-sm">{workspace.code}</code>
+                              <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
                               <div className="flex items-center gap-2">
                                 {workspace.isActive ? (
                                   <PowerSettingsNewIcon className="w-4 h-4 text-success" />

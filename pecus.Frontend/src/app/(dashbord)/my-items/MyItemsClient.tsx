@@ -145,7 +145,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                     key={tab.key}
                     type="button"
                     onClick={() => handleFilterChange(tab.key)}
-                    className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-ghost'}`}
+                    className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-secondary'}`}
                   >
                     {tab.icon}
                     <span>{tab.label}</span>
@@ -203,14 +203,14 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                             {/* ワークスペース名 + ステータス */}
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                {item.genreIcon && (
-                                  <img
-                                    src={`/icons/genres/${item.genreIcon}.svg`}
-                                    alt=""
-                                    className="w-4 h-4 flex-shrink-0"
-                                  />
-                                )}
-                                <span className="text-xs badge badge-ghost badge-sm truncate">
+                                <span className="badge badge-soft badge-accent badge-sm truncate p-3">
+                                  {item.genreIcon && (
+                                    <img
+                                      src={`/icons/genres/${item.genreIcon}.svg`}
+                                      alt=""
+                                      className="w-4 h-4 flex-shrink-0"
+                                    />
+                                  )}
                                   {item.workspaceName || 'ワークスペース'}
                                 </span>
                               </div>

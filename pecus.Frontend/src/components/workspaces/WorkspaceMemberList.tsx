@@ -247,7 +247,7 @@ function WorkspaceMemberCard({
         <div className="relative" ref={menuRef}>
           <button
             type="button"
-            className="btn btn-ghost btn-xs btn-square"
+            className="btn btn-secondary btn-xs btn-square"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={`${memberName}のメニューを開く`}
             aria-haspopup="true"
