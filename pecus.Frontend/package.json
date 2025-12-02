@@ -41,6 +41,7 @@
     "@minoru/react-dnd-treeview": "^3.5.3",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@payloadcms/richtext-lexical": "^3.65.0",
     "@yaireo/tagify": "^4.35.6",
     "axios": "^1.13.1",
     "classnames": "^2.5.1",
