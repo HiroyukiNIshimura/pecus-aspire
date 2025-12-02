@@ -1,6 +1,7 @@
 'use client';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
@@ -275,15 +276,7 @@ export default function AdminTagsClient({
                     <div className="flex justify-end gap-2 pt-2 border-t border-base-300">
                       <button
                         type="button"
-                        className="btn btn-primary btn-sm"
-                        onClick={handleSearch}
-                        disabled={!nameValidation.isValid}
-                      >
-                        検索
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-outline"
                         onClick={async () => {
                           // フィルター条件をデフォルト状態にリセット
                           setFilterName('');
@@ -322,6 +315,15 @@ export default function AdminTagsClient({
                         }}
                       >
                         リセット
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={handleSearch}
+                        disabled={!nameValidation.isValid}
+                      >
+                        <SearchIcon className="w-4 h-4" />
+                        検索
                       </button>
                     </div>
                   </div>

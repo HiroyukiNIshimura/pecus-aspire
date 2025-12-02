@@ -1,6 +1,7 @@
 'use client';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
@@ -433,16 +434,17 @@ export default function AdminUsersClient({
 
                     {/* Buttons */}
                     <div className="flex justify-end gap-2 mt-4">
+                      <button type="button" onClick={handleReset} className="btn btn-outline">
+                        リセット
+                      </button>
                       <button
                         type="button"
                         onClick={handleSearch}
                         disabled={!usernameValidation.isValid}
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary"
                       >
+                        <SearchIcon className="w-4 h-4" />
                         検索
-                      </button>
-                      <button type="button" onClick={handleReset} className="btn btn-outline btn-sm">
-                        リセット
                       </button>
                     </div>
                   </div>

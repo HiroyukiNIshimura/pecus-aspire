@@ -1,6 +1,7 @@
 'use client';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import { useCallback, useEffect, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -318,18 +319,9 @@ export default function AdminWorkspacesClient({
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-2 pt-2 border-t border-base-300">
-                      {/* 【ポイント4】pecus.Frontend\src\app\(dashbord)\adminボタンの無効化: !nameValidation.isValid */}
                       <button
                         type="button"
-                        className="btn btn-primary btn-sm"
-                        onClick={handleSearch}
-                        disabled={!nameValidation.isValid}
-                      >
-                        検索
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-outline"
                         onClick={async () => {
                           // フィルター条件をデフォルト状態にリセット
                           setFilterGenreId(null);
@@ -363,6 +355,15 @@ export default function AdminWorkspacesClient({
                         }}
                       >
                         リセット
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={handleSearch}
+                        disabled={!nameValidation.isValid}
+                      >
+                        <SearchIcon className="w-4 h-4" />
+                        検索
                       </button>
                     </div>
                   </div>
