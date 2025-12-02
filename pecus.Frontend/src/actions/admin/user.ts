@@ -222,7 +222,7 @@ export async function searchUsersForWorkspace(
     }
 
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsersSearch(query, limit);
+    const response = await api.user.getApiUsersSearch(query, limit);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to search users:', error);

@@ -23,6 +23,7 @@ import {
   ProfileService,
   TagService,
   TestEmailService,
+  UserService,
   WorkspaceItemService,
   WorkspaceItemTempAttachmentService,
   WorkspaceService
@@ -75,6 +76,7 @@ export function createApiClientInstances() {
     profile: ProfileService,
     tag: TagService,
     testEmail: TestEmailService,
+    user: UserService,
     workspaceItem: WorkspaceItemService,
     workspaceItemTempAttachment: WorkspaceItemTempAttachmentService,
     workspace: WorkspaceService

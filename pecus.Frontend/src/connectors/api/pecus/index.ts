@@ -74,6 +74,7 @@ export type { SetUserActiveStatusRequest } from './models/SetUserActiveStatusReq
 export type { SetUserPasswordRequest } from './models/SetUserPasswordRequest';
 export type { SetUserRolesRequest } from './models/SetUserRolesRequest';
 export type { SetUserSkillsRequest } from './models/SetUserSkillsRequest';
+export type { SetWorkspaceSkillsRequest } from './models/SetWorkspaceSkillsRequest';
 export type { SkillDetailResponse } from './models/SkillDetailResponse';
 export type { SkillDetailResponseConcurrencyErrorResponse } from './models/SkillDetailResponseConcurrencyErrorResponse';
 export type { SkillListItemResponse } from './models/SkillListItemResponse';
@@ -150,6 +151,7 @@ export { ProfileDeviceService } from './services/ProfileDeviceService';
 export { ProfileEmailService } from './services/ProfileEmailService';
 export { TagService } from './services/TagService';
 export { TestEmailService } from './services/TestEmailService';
+export { UserService } from './services/UserService';
 export { WorkspaceService } from './services/WorkspaceService';
 export { WorkspaceItemService } from './services/WorkspaceItemService';
 export { WorkspaceItemTempAttachmentService } from './services/WorkspaceItemTempAttachmentService';

@@ -1,7 +1,6 @@
 'use client';
 
 import PersonIcon from '@mui/icons-material/Person';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { addMemberToWorkspace, removeMemberFromWorkspace, updateMemberRoleInWorkspace } from '@/actions/workspace';
 import AppHeader from '@/components/common/AppHeader';
@@ -36,7 +35,6 @@ export default function WorkspaceDetailClient({
   workspaces,
   userInfo,
 }: WorkspaceDetailClientProps) {
-  const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
@@ -77,8 +75,8 @@ export default function WorkspaceDetailClient({
     newRole: WorkspaceRole;
   }>({ isOpen: false, userId: 0, userName: '', currentRole: 'Member', newRole: 'Member' });
 
-  // サイドバー幅（初期値: 256px、クライアントサイドでローカルストレージから復元）
-  const [sidebarWidth, setSidebarWidth] = useState(256);
+  // サイドバー幅（初期値: null → クライアントサイドでローカルストレージから復元）
+  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
 
   // クライアントサイドでローカルストレージから幅を復元
   useEffect(() => {
@@ -87,13 +85,12 @@ export default function WorkspaceDetailClient({
       const width = parseInt(saved, 10);
       if (!Number.isNaN(width) && width >= 200 && width <= 600) {
         setSidebarWidth(width);
+        return;
       }
     }
+    // 保存値がない場合はデフォルト値
+    setSidebarWidth(256);
   }, []);
-
-  const _handleBack = () => {
-    router.back();
-  };
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 
@@ -321,31 +318,43 @@ export default function WorkspaceDetailClient({
 
       <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
         {/* 左サイドバー (PC) */}
-        <div
-          ref={sidebarRef}
-          className="hidden lg:block h-full overflow-hidden relative"
-          style={{ width: `${sidebarWidth}px` }}
-        >
-          <WorkspaceItemsSidebar
-            ref={sidebarComponentRef}
-            workspaceId={workspaceDetail.id}
-            currentWorkspaceCode={workspaceCode}
-            workspaces={workspaces}
-            onHomeSelect={handleHomeSelect}
-            onItemSelect={handleItemSelect}
-            onCreateNew={handleCreateNew}
-            scrollContainerId="itemsScrollableDiv-desktop"
-          />
-
-          {/* リサイズハンドル */}
+        {sidebarWidth !== null && (
           <div
-            onMouseDown={handleMouseDown}
-            className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors ${
-              isResizing ? 'bg-primary' : ''
-            }`}
-            style={{ userSelect: 'none' }}
-          />
-        </div>
+            ref={sidebarRef}
+            className="hidden lg:block h-full overflow-hidden relative"
+            style={{ width: `${sidebarWidth}px` }}
+          >
+            <WorkspaceItemsSidebar
+              ref={sidebarComponentRef}
+              workspaceId={workspaceDetail.id}
+              currentWorkspaceCode={workspaceCode}
+              workspaces={workspaces}
+              onHomeSelect={handleHomeSelect}
+              onItemSelect={handleItemSelect}
+              onCreateNew={handleCreateNew}
+              scrollContainerId="itemsScrollableDiv-desktop"
+              currentUser={
+                userInfo
+                  ? {
+                      id: userInfo.id,
+                      username: userInfo.username || userInfo.name,
+                      email: userInfo.email,
+                      identityIconUrl: userInfo.identityIconUrl,
+                    }
+                  : null
+              }
+            />
+
+            {/* リサイズハンドル */}
+            <div
+              onMouseDown={handleMouseDown}
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors ${
+                isResizing ? 'bg-primary' : ''
+              }`}
+              style={{ userSelect: 'none' }}
+            />
+          </div>
+        )}
 
         {/* メインコンテンツ */}
         <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
@@ -524,6 +533,16 @@ export default function WorkspaceDetailClient({
             onItemSelect={handleItemSelect}
             onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-mobile"
+            currentUser={
+              userInfo
+                ? {
+                    id: userInfo.id,
+                    username: userInfo.username || userInfo.name,
+                    email: userInfo.email,
+                    identityIconUrl: userInfo.identityIconUrl,
+                  }
+                : null
+            }
           />
         </div>
       </div>

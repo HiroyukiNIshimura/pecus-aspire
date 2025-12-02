@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import type { TaskPriority } from '@/connectors/api/pecus';
 
 interface RouteParams {
   params: Promise<{
@@ -10,14 +11,23 @@ interface RouteParams {
 
 /**
  * ワークスペースアイテム一覧取得 API Route
- * GET /api/workspaces/[id]/items?page=1&searchQuery=xxx
+ * GET /api/workspaces/[id]/items?page=1&searchQuery=xxx&...
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const workspaceId = parseInt(id, 10);
-    const page = request.nextUrl.searchParams.get('page') ? parseInt(request.nextUrl.searchParams.get('page')!, 10) : 1;
-    const searchQuery = request.nextUrl.searchParams.get('searchQuery') || undefined;
+    const searchParams = request.nextUrl.searchParams;
+
+    const page = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
+    const searchQuery = searchParams.get('searchQuery') || undefined;
+    const isDraft = searchParams.get('isDraft') !== null ? searchParams.get('isDraft') === 'true' : undefined;
+    const isArchived = searchParams.get('isArchived') !== null ? searchParams.get('isArchived') === 'true' : undefined;
+    const assigneeId = searchParams.get('assigneeId') ? parseInt(searchParams.get('assigneeId')!, 10) : undefined;
+    const ownerId = searchParams.get('ownerId') ? parseInt(searchParams.get('ownerId')!, 10) : undefined;
+    const committerId = searchParams.get('committerId') ? parseInt(searchParams.get('committerId')!, 10) : undefined;
+    const priority = (searchParams.get('priority') as TaskPriority) || undefined;
+    const pinned = searchParams.get('pinned') !== null ? searchParams.get('pinned') === 'true' : undefined;
 
     if (Number.isNaN(workspaceId)) {
       return badRequestError('Invalid workspace ID');
@@ -28,11 +38,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const response = await api.workspaceItem.getApiWorkspacesItems(
       workspaceId,
       page,
-      undefined, // isDraft
-      undefined, // isArchived
-      undefined, // assigneeId
-      undefined, // priority
-      undefined, // pinned
+      isDraft,
+      isArchived,
+      assigneeId,
+      ownerId,
+      committerId,
+      priority,
+      pinned,
       searchQuery,
     );
 

@@ -18,6 +18,7 @@ interface WorkspaceSwitcherProps {
 export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: WorkspaceSwitcherProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 現在のワークスペースのインデックスを取得
@@ -30,9 +31,12 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
   const switchWorkspace = useCallback(
     (workspaceCode: string) => {
       if (workspaceCode !== currentWorkspaceCode) {
+        setIsNavigating(true);
+        setIsOpen(false);
         router.push(`/workspaces/${workspaceCode}`);
+      } else {
+        setIsOpen(false);
       }
-      setIsOpen(false);
     },
     [currentWorkspaceCode, router],
   );
@@ -79,6 +83,13 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
+      {/* ナビゲーション中のオーバーレイ */}
+      {isNavigating && (
+        <div className="absolute inset-0 bg-base-100/80 z-10 flex items-center justify-center rounded">
+          <span className="loading loading-spinner loading-sm" />
+        </div>
+      )}
+
       {/* メインボタン */}
       <button
         type="button"
@@ -87,6 +98,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        disabled={isNavigating}
         title="Enterキーまたはクリックでワークスペースを選択"
       >
         <div className="flex-1 min-w-0">

@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
-using Pecus.Libs;
-using Pecus.Models.Requests.Tag;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.Tag;
 using Pecus.Services;
 
 namespace Pecus.Controllers;

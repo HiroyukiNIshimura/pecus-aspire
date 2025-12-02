@@ -93,6 +93,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserSkill> UserSkills { get; set; }
 
     /// <summary>
+    /// ワークスペーススキルテーブル（中間テーブル）
+    /// </summary>
+    public DbSet<WorkspaceSkill> WorkspaceSkills { get; set; }
+
+    /// <summary>
     /// アクティビティ（操作履歴）テーブル
     /// </summary>
     public DbSet<Activity> Activities { get; set; }
@@ -568,6 +573,38 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(us => us.SkillId);
             entity.HasIndex(us => us.AddedByUserId);
             entity.HasIndex(us => us.AddedAt);
+        });
+
+        // WorkspaceSkillエンティティの設定（中間テーブル）
+        modelBuilder.Entity<WorkspaceSkill>(entity =>
+        {
+            entity.HasKey(ws => new { ws.WorkspaceId, ws.SkillId });
+
+            // WorkspaceSkill と Workspace の多対一リレーションシップ
+            entity
+                .HasOne(ws => ws.Workspace)
+                .WithMany(w => w.WorkspaceSkills)
+                .HasForeignKey(ws => ws.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceSkill と Skill の多対一リレーションシップ
+            entity
+                .HasOne(ws => ws.Skill)
+                .WithMany(s => s.WorkspaceSkills)
+                .HasForeignKey(ws => ws.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // WorkspaceSkill と AddedByUser の多対一リレーションシップ
+            entity
+                .HasOne(ws => ws.AddedByUser)
+                .WithMany()
+                .HasForeignKey(ws => ws.AddedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // インデックス
+            entity.HasIndex(ws => ws.SkillId);
+            entity.HasIndex(ws => ws.AddedByUserId);
+            entity.HasIndex(ws => ws.AddedAt);
         });
 
         // Activityエンティティの設定

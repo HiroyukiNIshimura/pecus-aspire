@@ -93,6 +93,11 @@ public class Workspace
     public ICollection<WorkspaceItem> WorkspaceItems { get; set; } = new List<WorkspaceItem>();
 
     /// <summary>
+    /// このワークスペースが必要とするスキル
+    /// </summary>
+    public ICollection<WorkspaceSkill> WorkspaceSkills { get; set; } = new List<WorkspaceSkill>();
+
+    /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
     /// </summary>
     public uint RowVersion { get; set; }
