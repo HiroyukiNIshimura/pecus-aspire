@@ -8,6 +8,7 @@ import {
 } from '@/connectors/api/PecusApiClient';
 import type {
   MasterGenreResponse,
+  MasterSkillResponse,
   UserDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
@@ -31,6 +32,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
   let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
   let genres: MasterGenreResponse[] = [];
+  let skills: MasterSkillResponse[] = [];
 
   try {
     const api = createPecusApiClients();
@@ -56,6 +58,15 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       console.warn('Failed to fetch genres:', err);
       // ジャンル一覧取得失敗時は空配列を渡す
       genres = [];
+    }
+
+    // スキル一覧取得（編集用）
+    try {
+      skills = await api.master.getApiMasterSkills();
+    } catch (err) {
+      console.warn('Failed to fetch skills:', err);
+      // スキル一覧取得失敗時は空配列を渡す
+      skills = [];
     }
   } catch (error) {
     console.error('WorkspaceDetailPage: failed to fetch data', error);
@@ -90,6 +101,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       workspaces={workspacesList?.data || []}
       userInfo={userInfo}
       genres={genres}
+      skills={skills}
     />
   );
 }

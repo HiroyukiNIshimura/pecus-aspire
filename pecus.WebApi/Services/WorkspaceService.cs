@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Utils;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Workspace;
 
 namespace Pecus.Services;
 
@@ -54,7 +51,7 @@ public class WorkspaceService
                 Description = request.Description,
                 GenreId = request.GenreId,
                 OrganizationId = organizationId,
-                OwnerId = request.OwnerId,
+                OwnerId = createdByUserId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = createdByUserId,
                 IsActive = true,
@@ -802,7 +799,10 @@ public class WorkspaceService
             .Include(w => w.Owner)
             .Include(w => w.WorkspaceUsers)
                 .ThenInclude(wu => wu.User)
+            .Include(w => w.WorkspaceSkills)
+                .ThenInclude(ws => ws.Skill)
             .Where(w => w.Id == workspaceId)
+            .AsSplitQuery() // デカルト爆発防止
             .FirstOrDefaultAsync();
 
         if (workspace == null)
@@ -908,6 +908,17 @@ public class WorkspaceService
             currentUserRole = currentUserWorkspace?.WorkspaceRole;
         }
 
+        // スキル一覧の構築（アクティブなスキルのみ）
+        var skills = workspace.WorkspaceSkills
+            .Where(ws => ws.Skill != null && ws.Skill.IsActive)
+            .Select(ws => new WorkspaceSkillResponse
+            {
+                Id = ws.Skill!.Id,
+                Name = ws.Skill.Name,
+            })
+            .OrderBy(s => s.Name)
+            .ToList();
+
         return new WorkspaceFullDetailResponse
         {
             Id = workspace.Id,
@@ -925,6 +936,7 @@ public class WorkspaceService
             Owner = owner,
             IsActive = workspace.IsActive,
             CurrentUserRole = currentUserRole,
+            Skills = skills,
             RowVersion = workspace.RowVersion!,
         };
     }

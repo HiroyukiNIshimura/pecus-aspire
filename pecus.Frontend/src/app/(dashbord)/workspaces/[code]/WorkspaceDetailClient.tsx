@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PersonIcon from '@mui/icons-material/Person';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import { useRouter } from 'next/navigation';
@@ -24,6 +25,7 @@ import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type {
   MasterGenreResponse,
+  MasterSkillResponse,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
@@ -33,6 +35,7 @@ import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceModal from '../EditWorkspaceModal';
+import EditWorkspaceSkillsModal from '../EditWorkspaceSkillsModal';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import WorkspaceItemDetail from './WorkspaceItemDetail';
 import type { WorkspaceItemsSidebarHandle } from './WorkspaceItemsSidebar';
@@ -44,6 +47,7 @@ interface WorkspaceDetailClientProps {
   workspaces: WorkspaceListItemResponse[];
   userInfo: UserInfo | null;
   genres: MasterGenreResponse[];
+  skills: MasterSkillResponse[];
 }
 
 export default function WorkspaceDetailClient({
@@ -52,6 +56,7 @@ export default function WorkspaceDetailClient({
   workspaces,
   userInfo,
   genres,
+  skills,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const notify = useNotify();
@@ -67,6 +72,7 @@ export default function WorkspaceDetailClient({
   // ===== アクションメニューの状態 =====
   const [openActionMenu, setOpenActionMenu] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
 
@@ -269,6 +275,17 @@ export default function WorkspaceDetailClient({
     setIsEditModalOpen(true);
   };
 
+  /** スキル編集モーダルを開く */
+  const handleSkills = () => {
+    setOpenActionMenu(false);
+    setIsSkillsModalOpen(true);
+  };
+
+  /** スキル編集成功時のハンドラ */
+  const handleSkillsSuccess = (updatedWorkspace: WorkspaceFullDetailResponse) => {
+    setCurrentWorkspaceDetail(updatedWorkspace);
+  };
+
   /** 編集成功時のハンドラ */
   const handleEditSuccess = async (updatedWorkspace: WorkspaceFullDetailResponse) => {
     // バックエンドから返されたデータでローカルの状態を更新
@@ -457,6 +474,19 @@ export default function WorkspaceDetailClient({
                 >
                   <EditIcon className="w-4 h-4" />
                   <span>編集</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSkills();
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <PsychologyIcon className="w-4 h-4" />
+                  <span>スキル</span>
                 </button>
               </li>
               <li>
@@ -658,6 +688,20 @@ export default function WorkspaceDetailClient({
                   )}
                 </div>
 
+                {/* 必要スキル表示 */}
+                {currentWorkspaceDetail.skills && currentWorkspaceDetail.skills.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold text-base-content/70 mb-2">必要なスキル</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {currentWorkspaceDetail.skills.map((skill) => (
+                        <span key={skill.id} className="badge badge-accent badge-lg">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* メンバー一覧 - WorkspaceMemberList コンポーネントを使用 */}
                 <div className="mt-4">
                   <WorkspaceMemberList
@@ -699,6 +743,13 @@ export default function WorkspaceDetailClient({
             workspaceRole: m.workspaceRole,
             isActive: m.isActive,
           }))}
+          showSkillMatching={true}
+          requiredSkills={
+            currentWorkspaceDetail.skills?.map((s) => ({
+              id: s.id,
+              name: s.name,
+            })) ?? []
+          }
         />
 
         {/* メンバー削除モーダル */}
@@ -751,6 +802,17 @@ export default function WorkspaceDetailClient({
               : null
           }
           genres={genres}
+        />
+
+        {/* ワークスペーススキル編集モーダル */}
+        <EditWorkspaceSkillsModal
+          isOpen={isSkillsModalOpen}
+          onClose={() => {
+            setIsSkillsModalOpen(false);
+          }}
+          onSuccess={handleSkillsSuccess}
+          workspace={currentWorkspaceDetail}
+          skills={skills}
         />
 
         {/* ワークスペース削除モーダル */}

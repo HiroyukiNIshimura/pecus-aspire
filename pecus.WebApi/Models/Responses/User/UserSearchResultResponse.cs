@@ -3,6 +3,22 @@ using Pecus.Libs.DB.Models.Enums;
 namespace Pecus.Models.Responses.User;
 
 /// <summary>
+/// ユーザー検索結果に含まれるスキル情報
+/// </summary>
+public class UserSearchSkillResponse
+{
+    /// <summary>
+    /// スキルID
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// スキル名
+    /// </summary>
+    public required string Name { get; set; }
+}
+
+/// <summary>
 /// ユーザー検索結果レスポンス
 /// </summary>
 /// <remarks>
@@ -35,4 +51,9 @@ public class UserSearchResultResponse
     /// アイデンティティアイコンURL
     /// </summary>
     public string? IdentityIconUrl { get; set; }
+
+    /// <summary>
+    /// ユーザーが持つスキル一覧
+    /// </summary>
+    public List<UserSearchSkillResponse> Skills { get; set; } = [];
 }

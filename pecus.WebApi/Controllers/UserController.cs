@@ -67,6 +67,15 @@ public class UserController : BaseSecureController
                 email: u.Email,
                 avatarPath: u.UserAvatarPath
             ),
+            Skills = u.UserSkills
+                .Where(us => us.Skill != null && us.Skill.IsActive)
+                .Select(us => new UserSearchSkillResponse
+                {
+                    Id = us.Skill!.Id,
+                    Name = us.Skill.Name,
+                })
+                .OrderBy(s => s.Name)
+                .ToList(),
         }).ToList();
 
         return TypedResults.Ok(response);

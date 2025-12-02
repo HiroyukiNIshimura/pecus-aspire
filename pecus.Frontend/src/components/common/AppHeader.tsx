@@ -61,7 +61,7 @@ export default function AppHeader({
       <nav className="navbar">
         <div className="navbar-start flex flex-col">
           <a href="/" className="text-3xl font-bold">
-            Pecus
+            Coati
           </a>
           <div className="md:hidden mt-2">
             <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>

@@ -11212,10 +11212,38 @@
             "type": "string",
             "description": "アイデンティティアイコンURL",
             "nullable": true
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSearchSkillResponse"
+            },
+            "description": "ユーザーが持つスキル一覧",
+            "nullable": true
           }
         },
         "additionalProperties": false,
         "description": "ユーザー検索結果レスポンス"
+      },
+      "UserSearchSkillResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "スキル名",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザー検索結果に含まれるスキル情報"
       },
       "UserSkillResponse": {
         "required": [
@@ -11526,6 +11554,14 @@
           },
           "currentUserRole": {
             "$ref": "#/components/schemas/WorkspaceRole"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSkillResponse"
+            },
+            "description": "ワークスペースに設定されているスキル一覧",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -12077,6 +12113,27 @@
           "Owner"
         ],
         "type": "string"
+      },
+      "WorkspaceSkillResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "スキルID",
+            "format": "int32"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "スキル名"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペーススキル情報"
       },
       "WorkspaceStatistics": {
         "required": [

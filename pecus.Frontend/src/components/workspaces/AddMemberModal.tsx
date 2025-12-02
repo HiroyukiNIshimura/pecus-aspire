@@ -1,10 +1,34 @@
 'use client';
 
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+
+/**
+ * スキルマッチング用のスキル情報
+ */
+export interface SkillItem {
+  id: number;
+  name: string;
+}
+
+/**
+ * スキルマッチング結果
+ */
+interface SkillMatchResult {
+  /** マッチ率（0-100） */
+  matchPercentage: number;
+  /** マッチしたスキル */
+  matchedSkills: SkillItem[];
+  /** 不足しているスキル */
+  missingSkills: SkillItem[];
+  /** ユーザーの追加スキル（ワークスペースでは不要だがユーザーが持っているスキル） */
+  extraSkills: SkillItem[];
+}
 
 interface AddMemberModalProps {
   /** モーダルの表示状態 */
@@ -21,6 +45,10 @@ interface AddMemberModalProps {
     role: WorkspaceRole,
     identityIconUrl: string | null,
   ) => Promise<void>;
+  /** スキルマッチングを表示するかどうか */
+  showSkillMatching?: boolean;
+  /** ワークスペースで必要なスキル一覧（スキルマッチング用） */
+  requiredSkills?: SkillItem[];
 }
 
 /** ロール選択肢 */
@@ -31,12 +59,61 @@ const roleOptions: { value: WorkspaceRole; label: string }[] = [
 ];
 
 /**
+ * スキルマッチング度を計算
+ */
+function calculateSkillMatch(requiredSkills: SkillItem[], userSkills: SkillItem[]): SkillMatchResult {
+  const requiredIds = new Set(requiredSkills.map((s) => s.id));
+  const userIds = new Set(userSkills.map((s) => s.id));
+
+  const matchedSkills = requiredSkills.filter((s) => userIds.has(s.id));
+  const missingSkills = requiredSkills.filter((s) => !userIds.has(s.id));
+  const extraSkills = userSkills.filter((s) => !requiredIds.has(s.id));
+
+  // マッチ率: 必須スキルがない場合は100%とする
+  const matchPercentage =
+    requiredSkills.length === 0 ? 100 : Math.round((matchedSkills.length / requiredSkills.length) * 100);
+
+  return {
+    matchPercentage,
+    matchedSkills,
+    missingSkills,
+    extraSkills,
+  };
+}
+
+/**
+ * マッチ率に応じた色クラスを取得
+ */
+function getMatchColor(percentage: number): string {
+  if (percentage >= 80) return 'text-success';
+  if (percentage >= 50) return 'text-warning';
+  return 'text-error';
+}
+
+/**
+ * マッチ率に応じたプログレスバーの色クラスを取得
+ */
+function getProgressColor(percentage: number): string {
+  if (percentage >= 80) return 'progress-success';
+  if (percentage >= 50) return 'progress-warning';
+  return 'progress-error';
+}
+
+/**
  * メンバー追加モーダル
  * - サーバーサイド検索（デバウンス付き）
  * - ロール選択
+ * - スキルマッチング表示（オプション）
  * - 追加確認
  */
-export default function AddMemberModal({ isOpen, existingMembers, onClose, onConfirm }: AddMemberModalProps) {
+export default function AddMemberModal({
+  isOpen,
+  existingMembers,
+  onClose,
+  onConfirm,
+  showSkillMatching = false,
+  requiredSkills = [],
+}: AddMemberModalProps) {
   // 検索状態
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResultResponse[]>([]);
@@ -55,6 +132,19 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
     () => searchResults.filter((u) => !existingMemberIds.has(u.id!)),
     [searchResults, existingMemberIds],
   );
+
+  // スキルマッチング結果を計算
+  const skillMatchResult = useMemo(() => {
+    if (!showSkillMatching || !selectedUser) return null;
+
+    // ユーザーのスキルを SkillItem 形式に変換
+    const userSkills: SkillItem[] = (selectedUser.skills || []).map((s) => ({
+      id: s.id!,
+      name: s.name!,
+    }));
+
+    return calculateSkillMatch(requiredSkills, userSkills);
+  }, [showSkillMatching, selectedUser, requiredSkills]);
 
   // デバウンス付き検索
   const performSearch = useCallback(async (query: string) => {
@@ -169,6 +259,97 @@ export default function AddMemberModal({ isOpen, existingMembers, onClose, onCon
                 </svg>
               </button>
             </div>
+
+            {/* スキルマッチング表示 */}
+            {showSkillMatching && skillMatchResult && requiredSkills.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-base-300">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold">スキルマッチング</span>
+                  <span className={`text-lg font-bold ${getMatchColor(skillMatchResult.matchPercentage)}`}>
+                    {skillMatchResult.matchPercentage}%
+                  </span>
+                </div>
+
+                {/* プログレスバー */}
+                <progress
+                  className={`progress ${getProgressColor(skillMatchResult.matchPercentage)} w-full h-2`}
+                  value={skillMatchResult.matchPercentage}
+                  max="100"
+                />
+
+                {/* マッチしたスキル */}
+                {skillMatchResult.matchedSkills.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-1 text-xs text-success mb-1">
+                      <CheckCircleIcon className="w-3 h-3" />
+                      <span>マッチしたスキル ({skillMatchResult.matchedSkills.length})</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {skillMatchResult.matchedSkills.map((skill) => (
+                        <span key={skill.id} className="badge badge-success badge-sm">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 不足しているスキル */}
+                {skillMatchResult.missingSkills.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-1 text-xs text-error mb-1">
+                      <HighlightOffIcon className="w-3 h-3" />
+                      <span>不足しているスキル ({skillMatchResult.missingSkills.length})</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {skillMatchResult.missingSkills.map((skill) => (
+                        <span key={skill.id} className="badge badge-error badge-outline badge-sm">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ユーザーの追加スキル */}
+                {skillMatchResult.extraSkills.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-xs text-base-content/60 mb-1">
+                      その他のスキル ({skillMatchResult.extraSkills.length})
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {skillMatchResult.extraSkills.map((skill) => (
+                        <span key={skill.id} className="badge badge-ghost badge-sm">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* スキルマッチング: 必須スキルが設定されていない場合 */}
+            {showSkillMatching && requiredSkills.length === 0 && (
+              <div className="mt-4 pt-4 border-t border-base-300">
+                <div className="text-sm text-base-content/60 italic">
+                  このワークスペースには必要スキルが設定されていません
+                </div>
+                {/* ユーザーのスキルを表示 */}
+                {selectedUser.skills && selectedUser.skills.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs text-base-content/60 mb-1">ユーザーのスキル</div>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedUser.skills.map((skill) => (
+                        <span key={skill.id} className="badge badge-accent badge-sm">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ロール選択 */}
             <div className="form-control mt-4">

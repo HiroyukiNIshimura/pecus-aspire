@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
 import type { WorkspaceRole } from './WorkspaceRole';
+import type { WorkspaceSkillResponse } from './WorkspaceSkillResponse';
 /**
  * ワークスペース詳細情報（一般ユーザー用）
  */
@@ -56,6 +57,10 @@ export type WorkspaceFullDetailResponse = {
      */
     isActive?: boolean;
     currentUserRole?: WorkspaceRole;
+    /**
+     * ワークスペースに設定されているスキル一覧
+     */
+    skills?: Array<WorkspaceSkillResponse> | null;
     /**
      * 楽観的ロック用のRowVersion
      */

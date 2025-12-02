@@ -32,6 +32,8 @@ interface MultiSelectDropdownProps {
   badgeColor?: 'primary' | 'secondary' | 'accent' | 'info' | 'success' | 'warning' | 'error';
   /** 変更検知メッセージ（変更がある場合に表示） */
   changeMessage?: string;
+  /** 初期表示時にドロップダウンを開いた状態にする */
+  defaultOpen?: boolean;
 }
 
 /**
@@ -64,6 +66,7 @@ export default function MultiSelectDropdown({
   emptyMessage = '利用可能なアイテムがありません',
   badgeColor = 'primary',
   changeMessage,
+  defaultOpen = false,
 }: MultiSelectDropdownProps) {
   /**
    * アイテムの選択状態をトグル
@@ -114,7 +117,7 @@ export default function MultiSelectDropdown({
         </span>
       </div>
 
-      <details className="dropdown w-full group">
+      <details className="dropdown w-full group" open={defaultOpen}>
         <summary className={`btn btn-outline w-full justify-between ${disabled ? 'btn-disabled' : ''}`}>
           <span className={selectedIds.length === 0 ? 'text-base-content/50' : ''}>{getSelectionText()}</span>
           {/* シェブロンアイコン（開閉状態で回転） */}

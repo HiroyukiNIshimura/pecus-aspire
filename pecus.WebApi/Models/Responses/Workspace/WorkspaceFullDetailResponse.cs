@@ -87,6 +87,11 @@ public class WorkspaceFullDetailResponse : IConflictModel
     public WorkspaceRole? CurrentUserRole { get; set; }
 
     /// <summary>
+    /// ワークスペースに設定されているスキル一覧
+    /// </summary>
+    public List<WorkspaceSkillResponse> Skills { get; set; } = [];
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]

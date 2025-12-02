@@ -8,6 +8,7 @@ import {
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  SuccessResponse,
   WorkspaceDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
@@ -280,5 +281,49 @@ export async function updateMemberRoleInWorkspace(
     }
 
     return parseErrorResponse(error, 'ロールの変更に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ワークスペースのスキルを設定（Owner権限が必要）
+ * 既存のスキルを洗い替えします（指定されたスキル以外は削除されます）
+ */
+export async function setWorkspaceSkills(
+  workspaceId: number,
+  skillIds: number[],
+  rowVersion: number,
+): Promise<ApiResponse<SuccessResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.putApiWorkspacesSkills(workspaceId, {
+      skillIds,
+      rowVersion,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to set workspace skills:', error);
+
+    // 競合エラー（409 Conflict）
+    const concurrency = detectConcurrencyError(error);
+    if (concurrency) {
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrency.message || '別のユーザーが同時に更新しました。ページを再読み込みしてください。',
+        latest: { type: 'workspace', data: concurrency.payload.current as WorkspaceDetailResponse },
+      };
+    }
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'スキルの設定に失敗しました');
   }
 }

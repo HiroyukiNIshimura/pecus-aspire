@@ -110,6 +110,7 @@ export type { UserDetailResponseUserStatisticsPagedResponse } from './models/Use
 export type { UserItem } from './models/UserItem';
 export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { UserSearchResultResponse } from './models/UserSearchResultResponse';
+export type { UserSearchSkillResponse } from './models/UserSearchSkillResponse';
 export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
@@ -126,6 +127,7 @@ export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
 export type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from './models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 export type { WorkspaceRole } from './models/WorkspaceRole';
+export type { WorkspaceSkillResponse } from './models/WorkspaceSkillResponse';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';
