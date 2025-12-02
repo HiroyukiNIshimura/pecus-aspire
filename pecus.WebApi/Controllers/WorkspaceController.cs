@@ -93,8 +93,8 @@ public class WorkspaceController : BaseSecureController
             updatedByUserId: CurrentUserId
         );
 
-        // 更新後のワークスペース詳細情報を取得
-        var response = await _workspaceService.GetWorkspaceDetailAsync(id);
+        // 更新後のワークスペース詳細情報を取得（currentUserIdを渡してCurrentUserRoleを設定）
+        var response = await _workspaceService.GetWorkspaceDetailAsync(id, CurrentUserId);
 
         return TypedResults.Ok(response);
     }

@@ -271,17 +271,8 @@ export default function WorkspaceDetailClient({
 
   /** 編集成功時のハンドラ */
   const handleEditSuccess = async (updatedWorkspace: WorkspaceFullDetailResponse) => {
-    // ローカルの状態を更新（更新されたフィールドをマージ、currentUserRole などは維持）
-    setCurrentWorkspaceDetail((prev) => ({
-      ...prev,
-      ...updatedWorkspace,
-      // currentUserRole は更新レスポンスに含まれない可能性があるため、既存の値を維持
-      currentUserRole: updatedWorkspace.currentUserRole ?? prev.currentUserRole,
-      // members も既存の値を維持（更新レスポンスに含まれない場合）
-      members: updatedWorkspace.members ?? prev.members,
-      // owner も既存の値を維持
-      owner: updatedWorkspace.owner ?? prev.owner,
-    }));
+    // バックエンドから返されたデータでローカルの状態を更新
+    setCurrentWorkspaceDetail(updatedWorkspace);
 
     // バックエンドからワークスペースリストを再取得（WorkspaceSwitcher のドロップダウンに反映）
     const result = await getMyWorkspaces();
@@ -584,21 +575,33 @@ export default function WorkspaceDetailClient({
 
                 {/* メタ情報（4列） */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 py-4 border-y border-base-300 text-sm">
+                  {/* ジャンル */}
+                  {currentWorkspaceDetail.genreName && (
+                    <div>
+                      <span className="text-xs text-base-content/70">ジャンル</span>
+                      <p className="font-semibold flex items-center gap-2">
+                        {currentWorkspaceDetail.genreIcon && (
+                          <span className="text-xl">{currentWorkspaceDetail.genreIcon}</span>
+                        )}
+                        {currentWorkspaceDetail.genreName}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* メンバー数 */}
+                  <div>
+                    <span className="text-xs text-base-content/70">メンバー数</span>
+                    <p className="font-semibold flex items-center gap-2">
+                      <PersonIcon className="w-4 h-4" />
+                      {members.length}
+                    </p>
+                  </div>
+
                   {/* ステータス */}
                   <div>
                     <span className="text-xs text-base-content/70">ステータス</span>
                     <p className="font-semibold">{currentWorkspaceDetail.isActive ? 'アクティブ' : '非アクティブ'}</p>
                   </div>
-
-                  {/* 作成日時 */}
-                  {currentWorkspaceDetail.createdAt && (
-                    <div>
-                      <span className="text-xs text-base-content/70">作成日時</span>
-                      <p className="font-semibold">
-                        {new Date(currentWorkspaceDetail.createdAt).toLocaleString('ja-JP')}
-                      </p>
-                    </div>
-                  )}
 
                   {/* オーナー */}
                   {currentWorkspaceDetail.owner?.userName && (
@@ -617,34 +620,12 @@ export default function WorkspaceDetailClient({
                     </div>
                   )}
 
-                  {/* メンバー数 */}
-                  <div>
-                    <span className="text-xs text-base-content/70">メンバー数</span>
-                    <p className="font-semibold flex items-center gap-2">
-                      <PersonIcon className="w-4 h-4" />
-                      {members.length}
-                    </p>
-                  </div>
-
-                  {/* ジャンル */}
-                  {currentWorkspaceDetail.genreName && (
+                  {/* 作成日時 */}
+                  {currentWorkspaceDetail.createdAt && (
                     <div>
-                      <span className="text-xs text-base-content/70">ジャンル</span>
-                      <p className="font-semibold flex items-center gap-2">
-                        {currentWorkspaceDetail.genreIcon && (
-                          <span className="text-xl">{currentWorkspaceDetail.genreIcon}</span>
-                        )}
-                        {currentWorkspaceDetail.genreName}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* 更新日時 */}
-                  {currentWorkspaceDetail.updatedAt && (
-                    <div>
-                      <span className="text-xs text-base-content/70">更新日時</span>
+                      <span className="text-xs text-base-content/70">作成日時</span>
                       <p className="font-semibold">
-                        {new Date(currentWorkspaceDetail.updatedAt).toLocaleString('ja-JP')}
+                        {new Date(currentWorkspaceDetail.createdAt).toLocaleString('ja-JP')}
                       </p>
                     </div>
                   )}
@@ -663,6 +644,16 @@ export default function WorkspaceDetailClient({
                         )}
                         <p className="font-semibold truncate">{currentWorkspaceDetail.updatedBy.userName}</p>
                       </div>
+                    </div>
+                  )}
+
+                  {/* 更新日時 */}
+                  {currentWorkspaceDetail.updatedAt && (
+                    <div>
+                      <span className="text-xs text-base-content/70">更新日時</span>
+                      <p className="font-semibold">
+                        {new Date(currentWorkspaceDetail.updatedAt).toLocaleString('ja-JP')}
+                      </p>
                     </div>
                   )}
                 </div>
