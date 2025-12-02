@@ -56,7 +56,47 @@ public class DatabaseSeeder
             await SeedDevelopmentDataAsync();
         }
 
+        // pgroonga インデックスを再構築（シードデータ投入後に必須）
+        await ReindexPgroongaAsync();
+
         _logger.LogInformation("Database seeding completed successfully");
+    }
+
+    /// <summary>
+    /// pgroonga インデックスを再構築
+    /// </summary>
+    /// <remarks>
+    /// シードデータ投入後に pgroonga インデックスを再構築することで、
+    /// 新しく追加されたデータが検索対象に含まれるようになります。
+    /// </remarks>
+    private async Task ReindexPgroongaAsync()
+    {
+        _logger.LogInformation("Rebuilding pgroonga indexes...");
+
+        try
+        {
+            // Users テーブルの pgroonga インデックスを再構築
+            await _context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
+            );
+
+            // WorkspaceItems テーブルの pgroonga インデックスを再構築
+            await _context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
+            );
+
+            // Skills テーブルの pgroonga インデックスを再構築
+            await _context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
+            );
+
+            _logger.LogInformation("pgroonga indexes rebuilt successfully");
+        }
+        catch (Exception ex)
+        {
+            // REINDEX が失敗してもシード処理は継続（pgroonga が利用できない環境を考慮）
+            _logger.LogWarning(ex, "Failed to rebuild pgroonga indexes. Search may not work correctly until indexes are rebuilt.");
+        }
     }
 
     /// <summary>

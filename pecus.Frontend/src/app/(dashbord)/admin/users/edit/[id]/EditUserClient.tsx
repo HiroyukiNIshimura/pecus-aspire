@@ -247,6 +247,34 @@ export default function EditUserClient({
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
 
+                  {/* スキル編集 */}
+                  <div className="divider my-4"></div>
+                  <MultiSelectDropdown
+                    label="スキル"
+                    items={availableSkills}
+                    selectedIds={selectedSkillIds}
+                    onSelectionChange={setSelectedSkillIds}
+                    disabled={isSubmitting}
+                    placeholder="スキルを選択してください"
+                    emptyMessage="利用可能なスキルがありません"
+                    badgeColor="primary"
+                    changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
+                  />
+
+                  {/* ロール編集 */}
+                  <div className="divider my-4"></div>
+                  <MultiSelectDropdown
+                    label="ロール"
+                    items={availableRoles}
+                    selectedIds={selectedRoleIds}
+                    onSelectionChange={setSelectedRoleIds}
+                    disabled={isSubmitting}
+                    placeholder="ロールを選択してください"
+                    emptyMessage="利用可能なロールがありません"
+                    badgeColor="secondary"
+                    changeMessage={rolesChanged ? '✓ ロールが変更されています' : undefined}
+                  />
+
                   {/* アクティブ状態 */}
                   <div className="divider my-2"></div>
                   <div className="form-control">
@@ -276,34 +304,6 @@ export default function EditUserClient({
                       </div>
                     )}
                   </div>
-
-                  {/* スキル編集 */}
-                  <div className="divider my-4"></div>
-                  <MultiSelectDropdown
-                    label="スキル"
-                    items={availableSkills}
-                    selectedIds={selectedSkillIds}
-                    onSelectionChange={setSelectedSkillIds}
-                    disabled={isSubmitting}
-                    placeholder="スキルを選択してください"
-                    emptyMessage="利用可能なスキルがありません"
-                    badgeColor="primary"
-                    changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
-                  />
-
-                  {/* ロール編集 */}
-                  <div className="divider my-4"></div>
-                  <MultiSelectDropdown
-                    label="ロール"
-                    items={availableRoles}
-                    selectedIds={selectedRoleIds}
-                    onSelectionChange={setSelectedRoleIds}
-                    disabled={isSubmitting}
-                    placeholder="ロールを選択してください"
-                    emptyMessage="利用可能なロールがありません"
-                    badgeColor="secondary"
-                    changeMessage={rolesChanged ? '✓ ロールが変更されています' : undefined}
-                  />
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6 gap-2">

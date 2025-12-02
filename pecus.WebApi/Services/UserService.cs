@@ -826,15 +826,22 @@ public class UserService
         // pgroonga のあいまい検索を使用
         // &@~ 演算子：類似検索（タイポ許容）
         // ARRAY[Username, Email] @@ query：複数カラムに対する全文検索
+        // スキル名での検索もサポート（UserSkills 経由で Skills.Name を検索）
         // 注意: xmin は PostgreSQL のシステムカラムのため、SELECT * では取得されない
         //       EF Core の RowVersion プロパティ用に明示的に xmin を SELECT する
         var users = await _context.Users
             .FromSqlInterpolated($@"
-                SELECT *, xmin FROM ""Users""
-                WHERE ""OrganizationId"" = {organizationId}
-                  AND ""IsActive"" = true
-                  AND ARRAY[""Username"", ""Email""] &@~ {searchQuery}
-                ORDER BY pgroonga_score(tableoid, ctid) DESC
+                SELECT DISTINCT u.*, u.xmin
+                FROM ""Users"" u
+                LEFT JOIN ""UserSkills"" us ON u.""Id"" = us.""UserId""
+                LEFT JOIN ""Skills"" s ON us.""SkillId"" = s.""Id"" AND s.""IsActive"" = true
+                WHERE u.""OrganizationId"" = {organizationId}
+                  AND u.""IsActive"" = true
+                  AND (
+                    ARRAY[u.""Username"", u.""Email""] &@~ {searchQuery}
+                    OR s.""Name"" &@~ {searchQuery}
+                  )
+                ORDER BY pgroonga_score(u.tableoid, u.ctid) DESC
                 LIMIT {limit}
             ")
             .ToListAsync();

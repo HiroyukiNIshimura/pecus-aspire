@@ -117,6 +117,14 @@ internal class DbInitializer(
             cancellationToken
         );
 
+        // Skills テーブルに pgroonga インデックスを作成（ユーザー検索時のスキル名検索用）
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS idx_skills_pgroonga
+              ON ""Skills""
+              USING pgroonga (""Name"") WITH (tokenizer=""TokenMecab"");",
+            cancellationToken
+        );
+
         logger.LogInformation("pgroonga extension and indexes enabled successfully");
     }
 }

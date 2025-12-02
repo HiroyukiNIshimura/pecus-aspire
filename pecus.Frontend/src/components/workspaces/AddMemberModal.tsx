@@ -380,13 +380,15 @@ export default function AddMemberModal({
               </label>
               <DebouncedSearchInput
                 onSearch={performSearch}
-                placeholder="名前またはメールアドレスで検索..."
+                placeholder="名前、メールアドレス、またはスキルで検索..."
                 debounceMs={300}
                 size="md"
                 isLoading={isSearching}
               />
               <div className="label">
-                <span className="label-text-alt text-base-content/60">2文字以上入力すると検索します</span>
+                <span className="label-text-alt text-base-content/60">
+                  2文字以上入力すると検索します（スキル名でも検索できます）
+                </span>
               </div>
             </div>
 
@@ -394,7 +396,7 @@ export default function AddMemberModal({
             <div className="flex-1 overflow-y-auto border border-base-300 rounded-lg min-h-[200px] max-h-[300px]">
               {!searchQuery.trim() ? (
                 <div className="flex items-center justify-center h-full text-base-content/50">
-                  ユーザー名またはメールアドレスを入力してください
+                  名前、メールアドレス、またはスキル名を入力してください
                 </div>
               ) : isSearching ? (
                 <div className="flex items-center justify-center h-full">
@@ -411,20 +413,33 @@ export default function AddMemberModal({
                     <li key={user.id}>
                       <button
                         type="button"
-                        className="w-full flex items-center gap-3 p-3 hover:bg-base-200 transition-colors text-left"
+                        className="w-full flex items-start gap-3 p-3 hover:bg-base-200 transition-colors text-left"
                         onClick={() => handleSelectUser(user)}
                       >
                         {/* アバター */}
                         <img
                           src={getDisplayIconUrl(user.identityIconUrl)}
                           alt={user.username || 'User Avatar'}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                          className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-0.5"
                         />
 
                         {/* ユーザー情報 */}
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold truncate">{user.username || '(名前なし)'}</p>
                           <p className="text-sm text-base-content/70 truncate">{user.email}</p>
+                          {/* スキル表示 */}
+                          {user.skills && user.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {user.skills.slice(0, 5).map((skill) => (
+                                <span key={skill.id} className="badge badge-accent badge-xs">
+                                  {skill.name}
+                                </span>
+                              ))}
+                              {user.skills.length > 5 && (
+                                <span className="badge badge-ghost badge-xs">+{user.skills.length - 5}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </button>
                     </li>
