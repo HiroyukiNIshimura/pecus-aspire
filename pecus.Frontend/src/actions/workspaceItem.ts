@@ -21,14 +21,18 @@ import { serverError } from './types';
 
 /**
  * Server Action: マイアイテム一覧を取得（ワークスペース横断）
+ * @param page ページ番号
+ * @param relation 関連タイプ（All, Owner, Assignee, Committer, Pinned）
+ * @param includeArchived アーカイブ済みアイテムを含めるかどうか（true: アーカイブ済みのみ、false/undefined: アーカイブ除外）
  */
 export async function fetchMyItems(
   page: number = 1,
   relation?: MyItemRelationType,
+  includeArchived?: boolean,
 ): Promise<ApiResponse<WorkspaceItemDetailResponsePagedResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.myWorkspaceItem.getApiMyWorkspaceItems(page, relation);
+    const response = await api.myWorkspaceItem.getApiMyWorkspaceItems(page, relation, includeArchived);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);

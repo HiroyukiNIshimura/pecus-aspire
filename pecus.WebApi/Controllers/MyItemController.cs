@@ -53,7 +53,8 @@ public class MyItemController : BaseSecureController
             userId: CurrentUserId,
             relation: request.Relation,
             page: request.Page,
-            pageSize: pageSize
+            pageSize: pageSize,
+            includeArchived: request.IncludeArchived
         );
 
         var itemResponses = items

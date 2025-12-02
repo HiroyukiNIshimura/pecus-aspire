@@ -4412,6 +4412,14 @@
             "schema": {
               "$ref": "#/components/schemas/MyItemRelationType"
             }
+          },
+          {
+            "name": "IncludeArchived",
+            "in": "query",
+            "description": "アーカイブ済みアイテムを含めるかどうか（デフォルト: false）\r\ntrue の場合、アーカイブ済みアイテムのみ表示\r\nfalse または未指定の場合、アーカイブ済みアイテムを除外",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {

@@ -637,11 +637,13 @@ public class WorkspaceItemService
     /// <param name="relation">関連タイプ（All, Owner, Assignee, Committer, Pinned）</param>
     /// <param name="page">ページ番号（1から開始）</param>
     /// <param name="pageSize">ページサイズ</param>
+    /// <param name="includeArchived">アーカイブ済みアイテムを含めるかどうか（trueの場合はアーカイブ済みのみ表示、デフォルト: null = アーカイブ除外）</param>
     public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetMyItemsAsync(
         int userId,
         MyItemRelationType? relation = null,
         int page = 1,
-        int pageSize = 20
+        int pageSize = 20,
+        bool? includeArchived = null
     )
     {
         var relationType = relation ?? MyItemRelationType.All;
@@ -676,8 +678,17 @@ public class WorkspaceItemService
         // 下書きは除外（自分がオーナーの下書きのみ表示）
         query = query.Where(wi => !wi.IsDraft || wi.OwnerId == userId);
 
-        // アーカイブ済みは除外
-        query = query.Where(wi => !wi.IsArchived);
+        // アーカイブフィルタ
+        // includeArchived = true の場合、アーカイブ済みのみ表示
+        // includeArchived = false または null の場合、アーカイブ済みを除外
+        if (includeArchived == true)
+        {
+            query = query.Where(wi => wi.IsArchived);
+        }
+        else
+        {
+            query = query.Where(wi => !wi.IsArchived);
+        }
 
         var totalCount = await query.CountAsync();
 

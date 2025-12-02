@@ -18,4 +18,11 @@ public class GetMyItemsRequest
     /// 関連タイプ（All, Owner, Assignee, Committer, Pinned）
     /// </summary>
     public MyItemRelationType? Relation { get; set; }
+
+    /// <summary>
+    /// アーカイブ済みアイテムを含めるかどうか（デフォルト: false）
+    /// true の場合、アーカイブ済みアイテムのみ表示
+    /// false または未指定の場合、アーカイブ済みアイテムを除外
+    /// </summary>
+    public bool? IncludeArchived { get; set; }
 }

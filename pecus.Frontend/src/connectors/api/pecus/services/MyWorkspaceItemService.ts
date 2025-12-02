@@ -13,12 +13,16 @@ export class MyWorkspaceItemService {
      * ログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得
      * @param page ページ番号（1から開始）
      * @param relation 関連タイプ（All, Owner, Assignee, Committer, Pinned）
+     * @param includeArchived アーカイブ済みアイテムを含めるかどうか（デフォルト: false）
+     * true の場合、アーカイブ済みアイテムのみ表示
+     * false または未指定の場合、アーカイブ済みアイテムを除外
      * @returns WorkspaceItemDetailResponsePagedResponse OK
      * @throws ApiError
      */
     public static getApiMyWorkspaceItems(
         page?: number,
         relation?: MyItemRelationType,
+        includeArchived?: boolean,
     ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -26,6 +30,7 @@ export class MyWorkspaceItemService {
             query: {
                 'Page': page,
                 'Relation': relation,
+                'IncludeArchived': includeArchived,
             },
             errors: {
                 401: `Unauthorized`,

@@ -1,5 +1,6 @@
 'use client';
 
+import ArchiveIcon from '@mui/icons-material/Archive';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,6 +50,8 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
 
   // フィルター状態
   const [activeFilter, setActiveFilter] = useState<MyItemRelationType | 'All'>('All');
+  // アーカイブ表示状態（デフォルト: アーカイブを除外）
+  const [showArchived, setShowArchived] = useState(false);
 
   // notify の最新値を参照するための ref
   const notifyRef = useRef(notify);
@@ -61,7 +64,8 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
     try {
       const nextPage = currentPage + 1;
       const relationParam = activeFilter === 'All' ? undefined : activeFilter;
-      const result = await fetchMyItems(nextPage, relationParam);
+      const includeArchivedParam = showArchived ? true : undefined;
+      const result = await fetchMyItems(nextPage, relationParam, includeArchivedParam);
 
       if (result.success) {
         setItems((prev) => [...prev, ...(result.data.data || [])]);
@@ -75,14 +79,41 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
       console.error('Failed to load more items:', err);
       notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
     }
-  }, [currentPage, activeFilter]);
+  }, [currentPage, activeFilter, showArchived]);
 
   // フィルター変更ハンドラー（リストをリセットして1ページ目から取得）
-  const handleFilterChange = useCallback(async (filter: MyItemRelationType | 'All') => {
-    setActiveFilter(filter);
+  const handleFilterChange = useCallback(
+    async (filter: MyItemRelationType | 'All') => {
+      setActiveFilter(filter);
+      try {
+        const relationParam = filter === 'All' ? undefined : filter;
+        const includeArchivedParam = showArchived ? true : undefined;
+        const result = await fetchMyItems(1, relationParam, includeArchivedParam);
+
+        if (result.success) {
+          setItems(result.data.data || []);
+          setCurrentPage(result.data.currentPage || 1);
+          setTotalPages(result.data.totalPages || 1);
+          setTotalCount(result.data.totalCount || 0);
+        } else {
+          notifyRef.current.error(result.message || 'アイテムの取得に失敗しました。');
+        }
+      } catch (err) {
+        console.error('Failed to fetch my items:', err);
+        notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
+      }
+    },
+    [showArchived],
+  );
+
+  // アーカイブトグルハンドラー
+  const handleArchiveToggle = useCallback(async () => {
+    const newShowArchived = !showArchived;
+    setShowArchived(newShowArchived);
     try {
-      const relationParam = filter === 'All' ? undefined : filter;
-      const result = await fetchMyItems(1, relationParam);
+      const relationParam = activeFilter === 'All' ? undefined : activeFilter;
+      const includeArchivedParam = newShowArchived ? true : undefined;
+      const result = await fetchMyItems(1, relationParam, includeArchivedParam);
 
       if (result.success) {
         setItems(result.data.data || []);
@@ -96,7 +127,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
       console.error('Failed to fetch my items:', err);
       notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
     }
-  }, []);
+  }, [showArchived, activeFilter]);
 
   // 初期エラー表示
   useEffect(() => {
@@ -139,18 +170,34 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
           {/* フィルタータブ */}
           <div className="card bg-base-200 shadow-md mb-6">
             <div className="card-body p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                {filterTabs.map((tab) => (
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                {/* 関連タイプフィルター */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {filterTabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => handleFilterChange(tab.key)}
+                      className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-secondary'}`}
+                    >
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* アーカイブトグル（別条件として分離） */}
+                <div className="flex items-center gap-2">
                   <button
-                    key={tab.key}
                     type="button"
-                    onClick={() => handleFilterChange(tab.key)}
-                    className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={handleArchiveToggle}
+                    className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-ghost'}`}
+                    title={showArchived ? 'アーカイブ済みを表示中' : 'アーカイブ済みを表示'}
                   >
-                    {tab.icon}
-                    <span>{tab.label}</span>
+                    <ArchiveIcon fontSize="small" />
+                    <span>アーカイブ</span>
                   </button>
-                ))}
+                </div>
               </div>
             </div>
           </div>
@@ -163,11 +210,14 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                   <h2 className="card-title text-lg">アイテム一覧</h2>
                   <span className="badge badge-primary">{totalCount}</span>
                 </div>
-                {activeFilter !== 'All' && (
-                  <span className="badge badge-secondary badge-outline">
-                    {filterTabs.find((t) => t.key === activeFilter)?.label}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {showArchived && <span className="badge badge-warning badge-outline">アーカイブ済み</span>}
+                  {activeFilter !== 'All' && (
+                    <span className="badge badge-secondary badge-outline">
+                      {filterTabs.find((t) => t.key === activeFilter)?.label}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {items.length === 0 ? (
@@ -215,6 +265,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
+                                {item.isArchived && <span className="badge badge-neutral badge-xs">アーカイブ</span>}
                                 {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
                                 {item.isPinned && <PushPinIcon className="w-4 h-4 text-info" />}
                               </div>
