@@ -4387,10 +4387,10 @@
         }
       }
     },
-    "/api/users/me/items": {
+    "/api/my/workspace-items": {
       "get": {
         "tags": [
-          "MyItem"
+          "MyWorkspaceItem"
         ],
         "summary": "マイアイテム一覧を取得\r\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
         "parameters": [
@@ -11717,6 +11717,11 @@
             "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "workspaceName": {
             "type": "string",

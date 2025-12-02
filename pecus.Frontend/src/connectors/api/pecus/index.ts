@@ -149,7 +149,7 @@ export { EntranceOrganizationService } from './services/EntranceOrganizationServ
 export { EntrancePasswordService } from './services/EntrancePasswordService';
 export { FileService } from './services/FileService';
 export { MasterService } from './services/MasterService';
-export { MyItemService } from './services/MyItemService';
+export { MyWorkspaceItemService } from './services/MyWorkspaceItemService';
 export { ProfileService } from './services/ProfileService';
 export { ProfileDeviceService } from './services/ProfileDeviceService';
 export { ProfileEmailService } from './services/ProfileEmailService';

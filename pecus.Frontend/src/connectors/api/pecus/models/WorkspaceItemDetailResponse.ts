@@ -18,6 +18,10 @@ export type WorkspaceItemDetailResponse = {
      */
     workspaceId?: number;
     /**
+     * ワークスペースコード
+     */
+    workspaceCode?: string | null;
+    /**
      * ワークスペース名
      */
     workspaceName?: string | null;

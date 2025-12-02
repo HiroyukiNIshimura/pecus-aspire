@@ -7,7 +7,7 @@ import type { WorkspaceItemDetailResponsePagedResponse } from '../models/Workspa
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class MyItemService {
+export class MyWorkspaceItemService {
     /**
      * マイアイテム一覧を取得
      * ログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得
@@ -16,13 +16,13 @@ export class MyItemService {
      * @returns WorkspaceItemDetailResponsePagedResponse OK
      * @throws ApiError
      */
-    public static getApiUsersMeItems(
+    public static getApiMyWorkspaceItems(
         page?: number,
         relation?: MyItemRelationType,
     ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/items',
+            url: '/api/my/workspace-items',
             query: {
                 'Page': page,
                 'Relation': relation,

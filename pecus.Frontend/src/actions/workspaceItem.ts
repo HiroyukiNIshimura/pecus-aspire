@@ -9,13 +9,32 @@ import {
 } from '@/connectors/api/PecusApiClient';
 import type {
   CreateWorkspaceItemRequest,
+  MyItemRelationType,
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemRequest,
   WorkspaceItemDetailResponse,
+  WorkspaceItemDetailResponsePagedResponse,
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
+
+/**
+ * Server Action: マイアイテム一覧を取得（ワークスペース横断）
+ */
+export async function fetchMyItems(
+  page: number = 1,
+  relation?: MyItemRelationType,
+): Promise<ApiResponse<WorkspaceItemDetailResponsePagedResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.myWorkspaceItem.getApiMyWorkspaceItems(page, relation);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch my items:', error);
+    return parseErrorResponse(error, 'マイアイテムの取得に失敗しました。');
+  }
+}
 
 /**
  * Server Action: 最新のワークスペースアイテムを取得

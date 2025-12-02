@@ -22,6 +22,7 @@ public static class WorkspaceItemResponseHelper
         {
             Id = item.Id,
             WorkspaceId = item.WorkspaceId,
+            WorkspaceCode = item.Workspace?.Code,
             WorkspaceName = item.Workspace?.Name,
             Code = item.Code,
             Subject = item.Subject,

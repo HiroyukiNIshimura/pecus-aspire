@@ -20,6 +20,11 @@ public class WorkspaceItemDetailResponse : IConflictModel
     public int WorkspaceId { get; set; }
 
     /// <summary>
+    /// ワークスペースコード
+    /// </summary>
+    public string? WorkspaceCode { get; set; }
+
+    /// <summary>
     /// ワークスペース名
     /// </summary>
     public string? WorkspaceName { get; set; }
