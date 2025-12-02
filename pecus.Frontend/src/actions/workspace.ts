@@ -10,11 +10,27 @@ import {
 import type {
   WorkspaceDetailResponse,
   WorkspaceFullDetailResponse,
+  WorkspaceListItemResponse,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 import { validationError } from './types';
+
+/**
+ * Server Action: ワークスペースリストを取得（一般ユーザー用）
+ * WorkspaceSwitcher などで使用
+ */
+export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
+    return { success: true, data: response.data || [] };
+  } catch (error) {
+    console.error('Failed to fetch workspaces:', error);
+    return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');
+  }
+}
 
 /**
  * Server Action: ワークスペースを作成（一般ユーザー用）

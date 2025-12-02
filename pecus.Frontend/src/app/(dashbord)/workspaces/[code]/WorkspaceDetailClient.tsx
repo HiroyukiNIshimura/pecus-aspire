@@ -1,14 +1,29 @@
 'use client';
 
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PersonIcon from '@mui/icons-material/Person';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { addMemberToWorkspace, removeMemberFromWorkspace, updateMemberRoleInWorkspace } from '@/actions/workspace';
+import { deleteWorkspace } from '@/actions/deleteWorkspace';
+import {
+  addMemberToWorkspace,
+  getMyWorkspaces,
+  removeMemberFromWorkspace,
+  toggleWorkspaceActive,
+  updateMemberRoleInWorkspace,
+} from '@/actions/workspace';
 import AppHeader from '@/components/common/AppHeader';
+import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type {
+  MasterGenreResponse,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
@@ -17,6 +32,7 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+import EditWorkspaceModal from '../EditWorkspaceModal';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import WorkspaceItemDetail from './WorkspaceItemDetail';
 import type { WorkspaceItemsSidebarHandle } from './WorkspaceItemsSidebar';
@@ -27,6 +43,7 @@ interface WorkspaceDetailClientProps {
   workspaceDetail: WorkspaceFullDetailResponse;
   workspaces: WorkspaceListItemResponse[];
   userInfo: UserInfo | null;
+  genres: MasterGenreResponse[];
 }
 
 export default function WorkspaceDetailClient({
@@ -34,7 +51,9 @@ export default function WorkspaceDetailClient({
   workspaceDetail,
   workspaces,
   userInfo,
+  genres,
 }: WorkspaceDetailClientProps) {
+  const router = useRouter();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
@@ -45,9 +64,18 @@ export default function WorkspaceDetailClient({
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // ===== アクションメニューの状態 =====
+  const [openActionMenu, setOpenActionMenu] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
+
+  // workspaces もローカル状態として管理（WorkspaceSwitcher の更新用）
+  const [currentWorkspaces, setCurrentWorkspaces] = useState<WorkspaceListItemResponse[]>(workspaces);
+
   // ===== メンバー管理の状態 =====
   // ログインユーザーがOwnerかどうか
-  const isOwner = workspaceDetail.currentUserRole === 'Owner';
+  const isOwner = currentWorkspaceDetail.currentUserRole === 'Owner';
 
   // メンバー一覧（状態管理）
   const [members, setMembers] = useState<WorkspaceDetailUserResponse[]>(workspaceDetail.members || []);
@@ -91,6 +119,20 @@ export default function WorkspaceDetailClient({
     // 保存値がない場合はデフォルト値
     setSidebarWidth(256);
   }, []);
+
+  // 外部クリックでアクションメニューを閉じる
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openActionMenu) {
+        setOpenActionMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openActionMenu]);
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 
@@ -214,6 +256,99 @@ export default function WorkspaceDetailClient({
     handleChangeRoleModalClose();
   };
 
+  // ===== ワークスペースアクションメニューのコールバック =====
+
+  /** アクションメニューを開閉 */
+  const handleActionMenuToggle = () => {
+    setOpenActionMenu(!openActionMenu);
+  };
+
+  /** 編集モーダルを開く */
+  const handleEdit = () => {
+    setOpenActionMenu(false);
+    setIsEditModalOpen(true);
+  };
+
+  /** 編集成功時のハンドラ */
+  const handleEditSuccess = async (updatedWorkspace: WorkspaceFullDetailResponse) => {
+    // ローカルの状態を更新（更新されたフィールドをマージ、currentUserRole などは維持）
+    setCurrentWorkspaceDetail((prev) => ({
+      ...prev,
+      ...updatedWorkspace,
+      // currentUserRole は更新レスポンスに含まれない可能性があるため、既存の値を維持
+      currentUserRole: updatedWorkspace.currentUserRole ?? prev.currentUserRole,
+      // members も既存の値を維持（更新レスポンスに含まれない場合）
+      members: updatedWorkspace.members ?? prev.members,
+      // owner も既存の値を維持
+      owner: updatedWorkspace.owner ?? prev.owner,
+    }));
+
+    // バックエンドからワークスペースリストを再取得（WorkspaceSwitcher のドロップダウンに反映）
+    const result = await getMyWorkspaces();
+    if (result.success) {
+      setCurrentWorkspaces(result.data);
+    }
+
+    // 成功通知
+    notify.success('ワークスペースを更新しました。');
+  };
+
+  /** 有効化/無効化を実行 */
+  const handleToggleActive = async () => {
+    setOpenActionMenu(false);
+
+    try {
+      const result = await toggleWorkspaceActive(currentWorkspaceDetail.id, !currentWorkspaceDetail.isActive);
+
+      if (result.success) {
+        // ローカルの状態を更新
+        setCurrentWorkspaceDetail((prev) => ({
+          ...prev,
+          isActive: !prev.isActive,
+        }));
+
+        // バックエンドからワークスペースリストを再取得（WorkspaceSwitcher のドロップダウンに反映）
+        const workspacesResult = await getMyWorkspaces();
+        if (workspacesResult.success) {
+          setCurrentWorkspaces(workspacesResult.data);
+        }
+
+        notify.success(
+          currentWorkspaceDetail.isActive ? 'ワークスペースを無効化しました。' : 'ワークスペースを有効化しました。',
+        );
+      } else {
+        notify.error(result.message || '状態の切り替えに失敗しました。');
+      }
+    } catch (error) {
+      console.error('Toggle active failed:', error);
+      notify.error('状態の切り替えに失敗しました。');
+    }
+  };
+
+  /** 削除モーダルを開く */
+  const handleDelete = () => {
+    setOpenActionMenu(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  /** 削除を実行 */
+  const handleDeleteConfirm = async () => {
+    try {
+      const result = await deleteWorkspace(currentWorkspaceDetail.id);
+
+      if (result.success) {
+        notify.success('ワークスペースを削除しました。');
+        // ワークスペース一覧ページにリダイレクト
+        router.push('/workspaces');
+      } else {
+        notify.error(result.message || 'ワークスペースの削除に失敗しました。');
+      }
+    } catch (error) {
+      console.error('Delete workspace failed:', error);
+      notify.error('ワークスペースの削除に失敗しました。');
+    }
+  };
+
   // ===== ワークスペースアイテム関連のコールバック =====
 
   // ワークスペースHome選択ハンドラ
@@ -289,21 +424,94 @@ export default function WorkspaceDetailClient({
     <div className="flex items-start justify-between gap-2 mb-4">
       <div className="min-w-0 flex-1">
         <h2 className="text-2xl font-bold truncate flex items-center gap-2">
-          {workspaceDetail.genreIcon && (
+          {currentWorkspaceDetail.genreIcon && (
             <img
-              src={`/icons/genres/${workspaceDetail.genreIcon}.svg`}
-              alt={workspaceDetail.genreName || 'ジャンルアイコン'}
+              src={`/icons/genres/${currentWorkspaceDetail.genreIcon}.svg`}
+              alt={currentWorkspaceDetail.genreName || 'ジャンルアイコン'}
               className="w-8 h-8 flex-shrink-0"
             />
           )}
-          <span>{workspaceDetail.name}</span>
+          <span>{currentWorkspaceDetail.name}</span>
         </h2>
-        {workspaceDetail.code && (
+        {currentWorkspaceDetail.code && (
           <code className="text-sm badge badge-ghost badge-md mt-2 truncate max-w-full block">
-            {workspaceDetail.code}
+            {currentWorkspaceDetail.code}
           </code>
         )}
       </div>
+      {/* アクションメニュー - Ownerのみ表示（右寄せ） */}
+      {isOwner && (
+        <div className="relative flex-shrink-0">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleActionMenuToggle();
+            }}
+            aria-label="アクション"
+          >
+            <MoreVertIcon className="w-5 h-5" />
+          </button>
+          {openActionMenu && (
+            <ul className="absolute right-0 top-10 menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-xl border border-base-300">
+              <li>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit();
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <EditIcon className="w-4 h-4" />
+                  <span>編集</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleActive();
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  {currentWorkspaceDetail.isActive ? (
+                    <>
+                      <ToggleOffIcon className="w-4 h-4" />
+                      <span>無効化</span>
+                    </>
+                  ) : (
+                    <>
+                      <ToggleOnIcon className="w-4 h-4" />
+                      <span>有効化</span>
+                    </>
+                  )}
+                </button>
+              </li>
+              {userInfo?.isAdmin && (
+                <>
+                  <div className="divider my-0"></div>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete();
+                      }}
+                      className="flex items-center gap-2 text-error hover:bg-error hover:text-error-content"
+                    >
+                      <DeleteIcon className="w-4 h-4" />
+                      <span>削除</span>
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -326,9 +534,9 @@ export default function WorkspaceDetailClient({
           >
             <WorkspaceItemsSidebar
               ref={sidebarComponentRef}
-              workspaceId={workspaceDetail.id}
+              workspaceId={currentWorkspaceDetail.id}
               currentWorkspaceCode={workspaceCode}
-              workspaces={workspaces}
+              workspaces={currentWorkspaces}
               onHomeSelect={handleHomeSelect}
               onItemSelect={handleItemSelect}
               onCreateNew={handleCreateNew}
@@ -368,9 +576,9 @@ export default function WorkspaceDetailClient({
                 </div>
 
                 {/* 説明 */}
-                {workspaceDetail.description && (
+                {currentWorkspaceDetail.description && (
                   <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap break-words">
-                    {workspaceDetail.description}
+                    {currentWorkspaceDetail.description}
                   </p>
                 )}
 
@@ -379,30 +587,32 @@ export default function WorkspaceDetailClient({
                   {/* ステータス */}
                   <div>
                     <span className="text-xs text-base-content/70">ステータス</span>
-                    <p className="font-semibold">{workspaceDetail.isActive ? 'アクティブ' : '非アクティブ'}</p>
+                    <p className="font-semibold">{currentWorkspaceDetail.isActive ? 'アクティブ' : '非アクティブ'}</p>
                   </div>
 
                   {/* 作成日時 */}
-                  {workspaceDetail.createdAt && (
+                  {currentWorkspaceDetail.createdAt && (
                     <div>
                       <span className="text-xs text-base-content/70">作成日時</span>
-                      <p className="font-semibold">{new Date(workspaceDetail.createdAt).toLocaleString('ja-JP')}</p>
+                      <p className="font-semibold">
+                        {new Date(currentWorkspaceDetail.createdAt).toLocaleString('ja-JP')}
+                      </p>
                     </div>
                   )}
 
                   {/* オーナー */}
-                  {workspaceDetail.owner?.userName && (
+                  {currentWorkspaceDetail.owner?.userName && (
                     <div>
                       <span className="text-xs text-base-content/70">オーナー</span>
                       <div className="flex items-center gap-2 mt-1">
-                        {workspaceDetail.owner.identityIconUrl && (
+                        {currentWorkspaceDetail.owner.identityIconUrl && (
                           <img
-                            src={getDisplayIconUrl(workspaceDetail.owner.identityIconUrl)}
-                            alt={workspaceDetail.owner.userName}
+                            src={getDisplayIconUrl(currentWorkspaceDetail.owner.identityIconUrl)}
+                            alt={currentWorkspaceDetail.owner.userName}
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
                         )}
-                        <p className="font-semibold truncate">{workspaceDetail.owner.userName}</p>
+                        <p className="font-semibold truncate">{currentWorkspaceDetail.owner.userName}</p>
                       </div>
                     </div>
                   )}
@@ -417,37 +627,41 @@ export default function WorkspaceDetailClient({
                   </div>
 
                   {/* ジャンル */}
-                  {workspaceDetail.genreName && (
+                  {currentWorkspaceDetail.genreName && (
                     <div>
                       <span className="text-xs text-base-content/70">ジャンル</span>
                       <p className="font-semibold flex items-center gap-2">
-                        {workspaceDetail.genreIcon && <span className="text-xl">{workspaceDetail.genreIcon}</span>}
-                        {workspaceDetail.genreName}
+                        {currentWorkspaceDetail.genreIcon && (
+                          <span className="text-xl">{currentWorkspaceDetail.genreIcon}</span>
+                        )}
+                        {currentWorkspaceDetail.genreName}
                       </p>
                     </div>
                   )}
 
                   {/* 更新日時 */}
-                  {workspaceDetail.updatedAt && (
+                  {currentWorkspaceDetail.updatedAt && (
                     <div>
                       <span className="text-xs text-base-content/70">更新日時</span>
-                      <p className="font-semibold">{new Date(workspaceDetail.updatedAt).toLocaleString('ja-JP')}</p>
+                      <p className="font-semibold">
+                        {new Date(currentWorkspaceDetail.updatedAt).toLocaleString('ja-JP')}
+                      </p>
                     </div>
                   )}
 
                   {/* 更新者 */}
-                  {workspaceDetail.updatedBy?.userName && (
+                  {currentWorkspaceDetail.updatedBy?.userName && (
                     <div>
                       <span className="text-xs text-base-content/70">更新者</span>
                       <div className="flex items-center gap-2 mt-1">
-                        {workspaceDetail.updatedBy.identityIconUrl && (
+                        {currentWorkspaceDetail.updatedBy.identityIconUrl && (
                           <img
-                            src={getDisplayIconUrl(workspaceDetail.updatedBy.identityIconUrl)}
-                            alt={workspaceDetail.updatedBy.userName}
+                            src={getDisplayIconUrl(currentWorkspaceDetail.updatedBy.identityIconUrl)}
+                            alt={currentWorkspaceDetail.updatedBy.userName}
                             className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                           />
                         )}
-                        <p className="font-semibold truncate">{workspaceDetail.updatedBy.userName}</p>
+                        <p className="font-semibold truncate">{currentWorkspaceDetail.updatedBy.userName}</p>
                       </div>
                     </div>
                   )}
@@ -458,7 +672,7 @@ export default function WorkspaceDetailClient({
                   <WorkspaceMemberList
                     members={members}
                     editable={isOwner}
-                    ownerId={workspaceDetail.owner?.id}
+                    ownerId={currentWorkspaceDetail.owner?.id}
                     onAddMember={isOwner ? handleAddMember : undefined}
                     onRemoveMember={isOwner ? handleRemoveMember : undefined}
                     onChangeRole={isOwner ? handleChangeRole : undefined}
@@ -472,7 +686,7 @@ export default function WorkspaceDetailClient({
           {/* アイテム詳細情報 */}
           {!showWorkspaceDetail && selectedItemId && (
             <WorkspaceItemDetail
-              workspaceId={workspaceDetail.id}
+              workspaceId={currentWorkspaceDetail.id}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
               members={members}
@@ -517,18 +731,61 @@ export default function WorkspaceDetailClient({
 
         {/* 新規アイテム作成モーダル */}
         <CreateWorkspaceItem
-          workspaceId={workspaceDetail.id}
+          workspaceId={currentWorkspaceDetail.id}
           isOpen={isCreateModalOpen}
           onClose={handleCloseCreateModal}
           onCreate={handleCreateComplete}
         />
 
+        {/* ワークスペース編集モーダル */}
+        <EditWorkspaceModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+          }}
+          onSuccess={handleEditSuccess}
+          workspace={
+            currentWorkspaceDetail
+              ? {
+                  id: currentWorkspaceDetail.id,
+                  name: currentWorkspaceDetail.name,
+                  code: currentWorkspaceDetail.code ?? undefined,
+                  description: currentWorkspaceDetail.description ?? undefined,
+                  genreId: currentWorkspaceDetail.genreId ?? undefined,
+                  genreName: currentWorkspaceDetail.genreName ?? undefined,
+                  genreIcon: currentWorkspaceDetail.genreIcon ?? undefined,
+                  isActive: currentWorkspaceDetail.isActive ?? true,
+                  createdAt: currentWorkspaceDetail.createdAt,
+                }
+              : null
+          }
+          genres={genres}
+        />
+
+        {/* ワークスペース削除モーダル */}
+        <DeleteWorkspaceModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+          }}
+          onConfirm={handleDeleteConfirm}
+          workspace={
+            currentWorkspaceDetail
+              ? {
+                  id: currentWorkspaceDetail.id,
+                  name: currentWorkspaceDetail.name,
+                  code: currentWorkspaceDetail.code ?? undefined,
+                }
+              : null
+          }
+        />
+
         {/* アイテム一覧 (スマホ) */}
         <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: '384px' }}>
           <WorkspaceItemsSidebar
-            workspaceId={workspaceDetail.id}
+            workspaceId={currentWorkspaceDetail.id}
             currentWorkspaceCode={workspaceCode}
-            workspaces={workspaces}
+            workspaces={currentWorkspaces}
             onHomeSelect={handleHomeSelect}
             onItemSelect={handleItemSelect}
             onCreateNew={handleCreateNew}

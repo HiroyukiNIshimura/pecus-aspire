@@ -7,6 +7,7 @@ import {
   detect404ValidationError,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  MasterGenreResponse,
   UserDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
@@ -29,6 +30,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
   let userResponse: UserDetailResponse | null = null;
   let workspaceDetail: WorkspaceFullDetailResponse | null = null;
   let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
+  let genres: MasterGenreResponse[] = [];
 
   try {
     const api = createPecusApiClients();
@@ -45,6 +47,15 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       console.warn('Failed to fetch workspaces list:', err);
       // ワークスペース一覧取得失敗時は空配列を渡す
       workspacesList = { data: [] };
+    }
+
+    // ジャンル一覧取得（編集用）
+    try {
+      genres = await api.master.getApiMasterGenres();
+    } catch (err) {
+      console.warn('Failed to fetch genres:', err);
+      // ジャンル一覧取得失敗時は空配列を渡す
+      genres = [];
     }
   } catch (error) {
     console.error('WorkspaceDetailPage: failed to fetch data', error);
@@ -78,6 +89,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       workspaceDetail={workspaceDetail}
       workspaces={workspacesList?.data || []}
       userInfo={userInfo}
+      genres={genres}
     />
   );
 }

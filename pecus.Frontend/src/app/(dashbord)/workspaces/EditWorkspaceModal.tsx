@@ -3,25 +3,27 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { useEffect, useState } from 'react';
-import GenreSelect from '@/components/workspaces/GenreSelect';
 import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
+import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
 interface EditWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedWorkspace: WorkspaceFullDetailResponse) => void;
   workspace: WorkspaceListItemResponse | null;
   genres: MasterGenreResponse[];
 }
 
 export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspace, genres }: EditWorkspaceModalProps) {
+  const notify = useNotify();
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [workspaceDetail, setWorkspaceDetail] = useState<WorkspaceFullDetailResponse | null>(null);
@@ -41,15 +43,16 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
         });
 
         if (!result.success) {
-          if (result.error === 'conflict') {
-            setServerErrors([{ key: 0, message: result.message || '別のユーザーが同時に更新しました。' }]);
-          } else {
-            setServerErrors([{ key: 1, message: result.message || 'エラーが発生しました。' }]);
-          }
+          const errorMessage =
+            result.error === 'conflict'
+              ? result.message || '別のユーザーが同時に更新しました。'
+              : result.message || 'エラーが発生しました。';
+          setServerErrors([{ key: result.error === 'conflict' ? 0 : 1, message: errorMessage }]);
+          notify.error(errorMessage);
           return;
         }
 
-        onSuccess();
+        onSuccess(result.data);
         onClose();
       },
     });

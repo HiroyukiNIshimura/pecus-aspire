@@ -1,24 +1,16 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import GridViewIcon from '@mui/icons-material/GridView';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PersonIcon from '@mui/icons-material/Person';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SearchIcon from '@mui/icons-material/Search';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { deleteWorkspace } from '@/actions/deleteWorkspace';
-import { toggleWorkspaceActive } from '@/actions/workspace';
 import AppHeader from '@/components/common/AppHeader';
-import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import GenreSelect from '@/components/workspaces/GenreSelect';
@@ -34,7 +26,6 @@ import { useValidation } from '@/hooks/useValidation';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
-import EditWorkspaceModal from './EditWorkspaceModal';
 
 interface WorkspacesClientProps {
   initialUser?: UserInfo | null;
@@ -56,11 +47,6 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingWorkspace, setEditingWorkspace] = useState<WorkspaceListItemResponse | null>(null);
-  const [deletingWorkspace, setDeletingWorkspace] = useState<WorkspaceListItemResponse | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
@@ -174,67 +160,6 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
     handleFilterChange();
   };
 
-  const handleEditSuccess = () => {
-    // ワークスペース更新成功時、一覧を再取得
-    handleFilterChange();
-  };
-
-  const handleMenuToggle = (workspaceId: number) => {
-    setOpenMenuId(openMenuId === workspaceId ? null : workspaceId);
-  };
-
-  const handleEdit = (workspace: WorkspaceListItemResponse) => {
-    setEditingWorkspace(workspace);
-    setIsEditModalOpen(true);
-    setOpenMenuId(null);
-  };
-
-  const handleToggleActive = async (workspace: WorkspaceListItemResponse) => {
-    setOpenMenuId(null);
-
-    try {
-      const result = await toggleWorkspaceActive(workspace.id, !workspace.isActive);
-
-      if (result.success) {
-        // 一覧を再取得
-        await handleFilterChange();
-        notify.success(workspace.isActive ? 'ワークスペースを無効化しました。' : 'ワークスペースを有効化しました。');
-      } else {
-        // エラー表示
-        notify.error(result.message || '状態の切り替えに失敗しました。');
-      }
-    } catch (error) {
-      console.error('Toggle active failed:', error);
-      notify.error('状態の切り替えに失敗しました。');
-    }
-  };
-
-  const handleDelete = (workspace: WorkspaceListItemResponse) => {
-    setDeletingWorkspace(workspace);
-    setIsDeleteModalOpen(true);
-    setOpenMenuId(null);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingWorkspace) return;
-
-    try {
-      const result = await deleteWorkspace(deletingWorkspace.id);
-
-      if (result.success) {
-        // 一覧を再取得
-        await handleFilterChange();
-        notify.success('ワークスペースを削除しました。');
-      } else {
-        // エラー表示
-        notify.error(result.message || 'ワークスペースの削除に失敗しました。');
-      }
-    } catch (error) {
-      console.error('Delete workspace failed:', error);
-      notify.error('ワークスペースの削除に失敗しました。');
-    }
-  };
-
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -252,7 +177,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         )}
 
         {/* Main Content */}
-        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100" onClick={() => setOpenMenuId(null)}>
+        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100">
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
           {/* ページヘッダー */}
@@ -437,77 +362,6 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                                     <PowerOffIcon className="w-4 h-4" />
                                   </div>
                                 )}
-                                {/* アクションメニュー */}
-                                <div className="relative">
-                                  <button
-                                    type="button"
-                                    className="btn btn-ghost btn-xs btn-circle"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleMenuToggle(workspace.id);
-                                    }}
-                                    aria-label="アクション"
-                                  >
-                                    <MoreVertIcon className="w-4 h-4" />
-                                  </button>
-                                  {openMenuId === workspace.id && (
-                                    <ul className="absolute right-0 top-8 menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-xl border border-base-300">
-                                      <li>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEdit(workspace);
-                                          }}
-                                          className="flex items-center gap-2"
-                                        >
-                                          <EditIcon className="w-4 h-4" />
-                                          <span>編集</span>
-                                        </button>
-                                      </li>
-                                      <li>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggleActive(workspace);
-                                          }}
-                                          className="flex items-center gap-2"
-                                        >
-                                          {workspace.isActive ? (
-                                            <>
-                                              <ToggleOffIcon className="w-4 h-4" />
-                                              <span>無効化</span>
-                                            </>
-                                          ) : (
-                                            <>
-                                              <ToggleOnIcon className="w-4 h-4" />
-                                              <span>有効化</span>
-                                            </>
-                                          )}
-                                        </button>
-                                      </li>
-                                      {userInfo?.isAdmin && (
-                                        <>
-                                          <div className="divider my-0"></div>
-                                          <li>
-                                            <button
-                                              type="button"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(workspace);
-                                              }}
-                                              className="flex items-center gap-2 text-error hover:bg-error hover:text-error-content"
-                                            >
-                                              <DeleteIcon className="w-4 h-4" />
-                                              <span>削除</span>
-                                            </button>
-                                          </li>
-                                        </>
-                                      )}
-                                    </ul>
-                                  )}
-                                </div>
                               </div>
                             </div>
 
@@ -612,29 +466,6 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleCreateSuccess}
         genres={genres}
-      />
-
-      {/* ワークスペース編集モーダル */}
-      <EditWorkspaceModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingWorkspace(null);
-        }}
-        onSuccess={handleEditSuccess}
-        workspace={editingWorkspace}
-        genres={genres}
-      />
-
-      {/* ワークスペース削除モーダル */}
-      <DeleteWorkspaceModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setDeletingWorkspace(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        workspace={deletingWorkspace}
       />
     </div>
   );
