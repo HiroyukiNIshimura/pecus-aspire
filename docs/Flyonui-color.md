@@ -5,6 +5,18 @@ bg-info
 bg-error
 これらのセマンティッククラスは、複数のモード（ダークテーマやライトテーマなど）にわたるテーマのカスタマイズと管理を簡素化します。各テーマは、CSS変数を介してこれらのクラスに動的に色を割り当てるため、テーマの変更にデザインを簡単に適応させることができます
 
+semantic-colorのサンプル： btn-{semantic-color}
+Here are the code snippets for the block component:
+```html
+<button class="btn">Default</button>
+<button class="btn btn-primary">Primary</button>
+<button class="btn btn-secondary">Secondary</button>
+<button class="btn btn-accent">Accent</button>
+<button class="btn btn-info">Info</button>
+<button class="btn btn-success">Success</button>
+<button class="btn btn-warning">Warning</button>
+<button class="btn btn-error">Error</button>
+```
 
 ## FlyonUIで利用可能なカラーオプション
 FlyonUIは、テーマ内またはユーティリティクラスとして使用できる包括的なカラーオプションのリストを提供します。以下は、利用可能なカラーオプションとその使用例の表です。
