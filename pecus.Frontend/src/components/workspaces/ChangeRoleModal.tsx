@@ -73,7 +73,7 @@ export default function ChangeRoleModal({
           <p className="text-sm text-base-content/70 mt-4">閲覧者は、ワークスペースのコンテンツを閲覧のみ可能です。</p>
         )}
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isUpdating}>
+          <button type="button" className="btn btn-default" onClick={onClose} disabled={isUpdating}>
             キャンセル
           </button>
           <button type="button" className="btn btn-primary" onClick={handleConfirm} disabled={isUpdating}>

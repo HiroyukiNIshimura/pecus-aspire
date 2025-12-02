@@ -1,5 +1,6 @@
 'use client';
 
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -31,9 +32,18 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-4 md:p-6 bg-base-100">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">ダッシュボード</h1>
+            {/* ページヘッダー */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <DashboardIcon className="text-primary" sx={{ fontSize: 32 }} />
+                <div>
+                  <h1 className="text-2xl font-bold">ダッシュボード</h1>
+                  <p className="text-base-content/70 mt-1">プロジェクトの概要と統計情報</p>
+                </div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Dashboard Cards */}
               <div className="card bg-base-100 shadow-xl">

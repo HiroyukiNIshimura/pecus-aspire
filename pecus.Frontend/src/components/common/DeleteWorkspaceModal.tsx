@@ -74,7 +74,7 @@ export default function DeleteWorkspaceModal({ isOpen, onClose, onConfirm, works
             </div>
             <button
               type="button"
-              className="btn btn-secondary btn-sm btn-circle"
+              className="btn btn-default btn-sm btn-circle"
               onClick={handleClose}
               disabled={isDeleting}
               aria-label="閉じる"

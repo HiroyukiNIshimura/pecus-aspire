@@ -106,7 +106,7 @@ export default function RemoveMemberModal({ isOpen, userName, email, onClose, on
 
         {/* ボタン */}
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" className="btn btn-secondary" onClick={handleClose} disabled={isDeleting}>
+          <button type="button" className="btn btn-default" onClick={handleClose} disabled={isDeleting}>
             キャンセル
           </button>
           <button

@@ -73,7 +73,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
             </h2>
             <button
               type="button"
-              className="btn btn-secondary btn-sm btn-circle"
+              className="btn btn-default btn-sm btn-circle"
               onClick={onClose}
               disabled={isSubmitting}
               aria-label="閉じる"

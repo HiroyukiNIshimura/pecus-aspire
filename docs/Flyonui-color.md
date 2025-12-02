@@ -17,6 +17,8 @@ Here are the code snippets for the block component:
 <button class="btn btn-warning">Warning</button>
 <button class="btn btn-error">Error</button>
 ```
+**ghost**
+semantic-colorにghostは存在しません。
 
 ## FlyonUIで利用可能なカラーオプション
 FlyonUIは、テーマ内またはユーティリティクラスとして使用できる包括的なカラーオプションのリストを提供します。以下は、利用可能なカラーオプションとその使用例の表です。

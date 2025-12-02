@@ -205,12 +205,12 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           {/* ページヘッダー */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <GridViewIcon />
-                  マイワークスペース
-                </h1>
-                <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
+              <div className="flex items-center gap-3">
+                <GridViewIcon className="text-primary" sx={{ fontSize: 32 }} />
+                <div>
+                  <h1 className="text-2xl font-bold">マイワークスペース</h1>
+                  <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
+                </div>
               </div>
               <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
                 <AddIcon />

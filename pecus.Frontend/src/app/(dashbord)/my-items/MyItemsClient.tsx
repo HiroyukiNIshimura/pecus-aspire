@@ -178,7 +178,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                       key={tab.key}
                       type="button"
                       onClick={() => handleFilterChange(tab.key)}
-                      className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-secondary'}`}
+                      className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-outline btn-secondary'}`}
                     >
                       {tab.icon}
                       <span>{tab.label}</span>
@@ -191,7 +191,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                   <button
                     type="button"
                     onClick={handleArchiveToggle}
-                    className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-ghost'}`}
+                    className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-default'}`}
                     title={showArchived ? 'アーカイブ済みを表示中' : 'アーカイブ済みを表示'}
                   >
                     <ArchiveIcon fontSize="small" />

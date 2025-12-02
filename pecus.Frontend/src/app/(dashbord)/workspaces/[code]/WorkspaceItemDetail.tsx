@@ -94,7 +94,7 @@ export default function WorkspaceItemDetail({
       } else {
         notify.error(result.message || 'PIN操作に失敗しました。');
       }
-    } catch (err) {
+    } catch (err: unknown) {
       notify.error('PIN操作中にエラーが発生しました。');
     } finally {
       setIsPinLoading(false);
@@ -176,7 +176,7 @@ export default function WorkspaceItemDetail({
             <button
               type="button"
               onClick={handlePinToggle}
-              className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : 'btn-secondary'}`}
+              className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : 'btn-default'}`}
               title={item.isPinned ? 'PINを解除' : 'PINを追加'}
               disabled={isPinLoading}
             >
@@ -200,12 +200,7 @@ export default function WorkspaceItemDetail({
               <EditIcon fontSize="small" />
               編集
             </button>
-            <button
-              type="button"
-              onClick={openDrawer}
-              className="btn btn-secondary btn-sm gap-2"
-              title="詳細オプション"
-            >
+            <button type="button" onClick={openDrawer} className="btn btn-default btn-sm gap-2" title="詳細オプション">
               <MenuIcon fontSize="small" />
             </button>
           </div>
