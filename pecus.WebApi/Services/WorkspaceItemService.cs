@@ -648,6 +648,7 @@ public class WorkspaceItemService
 
         var query = _context
             .WorkspaceItems.Include(wi => wi.Workspace)
+            .ThenInclude(w => w!.Genre)
             .Include(wi => wi.Owner)
             .Include(wi => wi.Assignee)
             .Include(wi => wi.Committer)

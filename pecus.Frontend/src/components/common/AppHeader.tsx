@@ -61,7 +61,7 @@ export default function AppHeader({
       <nav className="navbar">
         <div className="navbar-start flex flex-col">
           <a href="/" className="flex items-end gap-1 text-sm font-bold">
-            <img src="/logo.svg" alt="Coati Logo" className="size-17" />
+            <img src="/Designer2.png" alt="Coati Logo" className="h-14 w-auto" />
             <span className="pb-2">COATI TRACKING</span>
           </a>
           <div className="md:hidden mt-2">

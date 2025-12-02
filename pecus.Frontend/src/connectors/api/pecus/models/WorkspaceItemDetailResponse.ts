@@ -26,6 +26,10 @@ export type WorkspaceItemDetailResponse = {
      */
     workspaceName?: string | null;
     /**
+     * ジャンルアイコン
+     */
+    genreIcon?: string | null;
+    /**
      * コード
      */
     code?: string | null;

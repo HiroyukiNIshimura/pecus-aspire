@@ -11728,6 +11728,11 @@
             "description": "ワークスペース名",
             "nullable": true
           },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
           "code": {
             "type": "string",
             "description": "コード",

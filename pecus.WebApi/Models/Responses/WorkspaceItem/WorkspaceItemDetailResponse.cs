@@ -30,6 +30,11 @@ public class WorkspaceItemDetailResponse : IConflictModel
     public string? WorkspaceName { get; set; }
 
     /// <summary>
+    /// ジャンルアイコン
+    /// </summary>
+    public string? GenreIcon { get; set; }
+
+    /// <summary>
     /// コード
     /// </summary>
     public string Code { get; set; } = string.Empty;

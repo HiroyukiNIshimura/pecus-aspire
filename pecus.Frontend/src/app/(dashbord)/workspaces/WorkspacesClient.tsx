@@ -199,7 +199,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         )}
 
         {/* Main Content */}
-        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100">
+        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100 overflow-auto h-[calc(100vh-4rem)]">
           {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
           {/* ページヘッダー */}
@@ -337,7 +337,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                 <InfiniteScroll
                   dataLength={workspaces.length}
                   next={loadMoreWorkspaces}
-                  hasMore={currentPage < totalPages}
+                  hasMore={totalPages > 1 && currentPage < totalPages}
                   loader={
                     <div className="text-center py-4">
                       <span className="loading loading-spinner loading-md"></span>

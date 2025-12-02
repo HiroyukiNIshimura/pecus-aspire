@@ -8,9 +8,9 @@ import PushPinIcon from '@mui/icons-material/PushPin';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
-import Pagination from '@/components/common/Pagination';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import type {
   MyItemRelationType,
@@ -46,7 +46,6 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
   const [currentPage, setCurrentPage] = useState(initialItems?.currentPage || 1);
   const [totalPages, setTotalPages] = useState(initialItems?.totalPages || 1);
   const [totalCount, setTotalCount] = useState(initialItems?.totalCount || 0);
-  const [isLoading, setIsLoading] = useState(false);
 
   // フィルター状態
   const [activeFilter, setActiveFilter] = useState<MyItemRelationType | 'All'>('All');
@@ -57,13 +56,33 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
     notifyRef.current = notify;
   }, [notify]);
 
-  // アイテムを取得する関数
-  const loadItems = useCallback(async (page: number, relation: MyItemRelationType | 'All') => {
-    setIsLoading(true);
+  // 次のページを読み込む（無限スクロール用）
+  const loadMoreItems = useCallback(async () => {
     try {
-      // 'All' の場合は undefined を渡す
-      const relationParam = relation === 'All' ? undefined : relation;
-      const result = await fetchMyItems(page, relationParam);
+      const nextPage = currentPage + 1;
+      const relationParam = activeFilter === 'All' ? undefined : activeFilter;
+      const result = await fetchMyItems(nextPage, relationParam);
+
+      if (result.success) {
+        setItems((prev) => [...prev, ...(result.data.data || [])]);
+        setCurrentPage(result.data.currentPage || nextPage);
+        setTotalPages(result.data.totalPages || 1);
+        setTotalCount(result.data.totalCount || 0);
+      } else {
+        notifyRef.current.error(result.message || 'アイテムの取得に失敗しました。');
+      }
+    } catch (err) {
+      console.error('Failed to load more items:', err);
+      notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
+    }
+  }, [currentPage, activeFilter]);
+
+  // フィルター変更ハンドラー（リストをリセットして1ページ目から取得）
+  const handleFilterChange = useCallback(async (filter: MyItemRelationType | 'All') => {
+    setActiveFilter(filter);
+    try {
+      const relationParam = filter === 'All' ? undefined : filter;
+      const result = await fetchMyItems(1, relationParam);
 
       if (result.success) {
         setItems(result.data.data || []);
@@ -76,27 +95,8 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
     } catch (err) {
       console.error('Failed to fetch my items:', err);
       notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
-
-  // フィルター変更ハンドラー
-  const handleFilterChange = useCallback(
-    (filter: MyItemRelationType | 'All') => {
-      setActiveFilter(filter);
-      loadItems(1, filter);
-    },
-    [loadItems],
-  );
-
-  // ページ変更ハンドラー
-  const handlePageChange = useCallback(
-    (page: number) => {
-      loadItems(page, activeFilter);
-    },
-    [loadItems, activeFilter],
-  );
 
   // 初期エラー表示
   useEffect(() => {
@@ -117,155 +117,181 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
         {sidebarOpen && (
           <button
             type="button"
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label="サイドバーを閉じる"
           />
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-base-100">
-          <div className="max-w-7xl mx-auto">
-            {/* ヘッダー */}
-            <div className="flex items-center gap-3 mb-6">
+        <main id="scrollableDiv" className="flex-1 p-4 md:p-6 bg-base-100 overflow-auto h-[calc(100vh-4rem)]">
+          {/* ページヘッダー */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
               <AssignmentIcon className="text-primary" sx={{ fontSize: 32 }} />
               <div>
-                <h1 className="text-3xl font-bold">マイアイテム</h1>
-                <p className="text-base-content/70 text-sm">あなたに関連するワークスペースアイテムの一覧です</p>
+                <h1 className="text-2xl font-bold">マイアイテム</h1>
+                <p className="text-base-content/70 mt-1">あなたに関連するワークスペースアイテムの一覧</p>
               </div>
             </div>
+          </div>
 
-            {/* フィルタータブ */}
-            <div className="tabs tabs-boxed mb-6 bg-base-200 p-1">
-              {filterTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => handleFilterChange(tab.key)}
-                  className={`tab gap-1 ${activeFilter === tab.key ? 'tab-active' : ''}`}
-                >
-                  {tab.icon}
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* 件数表示 */}
-            <div className="mb-4 text-sm text-base-content/70">
-              {totalCount} 件のアイテム
-              {activeFilter !== 'All' && (
-                <span className="ml-2 badge badge-primary badge-sm">
-                  {filterTabs.find((t) => t.key === activeFilter)?.label}
-                </span>
-              )}
-            </div>
-
-            {/* アイテム一覧 */}
-            {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <span className="loading loading-spinner loading-lg"></span>
-              </div>
-            ) : items.length === 0 ? (
-              <div className="card bg-base-200 p-8 text-center">
-                <p className="text-base-content/70">該当するアイテムがありません。</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="card bg-base-100 shadow-sm border border-base-300 hover:shadow-md transition-shadow"
+          {/* フィルタータブ */}
+          <div className="card bg-base-200 shadow-md mb-6">
+            <div className="card-body p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {filterTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => handleFilterChange(tab.key)}
+                    className={`btn btn-sm gap-1 ${activeFilter === tab.key ? 'btn-primary' : 'btn-ghost'}`}
                   >
-                    <div className="card-body p-4">
-                      <div className="flex items-start gap-4">
-                        {/* アイテム情報 */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            {/* ワークスペース名 */}
-                            {item.workspaceName && (
-                              <span className="badge badge-ghost badge-sm truncate max-w-[150px]">
-                                {item.workspaceName}
-                              </span>
-                            )}
-                            {/* コード */}
-                            {item.code && <code className="text-xs text-base-content/60">{item.code}</code>}
-                            {/* ステータスバッジ */}
-                            {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
-                            {item.isPinned && (
-                              <span className="badge badge-info badge-xs gap-0.5">
-                                <PushPinIcon style={{ fontSize: '0.7rem' }} />
-                              </span>
-                            )}
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* アイテム一覧 */}
+          <div className="card bg-base-100 shadow-md">
+            <div className="card-body p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h2 className="card-title text-lg">アイテム一覧</h2>
+                  <span className="badge badge-primary">{totalCount}</span>
+                </div>
+                {activeFilter !== 'All' && (
+                  <span className="badge badge-secondary badge-outline">
+                    {filterTabs.find((t) => t.key === activeFilter)?.label}
+                  </span>
+                )}
+              </div>
+
+              {items.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-base-content/70">該当するアイテムがありません</p>
+                </div>
+              ) : (
+                <InfiniteScroll
+                  dataLength={items.length}
+                  next={loadMoreItems}
+                  hasMore={totalPages > 1 && currentPage < totalPages}
+                  loader={
+                    <div className="text-center py-4">
+                      <span className="loading loading-spinner loading-md"></span>
+                    </div>
+                  }
+                  endMessage={
+                    <div className="text-center py-4">
+                      <p className="text-base-content/70">すべてのアイテムを表示しました</p>
+                    </div>
+                  }
+                  scrollableTarget="scrollableDiv"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
+                      >
+                        <div className="card-body p-4 flex flex-col flex-1">
+                          {/* ヘッダー */}
+                          <div className="mb-3">
+                            {/* ワークスペース名 + ステータス */}
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                {item.genreIcon && (
+                                  <img
+                                    src={`/icons/genres/${item.genreIcon}.svg`}
+                                    alt=""
+                                    className="w-4 h-4 flex-shrink-0"
+                                  />
+                                )}
+                                <span className="text-xs badge badge-ghost badge-sm truncate">
+                                  {item.workspaceName || 'ワークスペース'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
+                                {item.isPinned && <PushPinIcon className="w-4 h-4 text-info" />}
+                              </div>
+                            </div>
+
+                            {/* 件名 */}
+                            <Link href={`/workspaces/${item.workspaceCode}?itemId=${item.id}`}>
+                              <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words line-clamp-2">
+                                {item.subject || '（件名未設定）'}
+                              </h3>
+                            </Link>
                           </div>
 
-                          {/* 件名 */}
-                          <h3 className="font-semibold text-lg truncate">{item.subject || '（件名未設定）'}</h3>
-
                           {/* メタ情報 */}
-                          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-base-content/60">
+                          <div className="space-y-2 mb-3 flex-1">
                             {/* オーナー */}
-                            {item.ownerUsername && (
-                              <div className="flex items-center gap-1">
-                                <PersonIcon style={{ fontSize: '0.875rem' }} />
-                                <span>オーナー:</span>
+                            <div className="flex items-center text-sm gap-2">
+                              <span className="text-base-content/70 w-20 flex-shrink-0">オーナー</span>
+                              <div className="flex items-center gap-1.5 min-w-0">
                                 {item.ownerAvatarUrl && (
                                   <img
                                     src={getDisplayIconUrl(item.ownerAvatarUrl)}
-                                    alt={item.ownerUsername}
-                                    className="w-4 h-4 rounded-full object-cover"
+                                    alt=""
+                                    className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                                   />
                                 )}
-                                <span>{item.ownerUsername}</span>
+                                <span className="truncate">{item.ownerUsername || '-'}</span>
                               </div>
-                            )}
+                            </div>
+
                             {/* 担当者 */}
                             {item.assigneeUsername && (
-                              <div className="flex items-center gap-1">
-                                <AssignmentIndIcon style={{ fontSize: '0.875rem' }} />
-                                <span>担当:</span>
-                                {item.assigneeAvatarUrl && (
-                                  <img
-                                    src={getDisplayIconUrl(item.assigneeAvatarUrl)}
-                                    alt={item.assigneeUsername}
-                                    className="w-4 h-4 rounded-full object-cover"
-                                  />
-                                )}
-                                <span>{item.assigneeUsername}</span>
+                              <div className="flex items-center text-sm gap-2">
+                                <span className="text-base-content/70 w-20 flex-shrink-0">担当</span>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  {item.assigneeAvatarUrl && (
+                                    <img
+                                      src={getDisplayIconUrl(item.assigneeAvatarUrl)}
+                                      alt=""
+                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                                    />
+                                  )}
+                                  <span className="truncate">{item.assigneeUsername}</span>
+                                </div>
                               </div>
                             )}
-                            {/* 更新日時 */}
-                            {item.updatedAt && (
-                              <span>更新: {new Date(item.updatedAt).toLocaleDateString('ja-JP')}</span>
+
+                            {/* コミッター */}
+                            {item.committerUsername && (
+                              <div className="flex items-center text-sm gap-2">
+                                <span className="text-base-content/70 w-20 flex-shrink-0">コミッター</span>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  {item.committerAvatarUrl && (
+                                    <img
+                                      src={getDisplayIconUrl(item.committerAvatarUrl)}
+                                      alt=""
+                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                                    />
+                                  )}
+                                  <span className="truncate">{item.committerUsername}</span>
+                                </div>
+                              </div>
                             )}
+
+                            {/* 更新日 */}
+                            <div className="flex items-center text-sm gap-2">
+                              <span className="text-base-content/70 w-20 flex-shrink-0">更新日</span>
+                              <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('ja-JP') : '-'}</span>
+                            </div>
                           </div>
                         </div>
-
-                        {/* アクション */}
-                        <div className="flex-shrink-0">
-                          <Link
-                            href={`/workspaces/${item.workspaceCode}?itemId=${item.id}`}
-                            className="btn btn-primary btn-sm"
-                          >
-                            開く
-                          </Link>
-                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* ページネーション */}
-            {totalPages > 1 && (
-              <div className="mt-6 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={({ selected }) => handlePageChange(selected + 1)}
-                />
-              </div>
-            )}
+                </InfiniteScroll>
+              )}
+            </div>
           </div>
         </main>
       </div>
