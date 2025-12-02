@@ -19,6 +19,8 @@ interface WorkspaceItemsSidebarProps {
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number) => void;
   onCreateNew?: () => void;
+  /** URLクエリパラメータで指定された初期選択アイテムID */
+  initialSelectedItemId?: number;
   /** 現在ログイン中のユーザー情報（フィルターの「自分」選択用） */
   currentUser?: {
     id: number;
@@ -42,11 +44,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       onHomeSelect,
       onItemSelect,
       onCreateNew,
+      initialSelectedItemId,
       currentUser,
     },
     ref,
   ) => {
-    const [selectedItemId, setSelectedItemId] = useState<'home' | 'new' | number | null>('home');
+    // initialSelectedItemId が指定されている場合は、そのアイテムを初期選択状態に
+    const [selectedItemId, setSelectedItemId] = useState<'home' | 'new' | number | null>(
+      initialSelectedItemId ?? 'home',
+    );
     const [searchQuery, setSearchQuery] = useState('');
     const [items, setItems] = useState<WorkspaceItemDetailResponse[]>([]);
     const [currentPage, setCurrentPage] = useState(1);

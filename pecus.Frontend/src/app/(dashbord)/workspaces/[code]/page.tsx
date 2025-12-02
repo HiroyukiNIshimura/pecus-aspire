@@ -21,10 +21,18 @@ interface WorkspaceDetailPageProps {
   params: Promise<{
     code: string;
   }>;
+  searchParams: Promise<{
+    itemId?: string;
+  }>;
 }
 
-export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPageProps) {
+export default async function WorkspaceDetailPage({ params, searchParams }: WorkspaceDetailPageProps) {
   const { code } = await params;
+  const { itemId } = await searchParams;
+
+  // itemId を数値に変換（存在する場合）
+  const initialItemId = itemId ? parseInt(itemId, 10) : undefined;
+  const validInitialItemId = initialItemId && !Number.isNaN(initialItemId) ? initialItemId : undefined;
 
   // ユーザー情報取得
   let userInfo: UserInfo | null = null;
@@ -102,6 +110,7 @@ export default async function WorkspaceDetailPage({ params }: WorkspaceDetailPag
       userInfo={userInfo}
       genres={genres}
       skills={skills}
+      initialItemId={validInitialItemId}
     />
   );
 }

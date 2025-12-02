@@ -48,6 +48,8 @@ interface WorkspaceDetailClientProps {
   userInfo: UserInfo | null;
   genres: MasterGenreResponse[];
   skills: MasterSkillResponse[];
+  /** URLクエリパラメータで指定された初期選択アイテムID */
+  initialItemId?: number;
 }
 
 export default function WorkspaceDetailClient({
@@ -57,6 +59,7 @@ export default function WorkspaceDetailClient({
   userInfo,
   genres,
   skills,
+  initialItemId,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const notify = useNotify();
@@ -65,8 +68,9 @@ export default function WorkspaceDetailClient({
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
-  const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(true);
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  // initialItemId が指定されている場合は、最初からアイテム詳細を表示
+  const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(!initialItemId);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(initialItemId ?? null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // ===== アクションメニューの状態 =====
@@ -562,6 +566,7 @@ export default function WorkspaceDetailClient({
               onItemSelect={handleItemSelect}
               onCreateNew={handleCreateNew}
               scrollContainerId="itemsScrollableDiv-desktop"
+              initialSelectedItemId={initialItemId}
               currentUser={
                 userInfo
                   ? {
@@ -843,6 +848,7 @@ export default function WorkspaceDetailClient({
             onItemSelect={handleItemSelect}
             onCreateNew={handleCreateNew}
             scrollContainerId="itemsScrollableDiv-mobile"
+            initialSelectedItemId={initialItemId}
             currentUser={
               userInfo
                 ? {
