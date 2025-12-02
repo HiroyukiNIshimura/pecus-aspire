@@ -7,6 +7,7 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import MultiSelectDropdown from '@/components/common/MultiSelectDropdown';
 import type { UserDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
@@ -150,18 +151,6 @@ export default function EditUserClient({
     router.push('/admin/users');
   };
 
-  // === トグル関数: IDの追加/削除を管理 ===
-  // 配列に ID が含まれていれば削除、なければ追加する
-  // リアクティブに selected* 配列を更新し、変更検知が自動的に isXxxChanged フラグを更新する
-
-  const toggleSkill = (skillId: number) => {
-    setSelectedSkillIds((prev) => (prev.includes(skillId) ? prev.filter((id) => id !== skillId) : [...prev, skillId]));
-  };
-
-  const toggleRole = (roleId: number) => {
-    setSelectedRoleIds((prev) => (prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]));
-  };
-
   const handleRequestPasswordReset = async () => {
     try {
       // === パスワードリセットメール送信 ===
@@ -290,131 +279,31 @@ export default function EditUserClient({
 
                   {/* スキル編集 */}
                   <div className="divider my-4"></div>
-                  <div className="form-control">
-                    <div className="label">
-                      <span className="label-text font-semibold text-base">スキル</span>
-                      <span className="label-text-alt">
-                        {selectedSkillIds.length} / {availableSkills.length} 個選択中
-                      </span>
-                    </div>
-                    <details className="dropdown w-full">
-                      <summary className="btn btn-outline w-full justify-start">
-                        {selectedSkillIds.length > 0
-                          ? `${selectedSkillIds.length} 個のスキルを選択中`
-                          : 'スキルを選択してください'}
-                      </summary>
-                      <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
-                        {availableSkills.length === 0 ? (
-                          <li className="text-center text-base-content/60 py-4">利用可能なスキルがありません</li>
-                        ) : (
-                          availableSkills.map((skill) => (
-                            <li key={skill.id}>
-                              <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedSkillIds.includes(skill.id)}
-                                  onChange={() => toggleSkill(skill.id)}
-                                  className="checkbox checkbox-primary checkbox-sm"
-                                />
-                                <span className="label-text flex-1">{skill.name}</span>
-                              </label>
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    </details>
-
-                    {selectedSkillIds.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {selectedSkillIds.map((skillId) => {
-                          const skill = availableSkills.find((s) => s.id === skillId);
-                          return (
-                            <div key={skillId} className="badge badge-primary gap-2">
-                              {skill?.name || `スキルID: ${skillId}`}
-                              <button
-                                type="button"
-                                onClick={() => toggleSkill(skillId)}
-                                className="btn btn-ghost btn-xs no-animation"
-                                aria-label={`${skill?.name}を削除`}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {skillsChanged && (
-                      <div className="alert alert-info mt-3">
-                        <span className="text-sm">✓ スキルが変更されています</span>
-                      </div>
-                    )}
-                  </div>
+                  <MultiSelectDropdown
+                    label="スキル"
+                    items={availableSkills}
+                    selectedIds={selectedSkillIds}
+                    onSelectionChange={setSelectedSkillIds}
+                    disabled={isSubmitting}
+                    placeholder="スキルを選択してください"
+                    emptyMessage="利用可能なスキルがありません"
+                    badgeColor="primary"
+                    changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
+                  />
 
                   {/* ロール編集 */}
                   <div className="divider my-4"></div>
-                  <div className="form-control">
-                    <div className="label">
-                      <span className="label-text font-semibold text-base">ロール</span>
-                      <span className="label-text-alt">
-                        {selectedRoleIds.length} / {availableRoles.length} 個選択中
-                      </span>
-                    </div>
-                    <details className="dropdown w-full">
-                      <summary className="btn btn-outline w-full justify-start">
-                        {selectedRoleIds.length > 0
-                          ? `${selectedRoleIds.length} 個のロールを選択中`
-                          : 'ロールを選択してください'}
-                      </summary>
-                      <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
-                        {availableRoles.length === 0 ? (
-                          <li className="text-center text-base-content/60 py-4">利用可能なロールがありません</li>
-                        ) : (
-                          availableRoles.map((role) => (
-                            <li key={role.id}>
-                              <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedRoleIds.includes(role.id)}
-                                  onChange={() => toggleRole(role.id)}
-                                  className="checkbox checkbox-primary checkbox-sm"
-                                />
-                                <span className="label-text flex-1">{role.name}</span>
-                              </label>
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    </details>
-
-                    {selectedRoleIds.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {selectedRoleIds.map((roleId) => {
-                          const role = availableRoles.find((r) => r.id === roleId);
-                          return (
-                            <div key={roleId} className="badge badge-secondary gap-2">
-                              {role?.name || `ロールID: ${roleId}`}
-                              <button
-                                type="button"
-                                onClick={() => toggleRole(roleId)}
-                                className="btn btn-ghost btn-xs no-animation"
-                                aria-label={`${role?.name}を削除`}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {rolesChanged && (
-                      <div className="alert alert-info mt-3">
-                        <span className="text-sm">✓ ロールが変更されています</span>
-                      </div>
-                    )}
-                  </div>
+                  <MultiSelectDropdown
+                    label="ロール"
+                    items={availableRoles}
+                    selectedIds={selectedRoleIds}
+                    onSelectionChange={setSelectedRoleIds}
+                    disabled={isSubmitting}
+                    placeholder="ロールを選択してください"
+                    emptyMessage="利用可能なロールがありません"
+                    badgeColor="secondary"
+                    changeMessage={rolesChanged ? '✓ ロールが変更されています' : undefined}
+                  />
 
                   {/* アクションボタン */}
                   <div className="card-actions justify-end mt-6 gap-2">
