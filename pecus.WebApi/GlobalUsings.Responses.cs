@@ -7,3 +7,4 @@ global using Pecus.Models.Responses.Tag;
 global using Pecus.Models.Responses.User;
 global using Pecus.Models.Responses.Workspace;
 global using Pecus.Models.Responses.WorkspaceItem;
+global using Pecus.Models.Responses.WorkspaceTask;

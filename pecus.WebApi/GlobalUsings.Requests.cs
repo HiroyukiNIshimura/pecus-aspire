@@ -9,3 +9,4 @@ global using Pecus.Models.Requests.User;
 global using Pecus.Models.Requests.Workspace;
 global using Pecus.Models.Requests.WorkspaceItem;
 global using Pecus.Models.Requests.WorkspaceItemRelation;
+global using Pecus.Models.Requests.WorkspaceTask;
