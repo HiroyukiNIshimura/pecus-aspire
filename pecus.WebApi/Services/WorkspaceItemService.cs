@@ -769,6 +769,22 @@ public class WorkspaceItemService
             item.Priority = request.Priority.Value;
         }
 
+        if (request.CommitterId.HasValue)
+        {
+            // Committerが指定されている場合、メンバーチェック
+            var isCommitterMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
+                request.CommitterId.Value,
+                workspaceId
+            );
+            if (!isCommitterMember)
+            {
+                throw new InvalidOperationException(
+                    "コミッターはワークスペースのメンバーである必要があります。"
+                );
+            }
+            item.CommitterId = request.CommitterId.Value;
+        }
+
         if (request.IsDraft.HasValue)
         {
             item.IsDraft = request.IsDraft.Value;

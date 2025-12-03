@@ -384,7 +384,7 @@ export default function WorkspaceItemDetail({
         isClosing={isDrawerClosing}
         onClose={closeDrawer}
         members={members}
-        onAssigneeUpdate={(updatedItem) => setItem(updatedItem)}
+        onItemUpdate={(updatedItem) => setItem(updatedItem)}
       />
     </div>
   );
