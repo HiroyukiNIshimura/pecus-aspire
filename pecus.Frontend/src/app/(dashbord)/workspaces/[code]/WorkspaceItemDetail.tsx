@@ -164,11 +164,17 @@ export default function WorkspaceItemDetail({
         <div className="flex items-start justify-between gap-2 mb-4">
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {item.priority !== undefined && item.priority !== null && (
                 <div className="badge badge-primary">優先度: {item.priority}</div>
               )}
               {item.code && <code className="text-sm badge badge-soft badge-accent badge-md">{item.code}</code>}
+              {item.dueDate && (
+                <span className="badge badge-outline badge-success badge-md gap-1">
+                  <span className="text-xs">期限:</span>
+                  {new Date(item.dueDate).toLocaleDateString('ja-JP')}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -260,14 +266,6 @@ export default function WorkspaceItemDetail({
               <p className="font-semibold">{new Date(item.updatedAt).toLocaleString('ja-JP')}</p>
             </div>
           )}
-
-          {/* 期限日 */}
-          <div>
-            <span className="text-xs text-base-content/70">期限日</span>
-            <p className="font-semibold">
-              {item.dueDate ? new Date(item.dueDate).toLocaleDateString('ja-JP') : '未設定'}
-            </p>
-          </div>
 
           {/* 担当者 */}
           <div>
