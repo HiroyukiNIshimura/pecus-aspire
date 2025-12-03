@@ -7,7 +7,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
@@ -63,6 +63,7 @@ export default function WorkspaceDetailClient({
   initialItemId,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
@@ -152,6 +153,32 @@ export default function WorkspaceDetailClient({
       document.removeEventListener('click', handleClickOutside);
     };
   }, [openActionMenu]);
+
+  // ブラウザの戻る/進むボタンに対応
+  useEffect(() => {
+    const handlePopState = () => {
+      // URLからitemIdパラメータを取得
+      const urlParams = new URLSearchParams(window.location.search);
+      const itemIdParam = urlParams.get('itemId');
+
+      if (itemIdParam) {
+        const itemId = parseInt(itemIdParam, 10);
+        if (!Number.isNaN(itemId)) {
+          setShowWorkspaceDetail(false);
+          setSelectedItemId(itemId);
+        }
+      } else {
+        // itemIdがない場合はホーム表示
+        setShowWorkspaceDetail(true);
+        setSelectedItemId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 
@@ -376,13 +403,20 @@ export default function WorkspaceDetailClient({
   const handleHomeSelect = useCallback(() => {
     setShowWorkspaceDetail(true);
     setSelectedItemId(null);
-  }, []);
+    // URLからitemIdパラメータを削除
+    router.push(pathname, { scroll: false });
+  }, [router, pathname]);
 
   // アイテム選択ハンドラ
-  const handleItemSelect = useCallback((itemId: number) => {
-    setShowWorkspaceDetail(false);
-    setSelectedItemId(itemId);
-  }, []);
+  const handleItemSelect = useCallback(
+    (itemId: number) => {
+      setShowWorkspaceDetail(false);
+      setSelectedItemId(itemId);
+      // URLにitemIdパラメータを追加
+      router.push(`${pathname}?itemId=${itemId}`, { scroll: false });
+    },
+    [router, pathname],
+  );
 
   // 新規作成ハンドラ（モーダルを開く）
   const handleCreateNew = useCallback(() => {
@@ -395,14 +429,20 @@ export default function WorkspaceDetailClient({
   }, []);
 
   // 新規作成完了ハンドラ
-  const handleCreateComplete = useCallback((itemId: number) => {
-    setIsCreateModalOpen(false);
-    setSelectedItemId(itemId);
-    setShowWorkspaceDetail(false);
+  const handleCreateComplete = useCallback(
+    (itemId: number) => {
+      setIsCreateModalOpen(false);
+      setSelectedItemId(itemId);
+      setShowWorkspaceDetail(false);
 
-    // サイドバーのアイテムリストをリロード（新規作成されたアイテムを選択状態に設定）
-    sidebarComponentRef.current?.refreshItems(itemId);
-  }, []);
+      // URLにitemIdパラメータを追加
+      router.push(`${pathname}?itemId=${itemId}`, { scroll: false });
+
+      // サイドバーのアイテムリストをリロード（新規作成されたアイテムを選択状態に設定）
+      sidebarComponentRef.current?.refreshItems(itemId);
+    },
+    [router, pathname],
+  );
 
   // ===== 関連アイテム追加機能 =====
 
