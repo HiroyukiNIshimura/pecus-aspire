@@ -14,6 +14,12 @@ public class GetWorkspaceTasksRequest
     public int Page { get; set; } = 1;
 
     /// <summary>
+    /// 1ページあたりの件数（1〜100、デフォルト10）
+    /// </summary>
+    [Range(1, 100, ErrorMessage = "ページサイズは1〜100の範囲で指定してください。")]
+    public int PageSize { get; set; } = 10;
+
+    /// <summary>
     /// 完了タスクを含めるか
     /// </summary>
     public bool? IncludeCompleted { get; set; }

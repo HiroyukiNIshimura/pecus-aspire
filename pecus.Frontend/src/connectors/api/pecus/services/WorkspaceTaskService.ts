@@ -45,6 +45,7 @@ export class WorkspaceTaskService {
      * @param workspaceId ワークスペースID
      * @param itemId ワークスペースアイテムID
      * @param page ページ番号（1から始まる）
+     * @param pageSize 1ページあたりの件数（1〜100、デフォルト10）
      * @param includeCompleted 完了タスクを含めるか
      * @param includeDiscarded 破棄タスクを含めるか
      * @param assignedUserId 担当ユーザーIDでフィルタ
@@ -55,6 +56,7 @@ export class WorkspaceTaskService {
         workspaceId: number,
         itemId: number,
         page?: number,
+        pageSize?: number,
         includeCompleted?: boolean,
         includeDiscarded?: boolean,
         assignedUserId?: number,
@@ -68,6 +70,7 @@ export class WorkspaceTaskService {
             },
             query: {
                 'Page': page,
+                'PageSize': pageSize,
                 'IncludeCompleted': includeCompleted,
                 'IncludeDiscarded': includeDiscarded,
                 'AssignedUserId': assignedUserId,

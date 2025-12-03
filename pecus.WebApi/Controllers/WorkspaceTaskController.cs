@@ -149,7 +149,7 @@ public class WorkspaceTaskController : BaseSecureController
             request
         );
 
-        const int pageSize = 20;
+        var pageSize = request.PageSize;
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
         var response = new PagedResponse<WorkspaceTaskDetailResponse>

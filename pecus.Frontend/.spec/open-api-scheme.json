@@ -8131,6 +8131,17 @@
             }
           },
           {
+            "name": "PageSize",
+            "in": "query",
+            "description": "1ページあたりの件数（1〜100、デフォルト10）",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "IncludeCompleted",
             "in": "query",
             "description": "完了タスクを含めるか",

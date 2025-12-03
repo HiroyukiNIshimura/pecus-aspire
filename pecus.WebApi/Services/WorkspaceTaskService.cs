@@ -186,7 +186,7 @@ public class WorkspaceTaskService
         var totalCount = await query.CountAsync();
 
         // ページネーション
-        const int pageSize = 20;
+        var pageSize = request.PageSize;
         var tasks = await query
             .OrderBy(t => t.DisplayOrder)
             .ThenByDescending(t => t.CreatedAt)
