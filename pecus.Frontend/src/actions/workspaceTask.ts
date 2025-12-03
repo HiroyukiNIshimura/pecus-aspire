@@ -1,7 +1,11 @@
 'use server';
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { WorkspaceTaskDetailResponse, WorkspaceTaskDetailResponsePagedResponse } from '@/connectors/api/pecus';
+import type {
+  TaskStatusFilter,
+  WorkspaceTaskDetailResponse,
+  WorkspaceTaskDetailResponsePagedResponse,
+} from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 
 /**
@@ -12,8 +16,7 @@ export async function getWorkspaceTasks(
   itemId: number,
   page: number = 1,
   pageSize: number = 10,
-  excludeCompleted?: boolean,
-  excludeDiscarded?: boolean,
+  status?: TaskStatusFilter,
   assignedUserId?: number,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponsePagedResponse>> {
   try {
@@ -23,8 +26,7 @@ export async function getWorkspaceTasks(
       itemId,
       page,
       pageSize,
-      excludeCompleted,
-      excludeDiscarded,
+      status,
       assignedUserId,
     );
 
@@ -46,8 +48,7 @@ export async function getWorkspaceTasks(
 export async function getAllWorkspaceTasks(
   workspaceId: number,
   itemId: number,
-  excludeCompleted?: boolean,
-  excludeDiscarded?: boolean,
+  status?: TaskStatusFilter,
   assignedUserId?: number,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponse[]>> {
   try {
@@ -64,8 +65,7 @@ export async function getAllWorkspaceTasks(
         itemId,
         page,
         pageSize,
-        excludeCompleted,
-        excludeDiscarded,
+        status,
         assignedUserId,
       );
 

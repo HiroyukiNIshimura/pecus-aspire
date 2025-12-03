@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
+import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
 import type { WorkspaceTaskDetailResponsePagedResponse } from '../models/WorkspaceTaskDetailResponsePagedResponse';
@@ -46,8 +47,7 @@ export class WorkspaceTaskService {
      * @param itemId ワークスペースアイテムID
      * @param page ページ番号（1から始まる）
      * @param pageSize 1ページあたりの件数（1〜100、デフォルト10）
-     * @param excludeCompleted 完了タスクを除外するか（trueの場合、完了タスクを表示しない）
-     * @param excludeDiscarded 破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）
+     * @param status タスクのステータスフィルター（省略時はすべて表示）
      * @param assignedUserId 担当ユーザーIDでフィルタ
      * @returns WorkspaceTaskDetailResponsePagedResponse OK
      * @throws ApiError
@@ -57,8 +57,7 @@ export class WorkspaceTaskService {
         itemId: number,
         page?: number,
         pageSize?: number,
-        excludeCompleted?: boolean,
-        excludeDiscarded?: boolean,
+        status?: TaskStatusFilter,
         assignedUserId?: number,
     ): CancelablePromise<WorkspaceTaskDetailResponsePagedResponse> {
         return __request(OpenAPI, {
@@ -71,8 +70,7 @@ export class WorkspaceTaskService {
             query: {
                 'Page': page,
                 'PageSize': pageSize,
-                'ExcludeCompleted': excludeCompleted,
-                'ExcludeDiscarded': excludeDiscarded,
+                'Status': status,
                 'AssignedUserId': assignedUserId,
             },
             errors: {

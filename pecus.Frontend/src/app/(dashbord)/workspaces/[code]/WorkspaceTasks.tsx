@@ -1,19 +1,57 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
-import type { WorkspaceTaskDetailResponse } from '@/connectors/api/pecus';
+import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
+import type {
+  TaskStatusFilter as TaskStatusFilterType,
+  UserSearchResultResponse,
+  WorkspaceTaskDetailResponse,
+} from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+
+/**
+ * フロントエンドの TaskStatus を API の TaskStatusFilter に変換
+ */
+function toApiTaskStatusFilter(status: TaskStatus): TaskStatusFilterType {
+  switch (status) {
+    case 'active':
+      return 'Active';
+    case 'completed':
+      return 'Completed';
+    case 'discarded':
+      return 'Discarded';
+    default:
+      return 'All';
+  }
+}
+
+/** 選択されたユーザー情報 */
+interface SelectedUser {
+  id: number;
+  username: string;
+  email: string;
+  identityIconUrl: string | null;
+}
 
 interface WorkspaceTasksProps {
   workspaceId: number;
   itemId: number;
+  /** 現在ログイン中のユーザー（「自分」リンク用） */
+  currentUser?: {
+    id: number;
+    username: string;
+    email: string;
+    identityIconUrl: string | null;
+  } | null;
 }
 
 const ITEMS_PER_PAGE = 8; // 4列 x 2行
 
-const WorkspaceTasks = ({ workspaceId, itemId }: WorkspaceTasksProps) => {
+const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProps) => {
   const notify = useNotify();
   const [tasks, setTasks] = useState<WorkspaceTaskDetailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,11 +59,27 @@ const WorkspaceTasks = ({ workspaceId, itemId }: WorkspaceTasksProps) => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
+  // フィルター状態
+  const [taskStatus, setTaskStatus] = useState<TaskStatus>(null);
+  const [selectedAssignee, setSelectedAssignee] = useState<SelectedUser | null>(null);
+  const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
+  const [isSearchingAssignee, setIsSearchingAssignee] = useState(false);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+
   // タスク取得
-  const fetchTasks = async (page: number) => {
+  const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
     try {
       setIsLoading(true);
-      const result = await getWorkspaceTasks(workspaceId, itemId, page, ITEMS_PER_PAGE);
+
+      // サーバー側でフィルタリング
+      const result = await getWorkspaceTasks(
+        workspaceId,
+        itemId,
+        page,
+        ITEMS_PER_PAGE,
+        toApiTaskStatusFilter(status),
+        assigneeId ?? undefined,
+      );
 
       if (result.success) {
         setTasks(result.data.data || []);
@@ -44,14 +98,84 @@ const WorkspaceTasks = ({ workspaceId, itemId }: WorkspaceTasksProps) => {
 
   // 初回取得
   useEffect(() => {
-    fetchTasks(1);
+    fetchTasks(1, taskStatus, selectedAssignee?.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, itemId]);
+
+  // フィルター変更時
+  const handleFilterChange = (newStatus: TaskStatus, newAssigneeId?: number | null) => {
+    setCurrentPage(1);
+    fetchTasks(1, newStatus, newAssigneeId);
+  };
+
+  // ステータスフィルター変更
+  const handleStatusChange = (status: TaskStatus) => {
+    setTaskStatus(status);
+    handleFilterChange(status, selectedAssignee?.id);
+  };
 
   // ページ変更
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage || isLoading) return;
-    fetchTasks(page);
+    fetchTasks(page, taskStatus, selectedAssignee?.id);
+  };
+
+  // 担当者検索
+  const handleAssigneeSearch = async (query: string) => {
+    if (query.length < 2) {
+      setAssigneeSearchResults([]);
+      setShowAssigneeDropdown(false);
+      return;
+    }
+
+    setIsSearchingAssignee(true);
+    setShowAssigneeDropdown(true);
+
+    try {
+      const result = await searchUsersForWorkspace(query);
+      if (result.success) {
+        setAssigneeSearchResults(result.data || []);
+        setShowAssigneeDropdown(true);
+      }
+    } catch {
+      // エラーは無視
+    } finally {
+      setIsSearchingAssignee(false);
+    }
+  };
+
+  // 担当者選択
+  const handleSelectAssignee = (user: UserSearchResultResponse) => {
+    const selected: SelectedUser = {
+      id: user.id || 0,
+      username: user.username || '',
+      email: user.email || '',
+      identityIconUrl: user.identityIconUrl || null,
+    };
+    setSelectedAssignee(selected);
+    setShowAssigneeDropdown(false);
+    setAssigneeSearchResults([]);
+    handleFilterChange(taskStatus, selected.id);
+  };
+
+  // 担当者クリア
+  const handleClearAssignee = () => {
+    setSelectedAssignee(null);
+    handleFilterChange(taskStatus, null);
+  };
+
+  // 自分を担当者に設定
+  const handleSelectSelf = () => {
+    if (currentUser) {
+      const selected: SelectedUser = {
+        id: currentUser.id,
+        username: currentUser.username,
+        email: currentUser.email,
+        identityIconUrl: currentUser.identityIconUrl,
+      };
+      setSelectedAssignee(selected);
+      handleFilterChange(taskStatus, selected.id);
+    }
   };
 
   // タスクタイプのアイコンパス
@@ -98,6 +222,82 @@ const WorkspaceTasks = ({ workspaceId, itemId }: WorkspaceTasksProps) => {
         <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
       </div>
 
+      {/* フィルターエリア */}
+      <div className="flex flex-wrap items-end gap-6 mb-4">
+        {/* ステータスフィルター */}
+        <TaskStatusFilter value={taskStatus} onChange={handleStatusChange} size="xs" />
+
+        {/* 担当者フィルター */}
+        <div className="form-control">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm">担当者</span>
+            {currentUser && (
+              <button type="button" className="link link-primary text-xs" onClick={handleSelectSelf}>
+                （自分）
+              </button>
+            )}
+          </div>
+          {selectedAssignee ? (
+            <div className="input input-xs input-bordered flex items-center gap-1.5 pr-1">
+              <img
+                src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
+                alt={selectedAssignee.username}
+                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+              />
+              <span className="text-xs truncate flex-1">{selectedAssignee.username}</span>
+              <button
+                type="button"
+                className="p-0.5 hover:bg-base-300 rounded transition-colors flex-shrink-0"
+                onClick={handleClearAssignee}
+                aria-label="選択解除"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <DebouncedSearchInput
+                onSearch={handleAssigneeSearch}
+                placeholder="名前で検索..."
+                debounceMs={300}
+                size="xs"
+                isLoading={isSearchingAssignee}
+                showSearchIcon={true}
+                showClearButton={true}
+              />
+              {showAssigneeDropdown && assigneeSearchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                  {assigneeSearchResults.map((user) => (
+                    <button
+                      key={user.id}
+                      type="button"
+                      className="w-full flex items-center gap-2 p-2 hover:bg-base-200 transition-colors text-left"
+                      onClick={() => handleSelectAssignee(user)}
+                    >
+                      <img
+                        src={getDisplayIconUrl(user.identityIconUrl)}
+                        alt={user.username || 'User'}
+                        className="w-5 h-5 rounded-full object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{user.username}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
       {tasks.length === 0 ? (
         <p className="text-sm text-base-content/50 text-center py-8">タスクはありません</p>
       ) : (

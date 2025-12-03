@@ -95,6 +95,7 @@ export type { TagResponse } from './models/TagResponse';
 export type { TagStatistics } from './models/TagStatistics';
 export type { TagUsageItem } from './models/TagUsageItem';
 export type { TaskPriority } from './models/TaskPriority';
+export type { TaskStatusFilter } from './models/TaskStatusFilter';
 export type { TaskType } from './models/TaskType';
 export type { TempAttachmentResponse } from './models/TempAttachmentResponse';
 export type { UpdateGenreRequest } from './models/UpdateGenreRequest';

@@ -8142,19 +8142,11 @@
             }
           },
           {
-            "name": "ExcludeCompleted",
+            "name": "Status",
             "in": "query",
-            "description": "完了タスクを除外するか（trueの場合、完了タスクを表示しない）",
+            "description": "タスクのステータスフィルター（省略時はすべて表示）",
             "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "ExcludeDiscarded",
-            "in": "query",
-            "description": "破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）",
-            "schema": {
-              "type": "boolean"
+              "$ref": "#/components/schemas/TaskStatusFilter"
             }
           },
           {
@@ -11167,6 +11159,16 @@
           "Critical"
         ],
         "type": "string"
+      },
+      "TaskStatusFilter": {
+        "enum": [
+          "All",
+          "Active",
+          "Completed",
+          "Discarded"
+        ],
+        "type": "string",
+        "description": "タスクのステータスフィルター"
       },
       "TaskType": {
         "enum": [

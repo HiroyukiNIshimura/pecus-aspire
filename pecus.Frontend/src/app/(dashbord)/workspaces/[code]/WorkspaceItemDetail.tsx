@@ -470,7 +470,25 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           </div>
 
           {/* タスク */}
-          <WorkspaceTasks workspaceId={workspaceId} itemId={itemId} />
+          <WorkspaceTasks
+            workspaceId={workspaceId}
+            itemId={itemId}
+            currentUser={
+              currentUserId && members.length > 0
+                ? (() => {
+                    const user = members.find((m) => m.id === currentUserId);
+                    return user
+                      ? {
+                          id: user.id || 0,
+                          username: user.userName || '',
+                          email: user.email || '',
+                          identityIconUrl: user.identityIconUrl || null,
+                        }
+                      : null;
+                  })()
+                : null
+            }
+          />
         </div>
 
         {/* 編集モーダル */}

@@ -3,6 +3,32 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Requests.WorkspaceTask;
 
 /// <summary>
+/// タスクのステータスフィルター
+/// </summary>
+public enum TaskStatusFilter
+{
+    /// <summary>
+    /// すべてのタスク
+    /// </summary>
+    All,
+
+    /// <summary>
+    /// 未完了のタスク（完了でも破棄でもない）
+    /// </summary>
+    Active,
+
+    /// <summary>
+    /// 完了したタスク（破棄は除く）
+    /// </summary>
+    Completed,
+
+    /// <summary>
+    /// 破棄されたタスク
+    /// </summary>
+    Discarded,
+}
+
+/// <summary>
 /// ワークスペースタスク一覧取得リクエスト
 /// </summary>
 public class GetWorkspaceTasksRequest
@@ -20,14 +46,9 @@ public class GetWorkspaceTasksRequest
     public int PageSize { get; set; } = 10;
 
     /// <summary>
-    /// 完了タスクを除外するか（trueの場合、完了タスクを表示しない）
+    /// タスクのステータスフィルター（省略時はすべて表示）
     /// </summary>
-    public bool? ExcludeCompleted { get; set; }
-
-    /// <summary>
-    /// 破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）
-    /// </summary>
-    public bool? ExcludeDiscarded { get; set; }
+    public TaskStatusFilter? Status { get; set; }
 
     /// <summary>
     /// 担当ユーザーIDでフィルタ
