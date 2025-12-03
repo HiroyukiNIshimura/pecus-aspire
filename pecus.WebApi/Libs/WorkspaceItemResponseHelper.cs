@@ -104,12 +104,14 @@ public static class WorkspaceItemResponseHelper
                 {
                     relatedItems.Add(new RelatedItemInfo
                     {
+                        RelationId = relation.Id,
                         Id = relation.ToItem.Id,
                         Subject = relation.ToItem.Subject,
                         Code = relation.ToItem.Code,
                         RelationType = relation.RelationType,
                         Direction = "from",
                         OwnerId = relation.ToItem.OwnerId,
+                        IsArchived = relation.ToItem.IsArchived,
                         OwnerUsername = relation.ToItem.Owner?.Username,
                         OwnerAvatarUrl =
                             relation.ToItem.Owner != null
@@ -135,12 +137,14 @@ public static class WorkspaceItemResponseHelper
                 {
                     relatedItems.Add(new RelatedItemInfo
                     {
+                        RelationId = relation.Id,
                         Id = relation.FromItem.Id,
                         Subject = relation.FromItem.Subject,
                         Code = relation.FromItem.Code,
                         RelationType = relation.RelationType,
                         Direction = "to",
                         OwnerId = relation.FromItem.OwnerId,
+                        IsArchived = relation.FromItem.IsArchived,
                         OwnerUsername = relation.FromItem.Owner?.Username,
                         OwnerAvatarUrl =
                             relation.FromItem.Owner != null

@@ -8,6 +8,10 @@ import type { RelationType } from './RelationType';
  */
 export type RelatedItemInfo = {
     /**
+     * 関連ID（削除時に使用）
+     */
+    relationId?: number;
+    /**
      * アイテムID
      */
     id?: number;
@@ -30,6 +34,10 @@ export type RelatedItemInfo = {
      * オーナーID
      */
     ownerId?: number | null;
+    /**
+     * アーカイブ済みかどうか
+     */
+    isArchived?: boolean;
     /**
      * オーナーユーザー名
      */

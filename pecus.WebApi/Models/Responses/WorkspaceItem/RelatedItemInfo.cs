@@ -8,6 +8,11 @@ namespace Pecus.Models.Responses.WorkspaceItem;
 public class RelatedItemInfo
 {
     /// <summary>
+    /// 関連ID（削除時に使用）
+    /// </summary>
+    public int RelationId { get; set; }
+
+    /// <summary>
     /// アイテムID
     /// </summary>
     public int Id { get; set; }
@@ -38,6 +43,11 @@ public class RelatedItemInfo
     /// オーナーID
     /// </summary>
     public int? OwnerId { get; set; }
+
+    /// <summary>
+    /// アーカイブ済みかどうか
+    /// </summary>
+    public bool IsArchived { get; set; }
 
     /// <summary>
     /// オーナーユーザー名

@@ -77,7 +77,7 @@ export default function WorkspaceDetailClient({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // ===== 関連アイテム選択モードの状態 =====
-  const [isAddingRelation, setIsAddingRelation] = useState(false);
+  const [, setIsAddingRelation] = useState(false);
 
   // ===== モバイルドロワーの状態 =====
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);

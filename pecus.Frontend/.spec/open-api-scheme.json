@@ -9655,6 +9655,11 @@
       "RelatedItemInfo": {
         "type": "object",
         "properties": {
+          "relationId": {
+            "type": "integer",
+            "description": "関連ID（削除時に使用）",
+            "format": "int32"
+          },
           "id": {
             "type": "integer",
             "description": "アイテムID",
@@ -9683,6 +9688,10 @@
             "description": "オーナーID",
             "format": "int32",
             "nullable": true
+          },
+          "isArchived": {
+            "type": "boolean",
+            "description": "アーカイブ済みかどうか"
           },
           "ownerUsername": {
             "type": "string",

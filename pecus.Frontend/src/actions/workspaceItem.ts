@@ -12,6 +12,7 @@ import type {
   CreateWorkspaceItemRequest,
   MyItemRelationType,
   RelationType,
+  SuccessResponse,
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
@@ -392,5 +393,32 @@ export async function addWorkspaceItemRelations(
     }
 
     return parseErrorResponse(error, '関連アイテムの追加に失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムの関連を削除
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ * @param relationId 関連ID
+ */
+export async function removeWorkspaceItemRelation(
+  workspaceId: number,
+  itemId: number,
+  relationId: number,
+): Promise<ApiResponse<SuccessResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.deleteApiWorkspacesItemsRelations(workspaceId, itemId, relationId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to remove workspace item relation:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, '関連アイテムの削除に失敗しました。');
   }
 }

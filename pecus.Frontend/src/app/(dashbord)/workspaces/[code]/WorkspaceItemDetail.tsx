@@ -2,13 +2,24 @@
 
 import AddLinkIcon from '@mui/icons-material/AddLink';
 import EditIcon from '@mui/icons-material/Edit';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import MenuIcon from '@mui/icons-material/Menu';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
-import { addWorkspaceItemPin, fetchLatestWorkspaceItem, removeWorkspaceItemPin } from '@/actions/workspaceItem';
+import {
+  addWorkspaceItemPin,
+  fetchLatestWorkspaceItem,
+  removeWorkspaceItemPin,
+  removeWorkspaceItemRelation,
+} from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
-import type { ErrorResponse, WorkspaceDetailUserResponse, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type {
+  ErrorResponse,
+  RelatedItemInfo,
+  WorkspaceDetailUserResponse,
+  WorkspaceItemDetailResponse,
+} from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
@@ -43,6 +54,13 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isDrawerClosing, setIsDrawerClosing] = useState(false);
     const [isPinLoading, setIsPinLoading] = useState(false);
+
+    // 関連削除モーダルの状態
+    const [deleteRelationModal, setDeleteRelationModal] = useState<{
+      isOpen: boolean;
+      relation: RelatedItemInfo | null;
+    }>({ isOpen: false, relation: null });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
@@ -144,6 +162,39 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         return 'オーナーが下書き中です';
       }
       return 'アイテムを編集';
+    };
+
+    // 関連削除モーダルを開く
+    const handleOpenDeleteRelationModal = (relation: RelatedItemInfo) => {
+      setDeleteRelationModal({ isOpen: true, relation });
+    };
+
+    // 関連削除モーダルを閉じる
+    const handleCloseDeleteRelationModal = () => {
+      setDeleteRelationModal({ isOpen: false, relation: null });
+    };
+
+    // 関連を削除
+    const handleDeleteRelation = async () => {
+      if (!deleteRelationModal.relation?.relationId) return;
+
+      setIsDeleting(true);
+      try {
+        const result = await removeWorkspaceItemRelation(workspaceId, itemId, deleteRelationModal.relation.relationId);
+
+        if (result.success) {
+          notify.success('関連を削除しました。');
+          // アイテム詳細を再取得して関連一覧を更新
+          await fetchItemDetail();
+        } else {
+          notify.error(result.message || '関連の削除に失敗しました。');
+        }
+      } catch (_err: unknown) {
+        notify.error('関連の削除中にエラーが発生しました。');
+      } finally {
+        setIsDeleting(false);
+        handleCloseDeleteRelationModal();
+      }
     };
 
     if (isLoading) {
@@ -369,49 +420,46 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {item.relatedItems && item.relatedItems.length > 0 ? (
               <div className="space-y-2">
                 {item.relatedItems.map((related) => (
-                  <div key={related.id} className="flex items-center gap-2 p-2 bg-base-200 rounded">
-                    {/* 方向インジケーター */}
-                    <div className="flex-shrink-0">
-                      {related.direction === 'from' ? (
-                        <span className="badge badge-sm badge-primary" title="このアイテムから関連">
-                          →
-                        </span>
-                      ) : (
-                        <span className="badge badge-sm badge-secondary" title="このアイテムへの関連">
-                          ←
-                        </span>
-                      )}
-                    </div>
-
-                    {/* リレーション種別 */}
-                    <div className="flex-shrink-0">
-                      <span className="badge badge-sm badge-outline">{related.relationType}</span>
-                    </div>
-
+                  <div
+                    key={related.id}
+                    className={`flex items-center gap-2 p-2 rounded ${related.isArchived ? 'bg-base-300 opacity-60' : 'bg-base-200'}`}
+                  >
                     {/* アイテム情報 */}
                     <div className="flex-1 min-w-0">
                       <button
                         type="button"
                         onClick={() => related.id && onItemSelect(related.id)}
-                        className="truncate hover:underline cursor-pointer text-left w-full"
+                        className={`truncate hover:underline cursor-pointer text-left w-full ${related.isArchived ? 'line-through' : ''}`}
                         disabled={!related.id}
                       >
                         {related.subject || '（件名未設定）'}
                       </button>
-                      {/* オーナー情報 */}
-                      {related.ownerId && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
-                          {related.ownerAvatarUrl && (
-                            <img
-                              src={getDisplayIconUrl(related.ownerAvatarUrl)}
-                              alt={related.ownerUsername || 'ユーザー'}
-                              className="w-4 h-4 rounded-full object-cover flex-shrink-0"
-                            />
-                          )}
-                          <span className="truncate">{related.ownerUsername}</span>
-                        </div>
-                      )}
+                      {/* アーカイブ状態とオーナー情報 */}
+                      <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
+                        {related.isArchived && <span className="badge badge-xs badge-neutral">アーカイブ</span>}
+                        {related.ownerId && (
+                          <>
+                            {related.ownerAvatarUrl && (
+                              <img
+                                src={getDisplayIconUrl(related.ownerAvatarUrl)}
+                                alt={related.ownerUsername || 'ユーザー'}
+                                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                              />
+                            )}
+                            <span className="truncate">{related.ownerUsername}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
+                    {/* 削除ボタン */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDeleteRelationModal(related)}
+                      className="btn btn-ghost btn-xs text-error hover:bg-error/10"
+                      title="関連を削除"
+                    >
+                      <LinkOffIcon className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -442,6 +490,60 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           onItemUpdate={(updatedItem) => setItem(updatedItem)}
           currentUserId={currentUserId}
         />
+
+        {/* 関連削除確認モーダル */}
+        {deleteRelationModal.isOpen && deleteRelationModal.relation && (
+          <>
+            {/* モーダル背景オーバーレイ */}
+            <div
+              className="fixed inset-0 bg-black/50 z-[60]"
+              onClick={handleCloseDeleteRelationModal}
+              aria-hidden="true"
+            />
+            {/* モーダルコンテンツ */}
+            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+              <div className="bg-base-100 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                <div className="p-6">
+                  <h3 className="font-bold text-lg">関連の削除</h3>
+                  <p className="py-4">以下のアイテムとの関連を削除しますか？</p>
+                  <div className="bg-base-200 p-3 rounded-lg mb-4">
+                    <p className="font-semibold">{deleteRelationModal.relation.subject || '（件名未設定）'}</p>
+                    {deleteRelationModal.relation.ownerUsername && (
+                      <p className="text-sm text-base-content/70 mt-1">
+                        オーナー: {deleteRelationModal.relation.ownerUsername}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCloseDeleteRelationModal}
+                      className="btn"
+                      disabled={isDeleting}
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteRelation}
+                      className="btn btn-error"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <span className="loading loading-spinner loading-xs"></span>
+                          削除中...
+                        </>
+                      ) : (
+                        '削除'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     );
   },
