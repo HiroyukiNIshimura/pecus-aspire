@@ -24,6 +24,7 @@ import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceItemDrawer from './WorkspaceItemDrawer';
+import WorkspaceTasks from './WorkspaceTasks';
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
@@ -467,6 +468,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <p className="text-sm text-base-content/50">関連アイテムはありません</p>
             )}
           </div>
+
+          {/* タスク */}
+          <WorkspaceTasks workspaceId={workspaceId} itemId={itemId} />
         </div>
 
         {/* 編集モーダル */}
