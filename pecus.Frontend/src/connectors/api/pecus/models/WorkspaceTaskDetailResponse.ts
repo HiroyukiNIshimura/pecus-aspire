@@ -95,10 +95,6 @@ export type WorkspaceTaskDetailResponse = {
      */
     discardReason?: string | null;
     /**
-     * 表示順序
-     */
-    displayOrder?: number;
-    /**
      * 作成日時
      */
     createdAt?: string;

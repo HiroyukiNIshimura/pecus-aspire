@@ -30,9 +30,5 @@ export type CreateWorkspaceTaskRequest = {
      * 予定工数（時間）
      */
     estimatedHours?: number | null;
-    /**
-     * 表示順序
-     */
-    displayOrder?: number;
 };
 

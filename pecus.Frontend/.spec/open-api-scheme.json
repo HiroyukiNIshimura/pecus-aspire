@@ -8869,13 +8869,6 @@
             "description": "予定工数（時間）",
             "format": "double",
             "nullable": true
-          },
-          "displayOrder": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "type": "integer",
-            "description": "表示順序",
-            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -11637,14 +11630,6 @@
             "description": "破棄理由",
             "nullable": true
           },
-          "displayOrder": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "type": "integer",
-            "description": "表示順序",
-            "format": "int32",
-            "nullable": true
-          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用のRowVersion（必須）",
@@ -13048,11 +13033,6 @@
             "type": "string",
             "description": "破棄理由",
             "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順序",
-            "format": "int32"
           },
           "createdAt": {
             "type": "string",

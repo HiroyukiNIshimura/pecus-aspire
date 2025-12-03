@@ -51,10 +51,6 @@ export type UpdateWorkspaceTaskRequest = {
      */
     discardReason?: string | null;
     /**
-     * 表示順序
-     */
-    displayOrder?: number | null;
-    /**
      * 楽観的ロック用のRowVersion（必須）
      */
     rowVersion: number;
