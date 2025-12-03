@@ -1209,8 +1209,8 @@ public class DatabaseSeeder
                 continue;
             }
 
-            // 各アイテムに0〜5件のタスクを作成
-            int taskCount = _random.Next(0, 6);
+            // 各アイテムに0〜29件のタスクを作成
+            int taskCount = _random.Next(0, 30);
 
             for (int i = 0; i < taskCount; i++)
             {
