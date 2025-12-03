@@ -4,6 +4,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Requests.WorkspaceTask;
+using Pecus.Models.Responses.Common;
 using Pecus.Models.Responses.WorkspaceTask;
 using Pecus.Services;
 
@@ -123,14 +124,16 @@ public class WorkspaceTaskController : BaseSecureController
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">フィルタリング・ページネーションリクエスト</param>
     /// <returns>タスク一覧</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(List<WorkspaceTaskDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResponse<WorkspaceTaskDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<List<WorkspaceTaskDetailResponse>>> GetWorkspaceTasks(
+    public async Task<Ok<PagedResponse<WorkspaceTaskDetailResponse>>> GetWorkspaceTasks(
         int workspaceId,
-        int itemId
+        int itemId,
+        [FromQuery] GetWorkspaceTasksRequest request
     )
     {
         // ワークスペースへのアクセス権限をチェック
@@ -140,14 +143,27 @@ public class WorkspaceTaskController : BaseSecureController
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
         }
 
-        var tasks = await _workspaceTaskService.GetWorkspaceTasksAsync(
+        var (tasks, totalCount) = await _workspaceTaskService.GetWorkspaceTasksAsync(
             workspaceId,
-            itemId
+            itemId,
+            request
         );
 
-        var responses = tasks.Select(BuildTaskDetailResponse).ToList();
+        const int pageSize = 20;
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-        return TypedResults.Ok(responses);
+        var response = new PagedResponse<WorkspaceTaskDetailResponse>
+        {
+            Data = tasks.Select(BuildTaskDetailResponse),
+            CurrentPage = request.Page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            HasPreviousPage = request.Page > 1,
+            HasNextPage = request.Page < totalPages,
+        };
+
+        return TypedResults.Ok(response);
     }
 
     /// <summary>

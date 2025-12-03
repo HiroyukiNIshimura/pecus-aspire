@@ -142,10 +142,12 @@ public class WorkspaceTaskService
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
-    /// <returns>タスク一覧</returns>
-    public async Task<List<WorkspaceTask>> GetWorkspaceTasksAsync(
+    /// <param name="request">フィルタリング・ページネーションリクエスト</param>
+    /// <returns>タスク一覧と総件数のタプル</returns>
+    public async Task<(List<WorkspaceTask> Tasks, int TotalCount)> GetWorkspaceTasksAsync(
         int workspaceId,
-        int itemId
+        int itemId,
+        GetWorkspaceTasksRequest request
     )
     {
         // ワークスペースアイテムの存在確認
@@ -157,15 +159,42 @@ public class WorkspaceTaskService
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
         }
 
-        var tasks = await _context.WorkspaceTasks
+        var query = _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
-            .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId)
+            .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
+
+        // 完了タスクのフィルタ（デフォルトは含めない）
+        if (request.IncludeCompleted != true)
+        {
+            query = query.Where(t => !t.IsCompleted);
+        }
+
+        // 破棄タスクのフィルタ（デフォルトは含めない）
+        if (request.IncludeDiscarded != true)
+        {
+            query = query.Where(t => !t.IsDiscarded);
+        }
+
+        // 担当者フィルタ
+        if (request.AssignedUserId.HasValue)
+        {
+            query = query.Where(t => t.AssignedUserId == request.AssignedUserId.Value);
+        }
+
+        // 総件数を取得
+        var totalCount = await query.CountAsync();
+
+        // ページネーション
+        const int pageSize = 20;
+        var tasks = await query
             .OrderBy(t => t.DisplayOrder)
             .ThenByDescending(t => t.CreatedAt)
+            .Skip((request.Page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return tasks;
+        return (tasks, totalCount);
     }
 
     /// <summary>
