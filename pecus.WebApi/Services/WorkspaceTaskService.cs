@@ -81,7 +81,6 @@ public class WorkspaceTaskService
             StartDate = request.StartDate,
             DueDate = request.DueDate,
             EstimatedHours = request.EstimatedHours,
-            DisplayOrder = request.DisplayOrder,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -188,8 +187,7 @@ public class WorkspaceTaskService
         // ページネーション
         var pageSize = request.PageSize;
         var tasks = await query
-            .OrderBy(t => t.DisplayOrder)
-            .ThenByDescending(t => t.CreatedAt)
+            .OrderByDescending(t => t.CreatedAt)
             .Skip((request.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -315,11 +313,6 @@ public class WorkspaceTaskService
             task.DiscardReason = request.DiscardReason;
         }
 
-        if (request.DisplayOrder.HasValue)
-        {
-            task.DisplayOrder = request.DisplayOrder.Value;
-        }
-
         task.UpdatedAt = DateTime.UtcNow;
 
         // 楽観的ロック用のRowVersionを設定
@@ -405,7 +398,6 @@ public class WorkspaceTaskService
             IsDiscarded = task.IsDiscarded,
             DiscardedAt = task.DiscardedAt,
             DiscardReason = task.DiscardReason,
-            DisplayOrder = task.DisplayOrder,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             RowVersion = task.RowVersion,

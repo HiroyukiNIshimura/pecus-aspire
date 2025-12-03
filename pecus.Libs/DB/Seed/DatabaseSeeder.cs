@@ -1265,7 +1265,6 @@ public class DatabaseSeeder
                     IsDiscarded = isDiscarded,
                     DiscardedAt = discardedAt,
                     DiscardReason = discardReason,
-                    DisplayOrder = i,
                     CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
                     UpdatedAt = DateTime.UtcNow,
                 };

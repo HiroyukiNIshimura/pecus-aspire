@@ -266,7 +266,6 @@ public class WorkspaceTaskController : BaseSecureController
             IsDiscarded = task.IsDiscarded,
             DiscardedAt = task.DiscardedAt,
             DiscardReason = task.DiscardReason,
-            DisplayOrder = task.DisplayOrder,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             RowVersion = task.RowVersion,

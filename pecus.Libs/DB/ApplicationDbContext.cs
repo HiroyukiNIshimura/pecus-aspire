@@ -660,7 +660,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.IsCompleted).HasDefaultValue(false);
             entity.Property(e => e.IsDiscarded).HasDefaultValue(false);
             entity.Property(e => e.DiscardReason).HasMaxLength(500);
-            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
             entity.Property(e => e.EstimatedHours).HasPrecision(10, 2);
             entity.Property(e => e.ActualHours).HasPrecision(10, 2);
 
@@ -710,7 +709,6 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => wt.DueDate);
             entity.HasIndex(wt => wt.Priority);
             entity.HasIndex(wt => wt.TaskType);
-            entity.HasIndex(wt => wt.DisplayOrder);
             // 複合インデックス（頻繁な検索パターン用）
             entity.HasIndex(wt => new { wt.AssignedUserId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });

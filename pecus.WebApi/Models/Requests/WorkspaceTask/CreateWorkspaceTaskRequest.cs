@@ -47,10 +47,4 @@ public class CreateWorkspaceTaskRequest
     /// </summary>
     [Range(0, 10000, ErrorMessage = "予定工数は0〜10000時間の範囲で指定してください。")]
     public decimal? EstimatedHours { get; set; }
-
-    /// <summary>
-    /// 表示順序
-    /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "表示順序は0以上の値を指定してください。")]
-    public int DisplayOrder { get; set; } = 0;
 }

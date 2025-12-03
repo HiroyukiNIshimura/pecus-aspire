@@ -74,12 +74,6 @@ public class UpdateWorkspaceTaskRequest
     public string? DiscardReason { get; set; }
 
     /// <summary>
-    /// 表示順序
-    /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "表示順序は0以上の値を指定してください。")]
-    public int? DisplayOrder { get; set; }
-
-    /// <summary>
     /// 楽観的ロック用のRowVersion（必須）
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

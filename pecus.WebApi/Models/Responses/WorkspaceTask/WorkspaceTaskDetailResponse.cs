@@ -125,11 +125,6 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public string? DiscardReason { get; set; }
 
     /// <summary>
-    /// 表示順序
-    /// </summary>
-    public int DisplayOrder { get; set; }
-
-    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; }

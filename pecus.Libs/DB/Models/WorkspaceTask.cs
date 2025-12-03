@@ -106,11 +106,6 @@ public class WorkspaceTask
     public string? DiscardReason { get; set; }
 
     /// <summary>
-    /// 表示順序
-    /// </summary>
-    public int DisplayOrder { get; set; } = 0;
-
-    /// <summary>
     /// 作成日時
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
