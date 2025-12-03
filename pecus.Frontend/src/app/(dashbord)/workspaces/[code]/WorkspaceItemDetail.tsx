@@ -29,7 +29,7 @@ import WorkspaceTasks from './WorkspaceTasks';
 interface WorkspaceItemDetailProps {
   workspaceId: number;
   itemId: number;
-  onItemSelect: (itemId: number) => void;
+  onItemSelect: (itemId: number, itemCode: string) => void;
   members?: WorkspaceDetailUserResponse[];
   currentUserId?: number;
   /** 関連アイテム追加モードを開始するコールバック */
@@ -429,9 +429,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                     <div className="flex-1 min-w-0">
                       <button
                         type="button"
-                        onClick={() => related.id && onItemSelect(related.id)}
+                        onClick={() => related.id && related.code && onItemSelect(related.id, related.code)}
                         className={`truncate hover:underline cursor-pointer text-left w-full ${related.isArchived ? 'line-through' : ''}`}
-                        disabled={!related.id}
+                        disabled={!related.id || !related.code}
                       >
                         {related.subject || '（件名未設定）'}
                       </button>

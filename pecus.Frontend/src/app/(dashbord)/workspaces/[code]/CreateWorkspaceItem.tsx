@@ -18,7 +18,7 @@ interface CreateWorkspaceItemProps {
   workspaceId: number;
   isOpen: boolean;
   onClose: () => void;
-  onCreate?: (itemId: number) => void;
+  onCreate?: (itemId: number, itemCode: string) => void;
 }
 
 export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCreate }: CreateWorkspaceItemProps) {
@@ -96,8 +96,8 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
 
         if (result.success) {
           // 作成成功時のコールバック
-          if (onCreate && result.data.workspaceItem?.id) {
-            onCreate(result.data.workspaceItem.id);
+          if (onCreate && result.data.workspaceItem?.id && result.data.workspaceItem?.code) {
+            onCreate(result.data.workspaceItem.id, result.data.workspaceItem.code);
           }
 
           // フォームをリセットしてモーダルを閉じる

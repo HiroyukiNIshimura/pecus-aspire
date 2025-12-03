@@ -157,18 +157,16 @@ export default function WorkspaceDetailClient({
   // ブラウザの戻る/進むボタンに対応
   useEffect(() => {
     const handlePopState = () => {
-      // URLからitemIdパラメータを取得
+      // URLからitemCodeパラメータを取得
       const urlParams = new URLSearchParams(window.location.search);
-      const itemIdParam = urlParams.get('itemId');
+      const itemCodeParam = urlParams.get('itemCode');
 
-      if (itemIdParam) {
-        const itemId = parseInt(itemIdParam, 10);
-        if (!Number.isNaN(itemId)) {
-          setShowWorkspaceDetail(false);
-          setSelectedItemId(itemId);
-        }
+      if (itemCodeParam) {
+        // itemCodeがある場合は、SSRでアイテムIDを解決するためにページをリロード
+        // Next.js App Router では router.refresh() で SSR を再実行
+        router.refresh();
       } else {
-        // itemIdがない場合はホーム表示
+        // itemCodeがない場合はホーム表示
         setShowWorkspaceDetail(true);
         setSelectedItemId(null);
       }
@@ -178,7 +176,7 @@ export default function WorkspaceDetailClient({
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [router]);
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 
@@ -409,11 +407,11 @@ export default function WorkspaceDetailClient({
 
   // アイテム選択ハンドラ
   const handleItemSelect = useCallback(
-    (itemId: number) => {
+    (itemId: number, itemCode: string) => {
       setShowWorkspaceDetail(false);
       setSelectedItemId(itemId);
-      // URLにitemIdパラメータを追加
-      router.push(`${pathname}?itemId=${itemId}`, { scroll: false });
+      // URLにitemCodeパラメータを追加
+      router.push(`${pathname}?itemCode=${itemCode}`, { scroll: false });
     },
     [router, pathname],
   );
@@ -430,13 +428,13 @@ export default function WorkspaceDetailClient({
 
   // 新規作成完了ハンドラ
   const handleCreateComplete = useCallback(
-    (itemId: number) => {
+    (itemId: number, itemCode: string) => {
       setIsCreateModalOpen(false);
       setSelectedItemId(itemId);
       setShowWorkspaceDetail(false);
 
-      // URLにitemIdパラメータを追加
-      router.push(`${pathname}?itemId=${itemId}`, { scroll: false });
+      // URLにitemCodeパラメータを追加
+      router.push(`${pathname}?itemCode=${itemCode}`, { scroll: false });
 
       // サイドバーのアイテムリストをリロード（新規作成されたアイテムを選択状態に設定）
       sidebarComponentRef.current?.refreshItems(itemId);
@@ -982,8 +980,8 @@ export default function WorkspaceDetailClient({
               currentWorkspaceCode={workspaceCode}
               workspaces={currentWorkspaces}
               onHomeSelect={handleHomeSelect}
-              onItemSelect={(itemId) => {
-                handleItemSelect(itemId);
+              onItemSelect={(itemId, itemCode) => {
+                handleItemSelect(itemId, itemCode);
                 setMobileDrawerOpen(false); // アイテム選択時にドロワーを閉じる
               }}
               onCreateNew={handleCreateNew}

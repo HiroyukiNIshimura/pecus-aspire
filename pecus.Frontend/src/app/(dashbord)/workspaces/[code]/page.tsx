@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
+import { fetchWorkspaceItemByCode } from '@/actions/workspaceItem';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -22,17 +23,13 @@ interface WorkspaceDetailPageProps {
     code: string;
   }>;
   searchParams: Promise<{
-    itemId?: string;
+    itemCode?: string;
   }>;
 }
 
 export default async function WorkspaceDetailPage({ params, searchParams }: WorkspaceDetailPageProps) {
   const { code } = await params;
-  const { itemId } = await searchParams;
-
-  // itemId を数値に変換（存在する場合）
-  const initialItemId = itemId ? parseInt(itemId, 10) : undefined;
-  const validInitialItemId = initialItemId && !Number.isNaN(initialItemId) ? initialItemId : undefined;
+  const { itemCode } = await searchParams;
 
   // ユーザー情報取得
   let userInfo: UserInfo | null = null;
@@ -41,6 +38,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
   let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
   let genres: MasterGenreResponse[] = [];
   let skills: MasterSkillResponse[] = [];
+  let initialItemId: number | undefined;
 
   try {
     const api = createPecusApiClients();
@@ -49,6 +47,15 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // ワークスペース詳細情報取得（code ベース）
     workspaceDetail = await api.workspace.getApiWorkspacesCode(code);
+
+    // itemCode が指定されている場合、アイテムIDを解決
+    if (itemCode && workspaceDetail) {
+      const itemResult = await fetchWorkspaceItemByCode(workspaceDetail.id, itemCode);
+      if (itemResult.success && itemResult.data) {
+        initialItemId = itemResult.data.id;
+      }
+      // アイテムが見つからない場合は無視（ワークスペース詳細を表示）
+    }
 
     // ワークスペース一覧取得（切り替え用）
     try {
@@ -110,7 +117,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       userInfo={userInfo}
       genres={genres}
       skills={skills}
-      initialItemId={validInitialItemId}
+      initialItemId={initialItemId}
     />
   );
 }

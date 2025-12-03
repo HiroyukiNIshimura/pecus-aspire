@@ -59,7 +59,7 @@ interface WorkspaceItemsSidebarProps {
   workspaces: WorkspaceListItemResponse[];
   scrollContainerId?: string;
   onHomeSelect?: () => void;
-  onItemSelect?: (itemId: number) => void;
+  onItemSelect?: (itemId: number, itemCode: string) => void;
   onCreateNew?: () => void;
   /** URLクエリパラメータで指定された初期選択アイテムID */
   initialSelectedItemId?: number;
@@ -503,7 +503,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                       }
                     } else {
                       setSelectedItemId(itemId);
-                      onItemSelect?.(itemId);
+                      onItemSelect?.(itemId, item.code ?? '');
                     }
                   };
 

@@ -272,7 +272,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                             </div>
 
                             {/* 件名 */}
-                            <Link href={`/workspaces/${item.workspaceCode}?itemId=${item.id}`}>
+                            <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
                               <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words line-clamp-2">
                                 {item.subject || '（件名未設定）'}
                               </h3>

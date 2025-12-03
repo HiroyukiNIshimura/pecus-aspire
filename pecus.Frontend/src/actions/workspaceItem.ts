@@ -74,6 +74,30 @@ export async function fetchLatestWorkspaceItem(
 }
 
 /**
+ * Server Action: ワークスペースアイテムをコードで取得
+ */
+export async function fetchWorkspaceItemByCode(
+  workspaceId: number,
+  itemCode: string,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.getApiWorkspacesItemsCode(workspaceId, itemCode);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to fetch workspace item by code:', error);
+
+    const notFound = detect404ValidationError(error);
+    // アイテムが見つからない（404 Not Found）
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'アイテムの取得に失敗しました。');
+  }
+}
+
+/**
  * Server Action: ワークスペースアイテムを作成
  */
 export async function createWorkspaceItem(
