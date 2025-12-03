@@ -120,6 +120,8 @@ public class DatabaseSeeder
         await SeedWorkspaceSkillsAsync();
         await SeedWorkspaceItemsAsync();
         await SeedWorkspaceItemRelationsAsync();
+        await SeedWorkspaceTasksAsync();
+        await SeedTaskCommentsAsync();
 
         _logger.LogInformation("Development mock data seeding completed");
     }
@@ -1148,5 +1150,260 @@ public class DatabaseSeeder
         return CodeGenerator.GenerateWorkspaceItemCode();
     }
 
+    /// <summary>
+    /// ワークスペースタスクのシードデータを投入
+    /// </summary>
+    public async Task SeedWorkspaceTasksAsync()
+    {
+        if (await _context.WorkspaceTasks.AnyAsync())
+        {
+            _logger.LogInformation("Workspace tasks already exist, skipping seeding");
+            return;
+        }
 
+        var workspaceItems = await _context.WorkspaceItems
+            .Include(wi => wi.Workspace)
+            .ToListAsync();
+
+        if (!workspaceItems.Any())
+        {
+            _logger.LogWarning("No workspace items found for seeding tasks");
+            return;
+        }
+
+        // タスク内容のサンプル
+        var taskContents = new[]
+        {
+            "コードレビューを実施する",
+            "ユニットテストを追加する",
+            "ドキュメントを更新する",
+            "バグを修正する",
+            "パフォーマンスを改善する",
+            "セキュリティチェックを行う",
+            "依存関係を更新する",
+            "リファクタリングを実施する",
+            "機能を実装する",
+            "デザインを調整する",
+            "APIエンドポイントを追加する",
+            "データベーススキーマを変更する",
+            "設定ファイルを更新する",
+            "ログ出力を追加する",
+            "エラーハンドリングを改善する",
+        };
+
+        var taskTypes = System.Enum.GetValues<TaskType>();
+        var priorities = new TaskPriority?[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High, TaskPriority.Critical, null };
+
+        int totalTasksAdded = 0;
+
+        foreach (var workspaceItem in workspaceItems)
+        {
+            // このワークスペースのメンバーを取得
+            var workspaceMembers = await _context.WorkspaceUsers
+                .Where(wu => wu.WorkspaceId == workspaceItem.WorkspaceId)
+                .Select(wu => wu.UserId)
+                .ToListAsync();
+
+            if (!workspaceMembers.Any())
+            {
+                continue;
+            }
+
+            // 各アイテムに0〜5件のタスクを作成
+            int taskCount = _random.Next(0, 6);
+
+            for (int i = 0; i < taskCount; i++)
+            {
+                var assignedUserId = workspaceMembers[_random.Next(workspaceMembers.Count)];
+                var createdByUserId = workspaceMembers[_random.Next(workspaceMembers.Count)];
+                var taskType = taskTypes[_random.Next(taskTypes.Length)];
+                var priority = priorities[_random.Next(priorities.Length)];
+                var content = taskContents[_random.Next(taskContents.Length)];
+
+                // 開始日と期限日を設定（50%の確率で設定）
+                DateTime? startDate = null;
+                DateTime? dueDate = null;
+                if (_random.Next(2) == 1)
+                {
+                    startDate = DateTime.UtcNow.AddDays(-_random.Next(0, 30));
+                    dueDate = startDate.Value.AddDays(_random.Next(1, 60));
+                }
+
+                // 予定工数と実績工数
+                decimal? estimatedHours = _random.Next(2) == 1 ? _random.Next(1, 40) : null;
+                decimal? actualHours = estimatedHours.HasValue && _random.Next(2) == 1
+                    ? Math.Round((decimal)(_random.NextDouble() * (double)estimatedHours.Value * 1.5), 1)
+                    : null;
+
+                // 進捗と完了状態
+                int progressPercentage = _random.Next(0, 101);
+                bool isCompleted = progressPercentage == 100 || _random.Next(10) == 0;
+                DateTime? completedAt = isCompleted ? DateTime.UtcNow.AddDays(-_random.Next(0, 30)) : null;
+
+                // 破棄状態（5%の確率）
+                bool isDiscarded = !isCompleted && _random.Next(20) == 0;
+                DateTime? discardedAt = isDiscarded ? DateTime.UtcNow.AddDays(-_random.Next(0, 30)) : null;
+                string? discardReason = isDiscarded ? "優先度変更のためキャンセル" : null;
+
+                var workspaceTask = new WorkspaceTask
+                {
+                    WorkspaceItemId = workspaceItem.Id,
+                    WorkspaceId = workspaceItem.WorkspaceId,
+                    OrganizationId = workspaceItem.Workspace!.OrganizationId,
+                    AssignedUserId = assignedUserId,
+                    CreatedByUserId = createdByUserId,
+                    Content = content,
+                    TaskType = taskType,
+                    Priority = priority,
+                    StartDate = startDate,
+                    DueDate = dueDate,
+                    EstimatedHours = estimatedHours,
+                    ActualHours = actualHours,
+                    ProgressPercentage = isCompleted ? 100 : progressPercentage,
+                    IsCompleted = isCompleted,
+                    CompletedAt = completedAt,
+                    IsDiscarded = isDiscarded,
+                    DiscardedAt = discardedAt,
+                    DiscardReason = discardReason,
+                    DisplayOrder = i,
+                    CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                _context.WorkspaceTasks.Add(workspaceTask);
+                totalTasksAdded++;
+
+                // 500件ごとに保存してメモリを節約
+                if (totalTasksAdded % 500 == 0)
+                {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Added {Count} workspace tasks", totalTasksAdded);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} workspace tasks in total", totalTasksAdded);
+    }
+
+    /// <summary>
+    /// タスクコメントのシードデータを投入
+    /// </summary>
+    public async Task SeedTaskCommentsAsync()
+    {
+        if (await _context.TaskComments.AnyAsync())
+        {
+            _logger.LogInformation("Task comments already exist, skipping seeding");
+            return;
+        }
+
+        var workspaceTasks = await _context.WorkspaceTasks
+            .Include(t => t.Workspace)
+            .ToListAsync();
+
+        if (!workspaceTasks.Any())
+        {
+            _logger.LogWarning("No workspace tasks found for seeding comments");
+            return;
+        }
+
+        // コメント内容のサンプル
+        var normalComments = new[]
+        {
+            "了解しました。対応します。",
+            "確認しました。",
+            "進捗を更新しました。",
+            "質問があります。詳細を教えてください。",
+            "完了しました。レビューをお願いします。",
+            "修正が必要です。",
+            "テストを実施しました。問題ありません。",
+            "ドキュメントを更新しました。",
+            "本日中に対応予定です。",
+            "期限を延長してもらえますか？",
+            "他のタスクとの依存関係があります。",
+            "優先度を上げてください。",
+            "関連するIssueを確認してください。",
+            "明日のミーティングで確認します。",
+            "承認しました。",
+        };
+
+        var commentTypes = new[] { "Normal", "StatusChange", "AssigneeChange", "PriorityChange" };
+
+        int totalCommentsAdded = 0;
+
+        foreach (var task in workspaceTasks)
+        {
+            // このワークスペースのメンバーを取得
+            var workspaceMembers = await _context.WorkspaceUsers
+                .Where(wu => wu.WorkspaceId == task.WorkspaceId)
+                .Select(wu => wu.UserId)
+                .ToListAsync();
+
+            if (!workspaceMembers.Any())
+            {
+                continue;
+            }
+
+            // 各タスクに0〜5件のコメントを作成
+            int commentCount = _random.Next(0, 6);
+
+            for (int i = 0; i < commentCount; i++)
+            {
+                var userId = workspaceMembers[_random.Next(workspaceMembers.Count)];
+                var commentType = commentTypes[_random.Next(commentTypes.Length)];
+
+                string content;
+                string? beforeValue = null;
+                string? afterValue = null;
+
+                switch (commentType)
+                {
+                    case "StatusChange":
+                        content = "ステータスを変更しました。";
+                        beforeValue = "{\"status\": \"進行中\"}";
+                        afterValue = "{\"status\": \"完了\"}";
+                        break;
+                    case "AssigneeChange":
+                        content = "担当者を変更しました。";
+                        beforeValue = $"{{\"userId\": {workspaceMembers[_random.Next(workspaceMembers.Count)]}}}";
+                        afterValue = $"{{\"userId\": {workspaceMembers[_random.Next(workspaceMembers.Count)]}}}";
+                        break;
+                    case "PriorityChange":
+                        content = "優先度を変更しました。";
+                        beforeValue = "{\"priority\": \"Medium\"}";
+                        afterValue = "{\"priority\": \"High\"}";
+                        break;
+                    default:
+                        content = normalComments[_random.Next(normalComments.Length)];
+                        break;
+                }
+
+                var taskComment = new TaskComment
+                {
+                    WorkspaceTaskId = task.Id,
+                    UserId = userId,
+                    Content = content,
+                    CommentType = commentType,
+                    BeforeValue = beforeValue,
+                    AfterValue = afterValue,
+                    CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                };
+
+                _context.TaskComments.Add(taskComment);
+                totalCommentsAdded++;
+
+                // 500件ごとに保存してメモリを節約
+                if (totalCommentsAdded % 500 == 0)
+                {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Added {Count} task comments", totalCommentsAdded);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} task comments in total", totalCommentsAdded);
+    }
 }

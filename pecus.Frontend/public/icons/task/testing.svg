@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#8B5CF6"/>
+  <!-- フラスコアイコン（テストを表す） -->
+  <path d="M26 12H38V24L48 48C48.5 49.5 47.5 52 45 52H19C16.5 52 15.5 49.5 16 48L26 24V12Z" fill="white"/>
+  <rect x="24" y="10" width="16" height="4" rx="2" fill="white"/>
+  <!-- 液体 -->
+  <path d="M22 40L26 32H38L42 40C44 44 42 48 40 48H24C22 48 20 44 22 40Z" fill="#C4B5FD"/>
+  <!-- 泡 -->
+  <circle cx="28" cy="42" r="2" fill="#8B5CF6"/>
+  <circle cx="34" cy="44" r="1.5" fill="#8B5CF6"/>
+  <circle cx="32" cy="38" r="1" fill="#8B5CF6"/>
+</svg>

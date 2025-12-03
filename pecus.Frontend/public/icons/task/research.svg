@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#14B8A6"/>
+  <!-- 本と虫眼鏡アイコン（調査・研究を表す） -->
+  <!-- 開いた本 -->
+  <path d="M32 18V44" stroke="white" stroke-width="2"/>
+  <!-- 左ページ -->
+  <path d="M32 18C32 18 28 14 18 14C14 14 10 15 10 18V42C10 42 14 40 18 40C28 40 32 44 32 44" fill="white"/>
+  <!-- 右ページ -->
+  <path d="M32 18C32 18 36 14 46 14C50 14 54 15 54 18V42C54 42 50 40 46 40C36 40 32 44 32 44" fill="white"/>
+  <!-- 本の背表紙 -->
+  <rect x="30" y="14" width="4" height="30" fill="#99F6E4"/>
+  <!-- ページ線（左） -->
+  <rect x="14" y="22" width="12" height="2" rx="1" fill="#14B8A6"/>
+  <rect x="14" y="28" width="12" height="2" rx="1" fill="#14B8A6"/>
+  <rect x="14" y="34" width="10" height="2" rx="1" fill="#14B8A6"/>
+  <!-- 虫眼鏡 -->
+  <circle cx="48" cy="48" r="7" stroke="white" stroke-width="3" fill="#14B8A6"/>
+  <path d="M53 53L58 58" stroke="white" stroke-width="3" stroke-linecap="round"/>
+</svg>

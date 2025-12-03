@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#10B981"/>
+  <!-- 電球アイコン（新機能を表す） -->
+  <path d="M32 12C24.268 12 18 18.268 18 26C18 31.5 21 36 26 38V44C26 45.1 26.9 46 28 46H36C37.1 46 38 45.1 38 44V38C43 36 46 31.5 46 26C46 18.268 39.732 12 32 12Z" fill="white"/>
+  <rect x="27" y="48" width="10" height="2" rx="1" fill="white"/>
+  <rect x="28" y="52" width="8" height="2" rx="1" fill="white"/>
+  <!-- 光線 -->
+  <path d="M32 6V10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M48 26H52" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M12 26H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M44 14L41 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20 14L23 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>

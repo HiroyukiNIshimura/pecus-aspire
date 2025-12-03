@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#6366F1"/>
+  <!-- ドキュメントアイコン -->
+  <path d="M18 14H38L46 22V50C46 51.1 45.1 52 44 52H18C16.9 52 16 51.1 16 50V16C16 14.9 16.9 14 18 14Z" fill="white"/>
+  <path d="M38 14V22H46" fill="white"/>
+  <path d="M38 14L46 22H38V14Z" fill="#C7D2FE"/>
+  <!-- テキスト行 -->
+  <rect x="22" y="28" width="18" height="2" rx="1" fill="#6366F1"/>
+  <rect x="22" y="34" width="18" height="2" rx="1" fill="#6366F1"/>
+  <rect x="22" y="40" width="14" height="2" rx="1" fill="#6366F1"/>
+  <rect x="22" y="46" width="10" height="2" rx="1" fill="#6366F1"/>
+</svg>

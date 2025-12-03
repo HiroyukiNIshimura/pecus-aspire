@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#06B6D4"/>
+  <!-- リファクタリング（循環矢印）アイコン -->
+  <!-- 上の円弧（右回り、上部） -->
+  <path d="M44 16C51 22 54 30 52 38" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- 下の円弧（右回り、下部） -->
+  <path d="M20 48C13 42 10 34 12 26" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- 上の矢印（右上向き） -->
+  <path d="M44 16L44 24" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <path d="M44 16L52 16" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- 下の矢印（左下向き） -->
+  <path d="M20 48L20 40" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <path d="M20 48L12 48" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- 中央のコードブラケット -->
+  <path d="M28 28L24 32L28 36" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M36 28L40 32L36 36" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
