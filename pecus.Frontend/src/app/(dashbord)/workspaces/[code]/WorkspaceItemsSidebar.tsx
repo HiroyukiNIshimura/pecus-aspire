@@ -1,15 +1,53 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import HomeIcon from '@mui/icons-material/Home';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import type { WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
+
+/** 優先度に応じた左ボーダー色のクラスを取得 */
+function getPriorityBorderClass(priority?: TaskPriority | null): string {
+  switch (priority) {
+    case 'Critical':
+      return 'border-l-4 border-l-error/60';
+    case 'High':
+      return 'border-l-4 border-l-warning/60';
+    case 'Medium':
+      return 'border-l-4 border-l-info/60';
+    case 'Low':
+      return 'border-l-4 border-l-base-content/40';
+    default:
+      return 'border-l-4 border-l-base-content/10';
+  }
+}
+
+/** 日付を短縮形式（MM/DD）でフォーマット */
+function formatShortDate(dateString?: string | null): string | null {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return null;
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${month}/${day}`;
+}
+
+/** 期限日が過ぎているかどうかを判定 */
+function isDueDatePast(dateString?: string | null): boolean {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+}
 
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
@@ -338,27 +376,57 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               scrollableTarget={scrollContainerId}
             >
               <ul className="space-y-1 p-2">
-                {items.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (item.id) {
-                          setSelectedItemId(item.id);
-                          onItemSelect?.(item.id);
-                        }
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded transition-colors text-sm truncate ${
-                        selectedItemId === item.id
-                          ? 'bg-primary text-primary-content font-semibold'
-                          : 'hover:bg-base-100 text-base-content'
-                      }`}
-                      title={item.subject || '（未設定）'}
-                    >
-                      {item.subject || '（未設定）'}
-                    </button>
-                  </li>
-                ))}
+                {items.map((item) => {
+                  const shortDate = formatShortDate(item.dueDate);
+                  const isPast = isDueDatePast(item.dueDate);
+
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (item.id) {
+                            setSelectedItemId(item.id);
+                            onItemSelect?.(item.id);
+                          }
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${getPriorityBorderClass(
+                          item.priority,
+                        )} ${
+                          selectedItemId === item.id
+                            ? 'bg-primary text-primary-content font-semibold'
+                            : 'hover:bg-base-100 text-base-content'
+                        }`}
+                        title={item.subject || '（未設定）'}
+                      >
+                        {/* 1行目: 件名 */}
+                        <div className="truncate">{item.subject || '（未設定）'}</div>
+
+                        {/* 2行目: ステータスアイコン群（常に表示） */}
+                        <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
+                          {/* 下書き */}
+                          {item.isDraft && (
+                            <span className="flex items-center gap-0.5" title="下書き">
+                              <EditNoteIcon className="w-3 h-3" />
+                              <span>下書き</span>
+                            </span>
+                          )}
+
+                          {/* 期限日 */}
+                          {shortDate && (
+                            <span
+                              className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
+                              title={`期限: ${item.dueDate}`}
+                            >
+                              <CalendarTodayIcon className="w-3 h-3" />
+                              <span>{shortDate}</span>
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </InfiniteScroll>
           </div>
