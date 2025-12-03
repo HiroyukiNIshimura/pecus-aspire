@@ -17,6 +17,7 @@ import {
   toggleWorkspaceActive,
   updateMemberRoleInWorkspace,
 } from '@/actions/workspace';
+import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
@@ -37,7 +38,7 @@ import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceModal from '../EditWorkspaceModal';
 import EditWorkspaceSkillsModal from '../EditWorkspaceSkillsModal';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
-import WorkspaceItemDetail from './WorkspaceItemDetail';
+import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
 import type { WorkspaceItemsSidebarHandle } from './WorkspaceItemsSidebar';
 import WorkspaceItemsSidebar from './WorkspaceItemsSidebar';
 
@@ -68,10 +69,18 @@ export default function WorkspaceDetailClient({
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
+  const mobileSidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
+  const itemDetailRef = useRef<WorkspaceItemDetailHandle>(null);
   // initialItemId が指定されている場合は、最初からアイテム詳細を表示
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(!initialItemId);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(initialItemId ?? null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // ===== 関連アイテム選択モードの状態 =====
+  const [isAddingRelation, setIsAddingRelation] = useState(false);
+
+  // ===== モバイルドロワーの状態 =====
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
 
   // ===== アクションメニューの状態 =====
   const [openActionMenu, setOpenActionMenu] = useState(false);
@@ -395,6 +404,64 @@ export default function WorkspaceDetailClient({
     sidebarComponentRef.current?.refreshItems(itemId);
   }, []);
 
+  // ===== 関連アイテム追加機能 =====
+
+  // 関連アイテム追加モードを開始
+  const handleStartAddRelation = useCallback(async () => {
+    if (!selectedItemId) return;
+
+    // 現在のアイテムの関連アイテムIDリストを取得
+    const result = await fetchLatestWorkspaceItem(workspaceDetail.id, selectedItemId);
+    const excludeIds: number[] = [selectedItemId];
+
+    if (result.success && result.data.relatedItems) {
+      // 既存の関連アイテムIDを除外リストに追加
+      for (const related of result.data.relatedItems) {
+        if (related.id) {
+          excludeIds.push(related.id);
+        }
+      }
+    }
+
+    setIsAddingRelation(true);
+    // デスクトップとモバイル両方のサイドバーで選択モードを開始
+    sidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
+    mobileSidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
+  }, [selectedItemId, workspaceDetail.id]);
+
+  // 関連アイテム選択確定時のハンドラ
+  const handleSelectionConfirm = useCallback(
+    async (selectedIds: number[]) => {
+      if (!selectedItemId || selectedIds.length === 0) {
+        setIsAddingRelation(false);
+        return;
+      }
+
+      try {
+        const result = await addWorkspaceItemRelations(workspaceDetail.id, selectedItemId, selectedIds);
+
+        if (result.success) {
+          notify.success(`${selectedIds.length} 件のアイテムを関連付けました。`);
+          // アイテム詳細を再取得
+          await itemDetailRef.current?.refreshItem();
+        } else {
+          notify.error(result.message || '関連アイテムの追加に失敗しました。');
+        }
+      } catch (error) {
+        console.error('Failed to add relations:', error);
+        notify.error('関連アイテムの追加に失敗しました。');
+      }
+
+      setIsAddingRelation(false);
+    },
+    [selectedItemId, workspaceDetail.id, notify],
+  );
+
+  // 関連アイテム選択キャンセル時のハンドラ
+  const handleSelectionCancel = useCallback(() => {
+    setIsAddingRelation(false);
+  }, []);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
@@ -577,6 +644,8 @@ export default function WorkspaceDetailClient({
                     }
                   : null
               }
+              onSelectionConfirm={handleSelectionConfirm}
+              onSelectionCancel={handleSelectionCancel}
             />
 
             {/* リサイズハンドル */}
@@ -726,11 +795,13 @@ export default function WorkspaceDetailClient({
           {/* アイテム詳細情報 */}
           {!showWorkspaceDetail && selectedItemId && (
             <WorkspaceItemDetail
+              ref={itemDetailRef}
               workspaceId={currentWorkspaceDetail.id}
               itemId={selectedItemId}
               onItemSelect={handleItemSelect}
               members={members}
               currentUserId={userInfo?.id}
+              onStartAddRelation={handleStartAddRelation}
             />
           )}
         </main>
@@ -838,28 +909,60 @@ export default function WorkspaceDetailClient({
           }
         />
 
-        {/* アイテム一覧 (スマホ) */}
-        <div className="lg:hidden flex-shrink-0 border-t border-base-300" style={{ height: '384px' }}>
-          <WorkspaceItemsSidebar
-            workspaceId={currentWorkspaceDetail.id}
-            currentWorkspaceCode={workspaceCode}
-            workspaces={currentWorkspaces}
-            onHomeSelect={handleHomeSelect}
-            onItemSelect={handleItemSelect}
-            onCreateNew={handleCreateNew}
-            scrollContainerId="itemsScrollableDiv-mobile"
-            initialSelectedItemId={initialItemId}
-            currentUser={
-              userInfo
-                ? {
-                    id: userInfo.id,
-                    username: userInfo.username || userInfo.name,
-                    email: userInfo.email,
-                    identityIconUrl: userInfo.identityIconUrl,
-                  }
-                : null
-            }
-          />
+        {/* アイテム一覧ドロワー (スマホ) */}
+        <div
+          className={`lg:hidden fixed bottom-0 left-0 right-0 bg-base-100 border-t border-base-300 shadow-lg transition-all duration-300 ease-in-out z-40 ${
+            mobileDrawerOpen ? '' : 'translate-y-[calc(100%-48px)]'
+          }`}
+          style={{ height: mobileDrawerOpen ? '70vh' : '48px', maxHeight: '600px' }}
+        >
+          {/* ドロワーハンドル */}
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+            className="w-full h-12 flex items-center justify-center gap-2 bg-base-200 hover:bg-base-300 transition-colors"
+            aria-label={mobileDrawerOpen ? 'アイテム一覧を閉じる' : 'アイテム一覧を開く'}
+          >
+            <div className="w-12 h-1 bg-base-content/30 rounded-full"></div>
+            <span className="text-sm font-medium text-base-content/70">
+              {mobileDrawerOpen ? '閉じる' : 'アイテム一覧'}
+            </span>
+            <span
+              className={`icon-[tabler--chevron-up] size-5 transition-transform duration-300 ${
+                mobileDrawerOpen ? 'rotate-180' : ''
+              }`}
+            ></span>
+          </button>
+
+          {/* ドロワーコンテンツ */}
+          <div className="h-[calc(100%-48px)] overflow-hidden">
+            <WorkspaceItemsSidebar
+              ref={mobileSidebarComponentRef}
+              workspaceId={currentWorkspaceDetail.id}
+              currentWorkspaceCode={workspaceCode}
+              workspaces={currentWorkspaces}
+              onHomeSelect={handleHomeSelect}
+              onItemSelect={(itemId) => {
+                handleItemSelect(itemId);
+                setMobileDrawerOpen(false); // アイテム選択時にドロワーを閉じる
+              }}
+              onCreateNew={handleCreateNew}
+              scrollContainerId="itemsScrollableDiv-mobile"
+              initialSelectedItemId={initialItemId}
+              currentUser={
+                userInfo
+                  ? {
+                      id: userInfo.id,
+                      username: userInfo.username || userInfo.name,
+                      email: userInfo.email,
+                      identityIconUrl: userInfo.identityIconUrl,
+                    }
+                  : null
+              }
+              onSelectionConfirm={handleSelectionConfirm}
+              onSelectionCancel={handleSelectionCancel}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -2,9 +2,13 @@
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CloseIcon from '@mui/icons-material/Close';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import HomeIcon from '@mui/icons-material/Home';
+import LinkIcon from '@mui/icons-material/Link';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
@@ -66,10 +70,18 @@ interface WorkspaceItemsSidebarProps {
     email: string;
     identityIconUrl: string | null;
   } | null;
+  /** 選択モードで関連付けが確定された時のコールバック */
+  onSelectionConfirm?: (selectedItemIds: number[]) => void;
+  /** 選択モードがキャンセルされた時のコールバック */
+  onSelectionCancel?: () => void;
 }
 
 export interface WorkspaceItemsSidebarHandle {
   refreshItems: (selectItemId?: number) => Promise<void>;
+  /** 選択モードを開始（関連アイテム追加用） */
+  startSelectionMode: (currentItemId: number, excludeItemIds: number[]) => void;
+  /** 選択モードを終了 */
+  endSelectionMode: () => void;
 }
 
 const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceItemsSidebarProps>(
@@ -84,6 +96,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       onCreateNew,
       initialSelectedItemId,
       currentUser,
+      onSelectionConfirm,
+      onSelectionCancel,
     },
     ref,
   ) => {
@@ -102,6 +116,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
     const [isFilterDrawerClosing, setIsFilterDrawerClosing] = useState(false);
     const [filters, setFilters] = useState<WorkspaceItemFilters>({});
+
+    // 選択モードの状態
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectionModeCurrentItemId, setSelectionModeCurrentItemId] = useState<number | null>(null);
+    const [excludeItemIds, setExcludeItemIds] = useState<number[]>([]);
+    const [selectedForRelation, setSelectedForRelation] = useState<Set<number>>(new Set());
 
     const notify = useNotify();
     const notifyRef = useRef(notify);
@@ -218,13 +238,58 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [workspaceId]);
 
-    // imperative handle で refreshItems を公開
+    // 選択モードを開始
+    const startSelectionMode = useCallback((currentItemId: number, excludeIds: number[]) => {
+      setIsSelectionMode(true);
+      setSelectionModeCurrentItemId(currentItemId);
+      setExcludeItemIds(excludeIds);
+      setSelectedForRelation(new Set());
+    }, []);
+
+    // 選択モードを終了
+    const endSelectionMode = useCallback(() => {
+      setIsSelectionMode(false);
+      setSelectionModeCurrentItemId(null);
+      setExcludeItemIds([]);
+      setSelectedForRelation(new Set());
+    }, []);
+
+    // 選択を確定
+    const handleConfirmSelection = useCallback(() => {
+      if (selectedForRelation.size > 0) {
+        onSelectionConfirm?.(Array.from(selectedForRelation));
+      }
+      endSelectionMode();
+    }, [selectedForRelation, onSelectionConfirm, endSelectionMode]);
+
+    // 選択をキャンセル
+    const handleCancelSelection = useCallback(() => {
+      onSelectionCancel?.();
+      endSelectionMode();
+    }, [onSelectionCancel, endSelectionMode]);
+
+    // アイテムの選択/解除をトグル
+    const toggleItemSelection = useCallback((itemId: number) => {
+      setSelectedForRelation((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(itemId)) {
+          newSet.delete(itemId);
+        } else {
+          newSet.add(itemId);
+        }
+        return newSet;
+      });
+    }, []);
+
+    // imperative handle で refreshItems と選択モード制御を公開
     useImperativeHandle(
       ref,
       () => ({
         refreshItems,
+        startSelectionMode,
+        endSelectionMode,
       }),
-      [refreshItems],
+      [refreshItems, startSelectionMode, endSelectionMode],
     );
 
     const loadMoreItems = useCallback(async () => {
@@ -285,67 +350,107 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
         {/* ヘッダー */}
         <div className="bg-base-200 border-b border-base-300 p-4 flex-shrink-0">
-          {/* ワークスペース切り替え */}
-          <div className="mb-4">
-            <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceCode={currentWorkspaceCode} />
-          </div>
+          {/* 選択モード時のヘッダー */}
+          {isSelectionMode ? (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <LinkIcon className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-bold text-primary">関連アイテムを選択</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCancelSelection}
+                  className="btn btn-ghost btn-sm btn-circle"
+                  title="キャンセル"
+                >
+                  <CloseIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-base-content/70 mb-3">
+                関連付けるアイテムをチェックしてください（{selectedForRelation.size} 件選択中）
+              </p>
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={handleConfirmSelection}
+                  disabled={selectedForRelation.size === 0}
+                  className="btn btn-primary btn-sm flex-1"
+                >
+                  関連付け（{selectedForRelation.size}）
+                </button>
+                <button type="button" onClick={handleCancelSelection} className="btn btn-outline btn-sm flex-1">
+                  キャンセル
+                </button>
+              </div>
+              {/* 検索ボックス（選択モード時） */}
+              <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
+            </>
+          ) : (
+            <>
+              {/* ワークスペース切り替え */}
+              <div className="mb-4">
+                <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceCode={currentWorkspaceCode} />
+              </div>
 
-          {/* ワークスペースHomeボタン */}
-          <div className="mb-4">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedItemId('home');
-                onHomeSelect?.();
-              }}
-              className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
-                selectedItemId === 'home'
-                  ? 'bg-primary text-primary-content font-semibold'
-                  : 'hover:bg-base-200 text-base-content'
-              }`}
-              title="ワークスペースHome"
-            >
-              <HomeIcon className="w-4 h-4" />
-              <span>ワークスペースHome</span>
-            </button>
-          </div>
+              {/* ワークスペースHomeボタン */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedItemId('home');
+                    onHomeSelect?.();
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded transition-colors text-sm flex items-center gap-2 ${
+                    selectedItemId === 'home'
+                      ? 'bg-primary text-primary-content font-semibold'
+                      : 'hover:bg-base-200 text-base-content'
+                  }`}
+                  title="ワークスペースHome"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span>ワークスペースHome</span>
+                </button>
+              </div>
 
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-bold">アイテム一覧</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedItemId('new');
-                onCreateNew?.();
-              }}
-              className="btn btn-primary btn-sm gap-1"
-              title="アイテムを追加"
-            >
-              <AddIcon className="w-4 h-4" />
-              <span>追加</span>
-            </button>
-          </div>
-          <p className="text-xs text-base-content/70 mb-3">
-            {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
-          </p>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-bold">アイテム一覧</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedItemId('new');
+                    onCreateNew?.();
+                  }}
+                  className="btn btn-primary btn-sm gap-1"
+                  title="アイテムを追加"
+                >
+                  <AddIcon className="w-4 h-4" />
+                  <span>追加</span>
+                </button>
+              </div>
+              <p className="text-xs text-base-content/70 mb-3">
+                {searchQuery ? `${items.length} 件（検索結果）` : `${totalCount} 件`}
+              </p>
 
-          {/* 検索ボックス */}
-          <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
+              {/* 検索ボックス */}
+              <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
 
-          {/* 詳細フィルターリンク */}
-          <button
-            type="button"
-            onClick={() => setIsFilterDrawerOpen(true)}
-            className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
-          >
-            <FilterListIcon className="w-3 h-3" />
-            <span>詳細フィルター</span>
-            {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
-              <span className="badge badge-primary badge-xs">
-                {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
-              </span>
-            )}
-          </button>
+              {/* 詳細フィルターリンク */}
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(true)}
+                className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
+              >
+                <FilterListIcon className="w-3 h-3" />
+                <span>詳細フィルター</span>
+                {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
+                  <span className="badge badge-primary badge-xs">
+                    {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
         </div>
 
         {/* アイテムリスト */}
@@ -379,49 +484,90 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 {items.map((item) => {
                   const shortDate = formatShortDate(item.dueDate);
                   const isPast = isDueDatePast(item.dueDate);
+                  const itemId = item.id;
+
+                  // 選択モード時: 自分自身や既存関連は除外
+                  const isExcluded =
+                    isSelectionMode &&
+                    itemId !== undefined &&
+                    (itemId === selectionModeCurrentItemId || excludeItemIds.includes(itemId));
+                  const isSelected = itemId !== undefined && selectedForRelation.has(itemId);
+
+                  // 選択モード時のクリックハンドラー
+                  const handleItemClick = () => {
+                    if (!itemId) return;
+
+                    if (isSelectionMode) {
+                      if (!isExcluded) {
+                        toggleItemSelection(itemId);
+                      }
+                    } else {
+                      setSelectedItemId(itemId);
+                      onItemSelect?.(itemId);
+                    }
+                  };
 
                   return (
                     <li key={item.id}>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (item.id) {
-                            setSelectedItemId(item.id);
-                            onItemSelect?.(item.id);
-                          }
-                        }}
+                        onClick={handleItemClick}
+                        disabled={isExcluded}
                         className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${getPriorityBorderClass(
                           item.priority,
                         )} ${
-                          selectedItemId === item.id
-                            ? 'bg-primary text-primary-content font-semibold'
-                            : 'hover:bg-base-100 text-base-content'
+                          isSelectionMode
+                            ? isExcluded
+                              ? 'opacity-40 cursor-not-allowed bg-base-300'
+                              : isSelected
+                                ? 'bg-primary/20 ring-2 ring-primary'
+                                : 'hover:bg-base-100 text-base-content'
+                            : selectedItemId === item.id
+                              ? 'bg-primary text-primary-content font-semibold'
+                              : 'hover:bg-base-100 text-base-content'
                         }`}
-                        title={item.subject || '（未設定）'}
+                        title={isExcluded ? '選択できません' : item.subject || '（未設定）'}
                       >
-                        {/* 1行目: 件名 */}
-                        <div className="truncate">{item.subject || '（未設定）'}</div>
-
-                        {/* 2行目: ステータスアイコン群（常に表示） */}
-                        <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
-                          {/* 下書き */}
-                          {item.isDraft && (
-                            <span className="flex items-center gap-0.5" title="下書き">
-                              <EditNoteIcon className="w-3 h-3" />
-                              <span>下書き</span>
-                            </span>
+                        <div className="flex items-start gap-2">
+                          {/* 選択モード時: チェックボックス */}
+                          {isSelectionMode && (
+                            <div className="flex-shrink-0 mt-0.5">
+                              {isExcluded ? (
+                                <CheckBoxOutlineBlankIcon className="w-4 h-4 opacity-30" />
+                              ) : isSelected ? (
+                                <CheckBoxIcon className="w-4 h-4 text-primary" />
+                              ) : (
+                                <CheckBoxOutlineBlankIcon className="w-4 h-4" />
+                              )}
+                            </div>
                           )}
 
-                          {/* 期限日 */}
-                          {shortDate && (
-                            <span
-                              className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
-                              title={`期限: ${item.dueDate}`}
-                            >
-                              <CalendarTodayIcon className="w-3 h-3" />
-                              <span>{shortDate}</span>
-                            </span>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            {/* 1行目: 件名 */}
+                            <div className="truncate">{item.subject || '（未設定）'}</div>
+
+                            {/* 2行目: ステータスアイコン群（常に表示） */}
+                            <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
+                              {/* 下書き */}
+                              {item.isDraft && (
+                                <span className="flex items-center gap-0.5" title="下書き">
+                                  <EditNoteIcon className="w-3 h-3" />
+                                  <span>下書き</span>
+                                </span>
+                              )}
+
+                              {/* 期限日 */}
+                              {shortDate && (
+                                <span
+                                  className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
+                                  title={`期限: ${item.dueDate}`}
+                                >
+                                  <CalendarTodayIcon className="w-3 h-3" />
+                                  <span>{shortDate}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </button>
                     </li>

@@ -8,8 +8,10 @@ import {
   parseErrorResponse,
 } from '@/connectors/api/PecusApiClient';
 import type {
+  AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
   MyItemRelationType,
+  RelationType,
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
@@ -346,5 +348,49 @@ export async function updateWorkspaceItemAttribute(
     const attrName = attributeNames[attribute] || attribute;
 
     return parseErrorResponse(error, `${attrName}の更新に失敗しました。`);
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムに関連を追加（複数対応）
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID（関連元）
+ * @param toItemIds 関連先アイテムIDの配列
+ * @param relationType 関連タイプ（デフォルト: Related）
+ */
+export async function addWorkspaceItemRelations(
+  workspaceId: number,
+  itemId: number,
+  toItemIds: number[],
+  relationType: RelationType = 'Related',
+): Promise<ApiResponse<AddWorkspaceItemRelationResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+
+    // 全ての関連追加を並列で実行
+    const results = await Promise.all(
+      toItemIds.map((toItemId) =>
+        api.workspaceItem.postApiWorkspacesItemsRelations(workspaceId, itemId, {
+          toItemId,
+          relationType,
+        }),
+      ),
+    );
+
+    return { success: true, data: results };
+  } catch (error) {
+    console.error('Failed to add workspace item relations:', error);
+
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, '関連アイテムの追加に失敗しました。');
   }
 }

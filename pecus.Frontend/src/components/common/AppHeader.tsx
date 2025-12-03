@@ -59,8 +59,15 @@ export default function AppHeader({
   return (
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
       <nav className="navbar">
-        <div className="navbar-start flex flex-col">
-          <a href="/" className="flex items-end gap-1 text-sm font-bold">
+        <div className="navbar-start flex items-center gap-2">
+          {/* ハンバーガーメニュー（モバイルのみ） */}
+          <div className="md:hidden">
+            <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <span className="icon-[tabler--menu-2] size-5"></span>
+            </button>
+          </div>
+          {/* ロゴ（デスクトップのみ） */}
+          <a href="/" className="hidden md:flex items-end gap-1 text-sm font-bold">
             <img
               src={resolvedTheme === 'dark' ? '/logo-dark.webp' : '/logo-light.webp'}
               alt="Coati Logo"
@@ -68,11 +75,6 @@ export default function AppHeader({
             />
             <span className="pb-2 font-mono">COATI TRACKING</span>
           </a>
-          <div className="md:hidden mt-2">
-            <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <span className="icon-[tabler--menu-2] size-5"></span>
-            </button>
-          </div>
         </div>
 
         <div className="navbar-center hidden md:flex">
