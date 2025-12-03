@@ -1,6 +1,5 @@
 import { Notyf } from 'notyf';
 import { useEffect, useRef } from 'react';
-import 'notyf/notyf.min.css';
 
 /**
  * Notyf通知を使用するためのカスタムフック

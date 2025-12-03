@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { updateWorkspaceItemAssignee, updateWorkspaceItemAttribute } from '@/actions/workspaceItem';
+import DatePicker from '@/components/common/DatePicker';
 import type {
   ErrorResponse,
   TaskPriority,
@@ -19,6 +20,14 @@ const PRIORITY_OPTIONS: { value: TaskPriority | null; label: string; className: 
   { value: 'Critical', label: '緊急', className: 'text-error font-bold' },
 ];
 
+/** 優先度の文字列を数値に変換（バックエンドの enum 値に対応） */
+const PRIORITY_TO_NUMBER: Record<TaskPriority, number> = {
+  Low: 1,
+  Medium: 2,
+  High: 3,
+  Critical: 4,
+};
+
 interface WorkspaceItemDrawerProps {
   item: WorkspaceItemDetailResponse;
   isOpen: boolean;
@@ -26,6 +35,7 @@ interface WorkspaceItemDrawerProps {
   onClose: () => void;
   members?: WorkspaceDetailUserResponse[];
   onItemUpdate?: (updatedItem: WorkspaceItemDetailResponse) => void;
+  currentUserId?: number;
 }
 
 export default function WorkspaceItemDrawer({
@@ -35,6 +45,7 @@ export default function WorkspaceItemDrawer({
   onClose,
   members = [],
   onItemUpdate,
+  currentUserId,
 }: WorkspaceItemDrawerProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +55,16 @@ export default function WorkspaceItemDrawer({
   const [dueDate, setDueDate] = useState<string>(item.dueDate ? item.dueDate.split('T')[0] : '');
   const [priority, setPriority] = useState<TaskPriority | null>(item.priority ?? null);
   const [currentRowVersion, setCurrentRowVersion] = useState<number>(item.rowVersion);
+
+  // 権限フラグの計算
+  const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
+  const isAssignee = currentUserId !== undefined && item.assigneeId === currentUserId;
+  const isDraft = item.isDraft ?? false;
+
+  // オーナーまたは担当者かどうか（編集権限あり）
+  const canEdit = isOwner || isAssignee;
+  // 下書き中はオーナーのみ編集可能
+  const canEditDraft = isOwner;
 
   if (!isOpen) return null;
 
@@ -162,8 +183,10 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
+        // バックエンドは数値を期待するため、文字列から数値に変換
+        const priorityValue = newPriority ? PRIORITY_TO_NUMBER[newPriority] : null;
         const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'priority', {
-          value: newPriority,
+          value: priorityValue,
           rowVersion: currentRowVersion,
         });
         return result;
@@ -278,93 +301,97 @@ export default function WorkspaceItemDrawer({
               })()}
           </div>
 
-          {/* コミッター設定 */}
-          <div className="form-control">
-            <div className="label">
-              <span className="label-text font-semibold">コミッター</span>
-            </div>
-            <select
-              value={selectedCommitterId || ''}
-              onChange={(e) => handleCommitterChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
-              disabled={isUpdating}
-              className="select select-bordered"
-            >
-              <option value="">未割当</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.userName}
-                </option>
-              ))}
-            </select>
-
-            {/* 現在のコミッター情報を表示 */}
-            {selectedCommitterId &&
-              (() => {
-                const committer = getSelectedMember(selectedCommitterId);
-                return committer ? (
-                  <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
-                    {committer.identityIconUrl ? (
-                      <img
-                        src={getDisplayIconUrl(committer.identityIconUrl)}
-                        alt={committer.userName || 'ユーザー'}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">
-                        ？
-                      </div>
-                    )}
-                    <span className="text-sm font-semibold">{committer.userName}</span>
-                  </div>
-                ) : null;
-              })()}
-          </div>
-
-          <div className="divider my-2" />
-
-          {/* アーカイブ設定 */}
-          <div className="form-control">
-            <label htmlFor="archive-switch" className="label cursor-pointer justify-start gap-3">
-              <input
-                id="archive-switch"
-                type="checkbox"
-                className="switch switch-primary"
-                checked={isArchived}
-                onChange={(e) => handleArchivedChange(e.target.checked)}
+          {/* コミッター設定（オーナーまたは担当者のみ表示、下書き中はオーナーのみ） */}
+          {((isDraft && canEditDraft) || (!isDraft && canEdit)) && (
+            <div className="form-control">
+              <div className="label">
+                <span className="label-text font-semibold">コミッター</span>
+              </div>
+              <select
+                value={selectedCommitterId || ''}
+                onChange={(e) => handleCommitterChange(e.target.value ? Number.parseInt(e.target.value, 10) : null)}
                 disabled={isUpdating}
-              />
-              <span className="label-text font-semibold">アーカイブ</span>
-            </label>
-            <p className="text-xs text-base-content/60 ml-12">アーカイブされたアイテムは編集不可になります</p>
-          </div>
+                className="select select-bordered"
+              >
+                <option value="">未割当</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.userName}
+                  </option>
+                ))}
+              </select>
+
+              {/* 現在のコミッター情報を表示 */}
+              {selectedCommitterId &&
+                (() => {
+                  const committer = getSelectedMember(selectedCommitterId);
+                  return committer ? (
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
+                      {committer.identityIconUrl ? (
+                        <img
+                          src={getDisplayIconUrl(committer.identityIconUrl)}
+                          alt={committer.userName || 'ユーザー'}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">
+                          ？
+                        </div>
+                      )}
+                      <span className="text-sm font-semibold">{committer.userName}</span>
+                    </div>
+                  ) : null;
+                })()}
+            </div>
+          )}
+
+          {/* アーカイブ設定（オーナーまたは担当者のみ表示、下書き中はオーナーのみ） */}
+          {((isDraft && canEditDraft) || (!isDraft && canEdit)) && (
+            <>
+              <div className="divider my-2" />
+
+              <div className="form-control">
+                <div className="flex items-center gap-3">
+                  <input
+                    id="archive-switch"
+                    type="checkbox"
+                    className="switch switch-primary"
+                    checked={isArchived}
+                    onChange={(e) => handleArchivedChange(e.target.checked)}
+                    disabled={isUpdating}
+                  />
+                  <label htmlFor="archive-switch" className="label-text font-semibold cursor-pointer">
+                    アーカイブ
+                  </label>
+                </div>
+                <p className="text-xs text-base-content/60 mt-1">アーカイブされたアイテムは編集不可になります</p>
+              </div>
+            </>
+          )}
 
           <div className="divider my-2" />
 
-          {/* 期限設定 */}
+          {/* 期限設定（誰でも表示） */}
           <div className="form-control">
             <div className="label">
               <span className="label-text font-semibold">期限</span>
             </div>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => handleDueDateChange(e.target.value)}
-              disabled={isUpdating}
-              className="input input-bordered"
-            />
+            <DatePicker value={dueDate} onChange={handleDueDateChange} disabled={isUpdating} />
             {dueDate && (
-              <button
-                type="button"
-                className="btn btn-ghost btn-xs mt-1"
-                onClick={() => handleDueDateChange('')}
-                disabled={isUpdating}
-              >
-                期限をクリア
-              </button>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="btn btn-default btn-xs mt-1"
+                  onClick={() => handleDueDateChange('')}
+                  disabled={isUpdating}
+                >
+                  期限をクリア
+                </button>
+              </div>
             )}
           </div>
 
-          {/* 優先度設定 */}
+          {/* 優先度設定（誰でも表示） */}
           <div className="form-control">
             <div className="label">
               <span className="label-text font-semibold">優先度</span>

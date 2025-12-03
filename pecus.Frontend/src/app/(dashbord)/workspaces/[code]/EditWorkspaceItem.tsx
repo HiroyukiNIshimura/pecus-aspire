@@ -7,7 +7,7 @@ import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
-import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
 
@@ -28,12 +28,10 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
   const [itemLoadError, setItemLoadError] = useState<string | null>(null);
 
   // フォーム状態（スキーマの型に合わせる）
+  // 注: dueDate, priority, isArchived はドロワー側で個別の属性更新APIを使用するため、このフォームでは管理しない
   const [formData, setFormData] = useState({
     subject: item.subject || '',
-    dueDate: item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0] : '',
-    priority: (item.priority || 'Medium') as TaskPriority,
     isDraft: item.isDraft ?? false,
-    isArchived: item.isArchived ?? false,
     rowVersion: item.rowVersion,
   });
 
@@ -69,10 +67,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
         // 注: formData, editorValue は最新の値を直接使用（React のクロージャ内なので安全）
         const result = await updateWorkspaceItemSchema.safeParseAsync({
           subject: formData.subject,
-          dueDate: formData.dueDate,
-          priority: formData.priority,
           isDraft: formData.isDraft,
-          isArchived: formData.isArchived,
           rowVersion: formData.rowVersion,
         });
         if (!result.success) {
@@ -95,20 +90,10 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
           return;
         }
 
-        // dueDate を ISO 8601 形式に変換（空の場合は null）
-        let dueDateValue: string | null = null;
-        if (result.data.dueDate) {
-          const date = new Date(result.data.dueDate);
-          dueDateValue = date.toISOString();
-        }
-
         const updateResult = await updateWorkspaceItem(latestItem.workspaceId || 0, latestItem.id, {
           subject: result.data.subject,
           body: editorValue || null,
-          dueDate: dueDateValue,
-          priority: result.data.priority as TaskPriority | undefined,
           isDraft: result.data.isDraft,
-          isArchived: result.data.isArchived,
           tagNames: tagNames,
           rowVersion: result.data.rowVersion,
         });
@@ -157,12 +142,10 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
         if (result.success) {
           setLatestItem(result.data);
           // フォームデータを更新
+          // 注: dueDate, priority, isArchived はドロワー側で個別の属性更新APIを使用するため、このフォームでは管理しない
           setFormData({
             subject: result.data.subject || '',
-            dueDate: result.data.dueDate ? new Date(result.data.dueDate).toISOString().split('T')[0] : '',
-            priority: (result.data.priority || 'Medium') as TaskPriority,
             isDraft: result.data.isDraft ?? false,
-            isArchived: result.data.isArchived ?? false,
             rowVersion: result.data.rowVersion,
           });
           // エディタ初期値とユーザー入力値を両方初期化
@@ -336,52 +319,6 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                   </div>
                 </div>
 
-                {/* 期限日 */}
-                <div className="form-control">
-                  <label htmlFor="dueDate" className="label">
-                    <span className="label-text font-semibold">期限日</span>
-                  </label>
-                  <input
-                    id="dueDate"
-                    name="dueDate"
-                    type="date"
-                    className={`input input-bordered w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
-                    value={formData.dueDate}
-                    onChange={(e) => handleFieldChange('dueDate', e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                  {shouldShowError('dueDate') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 優先度 */}
-                <div className="form-control">
-                  <label htmlFor="priority" className="label">
-                    <span className="label-text font-semibold">優先度</span>
-                  </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
-                    value={formData.priority || 'Medium'}
-                    onChange={(e) => handleFieldChange('priority', e.target.value as TaskPriority)}
-                    disabled={isSubmitting}
-                  >
-                    <option value="Low">低</option>
-                    <option value="Medium">中</option>
-                    <option value="High">高</option>
-                    <option value="Critical">緊急</option>
-                  </select>
-                  {shouldShowError('priority') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('priority')}</span>
-                    </div>
-                  )}
-                </div>
-
                 {/* ステータス（オーナーのみ表示） */}
                 {currentUserId !== undefined && latestItem.ownerId === currentUserId && (
                   <div className="flex items-center gap-3">
@@ -400,24 +337,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                   </div>
                 )}
 
-                {/* アーカイブフラグ（オーナーまたは担当者のみ表示） */}
-                {currentUserId !== undefined &&
-                  (latestItem.ownerId === currentUserId || latestItem.assigneeId === currentUserId) && (
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        id="isArchived"
-                        name="isArchived"
-                        className="switch switch-outline switch-neutral"
-                        checked={formData.isArchived || false}
-                        onChange={(e) => handleFieldChange('isArchived', e.target.checked)}
-                        disabled={isSubmitting}
-                      />
-                      <label htmlFor="isArchived" className="label-text cursor-pointer">
-                        アーカイブ
-                      </label>
-                    </div>
-                  )}
+                {/* 注: 期限日、優先度、アーカイブはドロワー側で個別の属性更新APIを使用するため、このフォームでは編集しない */}
 
                 {/* rowVersion（隠しフィールド） */}
                 <input type="hidden" name="rowVersion" value={formData.rowVersion} />

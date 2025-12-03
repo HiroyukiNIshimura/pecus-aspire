@@ -165,10 +165,29 @@ export default function WorkspaceItemDetail({
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
             <div className="flex items-center gap-2 flex-wrap">
+              {item.code && <code className="text-sm badge badge-soft badge-default badge-md">{item.code}</code>}
               {item.priority !== undefined && item.priority !== null && (
-                <div className="badge badge-primary">優先度: {item.priority}</div>
+                <div
+                  className={`badge ${
+                    item.priority === 'Critical'
+                      ? 'badge-error'
+                      : item.priority === 'High'
+                        ? 'badge-warning'
+                        : item.priority === 'Medium'
+                          ? 'badge-info'
+                          : 'badge-default'
+                  }`}
+                >
+                  優先度:{' '}
+                  {item.priority === 'Critical'
+                    ? '緊急'
+                    : item.priority === 'High'
+                      ? '高'
+                      : item.priority === 'Medium'
+                        ? '中'
+                        : '低'}
+                </div>
               )}
-              {item.code && <code className="text-sm badge badge-soft badge-accent badge-md">{item.code}</code>}
               {item.dueDate && (
                 <span className="badge badge-outline badge-success badge-md gap-1">
                   <span className="text-xs">期限:</span>
@@ -395,6 +414,7 @@ export default function WorkspaceItemDetail({
         onClose={closeDrawer}
         members={members}
         onItemUpdate={(updatedItem) => setItem(updatedItem)}
+        currentUserId={currentUserId}
       />
     </div>
   );

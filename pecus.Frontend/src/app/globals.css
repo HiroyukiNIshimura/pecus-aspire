@@ -3,7 +3,10 @@
   themes: all;
 }
 @import "flyonui/variants.css";
+@import 'notyf/notyf.min.css';
 @import "flyonui/src/vendor/notyf.css";
+@import "flatpickr/dist/flatpickr.min.css";
+@import "flyonui/src/vendor/flatpickr.css";
 @source "./node_modules/flyonui/dist/index.js";
 @plugin "@iconify/tailwind4";
 @import "react-day-picker/style.css";
