@@ -173,6 +173,7 @@ export class WorkspaceItemService {
      * @param committerId コミッターID（最後にコミットしたユーザー）
      * @param priority 優先度
      * @param pinned ピン留めされているかどうか
+     * @param hasDueDate 期限が設定されているかどうか
      * @param searchQuery あいまい検索クエリ（Subject, RawBody を対象）
      * pgroonga を使用して日本語のゆらぎやタイポにも対応
      * @returns WorkspaceItemDetailResponsePagedResponse OK
@@ -188,6 +189,7 @@ export class WorkspaceItemService {
         committerId?: number,
         priority?: TaskPriority,
         pinned?: boolean,
+        hasDueDate?: boolean,
         searchQuery?: string,
     ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
         return __request(OpenAPI, {
@@ -205,6 +207,7 @@ export class WorkspaceItemService {
                 'CommitterId': committerId,
                 'Priority': priority,
                 'Pinned': pinned,
+                'HasDueDate': hasDueDate,
                 'SearchQuery': searchQuery,
             },
             errors: {

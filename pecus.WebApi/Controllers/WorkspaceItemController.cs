@@ -176,6 +176,7 @@ public class WorkspaceItemController : BaseSecureController
             committerId: request.CommitterId,
             priority: request.Priority,
             pinnedByUserId: pinnedByUserId,
+            hasDueDate: request.HasDueDate,
             searchQuery: request.SearchQuery
         );
 

@@ -51,6 +51,12 @@ public class GetWorkspaceItemsRequest
     public bool? Pinned { get; set; }
 
     /// <summary>
+    /// 期限が設定されているかどうか
+    /// </summary>
+    /// <value></value>
+    public bool? HasDueDate { get; set; }
+
+    /// <summary>
     /// あいまい検索クエリ（Subject, RawBody を対象）
     /// pgroonga を使用して日本語のゆらぎやタイポにも対応
     /// </summary>

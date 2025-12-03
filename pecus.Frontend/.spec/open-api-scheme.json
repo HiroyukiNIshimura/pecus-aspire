@@ -6742,6 +6742,14 @@
             }
           },
           {
+            "name": "HasDueDate",
+            "in": "query",
+            "description": "期限が設定されているかどうか",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "SearchQuery",
             "in": "query",
             "description": "あいまい検索クエリ（Subject, RawBody を対象）\npgroonga を使用して日本語のゆらぎやタイポにも対応",

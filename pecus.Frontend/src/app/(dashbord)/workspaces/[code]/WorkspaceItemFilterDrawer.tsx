@@ -22,6 +22,8 @@ export interface WorkspaceItemFilters {
   isArchived?: boolean | null;
   /** ピン留めされているかどうか */
   pinned?: boolean | null;
+  /** 期限日が設定されているかどうか */
+  hasDueDate?: boolean | null;
 }
 
 /** 選択されたユーザー情報 */
@@ -217,6 +219,7 @@ export default function WorkspaceItemFilterDrawer({
       isDraft: null,
       isArchived: null,
       pinned: null,
+      hasDueDate: null,
     };
     setFilters(resetFilters);
     setSelectedAssignee(null);
@@ -527,6 +530,14 @@ export default function WorkspaceItemFilterDrawer({
             name="filter-pinned"
             value={filters.pinned}
             onChange={(value) => setFilters({ ...filters, pinned: value })}
+          />
+
+          {/* 期限日有無フィルター */}
+          <BooleanFilterGroup
+            label="期限日あり"
+            name="filter-has-due-date"
+            value={filters.hasDueDate}
+            onChange={(value) => setFilters({ ...filters, hasDueDate: value })}
           />
         </div>
 

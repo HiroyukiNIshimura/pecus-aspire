@@ -126,6 +126,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       if (appliedFilters.pinned !== null && appliedFilters.pinned !== undefined) {
         params.set('pinned', String(appliedFilters.pinned));
       }
+      if (appliedFilters.hasDueDate !== null && appliedFilters.hasDueDate !== undefined) {
+        params.set('hasDueDate', String(appliedFilters.hasDueDate));
+      }
 
       const queryString = params.toString();
       return queryString ? `${baseUrlWithoutParams}?${queryString}` : baseUrlWithoutParams;

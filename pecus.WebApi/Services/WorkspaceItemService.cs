@@ -351,6 +351,7 @@ public class WorkspaceItemService
     /// <param name="committerId">コミッターIDフィルタ</param>
     /// <param name="priority">優先度フィルタ</param>
     /// <param name="pinnedByUserId">PINしているユーザーIDフィルタ</param>
+    /// <param name="hasDueDate">期限が設定されているかどうか</param>
     /// <param name="searchQuery">あいまい検索クエリ（Subject, RawBody を対象、pgroonga 使用）</param>
     public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsAsync(
         int workspaceId,
@@ -363,6 +364,7 @@ public class WorkspaceItemService
         int? committerId = null,
         TaskPriority? priority = null,
         int? pinnedByUserId = null,
+        bool? hasDueDate = null,
         string? searchQuery = null
     )
     {
@@ -380,6 +382,7 @@ public class WorkspaceItemService
                 committerId: committerId,
                 priority: priority,
                 pinnedByUserId: pinnedByUserId,
+                hasDueDate: hasDueDate,
                 searchQuery: searchQuery
             );
         }
@@ -432,6 +435,13 @@ public class WorkspaceItemService
             );
         }
 
+        if (hasDueDate.HasValue)
+        {
+            query = hasDueDate.Value
+                ? query.Where(wi => wi.DueDate != null)
+                : query.Where(wi => wi.DueDate == null);
+        }
+
         var totalCount = await query.CountAsync();
 
         // ページネーション
@@ -466,6 +476,7 @@ public class WorkspaceItemService
         int? committerId,
         TaskPriority? priority,
         int? pinnedByUserId,
+        bool? hasDueDate,
         string searchQuery
     )
     {
@@ -521,6 +532,13 @@ public class WorkspaceItemService
             whereClauses.Add($@"""Priority"" = {{{paramIndex}}}");
             parameters.Add((int)priority.Value);
             paramIndex++;
+        }
+
+        if (hasDueDate.HasValue)
+        {
+            whereClauses.Add(hasDueDate.Value
+                ? @"""DueDate"" IS NOT NULL"
+                : @"""DueDate"" IS NULL");
         }
 
         var whereClause = string.Join(" AND ", whereClauses);
