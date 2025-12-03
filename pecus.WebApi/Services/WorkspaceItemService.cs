@@ -1142,4 +1142,196 @@ public class WorkspaceItemService
         var pattern = System.Text.RegularExpressions.Regex.Escape(tempUrlPrefix) + @"[^""'\s]*";
         return System.Text.RegularExpressions.Regex.Replace(content, pattern, permanentUrl);
     }
+
+    /// <summary>
+    /// ワークスペースアイテムの属性を更新
+    /// </summary>
+    public async Task<WorkspaceItem> UpdateWorkspaceItemAttributeAsync(
+        int workspaceId,
+        int itemId,
+        WorkspaceItemAttribute attribute,
+        UpdateWorkspaceItemAttributeRequest request,
+        int userId
+    )
+    {
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId
+        );
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // 属性に応じて値を更新
+        switch (attribute)
+        {
+            case WorkspaceItemAttribute.Assignee:
+                await UpdateAssigneeAttribute(item, workspaceId, request.Value);
+                break;
+
+            case WorkspaceItemAttribute.Committer:
+                await UpdateCommitterAttribute(item, workspaceId, request.Value);
+                break;
+
+            case WorkspaceItemAttribute.Priority:
+                UpdatePriorityAttribute(item, request.Value);
+                break;
+
+            case WorkspaceItemAttribute.Duedate:
+                UpdateDuedateAttribute(item, request.Value);
+                break;
+
+            case WorkspaceItemAttribute.Archive:
+                UpdateArchiveAttribute(item, request.Value);
+                break;
+
+            default:
+                throw new InvalidOperationException($"未対応の属性です: {attribute}");
+        }
+
+        try
+        {
+            item.RowVersion = request.RowVersion;
+            item.UpdatedAt = DateTime.UtcNow;
+            item.UpdatedByUserId = userId;
+
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await RaiseConflictException(itemId);
+        }
+
+        // ナビゲーションプロパティをロード
+        await LoadWorkspaceItemNavigations(item);
+
+        return item;
+    }
+
+    /// <summary>
+    /// 担当者属性を更新
+    /// </summary>
+    private async Task UpdateAssigneeAttribute(WorkspaceItem item, int workspaceId, System.Text.Json.JsonElement? value)
+    {
+        int? assigneeId = null;
+
+        if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            assigneeId = value.Value.GetInt32();
+
+            // ワークスペースメンバーであることを確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
+                assigneeId.Value,
+                workspaceId
+            );
+
+            if (!isMember)
+            {
+                throw new InvalidOperationException(
+                    "指定されたユーザーはワークスペースのメンバーではありません。"
+                );
+            }
+        }
+
+        item.AssigneeId = assigneeId;
+    }
+
+    /// <summary>
+    /// コミッター属性を更新
+    /// </summary>
+    private async Task UpdateCommitterAttribute(WorkspaceItem item, int workspaceId, System.Text.Json.JsonElement? value)
+    {
+        int? committerId = null;
+
+        if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            committerId = value.Value.GetInt32();
+
+            // ワークスペースメンバーであることを確認
+            var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(
+                committerId.Value,
+                workspaceId
+            );
+
+            if (!isMember)
+            {
+                throw new InvalidOperationException(
+                    "指定されたユーザーはワークスペースのメンバーではありません。"
+                );
+            }
+        }
+
+        item.CommitterId = committerId;
+    }
+
+    /// <summary>
+    /// 優先度属性を更新
+    /// </summary>
+    private static void UpdatePriorityAttribute(WorkspaceItem item, System.Text.Json.JsonElement? value)
+    {
+        if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            var priorityValue = value.Value.GetInt32();
+            if (!Enum.IsDefined(typeof(TaskPriority), priorityValue))
+            {
+                throw new InvalidOperationException($"無効な優先度です: {priorityValue}");
+            }
+            item.Priority = (TaskPriority)priorityValue;
+        }
+        else
+        {
+            item.Priority = null;
+        }
+    }
+
+    /// <summary>
+    /// 期限日属性を更新
+    /// </summary>
+    private static void UpdateDuedateAttribute(WorkspaceItem item, System.Text.Json.JsonElement? value)
+    {
+        if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            var dateTime = value.Value.GetDateTime();
+            // PostgreSQL の timestamp with time zone は UTC のみ対応
+            item.DueDate = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+        }
+        else
+        {
+            item.DueDate = null;
+        }
+    }
+
+    /// <summary>
+    /// アーカイブ属性を更新
+    /// </summary>
+    private static void UpdateArchiveAttribute(WorkspaceItem item, System.Text.Json.JsonElement? value)
+    {
+        if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
+        {
+            item.IsArchived = value.Value.GetBoolean();
+        }
+        else
+        {
+            // アーカイブは null 不可のため、明示的な値が必要
+            throw new InvalidOperationException("アーカイブ状態の値は必須です。");
+        }
+    }
+
+    /// <summary>
+    /// ワークスペースアイテムのナビゲーションプロパティをロード
+    /// </summary>
+    private async Task LoadWorkspaceItemNavigations(WorkspaceItem item)
+    {
+        await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
+        await _context.Entry(item).Reference(wi => wi.Owner).LoadAsync();
+        if (item.AssigneeId.HasValue)
+        {
+            await _context.Entry(item).Reference(wi => wi.Assignee).LoadAsync();
+        }
+        if (item.CommitterId.HasValue)
+        {
+            await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
+        }
+    }
 }

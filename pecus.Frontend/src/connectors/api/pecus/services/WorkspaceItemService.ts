@@ -9,6 +9,7 @@ import type { SetTagsToItemRequest } from '../models/SetTagsToItemRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { TaskPriority } from '../models/TaskPriority';
 import type { UpdateWorkspaceItemAssigneeRequest } from '../models/UpdateWorkspaceItemAssigneeRequest';
+import type { UpdateWorkspaceItemAttributeRequest } from '../models/UpdateWorkspaceItemAttributeRequest';
 import type { UpdateWorkspaceItemRequest } from '../models/UpdateWorkspaceItemRequest';
 import type { UpdateWorkspaceItemStatusRequest } from '../models/UpdateWorkspaceItemStatusRequest';
 import type { WorkspaceItemAttachmentResponse } from '../models/WorkspaceItemAttachmentResponse';
@@ -363,6 +364,45 @@ export class WorkspaceItemService {
             path: {
                 'workspaceId': workspaceId,
                 'itemId': itemId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ワークスペースアイテム属性更新
+     * 属性ごとに値を個別に更新します。サポートされる属性:
+     * - assignee: 担当者ID (int? / null で割り当て解除)
+     * - committer: コミッターID (int? / null で割り当て解除)
+     * - priority: 優先度 (TaskPriority enum / null でクリア)
+     * - duedate: 期限日 (DateTime / null でクリア)
+     * - archive: アーカイブ状態 (bool / 必須)
+     * @param workspaceId
+     * @param itemId
+     * @param attr
+     * @param requestBody
+     * @returns WorkspaceItemResponse OK
+     * @throws ApiError
+     */
+    public static patchApiWorkspacesItems1(
+        workspaceId: number,
+        itemId: number,
+        attr: string,
+        requestBody?: UpdateWorkspaceItemAttributeRequest,
+    ): CancelablePromise<WorkspaceItemResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/{attr}',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+                'attr': attr,
             },
             body: requestBody,
             mediaType: 'application/json',

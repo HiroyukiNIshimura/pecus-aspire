@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -371,5 +372,85 @@ public class WorkspaceItemController : BaseSecureController
         };
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ワークスペースアイテム属性更新
+    /// </summary>
+    /// <remarks>
+    /// 属性ごとに値を個別に更新します。サポートされる属性:
+    /// - assignee: 担当者ID (int? / null で割り当て解除)
+    /// - committer: コミッターID (int? / null で割り当て解除)
+    /// - priority: 優先度 (TaskPriority enum / null でクリア)
+    /// - duedate: 期限日 (DateTime / null でクリア)
+    /// - archive: アーカイブ状態 (bool / 必須)
+    /// </remarks>
+    [HttpPatch("{itemId}/{attr}")]
+    [ProducesResponseType(typeof(WorkspaceItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<WorkspaceItemDetailResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceItemResponse>> UpdateWorkspaceItemAttribute(
+        int workspaceId,
+        int itemId,
+        string attr,
+        [FromBody] UpdateWorkspaceItemAttributeRequest request
+    )
+    {
+        // 属性名を Enum に変換（case-insensitive）
+        if (!Enum.TryParse<WorkspaceItemAttribute>(attr, ignoreCase: true, out var attribute))
+        {
+            throw new InvalidOperationException($"無効な属性です: {attr}。使用可能な属性: assignee, committer, priority, duedate, archive");
+        }
+
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみがアイテムの属性を変更できます。"
+            );
+        }
+
+        var item = await _workspaceItemService.UpdateWorkspaceItemAttributeAsync(
+            workspaceId,
+            itemId,
+            attribute,
+            request,
+            CurrentUserId
+        );
+
+        var response = new WorkspaceItemResponse
+        {
+            Success = true,
+            Message = $"ワークスペースアイテムの{GetAttributeDisplayName(attribute)}を更新しました。",
+            WorkspaceItem = WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId),
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 属性の表示名を取得
+    /// </summary>
+    private static string GetAttributeDisplayName(WorkspaceItemAttribute attribute)
+    {
+        return attribute switch
+        {
+            WorkspaceItemAttribute.Assignee => "担当者",
+            WorkspaceItemAttribute.Committer => "コミッター",
+            WorkspaceItemAttribute.Priority => "優先度",
+            WorkspaceItemAttribute.Duedate => "期限日",
+            WorkspaceItemAttribute.Archive => "アーカイブ状態",
+            _ => attribute.ToString()
+        };
     }
 }

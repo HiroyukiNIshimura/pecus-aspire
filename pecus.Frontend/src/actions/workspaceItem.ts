@@ -11,6 +11,7 @@ import type {
   CreateWorkspaceItemRequest,
   MyItemRelationType,
   UpdateWorkspaceItemAssigneeRequest,
+  UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
   WorkspaceItemDetailResponse,
   WorkspaceItemDetailResponsePagedResponse,
@@ -18,6 +19,11 @@ import type {
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
+
+/**
+ * ワークスペースアイテム属性の種類
+ */
+export type WorkspaceItemAttributeType = 'assignee' | 'committer' | 'priority' | 'duedate' | 'archive';
 
 /**
  * Server Action: マイアイテム一覧を取得（ワークスペース横断）
@@ -266,5 +272,79 @@ export async function updateWorkspaceItemAssignee(
 
     // その他のエラー
     return parseErrorResponse(error, '担当者の更新に失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムの属性を更新
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ * @param attribute 属性名 (assignee, committer, priority, duedate, archive)
+ * @param request 更新リクエスト
+ */
+export async function updateWorkspaceItemAttribute(
+  workspaceId: number,
+  itemId: number,
+  attribute: WorkspaceItemAttributeType,
+  request: UpdateWorkspaceItemAttributeRequest,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.patchApiWorkspacesItems1(workspaceId, itemId, attribute, {
+      value: request.value,
+      rowVersion: request.rowVersion,
+    });
+
+    // レスポンスからアイテムデータを取得
+    if (response.workspaceItem) {
+      return {
+        success: true,
+        data: response.workspaceItem,
+      };
+    }
+
+    return serverError('アイテムの取得に失敗しました。');
+  } catch (error) {
+    console.error(`Failed to update workspace item ${attribute}:`, error);
+
+    // 409 Conflict: 並行更新による競合
+    const concurrency = detectConcurrencyError(error);
+    if (concurrency) {
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrency.message,
+        latest:
+          concurrency.payload.current && typeof concurrency.payload.current === 'object'
+            ? {
+                type: 'workspaceItem',
+                data: concurrency.payload.current as WorkspaceItemDetailResponse,
+              }
+            : undefined,
+      };
+    }
+
+    // バリデーションエラー
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    // 属性名に応じたエラーメッセージ
+    const attributeNames: Record<WorkspaceItemAttributeType, string> = {
+      assignee: '担当者',
+      committer: 'コミッター',
+      priority: '優先度',
+      duedate: '期限日',
+      archive: 'アーカイブ状態',
+    };
+    const attrName = attributeNames[attribute] || attribute;
+
+    return parseErrorResponse(error, `${attrName}の更新に失敗しました。`);
   }
 }

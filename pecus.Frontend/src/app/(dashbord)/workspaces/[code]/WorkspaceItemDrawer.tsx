@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { updateWorkspaceItem, updateWorkspaceItemAssignee } from '@/actions/workspaceItem';
+import { updateWorkspaceItemAssignee, updateWorkspaceItemAttribute } from '@/actions/workspaceItem';
 import type {
   ErrorResponse,
   TaskPriority,
@@ -108,14 +108,11 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
-        const result = await updateWorkspaceItem(item.workspaceId ?? 0, item.id, {
-          committerId: newCommitterId,
+        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'committer', {
+          value: newCommitterId,
           rowVersion: currentRowVersion,
         });
-        if (result.success && result.data.workspaceItem) {
-          return { success: true, data: result.data.workspaceItem };
-        }
-        return { success: false, message: result.success ? 'アイテム情報の取得に失敗しました。' : result.message };
+        return result;
       },
       'コミッターの更新に失敗しました。',
       () => setSelectedCommitterId(prevValue),
@@ -129,14 +126,11 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
-        const result = await updateWorkspaceItem(item.workspaceId ?? 0, item.id, {
-          isArchived: newIsArchived,
+        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'archive', {
+          value: newIsArchived,
           rowVersion: currentRowVersion,
         });
-        if (result.success && result.data.workspaceItem) {
-          return { success: true, data: result.data.workspaceItem };
-        }
-        return { success: false, message: result.success ? 'アイテム情報の取得に失敗しました。' : result.message };
+        return result;
       },
       'アーカイブ状態の更新に失敗しました。',
       () => setIsArchived(prevValue),
@@ -150,14 +144,11 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
-        const result = await updateWorkspaceItem(item.workspaceId ?? 0, item.id, {
-          dueDate: newDueDate || null,
+        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'duedate', {
+          value: newDueDate || null,
           rowVersion: currentRowVersion,
         });
-        if (result.success && result.data.workspaceItem) {
-          return { success: true, data: result.data.workspaceItem };
-        }
-        return { success: false, message: result.success ? 'アイテム情報の取得に失敗しました。' : result.message };
+        return result;
       },
       '期限の更新に失敗しました。',
       () => setDueDate(prevValue),
@@ -171,14 +162,11 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
-        const result = await updateWorkspaceItem(item.workspaceId ?? 0, item.id, {
-          priority: newPriority ?? undefined,
+        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'priority', {
+          value: newPriority,
           rowVersion: currentRowVersion,
         });
-        if (result.success && result.data.workspaceItem) {
-          return { success: true, data: result.data.workspaceItem };
-        }
-        return { success: false, message: result.success ? 'アイテム情報の取得に失敗しました。' : result.message };
+        return result;
       },
       '優先度の更新に失敗しました。',
       () => setPriority(prevValue),

@@ -261,10 +261,18 @@ export default function WorkspaceItemDetail({
             </div>
           )}
 
+          {/* 期限日 */}
+          <div>
+            <span className="text-xs text-base-content/70">期限日</span>
+            <p className="font-semibold">
+              {item.dueDate ? new Date(item.dueDate).toLocaleDateString('ja-JP') : '未設定'}
+            </p>
+          </div>
+
           {/* 担当者 */}
-          {item.assigneeId && (
-            <div>
-              <span className="text-xs text-base-content/70">担当者</span>
+          <div>
+            <span className="text-xs text-base-content/70">担当者</span>
+            {item.assigneeId ? (
               <div className="flex items-center gap-2 mt-1">
                 {item.assigneeAvatarUrl && (
                   <img
@@ -275,13 +283,15 @@ export default function WorkspaceItemDetail({
                 )}
                 <p className="font-semibold truncate">{item.assigneeUsername}</p>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="font-semibold text-base-content/50">未割当</p>
+            )}
+          </div>
 
           {/* コミッター */}
-          {item.committerId && (
-            <div>
-              <span className="text-xs text-base-content/70">コミッター</span>
+          <div>
+            <span className="text-xs text-base-content/70">コミッター</span>
+            {item.committerId ? (
               <div className="flex items-center gap-2 mt-1">
                 {item.committerAvatarUrl && (
                   <img
@@ -292,8 +302,10 @@ export default function WorkspaceItemDetail({
                 )}
                 <p className="font-semibold truncate">{item.committerUsername}</p>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="font-semibold text-base-content/50">未割当</p>
+            )}
+          </div>
         </div>
 
         {/* タグ */}
