@@ -136,6 +136,7 @@ export type { WorkspaceSkillResponse } from './models/WorkspaceSkillResponse';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';
 export type { WorkspaceTaskDetailResponse } from './models/WorkspaceTaskDetailResponse';
 export type { WorkspaceTaskDetailResponseConcurrencyErrorResponse } from './models/WorkspaceTaskDetailResponseConcurrencyErrorResponse';
+export type { WorkspaceTaskDetailResponsePagedResponse } from './models/WorkspaceTaskDetailResponsePagedResponse';
 export type { WorkspaceTaskResponse } from './models/WorkspaceTaskResponse';
 export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailResponse';
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';

@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "biome check --write",
     "format": "biome format --write",
+    "full:api": "npm run download:api && npm run generate:api && npm run generate:client",
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
     "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus --useUnionTypes --client axios && npm run generate:conflict-types",
     "generate:client": "node scripts/generate-pecus-api-client.js",

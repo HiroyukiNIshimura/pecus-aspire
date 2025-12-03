@@ -5,6 +5,7 @@
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
+import type { WorkspaceTaskDetailResponsePagedResponse } from '../models/WorkspaceTaskDetailResponsePagedResponse';
 import type { WorkspaceTaskResponse } from '../models/WorkspaceTaskResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -43,19 +44,33 @@ export class WorkspaceTaskService {
      * アイテムのタスク一覧取得
      * @param workspaceId ワークスペースID
      * @param itemId ワークスペースアイテムID
-     * @returns WorkspaceTaskDetailResponse OK
+     * @param page ページ番号（1から始まる）
+     * @param includeCompleted 完了タスクを含めるか
+     * @param includeDiscarded 破棄タスクを含めるか
+     * @param assignedUserId 担当ユーザーIDでフィルタ
+     * @returns WorkspaceTaskDetailResponsePagedResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasks(
         workspaceId: number,
         itemId: number,
-    ): CancelablePromise<Array<WorkspaceTaskDetailResponse>> {
+        page?: number,
+        includeCompleted?: boolean,
+        includeDiscarded?: boolean,
+        assignedUserId?: number,
+    ): CancelablePromise<WorkspaceTaskDetailResponsePagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',
             path: {
                 'workspaceId': workspaceId,
                 'itemId': itemId,
+            },
+            query: {
+                'Page': page,
+                'IncludeCompleted': includeCompleted,
+                'IncludeDiscarded': includeDiscarded,
+                'AssignedUserId': assignedUserId,
             },
             errors: {
                 404: `Not Found`,

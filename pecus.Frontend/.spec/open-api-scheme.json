@@ -8118,6 +8118,42 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から始まる）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IncludeCompleted",
+            "in": "query",
+            "description": "完了タスクを含めるか",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeDiscarded",
+            "in": "query",
+            "description": "破棄タスクを含めるか",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "AssignedUserId",
+            "in": "query",
+            "description": "担当ユーザーIDでフィルタ",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -8126,10 +8162,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
-                  }
+                  "$ref": "#/components/schemas/WorkspaceTaskDetailResponsePagedResponse"
                 }
               }
             }
@@ -13056,6 +13089,51 @@
         },
         "additionalProperties": false,
         "description": "競合エラーレスポンス（409 Conflict）"
+      },
+      "WorkspaceTaskDetailResponsePagedResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ページネーション付きレスポンス"
       },
       "WorkspaceTaskResponse": {
         "type": "object",
