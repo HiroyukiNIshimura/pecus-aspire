@@ -12,9 +12,9 @@
     "format": "biome format --write",
     "download:api": "curl -o ./.spec/open-api-scheme.json https://localhost:7265/swagger/v1/swagger.json",
     "generate:api": "npm run clean:api && openapi --input ./.spec/open-api-scheme.json --output src/connectors/api/pecus --useUnionTypes --client axios && npm run generate:conflict-types",
+    "generate:client": "node scripts/generate-pecus-api-client.js",
     "generate:conflict-types": "node scripts/generate-conflict-types.js",
-    "clean:api": "rimraf src/connectors/api/pecus",
-    "generate:client": "node scripts/generate-pecus-api-client.js"
+    "clean:api": "rimraf src/connectors/api/pecus"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

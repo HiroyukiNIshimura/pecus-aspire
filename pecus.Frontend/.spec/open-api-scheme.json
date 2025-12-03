@@ -8008,6 +8008,315 @@
           }
         }
       }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks": {
+      "post": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "タスク作成",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "作成リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceTaskRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceTaskRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "アイテムのタスク一覧取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}": {
+      "get": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "タスク取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "タスク更新",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "更新リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceTaskRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceTaskRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTaskDetailResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8471,6 +8780,62 @@
         },
         "additionalProperties": false,
         "description": "ワークスペース登録リクエスト"
+      },
+      "CreateWorkspaceTaskRequest": {
+        "required": [
+          "assignedUserId",
+          "content",
+          "taskType"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string",
+            "description": "タスク内容"
+          },
+          "taskType": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedHours": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "number",
+            "description": "予定工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "displayOrder": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "表示順序",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースタスク作成リクエスト"
       },
       "DeleteOrganizationRequest": {
         "required": [
@@ -10766,6 +11131,22 @@
         ],
         "type": "string"
       },
+      "TaskType": {
+        "enum": [
+          "Bug",
+          "Feature",
+          "Documentation",
+          "Review",
+          "Testing",
+          "Refactoring",
+          "Research",
+          "Meeting",
+          "BusinessNegotiation",
+          "RequirementsConfirmation",
+          "Other"
+        ],
+        "type": "string"
+      },
       "TempAttachmentResponse": {
         "required": [
           "fileName",
@@ -11135,6 +11516,99 @@
         },
         "additionalProperties": false,
         "description": "ワークスペース更新リクエスト"
+      },
+      "UpdateWorkspaceTaskRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "maxLength": 2000,
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
+          },
+          "taskType": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedHours": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "number",
+            "description": "予定工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "actualHours": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "number",
+            "description": "実績工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "progressPercentage": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer",
+            "description": "進捗率（0-100）",
+            "format": "int32",
+            "nullable": true
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ",
+            "nullable": true
+          },
+          "isDiscarded": {
+            "type": "boolean",
+            "description": "破棄状態",
+            "nullable": true
+          },
+          "discardReason": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "破棄理由",
+            "nullable": true
+          },
+          "displayOrder": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "表示順序",
+            "format": "int32",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion（必須）",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースタスク更新リクエスト"
       },
       "UpdateWorkspaceUserRoleRequest": {
         "required": [
@@ -12408,6 +12882,199 @@
         },
         "additionalProperties": false,
         "description": "ワークスペース統計情報レスポンス"
+      },
+      "WorkspaceTaskDetailResponse": {
+        "required": [
+          "id",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "workspaceItemId": {
+            "type": "integer",
+            "description": "ワークスペースアイテムID",
+            "format": "int32"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "organizationId": {
+            "type": "integer",
+            "description": "組織ID",
+            "format": "int32"
+          },
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32"
+          },
+          "assignedUsername": {
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
+          },
+          "assignedAvatarUrl": {
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
+          },
+          "createdByUserId": {
+            "type": "integer",
+            "description": "作成ユーザーID",
+            "format": "int32"
+          },
+          "createdByUsername": {
+            "type": "string",
+            "description": "作成ユーザー名",
+            "nullable": true
+          },
+          "createdByAvatarUrl": {
+            "type": "string",
+            "description": "作成ユーザーアバターURL",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
+          },
+          "taskType": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedHours": {
+            "type": "number",
+            "description": "予定工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "actualHours": {
+            "type": "number",
+            "description": "実績工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "progressPercentage": {
+            "type": "integer",
+            "description": "進捗率（0-100）",
+            "format": "int32"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "タスク完了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDiscarded": {
+            "type": "boolean",
+            "description": "破棄状態"
+          },
+          "discardedAt": {
+            "type": "string",
+            "description": "破棄日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "discardReason": {
+            "type": "string",
+            "description": "破棄理由",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "description": "表示順序",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースタスク詳細レスポンス"
+      },
+      "WorkspaceTaskDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
+      "WorkspaceTaskResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "成功フラグ"
+          },
+          "message": {
+            "type": "string",
+            "description": "メッセージ",
+            "nullable": true
+          },
+          "workspaceTask": {
+            "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ワークスペースタスク操作レスポンス"
       },
       "WorkspaceUserDetailResponse": {
         "required": [

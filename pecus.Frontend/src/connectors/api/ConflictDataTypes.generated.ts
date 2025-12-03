@@ -20,6 +20,7 @@ import type {
   UserDetailResponse,
   WorkspaceDetailResponse,
   WorkspaceItemDetailResponse,
+  WorkspaceTaskDetailResponse,
 } from "./pecus";
 
 /**
@@ -83,4 +84,8 @@ export type ConflictLatestData =
   | {
       type: 'workspaceItem';
       data: WorkspaceItemDetailResponse;
+    }
+  | {
+      type: 'workspaceTask';
+      data: WorkspaceTaskDetailResponse;
     };

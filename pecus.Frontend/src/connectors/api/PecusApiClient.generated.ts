@@ -27,7 +27,8 @@ import {
   UserService,
   WorkspaceItemService,
   WorkspaceItemTempAttachmentService,
-  WorkspaceService
+  WorkspaceService,
+  WorkspaceTaskService
 } from "./pecus";
 
 /**
@@ -81,6 +82,7 @@ export function createApiClientInstances() {
     user: UserService,
     workspaceItem: WorkspaceItemService,
     workspaceItemTempAttachment: WorkspaceItemTempAttachmentService,
-    workspace: WorkspaceService
+    workspace: WorkspaceService,
+    workspaceTask: WorkspaceTaskService
   };
 }
