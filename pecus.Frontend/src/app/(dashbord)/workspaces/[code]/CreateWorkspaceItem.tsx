@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
+import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
 import type { EditorContextSettings } from '@/components/editor/core/appSettings';
@@ -31,7 +32,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
   const [formData, setFormData] = useState<CreateWorkspaceItemInput>({
     subject: '',
     dueDate: '',
-    priority: 'Medium',
+    priority: undefined,
     isDraft: false,
   });
 
@@ -136,7 +137,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     setFormData({
       subject: '',
       dueDate: '',
-      priority: 'Medium',
+      priority: undefined,
       isDraft: true,
     });
     setEditorState('');
@@ -170,7 +171,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
             </h2>
             <button
               type="button"
-              className="btn btn-default btn-sm btn-circle"
+              className="btn btn-sm btn-circle"
               onClick={handleClose}
               disabled={isSubmitting}
               aria-label="閉じる"
@@ -264,15 +265,12 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 <label htmlFor="dueDate" className="label">
                   <span className="label-text font-semibold">期限日</span>
                 </label>
-                <input
-                  id="dueDate"
-                  name="dueDate"
-                  type="date"
-                  className={`input input-bordered w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
-                  value={formData.dueDate}
-                  onChange={(e) => handleFieldChange('dueDate', e.target.value)}
-                  onBlur={() => validateField('dueDate', formData.dueDate)}
+                <DatePicker
+                  value={formData.dueDate ?? ''}
+                  onChange={(date) => handleFieldChange('dueDate', date)}
                   disabled={isSubmitting}
+                  className={`w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
+                  placeholder="日付を選択"
                 />
                 {shouldShowError('dueDate') && (
                   <div className="label">
@@ -289,10 +287,11 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   id="priority"
                   name="priority"
                   className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
-                  value={formData.priority}
-                  onChange={(e) => handleFieldChange('priority', e.target.value as TaskPriority)}
+                  value={formData.priority ?? ''}
+                  onChange={(e) => handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)}
                   disabled={isSubmitting}
                 >
+                  <option value="">未設定</option>
                   <option value="Low">低</option>
                   <option value="Medium">中</option>
                   <option value="High">高</option>

@@ -165,7 +165,7 @@ export default function WorkspaceItemDetail({
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
             <div className="flex items-center gap-2 flex-wrap">
-              {item.code && <code className="text-sm badge badge-soft badge-default badge-md">{item.code}</code>}
+              {item.code && <code className="text-sm badge badge-soft badge-md">{item.code}</code>}
               {item.priority !== undefined && item.priority !== null && (
                 <div
                   className={`badge ${
@@ -175,7 +175,7 @@ export default function WorkspaceItemDetail({
                         ? 'badge-warning'
                         : item.priority === 'Medium'
                           ? 'badge-info'
-                          : 'badge-default'
+                          : ''
                   }`}
                 >
                   優先度:{' '}
@@ -201,7 +201,7 @@ export default function WorkspaceItemDetail({
             <button
               type="button"
               onClick={handlePinToggle}
-              className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : 'btn-default'}`}
+              className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : ''}`}
               title={item.isPinned ? 'PINを解除' : 'PINを追加'}
               disabled={isPinLoading}
             >
@@ -225,7 +225,7 @@ export default function WorkspaceItemDetail({
               <EditIcon fontSize="small" />
               編集
             </button>
-            <button type="button" onClick={openDrawer} className="btn btn-default btn-sm gap-2" title="詳細オプション">
+            <button type="button" onClick={openDrawer} className="btn btn-sm gap-2" title="詳細オプション">
               <MenuIcon fontSize="small" />
             </button>
           </div>

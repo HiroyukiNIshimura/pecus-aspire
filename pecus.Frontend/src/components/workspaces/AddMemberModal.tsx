@@ -244,7 +244,7 @@ export default function AddMemberModal({
               </div>
               <button
                 type="button"
-                className="btn btn-default btn-sm btn-circle"
+                className="btn btn-sm btn-circle"
                 onClick={handleClearSelection}
                 aria-label="選択解除"
               >

@@ -213,7 +213,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
             </h2>
             <button
               type="button"
-              className="btn btn-default btn-sm btn-circle"
+              className="btn btn-sm btn-circle"
               onClick={handleClose}
               disabled={isSubmitting || isLoadingItem}
               aria-label="閉じる"

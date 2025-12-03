@@ -456,7 +456,7 @@ export default function WorkspaceDetailClient({
         <div className="relative flex-shrink-0">
           <button
             type="button"
-            className="btn btn-default btn-sm"
+            className="btn btn-sm"
             onClick={(e) => {
               e.stopPropagation();
               handleActionMenuToggle();

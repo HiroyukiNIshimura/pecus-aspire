@@ -73,7 +73,10 @@ export const createWorkspaceItemSchema = z.object({
       return !Number.isNaN(date.getTime());
     }, '有効な日付を入力してください。')
     .optional(),
-  priority: z.enum(['Low', 'Medium', 'High', 'Critical']).default('Medium'),
+  priority: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
+  ),
   isDraft: z.boolean().default(true),
 });
 

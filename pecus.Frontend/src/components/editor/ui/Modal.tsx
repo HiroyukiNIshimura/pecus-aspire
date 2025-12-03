@@ -77,12 +77,7 @@ function PortalImpl({
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
-            <button
-              type="button"
-              className="btn btn-default btn-sm btn-circle ms-2"
-              onClick={onClose}
-              aria-label="閉じる"
-            >
+            <button type="button" className="btn btn-sm btn-circle ms-2" onClick={onClose} aria-label="閉じる">
               <CloseIcon />
             </button>
           </div>

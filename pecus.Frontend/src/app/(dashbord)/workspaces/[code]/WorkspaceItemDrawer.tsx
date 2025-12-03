@@ -245,7 +245,7 @@ export default function WorkspaceItemDrawer({
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-4 border-b border-base-300 sticky top-0 bg-base-100 z-10">
           <h3 className="text-lg font-bold">アイテム属性</h3>
-          <button type="button" className="btn btn-default btn-circle btn-sm" aria-label="Close" onClick={onClose}>
+          <button type="button" className="btn btn-circle btn-sm" aria-label="Close" onClick={onClose}>
             ✕
           </button>
         </div>
@@ -381,7 +381,7 @@ export default function WorkspaceItemDrawer({
               <div className="flex justify-end">
                 <button
                   type="button"
-                  className="btn btn-default btn-xs mt-1"
+                  className="btn btn-xs mt-1"
                   onClick={() => handleDueDateChange('')}
                   disabled={isUpdating}
                 >

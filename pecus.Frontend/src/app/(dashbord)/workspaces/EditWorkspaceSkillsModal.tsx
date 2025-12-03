@@ -133,7 +133,7 @@ export default function EditWorkspaceSkillsModal({
             </h2>
             <button
               type="button"
-              className="btn btn-default btn-sm btn-circle"
+              className="btn btn-sm btn-circle"
               onClick={onClose}
               disabled={isSubmitting}
               aria-label="閉じる"
