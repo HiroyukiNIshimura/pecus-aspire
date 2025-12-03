@@ -288,7 +288,9 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   name="priority"
                   className={`select select-bordered w-full ${shouldShowError('priority') ? 'select-error' : ''}`}
                   value={formData.priority ?? ''}
-                  onChange={(e) => handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)}
+                  onChange={(e) =>
+                    handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)
+                  }
                   disabled={isSubmitting}
                 >
                   <option value="">未設定</option>
