@@ -125,6 +125,14 @@ internal class DbInitializer(
             cancellationToken
         );
 
+        // Tags テーブルに pgroonga インデックスを作成（ワークスペースアイテム検索時のタグ名検索用）
+        await dbContext.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS idx_tags_pgroonga
+              ON ""Tags""
+              USING pgroonga (""Name"") WITH (tokenizer=""TokenMecab"");",
+            cancellationToken
+        );
+
         logger.LogInformation("pgroonga extension and indexes enabled successfully");
     }
 }

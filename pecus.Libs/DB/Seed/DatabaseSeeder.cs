@@ -90,6 +90,11 @@ public class DatabaseSeeder
                 @"REINDEX INDEX CONCURRENTLY idx_skills_pgroonga;"
             );
 
+            // Tags テーブルの pgroonga インデックスを再構築
+            await _context.Database.ExecuteSqlRawAsync(
+                @"REINDEX INDEX CONCURRENTLY idx_tags_pgroonga;"
+            );
+
             _logger.LogInformation("pgroonga indexes rebuilt successfully");
         }
         catch (Exception ex)
