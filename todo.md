@@ -5,5 +5,3 @@
 * アクティビティの実装（要設計）
 
 ## エディタ
-* https://github.com/facebook/lexical/issues/7663 → https://payloadcms.com/docs/rich-text/converting-markdown#markdown-to-richtext
-
