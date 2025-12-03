@@ -108,11 +108,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkspaceTask> WorkspaceTasks { get; set; }
 
     /// <summary>
-    /// タスクタグテーブル（中間テーブル）
-    /// </summary>
-    public DbSet<TaskTag> TaskTags { get; set; }
-
-    /// <summary>
     /// タスクコメントテーブル
     /// </summary>
     public DbSet<TaskComment> TaskComments { get; set; }
@@ -721,38 +716,6 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.OrganizationId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceItemId, wt.IsCompleted });
-        });
-
-        // TaskTagエンティティの設定（中間テーブル）
-        modelBuilder.Entity<TaskTag>(entity =>
-        {
-            entity.HasKey(tt => new { tt.WorkspaceTaskId, tt.TagId });
-
-            // TaskTag と WorkspaceTask の多対一リレーションシップ
-            entity
-                .HasOne(tt => tt.WorkspaceTask)
-                .WithMany(wt => wt.TaskTags)
-                .HasForeignKey(tt => tt.WorkspaceTaskId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // TaskTag と Tag の多対一リレーションシップ
-            entity
-                .HasOne(tt => tt.Tag)
-                .WithMany()
-                .HasForeignKey(tt => tt.TagId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // TaskTag と CreatedByUser の多対一リレーションシップ
-            entity
-                .HasOne(tt => tt.CreatedByUser)
-                .WithMany()
-                .HasForeignKey(tt => tt.CreatedByUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // インデックス
-            entity.HasIndex(tt => tt.TagId);
-            entity.HasIndex(tt => tt.CreatedByUserId);
-            entity.HasIndex(tt => tt.CreatedAt);
         });
 
         // TaskCommentエンティティの設定

@@ -153,11 +153,6 @@ public class WorkspaceTask
     public User CreatedByUser { get; set; } = null!;
 
     /// <summary>
-    /// タスクタグ（中間テーブル）
-    /// </summary>
-    public ICollection<TaskTag> TaskTags { get; set; } = new List<TaskTag>();
-
-    /// <summary>
     /// タスクコメント
     /// </summary>
     public ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
