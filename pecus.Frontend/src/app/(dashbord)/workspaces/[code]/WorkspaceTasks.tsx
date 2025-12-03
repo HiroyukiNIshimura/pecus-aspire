@@ -129,106 +129,108 @@ const WorkspaceTasks = ({ workspaceId, itemId }: WorkspaceTasksProps) => {
             className={`grid grid-cols-2 sm:grid-cols-4 gap-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}
             style={{ gridAutoRows: '1fr' }}
           >
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`card bg-base-200 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full ${
-                  task.isCompleted ? 'opacity-60' : ''
-                } ${task.isDiscarded ? 'opacity-40' : ''}`}
-              >
-                {/* カードボディ: 伸縮する部分 */}
-                <div className="p-3 pb-2 gap-2 flex flex-col flex-1">
-                  {/* ヘッダー: アイコン + ステータス */}
-                  <div className="flex items-start justify-between gap-2">
-                    {/* タスクタイプアイコン */}
-                    {task.taskType && getTaskTypeIcon(task.taskType) && (
-                      <div className="flex-shrink-0">
-                        <img
-                          src={getTaskTypeIcon(task.taskType) || undefined}
-                          alt={task.taskType}
-                          className="w-7 h-7 rounded"
-                          title={task.taskType}
-                        />
-                      </div>
-                    )}
-                    {/* ステータスバッジ */}
-                    <div className="flex flex-wrap gap-1 justify-end">
-                      {task.isCompleted && <span className="badge badge-success badge-xs">完了</span>}
-                      {task.isDiscarded && <span className="badge badge-neutral badge-xs">破棄</span>}
-                      {getPriorityBadge(task.priority)}
-                    </div>
-                  </div>
-
-                  {/* タスク内容（2行で省略、ホバーで全文表示） */}
-                  <div className="flex-1">
-                    <p
-                      className={`text-xs line-clamp-2 ${task.isCompleted ? 'line-through' : ''}`}
-                      title={task.content || undefined}
-                    >
-                      {task.content}
-                    </p>
-                  </div>
-                </div>
-
-                {/* カードフッター: 固定位置 */}
-                <div className="p-3 pt-0">
-                  {/* 進捗バー */}
-                  <div className="w-full mb-2">
-                    <progress
-                      className="progress progress-primary w-full h-1.5"
-                      value={task.progressPercentage || 0}
-                      max="100"
-                    ></progress>
-                  </div>
-
-                  {/* 担当者 + 期限（固定高さ） */}
-                  <div className="border-t border-base-300 pt-1.5 min-h-[3rem]">
-                    {/* 担当者 */}
-                    <div className="flex items-center gap-1.5 h-5">
-                      {task.assignedUserId ? (
-                        <>
-                          {task.assignedAvatarUrl && (
-                            <img
-                              src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                              alt={task.assignedUsername || '担当者'}
-                              className="w-4 h-4 rounded-full object-cover flex-shrink-0"
-                            />
-                          )}
-                          <span className="text-xs truncate">{task.assignedUsername}</span>
-                        </>
-                      ) : (
-                        <span className="text-xs text-base-content/30">—</span>
+            {tasks.map((task) => {
+              const isInactive = task.isCompleted || task.isDiscarded;
+              return (
+                <div
+                  key={task.id}
+                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full ${
+                    isInactive
+                      ? 'opacity-60 blur-[1px] grayscale-[30%] hover:opacity-100 hover:blur-none hover:grayscale-0 hover:shadow-md'
+                      : 'hover:shadow-md'
+                  }`}
+                >
+                  {/* カードボディ: 伸縮する部分 */}
+                  <div className="p-3 pb-2 gap-2 flex flex-col flex-1">
+                    {/* ヘッダー: アイコン + ステータス */}
+                    <div className="flex items-start justify-between gap-2">
+                      {/* タスクタイプアイコン */}
+                      {task.taskType && getTaskTypeIcon(task.taskType) && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={getTaskTypeIcon(task.taskType) || undefined}
+                            alt={task.taskType}
+                            className="w-7 h-7 rounded"
+                            title={task.taskType}
+                          />
+                        </div>
                       )}
+                      {/* ステータスバッジ */}
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {task.isCompleted && <span className="badge badge-success badge-xs">完了</span>}
+                        {task.isDiscarded && <span className="badge badge-neutral badge-xs">破棄</span>}
+                        {getPriorityBadge(task.priority)}
+                      </div>
                     </div>
-                    {/* 期限 */}
-                    <div className="flex items-center gap-1 text-xs text-base-content/70 h-5 mt-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-3.5 h-3.5 flex-shrink-0"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                        />
-                      </svg>
-                      <span>
-                        {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString('ja-JP', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : '—'}
-                      </span>
+
+                    {/* タスク内容（2行で省略、ホバーで全文表示） */}
+                    <div className="flex-1">
+                      <p className="text-xs line-clamp-2" title={task.content || undefined}>
+                        {task.content}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* カードフッター: 固定位置 */}
+                  <div className="p-3 pt-0">
+                    {/* 進捗バー */}
+                    <div className="w-full mb-2">
+                      <progress
+                        className="progress progress-primary w-full h-1.5"
+                        value={task.progressPercentage || 0}
+                        max="100"
+                      ></progress>
+                    </div>
+
+                    {/* 担当者 + 期限（固定高さ） */}
+                    <div className="border-t border-base-300 pt-1.5 min-h-[3rem]">
+                      {/* 担当者 */}
+                      <div className="flex items-center gap-1.5 h-5">
+                        {task.assignedUserId ? (
+                          <>
+                            {task.assignedAvatarUrl && (
+                              <img
+                                src={getDisplayIconUrl(task.assignedAvatarUrl)}
+                                alt={task.assignedUsername || '担当者'}
+                                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                              />
+                            )}
+                            <span className="text-xs truncate">{task.assignedUsername}</span>
+                          </>
+                        ) : (
+                          <span className="text-xs text-base-content/30">—</span>
+                        )}
+                      </div>
+                      {/* 期限 */}
+                      <div className="flex items-center gap-1 text-xs text-base-content/70 h-5 mt-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-3.5 h-3.5 flex-shrink-0"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                          />
+                        </svg>
+                        <span>
+                          {task.dueDate
+                            ? new Date(task.dueDate).toLocaleDateString('ja-JP', {
+                                month: 'short',
+                                day: 'numeric',
+                              })
+                            : '—'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* 右矢印 */}

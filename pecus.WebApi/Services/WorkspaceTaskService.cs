@@ -163,14 +163,14 @@ public class WorkspaceTaskService
             .Include(t => t.CreatedByUser)
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
 
-        // 完了タスクのフィルタ（デフォルトは含めない）
-        if (request.IncludeCompleted != true)
+        // 完了タスクのフィルタ（デフォルトは含める、ExcludeCompleted=trueの場合のみ除外）
+        if (request.ExcludeCompleted == true)
         {
             query = query.Where(t => !t.IsCompleted);
         }
 
-        // 破棄タスクのフィルタ（デフォルトは含めない）
-        if (request.IncludeDiscarded != true)
+        // 破棄タスクのフィルタ（デフォルトは含める、ExcludeDiscarded=trueの場合のみ除外）
+        if (request.ExcludeDiscarded == true)
         {
             query = query.Where(t => !t.IsDiscarded);
         }

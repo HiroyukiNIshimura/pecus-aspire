@@ -20,14 +20,14 @@ public class GetWorkspaceTasksRequest
     public int PageSize { get; set; } = 10;
 
     /// <summary>
-    /// 完了タスクを含めるか
+    /// 完了タスクを除外するか（trueの場合、完了タスクを表示しない）
     /// </summary>
-    public bool? IncludeCompleted { get; set; }
+    public bool? ExcludeCompleted { get; set; }
 
     /// <summary>
-    /// 破棄タスクを含めるか
+    /// 破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）
     /// </summary>
-    public bool? IncludeDiscarded { get; set; }
+    public bool? ExcludeDiscarded { get; set; }
 
     /// <summary>
     /// 担当ユーザーIDでフィルタ

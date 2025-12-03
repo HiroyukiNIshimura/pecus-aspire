@@ -8142,17 +8142,17 @@
             }
           },
           {
-            "name": "IncludeCompleted",
+            "name": "ExcludeCompleted",
             "in": "query",
-            "description": "完了タスクを含めるか",
+            "description": "完了タスクを除外するか（trueの場合、完了タスクを表示しない）",
             "schema": {
               "type": "boolean"
             }
           },
           {
-            "name": "IncludeDiscarded",
+            "name": "ExcludeDiscarded",
             "in": "query",
-            "description": "破棄タスクを含めるか",
+            "description": "破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）",
             "schema": {
               "type": "boolean"
             }

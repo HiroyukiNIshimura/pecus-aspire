@@ -12,8 +12,8 @@ export async function getWorkspaceTasks(
   itemId: number,
   page: number = 1,
   pageSize: number = 10,
-  includeCompleted?: boolean,
-  includeDiscarded?: boolean,
+  excludeCompleted?: boolean,
+  excludeDiscarded?: boolean,
   assignedUserId?: number,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponsePagedResponse>> {
   try {
@@ -23,8 +23,8 @@ export async function getWorkspaceTasks(
       itemId,
       page,
       pageSize,
-      includeCompleted,
-      includeDiscarded,
+      excludeCompleted,
+      excludeDiscarded,
       assignedUserId,
     );
 
@@ -46,8 +46,8 @@ export async function getWorkspaceTasks(
 export async function getAllWorkspaceTasks(
   workspaceId: number,
   itemId: number,
-  includeCompleted?: boolean,
-  includeDiscarded?: boolean,
+  excludeCompleted?: boolean,
+  excludeDiscarded?: boolean,
   assignedUserId?: number,
 ): Promise<ApiResponse<WorkspaceTaskDetailResponse[]>> {
   try {
@@ -64,8 +64,8 @@ export async function getAllWorkspaceTasks(
         itemId,
         page,
         pageSize,
-        includeCompleted,
-        includeDiscarded,
+        excludeCompleted,
+        excludeDiscarded,
         assignedUserId,
       );
 

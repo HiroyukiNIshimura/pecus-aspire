@@ -46,8 +46,8 @@ export class WorkspaceTaskService {
      * @param itemId ワークスペースアイテムID
      * @param page ページ番号（1から始まる）
      * @param pageSize 1ページあたりの件数（1〜100、デフォルト10）
-     * @param includeCompleted 完了タスクを含めるか
-     * @param includeDiscarded 破棄タスクを含めるか
+     * @param excludeCompleted 完了タスクを除外するか（trueの場合、完了タスクを表示しない）
+     * @param excludeDiscarded 破棄タスクを除外するか（trueの場合、破棄タスクを表示しない）
      * @param assignedUserId 担当ユーザーIDでフィルタ
      * @returns WorkspaceTaskDetailResponsePagedResponse OK
      * @throws ApiError
@@ -57,8 +57,8 @@ export class WorkspaceTaskService {
         itemId: number,
         page?: number,
         pageSize?: number,
-        includeCompleted?: boolean,
-        includeDiscarded?: boolean,
+        excludeCompleted?: boolean,
+        excludeDiscarded?: boolean,
         assignedUserId?: number,
     ): CancelablePromise<WorkspaceTaskDetailResponsePagedResponse> {
         return __request(OpenAPI, {
@@ -71,8 +71,8 @@ export class WorkspaceTaskService {
             query: {
                 'Page': page,
                 'PageSize': pageSize,
-                'IncludeCompleted': includeCompleted,
-                'IncludeDiscarded': includeDiscarded,
+                'ExcludeCompleted': excludeCompleted,
+                'ExcludeDiscarded': excludeDiscarded,
                 'AssignedUserId': assignedUserId,
             },
             errors: {
