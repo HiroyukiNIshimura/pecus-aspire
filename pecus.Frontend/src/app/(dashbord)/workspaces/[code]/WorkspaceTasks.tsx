@@ -308,7 +308,7 @@ const WorkspaceTasks = ({
       Critical: { label: '緊急', className: 'badge-error' },
       High: { label: '高', className: 'badge-warning' },
       Medium: { label: '中', className: 'badge-info' },
-      Low: { label: '低', className: 'badge-ghost' },
+      Low: { label: '低', className: 'badge-secondary' },
     };
 
     const badge = badges[priority as keyof typeof badges];

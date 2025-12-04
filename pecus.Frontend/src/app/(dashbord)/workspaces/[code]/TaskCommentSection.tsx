@@ -374,7 +374,7 @@ export default function TaskCommentSection({
                         <div className="flex-1"></div>
                         <button
                           type="button"
-                          className="btn btn-xs btn-ghost"
+                          className="btn btn-xs btn-secondary"
                           onClick={handleCancelEdit}
                           disabled={isSubmitting}
                         >
@@ -408,7 +408,7 @@ export default function TaskCommentSection({
                     <div className="flex items-center gap-1 mt-1 justify-end">
                       <button
                         type="button"
-                        className="btn btn-xs btn-ghost text-base-content/50 hover:text-primary p-1 min-h-0 h-auto"
+                        className="btn btn-xs btn-secondary text-base-content/50 hover:text-primary p-1 min-h-0 h-auto"
                         onClick={() => handleStartEdit(comment)}
                         title="編集"
                       >
@@ -416,7 +416,7 @@ export default function TaskCommentSection({
                       </button>
                       <button
                         type="button"
-                        className="btn btn-xs btn-ghost text-base-content/50 hover:text-error p-1 min-h-0 h-auto"
+                        className="btn btn-xs btn-secondary text-base-content/50 hover:text-error p-1 min-h-0 h-auto"
                         onClick={() => handleDeleteClick(comment)}
                         title="削除"
                       >
@@ -431,7 +431,12 @@ export default function TaskCommentSection({
             {/* さらに読み込むボタン */}
             {page < totalPages && (
               <div className="text-center">
-                <button type="button" className="btn btn-xs btn-ghost" onClick={handleLoadMore} disabled={isLoading}>
+                <button
+                  type="button"
+                  className="btn btn-xs btn-secondary"
+                  onClick={handleLoadMore}
+                  disabled={isLoading}
+                >
                   {isLoading ? <span className="loading loading-spinner loading-xs"></span> : 'さらに読み込む'}
                 </button>
               </div>

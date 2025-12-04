@@ -442,7 +442,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                     <button
                       type="button"
                       onClick={() => handleOpenDeleteRelationModal(related)}
-                      className="btn btn-ghost btn-xs text-error hover:bg-error/10"
+                      className="btn btn-secondary btn-xs text-error hover:bg-error/10"
                       title="関連を削除"
                     >
                       <LinkOffIcon className="w-4 h-4" />

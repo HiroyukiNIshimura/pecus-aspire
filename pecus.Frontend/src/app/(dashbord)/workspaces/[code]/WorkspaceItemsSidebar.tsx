@@ -361,7 +361,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 <button
                   type="button"
                   onClick={handleCancelSelection}
-                  className="btn btn-ghost btn-sm btn-circle"
+                  className="btn btn-secondary btn-sm btn-circle"
                   title="キャンセル"
                 >
                   <CloseIcon className="w-4 h-4" />

@@ -544,7 +544,7 @@ export default function EditWorkspaceTaskModal({
               {/* 前へボタン */}
               <button
                 type="button"
-                className="btn btn-sm btn-circle btn-ghost"
+                className="btn btn-sm btn-circle btn-secondary"
                 onClick={handlePrevTask}
                 disabled={!canGoPrev || isLoadingTask || isSubmitting}
                 aria-label="前のタスク"
@@ -555,7 +555,7 @@ export default function EditWorkspaceTaskModal({
               {/* 次へボタン */}
               <button
                 type="button"
-                className="btn btn-sm btn-circle btn-ghost"
+                className="btn btn-sm btn-circle btn-secondary"
                 onClick={handleNextTask}
                 disabled={!canGoNext || isLoadingTask || isSubmitting}
                 aria-label="次のタスク"

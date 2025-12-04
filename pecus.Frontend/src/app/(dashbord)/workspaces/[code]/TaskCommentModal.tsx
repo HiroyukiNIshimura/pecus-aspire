@@ -49,7 +49,7 @@ export default function TaskCommentModal({
               )}
               <span className="font-medium text-sm truncate">{task.content}</span>
             </div>
-            <button type="button" className="btn btn-sm btn-circle btn-ghost" onClick={onClose} aria-label="閉じる">
+            <button type="button" className="btn btn-sm btn-circle btn-secondary" onClick={onClose} aria-label="閉じる">
               <CloseIcon />
             </button>
           </div>
