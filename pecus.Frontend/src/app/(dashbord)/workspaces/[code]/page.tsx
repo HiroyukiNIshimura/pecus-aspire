@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchWorkspaceItemByCode } from '@/actions/workspaceItem';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import {
   createPecusApiClients,
   detect401ValidationError,
@@ -38,6 +39,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
   let workspacesList: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse | null = null;
   let genres: MasterGenreResponse[] = [];
   let skills: MasterSkillResponse[] = [];
+  let taskTypes: TaskTypeOption[] = [];
   let initialItemId: number | undefined;
 
   try {
@@ -83,6 +85,21 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       // スキル一覧取得失敗時は空配列を渡す
       skills = [];
     }
+
+    // タスクタイプ一覧取得
+    try {
+      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      taskTypes = taskTypeResponse.map((t) => ({
+        id: t.id,
+        code: t.code ?? '',
+        name: t.name ?? '',
+        icon: t.icon,
+      }));
+    } catch (err) {
+      console.warn('Failed to fetch task types:', err);
+      // タスクタイプ一覧取得失敗時は空配列を渡す
+      taskTypes = [];
+    }
   } catch (error) {
     console.error('WorkspaceDetailPage: failed to fetch data', error);
 
@@ -117,6 +134,7 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       userInfo={userInfo}
       genres={genres}
       skills={skills}
+      taskTypes={taskTypes}
       initialItemId={initialItemId}
     />
   );

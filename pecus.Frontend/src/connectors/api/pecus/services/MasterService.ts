@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { MasterGenreResponse } from '../models/MasterGenreResponse';
 import type { MasterSkillResponse } from '../models/MasterSkillResponse';
+import type { MasterTaskTypeResponse } from '../models/MasterTaskTypeResponse';
 import type { RoleResponse } from '../models/RoleResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -47,6 +48,20 @@ export class MasterService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/master/roles',
+            errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * アクティブなタスク種類一覧を取得
+     * @returns MasterTaskTypeResponse OK
+     * @throws ApiError
+     */
+    public static getApiMasterTaskTypes(): CancelablePromise<Array<MasterTaskTypeResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/master/task-types',
             errors: {
                 500: `Internal Server Error`,
             },

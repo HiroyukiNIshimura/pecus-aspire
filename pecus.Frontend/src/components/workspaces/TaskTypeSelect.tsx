@@ -1,52 +1,48 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { TaskType } from '@/connectors/api/pecus';
 
-/** タスクタイプの選択肢 */
-const taskTypeOptions: { value: TaskType; label: string }[] = [
-  { value: 'Bug', label: 'バグ修正' },
-  { value: 'Feature', label: '機能追加' },
-  { value: 'Documentation', label: 'ドキュメント' },
-  { value: 'Review', label: 'レビュー' },
-  { value: 'Testing', label: 'テスト' },
-  { value: 'Refactoring', label: 'リファクタリング' },
-  { value: 'Research', label: '調査' },
-  { value: 'Meeting', label: '会議' },
-  { value: 'BusinessNegotiation', label: '商談' },
-  { value: 'RequirementsConfirmation', label: '要件確認' },
-  { value: 'Other', label: 'その他' },
-];
+/** タスク種類の選択肢 */
+export interface TaskTypeOption {
+  id: number;
+  code: string;
+  name: string;
+  icon?: string | null;
+}
 
 export interface TaskTypeSelectProps {
   id?: string;
   name?: string;
-  /** 制御コンポーネント用の値（優先） */
-  value?: TaskType | null;
-  /** 非制御コンポーネント用の初期値 */
-  defaultValue?: TaskType | '' | null;
+  /** タスク種類の選択肢（API から取得したマスタデータ） */
+  taskTypes: TaskTypeOption[];
+  /** 制御コンポーネント用の値（優先） - taskTypeId */
+  value?: number | null;
+  /** 非制御コンポーネント用の初期値 - taskTypeId */
+  defaultValue?: number | '' | null;
   disabled?: boolean;
   error?: boolean;
   className?: string;
-  onChange?: (value: TaskType | null) => void;
+  onChange?: (value: number | null) => void;
 }
 
 /**
- * タスクタイプのアイコンパスを取得
+ * タスク種類のアイコンパスを取得
  */
-function getTaskTypeIconPath(taskType: TaskType): string {
-  return `/icons/task/${taskType.toLowerCase()}.svg`;
+function getTaskTypeIconPath(icon: string | null | undefined): string | null {
+  if (!icon) return null;
+  return `/icons/task/${icon.toLowerCase()}.svg`;
 }
 
 /**
- * タスクタイプ選択セレクト（アイコン表示対応）
+ * タスク種類選択セレクト（アイコン表示対応）
  * - option 内に SVG を表示
  * - 選択済み表示にも背景アイコンを表示
  * - value を指定すると制御コンポーネントとして動作
  */
 export default function TaskTypeSelect({
-  id = 'taskType',
-  name = 'taskType',
+  id = 'taskTypeId',
+  name = 'taskTypeId',
+  taskTypes,
   value,
   defaultValue = '',
   disabled,
@@ -60,16 +56,18 @@ export default function TaskTypeSelect({
 
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
-  // 制御コンポーネントの場合は value から、非制御の場合は defaultValue からアイコンを取得
-  const iconValue = isControlled
-    ? value
-    : typeof defaultValue === 'string' && defaultValue !== ''
-      ? defaultValue
-      : null;
+  // 選択されているタスク種類を取得
+  const selectedTaskType = useMemo(() => {
+    const targetId = isControlled ? value : defaultValue;
+    if (targetId === null || targetId === undefined || targetId === '') return null;
+    const numericId = typeof targetId === 'string' ? Number.parseInt(targetId, 10) : targetId;
+    if (Number.isNaN(numericId)) return null;
+    return taskTypes.find((t) => t.id === numericId) ?? null;
+  }, [isControlled, value, defaultValue, taskTypes]);
 
   const currentIcon = useMemo(() => {
-    return iconValue ? getTaskTypeIconPath(iconValue) : null;
-  }, [iconValue]);
+    return selectedTaskType ? getTaskTypeIconPath(selectedTaskType.icon) : null;
+  }, [selectedTaskType]);
 
   useEffect(() => {
     setSelectedIcon(currentIcon);
@@ -123,11 +121,12 @@ export default function TaskTypeSelect({
         className={`select select-bordered task-type-select ${error ? 'select-error' : ''} ${className ?? ''}`}
         disabled={disabled}
         onChange={(e) => {
-          const val = e.target.value as TaskType | '';
-          const taskType = val || null;
-          const icon = taskType ? getTaskTypeIconPath(taskType) : null;
+          const val = e.target.value;
+          const taskTypeId = val ? Number.parseInt(val, 10) : null;
+          const taskType = taskTypeId ? taskTypes.find((t) => t.id === taskTypeId) : null;
+          const icon = taskType ? getTaskTypeIconPath(taskType.icon) : null;
           setSelectedIcon(icon);
-          onChange?.(taskType);
+          onChange?.(taskTypeId);
         }}
         style={{
           backgroundImage: selectedIcon ? `url(${selectedIcon})` : 'none',
@@ -138,10 +137,12 @@ export default function TaskTypeSelect({
         }}
       >
         <option value="">選択してください</option>
-        {taskTypeOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            <img src={getTaskTypeIconPath(option.value)} alt="" className="w-4 h-4 inline-block mr-2" />
-            {option.label}
+        {taskTypes.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.icon && (
+              <img src={getTaskTypeIconPath(option.icon) || ''} alt="" className="w-4 h-4 inline-block mr-2" />
+            )}
+            {option.name}
           </option>
         ))}
       </select>

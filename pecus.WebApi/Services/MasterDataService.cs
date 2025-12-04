@@ -44,4 +44,15 @@ public class MasterDataService
             .OrderBy(r => r.Id)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// アクティブなタスク種類一覧を取得（ページング不使用）
+    /// </summary>
+    public async Task<List<TaskType>> GetActiveTaskTypesAsync()
+    {
+        return await _context.TaskTypes
+            .Where(t => t.IsActive)
+            .OrderBy(t => t.DisplayOrder)
+            .ToListAsync();
+    }
 }

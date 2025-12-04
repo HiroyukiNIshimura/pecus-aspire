@@ -9,11 +9,10 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import TaskTypeSelect from '@/components/workspaces/TaskTypeSelect';
+import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,
   TaskStatusFilter,
-  TaskType,
   UpdateWorkspaceTaskRequest,
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
@@ -62,6 +61,8 @@ interface EditWorkspaceTaskModalProps {
   itemCommitterAvatarUrl?: string | null;
   /** 初期タスクナビゲーション情報 */
   initialNavigation: TaskNavigation | null;
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
   /** 現在ログイン中のユーザー */
   currentUser?: {
     id: number;
@@ -83,6 +84,7 @@ export default function EditWorkspaceTaskModal({
   itemCommitterName,
   itemCommitterAvatarUrl,
   initialNavigation,
+  taskTypes,
   currentUser,
   pageSize,
 }: EditWorkspaceTaskModalProps) {
@@ -120,7 +122,7 @@ export default function EditWorkspaceTaskModal({
 
   // テキストフィールド状態（制御されたコンポーネント用）
   const [content, setContent] = useState('');
-  const [taskType, setTaskType] = useState<TaskType | null>(null);
+  const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
   const [priority, setPriority] = useState<TaskPriority>('Medium');
 
   // タスクデータをフォーム状態に反映
@@ -159,7 +161,7 @@ export default function EditWorkspaceTaskModal({
 
     // テキストフィールド
     setContent(taskData.content || '');
-    setTaskType(taskData.taskType || null);
+    setTaskTypeId(taskData.taskTypeId || null);
     setPriority(taskData.priority || 'Medium');
   }, []);
 
@@ -328,7 +330,7 @@ export default function EditWorkspaceTaskModal({
 
         const requestData: UpdateWorkspaceTaskRequest = {
           content: data.content,
-          taskType: data.taskType as TaskType,
+          taskTypeId: data.taskTypeId,
           assignedUserId: selectedAssignee.id,
           priority: data.priority as TaskPriority | undefined,
           startDate: toISODateString(data.startDate),
@@ -437,7 +439,7 @@ export default function EditWorkspaceTaskModal({
       setIsDiscarded(false);
       setDiscardReason('');
       setContent('');
-      setTaskType(null);
+      setTaskTypeId(null);
       setPriority('Medium');
     }
   }, [isOpen, resetForm]);
@@ -644,25 +646,26 @@ export default function EditWorkspaceTaskModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* タスクタイプ */}
                     <div className="form-control">
-                      <label htmlFor="taskType" className="label">
+                      <label htmlFor="taskTypeId" className="label">
                         <span className="label-text font-semibold">
                           タスクタイプ <span className="text-error">*</span>
                         </span>
                       </label>
+                      <input type="hidden" name="taskTypeId" value={taskTypeId || ''} />
                       <TaskTypeSelect
-                        id="taskType"
-                        name="taskType"
-                        value={taskType}
-                        error={shouldShowError('taskType')}
+                        id="taskTypeId"
+                        taskTypes={taskTypes}
+                        value={taskTypeId}
+                        error={shouldShowError('taskTypeId')}
                         disabled={isSubmitting || isLoadingTask}
                         onChange={(val) => {
-                          setTaskType(val);
-                          validateField('taskType', val || '');
+                          setTaskTypeId(val);
+                          validateField('taskTypeId', val || '');
                         }}
                       />
-                      {shouldShowError('taskType') && (
+                      {shouldShowError('taskTypeId') && (
                         <div className="label">
-                          <span className="label-text-alt text-error">{getFieldError('taskType')}</span>
+                          <span className="label-text-alt text-error">{getFieldError('taskTypeId')}</span>
                         </div>
                       )}
                     </div>

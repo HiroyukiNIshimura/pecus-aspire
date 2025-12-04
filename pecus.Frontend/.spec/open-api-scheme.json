@@ -4387,6 +4387,32 @@
         }
       }
     },
+    "/api/master/task-types": {
+      "get": {
+        "tags": [
+          "Master"
+        ],
+        "summary": "アクティブなタスク種類一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MasterTaskTypeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/my/workspace-items": {
       "get": {
         "tags": [
@@ -8821,7 +8847,7 @@
         "required": [
           "assignedUserId",
           "content",
-          "taskType"
+          "taskTypeId"
         ],
         "type": "object",
         "properties": {
@@ -8831,8 +8857,12 @@
             "type": "string",
             "description": "タスク内容"
           },
-          "taskType": {
-            "$ref": "#/components/schemas/TaskType"
+          "taskTypeId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32"
           },
           "assignedUserId": {
             "type": "integer",
@@ -9485,6 +9515,48 @@
         },
         "additionalProperties": false,
         "description": "マスターデータ用スキルレスポンス"
+      },
+      "MasterTaskTypeResponse": {
+        "required": [
+          "code",
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "タスク種類説明",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "description": "表示順",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスク種類マスタレスポンス"
       },
       "MessageResponse": {
         "required": [
@@ -11170,22 +11242,6 @@
         "type": "string",
         "description": "タスクのステータスフィルター"
       },
-      "TaskType": {
-        "enum": [
-          "Bug",
-          "Feature",
-          "Documentation",
-          "Review",
-          "Testing",
-          "Refactoring",
-          "Research",
-          "Meeting",
-          "BusinessNegotiation",
-          "RequirementsConfirmation",
-          "Other"
-        ],
-        "type": "string"
-      },
       "TempAttachmentResponse": {
         "required": [
           "fileName",
@@ -11568,8 +11624,13 @@
             "description": "タスク内容",
             "nullable": true
           },
-          "taskType": {
-            "$ref": "#/components/schemas/TaskType"
+          "taskTypeId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32",
+            "nullable": true
           },
           "assignedUserId": {
             "type": "integer",
@@ -12981,8 +13042,25 @@
             "description": "タスク内容",
             "nullable": true
           },
-          "taskType": {
-            "$ref": "#/components/schemas/TaskType"
+          "taskTypeId": {
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32"
+          },
+          "taskTypeCode": {
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
+          },
+          "taskTypeName": {
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
+          },
+          "taskTypeIcon": {
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
           },
           "priority": {
             "$ref": "#/components/schemas/TaskPriority"

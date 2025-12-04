@@ -6,6 +6,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskStatusFilter as TaskStatusFilterType,
   UserSearchResultResponse,
@@ -49,6 +50,8 @@ interface WorkspaceTasksProps {
   itemCommitterName?: string | null;
   /** アイテムのコミッターアバターURL */
   itemCommitterAvatarUrl?: string | null;
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
   /** 現在ログイン中のユーザー（「自分」リンク用） */
   currentUser?: {
     id: number;
@@ -66,6 +69,7 @@ const WorkspaceTasks = ({
   itemCommitterId,
   itemCommitterName,
   itemCommitterAvatarUrl,
+  taskTypes,
   currentUser,
 }: WorkspaceTasksProps) => {
   const notify = useNotify();
@@ -239,32 +243,26 @@ const WorkspaceTasks = ({
     fetchTasks(currentPage, taskStatus, selectedAssignee?.id);
   }, [currentPage, taskStatus, selectedAssignee?.id]);
 
-  // タスクタイプのアイコンパス
-  const getTaskTypeIcon = (taskType?: string) => {
-    if (!taskType) return null;
-    const iconName = taskType.toLowerCase();
-    return `/icons/task/${iconName}.svg`;
+  // タスクタイプのアイコンパスを取得（API レスポンスから）
+  const getTaskTypeIconPath = (task: WorkspaceTaskDetailResponse) => {
+    // API レスポンスに taskTypeIcon があればそれを使用
+    if (task.taskTypeIcon) {
+      return `/icons/task/${task.taskTypeIcon}.svg`;
+    }
+    // フォールバック: taskTypeCode から生成
+    if (task.taskTypeCode) {
+      return `/icons/task/${task.taskTypeCode.toLowerCase()}.svg`;
+    }
+    return null;
   };
 
-  // タスクタイプの日本語ラベル
-  const getTaskTypeLabel = (taskType?: string) => {
-    if (!taskType) return '';
-
-    const labels: Record<string, string> = {
-      Bug: 'バグ修正',
-      Feature: '新機能開発',
-      Documentation: 'ドキュメント作成・更新',
-      Review: 'レビュー',
-      Testing: 'テスト',
-      Refactoring: 'リファクタリング',
-      Research: '調査・研究',
-      Meeting: '打ち合わせ',
-      BusinessNegotiation: '商談',
-      RequirementsConfirmation: '要件確認',
-      Other: 'その他',
-    };
-
-    return labels[taskType] || taskType;
+  // タスクタイプの日本語ラベルを取得（API レスポンスから）
+  const getTaskTypeLabel = (task: WorkspaceTaskDetailResponse) => {
+    // API レスポンスに taskTypeName があればそれを使用
+    if (task.taskTypeName) {
+      return task.taskTypeName;
+    }
+    return '';
   };
 
   // 優先度の表示
@@ -330,6 +328,7 @@ const WorkspaceTasks = ({
           onSuccess={handleCreateTaskSuccess}
           workspaceId={workspaceId}
           itemId={itemId}
+          taskTypes={taskTypes}
           currentUser={currentUser}
         />
       </div>
@@ -496,13 +495,13 @@ const WorkspaceTasks = ({
                     {/* ヘッダー: アイコン + ステータス */}
                     <div className="flex items-start justify-between gap-2">
                       {/* タスクタイプアイコン */}
-                      {task.taskType && getTaskTypeIcon(task.taskType) && (
+                      {task.taskTypeId && getTaskTypeIconPath(task) && (
                         <div className="flex-shrink-0">
                           <img
-                            src={getTaskTypeIcon(task.taskType) || undefined}
-                            alt={getTaskTypeLabel(task.taskType)}
+                            src={getTaskTypeIconPath(task) || undefined}
+                            alt={getTaskTypeLabel(task)}
                             className="w-7 h-7 rounded"
-                            title={getTaskTypeLabel(task.taskType)}
+                            title={getTaskTypeLabel(task)}
                           />
                         </div>
                       )}
@@ -632,6 +631,7 @@ const WorkspaceTasks = ({
         onSuccess={handleCreateTaskSuccess}
         workspaceId={workspaceId}
         itemId={itemId}
+        taskTypes={taskTypes}
         currentUser={currentUser}
       />
 
@@ -649,6 +649,7 @@ const WorkspaceTasks = ({
         itemCommitterName={itemCommitterName}
         itemCommitterAvatarUrl={itemCommitterAvatarUrl}
         initialNavigation={editTaskNavigation}
+        taskTypes={taskTypes}
         currentUser={currentUser}
         pageSize={ITEMS_PER_PAGE}
       />

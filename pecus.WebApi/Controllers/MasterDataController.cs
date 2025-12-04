@@ -108,4 +108,29 @@ public class MasterDataController : BaseSecureController
 
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// アクティブなタスク種類一覧を取得
+    /// </summary>
+    [HttpGet("task-types")]
+    [ProducesResponseType(typeof(List<MasterTaskTypeResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<MasterTaskTypeResponse>>> GetTaskTypes()
+    {
+        var taskTypes = await _masterDataService.GetActiveTaskTypesAsync();
+
+        var response = taskTypes
+            .Select(t => new MasterTaskTypeResponse
+            {
+                Id = t.Id,
+                Code = t.Code,
+                Name = t.Name,
+                Description = t.Description,
+                Icon = t.Icon,
+                DisplayOrder = t.DisplayOrder,
+            })
+            .ToList();
+
+        return TypedResults.Ok(response);
+    }
 }

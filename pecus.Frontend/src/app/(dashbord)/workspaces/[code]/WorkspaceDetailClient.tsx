@@ -23,6 +23,7 @@ import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import type {
   MasterGenreResponse,
@@ -49,6 +50,8 @@ interface WorkspaceDetailClientProps {
   userInfo: UserInfo | null;
   genres: MasterGenreResponse[];
   skills: MasterSkillResponse[];
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
   /** URLクエリパラメータで指定された初期選択アイテムID */
   initialItemId?: number;
 }
@@ -60,6 +63,7 @@ export default function WorkspaceDetailClient({
   userInfo,
   genres,
   skills,
+  taskTypes,
   initialItemId,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
@@ -848,6 +852,7 @@ export default function WorkspaceDetailClient({
               onItemSelect={handleItemSelect}
               members={members}
               currentUserId={userInfo?.id}
+              taskTypes={taskTypes}
               onStartAddRelation={handleStartAddRelation}
               isAddingRelation={isAddingRelation}
             />

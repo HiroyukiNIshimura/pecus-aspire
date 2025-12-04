@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
-import type { TaskType } from './TaskType';
 /**
  * ワークスペースタスク作成リクエスト
  */
@@ -12,7 +11,10 @@ export type CreateWorkspaceTaskRequest = {
      * タスク内容
      */
     content: string;
-    taskType: TaskType;
+    /**
+     * タスク種類ID
+     */
+    taskTypeId: number;
     /**
      * 担当ユーザーID
      */

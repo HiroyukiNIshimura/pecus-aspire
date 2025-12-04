@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
-import type { TaskType } from './TaskType';
 /**
  * ワークスペースタスク詳細レスポンス
  */
@@ -52,7 +51,22 @@ export type WorkspaceTaskDetailResponse = {
      * タスク内容
      */
     content?: string | null;
-    taskType?: TaskType;
+    /**
+     * タスク種類ID
+     */
+    taskTypeId?: number;
+    /**
+     * タスク種類コード（例: "Bug", "Feature"）
+     */
+    taskTypeCode?: string | null;
+    /**
+     * タスク種類名（日本語表示名）
+     */
+    taskTypeName?: string | null;
+    /**
+     * タスク種類アイコン（拡張子なしのファイル名）
+     */
+    taskTypeIcon?: string | null;
     priority?: TaskPriority;
     /**
      * 開始日時

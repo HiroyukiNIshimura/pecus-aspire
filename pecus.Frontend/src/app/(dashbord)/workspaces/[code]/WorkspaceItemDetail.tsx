@@ -14,6 +14,7 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
   RelatedItemInfo,
@@ -32,6 +33,8 @@ interface WorkspaceItemDetailProps {
   onItemSelect: (itemId: number, itemCode: string) => void;
   members?: WorkspaceDetailUserResponse[];
   currentUserId?: number;
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
   /** 関連アイテム追加モードをトグルするコールバック */
   onStartAddRelation?: () => void;
   /** 関連アイテム追加モードが有効かどうか */
@@ -46,7 +49,7 @@ export interface WorkspaceItemDetailHandle {
 
 const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemDetailProps>(
   function WorkspaceItemDetail(
-    { workspaceId, itemId, onItemSelect, members = [], currentUserId, onStartAddRelation, isAddingRelation },
+    { workspaceId, itemId, onItemSelect, members = [], currentUserId, taskTypes, onStartAddRelation, isAddingRelation },
     ref,
   ) {
     const notify = useNotify();
@@ -459,6 +462,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             itemCommitterId={item?.committerId}
             itemCommitterName={item?.committerUsername}
             itemCommitterAvatarUrl={item?.committerAvatarUrl}
+            taskTypes={taskTypes}
             currentUser={
               currentUserId && members.length > 0
                 ? (() => {

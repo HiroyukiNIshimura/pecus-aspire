@@ -7,13 +7,8 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { createWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import TaskTypeSelect from '@/components/workspaces/TaskTypeSelect';
-import type {
-  CreateWorkspaceTaskRequest,
-  TaskPriority,
-  TaskType,
-  UserSearchResultResponse,
-} from '@/connectors/api/pecus';
+import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
+import type { CreateWorkspaceTaskRequest, TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { createWorkspaceTaskSchema, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
@@ -33,6 +28,8 @@ interface CreateWorkspaceTaskModalProps {
   onSuccess: () => void;
   workspaceId: number;
   itemId: number;
+  /** タスクタイプマスタデータ */
+  taskTypes: TaskTypeOption[];
   /** 現在ログイン中のユーザー（「自分」リンク用） */
   currentUser?: {
     id: number;
@@ -48,6 +45,7 @@ export default function CreateWorkspaceTaskModal({
   onSuccess,
   workspaceId,
   itemId,
+  taskTypes,
   currentUser,
 }: CreateWorkspaceTaskModalProps) {
   const notify = useNotify();
@@ -65,6 +63,9 @@ export default function CreateWorkspaceTaskModal({
 
   // 予定工数状態
   const [estimatedHours, setEstimatedHours] = useState<number>(0);
+
+  // タスクタイプ状態
+  const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -87,7 +88,7 @@ export default function CreateWorkspaceTaskModal({
 
         const requestData: CreateWorkspaceTaskRequest = {
           content: data.content,
-          taskType: data.taskType as TaskType,
+          taskTypeId: data.taskTypeId,
           assignedUserId: selectedAssignee.id,
           priority: data.priority as TaskPriority | undefined,
           startDate: toISODateString(data.startDate),
@@ -174,6 +175,7 @@ export default function CreateWorkspaceTaskModal({
       setStartDate('');
       setDueDate('');
       setEstimatedHours(0);
+      setTaskTypeId(null);
     }
   }, [isOpen, resetForm]);
 
@@ -282,22 +284,26 @@ export default function CreateWorkspaceTaskModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* タスクタイプ */}
                 <div className="form-control">
-                  <label htmlFor="taskType" className="label">
+                  <label htmlFor="taskTypeId" className="label">
                     <span className="label-text font-semibold">
                       タスクタイプ <span className="text-error">*</span>
                     </span>
                   </label>
+                  <input type="hidden" name="taskTypeId" value={taskTypeId || ''} />
                   <TaskTypeSelect
-                    id="taskType"
-                    name="taskType"
-                    defaultValue=""
-                    error={shouldShowError('taskType')}
+                    id="taskTypeId"
+                    taskTypes={taskTypes}
+                    value={taskTypeId}
+                    error={shouldShowError('taskTypeId')}
                     disabled={isSubmitting}
-                    onChange={(val) => validateField('taskType', val || '')}
+                    onChange={(val) => {
+                      setTaskTypeId(val);
+                      validateField('taskTypeId', val || '');
+                    }}
                   />
-                  {shouldShowError('taskType') && (
+                  {shouldShowError('taskTypeId') && (
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('taskType')}</span>
+                      <span className="label-text-alt text-error">{getFieldError('taskTypeId')}</span>
                     </div>
                   )}
                 </div>
