@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using System;
 
 #nullable disable
 
@@ -22,7 +22,7 @@ namespace pecus.DbManager.Migrations
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -46,7 +46,7 @@ namespace pecus.DbManager.Migrations
                     RepresentativeName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -67,7 +67,7 @@ namespace pecus.DbManager.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -86,7 +86,7 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -95,6 +95,29 @@ namespace pecus.DbManager.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -110,7 +133,7 @@ namespace pecus.DbManager.Migrations
                     AvatarType = table.Column<int>(type: "integer", nullable: true),
                     UserAvatarPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     OrganizationId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -168,8 +191,8 @@ namespace pecus.DbManager.Migrations
                     OS = table.Column<int>(type: "integer", nullable: false),
                     Client = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     AppVersion = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    FirstSeenAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastSeenAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FirstSeenAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastSeenAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     LastIpMasked = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     LastSeenLocation = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Timezone = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
@@ -200,7 +223,7 @@ namespace pecus.DbManager.Migrations
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     UsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -222,7 +245,7 @@ namespace pecus.DbManager.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     OrganizationId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -260,9 +283,9 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrganizationId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -325,7 +348,7 @@ namespace pecus.DbManager.Migrations
                     OrganizationId = table.Column<int>(type: "integer", nullable: false),
                     OwnerId = table.Column<int>(type: "integer", nullable: true),
                     GenreId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
@@ -363,8 +386,8 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Token = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     IsRevoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeviceId = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -391,7 +414,7 @@ namespace pecus.DbManager.Migrations
                 {
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     SkillId = table.Column<int>(type: "integer", nullable: false),
-                    AddedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AddedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     AddedByUserId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -425,19 +448,20 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
                     Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    Subject = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Subject = table.Column<string>(type: "text", nullable: false),
                     Body = table.Column<string>(type: "text", nullable: true),
                     RawBody = table.Column<string>(type: "text", nullable: true),
                     OwnerId = table.Column<int>(type: "integer", nullable: false),
                     AssigneeId = table.Column<int>(type: "integer", nullable: true),
                     Priority = table.Column<int>(type: "integer", nullable: true),
-                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DueDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsArchived = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     IsDraft = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CommitterId = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -462,7 +486,45 @@ namespace pecus.DbManager.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_WorkspaceItems_Users_UpdatedByUserId",
+                        column: x => x.UpdatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_WorkspaceItems_Workspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "Workspaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkspaceSkills",
+                columns: table => new
+                {
+                    WorkspaceId = table.Column<int>(type: "integer", nullable: false),
+                    SkillId = table.Column<int>(type: "integer", nullable: false),
+                    AddedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    AddedByUserId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkspaceSkills", x => new { x.WorkspaceId, x.SkillId });
+                    table.ForeignKey(
+                        name: "FK_WorkspaceSkills_Skills_SkillId",
+                        column: x => x.SkillId,
+                        principalTable: "Skills",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceSkills_Users_AddedByUserId",
+                        column: x => x.AddedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceSkills_Workspaces_WorkspaceId",
                         column: x => x.WorkspaceId,
                         principalTable: "Workspaces",
                         principalColumn: "Id",
@@ -476,7 +538,7 @@ namespace pecus.DbManager.Migrations
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     WorkspaceRole = table.Column<int>(type: "integer", nullable: true),
-                    JoinedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    JoinedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     LastAccessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -507,7 +569,7 @@ namespace pecus.DbManager.Migrations
                     UserId = table.Column<int>(type: "integer", nullable: true),
                     Action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ActionCategory = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     BeforeData = table.Column<string>(type: "jsonb", nullable: true),
                     AfterData = table.Column<string>(type: "jsonb", nullable: true),
                     Metadata = table.Column<string>(type: "jsonb", nullable: true),
@@ -546,7 +608,7 @@ namespace pecus.DbManager.Migrations
                     from_item_id = table.Column<int>(type: "integer", nullable: false),
                     to_item_id = table.Column<int>(type: "integer", nullable: false),
                     relation_type = table.Column<int>(type: "integer", maxLength: 50, nullable: true),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     created_by_user_id = table.Column<int>(type: "integer", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
@@ -588,7 +650,7 @@ namespace pecus.DbManager.Migrations
                     DownloadUrl = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     ThumbnailMediumPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ThumbnailSmallPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UploadedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UploadedByUserId = table.Column<int>(type: "integer", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
@@ -615,7 +677,7 @@ namespace pecus.DbManager.Migrations
                 {
                     WorkspaceItemId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -640,7 +702,7 @@ namespace pecus.DbManager.Migrations
                 {
                     WorkspaceItemId = table.Column<int>(type: "integer", nullable: false),
                     TagId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -678,21 +740,20 @@ namespace pecus.DbManager.Migrations
                     AssignedUserId = table.Column<int>(type: "integer", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    TaskType = table.Column<int>(type: "integer", nullable: false),
+                    TaskTypeId = table.Column<int>(type: "integer", nullable: false),
                     Priority = table.Column<int>(type: "integer", nullable: true),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DueDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     EstimatedHours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     ActualHours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     ProgressPercentage = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsDiscarded = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    DiscardedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DiscardedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     DiscardReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -704,6 +765,12 @@ namespace pecus.DbManager.Migrations
                         principalTable: "Organizations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceTasks_TaskTypes_TaskTypeId",
+                        column: x => x.TaskTypeId,
+                        principalTable: "TaskTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkspaceTasks_Users_AssignedUserId",
                         column: x => x.AssignedUserId,
@@ -739,11 +806,9 @@ namespace pecus.DbManager.Migrations
                     WorkspaceTaskId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    CommentType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Normal"),
-                    BeforeValue = table.Column<string>(type: "text", nullable: true),
-                    AfterValue = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CommentType = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -759,38 +824,6 @@ namespace pecus.DbManager.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_TaskComments_WorkspaceTasks_WorkspaceTaskId",
-                        column: x => x.WorkspaceTaskId,
-                        principalTable: "WorkspaceTasks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TaskTags",
-                columns: table => new
-                {
-                    WorkspaceTaskId = table.Column<int>(type: "integer", nullable: false),
-                    TagId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedByUserId = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TaskTags", x => new { x.WorkspaceTaskId, x.TagId });
-                    table.ForeignKey(
-                        name: "FK_TaskTags_Tags_TagId",
-                        column: x => x.TagId,
-                        principalTable: "Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TaskTags_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_TaskTags_WorkspaceTasks_WorkspaceTaskId",
                         column: x => x.WorkspaceTaskId,
                         principalTable: "WorkspaceTasks",
                         principalColumn: "Id",
@@ -992,19 +1025,15 @@ namespace pecus.DbManager.Migrations
                 column: "WorkspaceTaskId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TaskTags_CreatedAt",
-                table: "TaskTags",
-                column: "CreatedAt");
+                name: "IX_TaskTypes_Code",
+                table: "TaskTypes",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TaskTags_CreatedByUserId",
-                table: "TaskTags",
-                column: "CreatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TaskTags_TagId",
-                table: "TaskTags",
-                column: "TagId");
+                name: "IX_TaskTypes_DisplayOrder",
+                table: "TaskTypes",
+                column: "DisplayOrder");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_RoleId",
@@ -1135,6 +1164,11 @@ namespace pecus.DbManager.Migrations
                 column: "Priority");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItems_UpdatedByUserId",
+                table: "WorkspaceItems",
+                column: "UpdatedByUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceItems_WorkspaceId_Code",
                 table: "WorkspaceItems",
                 columns: new[] { "WorkspaceId", "Code" },
@@ -1172,6 +1206,21 @@ namespace pecus.DbManager.Migrations
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceSkills_AddedAt",
+                table: "WorkspaceSkills",
+                column: "AddedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceSkills_AddedByUserId",
+                table: "WorkspaceSkills",
+                column: "AddedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceSkills_SkillId",
+                table: "WorkspaceSkills",
+                column: "SkillId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceTasks_AssignedUserId",
                 table: "WorkspaceTasks",
                 column: "AssignedUserId");
@@ -1185,11 +1234,6 @@ namespace pecus.DbManager.Migrations
                 name: "IX_WorkspaceTasks_CreatedByUserId",
                 table: "WorkspaceTasks",
                 column: "CreatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkspaceTasks_DisplayOrder",
-                table: "WorkspaceTasks",
-                column: "DisplayOrder");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceTasks_DueDate",
@@ -1222,9 +1266,9 @@ namespace pecus.DbManager.Migrations
                 column: "Priority");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkspaceTasks_TaskType",
+                name: "IX_WorkspaceTasks_TaskTypeId",
                 table: "WorkspaceTasks",
-                column: "TaskType");
+                column: "TaskTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceTasks_WorkspaceId",
@@ -1276,9 +1320,6 @@ namespace pecus.DbManager.Migrations
                 name: "TaskComments");
 
             migrationBuilder.DropTable(
-                name: "TaskTags");
-
-            migrationBuilder.DropTable(
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
@@ -1297,6 +1338,9 @@ namespace pecus.DbManager.Migrations
                 name: "WorkspaceItemTags");
 
             migrationBuilder.DropTable(
+                name: "WorkspaceSkills");
+
+            migrationBuilder.DropTable(
                 name: "WorkspaceUsers");
 
             migrationBuilder.DropTable(
@@ -1312,10 +1356,13 @@ namespace pecus.DbManager.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
+                name: "Tags");
+
+            migrationBuilder.DropTable(
                 name: "Skills");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "TaskTypes");
 
             migrationBuilder.DropTable(
                 name: "WorkspaceItems");

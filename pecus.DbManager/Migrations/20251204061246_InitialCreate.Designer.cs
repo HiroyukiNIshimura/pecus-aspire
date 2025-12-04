@@ -12,8 +12,8 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251201135337_AddWorkspaceSkill")]
-    partial class AddWorkspaceSkill
+    [Migration("20251204061246_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,7 +49,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<string>("BeforeData")
                         .HasColumnType("jsonb");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsSystem")
@@ -113,7 +113,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("DeviceType")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("FirstSeenAt")
+                    b.Property<DateTimeOffset>("FirstSeenAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("HashedIdentifier")
@@ -128,7 +128,7 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("LastSeenAt")
+                    b.Property<DateTimeOffset>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastSeenLocation")
@@ -182,7 +182,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -233,7 +233,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -292,7 +292,7 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -355,7 +355,7 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -398,13 +398,13 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("DeviceId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsRevoked")
@@ -442,7 +442,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -485,7 +485,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -538,7 +538,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CreatedByUserId")
@@ -561,7 +561,7 @@ namespace pecus.DbManager.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("UpdatedByUserId")
@@ -587,24 +587,14 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AfterValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BeforeValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Normal");
+                    b.Property<int?>("CommentType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -621,7 +611,7 @@ namespace pecus.DbManager.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
@@ -645,29 +635,64 @@ namespace pecus.DbManager.Migrations
                     b.ToTable("TaskComments");
                 });
 
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskTag", b =>
+            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskType", b =>
                 {
-                    b.Property<int>("WorkspaceTaskId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CreatedByUserId")
+                    b.Property<int?>("CreatedByUserId")
                         .HasColumnType("integer");
 
-                    b.HasKey("WorkspaceTaskId", "TagId");
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-                    b.HasIndex("CreatedAt");
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("CreatedByUserId");
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.HasIndex("TagId");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
-                    b.ToTable("TaskTags");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.ToTable("TaskTypes");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
@@ -681,7 +706,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int?>("AvatarType")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -760,7 +785,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("SkillId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("AddedAt")
+                    b.Property<DateTimeOffset>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("AddedByUserId")
@@ -789,7 +814,7 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedByUserId")
@@ -864,10 +889,10 @@ namespace pecus.DbManager.Migrations
                     b.Property<int?>("CommitterId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DueDate")
+                    b.Property<DateTimeOffset?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
@@ -902,7 +927,7 @@ namespace pecus.DbManager.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("UpdatedByUserId")
@@ -980,7 +1005,7 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime>("UploadedAt")
+                    b.Property<DateTimeOffset>("UploadedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UploadedByUserId")
@@ -1008,7 +1033,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("WorkspaceItemId", "UserId");
@@ -1029,7 +1054,7 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -1083,7 +1108,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("TagId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CreatedByUserId")
@@ -1106,7 +1131,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("SkillId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("AddedAt")
+                    b.Property<DateTimeOffset>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("AddedByUserId")
@@ -1138,14 +1163,14 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("AssignedUserId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CompletedAt")
+                    b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CreatedByUserId")
@@ -1155,15 +1180,10 @@ namespace pecus.DbManager.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<DateTime?>("DiscardedAt")
+                    b.Property<DateTimeOffset?>("DiscardedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("DueDate")
+                    b.Property<DateTimeOffset?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("EstimatedHours")
@@ -1197,13 +1217,13 @@ namespace pecus.DbManager.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.Property<DateTime?>("StartDate")
+                    b.Property<DateTimeOffset?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("TaskType")
+                    b.Property<int>("TaskTypeId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("WorkspaceId")
@@ -1218,8 +1238,6 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("DisplayOrder");
-
                     b.HasIndex("DueDate");
 
                     b.HasIndex("IsCompleted");
@@ -1230,7 +1248,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("Priority");
 
-                    b.HasIndex("TaskType");
+                    b.HasIndex("TaskTypeId");
 
                     b.HasIndex("WorkspaceId");
 
@@ -1255,7 +1273,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("JoinedAt")
+                    b.Property<DateTimeOffset>("JoinedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("LastAccessedAt")
@@ -1434,33 +1452,6 @@ namespace pecus.DbManager.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-
-                    b.Navigation("WorkspaceTask");
-                });
-
-            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskTag", b =>
-                {
-                    b.HasOne("Pecus.Libs.DB.Models.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.Tag", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Pecus.Libs.DB.Models.WorkspaceTask", "WorkspaceTask")
-                        .WithMany("TaskTags")
-                        .HasForeignKey("WorkspaceTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Tag");
 
                     b.Navigation("WorkspaceTask");
                 });
@@ -1704,6 +1695,12 @@ namespace pecus.DbManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Pecus.Libs.DB.Models.TaskType", "TaskType")
+                        .WithMany("WorkspaceTasks")
+                        .HasForeignKey("TaskTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Pecus.Libs.DB.Models.Workspace", "Workspace")
                         .WithMany()
                         .HasForeignKey("WorkspaceId")
@@ -1721,6 +1718,8 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Organization");
+
+                    b.Navigation("TaskType");
 
                     b.Navigation("Workspace");
 
@@ -1809,6 +1808,11 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("WorkspaceItemTags");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.TaskType", b =>
+                {
+                    b.Navigation("WorkspaceTasks");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
                 {
                     b.Navigation("Devices");
@@ -1845,8 +1849,6 @@ namespace pecus.DbManager.Migrations
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceTask", b =>
                 {
                     b.Navigation("TaskComments");
-
-                    b.Navigation("TaskTags");
                 });
 #pragma warning restore 612, 618
         }
