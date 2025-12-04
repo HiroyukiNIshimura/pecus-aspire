@@ -1,9 +1,10 @@
 'use server';
 
-import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   CreateWorkspaceTaskRequest,
   TaskStatusFilter,
+  UpdateWorkspaceTaskRequest,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskDetailResponsePagedResponse,
   WorkspaceTaskResponse,
@@ -133,6 +134,46 @@ export async function createWorkspaceTask(
       success: false,
       error: 'server',
       message: err.body?.message || err.message || 'タスクの作成に失敗しました',
+    };
+  }
+}
+
+/**
+ * ワークスペースタスクを更新
+ */
+export async function updateWorkspaceTask(
+  workspaceId: number,
+  itemId: number,
+  taskId: number,
+  request: UpdateWorkspaceTaskRequest,
+): Promise<ApiResponse<WorkspaceTaskResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.putApiWorkspacesItemsTasks(workspaceId, itemId, taskId, request);
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    // 競合エラーのチェック
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrencyError.message,
+        latest: concurrencyError.payload.current
+          ? {
+              type: 'workspaceTask',
+              data: concurrencyError.payload.current as WorkspaceTaskDetailResponse,
+            }
+          : undefined,
+      };
+    }
+
+    const err = error as { body?: { message?: string }; message?: string };
+    return {
+      success: false,
+      error: 'server',
+      message: err.body?.message || err.message || 'タスクの更新に失敗しました',
     };
   }
 }

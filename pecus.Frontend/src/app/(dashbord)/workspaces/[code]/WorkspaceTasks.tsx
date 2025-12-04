@@ -1,7 +1,7 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
@@ -14,6 +14,7 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
+import EditWorkspaceTaskModal from './EditWorkspaceTaskModal';
 
 /**
  * フロントエンドの TaskStatus を API の TaskStatusFilter に変換
@@ -70,6 +71,18 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
 
   // タスク作成モーダル状態
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // タスク編集モーダル状態
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editTaskNavigation, setEditTaskNavigation] = useState<{
+    tasks: WorkspaceTaskDetailResponse[];
+    currentIndex: number;
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    statusFilter: TaskStatusFilterType;
+    assignedUserId?: number;
+  } | null>(null);
 
   // タスク取得
   const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
@@ -189,6 +202,29 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
     fetchTasks(1, taskStatus, selectedAssignee?.id);
     setCurrentPage(1);
   };
+
+  // タスクカードクリック時のハンドラ（編集モーダルを開く）
+  const handleTaskClick = useCallback(
+    (taskIndex: number) => {
+      setEditTaskNavigation({
+        tasks,
+        currentIndex: taskIndex,
+        currentPage,
+        totalPages,
+        totalCount,
+        statusFilter: toApiTaskStatusFilter(taskStatus),
+        assignedUserId: selectedAssignee?.id,
+      });
+      setIsEditModalOpen(true);
+    },
+    [tasks, currentPage, totalPages, totalCount, taskStatus, selectedAssignee?.id],
+  );
+
+  // タスク編集成功時のハンドラ
+  const handleEditTaskSuccess = useCallback(() => {
+    // タスクリストを再取得して最新状態に更新
+    fetchTasks(currentPage, taskStatus, selectedAssignee?.id);
+  }, [currentPage, taskStatus, selectedAssignee?.id]);
 
   // タスクタイプのアイコンパス
   const getTaskTypeIcon = (taskType?: string) => {
@@ -367,16 +403,19 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
             className={`grid grid-cols-2 sm:grid-cols-4 gap-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}
             style={{ gridAutoRows: '1fr' }}
           >
-            {tasks.map((task) => {
+            {tasks.map((task, index) => {
               const isInactive = task.isCompleted || task.isDiscarded;
               return (
-                <div
+                <button
+                  type="button"
                   key={task.id}
-                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full ${
+                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full text-left cursor-pointer ${
                     isInactive
                       ? 'opacity-60 blur-[1px] grayscale-[30%] hover:opacity-100 hover:blur-none hover:grayscale-0 hover:shadow-md'
-                      : 'hover:shadow-md'
+                      : 'hover:shadow-md hover:bg-base-300'
                   }`}
+                  onClick={() => handleTaskClick(index)}
+                  aria-label={`タスクを編集: ${task.content?.slice(0, 50) || 'タスク'}`}
                 >
                   {/* カードボディ: 伸縮する部分 */}
                   <div className="p-3 pb-2 gap-2 flex flex-col flex-1">
@@ -466,7 +505,7 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -520,6 +559,21 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
         workspaceId={workspaceId}
         itemId={itemId}
         currentUser={currentUser}
+      />
+
+      {/* タスク編集モーダル */}
+      <EditWorkspaceTaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditTaskNavigation(null);
+        }}
+        onSuccess={handleEditTaskSuccess}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        initialNavigation={editTaskNavigation}
+        currentUser={currentUser}
+        pageSize={ITEMS_PER_PAGE}
       />
     </div>
   );
