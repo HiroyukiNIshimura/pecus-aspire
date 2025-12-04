@@ -110,13 +110,13 @@ public class WorkspaceTaskController : BaseSecureController
             throw new NotFoundException("タスクが見つかりません。");
         }
 
-        var task = await _workspaceTaskService.GetWorkspaceTaskAsync(
+        var (task, commentCount) = await _workspaceTaskService.GetWorkspaceTaskAsync(
             workspaceId,
             itemId,
             taskId
         );
 
-        return TypedResults.Ok(BuildTaskDetailResponse(task));
+        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount));
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public class WorkspaceTaskController : BaseSecureController
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
         }
 
-        var (tasks, totalCount) = await _workspaceTaskService.GetWorkspaceTasksAsync(
+        var (tasks, commentCounts, totalCount) = await _workspaceTaskService.GetWorkspaceTasksAsync(
             workspaceId,
             itemId,
             request
@@ -154,7 +154,7 @@ public class WorkspaceTaskController : BaseSecureController
 
         var response = new PagedResponse<WorkspaceTaskDetailResponse>
         {
-            Data = tasks.Select(BuildTaskDetailResponse),
+            Data = tasks.Select(t => BuildTaskDetailResponse(t, commentCounts.GetValueOrDefault(t.Id, 0))),
             CurrentPage = request.Page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -203,7 +203,7 @@ public class WorkspaceTaskController : BaseSecureController
             );
         }
 
-        var task = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
+        var (task, commentCount) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
             workspaceId,
             itemId,
             taskId,
@@ -214,7 +214,7 @@ public class WorkspaceTaskController : BaseSecureController
         {
             Success = true,
             Message = "タスクを更新しました。",
-            WorkspaceTask = BuildTaskDetailResponse(task),
+            WorkspaceTask = BuildTaskDetailResponse(task, commentCount),
         };
 
         return TypedResults.Ok(response);
@@ -223,7 +223,9 @@ public class WorkspaceTaskController : BaseSecureController
     /// <summary>
     /// WorkspaceTaskエンティティからレスポンスを生成
     /// </summary>
-    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task)
+    /// <param name="task">タスクエンティティ</param>
+    /// <param name="commentCount">コメント数</param>
+    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
     {
         return new WorkspaceTaskDetailResponse
         {
@@ -271,6 +273,7 @@ public class WorkspaceTaskController : BaseSecureController
             DiscardReason = task.DiscardReason,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
+            CommentCount = commentCount,
             RowVersion = task.RowVersion,
         };
     }

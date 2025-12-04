@@ -17,6 +17,7 @@ import type {
   OrganizationResponse,
   SkillDetailResponse,
   TagDetailResponse,
+  TaskCommentDetailResponse,
   UserDetailResponse,
   WorkspaceDetailResponse,
   WorkspaceItemDetailResponse,
@@ -72,6 +73,10 @@ export type ConflictLatestData =
   | {
       type: 'tag';
       data: TagDetailResponse;
+    }
+  | {
+      type: 'taskComment';
+      data: TaskCommentDetailResponse;
     }
   | {
       type: 'user';

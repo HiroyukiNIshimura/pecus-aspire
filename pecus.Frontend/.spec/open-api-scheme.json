@@ -5284,6 +5284,503 @@
         }
       }
     },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}/comments": {
+      "get": {
+        "tags": [
+          "TaskComment"
+        ],
+        "summary": "コメント一覧取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から始まる）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "description": "1ページあたりの件数（1〜100、デフォルト20）",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "CommentType",
+            "in": "query",
+            "description": "コメントタイプでフィルタ",
+            "schema": {
+              "$ref": "#/components/schemas/TaskCommentType"
+            }
+          },
+          {
+            "name": "IncludeDeleted",
+            "in": "query",
+            "description": "削除されたコメントも含める（デフォルトはfalse）",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentDetailResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TaskComment"
+        ],
+        "summary": "コメント作成",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "作成リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskCommentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskCommentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}/comments/{commentId}": {
+      "get": {
+        "tags": [
+          "TaskComment"
+        ],
+        "summary": "コメント取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "description": "コメントID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TaskComment"
+        ],
+        "summary": "コメント更新（作成者のみ）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "description": "コメントID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "更新リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskCommentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskCommentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentDetailResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TaskComment"
+        ],
+        "summary": "コメント削除（無効化、作成者のみ）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "タスクID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "path",
+            "description": "コメントID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "削除リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteTaskCommentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteTaskCommentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteTaskCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCommentDetailResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/dev/email-test/templates": {
       "get": {
         "tags": [
@@ -8710,6 +9207,25 @@
         "additionalProperties": false,
         "description": "タグ作成リクエスト"
       },
+      "CreateTaskCommentRequest": {
+        "required": [
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string",
+            "description": "コメント内容"
+          },
+          "commentType": {
+            "$ref": "#/components/schemas/TaskCommentType"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクコメント作成リクエスト"
+      },
       "CreateUserWithoutPasswordRequest": {
         "required": [
           "email",
@@ -8909,6 +9425,21 @@
         },
         "additionalProperties": false,
         "description": "組織削除リクエスト"
+      },
+      "DeleteTaskCommentRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion（必須）",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクコメント削除（無効化）リクエスト"
       },
       "DeviceResponse": {
         "required": [
@@ -11223,6 +11754,178 @@
         "additionalProperties": false,
         "description": "タグ利用アイテム（ID と名前）"
       },
+      "TaskCommentDetailResponse": {
+        "required": [
+          "id",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "コメントID",
+            "format": "int32"
+          },
+          "workspaceTaskId": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "description": "コメントしたユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "コメントしたユーザー名",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "コメントしたユーザーアバターURL",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "description": "コメント内容",
+            "nullable": true
+          },
+          "commentType": {
+            "$ref": "#/components/schemas/TaskCommentType"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "削除済みフラグ"
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "削除日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクコメント詳細レスポンス"
+      },
+      "TaskCommentDetailResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/TaskCommentDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
+      },
+      "TaskCommentDetailResponsePagedResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskCommentDetailResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ページネーション付きレスポンス"
+      },
+      "TaskCommentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "成功フラグ"
+          },
+          "message": {
+            "type": "string",
+            "description": "メッセージ",
+            "nullable": true
+          },
+          "taskComment": {
+            "$ref": "#/components/schemas/TaskCommentDetailResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクコメント操作レスポンス"
+      },
+      "TaskCommentType": {
+        "enum": [
+          "Normal",
+          "Memo",
+          "HelpWanted",
+          "NeedReply",
+          "Reminder",
+          "Urge"
+        ],
+        "type": "string"
+      },
       "TaskPriority": {
         "enum": [
           "Low",
@@ -11444,6 +12147,30 @@
         },
         "additionalProperties": false,
         "description": "タグ更新リクエスト"
+      },
+      "UpdateTaskCommentRequest": {
+        "required": [
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "コメント内容",
+            "nullable": true
+          },
+          "commentType": {
+            "$ref": "#/components/schemas/TaskCommentType"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion（必須）",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクコメント更新リクエスト"
       },
       "UpdateWorkspaceItemAssigneeRequest": {
         "required": [

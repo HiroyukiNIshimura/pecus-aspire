@@ -1,6 +1,8 @@
 'use client';
 
 import AddIcon from '@mui/icons-material/Add';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
@@ -16,6 +18,7 @@ import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
 import EditWorkspaceTaskModal from './EditWorkspaceTaskModal';
+import TaskCommentModal from './TaskCommentModal';
 
 /**
  * フロントエンドの TaskStatus を API の TaskStatusFilter に変換
@@ -100,6 +103,10 @@ const WorkspaceTasks = ({
     statusFilter: TaskStatusFilterType;
     assignedUserId?: number;
   } | null>(null);
+
+  // コメントモーダル状態
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [commentTargetTask, setCommentTargetTask] = useState<WorkspaceTaskDetailResponse | null>(null);
 
   // タスク取得
   const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
@@ -242,6 +249,22 @@ const WorkspaceTasks = ({
     // タスクリストを再取得して最新状態に更新
     fetchTasks(currentPage, taskStatus, selectedAssignee?.id);
   }, [currentPage, taskStatus, selectedAssignee?.id]);
+
+  // コメントボタンクリック時のハンドラ
+  const handleCommentClick = useCallback((task: WorkspaceTaskDetailResponse, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCommentTargetTask(task);
+    setIsCommentModalOpen(true);
+  }, []);
+
+  // 編集ボタンクリック時のハンドラ
+  const handleEditClick = useCallback(
+    (taskIndex: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleTaskClick(taskIndex);
+    },
+    [handleTaskClick],
+  );
 
   // タスクタイプのアイコンパスを取得（API レスポンスから）
   const getTaskTypeIconPath = (task: WorkspaceTaskDetailResponse) => {
@@ -482,16 +505,13 @@ const WorkspaceTasks = ({
             {tasks.map((task, index) => {
               const isInactive = task.isCompleted || task.isDiscarded;
               return (
-                <button
-                  type="button"
+                <div
                   key={task.id}
-                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full text-left cursor-pointer ${
+                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full ${
                     isInactive
                       ? 'opacity-60 blur-[1px] grayscale-[30%] hover:opacity-100 hover:blur-none hover:grayscale-0 hover:shadow-md'
                       : 'hover:shadow-md hover:bg-base-300'
                   }`}
-                  onClick={() => handleTaskClick(index)}
-                  aria-label={`タスクを編集: ${task.content?.slice(0, 50) || 'タスク'}`}
                 >
                   {/* カードボディ: 伸縮する部分 */}
                   <div className="p-3 pb-2 gap-2 flex flex-col flex-1">
@@ -580,8 +600,30 @@ const WorkspaceTasks = ({
                         </span>
                       </div>
                     </div>
+
+                    {/* アクションボタン */}
+                    <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-base-300">
+                      <button
+                        type="button"
+                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
+                        onClick={(e) => handleCommentClick(task, e)}
+                        title="コメント"
+                        aria-label={`コメントを表示: ${task.content?.slice(0, 30) || 'タスク'}`}
+                      >
+                        <ChatBubbleOutlineIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
+                        onClick={(e) => handleEditClick(index, e)}
+                        title="編集"
+                        aria-label={`タスクを編集: ${task.content?.slice(0, 30) || 'タスク'}`}
+                      >
+                        <EditIcon className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -656,6 +698,21 @@ const WorkspaceTasks = ({
         currentUser={currentUser}
         pageSize={ITEMS_PER_PAGE}
       />
+
+      {/* コメントモーダル */}
+      {commentTargetTask && currentUser && (
+        <TaskCommentModal
+          isOpen={isCommentModalOpen}
+          onClose={() => {
+            setIsCommentModalOpen(false);
+            setCommentTargetTask(null);
+          }}
+          workspaceId={workspaceId}
+          itemId={itemId}
+          task={commentTargetTask}
+          currentUserId={currentUser.id}
+        />
+      )}
     </div>
   );
 };

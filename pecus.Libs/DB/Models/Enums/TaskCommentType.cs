@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Pecus.Libs.DB.Models.Enums;
 
 /// <summary>
 /// タスクコメントの種類を表す列挙型
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<TaskCommentType>))]
 public enum TaskCommentType
 {
     /// <summary>

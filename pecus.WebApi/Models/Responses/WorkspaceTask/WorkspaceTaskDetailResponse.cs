@@ -150,6 +150,11 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
+    /// コメント数
+    /// </summary>
+    public int CommentCount { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]

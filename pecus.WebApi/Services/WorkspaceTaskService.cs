@@ -115,8 +115,8 @@ public class WorkspaceTaskService
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="taskId">タスクID</param>
-    /// <returns>タスク</returns>
-    public async Task<WorkspaceTask> GetWorkspaceTaskAsync(
+    /// <returns>タスクとコメント数のタプル</returns>
+    public async Task<(WorkspaceTask Task, int CommentCount)> GetWorkspaceTaskAsync(
         int workspaceId,
         int itemId,
         int taskId
@@ -137,7 +137,10 @@ public class WorkspaceTaskService
             throw new NotFoundException("タスクが見つかりません。");
         }
 
-        return task;
+        var commentCount = await _context.TaskComments
+            .CountAsync(c => c.WorkspaceTaskId == taskId);
+
+        return (task, commentCount);
     }
 
     /// <summary>
@@ -146,8 +149,8 @@ public class WorkspaceTaskService
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="request">フィルタリング・ページネーションリクエスト</param>
-    /// <returns>タスク一覧と総件数のタプル</returns>
-    public async Task<(List<WorkspaceTask> Tasks, int TotalCount)> GetWorkspaceTasksAsync(
+    /// <returns>タスク一覧、コメント数辞書、総件数のタプル</returns>
+    public async Task<(List<WorkspaceTask> Tasks, Dictionary<int, int> CommentCounts, int TotalCount)> GetWorkspaceTasksAsync(
         int workspaceId,
         int itemId,
         GetWorkspaceTasksRequest request
@@ -197,7 +200,15 @@ public class WorkspaceTaskService
             .Take(pageSize)
             .ToListAsync();
 
-        return (tasks, totalCount);
+        // 各タスクのコメント数を取得
+        var taskIds = tasks.Select(t => t.Id).ToList();
+        var commentCounts = await _context.TaskComments
+            .Where(c => taskIds.Contains(c.WorkspaceTaskId))
+            .GroupBy(c => c.WorkspaceTaskId)
+            .Select(g => new { TaskId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.TaskId, x => x.Count);
+
+        return (tasks, commentCounts, totalCount);
     }
 
     /// <summary>
@@ -207,8 +218,8 @@ public class WorkspaceTaskService
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="taskId">タスクID</param>
     /// <param name="request">更新リクエスト</param>
-    /// <returns>更新されたタスク</returns>
-    public async Task<WorkspaceTask> UpdateWorkspaceTaskAsync(
+    /// <returns>更新されたタスクとコメント数のタプル</returns>
+    public async Task<(WorkspaceTask Task, int CommentCount)> UpdateWorkspaceTaskAsync(
         int workspaceId,
         int itemId,
         int taskId,
@@ -336,9 +347,13 @@ public class WorkspaceTaskService
                 .Include(t => t.TaskType)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
+            var latestCommentCount = latestTask != null
+                ? await _context.TaskComments.CountAsync(c => c.WorkspaceTaskId == taskId)
+                : 0;
+
             throw new ConcurrencyException<WorkspaceTaskDetailResponse>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTask != null ? BuildTaskDetailResponse(latestTask) : null
+                latestTask != null ? BuildTaskDetailResponse(latestTask, latestCommentCount) : null
             );
         }
 
@@ -362,13 +377,19 @@ public class WorkspaceTaskService
                 .LoadAsync();
         }
 
-        return task;
+        // コメント数を取得
+        var commentCount = await _context.TaskComments
+            .CountAsync(c => c.WorkspaceTaskId == taskId);
+
+        return (task, commentCount);
     }
 
     /// <summary>
     /// WorkspaceTaskエンティティからレスポンスを生成（内部ヘルパー）
     /// </summary>
-    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task)
+    /// <param name="task">タスクエンティティ</param>
+    /// <param name="commentCount">コメント数</param>
+    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
     {
         return new WorkspaceTaskDetailResponse
         {
@@ -416,6 +437,7 @@ public class WorkspaceTaskService
             DiscardReason = task.DiscardReason,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
+            CommentCount = commentCount,
             RowVersion = task.RowVersion,
         };
     }
