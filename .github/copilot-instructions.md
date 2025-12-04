@@ -11,6 +11,7 @@
 
 - エントリ: `pecus.AppHost/AppHost.cs`（Aspire がサービスの起動順・依存を管理）
 - 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
+- 全てのプロジェクトで、時間、通貨、言語などグローバリゼーションを考慮してください。（言語に関しては現在はjaのみをスコープとする）
 - RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
 - 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。クライアントは 409 受領時に最新データを再取得してマージ／再試行（`ConcurrencyErrorResponse<T>` 想定）。
 - フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。フロント UI は Tailwind CSS と `FlyonUI` を利用しています。**daisyUIは使用しない。**
