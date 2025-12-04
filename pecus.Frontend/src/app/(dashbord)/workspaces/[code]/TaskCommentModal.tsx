@@ -509,12 +509,11 @@ export default function TaskCommentModal({
         <>
           <div className="fixed inset-0 bg-black/50 z-[60]" onClick={handleDeleteCancel} aria-hidden="true" />
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            <div
-              className="bg-base-100 rounded-lg shadow-xl max-w-sm w-full p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="bg-base-100 rounded-lg shadow-xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-lg font-bold mb-4">コメントの削除</h3>
-              <p className="text-sm text-base-content/70 mb-6">このコメントを削除しますか？この操作は取り消せません。</p>
+              <p className="text-sm text-base-content/70 mb-6">
+                このコメントを削除しますか？この操作は取り消せません。
+              </p>
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
