@@ -1343,9 +1343,8 @@ public class WorkspaceItemService
     {
         if (value.HasValue && value.Value.ValueKind != System.Text.Json.JsonValueKind.Null)
         {
-            var dateTime = value.Value.GetDateTime();
-            // PostgreSQL の timestamp with time zone は UTC のみ対応
-            item.DueDate = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            // DateTimeOffset で直接取得（タイムゾーン情報を保持）
+            item.DueDate = value.Value.GetDateTimeOffset();
         }
         else
         {
