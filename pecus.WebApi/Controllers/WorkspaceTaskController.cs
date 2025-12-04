@@ -125,12 +125,12 @@ public class WorkspaceTaskController : BaseSecureController
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="request">フィルタリング・ページネーションリクエスト</param>
-    /// <returns>タスク一覧</returns>
+    /// <returns>タスク一覧（統計情報付き）</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(PagedResponse<WorkspaceTaskDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResponse<WorkspaceTaskDetailResponse, WorkspaceTaskStatistics>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<PagedResponse<WorkspaceTaskDetailResponse>>> GetWorkspaceTasks(
+    public async Task<Ok<PagedResponse<WorkspaceTaskDetailResponse, WorkspaceTaskStatistics>>> GetWorkspaceTasks(
         int workspaceId,
         int itemId,
         [FromQuery] GetWorkspaceTasksRequest request
@@ -149,10 +149,16 @@ public class WorkspaceTaskController : BaseSecureController
             request
         );
 
+        // 統計情報を取得
+        var statistics = await _workspaceTaskService.GetWorkspaceTaskStatisticsAsync(
+            workspaceId,
+            itemId
+        );
+
         var pageSize = request.PageSize;
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-        var response = new PagedResponse<WorkspaceTaskDetailResponse>
+        var response = new PagedResponse<WorkspaceTaskDetailResponse, WorkspaceTaskStatistics>
         {
             Data = tasks.Select(t => BuildTaskDetailResponse(t, commentCounts.GetValueOrDefault(t.Id, 0))),
             CurrentPage = request.Page,
@@ -161,6 +167,7 @@ public class WorkspaceTaskController : BaseSecureController
             TotalPages = totalPages,
             HasPreviousPage = request.Page > 1,
             HasNextPage = request.Page < totalPages,
+            Summary = statistics,
         };
 
         return TypedResults.Ok(response);

@@ -212,6 +212,53 @@ public class WorkspaceTaskService
     }
 
     /// <summary>
+    /// ワークスペースタスクの統計情報を取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <returns>統計情報</returns>
+    public async Task<WorkspaceTaskStatistics> GetWorkspaceTaskStatisticsAsync(
+        int workspaceId,
+        int itemId
+    )
+    {
+        var today = DateTime.UtcNow.Date;
+        var sevenDaysLater = today.AddDays(7);
+
+        var query = _context.WorkspaceTasks
+            .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
+
+        // 各統計値を計算
+        var totalCount = await query.CountAsync();
+        var completedCount = await query.CountAsync(t => t.IsCompleted && !t.IsDiscarded);
+        var incompleteCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
+        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < today);
+        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value.Date == today);
+        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value.Date > today && t.DueDate.Value.Date <= sevenDaysLater);
+        var noDueDateCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && !t.DueDate.HasValue);
+        var discardedCount = await query.CountAsync(t => t.IsDiscarded);
+
+        // タスクに紐づくコメント総数
+        var taskIds = await query.Select(t => t.Id).ToListAsync();
+        var commentCount = taskIds.Count > 0
+            ? await _context.TaskComments.CountAsync(c => taskIds.Contains(c.WorkspaceTaskId))
+            : 0;
+
+        return new WorkspaceTaskStatistics
+        {
+            TotalCount = totalCount,
+            CompletedCount = completedCount,
+            IncompleteCount = incompleteCount,
+            OverdueCount = overdueCount,
+            DueTodayCount = dueTodayCount,
+            DueSoonCount = dueSoonCount,
+            NoDueDateCount = noDueDateCount,
+            DiscardedCount = discardedCount,
+            CommentCount = commentCount,
+        };
+    }
+
+    /// <summary>
     /// ワークスペースタスクを更新
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

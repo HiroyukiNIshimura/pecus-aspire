@@ -3,10 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse';
+import type { WorkspaceTaskStatistics } from './WorkspaceTaskStatistics';
 /**
- * ページネーション付きレスポンス
+ * ページネーション付きレスポンス（統計情報付き）
  */
-export type WorkspaceTaskDetailResponsePagedResponse = {
+export type WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse = {
     /**
      * データのリスト
      */
@@ -35,5 +36,6 @@ export type WorkspaceTaskDetailResponsePagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
+    summary?: WorkspaceTaskStatistics;
 };
 

@@ -6,7 +6,7 @@ import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRe
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
-import type { WorkspaceTaskDetailResponsePagedResponse } from '../models/WorkspaceTaskDetailResponsePagedResponse';
+import type { WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from '../models/WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 import type { WorkspaceTaskResponse } from '../models/WorkspaceTaskResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -49,7 +49,7 @@ export class WorkspaceTaskService {
      * @param pageSize 1ページあたりの件数（1〜100、デフォルト10）
      * @param status タスクのステータスフィルター（省略時はすべて表示）
      * @param assignedUserId 担当ユーザーIDでフィルタ
-     * @returns WorkspaceTaskDetailResponsePagedResponse OK
+     * @returns WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasks(
@@ -59,7 +59,7 @@ export class WorkspaceTaskService {
         pageSize?: number,
         status?: TaskStatusFilter,
         assignedUserId?: number,
-    ): CancelablePromise<WorkspaceTaskDetailResponsePagedResponse> {
+    ): CancelablePromise<WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks',

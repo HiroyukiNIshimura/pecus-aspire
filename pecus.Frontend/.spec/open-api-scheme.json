@@ -8688,7 +8688,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceTaskDetailResponsePagedResponse"
+                  "$ref": "#/components/schemas/WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse"
                 }
               }
             }
@@ -13898,7 +13898,7 @@
         "additionalProperties": false,
         "description": "競合エラーレスポンス（409 Conflict）"
       },
-      "WorkspaceTaskDetailResponsePagedResponse": {
+      "WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse": {
         "required": [
           "data"
         ],
@@ -13938,10 +13938,13 @@
           "hasNextPage": {
             "type": "boolean",
             "description": "次のページが存在するか"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/WorkspaceTaskStatistics"
           }
         },
         "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
+        "description": "ページネーション付きレスポンス（統計情報付き）"
       },
       "WorkspaceTaskResponse": {
         "type": "object",
@@ -13961,6 +13964,68 @@
         },
         "additionalProperties": false,
         "description": "ワークスペースタスク操作レスポンス"
+      },
+      "WorkspaceTaskStatistics": {
+        "required": [
+          "commentCount",
+          "completedCount",
+          "discardedCount",
+          "dueSoonCount",
+          "dueTodayCount",
+          "incompleteCount",
+          "noDueDateCount",
+          "overdueCount",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "commentCount": {
+            "type": "integer",
+            "description": "コメント数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総件数",
+            "format": "int32"
+          },
+          "completedCount": {
+            "type": "integer",
+            "description": "完了済み件数",
+            "format": "int32"
+          },
+          "incompleteCount": {
+            "type": "integer",
+            "description": "未完了件数",
+            "format": "int32"
+          },
+          "overdueCount": {
+            "type": "integer",
+            "description": "期限切れ件数",
+            "format": "int32"
+          },
+          "dueTodayCount": {
+            "type": "integer",
+            "description": "今日締め切り件数",
+            "format": "int32"
+          },
+          "dueSoonCount": {
+            "type": "integer",
+            "description": "近日締め切り件数（7日以内）",
+            "format": "int32"
+          },
+          "noDueDateCount": {
+            "type": "integer",
+            "description": "期限未設定件数",
+            "format": "int32"
+          },
+          "discardedCount": {
+            "type": "integer",
+            "description": "破棄された件数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "WorkspaceUserDetailResponse": {
         "required": [
