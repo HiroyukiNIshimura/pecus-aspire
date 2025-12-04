@@ -21,6 +21,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { taskPriorityOptions, updateWorkspaceTaskSchema } from '@/schemas/workspaceTaskSchemas';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+import TaskCommentSection from './TaskCommentSection';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -72,6 +73,8 @@ interface EditWorkspaceTaskModalProps {
   } | null;
   /** ページサイズ（親コンポーネントと同じ値を使用） */
   pageSize: number;
+  /** コメント欄にフォーカスして開くかどうか */
+  initialFocusComments?: boolean;
 }
 
 export default function EditWorkspaceTaskModal({
@@ -87,6 +90,7 @@ export default function EditWorkspaceTaskModal({
   taskTypes,
   currentUser,
   pageSize,
+  initialFocusComments = false,
 }: EditWorkspaceTaskModalProps) {
   const notify = useNotify();
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
@@ -501,13 +505,13 @@ export default function EditWorkspaceTaskModal({
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-base-100 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+          className="bg-base-100 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}
-          <div className="flex items-center justify-between p-6 border-b border-base-300">
+          <div className="flex items-center justify-between p-4 border-b border-base-300 flex-shrink-0">
             <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="text-xl font-bold flex items-center gap-2">
                 <EditIcon />
                 タスクを編集
               </h2>
@@ -572,513 +576,529 @@ export default function EditWorkspaceTaskModal({
             </div>
           </div>
 
-          {/* モーダルボディ */}
-          <div className="p-6">
-            {isLoadingTask && !task ? (
-              <div className="flex justify-center items-center py-8">
-                <span className="loading loading-spinner loading-lg"></span>
-              </div>
-            ) : !task ? (
-              <p className="text-center text-base-content/50 py-8">タスクが見つかりません</p>
-            ) : (
-              <>
-                {/* サーバーエラー表示 */}
-                {serverErrors.length > 0 && (
-                  <div className="alert alert-error mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 shrink-0 stroke-current"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <div>
-                      <h3 className="font-bold">エラーが発生しました</h3>
-                      <ul className="list-disc list-inside mt-2">
-                        {serverErrors.map((error) => (
-                          <li key={error.key}>{error.message}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-
-                {/* ローディングオーバーレイ */}
-                {isLoadingTask && (
-                  <div className="absolute inset-0 bg-base-100/50 flex items-center justify-center z-10">
-                    <span className="loading loading-spinner loading-lg"></span>
-                  </div>
-                )}
-
-                {/* フォーム */}
-                <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 relative" noValidate>
-                  {/* タスク内容 */}
-                  <div className="form-control">
-                    <label htmlFor="content" className="label">
-                      <span className="label-text font-semibold">
-                        タスク内容 <span className="text-error">*</span>
-                      </span>
-                    </label>
-                    <textarea
-                      id="content"
-                      name="content"
-                      placeholder="タスクの内容を入力してください..."
-                      className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      onBlur={(e) => validateField('content', e.target.value)}
-                      disabled={isSubmitting || isLoadingTask}
-                    />
-                    {shouldShowError('content') && (
-                      <div className="label">
-                        <span className="label-text-alt text-error">{getFieldError('content')}</span>
+          {/* モーダルボディ - サイドバイサイドレイアウト */}
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            {/* 左パネル：編集フォーム */}
+            <div className="flex-1 p-4 overflow-y-auto border-r border-base-300">
+              {isLoadingTask && !task ? (
+                <div className="flex justify-center items-center py-8">
+                  <span className="loading loading-spinner loading-lg"></span>
+                </div>
+              ) : !task ? (
+                <p className="text-center text-base-content/50 py-8">タスクが見つかりません</p>
+              ) : (
+                <>
+                  {/* サーバーエラー表示 */}
+                  {serverErrors.length > 0 && (
+                    <div className="alert alert-error mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 shrink-0 stroke-current"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <div>
+                        <h3 className="font-bold">エラーが発生しました</h3>
+                        <ul className="list-disc list-inside mt-2">
+                          {serverErrors.map((error) => (
+                            <li key={error.key}>{error.message}</li>
+                          ))}
+                        </ul>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* タスクタイプと優先度を横並び */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* タスクタイプ */}
+                  {/* ローディングオーバーレイ */}
+                  {isLoadingTask && (
+                    <div className="absolute inset-0 bg-base-100/50 flex items-center justify-center z-10">
+                      <span className="loading loading-spinner loading-lg"></span>
+                    </div>
+                  )}
+
+                  {/* フォーム */}
+                  <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 relative" noValidate>
+                    {/* タスク内容 */}
                     <div className="form-control">
-                      <label htmlFor="taskTypeId" className="label">
+                      <label htmlFor="content" className="label">
                         <span className="label-text font-semibold">
-                          タスクタイプ <span className="text-error">*</span>
+                          タスク内容 <span className="text-error">*</span>
                         </span>
                       </label>
-                      <input type="hidden" name="taskTypeId" value={taskTypeId || ''} />
-                      <TaskTypeSelect
-                        id="taskTypeId"
-                        taskTypes={taskTypes}
-                        value={taskTypeId}
-                        error={shouldShowError('taskTypeId')}
+                      <textarea
+                        id="content"
+                        name="content"
+                        placeholder="タスクの内容を入力してください..."
+                        className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        onBlur={(e) => validateField('content', e.target.value)}
                         disabled={isSubmitting || isLoadingTask}
-                        onChange={(val) => {
-                          setTaskTypeId(val);
-                          validateField('taskTypeId', val || '');
-                        }}
                       />
-                      {shouldShowError('taskTypeId') && (
+                      {shouldShowError('content') && (
                         <div className="label">
-                          <span className="label-text-alt text-error">{getFieldError('taskTypeId')}</span>
+                          <span className="label-text-alt text-error">{getFieldError('content')}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* 優先度 */}
-                    <div className="form-control">
-                      <label htmlFor="priority" className="label">
-                        <span className="label-text font-semibold">優先度</span>
-                      </label>
-                      <select
-                        id="priority"
-                        name="priority"
-                        className="select select-bordered"
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                        disabled={isSubmitting || isLoadingTask}
-                      >
-                        {taskPriorityOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* 担当者 */}
-                  <div className="form-control">
-                    <div className="flex items-center gap-2 mb-1">
-                      <label htmlFor="assignedUserId" className="label py-0">
-                        <span className="label-text font-semibold">
-                          担当者 <span className="text-error">*</span>
-                        </span>
-                      </label>
-                      {currentUser && (
-                        <button type="button" className="link link-primary text-xs" onClick={handleSelectSelf}>
-                          （自分を設定）
-                        </button>
-                      )}
-                    </div>
-                    <input type="hidden" name="assignedUserId" value={selectedAssignee?.id || ''} />
-                    {selectedAssignee ? (
-                      <div className="input input-bordered flex items-center gap-2">
-                        <img
-                          src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
-                          alt={selectedAssignee.username}
-                          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    {/* タスクタイプと優先度を横並び */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* タスクタイプ */}
+                      <div className="form-control">
+                        <label htmlFor="taskTypeId" className="label">
+                          <span className="label-text font-semibold">
+                            タスクタイプ <span className="text-error">*</span>
+                          </span>
+                        </label>
+                        <input type="hidden" name="taskTypeId" value={taskTypeId || ''} />
+                        <TaskTypeSelect
+                          id="taskTypeId"
+                          taskTypes={taskTypes}
+                          value={taskTypeId}
+                          error={shouldShowError('taskTypeId')}
+                          disabled={isSubmitting || isLoadingTask}
+                          onChange={(val) => {
+                            setTaskTypeId(val);
+                            validateField('taskTypeId', val || '');
+                          }}
                         />
-                        <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
-                        <button
-                          type="button"
-                          className="p-1 hover:bg-base-300 rounded transition-colors flex-shrink-0"
-                          onClick={handleClearAssignee}
-                          aria-label="選択解除"
+                        {shouldShowError('taskTypeId') && (
+                          <div className="label">
+                            <span className="label-text-alt text-error">{getFieldError('taskTypeId')}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 優先度 */}
+                      <div className="form-control">
+                        <label htmlFor="priority" className="label">
+                          <span className="label-text font-semibold">優先度</span>
+                        </label>
+                        <select
+                          id="priority"
+                          name="priority"
+                          className="select select-bordered"
+                          value={priority}
+                          onChange={(e) => setPriority(e.target.value as TaskPriority)}
                           disabled={isSubmitting || isLoadingTask}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
+                          {taskPriorityOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    ) : (
-                      <div className="relative" onClick={(e) => e.stopPropagation()}>
-                        <DebouncedSearchInput
-                          onSearch={handleAssigneeSearch}
-                          placeholder="名前で検索..."
-                          debounceMs={300}
-                          size="md"
-                          isLoading={isSearchingAssignee}
-                          showSearchIcon={true}
-                          showClearButton={true}
+                    </div>
+
+                    {/* 担当者 */}
+                    <div className="form-control">
+                      <div className="flex items-center gap-2 mb-1">
+                        <label htmlFor="assignedUserId" className="label py-0">
+                          <span className="label-text font-semibold">
+                            担当者 <span className="text-error">*</span>
+                          </span>
+                        </label>
+                        {currentUser && (
+                          <button type="button" className="link link-primary text-xs" onClick={handleSelectSelf}>
+                            （自分を設定）
+                          </button>
+                        )}
+                      </div>
+                      <input type="hidden" name="assignedUserId" value={selectedAssignee?.id || ''} />
+                      {selectedAssignee ? (
+                        <div className="input input-bordered flex items-center gap-2">
+                          <img
+                            src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
+                            alt={selectedAssignee.username}
+                            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                          />
+                          <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
+                          <button
+                            type="button"
+                            className="p-1 hover:bg-base-300 rounded transition-colors flex-shrink-0"
+                            onClick={handleClearAssignee}
+                            aria-label="選択解除"
+                            disabled={isSubmitting || isLoadingTask}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative" onClick={(e) => e.stopPropagation()}>
+                          <DebouncedSearchInput
+                            onSearch={handleAssigneeSearch}
+                            placeholder="名前で検索..."
+                            debounceMs={300}
+                            size="md"
+                            isLoading={isSearchingAssignee}
+                            showSearchIcon={true}
+                            showClearButton={true}
+                          />
+                          {showAssigneeDropdown && assigneeSearchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                              {assigneeSearchResults.map((user) => (
+                                <button
+                                  key={user.id}
+                                  type="button"
+                                  className="w-full flex items-center gap-2 p-3 hover:bg-base-200 transition-colors text-left"
+                                  onClick={() => handleSelectAssignee(user)}
+                                >
+                                  <img
+                                    src={getDisplayIconUrl(user.identityIconUrl)}
+                                    alt={user.username || 'User'}
+                                    className="w-6 h-6 rounded-full object-cover"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{user.username}</p>
+                                    <p className="text-xs text-base-content/50 truncate">{user.email}</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {shouldShowError('assignedUserId') && (
+                        <div className="label">
+                          <span className="label-text-alt text-error">{getFieldError('assignedUserId')}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 開始日・期限日を横並び */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* 開始日 */}
+                      <div className="form-control">
+                        <label htmlFor="startDate" className="label">
+                          <span className="label-text font-semibold">開始日</span>
+                        </label>
+                        <input type="hidden" name="startDate" value={startDate} />
+                        <DatePicker
+                          value={startDate}
+                          onChange={setStartDate}
+                          placeholder="開始日を選択"
+                          disabled={isSubmitting || isLoadingTask}
                         />
-                        {showAssigneeDropdown && assigneeSearchResults.length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
-                            {assigneeSearchResults.map((user) => (
-                              <button
-                                key={user.id}
-                                type="button"
-                                className="w-full flex items-center gap-2 p-3 hover:bg-base-200 transition-colors text-left"
-                                onClick={() => handleSelectAssignee(user)}
-                              >
-                                <img
-                                  src={getDisplayIconUrl(user.identityIconUrl)}
-                                  alt={user.username || 'User'}
-                                  className="w-6 h-6 rounded-full object-cover"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{user.username}</p>
-                                  <p className="text-xs text-base-content/50 truncate">{user.email}</p>
-                                </div>
-                              </button>
-                            ))}
+                      </div>
+
+                      {/* 期限日 */}
+                      <div className="form-control">
+                        <label htmlFor="dueDate" className="label">
+                          <span className="label-text font-semibold">期限日</span>
+                        </label>
+                        <input type="hidden" name="dueDate" value={dueDate} />
+                        <DatePicker
+                          value={dueDate}
+                          onChange={setDueDate}
+                          placeholder="期限日を選択"
+                          disabled={isSubmitting || isLoadingTask}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 工数（予定・実績）を横並び */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* 予定工数 */}
+                      <div className="form-control">
+                        <label htmlFor="estimatedHours" className="label">
+                          <span className="label-text font-semibold">予定工数（時間）</span>
+                        </label>
+                        <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
+                        <div className="input input-bordered flex items-center">
+                          <input
+                            id="estimatedHours"
+                            type="text"
+                            inputMode="decimal"
+                            value={estimatedHours || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                setEstimatedHours(0);
+                              } else {
+                                const num = parseFloat(val);
+                                if (!Number.isNaN(num) && num >= 0) {
+                                  setEstimatedHours(num);
+                                }
+                              }
+                            }}
+                            className="flex-1 bg-transparent outline-none min-w-0"
+                            placeholder="0"
+                            disabled={isSubmitting || isLoadingTask}
+                            aria-label="予定工数入力"
+                          />
+                          <span className="my-auto flex gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                              aria-label="0.5時間減らす"
+                              onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
+                              disabled={isSubmitting || isLoadingTask || estimatedHours <= 0}
+                            >
+                              <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                              aria-label="0.5時間増やす"
+                              onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
+                              disabled={isSubmitting || isLoadingTask}
+                            >
+                              <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 実績工数 */}
+                      <div className="form-control">
+                        <label htmlFor="actualHours" className="label">
+                          <span className="label-text font-semibold">実績工数（時間）</span>
+                        </label>
+                        <input type="hidden" name="actualHours" value={actualHours || ''} />
+                        <div className="input input-bordered flex items-center">
+                          <input
+                            id="actualHours"
+                            type="text"
+                            inputMode="decimal"
+                            value={actualHours || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                setActualHours(0);
+                              } else {
+                                const num = parseFloat(val);
+                                if (!Number.isNaN(num) && num >= 0) {
+                                  setActualHours(num);
+                                }
+                              }
+                            }}
+                            className="flex-1 bg-transparent outline-none min-w-0"
+                            placeholder="0"
+                            disabled={isSubmitting || isLoadingTask}
+                            aria-label="実績工数入力"
+                          />
+                          <span className="my-auto flex gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                              aria-label="0.5時間減らす"
+                              onClick={() => setActualHours((prev) => Math.max(0, (prev || 0) - 0.5))}
+                              disabled={isSubmitting || isLoadingTask || actualHours <= 0}
+                            >
+                              <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                              aria-label="0.5時間増やす"
+                              onClick={() => setActualHours((prev) => (prev || 0) + 0.5)}
+                              disabled={isSubmitting || isLoadingTask}
+                            >
+                              <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 進捗率 */}
+                    <div className="form-control">
+                      <label htmlFor="progressPercentage" className="label">
+                        <span className="label-text font-semibold">進捗率: {progressPercentage}%</span>
+                      </label>
+                      <input type="hidden" name="progressPercentage" value={progressPercentage} />
+                      <input
+                        id="progressPercentage"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        className="range range-primary"
+                        value={progressPercentage}
+                        onChange={(e) => setProgressPercentage(Number(e.target.value))}
+                        disabled={isSubmitting || isLoadingTask}
+                      />
+                      <div className="flex justify-between text-xs px-2 mt-1">
+                        <span>0%</span>
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    {/* 完了フラグ */}
+                    <div className="flex flex-wrap gap-6 items-center">
+                      {/* 完了フラグ */}
+                      <div className="form-control">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id="isCompleted"
+                            name="isCompleted"
+                            className="switch switch-outline switch-success"
+                            checked={isCompleted}
+                            onChange={(e) => {
+                              setIsCompleted(e.target.checked);
+                              if (e.target.checked) {
+                                setIsDiscarded(false);
+                                setProgressPercentage(100);
+                              }
+                            }}
+                            disabled={
+                              isSubmitting ||
+                              isLoadingTask ||
+                              (itemCommitterId != null && currentUser?.id !== itemCommitterId)
+                            }
+                            title={
+                              itemCommitterId != null && currentUser?.id !== itemCommitterId
+                                ? '完了操作はコミッターのみ可能です'
+                                : undefined
+                            }
+                          />
+                          <label htmlFor="isCompleted" className="label-text cursor-pointer">
+                            完了
+                            {itemCommitterId != null && currentUser?.id !== itemCommitterId && (
+                              <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
+                            )}
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* 破棄フラグ */}
+                      <div className="form-control">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id="isDiscarded"
+                            name="isDiscarded"
+                            className="switch switch-outline switch-warning"
+                            checked={isDiscarded}
+                            onChange={(e) => {
+                              setIsDiscarded(e.target.checked);
+                              if (e.target.checked) {
+                                setIsCompleted(false);
+                              }
+                            }}
+                            disabled={isSubmitting || isLoadingTask}
+                          />
+                          <label htmlFor="isDiscarded" className="label-text cursor-pointer">
+                            破棄
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 破棄理由（破棄時のみ表示） */}
+                    {isDiscarded && (
+                      <div className="form-control">
+                        <label htmlFor="discardReason" className="label">
+                          <span className="label-text font-semibold">
+                            破棄理由 <span className="text-error">*</span>
+                          </span>
+                        </label>
+                        <textarea
+                          id="discardReason"
+                          name="discardReason"
+                          placeholder="破棄の理由を入力してください..."
+                          className={`textarea textarea-bordered h-20 ${shouldShowError('discardReason') ? 'textarea-error' : ''}`}
+                          value={discardReason}
+                          onChange={(e) => setDiscardReason(e.target.value)}
+                          onBlur={(e) => validateField('discardReason', e.target.value)}
+                          disabled={isSubmitting || isLoadingTask}
+                          required
+                        />
+                        {shouldShowError('discardReason') && (
+                          <div className="label">
+                            <span className="label-text-alt text-error">{getFieldError('discardReason')}</span>
                           </div>
                         )}
                       </div>
                     )}
-                    {shouldShowError('assignedUserId') && (
-                      <div className="label">
-                        <span className="label-text-alt text-error">{getFieldError('assignedUserId')}</span>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* 開始日・期限日を横並び */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 開始日 */}
-                    <div className="form-control">
-                      <label htmlFor="startDate" className="label">
-                        <span className="label-text font-semibold">開始日</span>
-                      </label>
-                      <input type="hidden" name="startDate" value={startDate} />
-                      <DatePicker
-                        value={startDate}
-                        onChange={setStartDate}
-                        placeholder="開始日を選択"
+                    {/* メタ情報（作成者・更新日時） */}
+                    <div className="border-t border-base-300 pt-4 mt-4">
+                      <div className="flex flex-wrap gap-4 text-sm text-base-content/60">
+                        {task.createdByUserId && (
+                          <div className="flex items-center gap-2">
+                            <span>作成者:</span>
+                            {task.createdByAvatarUrl && (
+                              <img
+                                src={getDisplayIconUrl(task.createdByAvatarUrl)}
+                                alt={task.createdByUsername || ''}
+                                className="w-5 h-5 rounded-full object-cover"
+                              />
+                            )}
+                            <span>{task.createdByUsername}</span>
+                          </div>
+                        )}
+                        {task.createdAt && <div>作成日時: {new Date(task.createdAt).toLocaleString('ja-JP')}</div>}
+                        {task.updatedAt && <div>更新日時: {new Date(task.updatedAt).toLocaleString('ja-JP')}</div>}
+                      </div>
+                    </div>
+
+                    {/* ボタングループ */}
+                    <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={onClose}
                         disabled={isSubmitting || isLoadingTask}
-                      />
+                      >
+                        キャンセル
+                      </button>
+                      <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoadingTask}>
+                        {isSubmitting ? (
+                          <>
+                            <span className="loading loading-spinner loading-sm"></span>
+                            保存中...
+                          </>
+                        ) : (
+                          <>
+                            <EditIcon className="w-5 h-5" />
+                            保存
+                          </>
+                        )}
+                      </button>
                     </div>
+                  </form>
+                </>
+              )}
+            </div>
 
-                    {/* 期限日 */}
-                    <div className="form-control">
-                      <label htmlFor="dueDate" className="label">
-                        <span className="label-text font-semibold">期限日</span>
-                      </label>
-                      <input type="hidden" name="dueDate" value={dueDate} />
-                      <DatePicker
-                        value={dueDate}
-                        onChange={setDueDate}
-                        placeholder="期限日を選択"
-                        disabled={isSubmitting || isLoadingTask}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 工数（予定・実績）を横並び */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 予定工数 */}
-                    <div className="form-control">
-                      <label htmlFor="estimatedHours" className="label">
-                        <span className="label-text font-semibold">予定工数（時間）</span>
-                      </label>
-                      <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
-                      <div className="input input-bordered flex items-center">
-                        <input
-                          id="estimatedHours"
-                          type="text"
-                          inputMode="decimal"
-                          value={estimatedHours || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '') {
-                              setEstimatedHours(0);
-                            } else {
-                              const num = parseFloat(val);
-                              if (!Number.isNaN(num) && num >= 0) {
-                                setEstimatedHours(num);
-                              }
-                            }
-                          }}
-                          className="flex-1 bg-transparent outline-none min-w-0"
-                          placeholder="0"
-                          disabled={isSubmitting || isLoadingTask}
-                          aria-label="予定工数入力"
-                        />
-                        <span className="my-auto flex gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                            aria-label="0.5時間減らす"
-                            onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
-                            disabled={isSubmitting || isLoadingTask || estimatedHours <= 0}
-                          >
-                            <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                            aria-label="0.5時間増やす"
-                            onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
-                            disabled={isSubmitting || isLoadingTask}
-                          >
-                            <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
-                          </button>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 実績工数 */}
-                    <div className="form-control">
-                      <label htmlFor="actualHours" className="label">
-                        <span className="label-text font-semibold">実績工数（時間）</span>
-                      </label>
-                      <input type="hidden" name="actualHours" value={actualHours || ''} />
-                      <div className="input input-bordered flex items-center">
-                        <input
-                          id="actualHours"
-                          type="text"
-                          inputMode="decimal"
-                          value={actualHours || ''}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '') {
-                              setActualHours(0);
-                            } else {
-                              const num = parseFloat(val);
-                              if (!Number.isNaN(num) && num >= 0) {
-                                setActualHours(num);
-                              }
-                            }
-                          }}
-                          className="flex-1 bg-transparent outline-none min-w-0"
-                          placeholder="0"
-                          disabled={isSubmitting || isLoadingTask}
-                          aria-label="実績工数入力"
-                        />
-                        <span className="my-auto flex gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                            aria-label="0.5時間減らす"
-                            onClick={() => setActualHours((prev) => Math.max(0, (prev || 0) - 0.5))}
-                            disabled={isSubmitting || isLoadingTask || actualHours <= 0}
-                          >
-                            <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                            aria-label="0.5時間増やす"
-                            onClick={() => setActualHours((prev) => (prev || 0) + 0.5)}
-                            disabled={isSubmitting || isLoadingTask}
-                          >
-                            <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
-                          </button>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 進捗率 */}
-                  <div className="form-control">
-                    <label htmlFor="progressPercentage" className="label">
-                      <span className="label-text font-semibold">進捗率: {progressPercentage}%</span>
-                    </label>
-                    <input type="hidden" name="progressPercentage" value={progressPercentage} />
-                    <input
-                      id="progressPercentage"
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      className="range range-primary"
-                      value={progressPercentage}
-                      onChange={(e) => setProgressPercentage(Number(e.target.value))}
-                      disabled={isSubmitting || isLoadingTask}
-                    />
-                    <div className="flex justify-between text-xs px-2 mt-1">
-                      <span>0%</span>
-                      <span>25%</span>
-                      <span>50%</span>
-                      <span>75%</span>
-                      <span>100%</span>
-                    </div>
-                  </div>
-
-                  {/* 完了フラグ */}
-                  <div className="flex flex-wrap gap-6 items-center">
-                    {/* 完了フラグ */}
-                    <div className="form-control">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="isCompleted"
-                          name="isCompleted"
-                          className="switch switch-outline switch-success"
-                          checked={isCompleted}
-                          onChange={(e) => {
-                            setIsCompleted(e.target.checked);
-                            if (e.target.checked) {
-                              setIsDiscarded(false);
-                              setProgressPercentage(100);
-                            }
-                          }}
-                          disabled={
-                            isSubmitting ||
-                            isLoadingTask ||
-                            (itemCommitterId != null && currentUser?.id !== itemCommitterId)
-                          }
-                          title={
-                            itemCommitterId != null && currentUser?.id !== itemCommitterId
-                              ? '完了操作はコミッターのみ可能です'
-                              : undefined
-                          }
-                        />
-                        <label htmlFor="isCompleted" className="label-text cursor-pointer">
-                          完了
-                          {itemCommitterId != null && currentUser?.id !== itemCommitterId && (
-                            <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
-                          )}
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* 破棄フラグ */}
-                    <div className="form-control">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="isDiscarded"
-                          name="isDiscarded"
-                          className="switch switch-outline switch-warning"
-                          checked={isDiscarded}
-                          onChange={(e) => {
-                            setIsDiscarded(e.target.checked);
-                            if (e.target.checked) {
-                              setIsCompleted(false);
-                            }
-                          }}
-                          disabled={isSubmitting || isLoadingTask}
-                        />
-                        <label htmlFor="isDiscarded" className="label-text cursor-pointer">
-                          破棄
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 破棄理由（破棄時のみ表示） */}
-                  {isDiscarded && (
-                    <div className="form-control">
-                      <label htmlFor="discardReason" className="label">
-                        <span className="label-text font-semibold">
-                          破棄理由 <span className="text-error">*</span>
-                        </span>
-                      </label>
-                      <textarea
-                        id="discardReason"
-                        name="discardReason"
-                        placeholder="破棄の理由を入力してください..."
-                        className={`textarea textarea-bordered h-20 ${shouldShowError('discardReason') ? 'textarea-error' : ''}`}
-                        value={discardReason}
-                        onChange={(e) => setDiscardReason(e.target.value)}
-                        onBlur={(e) => validateField('discardReason', e.target.value)}
-                        disabled={isSubmitting || isLoadingTask}
-                        required
-                      />
-                      {shouldShowError('discardReason') && (
-                        <div className="label">
-                          <span className="label-text-alt text-error">{getFieldError('discardReason')}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* メタ情報（作成者・更新日時） */}
-                  <div className="border-t border-base-300 pt-4 mt-4">
-                    <div className="flex flex-wrap gap-4 text-sm text-base-content/60">
-                      {task.createdByUserId && (
-                        <div className="flex items-center gap-2">
-                          <span>作成者:</span>
-                          {task.createdByAvatarUrl && (
-                            <img
-                              src={getDisplayIconUrl(task.createdByAvatarUrl)}
-                              alt={task.createdByUsername || ''}
-                              className="w-5 h-5 rounded-full object-cover"
-                            />
-                          )}
-                          <span>{task.createdByUsername}</span>
-                        </div>
-                      )}
-                      {task.createdAt && <div>作成日時: {new Date(task.createdAt).toLocaleString('ja-JP')}</div>}
-                      {task.updatedAt && <div>更新日時: {new Date(task.updatedAt).toLocaleString('ja-JP')}</div>}
-                    </div>
-                  </div>
-
-                  {/* ボタングループ */}
-                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      onClick={onClose}
-                      disabled={isSubmitting || isLoadingTask}
-                    >
-                      キャンセル
-                    </button>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoadingTask}>
-                      {isSubmitting ? (
-                        <>
-                          <span className="loading loading-spinner loading-sm"></span>
-                          保存中...
-                        </>
-                      ) : (
-                        <>
-                          <EditIcon className="w-5 h-5" />
-                          保存
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+            {/* 右パネル：コメントセクション */}
+            <div className="w-1/2 flex-shrink-0 flex flex-col bg-base-200/30">
+              {task && (
+                <TaskCommentSection
+                  workspaceId={workspaceId}
+                  itemId={itemId}
+                  taskId={task.id}
+                  currentUserId={currentUser?.id}
+                  autoFocus={initialFocusComments}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
