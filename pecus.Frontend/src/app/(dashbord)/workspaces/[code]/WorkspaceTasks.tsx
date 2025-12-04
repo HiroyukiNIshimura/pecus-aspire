@@ -13,6 +13,7 @@ import type {
   TaskStatusFilter as TaskStatusFilterType,
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
+  WorkspaceTaskStatistics,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -87,6 +88,7 @@ const WorkspaceTasks = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<WorkspaceTaskStatistics | null>(null);
 
   // フィルター状態
   const [taskStatus, setTaskStatus] = useState<TaskStatus>(null);
@@ -134,6 +136,7 @@ const WorkspaceTasks = ({
         setCurrentPage(result.data.currentPage || 1);
         setTotalPages(result.data.totalPages || 0);
         setTotalCount(result.data.totalCount || 0);
+        setStatistics(result.data.summary || null);
       } else {
         notify.error(result.message || 'タスクの取得に失敗しました');
       }
@@ -505,7 +508,7 @@ const WorkspaceTasks = ({
 
           {/* カードグリッド 4x2 */}
           <div
-            className={`grid grid-cols-2 sm:grid-cols-4 gap-3 transition-opacity ${isLoading ? 'opacity-50' : ''}`}
+            className={`grid grid-cols-2 sm:grid-cols-4 gap-3 ${isLoading ? 'opacity-50' : ''}`}
             style={{ gridAutoRows: '1fr' }}
           >
             {tasks.map((task, index) => {
@@ -513,10 +516,8 @@ const WorkspaceTasks = ({
               return (
                 <div
                   key={task.id}
-                  className={`card bg-base-200 shadow-sm transition-all duration-200 flex flex-col h-full ${
-                    isInactive
-                      ? 'opacity-60 blur-[1px] grayscale-[30%] hover:opacity-100 hover:blur-none hover:grayscale-0 hover:shadow-md'
-                      : 'hover:shadow-md hover:bg-base-300'
+                  className={`card bg-base-200 shadow-sm flex flex-col h-full ${
+                    isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''
                   }`}
                 >
                   {/* カードボディ: 伸縮する部分 */}
@@ -617,7 +618,7 @@ const WorkspaceTasks = ({
                           itemCommitterId === currentUser.id) && (
                           <button
                             type="button"
-                            className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
+                            className="btn btn-outline btn-primary btn-xs"
                             onClick={(e) => handleEditClick(index, e)}
                             title="編集"
                             aria-label={`タスクを編集: ${task.content?.slice(0, 30) || 'タスク'}`}
@@ -627,7 +628,7 @@ const WorkspaceTasks = ({
                         )}
                       <button
                         type="button"
-                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary relative"
+                        className="btn btn-outline btn-primary btn-xs relative"
                         onClick={(e) => handleCommentClick(task, e)}
                         title="コメント"
                         aria-label={`コメントを表示: ${task.content?.slice(0, 30) || 'タスク'}`}
@@ -684,6 +685,225 @@ const WorkspaceTasks = ({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* タスク統計サマリ */}
+      {statistics && (
+        <div className="mt-6 p-4 bg-base-200 rounded-lg">
+          <h4 className="text-sm font-semibold mb-3 text-base-content/80">タスクサマリ</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {/* 完了 */}
+            <div className="flex items-center gap-2 p-2 bg-success/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-success/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-success"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">完了</p>
+                <p className="text-lg font-bold text-success">{statistics.completedCount}</p>
+              </div>
+            </div>
+
+            {/* 未完了 */}
+            <div className="flex items-center gap-2 p-2 bg-info/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-info/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-info"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">未完了</p>
+                <p className="text-lg font-bold text-info">{statistics.incompleteCount}</p>
+              </div>
+            </div>
+
+            {/* 期限切れ */}
+            <div className="flex items-center gap-2 p-2 bg-error/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-error/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-error"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">期限切れ</p>
+                <p className="text-lg font-bold text-error">{statistics.overdueCount}</p>
+              </div>
+            </div>
+
+            {/* 今日締切 */}
+            <div className="flex items-center gap-2 p-2 bg-warning/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-warning/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-warning"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">今日締切</p>
+                <p className="text-lg font-bold text-warning">{statistics.dueTodayCount}</p>
+              </div>
+            </div>
+
+            {/* 7日以内 */}
+            <div className="flex items-center gap-2 p-2 bg-accent/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-accent/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-accent"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">7日以内</p>
+                <p className="text-lg font-bold text-accent">{statistics.dueSoonCount}</p>
+              </div>
+            </div>
+
+            {/* 期限未設定 */}
+            <div className="flex items-center gap-2 p-2 bg-base-300/50 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-base-content/10 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-base-content/50"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">期限未設定</p>
+                <p className="text-lg font-bold text-base-content/70">{statistics.noDueDateCount}</p>
+              </div>
+            </div>
+
+            {/* 破棄 */}
+            <div className="flex items-center gap-2 p-2 bg-neutral/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-neutral/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-neutral-content/70"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">破棄</p>
+                <p className="text-lg font-bold text-neutral-content/70">{statistics.discardedCount}</p>
+              </div>
+            </div>
+
+            {/* コメント数 */}
+            <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-primary/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">コメント</p>
+                <p className="text-lg font-bold text-primary">{statistics.commentCount}</p>
+              </div>
+            </div>
+
+            {/* 総件数 */}
+            <div className="flex items-center gap-2 p-2 bg-secondary/10 rounded-md">
+              <div className="w-8 h-8 flex items-center justify-center bg-secondary/20 rounded-full">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-secondary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs text-base-content/60">総件数</p>
+                <p className="text-lg font-bold text-secondary">{statistics.totalCount}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

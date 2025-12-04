@@ -6,7 +6,7 @@ import type {
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
   WorkspaceTaskDetailResponse,
-  WorkspaceTaskDetailResponsePagedResponse,
+  WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
@@ -21,7 +21,7 @@ export async function getWorkspaceTasks(
   pageSize: number = 10,
   status?: TaskStatusFilter,
   assignedUserId?: number,
-): Promise<ApiResponse<WorkspaceTaskDetailResponsePagedResponse>> {
+): Promise<ApiResponse<WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse>> {
   try {
     const api = await createPecusApiClients();
     const response = await api.workspaceTask.getApiWorkspacesItemsTasks(

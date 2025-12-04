@@ -222,8 +222,11 @@ public class WorkspaceTaskService
         int itemId
     )
     {
-        var today = DateTime.UtcNow.Date;
-        var sevenDaysLater = today.AddDays(7);
+        // DateTimeOffset で日付範囲を定義（PostgreSQL との互換性のため）
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+        var todayEnd = todayStart.AddDays(1);
+        var sevenDaysLaterEnd = todayStart.AddDays(8); // 7日後の終わりまで
 
         var query = _context.WorkspaceTasks
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
@@ -232,9 +235,9 @@ public class WorkspaceTaskService
         var totalCount = await query.CountAsync();
         var completedCount = await query.CountAsync(t => t.IsCompleted && !t.IsDiscarded);
         var incompleteCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
-        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < today);
-        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value.Date == today);
-        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value.Date > today && t.DueDate.Value.Date <= sevenDaysLater);
+        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart);
+        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayStart && t.DueDate.Value < todayEnd);
+        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayEnd && t.DueDate.Value < sevenDaysLaterEnd);
         var noDueDateCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && !t.DueDate.HasValue);
         var discardedCount = await query.CountAsync(t => t.IsDiscarded);
 
