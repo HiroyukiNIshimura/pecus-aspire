@@ -33,12 +33,12 @@ public class CreateWorkspaceTaskRequest
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 開始日時
+    /// 開始日時(ISO 8601 形式)
     /// </summary>
     public DateTimeOffset? StartDate { get; set; }
 
     /// <summary>
-    /// 期限日時
+    /// 期限日時(ISO 8601 形式)
     /// </summary>
     public DateTimeOffset? DueDate { get; set; }
 

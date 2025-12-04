@@ -21,7 +21,7 @@ export type CreateWorkspaceItemRequest = {
     assigneeId?: number | null;
     priority?: TaskPriority;
     /**
-     * 期限日（NULL許容）
+     * 期限日時(ISO 8601 形式)
      */
     dueDate?: string | null;
     /**

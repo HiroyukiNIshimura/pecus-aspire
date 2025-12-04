@@ -31,7 +31,7 @@ public class CreateWorkspaceItemRequest
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日時
+    /// 期限日時(ISO 8601 形式)
     /// </summary>
     public DateTimeOffset? DueDate { get; set; }
 
