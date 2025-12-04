@@ -25,6 +25,7 @@ public static class WorkspaceItemResponseHelper
             WorkspaceCode = item.Workspace?.Code,
             WorkspaceName = item.Workspace?.Name,
             GenreIcon = item.Workspace?.Genre?.Icon,
+            GenreName = item.Workspace?.Genre?.Name,
             Code = item.Code,
             Subject = item.Subject,
             Body = item.Body,

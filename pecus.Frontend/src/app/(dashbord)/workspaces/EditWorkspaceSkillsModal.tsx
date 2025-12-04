@@ -172,6 +172,7 @@ export default function EditWorkspaceSkillsModal({
                     <img
                       src={`/icons/genres/${workspace.genreIcon}.svg`}
                       alt={workspace.genreName || 'ジャンルアイコン'}
+                      title={workspace.genreName || 'ジャンル'}
                       className="w-10 h-10 flex-shrink-0"
                     />
                   )}

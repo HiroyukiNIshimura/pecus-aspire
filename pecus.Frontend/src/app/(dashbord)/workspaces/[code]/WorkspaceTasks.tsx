@@ -246,6 +246,27 @@ const WorkspaceTasks = ({
     return `/icons/task/${iconName}.svg`;
   };
 
+  // タスクタイプの日本語ラベル
+  const getTaskTypeLabel = (taskType?: string) => {
+    if (!taskType) return '';
+
+    const labels: Record<string, string> = {
+      Bug: 'バグ修正',
+      Feature: '新機能開発',
+      Documentation: 'ドキュメント作成・更新',
+      Review: 'レビュー',
+      Testing: 'テスト',
+      Refactoring: 'リファクタリング',
+      Research: '調査・研究',
+      Meeting: '打ち合わせ',
+      BusinessNegotiation: '商談',
+      RequirementsConfirmation: '要件確認',
+      Other: 'その他',
+    };
+
+    return labels[taskType] || taskType;
+  };
+
   // 優先度の表示
   const getPriorityBadge = (priority?: string) => {
     if (!priority) return null;
@@ -479,9 +500,9 @@ const WorkspaceTasks = ({
                         <div className="flex-shrink-0">
                           <img
                             src={getTaskTypeIcon(task.taskType) || undefined}
-                            alt={task.taskType}
+                            alt={getTaskTypeLabel(task.taskType)}
                             className="w-7 h-7 rounded"
-                            title={task.taskType}
+                            title={getTaskTypeLabel(task.taskType)}
                           />
                         </div>
                       )}

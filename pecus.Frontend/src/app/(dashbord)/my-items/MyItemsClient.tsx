@@ -257,7 +257,8 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                                   {item.genreIcon && (
                                     <img
                                       src={`/icons/genres/${item.genreIcon}.svg`}
-                                      alt=""
+                                      alt={item.genreName || 'ジャンルアイコン'}
+                                      title={item.genreName || 'ジャンル'}
                                       className="w-4 h-4 flex-shrink-0"
                                     />
                                   )}

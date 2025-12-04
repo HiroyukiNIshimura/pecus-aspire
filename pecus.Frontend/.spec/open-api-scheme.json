@@ -12383,6 +12383,11 @@
             "description": "ジャンルアイコン",
             "nullable": true
           },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
           "code": {
             "type": "string",
             "description": "コード",

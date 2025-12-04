@@ -379,6 +379,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                                     <img
                                       src={`/icons/genres/${workspace.genreIcon}.svg`}
                                       alt={workspace.genreName || 'ジャンルアイコン'}
+                                      title={workspace.genreName || 'ジャンル'}
                                       className="w-6 h-6 flex-shrink-0"
                                     />
                                   )}

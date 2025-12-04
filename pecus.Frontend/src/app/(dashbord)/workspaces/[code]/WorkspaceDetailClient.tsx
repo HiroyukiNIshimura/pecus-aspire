@@ -553,6 +553,7 @@ export default function WorkspaceDetailClient({
             <img
               src={`/icons/genres/${currentWorkspaceDetail.genreIcon}.svg`}
               alt={currentWorkspaceDetail.genreName || 'ジャンルアイコン'}
+              title={currentWorkspaceDetail.genreName || 'ジャンル'}
               className="w-8 h-8 flex-shrink-0"
             />
           )}

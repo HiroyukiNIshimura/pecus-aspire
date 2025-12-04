@@ -108,6 +108,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
               <img
                 src={`/icons/genres/${currentWorkspace.genreIcon}.svg`}
                 alt={currentWorkspace.genreName || 'ジャンルアイコン'}
+                title={currentWorkspace.genreName || 'ジャンル'}
                 className="w-5 h-5 flex-shrink-0"
               />
             )}
@@ -137,6 +138,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
                     <img
                       src={`/icons/genres/${workspace.genreIcon}.svg`}
                       alt={workspace.genreName || 'ジャンルアイコン'}
+                      title={workspace.genreName || 'ジャンル'}
                       className="w-5 h-5 flex-shrink-0"
                     />
                   )}
