@@ -268,7 +268,27 @@ const WorkspaceTasks = ({
     return (
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">タスク</h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-bold">タスク</h3>
+            {/* コミッター表示 */}
+            <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+              <span className="text-base-content/50">コミッター:</span>
+              {itemCommitterName ? (
+                <>
+                  {itemCommitterAvatarUrl && (
+                    <img
+                      src={getDisplayIconUrl(itemCommitterAvatarUrl)}
+                      alt={itemCommitterName}
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="font-medium">{itemCommitterName}</span>
+                </>
+              ) : (
+                <span className="text-base-content/50 italic">未設定</span>
+              )}
+            </div>
+          </div>
           <button
             type="button"
             className="btn btn-outline btn-primary btn-sm"
@@ -298,7 +318,27 @@ const WorkspaceTasks = ({
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
+          {/* コミッター表示 */}
+          <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+            <span className="text-base-content/50">コミッター:</span>
+            {itemCommitterName ? (
+              <>
+                {itemCommitterAvatarUrl && (
+                  <img
+                    src={getDisplayIconUrl(itemCommitterAvatarUrl)}
+                    alt={itemCommitterName}
+                    className="w-5 h-5 rounded-full object-cover"
+                  />
+                )}
+                <span className="font-medium">{itemCommitterName}</span>
+              </>
+            ) : (
+              <span className="text-base-content/50 italic">未設定</span>
+            )}
+          </div>
+        </div>
         <button
           type="button"
           className="btn  btn-outline btn-primary btn-sm"

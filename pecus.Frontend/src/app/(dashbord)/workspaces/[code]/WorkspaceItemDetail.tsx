@@ -371,25 +371,6 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <p className="font-semibold text-base-content/50">未割当</p>
               )}
             </div>
-
-            {/* コミッター */}
-            <div>
-              <span className="text-xs text-base-content/70">コミッター</span>
-              {item.committerId ? (
-                <div className="flex items-center gap-2 mt-1">
-                  {item.committerAvatarUrl && (
-                    <img
-                      src={getDisplayIconUrl(item.committerAvatarUrl)}
-                      alt={item.committerUsername || 'ユーザー'}
-                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                    />
-                  )}
-                  <p className="font-semibold truncate">{item.committerUsername}</p>
-                </div>
-              ) : (
-                <p className="font-semibold text-base-content/50">未割当</p>
-              )}
-            </div>
           </div>
 
           {/* タグ */}
