@@ -84,8 +84,6 @@ export default function TaskCommentModal({
           setTotalPages(result.data.totalPages || 1);
           setTotalCount(result.data.totalCount || 0);
           setPage(pageNum);
-
-          console.log('Fetched comments:', newComments);
         } else {
           notify.error(result.message || 'コメントの取得に失敗しました');
         }

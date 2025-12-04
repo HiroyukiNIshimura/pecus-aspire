@@ -605,12 +605,17 @@ const WorkspaceTasks = ({
                     <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-base-300">
                       <button
                         type="button"
-                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
+                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary relative"
                         onClick={(e) => handleCommentClick(task, e)}
                         title="コメント"
                         aria-label={`コメントを表示: ${task.content?.slice(0, 30) || 'タスク'}`}
                       >
                         <ChatBubbleOutlineIcon className="w-4 h-4" />
+                        {(task.commentCount ?? 0) > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-content rounded-full px-1">
+                            {task.commentCount}
+                          </span>
+                        )}
                       </button>
                       <button
                         type="button"

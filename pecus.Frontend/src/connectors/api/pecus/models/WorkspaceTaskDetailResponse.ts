@@ -117,6 +117,10 @@ export type WorkspaceTaskDetailResponse = {
      */
     updatedAt?: string;
     /**
+     * コメント数
+     */
+    commentCount?: number;
+    /**
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;

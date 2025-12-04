@@ -13856,6 +13856,11 @@
             "description": "更新日時",
             "format": "date-time"
           },
+          "commentCount": {
+            "type": "integer",
+            "description": "コメント数",
+            "format": "int32"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用のRowVersion",
