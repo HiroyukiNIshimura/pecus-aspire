@@ -356,7 +356,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <LinkIcon className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-bold text-primary">関連アイテムを選択</h3>
+                  <h3 className="text-lg font-bold">関連アイテムを選択</h3>
                 </div>
                 <button
                   type="button"

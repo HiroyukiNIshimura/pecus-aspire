@@ -78,7 +78,7 @@ export default function WorkspaceDetailClient({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // ===== 関連アイテム選択モードの状態 =====
-  const [, setIsAddingRelation] = useState(false);
+  const [isAddingRelation, setIsAddingRelation] = useState(false);
 
   // ===== モバイルドロワーの状態 =====
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
@@ -444,9 +444,17 @@ export default function WorkspaceDetailClient({
 
   // ===== 関連アイテム追加機能 =====
 
-  // 関連アイテム追加モードを開始
+  // 関連アイテム追加モードをトグル
   const handleStartAddRelation = useCallback(async () => {
     if (!selectedItemId) return;
+
+    // 既に追加モードの場合は解除
+    if (isAddingRelation) {
+      setIsAddingRelation(false);
+      sidebarComponentRef.current?.endSelectionMode();
+      mobileSidebarComponentRef.current?.endSelectionMode();
+      return;
+    }
 
     // 現在のアイテムの関連アイテムIDリストを取得
     const result = await fetchLatestWorkspaceItem(workspaceDetail.id, selectedItemId);
@@ -465,7 +473,7 @@ export default function WorkspaceDetailClient({
     // デスクトップとモバイル両方のサイドバーで選択モードを開始
     sidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
     mobileSidebarComponentRef.current?.startSelectionMode(selectedItemId, excludeIds);
-  }, [selectedItemId, workspaceDetail.id]);
+  }, [selectedItemId, workspaceDetail.id, isAddingRelation]);
 
   // 関連アイテム選択確定時のハンドラ
   const handleSelectionConfirm = useCallback(
@@ -840,6 +848,7 @@ export default function WorkspaceDetailClient({
               members={members}
               currentUserId={userInfo?.id}
               onStartAddRelation={handleStartAddRelation}
+              isAddingRelation={isAddingRelation}
             />
           )}
         </main>

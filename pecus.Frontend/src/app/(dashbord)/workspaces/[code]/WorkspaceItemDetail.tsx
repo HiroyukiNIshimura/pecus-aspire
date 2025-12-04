@@ -32,8 +32,10 @@ interface WorkspaceItemDetailProps {
   onItemSelect: (itemId: number, itemCode: string) => void;
   members?: WorkspaceDetailUserResponse[];
   currentUserId?: number;
-  /** 関連アイテム追加モードを開始するコールバック */
+  /** 関連アイテム追加モードをトグルするコールバック */
   onStartAddRelation?: () => void;
+  /** 関連アイテム追加モードが有効かどうか */
+  isAddingRelation?: boolean;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -44,7 +46,7 @@ export interface WorkspaceItemDetailHandle {
 
 const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemDetailProps>(
   function WorkspaceItemDetail(
-    { workspaceId, itemId, onItemSelect, members = [], currentUserId, onStartAddRelation },
+    { workspaceId, itemId, onItemSelect, members = [], currentUserId, onStartAddRelation, isAddingRelation },
     ref,
   ) {
     const notify = useNotify();
@@ -411,11 +413,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <button
                 type="button"
                 onClick={onStartAddRelation}
-                className="btn btn-sm btn-outline gap-1"
-                title="関連アイテムを追加"
+                className={`btn btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
+                title={isAddingRelation ? '関連アイテム追加を解除' : '関連アイテムを追加'}
               >
                 <AddLinkIcon className="w-4 h-4" />
-                <span>追加</span>
+                <span>{isAddingRelation ? '解除' : '追加'}</span>
               </button>
             </div>
             {item.relatedItems && item.relatedItems.length > 0 ? (
