@@ -2,9 +2,11 @@
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type {
+  CreateWorkspaceTaskRequest,
   TaskStatusFilter,
   WorkspaceTaskDetailResponse,
   WorkspaceTaskDetailResponsePagedResponse,
+  WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 
@@ -108,6 +110,29 @@ export async function getWorkspaceTask(
       success: false,
       error: 'server',
       message: err.body?.message || err.message || 'タスクの取得に失敗しました',
+    };
+  }
+}
+
+/**
+ * ワークスペースタスクを作成
+ */
+export async function createWorkspaceTask(
+  workspaceId: number,
+  itemId: number,
+  request: CreateWorkspaceTaskRequest,
+): Promise<ApiResponse<WorkspaceTaskResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.postApiWorkspacesItemsTasks(workspaceId, itemId, request);
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    const err = error as { body?: { message?: string }; message?: string };
+    return {
+      success: false,
+      error: 'server',
+      message: err.body?.message || err.message || 'タスクの作成に失敗しました',
     };
   }
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
@@ -12,6 +13,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
 
 /**
  * フロントエンドの TaskStatus を API の TaskStatusFilter に変換
@@ -65,6 +67,9 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
   const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
   const [isSearchingAssignee, setIsSearchingAssignee] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+
+  // タスク作成モーダル状態
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // タスク取得
   const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
@@ -178,6 +183,13 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
     }
   };
 
+  // タスク作成成功時のハンドラ
+  const handleCreateTaskSuccess = () => {
+    // タスクリストを最新の状態で再取得
+    fetchTasks(1, taskStatus, selectedAssignee?.id);
+    setCurrentPage(1);
+  };
+
   // タスクタイプのアイコンパス
   const getTaskTypeIcon = (taskType?: string) => {
     if (!taskType) return null;
@@ -208,10 +220,24 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">タスク</h3>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+            <AddIcon className="w-4 h-4" />
+            タスク追加
+          </button>
         </div>
         <div className="flex justify-center items-center py-8">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
+
+        {/* タスク作成モーダル */}
+        <CreateWorkspaceTaskModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={handleCreateTaskSuccess}
+          workspaceId={workspaceId}
+          itemId={itemId}
+          currentUser={currentUser}
+        />
       </div>
     );
   }
@@ -220,6 +246,10 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
     <div className="mt-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
+        <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+          <AddIcon className="w-4 h-4" />
+          タスク追加
+        </button>
       </div>
 
       {/* フィルターエリア */}
@@ -473,6 +503,16 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
           )}
         </div>
       )}
+
+      {/* タスク作成モーダル */}
+      <CreateWorkspaceTaskModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCreateTaskSuccess}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        currentUser={currentUser}
+      />
     </div>
   );
 };

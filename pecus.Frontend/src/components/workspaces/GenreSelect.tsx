@@ -57,7 +57,7 @@ export default function GenreSelect({
         :global(.genre-select) {
           appearance: base-select;
           min-width: 220px;
-          height: 44px;
+          height: 38px;
           border-color: #a4a4a4;
           border-radius: 8px;
           align-items: center;

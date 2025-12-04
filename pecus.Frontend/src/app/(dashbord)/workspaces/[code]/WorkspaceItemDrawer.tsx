@@ -165,8 +165,14 @@ export default function WorkspaceItemDrawer({
 
     await handleItemUpdate(
       async () => {
+        // 日付を ISO 8601 形式（UTC）に変換
+        let isoDateValue: string | null = null;
+        if (newDueDate) {
+          const date = new Date(newDueDate);
+          isoDateValue = date.toISOString();
+        }
         const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'duedate', {
-          value: newDueDate || null,
+          value: isoDateValue,
           rowVersion: currentRowVersion,
         });
         return result;
