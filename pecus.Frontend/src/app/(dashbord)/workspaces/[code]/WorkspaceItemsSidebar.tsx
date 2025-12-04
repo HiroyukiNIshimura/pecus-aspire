@@ -1,17 +1,19 @@
 'use client';
 
-import AddIcon from '@mui/icons-material/Add';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CloseIcon from '@mui/icons-material/Close';
-import EditNoteIcon from '@mui/icons-material/EditNote';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import HomeIcon from '@mui/icons-material/Home';
-import LinkIcon from '@mui/icons-material/Link';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import {
+  CalendarIcon,
+  CheckboxBlankIcon,
+  CheckboxIcon,
+  CloseIcon,
+  EditNoteIcon,
+  FilterIcon,
+  HomeIcon,
+  LinkIcon,
+  PlusIcon,
+} from '@/components/icons';
 import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
@@ -424,7 +426,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   className="btn btn-primary btn-sm gap-1"
                   title="アイテムを追加"
                 >
-                  <AddIcon className="w-4 h-4" />
+                  <PlusIcon className="w-4 h-4" />
                   <span>追加</span>
                 </button>
               </div>
@@ -441,7 +443,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 onClick={() => setIsFilterDrawerOpen(true)}
                 className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
               >
-                <FilterListIcon className="w-3 h-3" />
+                <FilterIcon className="w-3 h-3" />
                 <span>詳細フィルター</span>
                 {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
                   <span className="badge badge-primary badge-xs">
@@ -533,11 +535,11 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                           {isSelectionMode && (
                             <div className="flex-shrink-0 mt-0.5">
                               {isExcluded ? (
-                                <CheckBoxOutlineBlankIcon className="w-4 h-4 opacity-30" />
+                                <CheckboxBlankIcon className="w-4 h-4 opacity-30" />
                               ) : isSelected ? (
-                                <CheckBoxIcon className="w-4 h-4 text-primary" />
+                                <CheckboxIcon className="w-4 h-4 text-primary" />
                               ) : (
-                                <CheckBoxOutlineBlankIcon className="w-4 h-4" />
+                                <CheckboxBlankIcon className="w-4 h-4" />
                               )}
                             </div>
                           )}
@@ -562,7 +564,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                                   className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
                                   title={`期限: ${item.dueDate}`}
                                 >
-                                  <CalendarTodayIcon className="w-3 h-3" />
+                                  <CalendarIcon className="w-3 h-3" />
                                   <span>{shortDate}</span>
                                 </span>
                               )}

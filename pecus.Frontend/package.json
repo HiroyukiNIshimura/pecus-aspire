@@ -40,8 +40,6 @@
     "@lexical/tailwind": "^0.38.2",
     "@lexical/utils": "0.38.2",
     "@minoru/react-dnd-treeview": "^3.5.3",
-    "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
     "@yaireo/tagify": "^4.35.6",
     "axios": "^1.13.1",
     "classnames": "^2.5.1",

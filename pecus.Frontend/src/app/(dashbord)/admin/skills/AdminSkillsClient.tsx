@@ -1,7 +1,5 @@
 'use client';
 
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
@@ -10,6 +8,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
+import { FilterIcon, SearchIcon } from '@/components/icons';
 import type { SkillListItemResponse, SkillStatistics } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useValidation } from '@/hooks/useValidation';
@@ -207,7 +206,7 @@ export default function AdminSkillsClient({
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
                   <div className="flex items-center gap-2">
-                    <FilterListIcon />
+                    <FilterIcon className="w-5 h-5" />
                     <span
                       className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? 'text-success' : ''}`}
                     >

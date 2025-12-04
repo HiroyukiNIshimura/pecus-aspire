@@ -1,11 +1,5 @@
 'use client';
 
-import AddLinkIcon from '@mui/icons-material/AddLink';
-import EditIcon from '@mui/icons-material/Edit';
-import LinkOffIcon from '@mui/icons-material/LinkOff';
-import MenuIcon from '@mui/icons-material/Menu';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import {
   addWorkspaceItemPin,
@@ -14,6 +8,7 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
+import { AddLinkIcon, EditIcon, LinkOffIcon, MenuIcon, PinIcon, PinOutlineIcon } from '@/components/icons';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
@@ -278,9 +273,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 {isPinLoading ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : item.isPinned ? (
-                  <PushPinIcon fontSize="small" />
+                  <PinIcon size="sm" />
                 ) : (
-                  <PushPinOutlinedIcon fontSize="small" />
+                  <PinOutlineIcon size="sm" />
                 )}
                 {item.pinCount !== undefined && item.pinCount > 0 && <span className="text-xs">{item.pinCount}</span>}
               </button>
@@ -292,11 +287,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 style={{ pointerEvents: 'auto' }}
                 disabled={isDraftAndNotOwner}
               >
-                <EditIcon fontSize="small" />
+                <EditIcon size="sm" />
                 編集
               </button>
               <button type="button" onClick={openDrawer} className="btn btn-sm gap-2" title="詳細オプション">
-                <MenuIcon fontSize="small" />
+                <MenuIcon size="sm" />
               </button>
             </div>
           </div>
@@ -307,7 +302,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {item.isArchived && <span className="badge badge-neutral">アーカイブ済み</span>}
             {item.isPinned && (
               <span className="badge badge-info gap-1">
-                <PushPinIcon style={{ fontSize: '0.875rem' }} />
+                <PinIcon className="w-3.5 h-3.5" />
                 PIN済み
               </span>
             )}

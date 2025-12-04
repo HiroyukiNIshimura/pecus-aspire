@@ -1,12 +1,14 @@
 'use client';
 
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import GridIcon from '@mui/icons-material/GridView';
-import HistoryIcon from '@mui/icons-material/History';
-import TaskIcon from '@mui/icons-material/Task';
 import { usePathname } from 'next/navigation';
+import {
+  AdminPanelSettingsIcon,
+  AssignmentIcon,
+  DashboardIcon,
+  GridViewIcon,
+  HistoryIcon,
+  TaskIcon,
+} from '@/components/icons';
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -15,7 +17,7 @@ interface DashboardSidebarProps {
 
 const menuItems = [
   { href: '/', label: 'ダッシュボード', icon: DashboardIcon },
-  { href: '/workspaces', label: 'マイワークスペース', icon: GridIcon },
+  { href: '/workspaces', label: 'マイワークスペース', icon: GridViewIcon },
   { href: '/my-items', label: 'マイアイテム', icon: AssignmentIcon },
   { href: '/tasks', label: 'タスク', icon: TaskIcon },
   { href: '/activity', label: 'アクティビティ', icon: HistoryIcon },
@@ -48,7 +50,7 @@ export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSide
                 className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
                 title={item.label}
               >
-                <IconComponent sx={{ fontSize: 20 }} />
+                <IconComponent className="w-5 h-5" />
                 <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>

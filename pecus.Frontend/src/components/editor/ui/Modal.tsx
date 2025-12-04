@@ -6,12 +6,11 @@
  *
  */
 
-import CloseIcon from '@mui/icons-material/Close';
-
 import { isDOMNode } from 'lexical';
 import type { JSX } from 'react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { CloseIcon } from '@/components/icons';
 
 function PortalImpl({
   onClose,

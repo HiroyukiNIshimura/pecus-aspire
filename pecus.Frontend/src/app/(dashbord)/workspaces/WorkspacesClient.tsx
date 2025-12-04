@@ -1,12 +1,5 @@
 'use client';
 
-import AddIcon from '@mui/icons-material/Add';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import GridViewIcon from '@mui/icons-material/GridView';
-import PersonIcon from '@mui/icons-material/Person';
-import PowerOffIcon from '@mui/icons-material/PowerOff';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -14,6 +7,15 @@ import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import AppHeader from '@/components/common/AppHeader';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import {
+  FilterIcon,
+  GridViewIcon,
+  PersonIcon,
+  PlusIcon,
+  PowerOffIcon,
+  PowerOnIcon,
+  SearchIcon,
+} from '@/components/icons';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -206,14 +208,14 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <GridViewIcon className="text-primary" sx={{ fontSize: 32 }} />
+                <GridViewIcon className="text-primary w-8 h-8" />
                 <div>
                   <h1 className="text-2xl font-bold">マイワークスペース</h1>
                   <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
                 </div>
               </div>
               <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                <AddIcon />
+                <PlusIcon className="w-5 h-5" />
                 新規作成
               </button>
             </div>
@@ -227,7 +229,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                 onClick={() => setFilterOpen(!filterOpen)}
               >
                 <h2 className="card-title text-lg flex items-center gap-2">
-                  <FilterListIcon />
+                  <FilterIcon className="w-5 h-5" />
                   <span
                     className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
                   >
@@ -364,7 +366,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                               <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
                               <div className="flex items-center gap-2">
                                 {workspace.isActive ? (
-                                  <PowerSettingsNewIcon className="w-4 h-4 text-success" />
+                                  <PowerOnIcon className="w-4 h-4 text-success" />
                                 ) : (
                                   <PowerOffIcon className="w-4 h-4 text-base-content/50" />
                                 )}

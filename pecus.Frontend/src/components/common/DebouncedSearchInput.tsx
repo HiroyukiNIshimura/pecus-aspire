@@ -1,8 +1,7 @@
 'use client';
 
-import ClearIcon from '@mui/icons-material/Clear';
-import SearchIcon from '@mui/icons-material/Search';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ClearIcon, SearchIcon } from '@/components/icons';
 
 interface DebouncedSearchInputProps {
   /** 検索実行時のコールバック */

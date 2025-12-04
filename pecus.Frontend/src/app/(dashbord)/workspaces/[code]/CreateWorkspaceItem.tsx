@@ -1,14 +1,12 @@
 'use client';
 
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import SaveIcon from '@mui/icons-material/Save';
 import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
 import type { EditorContextSettings } from '@/components/editor/core/appSettings';
+import { CloseIcon, PlusIcon, SaveIcon } from '@/components/icons';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -166,7 +164,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <AddIcon />
+              <PlusIcon />
               新規アイテム作成
             </h2>
             <button

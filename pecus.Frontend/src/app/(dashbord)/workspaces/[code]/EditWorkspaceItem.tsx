@@ -1,12 +1,11 @@
 'use client';
 
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
+import { CloseIcon, EditIcon } from '@/components/icons';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';

@@ -1,9 +1,8 @@
 'use client';
 
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
 import { useEffect, useState } from 'react';
 import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
+import { CloseIcon, EditIcon } from '@/components/icons';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,

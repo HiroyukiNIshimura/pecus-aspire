@@ -1,14 +1,11 @@
 'use client';
 
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon } from '@/components/icons';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,

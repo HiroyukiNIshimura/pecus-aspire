@@ -1,9 +1,9 @@
 'use client';
 
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import { DashboardIcon } from '@/components/icons';
 import type { UserInfo } from '@/types/userInfo';
 
 interface DashboardClientProps {
@@ -37,7 +37,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
             {/* ページヘッダー */}
             <div className="mb-6">
               <div className="flex items-center gap-3">
-                <DashboardIcon className="text-primary" sx={{ fontSize: 32 }} />
+                <DashboardIcon className="text-primary w-8 h-8" />
                 <div>
                   <h1 className="text-2xl font-bold">ダッシュボード</h1>
                   <p className="text-base-content/70 mt-1">プロジェクトの概要と統計情報</p>

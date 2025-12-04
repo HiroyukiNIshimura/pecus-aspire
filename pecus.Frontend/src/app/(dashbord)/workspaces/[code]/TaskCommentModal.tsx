@@ -1,6 +1,6 @@
 'use client';
 
-import CloseIcon from '@mui/icons-material/Close';
+import { CloseIcon } from '@/components/icons';
 import type { WorkspaceTaskDetailResponse } from '@/connectors/api/pecus';
 import TaskCommentSection from './TaskCommentSection';
 

@@ -1,10 +1,9 @@
 'use client';
 
-import CloseIcon from '@mui/icons-material/Close';
-import PsychologyIcon from '@mui/icons-material/Psychology';
 import { useEffect, useState } from 'react';
 import { getWorkspaceDetail, setWorkspaceSkills } from '@/actions/workspace';
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown';
+import { CloseIcon, PsychologyIcon } from '@/components/icons';
 import type { MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 

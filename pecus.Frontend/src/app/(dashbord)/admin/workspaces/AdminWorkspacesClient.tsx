@@ -1,7 +1,5 @@
 'use client';
 
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
 import { useCallback, useEffect, useState } from 'react';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -10,6 +8,7 @@ import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
+import { FilterIcon, SearchIcon } from '@/components/icons';
 import type {
   MasterGenreResponse,
   WorkspaceListItemResponse,
@@ -233,7 +232,7 @@ export default function AdminWorkspacesClient({
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
                   <div className="flex items-center gap-2">
-                    <FilterListIcon />
+                    <FilterIcon className="w-5 h-5" />
                     <span
                       className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterGenreId !== null || filterIsActive !== true || filterName ? 'text-success' : ''}`}
                     >

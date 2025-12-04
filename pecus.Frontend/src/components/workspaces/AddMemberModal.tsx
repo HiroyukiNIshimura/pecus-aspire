@@ -1,10 +1,9 @@
 'use client';
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import { CheckCircleIcon, HighlightOffIcon } from '@/components/icons';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 

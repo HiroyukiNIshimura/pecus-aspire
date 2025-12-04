@@ -1,12 +1,5 @@
 'use client';
 
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PersonIcon from '@mui/icons-material/Person';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
@@ -20,6 +13,15 @@ import {
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
+import {
+  DeleteIcon,
+  EditIcon,
+  MoreVertIcon,
+  PersonIcon,
+  PsychologyIcon,
+  ToggleOffIcon,
+  ToggleOnIcon,
+} from '@/components/icons';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';

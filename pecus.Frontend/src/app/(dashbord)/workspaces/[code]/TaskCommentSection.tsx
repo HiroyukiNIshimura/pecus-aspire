@@ -1,9 +1,5 @@
 'use client';
 
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import EditIcon from '@mui/icons-material/Edit';
-import SendIcon from '@mui/icons-material/Send';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createTaskComment,
@@ -11,6 +7,7 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
+import { DeleteOutlineIcon, EditIcon, MessageIcon, SendIcon } from '@/components/icons';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -291,7 +288,7 @@ export default function TaskCommentSection({
     <div className="flex flex-col h-full flex-1 min-h-0">
       {/* ヘッダー */}
       <div className="flex items-center gap-2 p-3 border-b border-base-300 flex-shrink-0">
-        <ChatBubbleOutlineIcon className="text-primary w-5 h-5" />
+        <MessageIcon className="text-primary w-5 h-5" />
         <span className="font-bold">コメント</span>
         <span className="badge badge-neutral badge-sm">{totalCount}件</span>
       </div>
@@ -304,7 +301,7 @@ export default function TaskCommentSection({
           </div>
         ) : comments.length === 0 ? (
           <div className="text-center text-base-content/50 py-8">
-            <ChatBubbleOutlineIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
+            <MessageIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <p className="text-sm">コメントはまだありません</p>
           </div>
         ) : (

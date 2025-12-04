@@ -1,19 +1,15 @@
 'use client';
 
-import BadgeIcon from '@mui/icons-material/Badge';
-import BuildIcon from '@mui/icons-material/Business';
-import GridIcon from '@mui/icons-material/GridView';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import PeopleIcon from '@mui/icons-material/People';
 import { usePathname } from 'next/navigation';
+import { BadgeIcon, BusinessIcon, GridViewIcon, LocalOfferIcon, PeopleIcon } from '@/components/icons';
 
 interface AdminSidebarProps {
   sidebarOpen: boolean;
 }
 
 const menuItems = [
-  { href: '/admin', label: '組織', icon: BuildIcon },
-  { href: '/admin/workspaces', label: 'ワークスペース', icon: GridIcon },
+  { href: '/admin', label: '組織', icon: BusinessIcon },
+  { href: '/admin/workspaces', label: 'ワークスペース', icon: GridViewIcon },
   { href: '/admin/users', label: 'ユーザー', icon: PeopleIcon },
   { href: '/admin/skills', label: 'スキル', icon: BadgeIcon },
   { href: '/admin/tags', label: 'タグ', icon: LocalOfferIcon },
@@ -39,7 +35,7 @@ export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
                 className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
                 title={item.label}
               >
-                <IconComponent sx={{ fontSize: 20 }} />
+                <IconComponent className="w-5 h-5" />
                 <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
               </a>
             </li>

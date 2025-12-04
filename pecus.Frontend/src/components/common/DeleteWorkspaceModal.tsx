@@ -1,9 +1,7 @@
 'use client';
 
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import WarningIcon from '@mui/icons-material/Warning';
 import { useEffect, useState } from 'react';
+import { CloseIcon, DeleteIcon, WarningIcon } from '@/components/icons';
 import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 
 interface DeleteWorkspaceModalProps {

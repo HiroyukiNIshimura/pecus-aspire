@@ -1,9 +1,8 @@
 'use client';
 
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
 import { createWorkspace } from '@/actions/workspace';
+import { CloseIcon, PlusIcon } from '@/components/icons';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -68,7 +67,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <AddIcon />
+              <PlusIcon className="w-6 h-6" />
               ワークスペースを作成
             </h2>
             <button
@@ -194,7 +193,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                     </>
                   ) : (
                     <>
-                      <AddIcon className="w-5 h-5" />
+                      <PlusIcon className="w-5 h-5" />
                       作成
                     </>
                   )}
