@@ -268,7 +268,9 @@ export default function WorkspaceItemDrawer({
           {/* 担当者設定 */}
           <div className="form-control">
             <div className="label">
-              <span className="label-text font-semibold">担当者</span>
+              <span className="label-text font-semibold" title="このアイテムの担当または作業者を設定します">
+                担当者
+              </span>
             </div>
             <select
               value={selectedAssigneeId || ''}
@@ -311,7 +313,9 @@ export default function WorkspaceItemDrawer({
           {((isDraft && canEditDraft) || (!isDraft && canEdit)) && (
             <div className="form-control">
               <div className="label">
-                <span className="label-text font-semibold">コミッター</span>
+                <span className="label-text font-semibold" title="このアイテムのタスクを管理する担当者を設定します">
+                  コミッター
+                </span>
               </div>
               <select
                 value={selectedCommitterId || ''}
