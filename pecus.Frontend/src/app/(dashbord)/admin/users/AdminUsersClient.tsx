@@ -292,7 +292,7 @@ export default function AdminUsersClient({
             )}
 
             {/* Filter Section */}
-            <div className="card bg-base-100 shadow-xl mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <div
                   className="flex items-center justify-between cursor-pointer py-2"
@@ -453,7 +453,7 @@ export default function AdminUsersClient({
             </div>
 
             {/* User List */}
-            <div className="card bg-base-100 shadow-xl">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title mb-4">ユーザー一覧</h2>
                 <p className="text-sm text-base-content opacity-70 mb-4">
@@ -537,7 +537,7 @@ export default function AdminUsersClient({
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Skill Summary */}
                     {statistics.skillCounts && statistics.skillCounts.length > 0 && (
-                      <div className="card bg-base-100 border border-base-300">
+                      <div className="card">
                         <div className="card-body">
                           <h3 className="card-title text-lg">スキル別</h3>
                           <div className="space-y-2">
@@ -570,7 +570,7 @@ export default function AdminUsersClient({
 
                     {/* Role Summary */}
                     {statistics.roleCounts && statistics.roleCounts.length > 0 && (
-                      <div className="card bg-base-100 border border-base-300">
+                      <div className="card">
                         <div className="card-body">
                           <h3 className="card-title text-lg">ロール別</h3>
                           <div className="space-y-2">
@@ -586,7 +586,7 @@ export default function AdminUsersClient({
                     )}
 
                     {/* Active Status */}
-                    <div className="card bg-base-100 border border-base-300">
+                    <div className="card">
                       <div className="card-body">
                         <h3 className="card-title text-lg">ステータス</h3>
                         <div className="space-y-2">
@@ -607,7 +607,7 @@ export default function AdminUsersClient({
                     </div>
 
                     {/* Workspace Participation */}
-                    <div className="card bg-base-100 border border-base-300">
+                    <div className="card">
                       <div className="card-body">
                         <h3 className="card-title text-lg">ワークスペース</h3>
                         <div className="space-y-2">

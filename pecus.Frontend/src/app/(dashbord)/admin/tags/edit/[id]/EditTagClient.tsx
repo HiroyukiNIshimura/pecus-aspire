@@ -118,7 +118,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
 
             {/* 編集フォーム */}
             <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
-              <div className="card bg-base-200 shadow-lg">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
 
@@ -182,7 +182,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
             </form>
 
             {/* タグ詳細情報カード */}
-            <div className="card bg-base-200 shadow-lg">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">詳細情報</h2>
 

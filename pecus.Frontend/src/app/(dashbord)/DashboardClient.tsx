@@ -46,7 +46,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Dashboard Cards */}
-              <div className="card bg-base-100 shadow-xl">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title">ワークスペース</h2>
                   <p>現在のワークスペース状況</p>
@@ -57,7 +57,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-xl">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title">タスク</h2>
                   <p>進行中のタスク</p>
@@ -68,7 +68,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
                 </div>
               </div>
 
-              <div className="card bg-base-100 shadow-xl">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title">チーム</h2>
                   <p>チームメンバー</p>

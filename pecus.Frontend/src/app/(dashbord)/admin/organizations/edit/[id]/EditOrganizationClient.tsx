@@ -131,7 +131,7 @@ export default function EditOrganizationClient({
             )}
 
             {/* 基本情報カード（読み取り専用） */}
-            <div className="card bg-base-200 shadow-lg mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">基本情報</h2>
 
@@ -166,7 +166,7 @@ export default function EditOrganizationClient({
             {/* 編集フォーム */}
             <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
               {/* 組織基本情報カード */}
-              <div className="card bg-base-100 border border-base-300 mb-6">
+              <div className="card mb-6">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">基本情報編集</h2>
 
@@ -282,7 +282,7 @@ export default function EditOrganizationClient({
             </form>
 
             {/* 組織詳細情報カード */}
-            <div className="card bg-base-200 shadow-lg">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">詳細情報</h2>
 

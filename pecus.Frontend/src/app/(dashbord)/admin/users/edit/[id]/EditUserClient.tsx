@@ -218,7 +218,7 @@ export default function EditUserClient({
             )}
 
             {/* 基本情報カード（読み取り専用） */}
-            <div className="card bg-base-200 shadow-lg mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">基本情報</h2>
 
@@ -243,7 +243,7 @@ export default function EditUserClient({
 
             {/* 編集フォーム */}
             <form ref={formRef} onSubmit={handleSubmit} noValidate className="mb-6">
-              <div className="card bg-base-200 shadow-lg">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title text-lg mb-4">編集項目</h2>
 
@@ -330,7 +330,7 @@ export default function EditUserClient({
             </form>
 
             {/* ユーザー情報カード */}
-            <div className="card bg-base-200 shadow-lg mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">詳細情報</h2>
 
@@ -354,7 +354,7 @@ export default function EditUserClient({
             </div>
 
             {/* その他の操作 */}
-            <div className="card bg-base-200 shadow-lg">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title text-lg mb-4">その他の操作</h2>
 

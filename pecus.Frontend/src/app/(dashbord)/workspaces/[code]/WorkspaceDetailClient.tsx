@@ -714,7 +714,7 @@ export default function WorkspaceDetailClient({
         <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
           {/* ワークスペース詳細情報 */}
           {showWorkspaceDetail && (
-            <div className="card bg-base-100 shadow-md mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 {/* ヘッダー (PC) */}
                 <div className="hidden lg:block">

@@ -82,7 +82,7 @@ export default function AdminClient({
                 </div>
               </div>
             ) : (
-              <div className="card bg-base-100 shadow-xl">
+              <div className="card">
                 <div className="card-body">
                   <h2 className="card-title text-2xl mb-4">組織情報</h2>
 

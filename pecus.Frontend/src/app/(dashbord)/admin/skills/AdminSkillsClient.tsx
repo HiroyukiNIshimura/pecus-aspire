@@ -200,7 +200,7 @@ export default function AdminSkillsClient({
             </div>
 
             {/* Filter Section */}
-            <div className="card bg-base-100 shadow-xl mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <div
                   className="flex items-center justify-between cursor-pointer py-2"
@@ -342,7 +342,7 @@ export default function AdminSkillsClient({
             </div>
 
             {/* Skill List */}
-            <div className="card bg-base-100 shadow-xl">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title mb-4">スキル一覧</h2>
                 <p className="text-sm text-base-content opacity-70 mb-4">
@@ -406,7 +406,7 @@ export default function AdminSkillsClient({
             {statistics && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                 {/* Total Skills */}
-                <div className="card bg-base-100 shadow-xl border border-base-300">
+                <div className="card">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="card-title text-base">総スキル数</h3>
@@ -418,7 +418,7 @@ export default function AdminSkillsClient({
                 </div>
 
                 {/* Active Skills */}
-                <div className="card bg-base-100 shadow-xl border border-success border-opacity-30">
+                <div className="card border border-success border-opacity-30">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="card-title text-base">アクティブ</h3>
@@ -437,7 +437,7 @@ export default function AdminSkillsClient({
                 </div>
 
                 {/* Inactive Skills */}
-                <div className="card bg-base-100 shadow-xl border border-warning border-opacity-30">
+                <div className="card border border-warning border-opacity-30">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="card-title text-base">非アクティブ</h3>
@@ -456,7 +456,7 @@ export default function AdminSkillsClient({
                 </div>
 
                 {/* Unused Skills */}
-                <div className="card bg-base-100 shadow-xl border border-error border-opacity-30">
+                <div className="card border border-error border-opacity-30">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="card-title text-base">未使用スキル</h3>
@@ -468,7 +468,7 @@ export default function AdminSkillsClient({
                 </div>
 
                 {/* Top 5 Skills */}
-                <div className="card bg-base-100 shadow-xl border border-info border-opacity-30 md:col-span-2">
+                <div className="card border border-info border-opacity-30 md:col-span-2">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="card-title text-base">人気スキル TOP5</h3>

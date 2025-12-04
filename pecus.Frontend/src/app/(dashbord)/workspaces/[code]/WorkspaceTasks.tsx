@@ -508,7 +508,7 @@ const WorkspaceTasks = ({
 
           {/* カードグリッド 4x2 */}
           <div
-            className={`grid grid-cols-2 sm:grid-cols-4 gap-3 ${isLoading ? 'opacity-50' : ''}`}
+            className={`grid grid-cols-2 sm:grid-cols-4 gap-3 bg-base-200 p-3 ${isLoading ? 'opacity-50' : ''}`}
             style={{ gridAutoRows: '1fr' }}
           >
             {tasks.map((task, index) => {
@@ -516,7 +516,7 @@ const WorkspaceTasks = ({
               return (
                 <div
                   key={task.id}
-                  className={`card bg-base-200 shadow-sm flex flex-col h-full ${
+                  className={`card flex flex-col h-full ${
                     isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''
                   }`}
                 >

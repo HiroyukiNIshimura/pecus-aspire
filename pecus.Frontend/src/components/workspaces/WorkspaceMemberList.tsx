@@ -86,7 +86,7 @@ export default function WorkspaceMemberList({
   });
 
   return (
-    <div className="card bg-base-200 shadow-lg">
+    <div className="card">
       <div className="card-body">
         {/* ヘッダー */}
         <div className="flex justify-between items-center mb-4">

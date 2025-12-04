@@ -228,7 +228,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     }
 
     return (
-      <div className="card bg-base-100 shadow-md">
+      <div className="card">
         <div className="card-body">
           {/* ヘッダー */}
           <div className="flex items-start justify-between gap-2 mb-4">

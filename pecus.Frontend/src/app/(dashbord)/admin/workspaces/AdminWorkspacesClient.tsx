@@ -226,7 +226,7 @@ export default function AdminWorkspacesClient({
             </div>
 
             {/* Filter Section */}
-            <div className="card bg-base-100 shadow-xl mb-6">
+            <div className="card mb-6">
               <div className="card-body">
                 <div
                   className="flex items-center justify-between cursor-pointer py-2"
@@ -372,7 +372,7 @@ export default function AdminWorkspacesClient({
             </div>
 
             {/* Workspace List */}
-            <div className="card bg-base-100 shadow-xl">
+            <div className="card">
               <div className="card-body">
                 <h2 className="card-title mb-4">ワークスペース一覧</h2>
                 <p className="text-sm text-base-content opacity-70 mb-4">
@@ -450,7 +450,7 @@ export default function AdminWorkspacesClient({
               return (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                   {/* Total Workspaces */}
-                  <div className="card bg-base-100 shadow-xl border border-base-300">
+                  <div className="card">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">総ワークスペース数</h3>
@@ -462,7 +462,7 @@ export default function AdminWorkspacesClient({
                   </div>
 
                   {/* Active Workspaces */}
-                  <div className="card bg-base-100 shadow-xl border border-success border-opacity-30">
+                  <div className="card border border-success border-opacity-30">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">アクティブ</h3>
@@ -481,7 +481,7 @@ export default function AdminWorkspacesClient({
                   </div>
 
                   {/* Inactive Workspaces */}
-                  <div className="card bg-base-100 shadow-xl border border-warning border-opacity-30">
+                  <div className="card border border-warning border-opacity-30">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">非アクティブ</h3>
@@ -500,7 +500,7 @@ export default function AdminWorkspacesClient({
                   </div>
 
                   {/* Unique Members */}
-                  <div className="card bg-base-100 shadow-xl border border-info border-opacity-30">
+                  <div className="card border border-info border-opacity-30">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">総メンバー数</h3>
@@ -512,7 +512,7 @@ export default function AdminWorkspacesClient({
                   </div>
 
                   {/* Average Members */}
-                  <div className="card bg-base-100 shadow-xl border border-secondary border-opacity-30">
+                  <div className="card border border-secondary border-opacity-30">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">平均メンバー数</h3>
@@ -526,7 +526,7 @@ export default function AdminWorkspacesClient({
                   </div>
 
                   {/* Recent Workspaces */}
-                  <div className="card bg-base-100 shadow-xl border border-accent border-opacity-30">
+                  <div className="card border border-accent border-opacity-30">
                     <div className="card-body p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="card-title text-base">最近作成</h3>

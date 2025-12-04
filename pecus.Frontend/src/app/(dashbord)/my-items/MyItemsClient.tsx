@@ -168,7 +168,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
           </div>
 
           {/* フィルタータブ */}
-          <div className="card bg-base-200 shadow-md mb-6">
+          <div className="card mb-6">
             <div className="card-body p-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 {/* 関連タイプフィルター */}
@@ -203,7 +203,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
           </div>
 
           {/* アイテム一覧 */}
-          <div className="card bg-base-100 shadow-md">
+          <div className="card">
             <div className="card-body p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
+                        className="card hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
                       >
                         <div className="card-body p-4 flex flex-col flex-1">
                           {/* ヘッダー */}

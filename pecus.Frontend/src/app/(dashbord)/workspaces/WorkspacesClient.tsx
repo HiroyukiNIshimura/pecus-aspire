@@ -220,7 +220,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           </div>
 
           {/* フィルターセクション */}
-          <div className="card bg-base-200 shadow-md mb-6">
+          <div className="card mb-6">
             <div className="card-body p-4">
               <div
                 className="flex items-center justify-between cursor-pointer py-2 mb-4"
@@ -320,7 +320,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           </div>
 
           {/* ワークスペース一覧 */}
-          <div className="card bg-base-100 shadow-md">
+          <div className="card">
             <div className="card-body p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                     {workspaces.map((workspace) => (
                       <div
                         key={workspace.id}
-                        className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
+                        className="card hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
                       >
                         <div className="card-body p-4 flex flex-col flex-1">
                           {/* ヘッダー */}

@@ -44,7 +44,7 @@ export default function VerifyEmailClient() {
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl max-w-md w-full">
+    <div className="card max-w-md w-full">
       <div className="card-body items-center text-center">
         {state === 'verifying' && (
           <>
