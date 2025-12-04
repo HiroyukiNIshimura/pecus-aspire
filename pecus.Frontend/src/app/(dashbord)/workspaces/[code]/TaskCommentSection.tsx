@@ -70,12 +70,13 @@ export default function TaskCommentSection({
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // コメント一覧を取得
+  // コメント一覧を取得（削除済み含む）
   const fetchComments = useCallback(
     async (pageNum: number = 1, append: boolean = false) => {
       setIsLoading(true);
       try {
-        const result = await getTaskComments(workspaceId, itemId, taskId, pageNum, 20);
+        // includeDeleted: true で削除済みコメントも含めて取得
+        const result = await getTaskComments(workspaceId, itemId, taskId, pageNum, 20, undefined, true);
         if (result.success) {
           const newComments = result.data.data || [];
           if (append) {

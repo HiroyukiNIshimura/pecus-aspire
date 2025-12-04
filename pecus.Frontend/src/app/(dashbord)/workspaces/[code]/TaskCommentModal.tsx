@@ -65,15 +65,20 @@ export default function TaskCommentModal({
   const [editingContent, setEditingContent] = useState('');
   const [editingType, setEditingType] = useState<TaskCommentType>('Normal');
 
+  // 削除確認モーダル
+  const [deleteTargetComment, setDeleteTargetComment] = useState<TaskCommentDetailResponse | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   // スクロール位置
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  // コメント一覧を取得
+  // コメント一覧を取得（削除済み含む）
   const fetchComments = useCallback(
     async (pageNum: number = 1, append: boolean = false) => {
       setIsLoading(true);
       try {
-        const result = await getTaskComments(workspaceId, itemId, task.id, pageNum, 20);
+        // includeDeleted: true で削除済みコメントも含めて取得
+        const result = await getTaskComments(workspaceId, itemId, task.id, pageNum, 20, undefined, true);
         if (result.success) {
           const newComments = result.data.data || [];
           if (append) {
@@ -201,36 +206,51 @@ export default function TaskCommentModal({
     [editingContent, editingType, workspaceId, itemId, task.id, fetchComments, notify],
   );
 
-  // 削除
-  const handleDelete = useCallback(
-    async (comment: TaskCommentDetailResponse) => {
-      if (!confirm('このコメントを削除しますか？')) {
-        return;
-      }
+  // 削除ボタンクリック時（モーダルを開く）
+  const handleDeleteClick = useCallback((comment: TaskCommentDetailResponse) => {
+    setDeleteTargetComment(comment);
+    setIsDeleteModalOpen(true);
+  }, []);
 
-      setIsSubmitting(true);
-      try {
-        const result = await deleteTaskComment(workspaceId, itemId, task.id, comment.id, comment.rowVersion);
+  // 削除確認モーダルでの確定処理
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTargetComment) return;
 
-        if (result.success) {
-          notify.success('コメントを削除しました');
-          // コメント一覧を再取得
-          await fetchComments(1);
+    setIsSubmitting(true);
+    try {
+      const result = await deleteTaskComment(
+        workspaceId,
+        itemId,
+        task.id,
+        deleteTargetComment.id,
+        deleteTargetComment.rowVersion,
+      );
+
+      if (result.success) {
+        notify.success('コメントを削除しました');
+        // コメント一覧を再取得
+        await fetchComments(1);
+      } else {
+        if (result.error === 'conflict') {
+          notify.error('他のユーザーが更新しました。ページを再読み込みしてください。');
         } else {
-          if (result.error === 'conflict') {
-            notify.error('他のユーザーが更新しました。ページを再読み込みしてください。');
-          } else {
-            notify.error(result.message || 'コメントの削除に失敗しました');
-          }
+          notify.error(result.message || 'コメントの削除に失敗しました');
         }
-      } catch {
-        notify.error('コメントの削除中にエラーが発生しました');
-      } finally {
-        setIsSubmitting(false);
       }
-    },
-    [workspaceId, itemId, task.id, fetchComments, notify],
-  );
+    } catch {
+      notify.error('コメントの削除中にエラーが発生しました');
+    } finally {
+      setIsSubmitting(false);
+      setIsDeleteModalOpen(false);
+      setDeleteTargetComment(null);
+    }
+  }, [deleteTargetComment, workspaceId, itemId, task.id, fetchComments, notify]);
+
+  // 削除確認モーダルを閉じる
+  const handleDeleteCancel = useCallback(() => {
+    setIsDeleteModalOpen(false);
+    setDeleteTargetComment(null);
+  }, []);
 
   // Enter キーでコメント投稿
   const handleKeyDown = useCallback(
@@ -407,7 +427,7 @@ export default function TaskCommentModal({
                           <button
                             type="button"
                             className="btn btn-xs btn-ghost text-base-content/50 hover:text-error"
-                            onClick={() => handleDelete(comment)}
+                            onClick={() => handleDeleteClick(comment)}
                             title="削除"
                           >
                             <DeleteOutlineIcon className="w-3.5 h-3.5" />
@@ -483,6 +503,40 @@ export default function TaskCommentModal({
           </div>
         </div>
       </div>
+
+      {/* 削除確認モーダル */}
+      {isDeleteModalOpen && deleteTargetComment && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={handleDeleteCancel} aria-hidden="true" />
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div
+              className="bg-base-100 rounded-lg shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold mb-4">コメントの削除</h3>
+              <p className="text-sm text-base-content/70 mb-6">このコメントを削除しますか？この操作は取り消せません。</p>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={handleDeleteCancel}
+                  disabled={isSubmitting}
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-error"
+                  onClick={handleDeleteConfirm}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : '削除'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

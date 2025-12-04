@@ -1096,6 +1096,10 @@ export default function EditWorkspaceTaskModal({
                   taskId={task.id}
                   currentUserId={currentUser?.id}
                   autoFocus={initialFocusComments}
+                  onCommentCountChange={() => {
+                    // コメント件数が変更されたらタスク一覧を更新
+                    onSuccess();
+                  }}
                 />
               )}
             </div>
