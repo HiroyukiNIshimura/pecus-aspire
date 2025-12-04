@@ -488,7 +488,7 @@ const WorkspaceTasks = ({
               type="button"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1 || isLoading}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-primary btn-sm bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-outline btn-primary"
               aria-label="前のページ"
             >
               <ChevronLeftIcon className="w-5 h-5" />
@@ -642,7 +642,7 @@ const WorkspaceTasks = ({
               type="button"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages || isLoading}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm btn-primary bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-outline btn-primary"
               aria-label="次のページ"
             >
               <ChevronRightIcon className="w-5 h-5" />
