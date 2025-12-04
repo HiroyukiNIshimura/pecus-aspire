@@ -13,13 +13,14 @@
 - 主要プロジェクト: `pecus.WebApi`, `pecus.BackFire`, `pecus.DbManager`, `pecus.Libs`, `pecus.Frontend`
 - RowVersion は PostgreSQL の `xmin` を `uint RowVersion` として扱う（フロントは number） — 実装参照: `pecus.Libs/DB/ApplicationDbContext.cs`
 - 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す（参照: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`）。クライアントは 409 受領時に最新データを再取得してマージ／再試行（`ConcurrencyErrorResponse<T>` 想定）。
-- フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。フロント UI は Tailwind CSS と `FlyonUI` を利用しています。daisyuiは禁止。
+- フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。フロント UI は Tailwind CSS と `FlyonUI` を利用しています。**daisyUIは使用しない。**
 - セッション/トークン: ブラウザは Cookie に保存（httpOnly: false）。Middleware が期限前に自動リフレッシュし、必要に応じてサーバー側ユーティリティ（`src/libs/session.ts`）を併用する。
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
 - C#: 原則「1ファイル=1クラス」。関連する複数の enum/record は1ファイル可。
-- フロントエンドのAPIクライアントの生成はエージェントには実行を禁止する。バックエンドとフロントエンドの型の一貫性を保つため、生成スクリプトの実行は人間の開発者のみが行うため必ず作業を中断すること。
+- フロントエンドのAPIクライアントの生成はエージェントには実行を禁止する。**生成スクリプトの実行は人間の開発者のみが行うため必ず作業を中断すること。**
+- バックエンド・フロントエンド共に修正が必要になった場合は、バックエンド→フロントエンドの順で修正を行い、バックエンドの変更が完了し動作確認が取れた後にフロントエンドの修正を行うこと。
 
 **統一方針（簡潔版）**
 - コントローラー/戻り値: MVC コントローラー＋`HttpResults`（`Ok<T>`, `Created<T>`, `NoContent`）。`IActionResult`/`ActionResult<T>`は不使用。複数成功のみ`Results<...>`を使用。エラーは例外→`GlobalExceptionFilter`。
