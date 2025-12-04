@@ -15,9 +15,10 @@ public class UpdateWorkspaceTaskRequest
     public string? Content { get; set; }
 
     /// <summary>
-    /// タスクの種類
+    /// タスク種類ID
     /// </summary>
-    public TaskType? TaskType { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "タスクの種類を選択してください。")]
+    public int? TaskTypeId { get; set; }
 
     /// <summary>
     /// 担当ユーザーID

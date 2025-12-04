@@ -16,10 +16,11 @@ public class CreateWorkspaceTaskRequest
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// タスクの種類
+    /// タスク種類ID
     /// </summary>
     [Required(ErrorMessage = "タスクの種類は必須です。")]
-    public TaskType TaskType { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "タスクの種類を選択してください。")]
+    public int TaskTypeId { get; set; }
 
     /// <summary>
     /// 担当ユーザーID

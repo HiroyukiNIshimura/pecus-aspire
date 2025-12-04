@@ -254,7 +254,10 @@ public class WorkspaceTaskController : BaseSecureController
                 )
                 : null,
             Content = task.Content,
-            TaskType = task.TaskType,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeCode = task.TaskType?.Code,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
             Priority = task.Priority,
             StartDate = task.StartDate,
             DueDate = task.DueDate,

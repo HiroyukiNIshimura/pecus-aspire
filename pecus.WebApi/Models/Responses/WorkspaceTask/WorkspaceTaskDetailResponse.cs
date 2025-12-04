@@ -65,9 +65,24 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// タスクの種類
+    /// タスク種類ID
     /// </summary>
-    public TaskType TaskType { get; set; }
+    public int TaskTypeId { get; set; }
+
+    /// <summary>
+    /// タスク種類コード（例: "Bug", "Feature"）
+    /// </summary>
+    public string? TaskTypeCode { get; set; }
+
+    /// <summary>
+    /// タスク種類名（日本語表示名）
+    /// </summary>
+    public string? TaskTypeName { get; set; }
+
+    /// <summary>
+    /// タスク種類アイコン（拡張子なしのファイル名）
+    /// </summary>
+    public string? TaskTypeIcon { get; set; }
 
     /// <summary>
     /// 優先度（NULL の場合は Medium として扱う）

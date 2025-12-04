@@ -46,9 +46,9 @@ public class WorkspaceTask
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// タスクの種類
+    /// タスク種類ID（外部キー）
     /// </summary>
-    public TaskType TaskType { get; set; }
+    public int TaskTypeId { get; set; }
 
     /// <summary>
     /// 優先度（NULL の場合は Medium として扱う）
@@ -146,6 +146,12 @@ public class WorkspaceTask
     /// </summary>
     [ForeignKey(nameof(CreatedByUserId))]
     public User CreatedByUser { get; set; } = null!;
+
+    /// <summary>
+    /// タスク種類
+    /// </summary>
+    [ForeignKey(nameof(TaskTypeId))]
+    public TaskType TaskType { get; set; } = null!;
 
     /// <summary>
     /// タスクコメント

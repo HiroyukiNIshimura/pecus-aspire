@@ -49,6 +49,7 @@ public class DatabaseSeeder
         await SeedPermissionsAsync();
         await SeedRolesAsync();
         await SeedGenresAsync();
+        await SeedTaskTypesAsync();
 
         // 開発環境のみモックデータを投入
         if (isDevelopment)
@@ -353,6 +354,115 @@ public class DatabaseSeeder
             {
                 _context.Genres.Add(genre);
                 _logger.LogInformation("Added genre: {Name}", genre.Name);
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// タスク種類のシードデータを投入
+    /// </summary>
+    public async Task SeedTaskTypesAsync()
+    {
+        var taskTypes = new[]
+        {
+            new TaskType
+            {
+                Code = "Bug",
+                Name = "バグ修正",
+                Description = "不具合の修正作業",
+                Icon = "bug",
+                DisplayOrder = 1,
+            },
+            new TaskType
+            {
+                Code = "Feature",
+                Name = "新機能開発",
+                Description = "新しい機能の開発作業",
+                Icon = "feature",
+                DisplayOrder = 2,
+            },
+            new TaskType
+            {
+                Code = "Documentation",
+                Name = "ドキュメント作成・更新",
+                Description = "ドキュメントの作成または更新作業",
+                Icon = "documentation",
+                DisplayOrder = 3,
+            },
+            new TaskType
+            {
+                Code = "Review",
+                Name = "レビュー",
+                Description = "コードレビューやドキュメントレビュー作業",
+                Icon = "review",
+                DisplayOrder = 4,
+            },
+            new TaskType
+            {
+                Code = "Testing",
+                Name = "テスト",
+                Description = "テスト作成・実行作業",
+                Icon = "testing",
+                DisplayOrder = 5,
+            },
+            new TaskType
+            {
+                Code = "Refactoring",
+                Name = "リファクタリング",
+                Description = "コードの改善・整理作業",
+                Icon = "refactoring",
+                DisplayOrder = 6,
+            },
+            new TaskType
+            {
+                Code = "Research",
+                Name = "調査・研究",
+                Description = "技術調査や研究作業",
+                Icon = "research",
+                DisplayOrder = 7,
+            },
+            new TaskType
+            {
+                Code = "Meeting",
+                Name = "打ち合わせ",
+                Description = "ミーティングや会議",
+                Icon = "meeting",
+                DisplayOrder = 8,
+            },
+            new TaskType
+            {
+                Code = "BusinessNegotiation",
+                Name = "商談",
+                Description = "顧客との商談や営業活動",
+                Icon = "business-negotiation",
+                DisplayOrder = 9,
+            },
+            new TaskType
+            {
+                Code = "RequirementsConfirmation",
+                Name = "要件確認",
+                Description = "要件の確認・調整作業",
+                Icon = "requirements-confirmation",
+                DisplayOrder = 10,
+            },
+            new TaskType
+            {
+                Code = "Other",
+                Name = "その他",
+                Description = "その他のタスク",
+                Icon = "other",
+                DisplayOrder = 99,
+            },
+        };
+
+        foreach (var taskType in taskTypes)
+        {
+            if (!await _context.TaskTypes.AnyAsync(t => t.Code == taskType.Code))
+            {
+                _context.TaskTypes.Add(taskType);
+                _logger.LogInformation("Added task type: {Code} ({Name})", taskType.Code, taskType.Name);
             }
         }
 
@@ -1171,6 +1281,14 @@ public class DatabaseSeeder
             return;
         }
 
+        // タスク種類を取得
+        var taskTypes = await _context.TaskTypes.Where(t => t.IsActive).ToListAsync();
+        if (!taskTypes.Any())
+        {
+            _logger.LogWarning("No task types found for seeding tasks");
+            return;
+        }
+
         // タスク内容のサンプル
         var taskContents = new[]
         {
@@ -1191,7 +1309,6 @@ public class DatabaseSeeder
             "エラーハンドリングを改善する",
         };
 
-        var taskTypes = System.Enum.GetValues<TaskType>();
         var priorities = new TaskPriority?[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High, TaskPriority.Critical, null };
 
         int totalTasksAdded = 0;
@@ -1216,7 +1333,7 @@ public class DatabaseSeeder
             {
                 var assignedUserId = workspaceMembers[_random.Next(workspaceMembers.Count)];
                 var createdByUserId = workspaceMembers[_random.Next(workspaceMembers.Count)];
-                var taskType = taskTypes[_random.Next(taskTypes.Length)];
+                var taskType = taskTypes[_random.Next(taskTypes.Count)];
                 var priority = priorities[_random.Next(priorities.Length)];
                 var content = taskContents[_random.Next(taskContents.Length)];
 
@@ -1253,7 +1370,7 @@ public class DatabaseSeeder
                     AssignedUserId = assignedUserId,
                     CreatedByUserId = createdByUserId,
                     Content = content,
-                    TaskType = taskType,
+                    TaskTypeId = taskType.Id,
                     Priority = priority,
                     StartDate = startDate,
                     DueDate = dueDate,

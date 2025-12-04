@@ -76,7 +76,7 @@ public class WorkspaceTaskService
             AssignedUserId = request.AssignedUserId,
             CreatedByUserId = createdByUserId,
             Content = request.Content,
-            TaskType = request.TaskType,
+            TaskTypeId = request.TaskTypeId,
             Priority = request.Priority,
             StartDate = request.StartDate,
             DueDate = request.DueDate,
@@ -102,6 +102,9 @@ public class WorkspaceTaskService
         await _context.Entry(task)
             .Reference(t => t.CreatedByUser)
             .LoadAsync();
+        await _context.Entry(task)
+            .Reference(t => t.TaskType)
+            .LoadAsync();
 
         return task;
     }
@@ -122,6 +125,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
             .FirstOrDefaultAsync(t =>
                 t.Id == taskId &&
                 t.WorkspaceItemId == itemId &&
@@ -161,6 +165,7 @@ public class WorkspaceTaskService
         var query = _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
 
         // ステータスフィルタ
@@ -213,6 +218,7 @@ public class WorkspaceTaskService
         var task = await _context.WorkspaceTasks
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
             .FirstOrDefaultAsync(t =>
                 t.Id == taskId &&
                 t.WorkspaceItemId == itemId &&
@@ -246,9 +252,9 @@ public class WorkspaceTaskService
             task.Content = request.Content;
         }
 
-        if (request.TaskType.HasValue)
+        if (request.TaskTypeId.HasValue)
         {
-            task.TaskType = request.TaskType.Value;
+            task.TaskTypeId = request.TaskTypeId.Value;
         }
 
         if (request.Priority.HasValue)
@@ -327,6 +333,7 @@ public class WorkspaceTaskService
             var latestTask = await _context.WorkspaceTasks
                 .Include(t => t.AssignedUser)
                 .Include(t => t.CreatedByUser)
+                .Include(t => t.TaskType)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             throw new ConcurrencyException<WorkspaceTaskDetailResponse>(
@@ -341,11 +348,17 @@ public class WorkspaceTaskService
             itemId
         );
 
-        // ナビゲーションプロパティを再読み込み（担当者が変更された場合）
+        // ナビゲーションプロパティを再読み込み（担当者またはタスク種類が変更された場合）
         if (request.AssignedUserId.HasValue)
         {
             await _context.Entry(task)
                 .Reference(t => t.AssignedUser)
+                .LoadAsync();
+        }
+        if (request.TaskTypeId.HasValue)
+        {
+            await _context.Entry(task)
+                .Reference(t => t.TaskType)
                 .LoadAsync();
         }
 
@@ -386,7 +399,10 @@ public class WorkspaceTaskService
                 )
                 : null,
             Content = task.Content,
-            TaskType = task.TaskType,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeCode = task.TaskType?.Code,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
             Priority = task.Priority,
             StartDate = task.StartDate,
             DueDate = task.DueDate,

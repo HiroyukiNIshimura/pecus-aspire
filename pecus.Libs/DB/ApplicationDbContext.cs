@@ -53,6 +53,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Genre> Genres { get; set; }
 
     /// <summary>
+    /// タスク種類テーブル
+    /// </summary>
+    public DbSet<TaskType> TaskTypes { get; set; }
+
+    /// <summary>
     /// ワークスペースアイテムテーブル
     /// </summary>
     public DbSet<WorkspaceItem> WorkspaceItems { get; set; }
@@ -282,6 +287,18 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.Icon).HasMaxLength(50);
             entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.DisplayOrder);
+        });
+
+        // TaskTypeエンティティの設定
+        modelBuilder.Entity<TaskType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.HasIndex(e => e.Code).IsUnique();
             entity.HasIndex(e => e.DisplayOrder);
         });
 
@@ -655,7 +672,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired();
-            entity.Property(e => e.TaskType).IsRequired();
+            entity.Property(e => e.TaskTypeId).IsRequired();
             entity.Property(e => e.ProgressPercentage).HasDefaultValue(0);
             entity.Property(e => e.IsCompleted).HasDefaultValue(false);
             entity.Property(e => e.IsDiscarded).HasDefaultValue(false);
@@ -698,6 +715,13 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(wt => wt.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WorkspaceTask と TaskType の多対一リレーションシップ
+            entity
+                .HasOne(wt => wt.TaskType)
+                .WithMany(tt => tt.WorkspaceTasks)
+                .HasForeignKey(wt => wt.TaskTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // インデックス（検索効率化用）
             entity.HasIndex(wt => wt.WorkspaceItemId);
             entity.HasIndex(wt => wt.WorkspaceId);
@@ -708,7 +732,7 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => wt.IsDiscarded);
             entity.HasIndex(wt => wt.DueDate);
             entity.HasIndex(wt => wt.Priority);
-            entity.HasIndex(wt => wt.TaskType);
+            entity.HasIndex(wt => wt.TaskTypeId);
             // 複合インデックス（頻繁な検索パターン用）
             entity.HasIndex(wt => new { wt.AssignedUserId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });
@@ -947,6 +971,15 @@ public class ApplicationDbContext : DbContext
         // Genre
         modelBuilder
             .Entity<Genre>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // TaskType
+        modelBuilder
+            .Entity<TaskType>()
             .Property(e => e.RowVersion)
             .HasColumnName("xmin")
             .HasColumnType("xid")
