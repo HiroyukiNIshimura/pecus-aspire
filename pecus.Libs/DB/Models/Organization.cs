@@ -45,7 +45,7 @@ public class Organization
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 作成者ユーザーID

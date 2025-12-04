@@ -49,12 +49,12 @@ public class UserItem
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 最終ログイン日時
     /// </summary>
-    public DateTime? LastLoginAt { get; set; }
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     /// <summary>
     /// ユーザーが持つロール数

@@ -23,10 +23,10 @@ public class PasswordResetEmailModel
     /// <summary>
     /// トークンの有効期限
     /// </summary>
-    public DateTime TokenExpiresAt { get; set; }
+    public DateTimeOffset TokenExpiresAt { get; set; }
 
     /// <summary>
     /// リクエスト日時
     /// </summary>
-    public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset RequestedAt { get; set; } = DateTimeOffset.UtcNow;
 }

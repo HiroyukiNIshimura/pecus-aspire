@@ -43,7 +43,7 @@ public class SecurityNotificationEmailModel
     /// <summary>
     /// ログイン日時
     /// </summary>
-    public DateTime LoginAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset LoginAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// セキュリティ設定URL

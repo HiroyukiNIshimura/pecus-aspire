@@ -85,9 +85,9 @@ public class WorkspaceItemDetailResponse : IConflictModel
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日
+    /// 期限日時
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     /// <summary>
     /// アーカイブフラグ
@@ -117,12 +117,12 @@ public class WorkspaceItemDetailResponse : IConflictModel
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// タグのリスト

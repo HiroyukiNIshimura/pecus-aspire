@@ -19,7 +19,7 @@ public class WorkspaceSkill
     /// <summary>
     /// 追加日時
     /// </summary>
-    public DateTime AddedAt { get; set; }
+    public DateTimeOffset AddedAt { get; set; }
 
     /// <summary>
     /// 追加者ユーザーID

@@ -53,12 +53,12 @@ public class Device
     /// <summary>
     /// 初回確認日時（UTC）
     /// </summary>
-    public DateTime FirstSeenAt { get; set; }
+    public DateTimeOffset FirstSeenAt { get; set; }
 
     /// <summary>
     /// 最終確認日時（UTC）
     /// </summary>
-    public DateTime LastSeenAt { get; set; }
+    public DateTimeOffset LastSeenAt { get; set; }
 
     /// <summary>
     /// 表示用にマスクしたIPアドレス（例: 203.0.113.xxx）

@@ -54,9 +54,9 @@ public class WorkspaceItem
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日（NULL許容）
+    /// 期限日時
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     /// <summary>
     /// 編集不可フラグ（アーカイブ）
@@ -86,12 +86,12 @@ public class WorkspaceItem
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Navigation Properties
     /// <summary>

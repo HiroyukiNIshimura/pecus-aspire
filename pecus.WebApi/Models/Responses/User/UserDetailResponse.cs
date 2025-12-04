@@ -76,7 +76,7 @@ public class UserDetailResponse : IConflictModel
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// ユーザーの楽観的ロック用RowVersion

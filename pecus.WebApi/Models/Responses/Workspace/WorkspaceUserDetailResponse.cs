@@ -47,12 +47,12 @@ public class WorkspaceUserDetailResponse
     /// <summary>
     /// 参加日時
     /// </summary>
-    public DateTime JoinedAt { get; set; }
+    public DateTimeOffset JoinedAt { get; set; }
 
     /// <summary>
     /// 最終アクセス日時
     /// </summary>
-    public DateTime? LastAccessedAt { get; set; }
+    public DateTimeOffset? LastAccessedAt { get; set; }
 
     /// <summary>
     /// アクティブフラグ

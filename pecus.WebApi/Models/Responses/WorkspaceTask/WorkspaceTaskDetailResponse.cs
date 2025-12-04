@@ -77,12 +77,12 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// <summary>
     /// 開始日時
     /// </summary>
-    public DateTime? StartDate { get; set; }
+    public DateTimeOffset? StartDate { get; set; }
 
     /// <summary>
     /// 期限日時
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     /// <summary>
     /// 予定工数（時間）
@@ -107,7 +107,7 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// <summary>
     /// タスク完了日時
     /// </summary>
-    public DateTime? CompletedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
 
     /// <summary>
     /// 破棄状態
@@ -117,7 +117,7 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// <summary>
     /// 破棄日時
     /// </summary>
-    public DateTime? DiscardedAt { get; set; }
+    public DateTimeOffset? DiscardedAt { get; set; }
 
     /// <summary>
     /// 破棄理由
@@ -127,12 +127,12 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// 楽観的ロック用のRowVersion

@@ -59,7 +59,7 @@ public class WorkspaceFullDetailResponse : IConflictModel
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 作成ユーザー（無効なユーザーでも含む）
@@ -69,7 +69,7 @@ public class WorkspaceFullDetailResponse : IConflictModel
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// 更新ユーザー（無効なユーザーでも含む）

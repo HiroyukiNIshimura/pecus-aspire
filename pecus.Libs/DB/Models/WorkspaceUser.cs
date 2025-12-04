@@ -35,7 +35,7 @@ public class WorkspaceUser
     /// <summary>
     /// 参加日時
     /// </summary>
-    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset JoinedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 最終アクセス日時

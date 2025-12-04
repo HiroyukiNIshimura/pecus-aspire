@@ -42,7 +42,7 @@ public class WorkspaceItemRelation
     /// </summary>
     [Required]
     [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 作成者ID

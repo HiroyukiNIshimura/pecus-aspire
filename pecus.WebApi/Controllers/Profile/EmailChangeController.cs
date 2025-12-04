@@ -210,10 +210,10 @@ public class PendingEmailChangeResponse
     /// <summary>
     /// トークン有効期限（UTC）
     /// </summary>
-    public required DateTime ExpiresAt { get; set; }
+    public required DateTimeOffset ExpiresAt { get; set; }
 
     /// <summary>
     /// トークン作成日時（UTC）
     /// </summary>
-    public required DateTime CreatedAt { get; set; }
+    public required DateTimeOffset CreatedAt { get; set; }
 }

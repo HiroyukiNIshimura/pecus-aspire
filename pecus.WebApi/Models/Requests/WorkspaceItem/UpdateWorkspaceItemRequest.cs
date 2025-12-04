@@ -30,9 +30,9 @@ public class UpdateWorkspaceItemRequest
     public TaskPriority? Priority { get; set; }
 
     /// <summary>
-    /// 期限日
+    /// 期限日時
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     /// <summary>
     /// 下書き中フラグ

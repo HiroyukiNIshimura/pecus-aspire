@@ -88,7 +88,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("WorkspaceId", "CreatedAt");
 
-                    b.ToTable("Activities");
+                    b.ToTable("Activities", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Device", b =>
@@ -168,7 +168,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.EmailChangeToken", b =>
@@ -219,7 +219,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("UserId", "IsUsed");
 
-                    b.ToTable("EmailChangeTokens");
+                    b.ToTable("EmailChangeTokens", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Genre", b =>
@@ -274,7 +274,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Genres");
+                    b.ToTable("Genres", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Organization", b =>
@@ -337,7 +337,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Permission", b =>
@@ -384,7 +384,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.RefreshToken", b =>
@@ -428,7 +428,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("UserId", "IsRevoked", "ExpiresAt");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Role", b =>
@@ -471,7 +471,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Skill", b =>
@@ -524,7 +524,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("OrganizationId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Tag", b =>
@@ -573,7 +573,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("OrganizationId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.TaskComment", b =>
@@ -639,7 +639,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("WorkspaceTaskId");
 
-                    b.ToTable("TaskComments");
+                    b.ToTable("TaskComments", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
@@ -721,7 +721,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("Username");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSkill", b =>
@@ -746,7 +746,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("UserSkills");
+                    b.ToTable("UserSkills", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Workspace", b =>
@@ -811,7 +811,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Workspaces");
+                    b.ToTable("Workspaces", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItem", b =>
@@ -904,7 +904,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("WorkspaceId", "Code")
                         .IsUnique();
 
-                    b.ToTable("WorkspaceItems");
+                    b.ToTable("WorkspaceItems", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemAttachment", b =>
@@ -969,7 +969,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("WorkspaceItemId");
 
-                    b.ToTable("WorkspaceItemAttachments");
+                    b.ToTable("WorkspaceItemAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemPin", b =>
@@ -989,7 +989,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WorkspaceItemPins");
+                    b.ToTable("WorkspaceItemPins", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceItemRelation", b =>
@@ -1041,7 +1041,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("FromItemId", "ToItemId", "RelationType")
                         .IsUnique();
 
-                    b.ToTable("workspace_item_relations", t =>
+                    b.ToTable("workspace_item_relations", null, t =>
                         {
                             t.HasCheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
                         });
@@ -1067,7 +1067,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("WorkspaceItemTags");
+                    b.ToTable("WorkspaceItemTags", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceSkill", b =>
@@ -1092,7 +1092,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("WorkspaceSkills");
+                    b.ToTable("WorkspaceSkills", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceTask", b =>
@@ -1209,7 +1209,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("WorkspaceItemId", "IsCompleted");
 
-                    b.ToTable("WorkspaceTasks");
+                    b.ToTable("WorkspaceTasks", (string)null);
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.WorkspaceUser", b =>
@@ -1235,7 +1235,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("WorkspaceUsers");
+                    b.ToTable("WorkspaceUsers", (string)null);
                 });
 
             modelBuilder.Entity("RolePermission", b =>

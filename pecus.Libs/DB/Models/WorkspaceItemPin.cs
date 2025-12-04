@@ -24,7 +24,7 @@ public class WorkspaceItemPin
     /// PIN作成日時
     /// </summary>
     [Required]
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     // ナビゲーションプロパティ
     /// <summary>

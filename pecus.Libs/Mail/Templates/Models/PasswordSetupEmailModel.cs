@@ -28,10 +28,10 @@ public class PasswordSetupEmailModel
     /// <summary>
     /// トークンの有効期限
     /// </summary>
-    public DateTime TokenExpiresAt { get; set; }
+    public DateTimeOffset TokenExpiresAt { get; set; }
 
     /// <summary>
     /// アカウント作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

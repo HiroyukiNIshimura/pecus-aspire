@@ -46,12 +46,12 @@ public class DeviceResponse
     /// <summary>
     /// 初回確認日時
     /// </summary>
-    public DateTime FirstSeenAt { get; set; }
+    public DateTimeOffset FirstSeenAt { get; set; }
 
     /// <summary>
     /// 最終確認日時
     /// </summary>
-    public DateTime LastSeenAt { get; set; }
+    public DateTimeOffset LastSeenAt { get; set; }
 
     /// <summary>
     /// マスクされたIPアドレス

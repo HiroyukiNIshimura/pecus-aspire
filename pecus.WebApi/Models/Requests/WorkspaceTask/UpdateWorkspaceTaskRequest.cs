@@ -32,12 +32,12 @@ public class UpdateWorkspaceTaskRequest
     /// <summary>
     /// 開始日時
     /// </summary>
-    public DateTime? StartDate { get; set; }
+    public DateTimeOffset? StartDate { get; set; }
 
     /// <summary>
     /// 期限日時
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
     /// <summary>
     /// 予定工数（時間）

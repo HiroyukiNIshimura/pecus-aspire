@@ -55,7 +55,7 @@ public class WorkspaceItemAttachment
     /// <summary>
     /// アップロード日時
     /// </summary>
-    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// アップロードしたユーザーID（外部キー）

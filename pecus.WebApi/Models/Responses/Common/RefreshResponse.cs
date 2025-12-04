@@ -21,7 +21,7 @@ public class RefreshResponse
     /// <summary>
     /// トークンの有効期限（UTC）
     /// </summary>
-    public DateTime ExpiresAt { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
 
     /// <summary>
     /// トークンの有効時間（秒）
@@ -37,5 +37,5 @@ public class RefreshResponse
     /// <summary>
     /// リフレッシュトークンの有効期限（UTC）
     /// </summary>
-    public DateTime RefreshExpiresAt { get; set; }
+    public DateTimeOffset RefreshExpiresAt { get; set; }
 }

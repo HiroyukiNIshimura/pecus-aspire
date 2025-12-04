@@ -30,7 +30,7 @@ public class RefreshTokenService
         _context = context;
     }
 
-    public record RefreshTokenInfo(string Token, int UserId, DateTime ExpiresAt, bool ChangeDevice = false);
+    public record RefreshTokenInfo(string Token, int UserId, DateTimeOffset ExpiresAt, bool ChangeDevice = false);
 
     /// <summary>
     /// デバイス作成情報
@@ -158,7 +158,7 @@ public class RefreshTokenService
 
         // 2. Redis にない場合は DB から復元（再起動後など）
         var dbToken = await _context.RefreshTokens
-            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
+            .Where(t => t.Token == token && !t.IsRevoked && t.ExpiresAt > DateTimeOffset.UtcNow)
             .FirstOrDefaultAsync();
 
         if (dbToken == null) return null;
@@ -166,7 +166,7 @@ public class RefreshTokenService
         // Redis に再キャッシュ
         var restored = new RefreshTokenInfo(dbToken.Token, dbToken.UserId, dbToken.ExpiresAt);
         var restoredPayload = JsonSerializer.Serialize(restored);
-        await _db.StringSetAsync(key, restoredPayload, dbToken.ExpiresAt - DateTime.UtcNow);
+        await _db.StringSetAsync(key, restoredPayload, dbToken.ExpiresAt - DateTimeOffset.UtcNow);
 
         // ユーザーキーも復元
         var userKey = GetUserKey(dbToken.UserId);

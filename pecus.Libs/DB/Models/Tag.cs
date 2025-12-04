@@ -25,7 +25,7 @@ public class Tag
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 作成者ユーザーID
@@ -35,7 +35,7 @@ public class Tag
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 更新者ユーザーID

@@ -51,7 +51,7 @@ public class Activity
     /// 操作日時（UTC）
     /// </summary>
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
     /// 変更前のデータ（jsonb形式）

@@ -11,7 +11,7 @@ public class WorkspaceItemListResponse
     public int? Priority { get; set; }
     public bool IsDraft { get; set; }
     public bool IsArchived { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
     public bool IsAssigned { get; set; }
     public Pecus.Models.Responses.Workspace.WorkspaceDetailUserResponse Owner { get; set; } = null!;
 }

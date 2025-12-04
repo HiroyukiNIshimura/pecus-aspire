@@ -51,7 +51,7 @@ public class WorkspaceItemAttachmentResponse
     /// <summary>
     /// アップロード日時
     /// </summary>
-    public DateTime UploadedAt { get; set; }
+    public DateTimeOffset UploadedAt { get; set; }
 
     /// <summary>
     /// アップロードしたユーザーID

@@ -32,7 +32,7 @@ public class SkillDetailResponse : IConflictModel
     /// <summary>
     /// 作成日時
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// 作成者ユーザーID
@@ -42,7 +42,7 @@ public class SkillDetailResponse : IConflictModel
     /// <summary>
     /// 更新日時
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     /// <summary>
     /// 更新者ユーザーID
