@@ -43,6 +43,12 @@ interface SelectedUser {
 interface WorkspaceTasksProps {
   workspaceId: number;
   itemId: number;
+  /** アイテムのコミッターID（完了操作の権限チェック用） */
+  itemCommitterId?: number | null;
+  /** アイテムのコミッター名 */
+  itemCommitterName?: string | null;
+  /** アイテムのコミッターアバターURL */
+  itemCommitterAvatarUrl?: string | null;
   /** 現在ログイン中のユーザー（「自分」リンク用） */
   currentUser?: {
     id: number;
@@ -54,7 +60,14 @@ interface WorkspaceTasksProps {
 
 const ITEMS_PER_PAGE = 8; // 4列 x 2行
 
-const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProps) => {
+const WorkspaceTasks = ({
+  workspaceId,
+  itemId,
+  itemCommitterId,
+  itemCommitterName,
+  itemCommitterAvatarUrl,
+  currentUser,
+}: WorkspaceTasksProps) => {
   const notify = useNotify();
   const [tasks, setTasks] = useState<WorkspaceTaskDetailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -571,6 +584,9 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
         onSuccess={handleEditTaskSuccess}
         workspaceId={workspaceId}
         itemId={itemId}
+        itemCommitterId={itemCommitterId}
+        itemCommitterName={itemCommitterName}
+        itemCommitterAvatarUrl={itemCommitterAvatarUrl}
         initialNavigation={editTaskNavigation}
         currentUser={currentUser}
         pageSize={ITEMS_PER_PAGE}

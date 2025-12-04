@@ -475,6 +475,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           <WorkspaceTasks
             workspaceId={workspaceId}
             itemId={itemId}
+            itemCommitterId={item?.committerId}
+            itemCommitterName={item?.committerUsername}
+            itemCommitterAvatarUrl={item?.committerAvatarUrl}
             currentUser={
               currentUserId && members.length > 0
                 ? (() => {

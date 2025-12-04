@@ -54,6 +54,12 @@ interface EditWorkspaceTaskModalProps {
   onSuccess: () => void;
   workspaceId: number;
   itemId: number;
+  /** アイテムのコミッターID（完了操作の権限チェック用） */
+  itemCommitterId?: number | null;
+  /** アイテムのコミッター名 */
+  itemCommitterName?: string | null;
+  /** アイテムのコミッターアバターURL */
+  itemCommitterAvatarUrl?: string | null;
   /** 初期タスクナビゲーション情報 */
   initialNavigation: TaskNavigation | null;
   /** 現在ログイン中のユーザー */
@@ -73,6 +79,9 @@ export default function EditWorkspaceTaskModal({
   onSuccess,
   workspaceId,
   itemId,
+  itemCommitterId,
+  itemCommitterName,
+  itemCommitterAvatarUrl,
   initialNavigation,
   currentUser,
   pageSize,
@@ -506,6 +515,24 @@ export default function EditWorkspaceTaskModal({
                   {currentPosition} / {navigation.totalCount}
                 </span>
               )}
+              {/* コミッター表示 */}
+              <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+                <span className="text-base-content/50">コミッター:</span>
+                {itemCommitterName ? (
+                  <>
+                    {itemCommitterAvatarUrl && (
+                      <img
+                        src={getDisplayIconUrl(itemCommitterAvatarUrl)}
+                        alt={itemCommitterName}
+                        className="w-5 h-5 rounded-full object-cover"
+                      />
+                    )}
+                    <span className="font-medium">{itemCommitterName}</span>
+                  </>
+                ) : (
+                  <span className="text-base-content/50 italic">未設定</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {/* 前へボタン */}
@@ -912,7 +939,7 @@ export default function EditWorkspaceTaskModal({
                     </div>
                   </div>
 
-                  {/* 完了・破棄 */}
+                  {/* 完了フラグ */}
                   <div className="flex flex-wrap gap-6 items-center">
                     {/* 完了フラグ */}
                     <div className="form-control">
@@ -930,10 +957,22 @@ export default function EditWorkspaceTaskModal({
                               setProgressPercentage(100);
                             }
                           }}
-                          disabled={isSubmitting || isLoadingTask}
+                          disabled={
+                            isSubmitting ||
+                            isLoadingTask ||
+                            (itemCommitterId != null && currentUser?.id !== itemCommitterId)
+                          }
+                          title={
+                            itemCommitterId != null && currentUser?.id !== itemCommitterId
+                              ? '完了操作はコミッターのみ可能です'
+                              : undefined
+                          }
                         />
                         <label htmlFor="isCompleted" className="label-text cursor-pointer">
                           完了
+                          {itemCommitterId != null && currentUser?.id !== itemCommitterId && (
+                            <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
+                          )}
                         </label>
                       </div>
                     </div>
