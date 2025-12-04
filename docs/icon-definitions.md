@@ -92,7 +92,7 @@ const getTaskTypeLabel = (taskType?: string) => {
    public enum TaskType
    {
        // 既存の値...
-       
+
        /// <summary>
        /// 新しいタイプの説明（日本語）
        /// </summary>
@@ -109,7 +109,7 @@ const getTaskTypeLabel = (taskType?: string) => {
    ```typescript
    // WorkspaceTasks.tsx の getTaskTypeIcon 関数に追加
    NewType: '/icons/task-types/new-type.svg',
-   
+
    // getTaskTypeLabel 関数に追加
    NewType: '新しいタイプ名',
    ```
@@ -118,7 +118,7 @@ const getTaskTypeLabel = (taskType?: string) => {
    ```bash
    # バックエンド
    dotnet build pecus.sln
-   
+
    # フロントエンド
    cd pecus.Frontend
    npx tsc --noEmit
