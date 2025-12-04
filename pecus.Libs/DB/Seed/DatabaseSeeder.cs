@@ -436,7 +436,7 @@ public class DatabaseSeeder
                 Code = "BusinessNegotiation",
                 Name = "商談",
                 Description = "顧客との商談や営業活動",
-                Icon = "business-negotiation",
+                Icon = "businessnegotiation",
                 DisplayOrder = 9,
             },
             new TaskType
@@ -444,7 +444,7 @@ public class DatabaseSeeder
                 Code = "RequirementsConfirmation",
                 Name = "要件確認",
                 Description = "要件の確認・調整作業",
-                Icon = "requirements-confirmation",
+                Icon = "requirementsconfirmation",
                 DisplayOrder = 10,
             },
             new TaskType

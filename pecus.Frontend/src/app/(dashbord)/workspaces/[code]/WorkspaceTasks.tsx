@@ -246,12 +246,15 @@ const WorkspaceTasks = ({
   // タスクタイプのアイコンパスを取得（API レスポンスから）
   const getTaskTypeIconPath = (task: WorkspaceTaskDetailResponse) => {
     // API レスポンスに taskTypeIcon があればそれを使用
+    // Icon 値からハイフンを除去してファイル名と一致させる
     if (task.taskTypeIcon) {
-      return `/icons/task/${task.taskTypeIcon}.svg`;
+      const iconName = task.taskTypeIcon.replace(/-/g, '').toLowerCase();
+      return `/icons/task/${iconName}.svg`;
     }
-    // フォールバック: taskTypeCode から生成
+    // フォールバック: taskTypeCode から生成（ハイフンを除去）
     if (task.taskTypeCode) {
-      return `/icons/task/${task.taskTypeCode.toLowerCase()}.svg`;
+      const iconName = task.taskTypeCode.replace(/-/g, '').toLowerCase();
+      return `/icons/task/${iconName}.svg`;
     }
     return null;
   };
@@ -455,7 +458,7 @@ const WorkspaceTasks = ({
               type="button"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1 || isLoading}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm btn-ghost bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-primary btn-sm bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="前のページ"
             >
               <svg
@@ -589,7 +592,7 @@ const WorkspaceTasks = ({
               type="button"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages || isLoading}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm btn-ghost bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm btn-primary bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="次のページ"
             >
               <svg

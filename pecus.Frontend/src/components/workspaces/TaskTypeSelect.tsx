@@ -27,10 +27,12 @@ export interface TaskTypeSelectProps {
 
 /**
  * タスク種類のアイコンパスを取得
+ * Icon 値からハイフンを除去してファイル名と一致させる
  */
 function getTaskTypeIconPath(icon: string | null | undefined): string | null {
   if (!icon) return null;
-  return `/icons/task/${icon.toLowerCase()}.svg`;
+  const iconName = icon.replace(/-/g, '').toLowerCase();
+  return `/icons/task/${iconName}.svg`;
 }
 
 /**
