@@ -459,6 +459,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           <WorkspaceTasks
             workspaceId={workspaceId}
             itemId={itemId}
+            itemOwnerId={item?.ownerId}
+            itemAssigneeId={item?.assigneeId}
             itemCommitterId={item?.committerId}
             itemCommitterName={item?.committerUsername}
             itemCommitterAvatarUrl={item?.committerAvatarUrl}

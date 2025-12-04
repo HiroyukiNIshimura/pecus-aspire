@@ -47,6 +47,10 @@ interface SelectedUser {
 interface WorkspaceTasksProps {
   workspaceId: number;
   itemId: number;
+  /** アイテムのオーナーID */
+  itemOwnerId?: number | null;
+  /** アイテムの担当者ID */
+  itemAssigneeId?: number | null;
   /** アイテムのコミッターID（完了操作の権限チェック用） */
   itemCommitterId?: number | null;
   /** アイテムのコミッター名 */
@@ -69,6 +73,8 @@ const ITEMS_PER_PAGE = 8; // 4列 x 2行
 const WorkspaceTasks = ({
   workspaceId,
   itemId,
+  itemOwnerId,
+  itemAssigneeId,
   itemCommitterId,
   itemCommitterName,
   itemCommitterAvatarUrl,
@@ -603,6 +609,22 @@ const WorkspaceTasks = ({
 
                     {/* アクションボタン */}
                     <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-base-300">
+                      {/* 編集ボタン: タスク担当者、アイテムオーナー、アイテム担当者、アイテムコミッタのみ表示 */}
+                      {currentUser &&
+                        (task.assignedUserId === currentUser.id ||
+                          itemOwnerId === currentUser.id ||
+                          itemAssigneeId === currentUser.id ||
+                          itemCommitterId === currentUser.id) && (
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
+                            onClick={(e) => handleEditClick(index, e)}
+                            title="編集"
+                            aria-label={`タスクを編集: ${task.content?.slice(0, 30) || 'タスク'}`}
+                          >
+                            <EditIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       <button
                         type="button"
                         className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary relative"
@@ -616,15 +638,6 @@ const WorkspaceTasks = ({
                             {task.commentCount}
                           </span>
                         )}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-ghost text-base-content/60 hover:text-primary"
-                        onClick={(e) => handleEditClick(index, e)}
-                        title="編集"
-                        aria-label={`タスクを編集: ${task.content?.slice(0, 30) || 'タスク'}`}
-                      >
-                        <EditIcon className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -716,6 +729,7 @@ const WorkspaceTasks = ({
           itemId={itemId}
           task={commentTargetTask}
           currentUserId={currentUser.id}
+          onCommentCountChange={() => handleEditTaskSuccess()}
         />
       )}
     </div>

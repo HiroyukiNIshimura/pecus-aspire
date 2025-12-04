@@ -16,6 +16,9 @@ import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /** コメントタイプのラベルと色 */
+/** コメントの最大文字数 */
+const MAX_COMMENT_LENGTH = 500;
+
 const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; icon: string }> = {
   Normal: { label: '通常', color: 'badge-neutral', icon: 'icon-[tabler--message]' },
   Memo: { label: 'メモ', color: 'badge-info', icon: 'icon-[tabler--note]' },
@@ -56,6 +59,7 @@ export default function TaskCommentSection({
   // 新規コメント入力
   const [newComment, setNewComment] = useState('');
   const [newCommentType, setNewCommentType] = useState<TaskCommentType>('Normal');
+  const [newCommentError, setNewCommentError] = useState<string | null>(null);
 
   // 編集中のコメント
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -125,10 +129,25 @@ export default function TaskCommentSection({
     }
   }, [page, totalPages, isLoading, fetchComments]);
 
-  // コメント投稿
+  // 新規コメント入力時のバリデーション
+  const handleNewCommentChange = useCallback((value: string) => {
+    setNewComment(value);
+    if (value.length > MAX_COMMENT_LENGTH) {
+      setNewCommentError(`コメントは${MAX_COMMENT_LENGTH}文字以内で入力してください。`);
+    } else {
+      setNewCommentError(null);
+    }
+  }, []);
+
+  // 新規コメント投稿
   const handleSubmitComment = useCallback(async () => {
-    if (!newComment.trim()) {
-      notify.error('コメントを入力してください');
+    const trimmed = newComment.trim();
+    if (!trimmed) {
+      setNewCommentError('コメントを入力してください。');
+      return;
+    }
+    if (trimmed.length > MAX_COMMENT_LENGTH) {
+      setNewCommentError(`コメントは${MAX_COMMENT_LENGTH}文字以内で入力してください。`);
       return;
     }
 
@@ -144,6 +163,7 @@ export default function TaskCommentSection({
         notify.success('コメントを投稿しました');
         setNewComment('');
         setNewCommentType('Normal');
+        setNewCommentError(null);
         // コメント一覧を再取得
         await fetchComments(1);
         // 新しいコメントへスクロール
@@ -268,7 +288,7 @@ export default function TaskCommentSection({
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full flex-1 min-h-0">
       {/* ヘッダー */}
       <div className="flex items-center gap-2 p-3 border-b border-base-300 flex-shrink-0">
         <ChatBubbleOutlineIcon className="text-primary w-5 h-5" />
@@ -440,23 +460,34 @@ export default function TaskCommentSection({
           </select>
 
           {/* テキストエリア */}
-          <textarea
-            ref={textareaRef}
-            className="textarea textarea-bordered textarea-sm flex-1 min-h-[2.5rem] max-h-24 resize-none"
-            placeholder="コメント... (Shift+Enterで改行)"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isSubmitting}
-            rows={1}
-          />
+          <div className="flex-1 flex flex-col">
+            <textarea
+              ref={textareaRef}
+              className={`textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
+              placeholder="コメント... (Shift+Enterで改行)"
+              value={newComment}
+              onChange={(e) => handleNewCommentChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isSubmitting}
+              rows={1}
+              maxLength={MAX_COMMENT_LENGTH + 50}
+            />
+            <div className="flex justify-between items-center mt-1">
+              {newCommentError ? <span className="text-error text-xs">{newCommentError}</span> : <span></span>}
+              <span
+                className={`text-xs ${newComment.length > MAX_COMMENT_LENGTH ? 'text-error font-medium' : 'text-base-content/50'}`}
+              >
+                {newComment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
+          </div>
 
           {/* 送信ボタン */}
           <button
             type="button"
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary btn-sm self-start"
             onClick={handleSubmitComment}
-            disabled={isSubmitting || !newComment.trim()}
+            disabled={isSubmitting || !newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
             title="送信 (Enter)"
           >
             {isSubmitting ? (
