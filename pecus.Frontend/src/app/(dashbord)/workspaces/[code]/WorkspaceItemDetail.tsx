@@ -413,7 +413,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <button
                 type="button"
                 onClick={onStartAddRelation}
-                className={`btn btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-primary btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
                 title={isAddingRelation ? '関連アイテム追加を解除' : '関連アイテムを追加'}
               >
                 <AddLinkIcon className="w-4 h-4" />

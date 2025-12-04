@@ -220,7 +220,11 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">タスク</h3>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-outline btn-primary btn-sm"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
             <AddIcon className="w-4 h-4" />
             タスク追加
           </button>
@@ -246,7 +250,11 @@ const WorkspaceTasks = ({ workspaceId, itemId, currentUser }: WorkspaceTasksProp
     <div className="mt-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+        <button
+          type="button"
+          className="btn  btn-outline btn-primary btn-sm"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <AddIcon className="w-4 h-4" />
           タスク追加
         </button>
