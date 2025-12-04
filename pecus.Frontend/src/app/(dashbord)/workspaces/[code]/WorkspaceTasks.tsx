@@ -670,7 +670,7 @@ const WorkspaceTasks = ({
 
       {/* タスク統計サマリ */}
       {statistics && (
-        <div className="mt-6 p-4 bg-base-200 rounded-lg">
+        <div className="mt-6 p-4 rounded-lg">
           <h4 className="text-sm font-semibold mb-3 text-base-content/80">タスクサマリ</h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* 完了 */}
