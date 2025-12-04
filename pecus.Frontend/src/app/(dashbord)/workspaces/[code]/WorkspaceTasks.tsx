@@ -2,6 +2,8 @@
 
 import AddIcon from '@mui/icons-material/Add';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
@@ -493,16 +495,7 @@ const WorkspaceTasks = ({
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-primary btn-sm bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="前のページ"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
+              <ChevronLeftIcon className="w-5 h-5" />
             </button>
           )}
 
@@ -656,16 +649,7 @@ const WorkspaceTasks = ({
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm btn-primary bg-base-100 shadow-md hover:bg-base-200 disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="次のページ"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
+              <ChevronRightIcon className="w-5 h-5" />
             </button>
           )}
 
