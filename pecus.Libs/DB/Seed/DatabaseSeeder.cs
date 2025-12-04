@@ -1443,7 +1443,7 @@ public class DatabaseSeeder
             "承認しました。",
         };
 
-        var commentTypes = new[] { "Normal", "StatusChange", "AssigneeChange", "PriorityChange" };
+        var commentTypes = System.Enum.GetValues<TaskCommentType>();
 
         int totalCommentsAdded = 0;
 
@@ -1468,31 +1468,15 @@ public class DatabaseSeeder
                 var userId = workspaceMembers[_random.Next(workspaceMembers.Count)];
                 var commentType = commentTypes[_random.Next(commentTypes.Length)];
 
-                string content;
-                string? beforeValue = null;
-                string? afterValue = null;
-
-                switch (commentType)
+                string content = commentType switch
                 {
-                    case "StatusChange":
-                        content = "ステータスを変更しました。";
-                        beforeValue = "{\"status\": \"進行中\"}";
-                        afterValue = "{\"status\": \"完了\"}";
-                        break;
-                    case "AssigneeChange":
-                        content = "担当者を変更しました。";
-                        beforeValue = $"{{\"userId\": {workspaceMembers[_random.Next(workspaceMembers.Count)]}}}";
-                        afterValue = $"{{\"userId\": {workspaceMembers[_random.Next(workspaceMembers.Count)]}}}";
-                        break;
-                    case "PriorityChange":
-                        content = "優先度を変更しました。";
-                        beforeValue = "{\"priority\": \"Medium\"}";
-                        afterValue = "{\"priority\": \"High\"}";
-                        break;
-                    default:
-                        content = normalComments[_random.Next(normalComments.Length)];
-                        break;
-                }
+                    TaskCommentType.Memo => "メモを追加しました。",
+                    TaskCommentType.HelpWanted => "助けてください！この問題で詰まっています。",
+                    TaskCommentType.NeedReply => "返事をお願いします。",
+                    TaskCommentType.Reminder => "進捗はいかがでしょうか？",
+                    TaskCommentType.Urge => "至急対応をお願いします。",
+                    _ => normalComments[_random.Next(normalComments.Length)],
+                };
 
                 var taskComment = new TaskComment
                 {
@@ -1500,8 +1484,6 @@ public class DatabaseSeeder
                     UserId = userId,
                     Content = content,
                     CommentType = commentType,
-                    BeforeValue = beforeValue,
-                    AfterValue = afterValue,
                     CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
                     UpdatedAt = DateTime.UtcNow,
                     IsDeleted = false,

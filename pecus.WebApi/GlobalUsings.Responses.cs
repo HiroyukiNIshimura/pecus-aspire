@@ -4,6 +4,7 @@ global using Pecus.Models.Responses.Permission;
 global using Pecus.Models.Responses.Role;
 global using Pecus.Models.Responses.Skill;
 global using Pecus.Models.Responses.Tag;
+global using Pecus.Models.Responses.TaskComment;
 global using Pecus.Models.Responses.User;
 global using Pecus.Models.Responses.Workspace;
 global using Pecus.Models.Responses.WorkspaceItem;

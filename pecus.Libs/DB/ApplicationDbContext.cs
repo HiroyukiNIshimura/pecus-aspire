@@ -745,7 +745,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired();
-            entity.Property(e => e.CommentType).IsRequired().HasMaxLength(50).HasDefaultValue("Normal");
+            entity.Property(e => e.CommentType);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
 
             // TaskComment と WorkspaceTask の多対一リレーションシップ

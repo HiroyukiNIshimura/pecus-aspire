@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,19 +31,9 @@ public class TaskComment
     public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// コメントタイプ（通常コメント、ステータス変更、担当者変更など）
+    /// コメントタイプ（NULL の場合は Normal として扱う）
     /// </summary>
-    public string CommentType { get; set; } = "Normal";
-
-    /// <summary>
-    /// 変更前の値（履歴用、JSON形式）
-    /// </summary>
-    public string? BeforeValue { get; set; }
-
-    /// <summary>
-    /// 変更後の値（履歴用、JSON形式）
-    /// </summary>
-    public string? AfterValue { get; set; }
+    public TaskCommentType? CommentType { get; set; }
 
     /// <summary>
     /// 作成日時
