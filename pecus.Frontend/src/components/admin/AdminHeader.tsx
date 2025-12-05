@@ -5,19 +5,10 @@ import type { UserInfo } from '@/types/userInfo';
 
 interface AdminHeaderProps {
   userInfo: UserInfo | null;
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
+  onToggleSidebar?: () => void;
   loading?: boolean;
 }
 
-export default function AdminHeader({ userInfo, sidebarOpen, setSidebarOpen, loading = false }: AdminHeaderProps) {
-  return (
-    <AppHeader
-      userInfo={userInfo}
-      sidebarOpen={sidebarOpen}
-      setSidebarOpen={setSidebarOpen}
-      loading={loading}
-      showAdminLink={true}
-    />
-  );
+export default function AdminHeader({ userInfo, onToggleSidebar, loading = false }: AdminHeaderProps) {
+  return <AppHeader userInfo={userInfo} onToggleSidebar={onToggleSidebar} loading={loading} showAdminLink={true} />;
 }

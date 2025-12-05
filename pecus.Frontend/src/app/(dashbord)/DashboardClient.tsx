@@ -16,7 +16,7 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}

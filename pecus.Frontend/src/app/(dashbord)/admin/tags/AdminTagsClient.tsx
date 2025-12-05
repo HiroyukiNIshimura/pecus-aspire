@@ -157,7 +157,7 @@ export default function AdminTagsClient({
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} loading={false} />
+      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1">
         {/* Sidebar Menu */}

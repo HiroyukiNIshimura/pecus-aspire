@@ -54,8 +54,7 @@ export default function AdminClient({
 
       <AdminHeader
         userInfo={userInfo}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         loading={showLoading}
       />
 

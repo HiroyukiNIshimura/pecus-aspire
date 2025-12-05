@@ -8,8 +8,7 @@ import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface AppHeaderProps {
   userInfo: UserInfo | null;
-  sidebarOpen: boolean;
-  setSidebarOpen?: (open: boolean) => void;
+  onToggleSidebar?: () => void;
   loading?: boolean;
   showAdminLink?: boolean;
   hideProfileMenu?: boolean;
@@ -18,8 +17,7 @@ interface AppHeaderProps {
 
 export default function AppHeader({
   userInfo,
-  sidebarOpen,
-  setSidebarOpen,
+  onToggleSidebar,
   loading = false,
   showAdminLink = true,
   hideProfileMenu = false,
@@ -61,9 +59,9 @@ export default function AppHeader({
       <nav className="navbar">
         <div className="navbar-start flex items-center gap-2">
           {/* ハンバーガーメニュー（モバイルのみ） */}
-          {setSidebarOpen && (
+          {onToggleSidebar && (
             <div className="md:hidden">
-              <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)} title="メニューを開く">
+              <button type="button" className="p-2" onClick={onToggleSidebar} title="メニューを開く">
                 <span className="icon-[mdi--menu] size-5" aria-hidden="true" />
               </button>
             </div>
