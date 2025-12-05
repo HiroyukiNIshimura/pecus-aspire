@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 
 namespace Pecus.Services;
 
@@ -14,16 +15,19 @@ public class WorkspaceTaskService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceTaskService> _logger;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly PecusConfig _config;
 
     public WorkspaceTaskService(
         ApplicationDbContext context,
         ILogger<WorkspaceTaskService> logger,
-        OrganizationAccessHelper accessHelper
+        OrganizationAccessHelper accessHelper,
+        PecusConfig config
     )
     {
         _context = context;
         _logger = logger;
         _accessHelper = accessHelper;
+        _config = config;
     }
 
     /// <summary>
@@ -430,6 +434,122 @@ public class WorkspaceTaskService
             .CountAsync(c => c.WorkspaceTaskId == taskId);
 
         return (task, commentCount);
+    }
+
+    /// <summary>
+    /// コミッタIDでアイテムとタスクを取得（ワークスペース単位）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="committerId">コミッタID</param>
+    /// <param name="page">ページ番号</param>
+    /// <returns>アイテムとタスクのリスト、総件数、ページサイズのタプル</returns>
+    public async Task<(List<(WorkspaceItem Item, List<WorkspaceTask> Tasks)> Results, int TotalCount, int PageSize)> GetTasksByCommitterAsync(
+        int? workspaceId,
+        int committerId,
+        int page
+    )
+    {
+        // 設定からページサイズを取得
+        var pageSize = _config.Pagination.DefaultPageSize;
+
+        // コミッタIDに一致するワークスペースアイテムを取得
+        var itemsQuery = _context.WorkspaceItems
+            .Include(wi => wi.Workspace!)
+                .ThenInclude(w => w.Genre)
+            .Include(wi => wi.Owner)
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .Where(wi => wi.CommitterId == committerId);
+
+        // WorkspaceIdが指定されている場合はフィルタ追加
+        if (workspaceId.HasValue)
+        {
+            itemsQuery = itemsQuery.Where(wi => wi.WorkspaceId == workspaceId.Value);
+        }
+
+        itemsQuery = itemsQuery.OrderByDescending(wi => wi.UpdatedAt);
+
+        // 総件数を取得
+        var totalCount = await itemsQuery.CountAsync();
+
+        // ページネーション適用
+        var items = await itemsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // 各アイテムのIDを抽出
+        var itemIds = items.Select(i => i.Id).ToList();
+
+        // アイテムIDに紐づくタスクを一括取得
+        var tasks = await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
+            .Where(t => itemIds.Contains(t.WorkspaceItemId))
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+
+        // アイテムごとにタスクをグループ化
+        var tasksByItem = tasks.GroupBy(t => t.WorkspaceItemId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // 結果を構築
+        var results = items.Select(item => (
+            Item: item,
+            Tasks: tasksByItem.ContainsKey(item.Id) ? tasksByItem[item.Id] : new List<WorkspaceTask>()
+        )).ToList();
+
+        return (results, totalCount, pageSize);
+    }
+
+    /// <summary>
+    /// WorkspaceItemエンティティからレスポンスを生成（内部ヘルパー）
+    /// </summary>
+    /// <param name="item">アイテムエンティティ</param>
+    private static WorkspaceItemDetailResponse BuildItemDetailResponse(WorkspaceItem item)
+    {
+        return new WorkspaceItemDetailResponse
+        {
+            Id = item.Id,
+            WorkspaceId = item.WorkspaceId,
+            WorkspaceCode = item.Workspace?.Code,
+            WorkspaceName = item.Workspace?.Name,
+            GenreIcon = item.Workspace?.Genre?.Icon,
+            GenreName = item.Workspace?.Genre?.Name,
+            Code = item.Code,
+            Subject = item.Subject,
+            Body = item.Body,
+            OwnerId = item.OwnerId,
+            OwnerUsername = item.Owner?.Username,
+            OwnerAvatarUrl = item.Owner != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Owner.AvatarType,
+                    userId: item.Owner.Id,
+                    username: item.Owner.Username,
+                    email: item.Owner.Email,
+                    avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            AssigneeId = item.AssigneeId,
+            AssigneeUsername = item.Assignee?.Username,
+            AssigneeAvatarUrl = item.Assignee != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Assignee.AvatarType,
+                    userId: item.Assignee.Id,
+                    username: item.Assignee.Username,
+                    email: item.Assignee.Email,
+                    avatarPath: item.Assignee.UserAvatarPath
+                )
+                : null,
+            Priority = item.Priority,
+            DueDate = item.DueDate,
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+            RowVersion = item.RowVersion!,
+        };
     }
 
     /// <summary>

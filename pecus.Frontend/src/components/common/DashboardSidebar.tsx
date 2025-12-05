@@ -12,6 +12,7 @@ const menuItems = [
   { href: '/workspaces', label: 'マイワークスペース', iconClass: 'icon-[mdi--view-grid-outline]' },
   { href: '/my-items', label: 'マイアイテム', iconClass: 'icon-[mdi--clipboard-text-outline]' },
   { href: '/tasks', label: 'タスク', iconClass: 'icon-[mdi--clipboard-check-outline]' },
+  { href: '/committer', label: 'コミッター', iconClass: 'icon-[mdi--checkbox-outline]' },
   { href: '/activity', label: 'アクティビティ', iconClass: 'icon-[mdi--history]' },
 ];
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -18,17 +19,20 @@ public class TaskCommentController : BaseSecureController
 {
     private readonly TaskCommentService _taskCommentService;
     private readonly OrganizationAccessHelper _accessHelper;
+    private readonly PecusConfig _config;
     private readonly ILogger<TaskCommentController> _logger;
 
     public TaskCommentController(
         TaskCommentService taskCommentService,
         OrganizationAccessHelper accessHelper,
+        PecusConfig config,
         ProfileService profileService,
         ILogger<TaskCommentController> logger
     ) : base(profileService, logger)
     {
         _taskCommentService = taskCommentService;
         _accessHelper = accessHelper;
+        _config = config;
         _logger = logger;
     }
 
@@ -65,7 +69,7 @@ public class TaskCommentController : BaseSecureController
             request
         );
 
-        var pageSize = request.PageSize;
+        var pageSize = _config.Pagination.DefaultPageSize;
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
         var response = new PagedResponse<TaskCommentDetailResponse>

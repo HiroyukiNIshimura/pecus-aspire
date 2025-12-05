@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Models.Config;
 
 namespace Pecus.Services;
 
@@ -13,14 +14,17 @@ public class TaskCommentService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<TaskCommentService> _logger;
+    private readonly PecusConfig _config;
 
     public TaskCommentService(
         ApplicationDbContext context,
-        ILogger<TaskCommentService> logger
+        ILogger<TaskCommentService> logger,
+        PecusConfig config
     )
     {
         _context = context;
         _logger = logger;
+        _config = config;
     }
 
     /// <summary>
@@ -173,7 +177,7 @@ public class TaskCommentService
         var totalCount = await query.CountAsync();
 
         // ページネーション
-        var pageSize = request.PageSize;
+        var pageSize = _config.Pagination.DefaultPageSize;
         var comments = await query
             .OrderBy(c => c.CreatedAt)
             .Skip((request.Page - 1) * pageSize)

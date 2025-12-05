@@ -171,6 +171,59 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
+    /// コミッタIDでタスクを検索
+    /// コミッタIDに一致するアイテムとそのタスクを取得します（ワークスペースIDで絞り込み可能）
+    /// </summary>
+    /// <param name="request">コミッタID・ワークスペースID・ページネーションリクエスト</param>
+    /// <returns>アイテムとタスクのグループ化されたリスト</returns>
+    [HttpGet("~/api/tasks/by-committer")]
+    [ProducesResponseType(typeof(PagedResponse<ItemWithTasksResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<PagedResponse<ItemWithTasksResponse>>> GetTasksByCommitter(
+        [FromQuery] GetTasksByCommitterRequest request
+    )
+    {
+        // WorkspaceIdが指定されている場合はアクセス権限をチェック
+        if (request.WorkspaceId.HasValue)
+        {
+            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, request.WorkspaceId.Value);
+            if (!hasAccess)
+            {
+                throw new NotFoundException("ワークスペースが見つかりません。");
+            }
+        }
+
+        var (results, totalCount, pageSize) = await _workspaceTaskService.GetTasksByCommitterAsync(
+            workspaceId: request.WorkspaceId,
+            committerId: request.CommitterId,
+            page: request.Page
+        );
+
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        var responseData = results.Select(r => new ItemWithTasksResponse
+        {
+            Item = BuildTaskItemResponse(r.Item),
+            Tasks = r.Tasks.Select(t => BuildTaskDetailResponse(t)),
+        });
+
+        var response = new PagedResponse<ItemWithTasksResponse>
+        {
+            Data = responseData,
+            CurrentPage = request.Page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            HasPreviousPage = request.Page > 1,
+            HasNextPage = request.Page < totalPages,
+        };
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// タスク更新
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
@@ -222,6 +275,112 @@ public class WorkspaceTaskController : BaseSecureController
         };
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// WorkspaceItemエンティティからレスポンスを生成
+    /// </summary>
+    /// <param name="item">アイテムエンティティ</param>
+    private static WorkspaceItemDetailResponse BuildItemDetailResponse(WorkspaceItem item)
+    {
+        return new WorkspaceItemDetailResponse
+        {
+            Id = item.Id,
+            WorkspaceId = item.WorkspaceId,
+            WorkspaceCode = item.Workspace?.Code,
+            WorkspaceName = item.Workspace?.Name,
+            GenreIcon = item.Workspace?.Genre?.Icon,
+            GenreName = item.Workspace?.Genre?.Name,
+            Code = item.Code,
+            Subject = item.Subject,
+            Body = item.Body,
+            OwnerId = item.OwnerId,
+            OwnerUsername = item.Owner?.Username,
+            OwnerAvatarUrl = item.Owner != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Owner.AvatarType,
+                    userId: item.Owner.Id,
+                    username: item.Owner.Username,
+                    email: item.Owner.Email,
+                    avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            AssigneeId = item.AssigneeId,
+            AssigneeUsername = item.Assignee?.Username,
+            AssigneeAvatarUrl = item.Assignee != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Assignee.AvatarType,
+                    userId: item.Assignee.Id,
+                    username: item.Assignee.Username,
+                    email: item.Assignee.Email,
+                    avatarPath: item.Assignee.UserAvatarPath
+                )
+                : null,
+            Priority = item.Priority,
+            DueDate = item.DueDate,
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+            RowVersion = item.RowVersion!,
+        };
+    }
+
+    /// <summary>
+    /// WorkspaceItemエンティティからTaskItemResponseを生成
+    /// </summary>
+    /// <param name="item">ワークスペースアイテムエンティティ</param>
+    private static TaskItemResponse BuildTaskItemResponse(WorkspaceItem item)
+    {
+        return new TaskItemResponse
+        {
+            WorkspaceId = item.WorkspaceId,
+            WorkspaceCode = item.Workspace?.Code,
+            WorkspaceName = item.Workspace?.Name,
+            GenreIcon = item.Workspace?.Genre?.Icon,
+            GenreName = item.Workspace?.Genre?.Name,
+            Code = item.Code,
+            Subject = item.Subject,
+            OwnerId = item.OwnerId,
+            OwnerUsername = item.Owner?.Username,
+            OwnerAvatarUrl = item.Owner != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Owner.AvatarType,
+                    userId: item.Owner.Id,
+                    username: item.Owner.Username,
+                    email: item.Owner.Email,
+                    avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            AssigneeId = item.AssigneeId,
+            AssigneeUsername = item.Assignee?.Username,
+            AssigneeAvatarUrl = item.Assignee != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Assignee.AvatarType,
+                    userId: item.Assignee.Id,
+                    username: item.Assignee.Username,
+                    email: item.Assignee.Email,
+                    avatarPath: item.Assignee.UserAvatarPath
+                )
+                : null,
+            Priority = item.Priority,
+            DueDate = item.DueDate,
+            IsArchived = item.IsArchived,
+            IsDraft = item.IsDraft,
+            CommitterId = item.CommitterId,
+            CommitterUsername = item.Committer?.Username,
+            CommitterAvatarUrl = item.Committer != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Committer.AvatarType,
+                    userId: item.Committer.Id,
+                    username: item.Committer.Username,
+                    email: item.Committer.Email,
+                    avatarPath: item.Committer.UserAvatarPath
+                )
+                : null,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+        };
     }
 
     /// <summary>

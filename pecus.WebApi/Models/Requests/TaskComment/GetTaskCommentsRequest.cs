@@ -15,12 +15,6 @@ public class GetTaskCommentsRequest
     public int Page { get; set; } = 1;
 
     /// <summary>
-    /// 1ページあたりの件数（1〜100、デフォルト20）
-    /// </summary>
-    [Range(1, 100, ErrorMessage = "ページサイズは1〜100の範囲で指定してください。")]
-    public int PageSize { get; set; } = 20;
-
-    /// <summary>
     /// コメントタイプでフィルタ
     /// </summary>
     public TaskCommentType? CommentType { get; set; }

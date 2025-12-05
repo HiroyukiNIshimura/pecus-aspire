@@ -13,5 +13,5 @@ public class WorkspaceItemListResponse
     public bool IsArchived { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public bool IsAssigned { get; set; }
-    public Pecus.Models.Responses.Workspace.WorkspaceDetailUserResponse Owner { get; set; } = null!;
+    public WorkspaceDetailUserResponse Owner { get; set; } = null!;
 }

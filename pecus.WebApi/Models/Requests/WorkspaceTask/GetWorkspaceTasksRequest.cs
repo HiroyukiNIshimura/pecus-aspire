@@ -40,9 +40,10 @@ public class GetWorkspaceTasksRequest
     public int Page { get; set; } = 1;
 
     /// <summary>
-    /// 1ページあたりの件数（1〜100、デフォルト10）
+    /// 1ページあたりの件数（1〜50、デフォルト10）
+    /// カルーセルのためクライアントからの指定を許可
     /// </summary>
-    [Range(1, 100, ErrorMessage = "ページサイズは1〜100の範囲で指定してください。")]
+    [Range(1, 50, ErrorMessage = "ページサイズは1〜50の範囲で指定してください。")]
     public int PageSize { get; set; } = 10;
 
     /// <summary>
