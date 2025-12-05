@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
+import { deleteTag } from '@/actions/admin/tags';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -509,14 +510,14 @@ export default function AdminTagsClient({
           setTagToDelete(null);
         }}
         onConfirm={async () => {
-          // TODO: 削除APIの実装後に以下のコードを追加
-          // const result = await deleteTag(tagToDelete!.id);
-          // if (result.success) {
-          //   handleFilterChange();
-          //   notify.success("タグを削除しました");
-          // } else {
-          //   notify.error(result.message || "タグの削除に失敗しました。");
-          // }
+          if (!tagToDelete) return;
+          const result = await deleteTag(tagToDelete.id);
+          if (result.success) {
+            handleFilterChange();
+            notify.success('タグを削除しました');
+          } else {
+            notify.error(result.message || 'タグの削除に失敗しました。');
+          }
         }}
         itemType="タグ"
         itemName={tagToDelete?.name || ''}

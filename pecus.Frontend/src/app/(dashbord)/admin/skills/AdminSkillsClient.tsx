@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
+import { deleteSkill } from '@/actions/admin/skills';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -523,14 +524,14 @@ export default function AdminSkillsClient({
           setSkillToDelete(null);
         }}
         onConfirm={async () => {
-          // TODO: 削除APIの実装後に以下のコードを追加
-          // const result = await deleteSkill(skillToDelete!.id);
-          // if (result.success) {
-          //   handleFilterChange();
-          //   notify.success("スキルを削除しました");
-          // } else {
-          //   notify.error(result.message || "スキルの削除に失敗しました。");
-          // }
+          if (!skillToDelete) return;
+          const result = await deleteSkill(skillToDelete.id);
+          if (result.success) {
+            handleFilterChange();
+            notify.success('スキルを削除しました');
+          } else {
+            notify.error(result.message || 'スキルの削除に失敗しました。');
+          }
         }}
         itemType="スキル"
         itemName={skillToDelete?.name || ''}

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { deleteUser } from '@/actions/admin/user';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -659,14 +660,14 @@ export default function AdminUsersClient({
           setUserToDelete(null);
         }}
         onConfirm={async () => {
-          // TODO: 削除APIの実装後に以下のコードを追加
-          // const result = await deleteUser(userToDelete!.id);
-          // if (result.success) {
-          //   handleFilterChange();
-          //   notify.success("ユーザーを削除しました");
-          // } else {
-          //   notify.error(result.message || "ユーザーの削除に失敗しました。");
-          // }
+          if (!userToDelete) return;
+          const result = await deleteUser(userToDelete.id);
+          if (result.success) {
+            handleFilterChange();
+            notify.success('ユーザーを削除しました');
+          } else {
+            notify.error(result.message || 'ユーザーの削除に失敗しました。');
+          }
         }}
         user={userToDelete}
       />
