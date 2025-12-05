@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import AppHeader from '@/components/common/AppHeader';
+import DashboardSidebar from '@/components/common/DashboardSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,

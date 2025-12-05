@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import DashboardSidebar from '@/components/common/DashboardSidebar';
 import type { UserInfo } from '@/types/userInfo';
 
 interface DashboardClientProps {

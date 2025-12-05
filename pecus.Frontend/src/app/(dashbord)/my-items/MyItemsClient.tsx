@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import DashboardSidebar from '@/components/common/DashboardSidebar';
 import type {
   MyItemRelationType,
   WorkspaceItemDetailResponse,
