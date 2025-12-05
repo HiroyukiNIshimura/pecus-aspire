@@ -52,11 +52,7 @@ export default function AdminClient({
     <div className="flex flex-col min-h-screen">
       <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
-      <AdminHeader
-        userInfo={userInfo}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        loading={showLoading}
-      />
+      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />
 
       <div className="flex flex-1">
         <AdminSidebar sidebarOpen={sidebarOpen} />
