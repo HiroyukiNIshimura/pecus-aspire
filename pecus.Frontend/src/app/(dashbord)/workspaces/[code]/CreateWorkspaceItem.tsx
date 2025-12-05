@@ -6,7 +6,6 @@ import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
 import type { EditorContextSettings } from '@/components/editor/core/appSettings';
-import { CloseIcon, PlusIcon, SaveIcon } from '@/components/icons';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -164,7 +163,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <PlusIcon />
+              <span className="icon-[mdi--plus-circle-outline] size-6" aria-hidden="true" />
               新規アイテム作成
             </h2>
             <button
@@ -174,7 +173,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
               disabled={isSubmitting}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -333,7 +332,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     </>
                   ) : (
                     <>
-                      <SaveIcon className="w-5 h-5" />
+                      <span className="icon-[mdi--content-save-outline] w-5 h-5" aria-hidden="true" />
                       作成
                     </>
                   )}

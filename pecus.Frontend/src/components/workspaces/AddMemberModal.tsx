@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import { CheckCircleIcon, HighlightOffIcon } from '@/components/icons';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
@@ -280,7 +279,7 @@ export default function AddMemberModal({
                 {skillMatchResult.matchedSkills.length > 0 && (
                   <div className="mt-3">
                     <div className="flex items-center gap-1 text-xs text-success mb-1">
-                      <CheckCircleIcon className="w-3 h-3" />
+                      <span className="icon-[mdi--check-circle-outline] w-3 h-3" aria-hidden="true" />
                       <span>マッチしたスキル ({skillMatchResult.matchedSkills.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -297,7 +296,7 @@ export default function AddMemberModal({
                 {skillMatchResult.missingSkills.length > 0 && (
                   <div className="mt-3">
                     <div className="flex items-center gap-1 text-xs text-error mb-1">
-                      <HighlightOffIcon className="w-3 h-3" />
+                      <span className="icon-[mdi--close-circle-outline] w-3 h-3" aria-hidden="true" />
                       <span>不足しているスキル ({skillMatchResult.missingSkills.length})</span>
                     </div>
                     <div className="flex flex-wrap gap-1">

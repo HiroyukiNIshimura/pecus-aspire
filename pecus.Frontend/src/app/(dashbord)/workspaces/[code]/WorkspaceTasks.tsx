@@ -5,7 +5,6 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
-import { ChevronLeftIcon, ChevronRightIcon, EditIcon, MessageIcon, PlusIcon } from '@/components/icons';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskStatusFilter as TaskStatusFilterType,
@@ -346,7 +345,7 @@ const WorkspaceTasks = ({
             className="btn btn-outline btn-primary btn-sm"
             onClick={() => setIsCreateModalOpen(true)}
           >
-            <PlusIcon className="w-4 h-4" />
+            <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
             タスク追加
           </button>
         </div>
@@ -397,7 +396,7 @@ const WorkspaceTasks = ({
           className="btn  btn-outline btn-primary btn-sm"
           onClick={() => setIsCreateModalOpen(true)}
         >
-          <PlusIcon className="w-4 h-4" />
+          <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
           タスク追加
         </button>
       </div>
@@ -491,7 +490,7 @@ const WorkspaceTasks = ({
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-outline btn-primary"
               aria-label="前のページ"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
+              <span className="icon-[mdi--chevron-left] w-5 h-5" aria-hidden="true" />
             </button>
           )}
 
@@ -612,7 +611,7 @@ const WorkspaceTasks = ({
                             title="編集"
                             aria-label={`タスクを編集: ${task.content?.slice(0, 30) || 'タスク'}`}
                           >
-                            <EditIcon className="w-4 h-4" />
+                            <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
                           </button>
                         )}
                       <button
@@ -622,7 +621,7 @@ const WorkspaceTasks = ({
                         title="コメント"
                         aria-label={`コメントを表示: ${task.content?.slice(0, 30) || 'タスク'}`}
                       >
-                        <MessageIcon className="w-4 h-4" />
+                        <span className="icon-[mdi--message-outline] w-4 h-4" aria-hidden="true" />
                         {(task.commentCount ?? 0) > 0 && (
                           <span className="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-content rounded-full px-1">
                             {task.commentCount}
@@ -645,7 +644,7 @@ const WorkspaceTasks = ({
               className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-outline btn-primary"
               aria-label="次のページ"
             >
-              <ChevronRightIcon className="w-5 h-5" />
+              <span className="icon-[mdi--chevron-right] w-5 h-5" aria-hidden="true" />
             </button>
           )}
 

@@ -1,6 +1,5 @@
 'use client';
 
-import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createTaskComment,
@@ -8,17 +7,6 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
-import {
-  BellIcon,
-  DeleteOutlineIcon,
-  EditIcon,
-  HelpIcon,
-  MailQuestionIcon,
-  MessageIcon,
-  NoteIcon,
-  SendIcon,
-  UrgentIcon,
-} from '@/components/icons';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -27,18 +15,13 @@ import { getDisplayIconUrl } from '@/utils/imageUrl';
 /** コメントの最大文字数 */
 const MAX_COMMENT_LENGTH = 500;
 
-interface IconProps {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-  className?: string;
-}
-
-const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; Icon: FC<IconProps> }> = {
-  Normal: { label: '通常', color: 'badge-neutral', Icon: MessageIcon },
-  Memo: { label: 'メモ', color: 'badge-info', Icon: NoteIcon },
-  HelpWanted: { label: '助けて', color: 'badge-warning', Icon: HelpIcon },
-  NeedReply: { label: '返事が欲しい', color: 'badge-primary', Icon: MailQuestionIcon },
-  Reminder: { label: 'リマインダー', color: 'badge-secondary', Icon: BellIcon },
-  Urge: { label: '督促', color: 'badge-error', Icon: UrgentIcon },
+const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; iconClass: string }> = {
+  Normal: { label: '通常', color: 'badge-neutral', iconClass: 'icon-[mdi--message-outline]' },
+  Memo: { label: 'メモ', color: 'badge-info', iconClass: 'icon-[mdi--note-outline]' },
+  HelpWanted: { label: '助けて', color: 'badge-warning', iconClass: 'icon-[mdi--help-circle-outline]' },
+  NeedReply: { label: '返事が欲しい', color: 'badge-primary', iconClass: 'icon-[mdi--email-outline]' },
+  Reminder: { label: 'リマインダー', color: 'badge-secondary', iconClass: 'icon-[mdi--bell-outline]' },
+  Urge: { label: '督促', color: 'badge-error', iconClass: 'icon-[mdi--alarm]' },
 };
 
 interface TaskCommentSectionProps {
@@ -304,7 +287,7 @@ export default function TaskCommentSection({
     <div className="flex flex-col h-full flex-1 min-h-0">
       {/* ヘッダー */}
       <div className="flex items-center gap-2 p-3 border-b border-base-300 flex-shrink-0">
-        <MessageIcon className="text-primary w-5 h-5" />
+        <span className="icon-[mdi--message-outline] text-primary w-5 h-5" aria-hidden="true" />
         <span className="font-bold">コメント</span>
         <span className="badge badge-neutral badge-sm">{totalCount}件</span>
       </div>
@@ -317,7 +300,7 @@ export default function TaskCommentSection({
           </div>
         ) : comments.length === 0 ? (
           <div className="text-center text-base-content/50 py-8">
-            <MessageIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
+            <span className="icon-[mdi--message-outline] w-10 h-10 mx-auto mb-2 opacity-30 block" aria-hidden="true" />
             <p className="text-sm">コメントはまだありません</p>
           </div>
         ) : (
@@ -348,10 +331,9 @@ export default function TaskCommentSection({
                     {(() => {
                       const type = comment.commentType || 'Normal';
                       const config = commentTypeConfig[type];
-                      const IconComponent = config?.Icon;
-                      return config && IconComponent ? (
+                      return config ? (
                         <span className={`badge badge-sm ${config.color}`} title={config.label}>
-                          <IconComponent size="xs" className="mr-0.5" />
+                          <span className={`${config.iconClass} size-3 mr-0.5`} aria-hidden="true" />
                           {config.label}
                         </span>
                       ) : null;
@@ -426,7 +408,7 @@ export default function TaskCommentSection({
                         onClick={() => handleStartEdit(comment)}
                         title="編集"
                       >
-                        <EditIcon className="w-4 h-4" />
+                        <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -434,7 +416,7 @@ export default function TaskCommentSection({
                         onClick={() => handleDeleteClick(comment)}
                         title="削除"
                       >
-                        <DeleteOutlineIcon className="w-4 h-4" />
+                        <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
                   )}
@@ -512,7 +494,7 @@ export default function TaskCommentSection({
             {isSubmitting ? (
               <span className="loading loading-spinner loading-xs"></span>
             ) : (
-              <SendIcon className="w-3.5 h-3.5" />
+              <span className="icon-[mdi--send-outline] w-3.5 h-3.5" aria-hidden="true" />
             )}
           </button>
         </div>

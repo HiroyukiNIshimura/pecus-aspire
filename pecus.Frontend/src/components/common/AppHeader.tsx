@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { logout } from '@/actions/auth';
-import { AutoBrightnessIcon, MenuIcon, MoonIcon, SunIcon } from '@/components/icons';
 import { useTheme } from '@/hooks/useTheme';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -64,7 +63,7 @@ export default function AppHeader({
           {/* ハンバーガーメニュー（モバイルのみ） */}
           <div className="md:hidden">
             <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <MenuIcon size="md" />
+              <span className="icon-[mdi--menu] size-5" aria-hidden="true" />
             </button>
           </div>
           {/* ロゴ（デスクトップのみ） */}
@@ -99,9 +98,9 @@ export default function AppHeader({
           {mounted && (
             <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end] mr-2">
               <button type="button" className="dropdown-toggle bg-transparent hover:bg-transparent before:hidden p-2">
-                {theme === 'light' && <SunIcon size="md" />}
-                {theme === 'dark' && <MoonIcon size="md" />}
-                {theme === 'auto' && <AutoBrightnessIcon size="md" />}
+                {theme === 'light' && <span className="icon-[mdi--white-balance-sunny] size-6" aria-hidden="true" />}
+                {theme === 'dark' && <span className="icon-[mdi--moon-and-stars] size-6" aria-hidden="true" />}
+                {theme === 'auto' && <span className="icon-[mdi--brightness-auto] size-6" aria-hidden="true" />}
               </button>
               <ul className="dropdown-menu dropdown-open:opacity-100 hidden min-w-32">
                 <li>
@@ -110,7 +109,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'light' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('light')}
                   >
-                    <SunIcon size="sm" />
+                    <span className="icon-[mdi--white-balance-sunny] size-4" aria-hidden="true" />
                     ライト
                   </button>
                 </li>
@@ -120,7 +119,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'dark' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('dark')}
                   >
-                    <MoonIcon size="sm" />
+                    <span className="icon-[mdi--moon-and-stars] size-4" aria-hidden="true" />
                     ダーク
                   </button>
                 </li>
@@ -130,7 +129,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'auto' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('auto')}
                   >
-                    <AutoBrightnessIcon size="sm" />
+                    <span className="icon-[mdi--brightness-auto] size-4" aria-hidden="true" />
                     自動
                   </button>
                 </li>

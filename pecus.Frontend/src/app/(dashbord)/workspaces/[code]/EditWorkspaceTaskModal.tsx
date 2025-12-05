@@ -5,7 +5,6 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, MinusIcon, PlusSimpleIcon } from '@/components/icons';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,
@@ -509,7 +508,7 @@ export default function EditWorkspaceTaskModal({
           <div className="flex items-center justify-between p-4 border-b border-base-300 flex-shrink-0">
             <div className="flex items-center gap-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <EditIcon />
+                <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
                 タスクを編集
               </h2>
               {/* ナビゲーションインジケーター */}
@@ -547,7 +546,7 @@ export default function EditWorkspaceTaskModal({
                 aria-label="前のタスク"
                 title="前のタスク (←)"
               >
-                <ChevronLeftIcon />
+                <span className="icon-[mdi--chevron-left] size-5" aria-hidden="true" />
               </button>
               {/* 次へボタン */}
               <button
@@ -558,7 +557,7 @@ export default function EditWorkspaceTaskModal({
                 aria-label="次のタスク"
                 title="次のタスク (→)"
               >
-                <ChevronRightIcon />
+                <span className="icon-[mdi--chevron-right] size-5" aria-hidden="true" />
               </button>
               {/* 閉じるボタン */}
               <button
@@ -568,7 +567,7 @@ export default function EditWorkspaceTaskModal({
                 disabled={isSubmitting}
                 aria-label="閉じる"
               >
-                <CloseIcon />
+                <span className="icon-[mdi--close] size-5" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -852,7 +851,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                               disabled={isSubmitting || isLoadingTask || estimatedHours <= 0}
                             >
-                              <MinusIcon size="xs" />
+                              <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
                             </button>
                             <button
                               type="button"
@@ -861,7 +860,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
                               disabled={isSubmitting || isLoadingTask}
                             >
-                              <PlusSimpleIcon size="xs" />
+                              <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
                             </button>
                           </span>
                         </div>
@@ -903,7 +902,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setActualHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                               disabled={isSubmitting || isLoadingTask || actualHours <= 0}
                             >
-                              <MinusIcon size="xs" />
+                              <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
                             </button>
                             <button
                               type="button"
@@ -912,7 +911,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setActualHours((prev) => (prev || 0) + 0.5)}
                               disabled={isSubmitting || isLoadingTask}
                             >
-                              <PlusSimpleIcon size="xs" />
+                              <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
                             </button>
                           </span>
                         </div>
@@ -1073,7 +1072,7 @@ export default function EditWorkspaceTaskModal({
                           </>
                         ) : (
                           <>
-                            <EditIcon className="w-5 h-5" />
+                            <span className="icon-[mdi--pencil-outline] w-5 h-5" aria-hidden="true" />
                             保存
                           </>
                         )}

@@ -13,16 +13,6 @@ import {
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
-import {
-  ChevronUpIcon,
-  DeleteIcon,
-  EditIcon,
-  MoreVertIcon,
-  PersonIcon,
-  PsychologyIcon,
-  ToggleOffIcon,
-  ToggleOnIcon,
-} from '@/components/icons';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
@@ -584,7 +574,7 @@ export default function WorkspaceDetailClient({
             }}
             aria-label="アクション"
           >
-            <MoreVertIcon className="w-5 h-5" />
+            <span className="icon-[mdi--dots-vertical] w-5 h-5" aria-hidden="true" />
           </button>
           {openActionMenu && (
             <ul className="absolute right-0 top-10 menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-xl border border-base-300">
@@ -597,7 +587,7 @@ export default function WorkspaceDetailClient({
                   }}
                   className="flex items-center gap-2"
                 >
-                  <EditIcon className="w-4 h-4" />
+                  <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
                   <span>編集</span>
                 </button>
               </li>
@@ -610,7 +600,7 @@ export default function WorkspaceDetailClient({
                   }}
                   className="flex items-center gap-2"
                 >
-                  <PsychologyIcon className="w-4 h-4" />
+                  <span className="icon-[mdi--lightbulb-outline] w-4 h-4" aria-hidden="true" />
                   <span>スキル</span>
                 </button>
               </li>
@@ -625,12 +615,12 @@ export default function WorkspaceDetailClient({
                 >
                   {currentWorkspaceDetail.isActive ? (
                     <>
-                      <ToggleOffIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--toggle-switch-off-outline] w-4 h-4" aria-hidden="true" />
                       <span>無効化</span>
                     </>
                   ) : (
                     <>
-                      <ToggleOnIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--toggle-switch] w-4 h-4" aria-hidden="true" />
                       <span>有効化</span>
                     </>
                   )}
@@ -648,7 +638,7 @@ export default function WorkspaceDetailClient({
                       }}
                       className="flex items-center gap-2 text-error hover:bg-error hover:text-error-content"
                     >
-                      <DeleteIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
                       <span>削除</span>
                     </button>
                   </li>
@@ -750,7 +740,7 @@ export default function WorkspaceDetailClient({
                   <div>
                     <span className="text-xs text-base-content/70">メンバー数</span>
                     <p className="font-semibold flex items-center gap-2">
-                      <PersonIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--account-outline] w-4 h-4" aria-hidden="true" />
                       {members.length}
                     </p>
                   </div>
@@ -983,9 +973,9 @@ export default function WorkspaceDetailClient({
             <span className="text-sm font-medium text-base-content/70">
               {mobileDrawerOpen ? '閉じる' : 'アイテム一覧'}
             </span>
-            <ChevronUpIcon
-              size="md"
-              className={`transition-transform duration-300 ${mobileDrawerOpen ? 'rotate-180' : ''}`}
+            <span
+              className={`icon-[mdi--chevron-up] size-5 transition-transform duration-300 ${mobileDrawerOpen ? 'rotate-180' : ''}`}
+              aria-hidden="true"
             />
           </button>
 

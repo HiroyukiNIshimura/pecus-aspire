@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ClearIcon, SearchIcon } from '@/components/icons';
 
 interface DebouncedSearchInputProps {
   /** 検索実行時のコールバック */
@@ -125,7 +124,10 @@ export default function DebouncedSearchInput({
         autoComplete="nope"
       />
       {showSearchIcon && (
-        <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50 pointer-events-none" />
+        <span
+          className="icon-[mdi--magnify] absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50 pointer-events-none"
+          aria-hidden="true"
+        />
       )}
       {showClearButton && value && !isLoading && (
         <button
@@ -134,7 +136,7 @@ export default function DebouncedSearchInput({
           className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content transition-colors"
           title="クリア"
         >
-          <ClearIcon className="w-4 h-4" />
+          <span className="icon-[mdi--close-circle-outline] w-4 h-4" aria-hidden="true" />
         </button>
       )}
       {isLoading && (

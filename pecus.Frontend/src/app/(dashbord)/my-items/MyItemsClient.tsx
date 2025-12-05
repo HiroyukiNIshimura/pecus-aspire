@@ -6,15 +6,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import {
-  ArchiveIcon,
-  AssignmentIcon,
-  AssignmentIndIcon,
-  EditIcon,
-  PersonIcon,
-  PinIcon,
-  ViewListIcon,
-} from '@/components/icons';
 import type {
   MyItemRelationType,
   WorkspaceItemDetailResponse,
@@ -32,11 +23,19 @@ interface MyItemsClientProps {
 
 // フィルタータブの定義
 const filterTabs: { key: MyItemRelationType | 'All'; label: string; icon: React.ReactNode }[] = [
-  { key: 'All', label: 'すべて', icon: <ViewListIcon size="sm" /> },
-  { key: 'Owner', label: 'オーナー', icon: <PersonIcon size="sm" /> },
-  { key: 'Assignee', label: '担当', icon: <AssignmentIndIcon size="sm" /> },
-  { key: 'Committer', label: 'コミッター', icon: <EditIcon size="sm" /> },
-  { key: 'Pinned', label: 'PIN', icon: <PinIcon size="sm" /> },
+  { key: 'All', label: 'すべて', icon: <span className="icon-[mdi--view-list-outline] size-4" aria-hidden="true" /> },
+  { key: 'Owner', label: 'オーナー', icon: <span className="icon-[mdi--account-outline] size-4" aria-hidden="true" /> },
+  {
+    key: 'Assignee',
+    label: '担当',
+    icon: <span className="icon-[mdi--clipboard-account-outline] size-4" aria-hidden="true" />,
+  },
+  {
+    key: 'Committer',
+    label: 'コミッター',
+    icon: <span className="icon-[mdi--pencil-outline] size-4" aria-hidden="true" />,
+  },
+  { key: 'Pinned', label: 'PIN', icon: <span className="icon-[mdi--pin] size-4" aria-hidden="true" /> },
 ];
 
 export default function MyItemsClient({ initialUser, initialItems, fetchError }: MyItemsClientProps) {
@@ -161,7 +160,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
           {/* ページヘッダー */}
           <div className="mb-6">
             <div className="flex items-center gap-3">
-              <AssignmentIcon className="text-primary w-8 h-8" />
+              <span className="icon-[mdi--clipboard-text-outline] text-primary w-8 h-8" aria-hidden="true" />
               <div>
                 <h1 className="text-2xl font-bold">マイアイテム</h1>
                 <p className="text-base-content/70 mt-1">あなたに関連するワークスペースアイテムの一覧</p>
@@ -196,7 +195,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                     className={`btn btn-sm gap-1 ${showArchived ? 'btn-warning' : 'btn-default'}`}
                     title={showArchived ? 'アーカイブ済みを表示中' : 'アーカイブ済みを表示'}
                   >
-                    <ArchiveIcon size="sm" />
+                    <span className="icon-[mdi--archive-outline] size-4" aria-hidden="true" />
                     <span>アーカイブ</span>
                   </button>
                 </div>
@@ -270,7 +269,9 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                               <div className="flex items-center gap-1">
                                 {item.isArchived && <span className="badge badge-neutral badge-xs">アーカイブ</span>}
                                 {item.isDraft && <span className="badge badge-warning badge-xs">下書き</span>}
-                                {item.isPinned && <PinIcon className="w-4 h-4 text-info" />}
+                                {item.isPinned && (
+                                  <span className="icon-[mdi--pin] w-4 h-4 text-info" aria-hidden="true" />
+                                )}
                               </div>
                             </div>
 

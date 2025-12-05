@@ -8,7 +8,6 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
-import { AddLinkIcon, EditIcon, LinkOffIcon, MenuIcon, PinIcon, PinOutlineIcon } from '@/components/icons';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
@@ -273,9 +272,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 {isPinLoading ? (
                   <span className="loading loading-spinner loading-xs"></span>
                 ) : item.isPinned ? (
-                  <PinIcon size="sm" />
+                  <span className="icon-[mdi--pin] size-4" aria-hidden="true" />
                 ) : (
-                  <PinOutlineIcon size="sm" />
+                  <span className="icon-[mdi--pin-outline] size-4" aria-hidden="true" />
                 )}
                 {item.pinCount !== undefined && item.pinCount > 0 && <span className="text-xs">{item.pinCount}</span>}
               </button>
@@ -287,7 +286,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 style={{ pointerEvents: 'auto' }}
                 disabled={isDraftAndNotOwner}
               >
-                <EditIcon size="sm" />
+                <span className="icon-[mdi--pencil-outline] size-4" aria-hidden="true" />
                 編集
               </button>
               <button
@@ -296,7 +295,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 className="btn btn-secondary btn-sm gap-2"
                 title="詳細オプション"
               >
-                <MenuIcon size="sm" />
+                <span className="icon-[mdi--menu] size-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -307,7 +306,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {item.isArchived && <span className="badge badge-neutral">アーカイブ済み</span>}
             {item.isPinned && (
               <span className="badge badge-info gap-1">
-                <PinIcon className="w-3.5 h-3.5" />
+                <span className="icon-[mdi--pin] w-3.5 h-3.5" aria-hidden="true" />
                 PIN済み
               </span>
             )}
@@ -400,7 +399,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 className={`btn btn-primary btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
                 title={isAddingRelation ? '関連アイテム追加を解除' : '関連アイテムを追加'}
               >
-                <AddLinkIcon className="w-4 h-4" />
+                <span className="icon-[mdi--link-plus] w-4 h-4" aria-hidden="true" />
                 <span>{isAddingRelation ? '解除' : '追加'}</span>
               </button>
             </div>
@@ -445,7 +444,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                       className="btn btn-secondary btn-xs text-error hover:bg-error/10"
                       title="関連を削除"
                     >
-                      <LinkOffIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--link-off] w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 ))}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { StarFilledIcon } from '@/components/icons';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 
@@ -231,7 +230,7 @@ function WorkspaceMemberCard({
           {isWorkspaceOwner ? (
             <div className="indicator">
               <span className="indicator-item indicator-end bg-warning size-3 rounded-full flex items-center justify-center">
-                <StarFilledIcon size="xs" className="text-warning-content" />
+                <span className="icon-[mdi--star] size-3 text-warning-content" aria-hidden="true" />
               </span>
               <span className={`badge badge-xs ${config.badgeClass}`}>{config.label}</span>
             </div>

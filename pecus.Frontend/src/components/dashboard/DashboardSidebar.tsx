@@ -1,14 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import {
-  AdminPanelSettingsIcon,
-  AssignmentIcon,
-  DashboardIcon,
-  GridViewIcon,
-  HistoryIcon,
-  TaskIcon,
-} from '@/components/icons';
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -16,17 +8,17 @@ interface DashboardSidebarProps {
 }
 
 const menuItems = [
-  { href: '/', label: 'ダッシュボード', icon: DashboardIcon },
-  { href: '/workspaces', label: 'マイワークスペース', icon: GridViewIcon },
-  { href: '/my-items', label: 'マイアイテム', icon: AssignmentIcon },
-  { href: '/tasks', label: 'タスク', icon: TaskIcon },
-  { href: '/activity', label: 'アクティビティ', icon: HistoryIcon },
+  { href: '/', label: 'ダッシュボード', iconClass: 'icon-[mdi--view-dashboard-outline]' },
+  { href: '/workspaces', label: 'マイワークスペース', iconClass: 'icon-[mdi--view-grid-outline]' },
+  { href: '/my-items', label: 'マイアイテム', iconClass: 'icon-[mdi--clipboard-text-outline]' },
+  { href: '/tasks', label: 'タスク', iconClass: 'icon-[mdi--clipboard-check-outline]' },
+  { href: '/activity', label: 'アクティビティ', iconClass: 'icon-[mdi--history]' },
 ];
 
 const adminItem = {
   href: '/admin',
   label: '管理者',
-  icon: AdminPanelSettingsIcon,
+  iconClass: 'icon-[mdi--cog-outline]',
 };
 
 export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSidebarProps) {
@@ -41,21 +33,18 @@ export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSide
         機能メニュー
       </h2>
       <ul className="menu bg-base-100 rounded-box w-full">
-        {allMenuItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <li key={item.href} className="w-full">
-              <a
-                href={item.href}
-                className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
-                title={item.label}
-              >
-                <IconComponent className="w-5 h-5" />
-                <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
-              </a>
-            </li>
-          );
-        })}
+        {allMenuItems.map((item) => (
+          <li key={item.href} className="w-full">
+            <a
+              href={item.href}
+              className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
+              title={item.label}
+            >
+              <span className={`${item.iconClass} size-5`} aria-hidden="true" />
+              <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
+            </a>
+          </li>
+        ))}
       </ul>
     </aside>
   );

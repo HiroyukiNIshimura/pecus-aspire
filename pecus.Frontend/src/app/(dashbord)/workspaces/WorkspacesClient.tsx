@@ -7,15 +7,6 @@ import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import AppHeader from '@/components/common/AppHeader';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import {
-  FilterIcon,
-  GridViewIcon,
-  PersonIcon,
-  PlusIcon,
-  PowerOffIcon,
-  PowerOnIcon,
-  SearchIcon,
-} from '@/components/icons';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -208,14 +199,14 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <GridViewIcon className="text-primary w-8 h-8" />
+                <span className="icon-[mdi--view-grid-outline] text-primary w-8 h-8" aria-hidden="true" />
                 <div>
                   <h1 className="text-2xl font-bold">マイワークスペース</h1>
                   <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
                 </div>
               </div>
               <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                <PlusIcon className="w-5 h-5" />
+                <span className="icon-[mdi--plus-circle-outline] w-5 h-5" aria-hidden="true" />
                 新規作成
               </button>
             </div>
@@ -229,7 +220,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                 onClick={() => setFilterOpen(!filterOpen)}
               >
                 <h2 className="card-title text-lg flex items-center gap-2">
-                  <FilterIcon className="w-5 h-5" />
+                  <span className="icon-[mdi--filter-outline] w-5 h-5" aria-hidden="true" />
                   <span
                     className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
                   >
@@ -312,7 +303,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                       onClick={handleSearch}
                       disabled={!nameValidation.isValid}
                     >
-                      <SearchIcon className="w-4 h-4" />
+                      <span className="icon-[mdi--magnify] w-4 h-4" aria-hidden="true" />
                       検索
                     </button>
                   </div>
@@ -366,9 +357,12 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                               <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
                               <div className="flex items-center gap-2">
                                 {workspace.isActive ? (
-                                  <PowerOnIcon className="w-4 h-4 text-success" />
+                                  <span className="icon-[mdi--power] w-4 h-4 text-success" aria-hidden="true" />
                                 ) : (
-                                  <PowerOffIcon className="w-4 h-4 text-base-content/50" />
+                                  <span
+                                    className="icon-[mdi--power-off] w-4 h-4 text-base-content/50"
+                                    aria-hidden="true"
+                                  />
                                 )}
                               </div>
                             </div>
@@ -403,7 +397,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                             <div className="flex items-center justify-between text-sm gap-2">
                               <span className="text-base-content/70 flex-shrink-0">メンバー</span>
                               <div className="flex items-center gap-1 font-medium">
-                                <PersonIcon className="w-4 h-4" />
+                                <span className="icon-[mdi--account-outline] w-4 h-4" aria-hidden="true" />
                                 {workspace.memberCount || 0}
                               </div>
                             </div>

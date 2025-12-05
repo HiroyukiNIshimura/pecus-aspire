@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { CloseIcon, DeleteIcon, WarningIcon } from '@/components/icons';
 
 interface DeleteConfirmModalProps {
   /** モーダルの表示状態 */
@@ -75,7 +74,7 @@ export default function DeleteConfirmModal({
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-error/10">
-                <WarningIcon className="w-6 h-6 text-error" />
+                <span className="icon-[mdi--alert-outline] w-6 h-6 text-error" aria-hidden="true" />
               </div>
               <div>
                 <h2 id="delete-modal-title" className="text-xl font-bold text-error">
@@ -91,7 +90,7 @@ export default function DeleteConfirmModal({
               disabled={isDeleting}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -111,7 +110,7 @@ export default function DeleteConfirmModal({
             {/* 追加の警告メッセージ */}
             {additionalWarning && (
               <div className="alert alert-warning mb-4">
-                <WarningIcon className="w-5 h-5" />
+                <span className="icon-[mdi--alert-outline] w-5 h-5" aria-hidden="true" />
                 <span className="text-sm">{additionalWarning}</span>
               </div>
             )}
@@ -129,7 +128,7 @@ export default function DeleteConfirmModal({
                   </>
                 ) : (
                   <>
-                    <DeleteIcon className="w-4 h-4" />
+                    <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
                     削除する
                   </>
                 )}

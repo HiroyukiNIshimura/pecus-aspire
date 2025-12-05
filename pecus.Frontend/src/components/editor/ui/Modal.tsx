@@ -10,7 +10,6 @@ import { isDOMNode } from 'lexical';
 import type { JSX } from 'react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { CloseIcon } from '@/components/icons';
 
 function PortalImpl({
   onClose,
@@ -77,7 +76,7 @@ function PortalImpl({
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">{title}</h2>
             <button type="button" className="btn btn-sm btn-circle ms-2" onClick={onClose} aria-label="閉じる">
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
           <div className="p-6">{children}</div>

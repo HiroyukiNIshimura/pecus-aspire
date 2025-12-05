@@ -1,18 +1,17 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { BadgeIcon, BusinessIcon, GridViewIcon, LocalOfferIcon, PeopleIcon } from '@/components/icons';
 
 interface AdminSidebarProps {
   sidebarOpen: boolean;
 }
 
 const menuItems = [
-  { href: '/admin', label: '組織', icon: BusinessIcon },
-  { href: '/admin/workspaces', label: 'ワークスペース', icon: GridViewIcon },
-  { href: '/admin/users', label: 'ユーザー', icon: PeopleIcon },
-  { href: '/admin/skills', label: 'スキル', icon: BadgeIcon },
-  { href: '/admin/tags', label: 'タグ', icon: LocalOfferIcon },
+  { href: '/admin', label: '組織', iconClass: 'icon-[mdi--office-building-outline]' },
+  { href: '/admin/workspaces', label: 'ワークスペース', iconClass: 'icon-[mdi--view-grid-outline]' },
+  { href: '/admin/users', label: 'ユーザー', iconClass: 'icon-[mdi--account-group-outline]' },
+  { href: '/admin/skills', label: 'スキル', iconClass: 'icon-[mdi--badge-account-outline]' },
+  { href: '/admin/tags', label: 'タグ', iconClass: 'icon-[mdi--tag-outline]' },
 ];
 
 export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
@@ -26,21 +25,18 @@ export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
         管理者メニュー
       </h2>
       <ul className="menu bg-base-100 rounded-box w-full">
-        {menuItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <li key={item.href} className="w-full">
-              <a
-                href={item.href}
-                className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
-                title={item.label}
-              >
-                <IconComponent className="w-5 h-5" />
-                <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
-              </a>
-            </li>
-          );
-        })}
+        {menuItems.map((item) => (
+          <li key={item.href} className="w-full">
+            <a
+              href={item.href}
+              className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
+              title={item.label}
+            >
+              <span className={`${item.iconClass} size-5`} aria-hidden="true" />
+              <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
+            </a>
+          </li>
+        ))}
       </ul>
     </aside>
   );

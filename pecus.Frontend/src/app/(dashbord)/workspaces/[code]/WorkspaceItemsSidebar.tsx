@@ -3,17 +3,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import {
-  CalendarIcon,
-  CheckboxBlankIcon,
-  CheckboxIcon,
-  CloseIcon,
-  EditNoteIcon,
-  FilterIcon,
-  HomeIcon,
-  LinkIcon,
-  PlusIcon,
-} from '@/components/icons';
 import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
@@ -357,7 +346,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5 text-primary" />
+                  <span className="icon-[mdi--link] w-5 h-5 text-primary" aria-hidden="true" />
                   <h3 className="text-lg font-bold">関連アイテムを選択</h3>
                 </div>
                 <button
@@ -366,7 +355,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   className="btn btn-secondary btn-sm btn-circle"
                   title="キャンセル"
                 >
-                  <CloseIcon className="w-4 h-4" />
+                  <span className="icon-[mdi--close] w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
               <p className="text-xs text-base-content/70 mb-3">
@@ -410,7 +399,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   }`}
                   title="ワークスペースHome"
                 >
-                  <HomeIcon className="w-4 h-4" />
+                  <span className="icon-[mdi--home-outline] w-4 h-4" aria-hidden="true" />
                   <span>ワークスペースHome</span>
                 </button>
               </div>
@@ -426,7 +415,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                   className="btn btn-primary btn-sm gap-1"
                   title="アイテムを追加"
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
                   <span>追加</span>
                 </button>
               </div>
@@ -443,7 +432,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                 onClick={() => setIsFilterDrawerOpen(true)}
                 className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
               >
-                <FilterIcon className="w-3 h-3" />
+                <span className="icon-[mdi--filter-outline] w-3 h-3" aria-hidden="true" />
                 <span>詳細フィルター</span>
                 {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
                   <span className="badge badge-primary badge-xs">
@@ -535,11 +524,17 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                           {isSelectionMode && (
                             <div className="flex-shrink-0 mt-0.5">
                               {isExcluded ? (
-                                <CheckboxBlankIcon className="w-4 h-4 opacity-30" />
+                                <span
+                                  className="icon-[mdi--checkbox-blank-outline] w-4 h-4 opacity-30"
+                                  aria-hidden="true"
+                                />
                               ) : isSelected ? (
-                                <CheckboxIcon className="w-4 h-4 text-primary" />
+                                <span
+                                  className="icon-[mdi--checkbox-marked-outline] w-4 h-4 text-primary"
+                                  aria-hidden="true"
+                                />
                               ) : (
-                                <CheckboxBlankIcon className="w-4 h-4" />
+                                <span className="icon-[mdi--checkbox-blank-outline] w-4 h-4" aria-hidden="true" />
                               )}
                             </div>
                           )}
@@ -553,7 +548,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                               {/* 下書き */}
                               {item.isDraft && (
                                 <span className="flex items-center gap-0.5" title="下書き">
-                                  <EditNoteIcon className="w-3 h-3" />
+                                  <span className="icon-[mdi--file-document-edit-outline] w-3 h-3" aria-hidden="true" />
                                   <span>下書き</span>
                                 </span>
                               )}
@@ -564,7 +559,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                                   className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
                                   title={`期限: ${item.dueDate}`}
                                 >
-                                  <CalendarIcon className="w-3 h-3" />
+                                  <span className="icon-[mdi--calendar-outline] w-3 h-3" aria-hidden="true" />
                                   <span>{shortDate}</span>
                                 </span>
                               )}

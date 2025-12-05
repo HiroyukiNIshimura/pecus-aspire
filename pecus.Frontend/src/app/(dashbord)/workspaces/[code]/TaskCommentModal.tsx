@@ -1,6 +1,5 @@
 'use client';
 
-import { CloseIcon } from '@/components/icons';
 import type { WorkspaceTaskDetailResponse } from '@/connectors/api/pecus';
 import TaskCommentSection from './TaskCommentSection';
 
@@ -50,7 +49,7 @@ export default function TaskCommentModal({
               <span className="font-medium text-sm truncate">{task.content}</span>
             </div>
             <button type="button" className="btn btn-sm btn-circle btn-secondary" onClick={onClose} aria-label="閉じる">
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 

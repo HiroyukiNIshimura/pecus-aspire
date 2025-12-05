@@ -5,7 +5,6 @@ import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
 import { PecusNotionLikeEditor } from '@/components/editor';
-import { CloseIcon, EditIcon } from '@/components/icons';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
@@ -207,7 +206,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <EditIcon />
+              <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
               アイテム編集
             </h2>
             <button
@@ -217,7 +216,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
               disabled={isSubmitting || isLoadingItem}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 

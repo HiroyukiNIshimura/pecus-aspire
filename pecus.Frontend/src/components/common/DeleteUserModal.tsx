@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CloseIcon, DeleteIcon, WarningIcon } from '@/components/icons';
 
 interface User {
   id: number;
@@ -70,7 +69,7 @@ export default function DeleteUserModal({ isOpen, onClose, onConfirm, user }: De
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-error/10">
-                <WarningIcon className="w-6 h-6 text-error" />
+                <span className="icon-[mdi--alert-outline] w-6 h-6 text-error" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-error">ユーザーの削除</h2>
@@ -84,7 +83,7 @@ export default function DeleteUserModal({ isOpen, onClose, onConfirm, user }: De
               disabled={isDeleting}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -92,7 +91,7 @@ export default function DeleteUserModal({ isOpen, onClose, onConfirm, user }: De
           <div className="p-6">
             {/* 警告メッセージ */}
             <div className="alert alert-error mb-4">
-              <WarningIcon className="w-5 h-5" />
+              <span className="icon-[mdi--alert-outline] w-5 h-5" aria-hidden="true" />
               <div>
                 <p className="font-semibold">重要な警告</p>
                 <p className="text-sm">このユーザーに関連するすべてのデータが完全に削除されます。</p>
@@ -163,7 +162,7 @@ export default function DeleteUserModal({ isOpen, onClose, onConfirm, user }: De
                   </>
                 ) : (
                   <>
-                    <DeleteIcon className="w-4 h-4" />
+                    <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
                     削除する
                   </>
                 )}

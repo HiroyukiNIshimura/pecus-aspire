@@ -10,7 +10,6 @@ import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
-import { FilterIcon, SearchIcon } from '@/components/icons';
 import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
@@ -210,7 +209,7 @@ export default function AdminTagsClient({
                   onClick={() => setFilterOpen(!filterOpen)}
                 >
                   <div className="flex items-center gap-2">
-                    <FilterIcon className="w-5 h-5" />
+                    <span className="icon-[mdi--filter-outline] w-5 h-5" aria-hidden="true" />
                     <span
                       className={`text-lg font-semibold underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName ? 'text-success' : ''}`}
                     >
@@ -335,7 +334,7 @@ export default function AdminTagsClient({
                         onClick={handleSearch}
                         disabled={!nameValidation.isValid}
                       >
-                        <SearchIcon className="w-4 h-4" />
+                        <span className="icon-[mdi--magnify] w-4 h-4" aria-hidden="true" />
                         検索
                       </button>
                     </div>

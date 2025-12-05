@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { getWorkspaceDetail, updateWorkspace } from '@/actions/workspace';
-import { CloseIcon, EditIcon } from '@/components/icons';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
@@ -105,7 +104,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <EditIcon />
+              <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
               ワークスペース編集
             </h2>
             <button
@@ -115,7 +114,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
               disabled={isSubmitting || isLoading}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -241,7 +240,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                       </>
                     ) : (
                       <>
-                        <EditIcon className="w-5 h-5" />
+                        <span className="icon-[mdi--pencil-outline] w-5 h-5" aria-hidden="true" />
                         更新
                       </>
                     )}

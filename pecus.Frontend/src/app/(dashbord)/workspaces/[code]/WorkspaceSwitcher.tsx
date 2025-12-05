@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDownIcon } from '@/components/icons';
 import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 
 interface WorkspaceSwitcherProps {
@@ -118,7 +117,7 @@ export default function WorkspaceSwitcher({ workspaces, currentWorkspaceCode }: 
             <code className="text-xs text-base-content/70 truncate block">{currentWorkspace.code}</code>
           )}
         </div>
-        <ChevronDownIcon className="w-5 h-5 text-base-content/50 flex-shrink-0" />
+        <span className="icon-[mdi--chevron-down] w-5 h-5 text-base-content/50 flex-shrink-0" aria-hidden="true" />
       </button>
 
       {/* ドロップダウンリスト */}

@@ -5,7 +5,6 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { createWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import { CloseIcon, MinusIcon, PlusIcon, PlusSimpleIcon } from '@/components/icons';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type { CreateWorkspaceTaskRequest, TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -212,7 +211,7 @@ export default function CreateWorkspaceTaskModal({
           {/* モーダルヘッダー */}
           <div className="flex items-center justify-between p-6 border-b border-base-300">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <PlusIcon />
+              <span className="icon-[mdi--plus-circle-outline] size-6" aria-hidden="true" />
               タスクを作成
             </h2>
             <button
@@ -222,7 +221,7 @@ export default function CreateWorkspaceTaskModal({
               disabled={isSubmitting}
               aria-label="閉じる"
             >
-              <CloseIcon />
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -479,7 +478,7 @@ export default function CreateWorkspaceTaskModal({
                       onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                       disabled={isSubmitting || estimatedHours <= 0}
                     >
-                      <MinusIcon size="xs" />
+                      <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
@@ -488,7 +487,7 @@ export default function CreateWorkspaceTaskModal({
                       onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
                       disabled={isSubmitting}
                     >
-                      <PlusSimpleIcon size="xs" />
+                      <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
                     </button>
                   </span>
                 </div>
@@ -512,7 +511,7 @@ export default function CreateWorkspaceTaskModal({
                     </>
                   ) : (
                     <>
-                      <PlusIcon className="w-5 h-5" />
+                      <span className="icon-[mdi--plus-circle-outline] w-5 h-5" aria-hidden="true" />
                       作成
                     </>
                   )}
