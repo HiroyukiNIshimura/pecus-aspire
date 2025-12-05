@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { fetchMyCommitterWorkspaces } from '@/actions/myCommitter';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MyCommitterWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
@@ -10,6 +11,7 @@ import CommitterDashboardClient from './CommitterDashboardClient';
 export default async function CommitterDashboardPage() {
   let userResponse: UserDetailResponse | null = null;
   let initialWorkspaces: MyCommitterWorkspaceResponse[] = [];
+  let taskTypes: TaskTypeOption[] = [];
   let fetchError: string | null = null;
 
   try {
@@ -21,9 +23,29 @@ export default async function CommitterDashboardPage() {
     // コミッターワークスペース一覧を取得
     const workspacesResult = await fetchMyCommitterWorkspaces();
     if (workspacesResult.success) {
-      initialWorkspaces = workspacesResult.data;
+      // oldest due date でソート（早い期限が上）
+      initialWorkspaces = [...workspacesResult.data].sort((a, b) => {
+        if (!a.oldestDueDate && !b.oldestDueDate) return 0;
+        if (!a.oldestDueDate) return 1;
+        if (!b.oldestDueDate) return -1;
+        return new Date(a.oldestDueDate).getTime() - new Date(b.oldestDueDate).getTime();
+      });
     } else {
       fetchError = workspacesResult.message;
+    }
+
+    // タスクタイプ一覧取得（モーダル編集用）
+    try {
+      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      taskTypes = taskTypeResponse.map((t) => ({
+        id: t.id,
+        code: t.code ?? '',
+        name: t.name ?? '',
+        icon: t.icon,
+      }));
+    } catch (err) {
+      console.warn('Failed to fetch task types:', err);
+      taskTypes = [];
     }
   } catch (error) {
     console.error('CommitterDashboardPage: failed to fetch data', error);
@@ -42,5 +64,12 @@ export default async function CommitterDashboardPage() {
 
   const user = mapUserResponseToUserInfo(userResponse);
 
-  return <CommitterDashboardClient initialUser={user} initialWorkspaces={initialWorkspaces} fetchError={fetchError} />;
+  return (
+    <CommitterDashboardClient
+      initialUser={user}
+      initialWorkspaces={initialWorkspaces}
+      taskTypes={taskTypes}
+      fetchError={fetchError}
+    />
+  );
 }

@@ -1,18 +1,17 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
-import { fetchMyTasks } from '@/actions/myTask';
+import { fetchMyTaskWorkspaces } from '@/actions/myTask';
+import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type {
-  MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse,
-  UserDetailResponse,
-} from '@/connectors/api/pecus';
+import type { MyTaskWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
-import MyTasksClient from './MyTasksClient';
+import MyTasksDashboardClient from './MyTasksDashboardClient';
 
 export default async function MyTasksPage() {
   let userResponse: UserDetailResponse | null = null;
-  let initialData: MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse | null = null;
+  let initialWorkspaces: MyTaskWorkspaceResponse[] = [];
+  let taskTypes: TaskTypeOption[] = [];
   let fetchError: string | null = null;
 
   try {
@@ -21,12 +20,26 @@ export default async function MyTasksPage() {
     // ユーザー情報を取得
     userResponse = await api.profile.getApiProfile();
 
-    // マイタスクを取得（初期はアクティブのみ）
-    const tasksResult = await fetchMyTasks(1, 'Active');
-    if (tasksResult.success) {
-      initialData = tasksResult.data;
+    // マイタスクワークスペース一覧を取得
+    const workspacesResult = await fetchMyTaskWorkspaces();
+    if (workspacesResult.success) {
+      initialWorkspaces = workspacesResult.data;
     } else {
-      fetchError = tasksResult.message;
+      fetchError = workspacesResult.message;
+    }
+
+    // タスクタイプ一覧取得（モーダル編集用）
+    try {
+      const taskTypeResponse = await api.master.getApiMasterTaskTypes();
+      taskTypes = taskTypeResponse.map((t) => ({
+        id: t.id,
+        code: t.code ?? '',
+        name: t.name ?? '',
+        icon: t.icon,
+      }));
+    } catch (err) {
+      console.warn('Failed to fetch task types:', err);
+      taskTypes = [];
     }
   } catch (error) {
     console.error('MyTasksPage: failed to fetch data', error);
@@ -45,5 +58,12 @@ export default async function MyTasksPage() {
 
   const user = mapUserResponseToUserInfo(userResponse);
 
-  return <MyTasksClient initialUser={user} initialData={initialData} fetchError={fetchError} />;
+  return (
+    <MyTasksDashboardClient
+      initialUser={user}
+      initialWorkspaces={initialWorkspaces}
+      taskTypes={taskTypes}
+      fetchError={fetchError}
+    />
+  );
 }

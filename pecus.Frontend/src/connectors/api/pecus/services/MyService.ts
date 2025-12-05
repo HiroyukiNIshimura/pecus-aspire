@@ -6,6 +6,8 @@ import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasks
 import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
 import type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from '../models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
+import type { MyTaskWorkspaceResponse } from '../models/MyTaskWorkspaceResponse';
+import type { TasksByDueDateResponse } from '../models/TasksByDueDateResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { WorkspaceItemDetailResponsePagedResponse } from '../models/WorkspaceItemDetailResponsePagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -23,6 +25,28 @@ export class MyService {
             method: 'GET',
             url: '/api/my/committer-workspaces',
             errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 指定ワークスペース内のコミッタータスクを期限日グループで取得
+     * ログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します
+     * @param workspaceId ワークスペースID
+     * @returns TasksByDueDateResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyCommitterWorkspacesTasks(
+        workspaceId: number,
+    ): CancelablePromise<Array<TasksByDueDateResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/committer-workspaces/{workspaceId}/tasks',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            errors: {
+                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });
@@ -104,6 +128,43 @@ export class MyService {
             },
             errors: {
                 401: `Unauthorized`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * マイタスクワークスペース一覧を取得
+     * ログインユーザーが担当のタスクを持つワークスペースの一覧を取得します（期限日が古い順）
+     * @returns MyTaskWorkspaceResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyTaskWorkspaces(): CancelablePromise<Array<MyTaskWorkspaceResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/task-workspaces',
+            errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 指定ワークスペース内のマイタスクを期限日グループで取得
+     * ログインユーザーが担当のタスクを期限日でグループ化して返します
+     * @param workspaceId ワークスペースID
+     * @returns TasksByDueDateResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyTaskWorkspacesTasks(
+        workspaceId: number,
+    ): CancelablePromise<Array<TasksByDueDateResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/task-workspaces/{workspaceId}/tasks',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            errors: {
+                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });

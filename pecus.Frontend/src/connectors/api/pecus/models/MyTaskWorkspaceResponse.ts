@@ -3,10 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * マイコミッターワークスペースレスポンス
- * ログインユーザーがコミッターになっているアイテムを持つワークスペースの情報
+ * マイタスクワークスペースレスポンス
+ * ログインユーザーが担当のタスクを持つワークスペースの情報
  */
-export type MyCommitterWorkspaceResponse = {
+export type MyTaskWorkspaceResponse = {
     /**
      * ワークスペースID
      */
@@ -27,10 +27,6 @@ export type MyCommitterWorkspaceResponse = {
      * ジャンル名
      */
     genreName?: string | null;
-    /**
-     * コミッターになっているアイテム数
-     */
-    itemCount: number;
     /**
      * 未完了タスク数
      */

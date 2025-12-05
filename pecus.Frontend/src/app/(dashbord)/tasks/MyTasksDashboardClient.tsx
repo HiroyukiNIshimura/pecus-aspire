@@ -1,31 +1,31 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchCommitterTasksByWorkspace } from '@/actions/myCommitter';
+import { fetchMyTasksByWorkspace } from '@/actions/myTask';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { MyCommitterWorkspaceResponse } from '@/connectors/api/pecus';
+import type { MyTaskWorkspaceResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 
-interface CommitterDashboardClientProps {
+interface MyTasksDashboardClientProps {
   initialUser?: UserInfo | null;
-  initialWorkspaces: MyCommitterWorkspaceResponse[];
+  initialWorkspaces: MyTaskWorkspaceResponse[];
   taskTypes: TaskTypeOption[];
   fetchError?: string | null;
 }
 
 /**
- * コミッターダッシュボード（ワークスペース×期限日でグループ化）
+ * マイタスクダッシュボード（ワークスペース×期限日でグループ化）
  */
-export default function CommitterDashboardClient({
+export default function MyTasksDashboardClient({
   initialUser,
   initialWorkspaces,
   taskTypes,
   fetchError,
-}: CommitterDashboardClientProps) {
+}: MyTasksDashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const notify = useNotify();
@@ -53,17 +53,15 @@ export default function CommitterDashboardClient({
     completedTaskCount: ws.completedTaskCount,
     overdueTaskCount: ws.overdueTaskCount,
     oldestDueDate: ws.oldestDueDate,
-    itemCount: ws.itemCount,
   }));
 
   // タスク取得関数
   const handleFetchTasks = useCallback(async (workspaceId: number) => {
-    const result = await fetchCommitterTasksByWorkspace(workspaceId);
+    const result = await fetchMyTasksByWorkspace(workspaceId);
     return result;
   }, []);
 
   // 統計情報を計算
-  const totalItems = workspaces.reduce((sum, ws) => sum + (ws.itemCount || 0), 0);
   const totalActive = workspaces.reduce((sum, ws) => sum + ws.activeTaskCount, 0);
   const totalCompleted = workspaces.reduce((sum, ws) => sum + ws.completedTaskCount, 0);
   const totalOverdue = workspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
@@ -91,23 +89,19 @@ export default function CommitterDashboardClient({
           {/* ページヘッダー */}
           <div className="mb-6">
             <div className="flex items-center gap-3">
-              <span className="icon-[mdi--account-check-outline] text-primary w-8 h-8" aria-hidden="true" />
+              <span className="icon-[mdi--clipboard-check-outline] text-primary w-8 h-8" aria-hidden="true" />
               <div>
-                <h1 className="text-2xl font-bold">コミッター</h1>
-                <p className="text-base-content/70 mt-1">あなたがコミッターを担当するアイテムのタスク一覧（期日順）</p>
+                <h1 className="text-2xl font-bold">タスク</h1>
+                <p className="text-base-content/70 mt-1">あなたに割り当てられたタスクの一覧（期日順）</p>
               </div>
             </div>
           </div>
 
           {/* 統計サマリー */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="stat bg-base-200 rounded-box p-4">
               <div className="stat-title">ワークスペース</div>
               <div className="stat-value text-2xl">{workspaces.length}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">アイテム</div>
-              <div className="stat-value text-2xl">{totalItems}</div>
             </div>
             <div className="stat bg-base-200 rounded-box p-4">
               <div className="stat-title">アクティブ</div>
@@ -127,9 +121,9 @@ export default function CommitterDashboardClient({
           <WorkspaceTaskAccordion
             workspaces={workspaces}
             fetchTasks={handleFetchTasks}
-            emptyMessage="コミッターを担当しているアイテムがありません"
-            emptyIconClass="icon-[mdi--clipboard-text-off-outline]"
-            showItemCount={true}
+            emptyMessage="担当のタスクがありません"
+            emptyIconClass="icon-[mdi--clipboard-check-outline]"
+            showItemCount={false}
             taskTypes={taskTypes}
             currentUser={
               userInfo

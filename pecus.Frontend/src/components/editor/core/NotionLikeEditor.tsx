@@ -8,6 +8,7 @@
 'use client';
 
 import './Editor.css';
+import { HorizontalRuleExtension } from '@lexical/extension';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
@@ -15,19 +16,18 @@ import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
 import { useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { INITIAL_SETTINGS } from './appSettings';
-import { buildHTMLConfig } from './buildHTMLConfig';
 import { FlashMessageContext } from '../context/FlashMessageContext';
 import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
 import { ToolbarContext } from '../context/ToolbarContext';
-import Editor from './Editor';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import OnChangePlugin from '../plugins/OnChangePlugin';
 import { TableContext } from '../plugins/TablePlugin';
 import TypingPerfPlugin from '../plugins/TypingPerfPlugin';
 import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
-import { HorizontalRuleExtension } from '@lexical/extension';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
+import Editor from './Editor';
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示

@@ -866,26 +866,234 @@ public class WorkspaceTaskService
                 ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
                 CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
                 OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
+                OldestDueDate = g.Where(t => !t.IsCompleted && !t.IsDiscarded)
+                                  .Min(t => (DateTimeOffset?)t.DueDate),
             })
             .ToDictionaryAsync(x => x.WorkspaceId);
 
         // レスポンスを構築
-        var results = workspaces.Select(w => new MyCommitterWorkspaceResponse
+        var results = workspaces.Select(w =>
         {
-            WorkspaceId = w.WorkspaceId,
-            WorkspaceCode = w.WorkspaceCode ?? string.Empty,
-            WorkspaceName = w.WorkspaceName ?? string.Empty,
-            GenreIcon = w.GenreIcon,
-            GenreName = w.GenreName,
-            ItemCount = w.ItemCount,
-            ActiveTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].ActiveTaskCount : 0,
-            CompletedTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].CompletedTaskCount : 0,
-            OverdueTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].OverdueTaskCount : 0,
+            taskStats.TryGetValue(w.WorkspaceId, out var stats);
+            return new MyCommitterWorkspaceResponse
+            {
+                WorkspaceId = w.WorkspaceId,
+                WorkspaceCode = w.WorkspaceCode ?? string.Empty,
+                WorkspaceName = w.WorkspaceName ?? string.Empty,
+                GenreIcon = w.GenreIcon,
+                GenreName = w.GenreName,
+                ItemCount = w.ItemCount,
+                ActiveTaskCount = stats?.ActiveTaskCount ?? 0,
+                CompletedTaskCount = stats?.CompletedTaskCount ?? 0,
+                OverdueTaskCount = stats?.OverdueTaskCount ?? 0,
+                OldestDueDate = stats?.OldestDueDate,
+            };
         })
-        .OrderByDescending(w => w.ActiveTaskCount) // アクティブタスクが多い順
+        .OrderBy(w => w.OldestDueDate == null ? 1 : 0) // 期限日がNULLのものは後ろ
+        .ThenBy(w => w.OldestDueDate) // 期限日が古い順
         .ThenBy(w => w.WorkspaceName)
         .ToList();
 
         return results;
+    }
+
+    /// <summary>
+    /// ログインユーザーが担当のタスクを持つワークスペース一覧を取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>タスクワークスペースのリスト</returns>
+    public async Task<List<MyTaskWorkspaceResponse>> GetMyTaskWorkspacesAsync(int userId)
+    {
+        // DateTimeOffset で日付範囲を定義（PostgreSQL との互換性のため）
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+
+        // ユーザーが担当のタスクを持つワークスペースを取得
+        var workspaces = await _context.WorkspaceTasks
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Workspace!)
+                    .ThenInclude(w => w.Genre)
+            .Where(t => t.AssignedUserId == userId)
+            .Where(t => !t.WorkspaceItem!.IsArchived) // アーカイブされていないアイテムのみ
+            .GroupBy(t => new
+            {
+                t.WorkspaceId,
+                WorkspaceCode = t.WorkspaceItem!.Workspace!.Code,
+                WorkspaceName = t.WorkspaceItem!.Workspace!.Name,
+                GenreIcon = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Icon : null,
+                GenreName = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Name : null,
+            })
+            .Select(g => new MyTaskWorkspaceResponse
+            {
+                WorkspaceId = g.Key.WorkspaceId,
+                WorkspaceCode = g.Key.WorkspaceCode ?? string.Empty,
+                WorkspaceName = g.Key.WorkspaceName ?? string.Empty,
+                GenreIcon = g.Key.GenreIcon,
+                GenreName = g.Key.GenreName,
+                ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
+                CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
+                OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
+                OldestDueDate = g.Where(t => !t.IsCompleted && !t.IsDiscarded)
+                                 .Min(t => (DateTimeOffset?)t.DueDate),
+            })
+            .ToListAsync();
+
+        // 期限日が古い順（NULLは最後）
+        return workspaces
+            .OrderBy(w => w.OldestDueDate == null ? 1 : 0)
+            .ThenBy(w => w.OldestDueDate)
+            .ThenBy(w => w.WorkspaceName)
+            .ToList();
+    }
+
+    /// <summary>
+    /// 指定ワークスペース内のマイタスクを期限日グループで取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>期限日でグループ化されたタスク一覧</returns>
+    public async Task<List<TasksByDueDateResponse>> GetMyTasksByWorkspaceAsync(
+        int userId,
+        int workspaceId
+    )
+    {
+        var tasks = await _context.WorkspaceTasks
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Workspace)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Committer)
+            .Include(t => t.TaskType)
+            .Include(t => t.AssignedUser)
+            .Where(t => t.AssignedUserId == userId && t.WorkspaceId == workspaceId)
+            .Where(t => !t.WorkspaceItem!.IsArchived)
+            .OrderBy(t => t.DueDate)                    // 期限日古い順
+            .ThenBy(t => t.WorkspaceItemId)            // アイテムID順
+            .ThenBy(t => t.Id)                         // タスクID順
+            .AsSplitQuery()
+            .ToListAsync();
+
+        // 期限日でグループ化
+        return tasks
+            .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
+            .Select(g => new TasksByDueDateResponse
+            {
+                DueDate = g.Key,
+                Tasks = g.Select(t => BuildTaskWithItemResponse(t)).ToList(),
+            })
+            .ToList();
+    }
+
+    /// <summary>
+    /// 指定ワークスペース内のコミッタータスクを期限日グループで取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>期限日でグループ化されたタスク一覧</returns>
+    public async Task<List<TasksByDueDateResponse>> GetCommitterTasksByWorkspaceAsync(
+        int userId,
+        int workspaceId
+    )
+    {
+        // ユーザーがコミッターのアイテムに紐づくタスクを取得
+        var tasks = await _context.WorkspaceTasks
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Workspace)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Committer)
+            .Include(t => t.TaskType)
+            .Include(t => t.AssignedUser)
+            .Where(t => t.WorkspaceId == workspaceId)
+            .Where(t => t.WorkspaceItem!.CommitterId == userId)
+            .Where(t => !t.WorkspaceItem!.IsArchived)
+            .OrderBy(t => t.DueDate)
+            .ThenBy(t => t.WorkspaceItemId)
+            .ThenBy(t => t.Id)
+            .AsSplitQuery()
+            .ToListAsync();
+
+        return tasks
+            .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
+            .Select(g => new TasksByDueDateResponse
+            {
+                DueDate = g.Key,
+                Tasks = g.Select(t => BuildTaskWithItemResponse(t)).ToList(),
+            })
+            .ToList();
+    }
+
+    /// <summary>
+    /// WorkspaceTaskエンティティからTaskWithItemResponseを生成
+    /// </summary>
+    /// <param name="task">タスクエンティティ（WorkspaceItem含む）</param>
+    private static TaskWithItemResponse BuildTaskWithItemResponse(WorkspaceTask task)
+    {
+        var item = task.WorkspaceItem;
+        var workspaceCode = item?.Workspace?.Code ?? "";
+        var itemCode = item?.Code ?? "";
+
+        return new TaskWithItemResponse
+        {
+            // タスク情報
+            TaskId = task.Id,
+            TaskContent = task.Content,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeCode = task.TaskType?.Code,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
+            Priority = task.Priority,
+            StartDate = task.StartDate,
+            DueDate = task.DueDate,
+            EstimatedHours = task.EstimatedHours,
+            ActualHours = task.ActualHours,
+            ProgressPercentage = task.ProgressPercentage,
+            IsCompleted = task.IsCompleted,
+            CompletedAt = task.CompletedAt,
+            IsDiscarded = task.IsDiscarded,
+            AssignedUserId = task.AssignedUserId,
+            AssignedUsername = task.AssignedUser?.Username,
+            AssignedAvatarUrl = task.AssignedUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.AssignedUser.AvatarType,
+                    userId: task.AssignedUser.Id,
+                    username: task.AssignedUser.Username,
+                    email: task.AssignedUser.Email,
+                    avatarPath: task.AssignedUser.UserAvatarPath
+                )
+                : null,
+            CreatedAt = task.CreatedAt,
+            UpdatedAt = task.UpdatedAt,
+
+            // アイテム情報
+            ItemId = item?.Id ?? 0,
+            ItemCode = itemCode,
+            ItemSubject = item?.Subject ?? "",
+            WorkspaceCode = workspaceCode,
+            ItemOwnerId = item?.OwnerId ?? 0,
+            ItemOwnerUsername = item?.Owner?.Username,
+            ItemOwnerAvatarUrl = item?.Owner != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Owner.AvatarType,
+                    userId: item.Owner.Id,
+                    username: item.Owner.Username,
+                    email: item.Owner.Email,
+                    avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            ItemCommitterId = item?.CommitterId,
+            ItemCommitterUsername = item?.Committer?.Username,
+            ItemCommitterAvatarUrl = item?.Committer != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Committer.AvatarType,
+                    userId: item.Committer.Id,
+                    username: item.Committer.Username,
+                    email: item.Committer.Email,
+                    avatarPath: item.Committer.UserAvatarPath
+                )
+                : null,
+        };
     }
 }

@@ -1,10 +1,10 @@
 namespace Pecus.Models.Responses.WorkspaceTask;
 
 /// <summary>
-/// マイコミッターワークスペースレスポンス
-/// ログインユーザーがコミッターになっているアイテムを持つワークスペースの情報
+/// マイタスクワークスペースレスポンス
+/// ログインユーザーが担当のタスクを持つワークスペースの情報
 /// </summary>
-public class MyCommitterWorkspaceResponse
+public class MyTaskWorkspaceResponse
 {
     /// <summary>
     /// ワークスペースID
@@ -30,11 +30,6 @@ public class MyCommitterWorkspaceResponse
     /// ジャンル名
     /// </summary>
     public string? GenreName { get; set; }
-
-    /// <summary>
-    /// コミッターになっているアイテム数
-    /// </summary>
-    public required int ItemCount { get; set; }
 
     /// <summary>
     /// 未完了タスク数

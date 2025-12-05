@@ -25,6 +25,7 @@ import CodeHighlightShikiPlugin from '../plugins/CodeHighlightShikiPlugin';
 import CollapsiblePlugin from '../plugins/CollapsiblePlugin';
 import EquationsPlugin from '../plugins/EquationsPlugin';
 import FigmaPlugin from '../plugins/FigmaPlugin';
+import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 import ImagesPlugin from '../plugins/ImagesPlugin';
 import { LayoutPlugin } from '../plugins/LayoutPlugin/LayoutPlugin';
 import LinkPlugin from '../plugins/LinkPlugin';
@@ -35,7 +36,6 @@ import TableCellResizer from '../plugins/TableCellResizer';
 import TableOfContentsPlugin from '../plugins/TableOfContentsPlugin';
 import TwitterPlugin from '../plugins/TwitterPlugin';
 import YouTubePlugin from '../plugins/YouTubePlugin';
-import { HorizontalRulePlugin } from '../plugins/HorizontalRulePlugin';
 
 export default function Viewer() {
   const {

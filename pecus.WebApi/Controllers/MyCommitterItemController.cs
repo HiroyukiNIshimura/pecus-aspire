@@ -39,13 +39,36 @@ public class MyCommitterItemController : BaseSecureController
     /// マイコミッターワークスペース一覧を取得
     /// ログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します
     /// </summary>
-    /// <returns>ワークスペース一覧（アイテム数・タスク統計付き）</returns>
+    /// <returns>ワークスペース一覧（アイテム数・タスク統計付き、期限日が古い順）</returns>
     [HttpGet("committer-workspaces")]
     [ProducesResponseType(typeof(List<MyCommitterWorkspaceResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<List<MyCommitterWorkspaceResponse>>> GetMyCommitterWorkspaces()
     {
         var results = await _workspaceTaskService.GetMyCommitterWorkspacesAsync(CurrentUserId);
+        return TypedResults.Ok(results);
+    }
+
+    /// <summary>
+    /// 指定ワークスペース内のコミッタータスクを期限日グループで取得
+    /// ログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>期限日でグループ化されたタスク一覧</returns>
+    [HttpGet("committer-workspaces/{workspaceId:int}/tasks")]
+    [ProducesResponseType(typeof(List<TasksByDueDateResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<TasksByDueDateResponse>>> GetCommitterTasksByWorkspace(int workspaceId)
+    {
+        // アクセス権チェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new Exceptions.NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var results = await _workspaceTaskService.GetCommitterTasksByWorkspaceAsync(CurrentUserId, workspaceId);
         return TypedResults.Ok(results);
     }
 

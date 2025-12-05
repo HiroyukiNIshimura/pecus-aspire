@@ -3065,6 +3065,54 @@
         }
       }
     },
+    "/api/my/committer-workspaces/{workspaceId}/tasks": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "指定ワークスペース内のコミッタータスクを期限日グループで取得\nログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TasksByDueDateResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/my/committer-items": {
       "get": {
         "tags": [
@@ -3232,6 +3280,80 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/my/task-workspaces": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "マイタスクワークスペース一覧を取得\nログインユーザーが担当のタスクを持つワークスペースの一覧を取得します（期限日が古い順）",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyTaskWorkspaceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/my/task-workspaces/{workspaceId}/tasks": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "指定ワークスペース内のマイタスクを期限日グループで取得\nログインユーザーが担当のタスクを期限日でグループ化して返します",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TasksByDueDateResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -8679,6 +8801,12 @@
             "type": "integer",
             "description": "期限超過タスク数",
             "format": "int32"
+          },
+          "oldestDueDate": {
+            "type": "string",
+            "description": "最も古い期限日（ソート用、未完了タスクのみ対象）",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -8981,6 +9109,67 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "MyTaskWorkspaceResponse": {
+        "required": [
+          "activeTaskCount",
+          "completedTaskCount",
+          "overdueTaskCount",
+          "workspaceCode",
+          "workspaceId",
+          "workspaceName"
+        ],
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "activeTaskCount": {
+            "type": "integer",
+            "description": "未完了タスク数",
+            "format": "int32"
+          },
+          "completedTaskCount": {
+            "type": "integer",
+            "description": "完了済みタスク数",
+            "format": "int32"
+          },
+          "overdueTaskCount": {
+            "type": "integer",
+            "description": "期限超過タスク数",
+            "format": "int32"
+          },
+          "oldestDueDate": {
+            "type": "string",
+            "description": "最も古い期限日（ソート用、未完了タスクのみ対象）",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "マイタスクワークスペースレスポンス\nログインユーザーが担当のタスクを持つワークスペースの情報"
       },
       "OSPlatform": {
         "enum": [
@@ -10576,6 +10765,198 @@
         ],
         "type": "string",
         "description": "タスクのステータスフィルター"
+      },
+      "TaskWithItemResponse": {
+        "required": [
+          "itemCode",
+          "itemId",
+          "itemSubject",
+          "taskContent",
+          "taskId",
+          "workspaceCode"
+        ],
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "taskContent": {
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
+          },
+          "taskTypeId": {
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32",
+            "nullable": true
+          },
+          "taskTypeCode": {
+            "type": "string",
+            "description": "タスク種類コード",
+            "nullable": true
+          },
+          "taskTypeName": {
+            "type": "string",
+            "description": "タスク種類名",
+            "nullable": true
+          },
+          "taskTypeIcon": {
+            "type": "string",
+            "description": "タスク種類アイコン",
+            "nullable": true
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "開始日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedHours": {
+            "type": "number",
+            "description": "予定工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "actualHours": {
+            "type": "number",
+            "description": "実績工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "progressPercentage": {
+            "type": "integer",
+            "description": "進捗率（0-100）",
+            "format": "int32"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "タスク完了日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isDiscarded": {
+            "type": "boolean",
+            "description": "破棄状態"
+          },
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32"
+          },
+          "assignedUsername": {
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
+          },
+          "assignedAvatarUrl": {
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time"
+          },
+          "itemId": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "itemCode": {
+            "type": "string",
+            "description": "アイテムコード",
+            "nullable": true
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "itemOwnerId": {
+            "type": "integer",
+            "description": "アイテムオーナーユーザーID",
+            "format": "int32"
+          },
+          "itemOwnerUsername": {
+            "type": "string",
+            "description": "アイテムオーナーユーザー名",
+            "nullable": true
+          },
+          "itemOwnerAvatarUrl": {
+            "type": "string",
+            "description": "アイテムオーナーアバターURL",
+            "nullable": true
+          },
+          "itemCommitterId": {
+            "type": "integer",
+            "description": "アイテムコミッターユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemCommitterUsername": {
+            "type": "string",
+            "description": "アイテムコミッターユーザー名",
+            "nullable": true
+          },
+          "itemCommitterAvatarUrl": {
+            "type": "string",
+            "description": "アイテムコミッターアバターURL",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "アイテム情報付きタスクレスポンス\nタスク一覧でアイテムへのリンクを表示するために使用"
+      },
+      "TasksByDueDateResponse": {
+        "required": [
+          "dueDate",
+          "tasks"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "description": "期限日（日付のみ）",
+            "format": "date"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskWithItemResponse"
+            },
+            "description": "その期限日のタスク一覧（アイテムID + タスクID順）",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "期限日でグループ化されたタスク一覧レスポンス"
       },
       "TempAttachmentResponse": {
         "required": [

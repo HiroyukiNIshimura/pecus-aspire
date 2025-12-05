@@ -41,6 +41,7 @@ export type { MyCommitterWorkspaceResponse } from './models/MyCommitterWorkspace
 export type { MyItemRelationType } from './models/MyItemRelationType';
 export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
 export type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from './models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
+export type { MyTaskWorkspaceResponse } from './models/MyTaskWorkspaceResponse';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
 export type { OrganizationResponse } from './models/OrganizationResponse';
 export type { OrganizationResponseConcurrencyErrorResponse } from './models/OrganizationResponseConcurrencyErrorResponse';
@@ -91,7 +92,9 @@ export type { TaskCommentResponse } from './models/TaskCommentResponse';
 export type { TaskCommentType } from './models/TaskCommentType';
 export type { TaskItemResponse } from './models/TaskItemResponse';
 export type { TaskPriority } from './models/TaskPriority';
+export type { TasksByDueDateResponse } from './models/TasksByDueDateResponse';
 export type { TaskStatusFilter } from './models/TaskStatusFilter';
+export type { TaskWithItemResponse } from './models/TaskWithItemResponse';
 export type { TempAttachmentResponse } from './models/TempAttachmentResponse';
 export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';
 export type { UpdateProfileRequest } from './models/UpdateProfileRequest';

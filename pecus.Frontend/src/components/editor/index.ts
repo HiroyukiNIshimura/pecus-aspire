@@ -17,6 +17,10 @@
  * ```
  */
 
+// コアエディタのエクスポート
+export { Editor } from './core';
+// Pecus固有エディタのエクスポート（デフォルト）
+export { PecusNotionLikeEditor, PecusNotionLikeViewer } from './pecus';
 // 型定義のエクスポート
 export type {
   CoreEditorProps,
@@ -25,9 +29,3 @@ export type {
   EditorSettings,
   PecusEditorProps,
 } from './types';
-
-// コアエディタのエクスポート
-export { Editor } from './core';
-
-// Pecus固有エディタのエクスポート（デフォルト）
-export { PecusNotionLikeEditor, PecusNotionLikeViewer } from './pecus';

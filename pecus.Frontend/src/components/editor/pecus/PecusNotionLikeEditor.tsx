@@ -7,8 +7,8 @@
  */
 'use client';
 
-import NotionLikeEditor from '../core/NotionLikeEditor';
 import type { NotionLikeEditorProps } from '../core/NotionLikeEditor';
+import NotionLikeEditor from '../core/NotionLikeEditor';
 
 /**
  * Pecus固有のNotionLikeEditor

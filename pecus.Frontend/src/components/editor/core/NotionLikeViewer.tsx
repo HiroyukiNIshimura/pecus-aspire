@@ -8,17 +8,17 @@
 'use client';
 
 import './Editor.css';
+import { HorizontalRuleExtension } from '@lexical/extension';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
 import { useMemo } from 'react';
-import { INITIAL_SETTINGS } from './appSettings';
-import { buildHTMLConfig } from './buildHTMLConfig';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
 import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
+import { INITIAL_SETTINGS } from './appSettings';
+import { buildHTMLConfig } from './buildHTMLConfig';
 import Viewer from './Viewer';
-import { HorizontalRuleExtension } from '@lexical/extension';
 
 export interface NotionLikeViewerProps {
   /**

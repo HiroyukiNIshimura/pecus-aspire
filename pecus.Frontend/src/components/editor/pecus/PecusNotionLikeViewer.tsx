@@ -7,8 +7,8 @@
  */
 'use client';
 
-import NotionLikeViewer from '../core/NotionLikeViewer';
 import type { NotionLikeViewerProps } from '../core/NotionLikeViewer';
+import NotionLikeViewer from '../core/NotionLikeViewer';
 
 /**
  * Pecus固有のNotionLikeViewer

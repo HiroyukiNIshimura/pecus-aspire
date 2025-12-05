@@ -7,8 +7,7 @@
  * - セッション管理
  */
 
-export { default as PecusNotionLikeEditor } from './PecusNotionLikeEditor';
-export { default as PecusNotionLikeViewer } from './PecusNotionLikeViewer';
-
 // 型定義は types/ から再エクスポート
 export type { PecusEditorProps } from '../types';
+export { default as PecusNotionLikeEditor } from './PecusNotionLikeEditor';
+export { default as PecusNotionLikeViewer } from './PecusNotionLikeViewer';

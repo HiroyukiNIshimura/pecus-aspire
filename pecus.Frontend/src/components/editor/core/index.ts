@@ -6,6 +6,6 @@
  */
 
 export { default as Editor } from './Editor';
-export { default as Viewer } from './Viewer';
 export { default as NotionLikeEditor } from './NotionLikeEditor';
 export { default as NotionLikeViewer } from './NotionLikeViewer';
+export { default as Viewer } from './Viewer';

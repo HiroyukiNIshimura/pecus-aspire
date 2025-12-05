@@ -1,7 +1,11 @@
 'use server';
 
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { ItemWithTasksResponsePagedResponse, MyCommitterWorkspaceResponse } from '@/connectors/api/pecus';
+import type {
+  ItemWithTasksResponsePagedResponse,
+  MyCommitterWorkspaceResponse,
+  TasksByDueDateResponse,
+} from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 
 /**
@@ -34,5 +38,22 @@ export async function fetchMyCommitterItems(
   } catch (error: unknown) {
     console.error('Failed to fetch committer items:', error);
     return parseErrorResponse(error, 'コミッターアイテム一覧の取得に失敗しました');
+  }
+}
+
+/**
+ * 指定ワークスペース内のコミッタータスクを期限日グループで取得
+ */
+export async function fetchCommitterTasksByWorkspace(
+  workspaceId: number,
+): Promise<ApiResponse<TasksByDueDateResponse[]>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.my.getApiMyCommitterWorkspacesTasks(workspaceId);
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    console.error('Failed to fetch committer tasks by workspace:', error);
+    return parseErrorResponse(error, 'コミッタータスク一覧の取得に失敗しました');
   }
 }
