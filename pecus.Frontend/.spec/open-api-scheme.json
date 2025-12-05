@@ -14184,8 +14184,89 @@
     }
   },
   "security": [
+    { }
+  ],
+  "tags": [
     {
-      "bearerAuth": [ ]
+      "name": "Admin - Organization"
+    },
+    {
+      "name": "Admin - Skill"
+    },
+    {
+      "name": "Admin - Tag"
+    },
+    {
+      "name": "Admin - User"
+    },
+    {
+      "name": "Admin - Workspace"
+    },
+    {
+      "name": "Backend - Genre"
+    },
+    {
+      "name": "Backend - Organization"
+    },
+    {
+      "name": "Backend - Permission"
+    },
+    {
+      "name": "Backend - Role"
+    },
+    {
+      "name": "Backend - Specs"
+    },
+    {
+      "name": "Entrance - Auth"
+    },
+    {
+      "name": "Entrance - Organization"
+    },
+    {
+      "name": "Entrance - Password"
+    },
+    {
+      "name": "File"
+    },
+    {
+      "name": "Master"
+    },
+    {
+      "name": "MyWorkspaceItem"
+    },
+    {
+      "name": "Profile"
+    },
+    {
+      "name": "Profile - Device"
+    },
+    {
+      "name": "Profile - Email"
+    },
+    {
+      "name": "Tag"
+    },
+    {
+      "name": "TaskComment"
+    },
+    {
+      "name": "TestEmail"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Workspace"
+    },
+    {
+      "name": "WorkspaceItem"
+    },
+    {
+      "name": "WorkspaceItemTempAttachment"
+    },
+    {
+      "name": "WorkspaceTask"
     }
   ]
 }

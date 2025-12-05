@@ -253,6 +253,7 @@ builder.Services.AddControllers(options =>
     });
 
 // Swagger/OpenAPIの設定
+// https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-8.0&tabs=visual-studio
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
