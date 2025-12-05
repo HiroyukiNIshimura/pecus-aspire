@@ -41,7 +41,7 @@ export async function fetchMyItems(
 ): Promise<ApiResponse<WorkspaceItemDetailResponsePagedResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.myWorkspaceItem.getApiMyWorkspaceItems(page, relation, includeArchived);
+    const response = await api.my.getApiMyWorkspaceItems(page, relation, includeArchived);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);
