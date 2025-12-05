@@ -873,8 +873,8 @@ public class WorkspaceTaskService
         var results = workspaces.Select(w => new MyCommitterWorkspaceResponse
         {
             WorkspaceId = w.WorkspaceId,
-            WorkspaceCode = w.WorkspaceCode,
-            WorkspaceName = w.WorkspaceName,
+            WorkspaceCode = w.WorkspaceCode ?? string.Empty,
+            WorkspaceName = w.WorkspaceName ?? string.Empty,
             GenreIcon = w.GenreIcon,
             GenreName = w.GenreName,
             ItemCount = w.ItemCount,
