@@ -280,13 +280,13 @@
 
 | 用途 | アイコン |
 |------|---------|
-| 警告 | ⚠️ または `icon-[tabler--alert-triangle]` |
-| エラー | `icon-[tabler--x]` |
-| 成功 | `icon-[tabler--check]` |
-| 情報 | `icon-[tabler--info-circle]` |
-| 削除 | `icon-[tabler--trash]` |
-| 編集 | `icon-[tabler--pencil]` |
-| 追加 | `icon-[tabler--plus]` |
+| 警告 | ⚠️ または `icon-[solar--alert-triangle]` |
+| エラー | `icon-[solar--x]` |
+| 成功 | `icon-[solar--check]` |
+| 情報 | `icon-[solar--info-circle]` |
+| 削除 | `icon-[solar--trash]` |
+| 編集 | `icon-[solar--pencil]` |
+| 追加 | `icon-[solar--plus]` |
 
 ---
 

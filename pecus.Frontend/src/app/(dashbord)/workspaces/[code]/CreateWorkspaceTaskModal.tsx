@@ -5,7 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { createWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import { CloseIcon, PlusIcon } from '@/components/icons';
+import { CloseIcon, MinusIcon, PlusIcon, PlusSimpleIcon } from '@/components/icons';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type { CreateWorkspaceTaskRequest, TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
@@ -479,7 +479,7 @@ export default function CreateWorkspaceTaskModal({
                       onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                       disabled={isSubmitting || estimatedHours <= 0}
                     >
-                      <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
+                      <MinusIcon size="xs" />
                     </button>
                     <button
                       type="button"
@@ -488,7 +488,7 @@ export default function CreateWorkspaceTaskModal({
                       onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
                       disabled={isSubmitting}
                     >
-                      <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
+                      <PlusSimpleIcon size="xs" />
                     </button>
                   </span>
                 </div>

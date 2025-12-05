@@ -5,7 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon } from '@/components/icons';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, MinusIcon, PlusSimpleIcon } from '@/components/icons';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,
@@ -852,7 +852,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                               disabled={isSubmitting || isLoadingTask || estimatedHours <= 0}
                             >
-                              <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
+                              <MinusIcon size="xs" />
                             </button>
                             <button
                               type="button"
@@ -861,7 +861,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
                               disabled={isSubmitting || isLoadingTask}
                             >
-                              <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
+                              <PlusSimpleIcon size="xs" />
                             </button>
                           </span>
                         </div>
@@ -903,7 +903,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setActualHours((prev) => Math.max(0, (prev || 0) - 0.5))}
                               disabled={isSubmitting || isLoadingTask || actualHours <= 0}
                             >
-                              <span className="icon-[tabler--minus] size-3.5 shrink-0"></span>
+                              <MinusIcon size="xs" />
                             </button>
                             <button
                               type="button"
@@ -912,7 +912,7 @@ export default function EditWorkspaceTaskModal({
                               onClick={() => setActualHours((prev) => (prev || 0) + 0.5)}
                               disabled={isSubmitting || isLoadingTask}
                             >
-                              <span className="icon-[tabler--plus] size-3.5 shrink-0"></span>
+                              <PlusSimpleIcon size="xs" />
                             </button>
                           </span>
                         </div>

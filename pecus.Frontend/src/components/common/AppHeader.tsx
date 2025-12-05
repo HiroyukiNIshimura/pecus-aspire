@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { logout } from '@/actions/auth';
+import { AutoBrightnessIcon, MenuIcon, MoonIcon, SunIcon } from '@/components/icons';
 import { useTheme } from '@/hooks/useTheme';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -63,7 +64,7 @@ export default function AppHeader({
           {/* ハンバーガーメニュー（モバイルのみ） */}
           <div className="md:hidden">
             <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <span className="icon-[tabler--menu-2] size-5"></span>
+              <MenuIcon size="md" />
             </button>
           </div>
           {/* ロゴ（デスクトップのみ） */}
@@ -98,9 +99,9 @@ export default function AppHeader({
           {mounted && (
             <div className="dropdown [--auto-close:inside] [--offset:10] [--placement:bottom-end] mr-2">
               <button type="button" className="dropdown-toggle bg-transparent hover:bg-transparent before:hidden p-2">
-                {theme === 'light' && <span className="icon-[tabler--sun] size-5"></span>}
-                {theme === 'dark' && <span className="icon-[tabler--moon] size-5"></span>}
-                {theme === 'auto' && <span className="icon-[tabler--brightness-auto] size-5"></span>}
+                {theme === 'light' && <SunIcon size="md" />}
+                {theme === 'dark' && <MoonIcon size="md" />}
+                {theme === 'auto' && <AutoBrightnessIcon size="md" />}
               </button>
               <ul className="dropdown-menu dropdown-open:opacity-100 hidden min-w-32">
                 <li>
@@ -109,7 +110,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'light' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('light')}
                   >
-                    <span className="icon-[tabler--sun] size-4"></span>
+                    <SunIcon size="sm" />
                     ライト
                   </button>
                 </li>
@@ -119,7 +120,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'dark' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('dark')}
                   >
-                    <span className="icon-[tabler--moon] size-4"></span>
+                    <MoonIcon size="sm" />
                     ダーク
                   </button>
                 </li>
@@ -129,7 +130,7 @@ export default function AppHeader({
                     className={`dropdown-item ${theme === 'auto' ? 'active' : ''}`}
                     onClick={() => handleThemeChange('auto')}
                   >
-                    <span className="icon-[tabler--brightness-auto] size-4"></span>
+                    <AutoBrightnessIcon size="sm" />
                     自動
                   </button>
                 </li>

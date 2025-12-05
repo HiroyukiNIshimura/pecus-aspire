@@ -24,7 +24,7 @@ export function useNotify() {
             type: 'success',
             background: 'var(--color-success)',
             icon: {
-              className: 'icon-[tabler--check] !text-success',
+              className: 'icon-[solar--check-circle-linear] !text-success',
               tagName: 'span',
             },
           },
@@ -32,7 +32,7 @@ export function useNotify() {
             type: 'error',
             background: 'var(--color-error)',
             icon: {
-              className: 'icon-[tabler--x] !text-error',
+              className: 'icon-[solar--close-circle-linear] !text-error',
               tagName: 'span',
             },
           },
@@ -40,7 +40,7 @@ export function useNotify() {
             type: 'warning',
             background: 'var(--color-warning)',
             icon: {
-              className: 'icon-[tabler--alert-triangle] !text-warning',
+              className: 'icon-[solar--danger-triangle-linear] !text-warning',
               tagName: 'span',
             },
           },
@@ -48,7 +48,7 @@ export function useNotify() {
             type: 'info',
             background: 'var(--color-info)',
             icon: {
-              className: 'icon-[tabler--info-circle] !text-info',
+              className: 'icon-[solar--info-circle-linear] !text-info',
               tagName: 'span',
             },
           },

@@ -14,6 +14,7 @@ import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/w
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import {
+  ChevronUpIcon,
   DeleteIcon,
   EditIcon,
   MoreVertIcon,
@@ -982,11 +983,10 @@ export default function WorkspaceDetailClient({
             <span className="text-sm font-medium text-base-content/70">
               {mobileDrawerOpen ? '閉じる' : 'アイテム一覧'}
             </span>
-            <span
-              className={`icon-[tabler--chevron-up] size-5 transition-transform duration-300 ${
-                mobileDrawerOpen ? 'rotate-180' : ''
-              }`}
-            ></span>
+            <ChevronUpIcon
+              size="md"
+              className={`transition-transform duration-300 ${mobileDrawerOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* ドロワーコンテンツ */}

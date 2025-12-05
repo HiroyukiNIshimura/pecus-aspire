@@ -1,5 +1,6 @@
 'use client';
 
+import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createTaskComment,
@@ -7,7 +8,17 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
-import { DeleteOutlineIcon, EditIcon, MessageIcon, SendIcon } from '@/components/icons';
+import {
+  BellIcon,
+  DeleteOutlineIcon,
+  EditIcon,
+  HelpIcon,
+  MailQuestionIcon,
+  MessageIcon,
+  NoteIcon,
+  SendIcon,
+  UrgentIcon,
+} from '@/components/icons';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -16,13 +27,18 @@ import { getDisplayIconUrl } from '@/utils/imageUrl';
 /** コメントの最大文字数 */
 const MAX_COMMENT_LENGTH = 500;
 
-const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; icon: string }> = {
-  Normal: { label: '通常', color: 'badge-neutral', icon: 'icon-[tabler--message]' },
-  Memo: { label: 'メモ', color: 'badge-info', icon: 'icon-[tabler--note]' },
-  HelpWanted: { label: '助けて', color: 'badge-warning', icon: 'icon-[tabler--help]' },
-  NeedReply: { label: '返事が欲しい', color: 'badge-primary', icon: 'icon-[tabler--mail-question]' },
-  Reminder: { label: 'リマインダー', color: 'badge-secondary', icon: 'icon-[tabler--bell]' },
-  Urge: { label: '督促', color: 'badge-error', icon: 'icon-[tabler--urgent]' },
+interface IconProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  className?: string;
+}
+
+const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; Icon: FC<IconProps> }> = {
+  Normal: { label: '通常', color: 'badge-neutral', Icon: MessageIcon },
+  Memo: { label: 'メモ', color: 'badge-info', Icon: NoteIcon },
+  HelpWanted: { label: '助けて', color: 'badge-warning', Icon: HelpIcon },
+  NeedReply: { label: '返事が欲しい', color: 'badge-primary', Icon: MailQuestionIcon },
+  Reminder: { label: 'リマインダー', color: 'badge-secondary', Icon: BellIcon },
+  Urge: { label: '督促', color: 'badge-error', Icon: UrgentIcon },
 };
 
 interface TaskCommentSectionProps {
@@ -332,9 +348,10 @@ export default function TaskCommentSection({
                     {(() => {
                       const type = comment.commentType || 'Normal';
                       const config = commentTypeConfig[type];
-                      return config ? (
+                      const IconComponent = config?.Icon;
+                      return config && IconComponent ? (
                         <span className={`badge badge-sm ${config.color}`} title={config.label}>
-                          <span className={`${config.icon} w-3 h-3 mr-0.5`}></span>
+                          <IconComponent size="xs" className="mr-0.5" />
                           {config.label}
                         </span>
                       ) : null;

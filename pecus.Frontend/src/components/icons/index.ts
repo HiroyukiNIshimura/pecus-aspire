@@ -6,7 +6,9 @@ export {
   ArchiveIcon,
   AssignmentIcon,
   AssignmentIndIcon,
+  AutoBrightnessIcon,
   BadgeIcon,
+  BellIcon,
   BusinessIcon,
   // カレンダー
   CalendarIcon,
@@ -20,18 +22,19 @@ export {
   // ナビゲーション
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   ClearIcon,
   CloseIcon,
   // UI
   DashboardIcon,
   DeleteIcon,
   DeleteOutlineIcon,
-  default as Icon,
   EditIcon,
   // 編集
   EditNoteIcon,
   FilterIcon,
   GridViewIcon,
+  HelpIcon,
   HighlightOffIcon,
   HistoryIcon,
   HomeIcon,
@@ -39,9 +42,14 @@ export {
   LinkIcon,
   LinkOffIcon,
   LocalOfferIcon,
+  MailQuestionIcon,
   MenuIcon,
   MessageIcon,
+  // 数値操作
+  MinusIcon,
+  MoonIcon,
   MoreVertIcon,
+  NoteIcon,
   PeopleIcon,
   // ユーザー関連
   PersonIcon,
@@ -50,17 +58,22 @@ export {
   PinOutlineIcon,
   // 基本操作
   PlusIcon,
+  PlusSimpleIcon,
   PowerOffIcon,
   PowerOnIcon,
   PsychologyIcon,
   SaveIcon,
   SearchIcon,
   SendIcon,
+  StarFilledIcon,
+  StarIcon,
+  SunIcon,
   // タスク・管理
   TaskIcon,
   ToggleOffIcon,
   // トグル
   ToggleOnIcon,
+  UrgentIcon,
   ViewListIcon,
   WarningIcon,
 } from './Icon';

@@ -266,7 +266,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <button
                 type="button"
                 onClick={handlePinToggle}
-                className={`btn btn-sm gap-1 ${item.isPinned ? 'btn-warning' : ''}`}
+                className={`btn btn-secondary btn-sm gap-1 ${item.isPinned ? 'btn-warning' : ''}`}
                 title={item.isPinned ? 'PINを解除' : 'PINを追加'}
                 disabled={isPinLoading}
               >
@@ -290,7 +290,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <EditIcon size="sm" />
                 編集
               </button>
-              <button type="button" onClick={openDrawer} className="btn btn-sm gap-2" title="詳細オプション">
+              <button
+                type="button"
+                onClick={openDrawer}
+                className="btn btn-secondary btn-sm gap-2"
+                title="詳細オプション"
+              >
                 <MenuIcon size="sm" />
               </button>
             </div>
