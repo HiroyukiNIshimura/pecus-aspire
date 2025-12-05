@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { deleteWorkspace } from '@/actions/admin/workspace';
 import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -545,7 +546,7 @@ export default function AdminWorkspacesClient({
       {/* Footer */}
       <AdminFooter />
 
-      {/* 削除確認モーダル（削除処理は未実装） */}
+      {/* 削除確認モーダル */}
       <DeleteWorkspaceModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
@@ -553,15 +554,14 @@ export default function AdminWorkspacesClient({
           setWorkspaceToDelete(null);
         }}
         onConfirm={async () => {
-          // 現時点では削除処理は未実装
-          // TODO: 削除APIの実装後に以下のコードを追加
-          // const result = await deleteWorkspace(workspaceToDelete!.id);
-          // if (result.success) {
-          //   handleFilterChange();
-          //   notify.success("ワークスペースを削除しました");
-          // } else {
-          //   notify.error(result.message || "ワークスペースの削除に失敗しました。");
-          // }
+          if (!workspaceToDelete) return;
+          const result = await deleteWorkspace(workspaceToDelete.id);
+          if (result.success) {
+            handleFilterChange();
+            notify.success('ワークスペースを削除しました');
+          } else {
+            notify.error(result.message || 'ワークスペースの削除に失敗しました。');
+          }
         }}
         workspace={workspaceToDelete}
       />
