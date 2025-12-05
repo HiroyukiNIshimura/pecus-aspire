@@ -609,4 +609,211 @@ public class WorkspaceTaskService
             RowVersion = task.RowVersion,
         };
     }
+
+    /// <summary>
+    /// ログインユーザーに割り当てられたタスク一覧を取得（全ワークスペース横断）
+    /// </summary>
+    /// <param name="userId">ログインユーザーID</param>
+    /// <param name="request">フィルタリング・ページネーションリクエスト</param>
+    /// <returns>タスク一覧、コメント数辞書、総件数のタプル</returns>
+    public async Task<(List<WorkspaceTask> Tasks, Dictionary<int, int> CommentCounts, int TotalCount)> GetMyTasksAsync(
+        int userId,
+        GetMyTasksRequest request
+    )
+    {
+        var query = _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Workspace!)
+                    .ThenInclude(w => w.Genre)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Assignee)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Committer)
+            .Where(t => t.AssignedUserId == userId);
+
+        // ステータスフィルタ
+        if (request.Status.HasValue)
+        {
+            query = request.Status.Value switch
+            {
+                TaskStatusFilter.Active => query.Where(t => !t.IsCompleted && !t.IsDiscarded),
+                TaskStatusFilter.Completed => query.Where(t => t.IsCompleted && !t.IsDiscarded),
+                TaskStatusFilter.Discarded => query.Where(t => t.IsDiscarded),
+                _ => query, // All の場合はフィルタなし
+            };
+        }
+
+        // 総件数を取得
+        var totalCount = await query.CountAsync();
+
+        // ページネーション（ページサイズは設定から取得）
+        var pageSize = _config.Pagination.DefaultPageSize;
+        var tasks = await query
+            .AsSplitQuery() // デカルト爆発防止
+            .OrderByDescending(t => t.DueDate.HasValue ? 0 : 1) // 期限ありを優先
+            .ThenBy(t => t.DueDate) // 期限が近い順
+            .ThenByDescending(t => t.CreatedAt)
+            .Skip((request.Page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        // 各タスクのコメント数を取得
+        var taskIds = tasks.Select(t => t.Id).ToList();
+        var commentCounts = await _context.TaskComments
+            .Where(c => taskIds.Contains(c.WorkspaceTaskId))
+            .GroupBy(c => c.WorkspaceTaskId)
+            .Select(g => new { TaskId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.TaskId, x => x.Count);
+
+        return (tasks, commentCounts, totalCount);
+    }
+
+    /// <summary>
+    /// ログインユーザーのタスク統計情報を取得
+    /// </summary>
+    /// <param name="userId">ログインユーザーID</param>
+    /// <returns>統計情報</returns>
+    public async Task<WorkspaceTaskStatistics> GetMyTaskStatisticsAsync(int userId)
+    {
+        // DateTimeOffset で日付範囲を定義（PostgreSQL との互換性のため）
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+        var todayEnd = todayStart.AddDays(1);
+        var sevenDaysLaterEnd = todayStart.AddDays(8); // 7日後の終わりまで
+
+        var query = _context.WorkspaceTasks
+            .Where(t => t.AssignedUserId == userId);
+
+        // 各統計値を計算
+        var totalCount = await query.CountAsync();
+        var completedCount = await query.CountAsync(t => t.IsCompleted && !t.IsDiscarded);
+        var incompleteCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
+        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart);
+        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayStart && t.DueDate.Value < todayEnd);
+        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayEnd && t.DueDate.Value < sevenDaysLaterEnd);
+        var noDueDateCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && !t.DueDate.HasValue);
+        var discardedCount = await query.CountAsync(t => t.IsDiscarded);
+
+        // タスクに紐づくコメント総数
+        var taskIds = await query.Select(t => t.Id).ToListAsync();
+        var commentCount = taskIds.Count > 0
+            ? await _context.TaskComments.CountAsync(c => taskIds.Contains(c.WorkspaceTaskId))
+            : 0;
+
+        return new WorkspaceTaskStatistics
+        {
+            TotalCount = totalCount,
+            CompletedCount = completedCount,
+            IncompleteCount = incompleteCount,
+            OverdueCount = overdueCount,
+            DueTodayCount = dueTodayCount,
+            DueSoonCount = dueSoonCount,
+            NoDueDateCount = noDueDateCount,
+            DiscardedCount = discardedCount,
+            CommentCount = commentCount,
+        };
+    }
+
+    /// <summary>
+    /// WorkspaceTaskエンティティからMyTaskDetailResponseを生成
+    /// </summary>
+    /// <param name="task">タスクエンティティ（WorkspaceItem含む）</param>
+    /// <param name="commentCount">コメント数</param>
+    public static MyTaskDetailResponse BuildMyTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
+    {
+        var item = task.WorkspaceItem;
+        return new MyTaskDetailResponse
+        {
+            Id = task.Id,
+            WorkspaceItemId = task.WorkspaceItemId,
+            WorkspaceId = task.WorkspaceId,
+            WorkspaceCode = item?.Workspace?.Code,
+            WorkspaceName = item?.Workspace?.Name,
+            GenreIcon = item?.Workspace?.Genre?.Icon,
+            GenreName = item?.Workspace?.Genre?.Name,
+            ItemCode = item?.Code,
+            ItemSubject = item?.Subject,
+            ItemOwnerId = item?.OwnerId,
+            ItemOwnerUsername = item?.Owner?.Username,
+            ItemOwnerAvatarUrl = item?.Owner != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Owner.AvatarType,
+                    userId: item.Owner.Id,
+                    username: item.Owner.Username,
+                    email: item.Owner.Email,
+                    avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            ItemAssigneeId = item?.AssigneeId,
+            ItemAssigneeUsername = item?.Assignee?.Username,
+            ItemAssigneeAvatarUrl = item?.Assignee != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Assignee.AvatarType,
+                    userId: item.Assignee.Id,
+                    username: item.Assignee.Username,
+                    email: item.Assignee.Email,
+                    avatarPath: item.Assignee.UserAvatarPath
+                )
+                : null,
+            ItemCommitterId = item?.CommitterId,
+            ItemCommitterUsername = item?.Committer?.Username,
+            ItemCommitterAvatarUrl = item?.Committer != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Committer.AvatarType,
+                    userId: item.Committer.Id,
+                    username: item.Committer.Username,
+                    email: item.Committer.Email,
+                    avatarPath: item.Committer.UserAvatarPath
+                )
+                : null,
+            OrganizationId = task.OrganizationId,
+            AssignedUserId = task.AssignedUserId,
+            AssignedUsername = task.AssignedUser?.Username,
+            AssignedAvatarUrl = task.AssignedUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.AssignedUser.AvatarType,
+                    userId: task.AssignedUser.Id,
+                    username: task.AssignedUser.Username,
+                    email: task.AssignedUser.Email,
+                    avatarPath: task.AssignedUser.UserAvatarPath
+                )
+                : null,
+            CreatedByUserId = task.CreatedByUserId,
+            CreatedByUsername = task.CreatedByUser?.Username,
+            CreatedByAvatarUrl = task.CreatedByUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.CreatedByUser.AvatarType,
+                    userId: task.CreatedByUser.Id,
+                    username: task.CreatedByUser.Username,
+                    email: task.CreatedByUser.Email,
+                    avatarPath: task.CreatedByUser.UserAvatarPath
+                )
+                : null,
+            Content = task.Content,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeCode = task.TaskType?.Code,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
+            Priority = task.Priority,
+            StartDate = task.StartDate,
+            DueDate = task.DueDate,
+            EstimatedHours = task.EstimatedHours,
+            ActualHours = task.ActualHours,
+            ProgressPercentage = task.ProgressPercentage,
+            IsCompleted = task.IsCompleted,
+            CompletedAt = task.CompletedAt,
+            IsDiscarded = task.IsDiscarded,
+            DiscardedAt = task.DiscardedAt,
+            DiscardReason = task.DiscardReason,
+            CreatedAt = task.CreatedAt,
+            UpdatedAt = task.UpdatedAt,
+            CommentCount = commentCount,
+            RowVersion = task.RowVersion,
+        };
+    }
 }

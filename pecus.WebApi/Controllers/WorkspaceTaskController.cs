@@ -171,59 +171,6 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
-    /// コミッタIDでタスクを検索
-    /// コミッタIDに一致するアイテムとそのタスクを取得します（ワークスペースIDで絞り込み可能）
-    /// </summary>
-    /// <param name="request">コミッタID・ワークスペースID・ページネーションリクエスト</param>
-    /// <returns>アイテムとタスクのグループ化されたリスト</returns>
-    [HttpGet("~/api/tasks/by-committer")]
-    [ProducesResponseType(typeof(PagedResponse<ItemWithTasksResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<PagedResponse<ItemWithTasksResponse>>> GetTasksByCommitter(
-        [FromQuery] GetTasksByCommitterRequest request
-    )
-    {
-        // WorkspaceIdが指定されている場合はアクセス権限をチェック
-        if (request.WorkspaceId.HasValue)
-        {
-            var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, request.WorkspaceId.Value);
-            if (!hasAccess)
-            {
-                throw new NotFoundException("ワークスペースが見つかりません。");
-            }
-        }
-
-        var (results, totalCount, pageSize) = await _workspaceTaskService.GetTasksByCommitterAsync(
-            workspaceId: request.WorkspaceId,
-            committerId: request.CommitterId,
-            page: request.Page
-        );
-
-        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        var responseData = results.Select(r => new ItemWithTasksResponse
-        {
-            Item = BuildTaskItemResponse(r.Item),
-            Tasks = r.Tasks.Select(t => BuildTaskDetailResponse(t)),
-        });
-
-        var response = new PagedResponse<ItemWithTasksResponse>
-        {
-            Data = responseData,
-            CurrentPage = request.Page,
-            PageSize = pageSize,
-            TotalCount = totalCount,
-            TotalPages = totalPages,
-            HasPreviousPage = request.Page > 1,
-            HasNextPage = request.Page < totalPages,
-        };
-
-        return TypedResults.Ok(response);
-    }
-
-    /// <summary>
     /// タスク更新
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

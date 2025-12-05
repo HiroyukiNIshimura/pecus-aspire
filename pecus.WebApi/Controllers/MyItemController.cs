@@ -12,7 +12,7 @@ namespace Pecus.Controllers;
 /// </summary>
 [Route("api/my/workspace-items")]
 [Produces("application/json")]
-[Tags("MyWorkspaceItem")]
+[Tags("My")]
 public class MyItemController : BaseSecureController
 {
     private readonly WorkspaceItemService _workspaceItemService;

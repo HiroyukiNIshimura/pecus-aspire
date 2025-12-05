@@ -38,6 +38,8 @@ export type { MasterSkillResponse } from './models/MasterSkillResponse';
 export type { MasterTaskTypeResponse } from './models/MasterTaskTypeResponse';
 export type { MessageResponse } from './models/MessageResponse';
 export type { MyItemRelationType } from './models/MyItemRelationType';
+export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
+export type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from './models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
 export type { OrganizationResponse } from './models/OrganizationResponse';
 export type { OrganizationResponseConcurrencyErrorResponse } from './models/OrganizationResponseConcurrencyErrorResponse';
@@ -146,7 +148,7 @@ export { EntranceOrganizationService } from './services/EntranceOrganizationServ
 export { EntrancePasswordService } from './services/EntrancePasswordService';
 export { FileService } from './services/FileService';
 export { MasterService } from './services/MasterService';
-export { MyWorkspaceItemService } from './services/MyWorkspaceItemService';
+export { MyService } from './services/MyService';
 export { ProfileService } from './services/ProfileService';
 export { ProfileDeviceService } from './services/ProfileDeviceService';
 export { ProfileEmailService } from './services/ProfileEmailService';

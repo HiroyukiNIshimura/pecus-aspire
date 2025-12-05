@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
-import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasksResponsePagedResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
@@ -137,35 +136,6 @@ export class WorkspaceTaskService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
-     * コミッタIDでタスクを検索
-     * コミッタIDに一致するアイテムとそのタスクを取得します（ワークスペースIDで絞り込み可能）
-     * @param committerId コミッタID（ワークスペースアイテムのコミッタ）
-     * @param workspaceId ワークスペースID（任意）
-     * @param page ページ番号（1から始まる）
-     * @returns ItemWithTasksResponsePagedResponse OK
-     * @throws ApiError
-     */
-    public static getApiTasksByCommitter(
-        committerId: number,
-        workspaceId?: number,
-        page?: number,
-    ): CancelablePromise<ItemWithTasksResponsePagedResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/tasks/by-committer',
-            query: {
-                'WorkspaceId': workspaceId,
-                'CommitterId': committerId,
-                'Page': page,
-            },
-            errors: {
-                400: `Bad Request`,
-                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });
