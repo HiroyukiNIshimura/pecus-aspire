@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const pageSize = searchParams.get('PageSize') ? parseInt(searchParams.get('PageSize')!, 10) : undefined;
 
     // フィルタパラメータの処理
     const isActiveParam = searchParams.get('IsActive');
@@ -26,7 +25,7 @@ export async function GET(request: NextRequest) {
     // SkillFilterMode の取得（デフォルトは 'and'）
     const skillFilterMode = searchParams.get('SkillFilterMode') || 'and';
 
-    const result = await getUsers(page, pageSize, isActive, username, skillIds, skillFilterMode);
+    const result = await getUsers(page, isActive, username, skillIds, skillFilterMode);
 
     if (result.success) {
       return NextResponse.json(result.data, { status: 200 });

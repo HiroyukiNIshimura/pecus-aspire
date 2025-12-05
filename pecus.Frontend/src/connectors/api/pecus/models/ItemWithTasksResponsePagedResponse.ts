@@ -2,15 +2,15 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GenreListItemResponse } from './GenreListItemResponse';
+import type { ItemWithTasksResponse } from './ItemWithTasksResponse';
 /**
  * ページネーション付きレスポンス
  */
-export type GenreListItemResponsePagedResponse = {
+export type ItemWithTasksResponsePagedResponse = {
     /**
      * データのリスト
      */
-    data: Array<GenreListItemResponse>;
+    data: Array<ItemWithTasksResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */

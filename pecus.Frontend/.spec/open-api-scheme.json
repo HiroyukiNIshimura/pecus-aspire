@@ -1024,16 +1024,6 @@
             }
           },
           {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "maximum": 100,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
             "name": "IsActive",
             "in": "query",
             "description": "アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）",
@@ -2154,1370 +2144,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/genres": {
-      "get": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンル一覧を取得",
-        "parameters": [
-          {
-            "name": "Page",
-            "in": "query",
-            "schema": {
-              "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "ActiveOnly",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreListItemResponsePagedResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreListItemResponsePagedResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreListItemResponsePagedResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンルを作成",
-        "requestBody": {
-          "description": "ジャンル作成リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGenreRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGenreRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGenreRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/genres/{id}": {
-      "get": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンル詳細を取得",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ジャンルID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンルを更新",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ジャンルID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "ジャンル更新リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateGenreRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateGenreRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateGenreRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenreResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンルを削除",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ジャンルID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/genres/{id}/active-status": {
-      "put": {
-        "tags": [
-          "Backend - Genre"
-        ],
-        "summary": "ジャンルのアクティブ状態を設定",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ジャンルID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "アクティブ状態設定リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetActiveStatusRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/backend/organizations/{id}": {
-      "get": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織情報取得",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織更新",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BackendUpdateOrganizationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織削除",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteOrganizationRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteOrganizationRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteOrganizationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/organizations": {
-      "get": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織一覧取得（ページネーション対応）",
-        "parameters": [
-          {
-            "name": "Page",
-            "in": "query",
-            "schema": {
-              "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "ActiveOnly",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationListItemResponsePagedResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/organizations/{id}/users": {
-      "get": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織の所属ユーザー取得",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserItem"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/organizations/{id}/active-status": {
-      "put": {
-        "tags": [
-          "Backend - Organization"
-        ],
-        "summary": "組織のアクティブ状態を設定",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "組織ID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "アクティブ状態設定リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetOrganizationActiveStatusRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/permissions": {
-      "post": {
-        "tags": [
-          "Backend - Permission"
-        ],
-        "summary": "権限作成",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePermissionRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePermissionRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePermissionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PermissionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Backend - Permission"
-        ],
-        "summary": "全権限取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PermissionListItemResponse"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/permissions/{id}": {
-      "get": {
-        "tags": [
-          "Backend - Permission"
-        ],
-        "summary": "権限取得",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PermissionDetailResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Backend - Permission"
-        ],
-        "summary": "権限削除",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/permissions/category/{category}": {
-      "get": {
-        "tags": [
-          "Backend - Permission"
-        ],
-        "summary": "カテゴリで権限取得",
-        "parameters": [
-          {
-            "name": "category",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PermissionListItemResponse"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/roles": {
-      "post": {
-        "tags": [
-          "Backend - Role"
-        ],
-        "summary": "ロール作成",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRoleRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRoleRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRoleRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoleResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Backend - Role"
-        ],
-        "summary": "全ロール取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RoleListItemResponse"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/roles/{id}": {
-      "get": {
-        "tags": [
-          "Backend - Role"
-        ],
-        "summary": "ロール取得",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoleDetailResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Backend - Role"
-        ],
-        "summary": "ロール削除",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/backend/roles/{roleId}/permissions": {
-      "put": {
-        "tags": [
-          "Backend - Role"
-        ],
-        "summary": "ロールに権限を設定（既存の権限を置き換える）",
-        "parameters": [
-          {
-            "name": "roleId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetPermissionsToRoleRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetPermissionsToRoleRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetPermissionsToRoleRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoleDetailResponse"
                 }
               }
             }
@@ -5327,17 +3953,6 @@
             "description": "ページ番号（1から始まる）",
             "schema": {
               "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "description": "1ページあたりの件数（1〜100、デフォルト20）",
-            "schema": {
-              "maximum": 100,
               "minimum": 1,
               "type": "integer",
               "format": "int32"
@@ -8656,9 +7271,9 @@
           {
             "name": "PageSize",
             "in": "query",
-            "description": "1ページあたりの件数（1〜100、デフォルト10）",
+            "description": "1ページあたりの件数（1〜50、デフォルト10）\r\nカルーセルのためクライアントからの指定を許可",
             "schema": {
-              "maximum": 100,
+              "maximum": 50,
               "minimum": 1,
               "type": "integer",
               "format": "int32"
@@ -8876,6 +7491,83 @@
           }
         }
       }
+    },
+    "/api/tasks/by-committer": {
+      "get": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "コミッタIDでタスクを検索\r\nコミッタIDに一致するアイテムとそのタスクを取得します（ワークスペースIDで絞り込み可能）",
+        "parameters": [
+          {
+            "name": "WorkspaceId",
+            "in": "query",
+            "description": "ワークスペースID（任意）",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "CommitterId",
+            "in": "query",
+            "description": "コミッタID（ワークスペースアイテムのコミッタ）",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から始まる）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemWithTasksResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8985,91 +7677,6 @@
         ],
         "type": "string"
       },
-      "BackendUpdateOrganizationRequest": {
-        "required": [
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 100,
-            "type": "string",
-            "nullable": true
-          },
-          "code": {
-            "maxLength": 50,
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "maxLength": 500,
-            "type": "string",
-            "nullable": true
-          },
-          "representativeName": {
-            "maxLength": 100,
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "maxLength": 20,
-            "type": "string",
-            "format": "tel",
-            "nullable": true
-          },
-          "email": {
-            "maxLength": 100,
-            "type": "string",
-            "format": "email",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "rowVersion": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織更新リクエスト（バックエンドサービス用）"
-      },
-      "CreateGenreRequest": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 100,
-            "minLength": 1,
-            "type": "string",
-            "description": "ジャンル名"
-          },
-          "description": {
-            "maxLength": 500,
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "maxLength": 50,
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル登録リクエスト"
-      },
       "CreateOrganizationRequest": {
         "required": [
           "adminEmail",
@@ -9125,51 +7732,6 @@
         },
         "additionalProperties": false,
         "description": "組織登録リクエスト"
-      },
-      "CreatePermissionRequest": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 100,
-            "minLength": 1,
-            "type": "string"
-          },
-          "description": {
-            "maxLength": 200,
-            "type": "string",
-            "nullable": true
-          },
-          "category": {
-            "maxLength": 50,
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "権限作成リクエスト"
-      },
-      "CreateRoleRequest": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 50,
-            "minLength": 1,
-            "type": "string"
-          },
-          "description": {
-            "maxLength": 200,
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "ロール作成リクエスト"
       },
       "CreateSkillRequest": {
         "required": [
@@ -9411,20 +7973,6 @@
         },
         "additionalProperties": false,
         "description": "ワークスペースタスク作成リクエスト"
-      },
-      "DeleteOrganizationRequest": {
-        "required": [
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "rowVersion": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織削除リクエスト"
       },
       "DeleteTaskCommentRequest": {
         "required": [
@@ -9684,52 +8232,29 @@
         "additionalProperties": false,
         "description": "ジャンルごとのワークスペース数"
       },
-      "GenreListItemResponse": {
+      "ItemWithTasksResponse": {
         "required": [
-          "id",
-          "name"
+          "item",
+          "tasks"
         ],
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ジャンルID",
-            "format": "int32"
+          "item": {
+            "$ref": "#/components/schemas/TaskItemResponse"
           },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ジャンル名"
-          },
-          "description": {
-            "type": "string",
-            "description": "ジャンルの説明",
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
+            },
+            "description": "アイテムに紐づくタスクのリスト",
             "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          },
-          "workspaceCount": {
-            "type": "integer",
-            "description": "このジャンルを使用しているワークスペース数",
-            "format": "int32"
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "有効フラグ"
           }
         },
         "additionalProperties": false,
-        "description": "ジャンル一覧用レスポンス"
+        "description": "アイテムとそのタスクをグループ化したレスポンス"
       },
-      "GenreListItemResponsePagedResponse": {
+      "ItemWithTasksResponsePagedResponse": {
         "required": [
           "data"
         ],
@@ -9738,7 +8263,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/GenreListItemResponse"
+              "$ref": "#/components/schemas/ItemWithTasksResponse"
             },
             "description": "データのリスト"
           },
@@ -9773,80 +8298,6 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
-      },
-      "GenreResponse": {
-        "required": [
-          "id",
-          "name",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ジャンルID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ジャンル名"
-          },
-          "description": {
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32"
-          },
-          "workspaceCount": {
-            "type": "integer",
-            "description": "このジャンルを使用しているワークスペース数",
-            "format": "int32"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "更新日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedByUserId": {
-            "type": "integer",
-            "description": "更新者ユーザーID",
-            "format": "int32",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "有効フラグ"
-          },
-          "rowVersion": {
-            "type": "integer",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル基本レスポンス"
       },
       "LoginRequest": {
         "required": [
@@ -10151,107 +8602,6 @@
         "additionalProperties": false,
         "description": "組織情報レスポンス（簡易版）"
       },
-      "OrganizationListItemResponse": {
-        "required": [
-          "id",
-          "name",
-          "phoneNumber"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "組織ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "組織名"
-          },
-          "code": {
-            "type": "string",
-            "description": "組織コード",
-            "nullable": true
-          },
-          "representativeName": {
-            "type": "string",
-            "description": "代表者名",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "minLength": 1,
-            "type": "string",
-            "description": "電話番号"
-          },
-          "email": {
-            "type": "string",
-            "description": "メールアドレス",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "userCount": {
-            "type": "integer",
-            "description": "所属ユーザー数",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織リスト項目レスポンス"
-      },
-      "OrganizationListItemResponsePagedResponse": {
-        "required": [
-          "data"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OrganizationListItemResponse"
-            },
-            "description": "データのリスト"
-          },
-          "currentPage": {
-            "type": "integer",
-            "description": "現在のページ番号（1から始まる）",
-            "format": "int32"
-          },
-          "pageSize": {
-            "type": "integer",
-            "description": "1ページあたりのアイテム数",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "description": "総アイテム数",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "description": "総ページ数",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean",
-            "description": "前のページが存在するか"
-          },
-          "hasNextPage": {
-            "type": "boolean",
-            "description": "次のページが存在するか"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ページネーション付きレスポンス"
-      },
       "OrganizationResponse": {
         "required": [
           "id",
@@ -10396,164 +8746,6 @@
         },
         "additionalProperties": false,
         "description": "未使用メールアドレス変更トークン情報レスポンス"
-      },
-      "PermissionDetailInfoResponse": {
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "権限ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "権限名"
-          },
-          "description": {
-            "type": "string",
-            "description": "権限の説明",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "description": "権限カテゴリ",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "権限詳細情報レスポンス"
-      },
-      "PermissionDetailResponse": {
-        "required": [
-          "id",
-          "name",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "権限ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "権限名"
-          },
-          "description": {
-            "type": "string",
-            "description": "権限の説明",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "description": "権限カテゴリ",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RoleInfoResponse"
-            },
-            "description": "この権限を持つロール一覧",
-            "nullable": true
-          },
-          "rowVersion": {
-            "type": "integer",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "権限詳細レスポンス（ロールを含む）"
-      },
-      "PermissionListItemResponse": {
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "権限ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "権限名"
-          },
-          "description": {
-            "type": "string",
-            "description": "権限の説明",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "description": "権限カテゴリ",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "roleCount": {
-            "type": "integer",
-            "description": "この権限を持つロール数",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "権限リスト項目レスポンス"
-      },
-      "PermissionResponse": {
-        "required": [
-          "id",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "権限ID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "権限名"
-          },
-          "description": {
-            "type": "string",
-            "description": "権限の説明",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "description": "権限カテゴリ",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          }
-        },
-        "additionalProperties": false,
-        "description": "権限情報レスポンス"
       },
       "ProblemDetails": {
         "type": "object",
@@ -10778,51 +8970,6 @@
         "additionalProperties": false,
         "description": "パスワードリセット実行リクエスト"
       },
-      "RoleDetailResponse": {
-        "required": [
-          "id",
-          "name",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ロールID",
-            "format": "int32"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ロール名"
-          },
-          "description": {
-            "type": "string",
-            "description": "ロールの説明",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "permissions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PermissionDetailInfoResponse"
-            },
-            "description": "ロールが持つ権限一覧",
-            "nullable": true
-          },
-          "rowVersion": {
-            "type": "integer",
-            "description": "楽観的ロック用のRowVersion",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ロール詳細レスポンス（権限を含む）"
-      },
       "RoleInfoResponse": {
         "required": [
           "id",
@@ -10938,38 +9085,6 @@
         "additionalProperties": false,
         "description": "ロールごとのユーザー数"
       },
-      "SetActiveStatusRequest": {
-        "required": [
-          "isActive"
-        ],
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブ状態（true: 有効, false: 無効）"
-          }
-        },
-        "additionalProperties": false,
-        "description": "アクティブ状態設定リクエスト（レガシー用）"
-      },
-      "SetOrganizationActiveStatusRequest": {
-        "required": [
-          "isActive",
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean"
-          },
-          "rowVersion": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "組織のアクティブ状態変更リクエスト"
-      },
       "SetOwnSkillsRequest": {
         "type": "object",
         "properties": {
@@ -10991,21 +9106,6 @@
         },
         "additionalProperties": false,
         "description": "自ユーザースキル設定リクエスト"
-      },
-      "SetPermissionsToRoleRequest": {
-        "type": "object",
-        "properties": {
-          "permissionIds": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "ロールに権限を設定するリクエスト"
       },
       "SetTagsToItemRequest": {
         "type": "object",
@@ -11926,6 +10026,121 @@
         ],
         "type": "string"
       },
+      "TaskItemResponse": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "コード",
+            "nullable": true
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名",
+            "nullable": true
+          },
+          "ownerId": {
+            "type": "integer",
+            "description": "オーナーユーザーID",
+            "format": "int32"
+          },
+          "ownerUsername": {
+            "type": "string",
+            "description": "オーナーユーザー名",
+            "nullable": true
+          },
+          "ownerAvatarUrl": {
+            "type": "string",
+            "description": "オーナーアバターURL",
+            "nullable": true
+          },
+          "assigneeId": {
+            "type": "integer",
+            "description": "作業中のユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "assigneeUsername": {
+            "type": "string",
+            "description": "作業中のユーザー名",
+            "nullable": true
+          },
+          "assigneeAvatarUrl": {
+            "type": "string",
+            "description": "作業中のユーザーアバターURL",
+            "nullable": true
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isArchived": {
+            "type": "boolean",
+            "description": "アーカイブフラグ"
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "下書き中フラグ"
+          },
+          "committerId": {
+            "type": "integer",
+            "description": "コミッターユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "committerUsername": {
+            "type": "string",
+            "description": "コミッターユーザー名",
+            "nullable": true
+          },
+          "committerAvatarUrl": {
+            "type": "string",
+            "description": "コミッターアバターURL",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "更新日時",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "TaskPriority": {
         "enum": [
           "Low",
@@ -11989,52 +10204,6 @@
         },
         "additionalProperties": false,
         "description": "一時添付ファイルのレスポンス"
-      },
-      "UpdateGenreRequest": {
-        "required": [
-          "rowVersion"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "maxLength": 100,
-            "type": "string",
-            "description": "ジャンル名",
-            "nullable": true
-          },
-          "description": {
-            "maxLength": 500,
-            "type": "string",
-            "description": "ジャンルの説明",
-            "nullable": true
-          },
-          "icon": {
-            "maxLength": 50,
-            "type": "string",
-            "description": "ジャンルアイコン",
-            "nullable": true
-          },
-          "displayOrder": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "type": "integer",
-            "description": "表示順",
-            "format": "int32",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ",
-            "nullable": true
-          },
-          "rowVersion": {
-            "type": "integer",
-            "description": "ジャンルの楽観的ロック用のRowVersion",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ジャンル更新リクエスト"
       },
       "UpdatePasswordRequest": {
         "required": [
@@ -12600,69 +10769,6 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
-      },
-      "UserItem": {
-        "required": [
-          "email",
-          "id",
-          "loginId",
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ユーザーID",
-            "format": "int32"
-          },
-          "loginId": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ログインID"
-          },
-          "username": {
-            "minLength": 1,
-            "type": "string",
-            "description": "ユーザー名"
-          },
-          "email": {
-            "minLength": 1,
-            "type": "string",
-            "description": "メールアドレス"
-          },
-          "avatarType": {
-            "type": "string",
-            "description": "アバタータイプ",
-            "nullable": true
-          },
-          "identityIconUrl": {
-            "type": "string",
-            "description": "アイデンティティアイコンURL",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean",
-            "description": "アクティブフラグ"
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "lastLoginAt": {
-            "type": "string",
-            "description": "最終ログイン日時",
-            "format": "date-time",
-            "nullable": true
-          },
-          "roleCount": {
-            "type": "integer",
-            "description": "ユーザーが持つロール数",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false,
-        "description": "ユーザー一覧項目"
       },
       "UserRoleResponse": {
         "required": [
@@ -14201,18 +12307,6 @@
     },
     {
       "name": "Admin - Workspace"
-    },
-    {
-      "name": "Backend - Genre"
-    },
-    {
-      "name": "Backend - Organization"
-    },
-    {
-      "name": "Backend - Permission"
-    },
-    {
-      "name": "Backend - Role"
     },
     {
       "name": "Backend - Specs"

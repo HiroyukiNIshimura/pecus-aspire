@@ -19,7 +19,6 @@ export class TaskCommentService {
      * @param itemId ワークスペースアイテムID
      * @param taskId タスクID
      * @param page ページ番号（1から始まる）
-     * @param pageSize 1ページあたりの件数（1〜100、デフォルト20）
      * @param commentType コメントタイプでフィルタ
      * @param includeDeleted 削除されたコメントも含める（デフォルトはfalse）
      * @returns TaskCommentDetailResponsePagedResponse OK
@@ -30,7 +29,6 @@ export class TaskCommentService {
         itemId: number,
         taskId: number,
         page?: number,
-        pageSize?: number,
         commentType?: TaskCommentType,
         includeDeleted?: boolean,
     ): CancelablePromise<TaskCommentDetailResponsePagedResponse> {
@@ -44,7 +42,6 @@ export class TaskCommentService {
             },
             query: {
                 'Page': page,
-                'PageSize': pageSize,
                 'CommentType': commentType,
                 'IncludeDeleted': includeDeleted,
             },

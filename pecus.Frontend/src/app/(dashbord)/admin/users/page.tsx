@@ -48,7 +48,7 @@ export default async function AdminUsers() {
     userResponse = await api.profile.getApiProfile();
 
     // ユーザー一覧を取得
-    const usersResult = await getUsers(1, undefined, true); // 全ユーザー取得（アクティブ・非アクティブ両方）
+    const usersResult = await getUsers(1, true); // 全ユーザー取得（アクティブ・非アクティブ両方）
     if (usersResult.success) {
       const responseData = usersResult.data;
       if (responseData?.data) {

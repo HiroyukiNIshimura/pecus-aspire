@@ -14,7 +14,6 @@ import type { ApiResponse } from '../types';
  */
 export async function getUsers(
   page: number = 1,
-  pageSize?: number,
   isActive?: boolean,
   username?: string,
   skillIds?: number[],
@@ -22,14 +21,7 @@ export async function getUsers(
 ): Promise<ApiResponse<UserDetailResponseUserStatisticsPagedResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminUser.getApiAdminUsers1(
-      page,
-      pageSize,
-      isActive,
-      username,
-      skillIds,
-      skillFilterMode,
-    );
+    const response = await api.adminUser.getApiAdminUsers1(page, isActive, username, skillIds, skillFilterMode);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch users:', error);

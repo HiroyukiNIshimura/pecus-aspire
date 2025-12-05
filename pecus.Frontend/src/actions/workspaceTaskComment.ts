@@ -19,7 +19,6 @@ export async function getTaskComments(
   itemId: number,
   taskId: number,
   page: number = 1,
-  pageSize: number = 20,
   commentType?: TaskCommentType,
   includeDeleted?: boolean,
 ): Promise<ApiResponse<TaskCommentDetailResponsePagedResponse>> {
@@ -30,7 +29,6 @@ export async function getTaskComments(
       itemId,
       taskId,
       page,
-      pageSize,
       commentType,
       includeDeleted,
     );

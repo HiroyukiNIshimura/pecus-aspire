@@ -62,7 +62,6 @@ export class AdminUserService {
      * 組織内のユーザー一覧を取得（ページング）
      * ログインユーザーの組織に所属するユーザーの一覧をページングで取得します。
      * @param page
-     * @param pageSize
      * @param isActive アクティブなユーザーのみ取得するか（null: 全て、true: アクティブのみ、false: 非アクティブのみ）
      * @param username ユーザー名による前方一致検索（オプション）
      * @param skillIds スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
@@ -73,7 +72,6 @@ export class AdminUserService {
      */
     public static getApiAdminUsers1(
         page?: number,
-        pageSize?: number,
         isActive?: boolean,
         username?: string,
         skillIds?: Array<number>,
@@ -84,7 +82,6 @@ export class AdminUserService {
             url: '/api/admin/users',
             query: {
                 'Page': page,
-                'PageSize': pageSize,
                 'IsActive': isActive,
                 'Username': username,
                 'SkillIds': skillIds,
