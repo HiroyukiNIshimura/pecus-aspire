@@ -3039,6 +3039,32 @@
         }
       }
     },
+    "/api/my/committer-workspaces": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "マイコミッターワークスペース一覧を取得\r\nログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MyCommitterWorkspaceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/my/committer-items": {
       "get": {
         "tags": [
@@ -8596,6 +8622,67 @@
         },
         "additionalProperties": false,
         "description": "メッセージレスポンス"
+      },
+      "MyCommitterWorkspaceResponse": {
+        "required": [
+          "activeTaskCount",
+          "completedTaskCount",
+          "itemCount",
+          "overdueTaskCount",
+          "workspaceCode",
+          "workspaceId",
+          "workspaceName"
+        ],
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "itemCount": {
+            "type": "integer",
+            "description": "コミッターになっているアイテム数",
+            "format": "int32"
+          },
+          "activeTaskCount": {
+            "type": "integer",
+            "description": "未完了タスク数",
+            "format": "int32"
+          },
+          "completedTaskCount": {
+            "type": "integer",
+            "description": "完了済みタスク数",
+            "format": "int32"
+          },
+          "overdueTaskCount": {
+            "type": "integer",
+            "description": "期限超過タスク数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "マイコミッターワークスペースレスポンス\r\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
       },
       "MyItemRelationType": {
         "enum": [

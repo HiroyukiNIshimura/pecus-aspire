@@ -37,6 +37,7 @@ export type { MasterGenreResponse } from './models/MasterGenreResponse';
 export type { MasterSkillResponse } from './models/MasterSkillResponse';
 export type { MasterTaskTypeResponse } from './models/MasterTaskTypeResponse';
 export type { MessageResponse } from './models/MessageResponse';
+export type { MyCommitterWorkspaceResponse } from './models/MyCommitterWorkspaceResponse';
 export type { MyItemRelationType } from './models/MyItemRelationType';
 export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
 export type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from './models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';

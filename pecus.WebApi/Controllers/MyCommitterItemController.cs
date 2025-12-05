@@ -11,7 +11,7 @@ namespace Pecus.Controllers;
 /// マイコミッターアイテムコントローラー
 /// ログインユーザーがコミッターとして割り当てられたアイテムとタスクを取得
 /// </summary>
-[Route("api/my/committer-items")]
+[Route("api/my")]
 [Produces("application/json")]
 [Tags("My")]
 public class MyCommitterItemController : BaseSecureController
@@ -36,12 +36,26 @@ public class MyCommitterItemController : BaseSecureController
     }
 
     /// <summary>
+    /// マイコミッターワークスペース一覧を取得
+    /// ログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します
+    /// </summary>
+    /// <returns>ワークスペース一覧（アイテム数・タスク統計付き）</returns>
+    [HttpGet("committer-workspaces")]
+    [ProducesResponseType(typeof(List<MyCommitterWorkspaceResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<MyCommitterWorkspaceResponse>>> GetMyCommitterWorkspaces()
+    {
+        var results = await _workspaceTaskService.GetMyCommitterWorkspacesAsync(CurrentUserId);
+        return TypedResults.Ok(results);
+    }
+
+    /// <summary>
     /// マイコミッターアイテム一覧を取得
     /// ログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します
     /// </summary>
     /// <param name="request">ワークスペースID・ページネーションリクエスト</param>
     /// <returns>アイテムとタスクのグループ化されたリスト</returns>
-    [HttpGet]
+    [HttpGet("committer-items")]
     [ProducesResponseType(typeof(PagedResponse<ItemWithTasksResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

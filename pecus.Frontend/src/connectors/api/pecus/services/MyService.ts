@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasksResponsePagedResponse';
+import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
 import type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from '../models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
@@ -11,6 +12,21 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class MyService {
+    /**
+     * マイコミッターワークスペース一覧を取得
+     * ログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します
+     * @returns MyCommitterWorkspaceResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyCommitterWorkspaces(): CancelablePromise<Array<MyCommitterWorkspaceResponse>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/committer-workspaces',
+            errors: {
+                500: `Internal Server Error`,
+            },
+        });
+    }
     /**
      * マイコミッターアイテム一覧を取得
      * ログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します

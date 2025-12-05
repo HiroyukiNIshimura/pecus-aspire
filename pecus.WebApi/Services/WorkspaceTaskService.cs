@@ -816,4 +816,83 @@ public class WorkspaceTaskService
             RowVersion = task.RowVersion,
         };
     }
+
+    /// <summary>
+    /// ログインユーザーがコミッターになっているワークスペースの一覧を取得
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>コミッターワークスペースのリスト</returns>
+    public async Task<List<MyCommitterWorkspaceResponse>> GetMyCommitterWorkspacesAsync(int userId)
+    {
+        // DateTimeOffset で日付範囲を定義（PostgreSQL との互換性のため）
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
+
+        // ユーザーがコミッターになっているアイテムを持つワークスペースを取得
+        var workspaces = await _context.WorkspaceItems
+            .Include(wi => wi.Workspace!)
+                .ThenInclude(w => w.Genre)
+            .Where(wi => wi.CommitterId == userId)
+            .Where(wi => !wi.IsArchived) // アーカイブされていないアイテムのみ
+            .GroupBy(wi => new
+            {
+                wi.WorkspaceId,
+                WorkspaceCode = wi.Workspace!.Code,
+                WorkspaceName = wi.Workspace!.Name,
+                GenreIcon = wi.Workspace!.Genre != null ? wi.Workspace.Genre.Icon : null,
+                GenreName = wi.Workspace!.Genre != null ? wi.Workspace.Genre.Name : null,
+            })
+            .Select(g => new
+            {
+                g.Key.WorkspaceId,
+                g.Key.WorkspaceCode,
+                g.Key.WorkspaceName,
+                g.Key.GenreIcon,
+                g.Key.GenreName,
+                ItemCount = g.Count(),
+                ItemIds = g.Select(wi => wi.Id).ToList(),
+            })
+            .ToListAsync();
+
+        // ワークスペースが見つからない場合は空リストを返す
+        if (workspaces.Count == 0)
+        {
+            return [];
+        }
+
+        // 全アイテムIDを収集
+        var allItemIds = workspaces.SelectMany(w => w.ItemIds).ToList();
+
+        // タスク統計を一括取得
+        var taskStats = await _context.WorkspaceTasks
+            .Where(t => allItemIds.Contains(t.WorkspaceItemId))
+            .GroupBy(t => t.WorkspaceItem!.WorkspaceId)
+            .Select(g => new
+            {
+                WorkspaceId = g.Key,
+                ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
+                CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
+                OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart),
+            })
+            .ToDictionaryAsync(x => x.WorkspaceId);
+
+        // レスポンスを構築
+        var results = workspaces.Select(w => new MyCommitterWorkspaceResponse
+        {
+            WorkspaceId = w.WorkspaceId,
+            WorkspaceCode = w.WorkspaceCode,
+            WorkspaceName = w.WorkspaceName,
+            GenreIcon = w.GenreIcon,
+            GenreName = w.GenreName,
+            ItemCount = w.ItemCount,
+            ActiveTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].ActiveTaskCount : 0,
+            CompletedTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].CompletedTaskCount : 0,
+            OverdueTaskCount = taskStats.ContainsKey(w.WorkspaceId) ? taskStats[w.WorkspaceId].OverdueTaskCount : 0,
+        })
+        .OrderByDescending(w => w.ActiveTaskCount) // アクティブタスクが多い順
+        .ThenBy(w => w.WorkspaceName)
+        .ToList();
+
+        return results;
+    }
 }
