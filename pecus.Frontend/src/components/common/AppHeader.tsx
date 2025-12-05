@@ -9,7 +9,7 @@ import { getDisplayIconUrl } from '@/utils/imageUrl';
 interface AppHeaderProps {
   userInfo: UserInfo | null;
   sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
+  setSidebarOpen?: (open: boolean) => void;
   loading?: boolean;
   showAdminLink?: boolean;
   hideProfileMenu?: boolean;
@@ -61,11 +61,13 @@ export default function AppHeader({
       <nav className="navbar">
         <div className="navbar-start flex items-center gap-2">
           {/* ハンバーガーメニュー（モバイルのみ） */}
-          <div className="md:hidden">
-            <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)} title="メニューを開く">
-              <span className="icon-[mdi--menu] size-5" aria-hidden="true" />
-            </button>
-          </div>
+          {setSidebarOpen && (
+            <div className="md:hidden">
+              <button type="button" className="p-2" onClick={() => setSidebarOpen(!sidebarOpen)} title="メニューを開く">
+                <span className="icon-[mdi--menu] size-5" aria-hidden="true" />
+              </button>
+            </div>
+          )}
           {/* ロゴ（デスクトップのみ） */}
           <a href="/" className="hidden md:flex items-end gap-1 text-sm font-bold">
             <img

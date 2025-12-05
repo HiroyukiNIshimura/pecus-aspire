@@ -653,7 +653,7 @@ export default function WorkspaceDetailClient({
 
   return (
     <div className="flex h-screen overflow-hidden flex-col">
-      <AppHeader sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} userInfo={userInfo} />
+      <AppHeader sidebarOpen={sidebarOpen} userInfo={userInfo} />
 
       {/* スマホ: ヘッダーのみ表示 */}
       <div className="lg:hidden bg-base-100 p-4 border-b border-base-300">
