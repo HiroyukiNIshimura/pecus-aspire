@@ -6,11 +6,13 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
+import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import { FilterIcon, SearchIcon } from '@/components/icons';
 import type { TagListItemResponse, TagStatistics } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { tagNameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
@@ -47,9 +49,20 @@ export default function AdminTagsClient({
   const [filterUnusedOnly, setFilterUnusedOnly] = useState<boolean>(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
+  // 削除モーダルの状態
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [tagToDelete, setTagToDelete] = useState<TagListItemResponse | null>(null);
+
   // バリデーション
   const nameValidation = useValidation(tagNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
+  const notify = useNotify();
+
+  // 削除ボタンクリック時のハンドラ
+  const handleDeleteClick = useCallback((tag: TagListItemResponse) => {
+    setTagToDelete(tag);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   // ページ変更処理
   const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
@@ -371,7 +384,11 @@ export default function AdminTagsClient({
                               >
                                 編集
                               </button>
-                              <button type="button" className="btn btn-sm btn-outline btn-error">
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline btn-error"
+                                onClick={() => handleDeleteClick(tag)}
+                              >
                                 削除
                               </button>
                             </div>
@@ -483,6 +500,32 @@ export default function AdminTagsClient({
 
       {/* Footer */}
       <AdminFooter />
+
+      {/* 削除確認モーダル */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setTagToDelete(null);
+        }}
+        onConfirm={async () => {
+          // TODO: 削除APIの実装後に以下のコードを追加
+          // const result = await deleteTag(tagToDelete!.id);
+          // if (result.success) {
+          //   handleFilterChange();
+          //   notify.success("タグを削除しました");
+          // } else {
+          //   notify.error(result.message || "タグの削除に失敗しました。");
+          // }
+        }}
+        itemType="タグ"
+        itemName={tagToDelete?.name || ''}
+        additionalWarning={
+          tagToDelete?.itemCount && tagToDelete.itemCount > 0
+            ? `このタグは${tagToDelete.itemCount}個のアイテムに関連付けられています。`
+            : undefined
+        }
+      />
     </div>
   );
 }

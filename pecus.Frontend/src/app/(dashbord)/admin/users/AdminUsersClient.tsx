@@ -6,6 +6,7 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
+import DeleteUserModal from '@/components/common/DeleteUserModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import { FilterIcon, SearchIcon } from '@/components/icons';
@@ -77,6 +78,16 @@ export default function AdminUsersClient({
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const usernameValidation = useValidation(usernameFilterSchema);
   const notify = useNotify();
+
+  // 削除モーダルの状態
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  // 削除ボタンクリック時のハンドラ
+  const handleDeleteClick = useCallback((user: User) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -506,7 +517,11 @@ export default function AdminUsersClient({
                                 >
                                   編集
                                 </button>
-                                <button type="button" className="btn btn-sm btn-outline btn-error">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline btn-error"
+                                  onClick={() => handleDeleteClick(user)}
+                                >
                                   削除
                                 </button>
                               </div>
@@ -635,6 +650,26 @@ export default function AdminUsersClient({
 
       {/* Footer */}
       <AdminFooter />
+
+      {/* 削除確認モーダル */}
+      <DeleteUserModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={async () => {
+          // TODO: 削除APIの実装後に以下のコードを追加
+          // const result = await deleteUser(userToDelete!.id);
+          // if (result.success) {
+          //   handleFilterChange();
+          //   notify.success("ユーザーを削除しました");
+          // } else {
+          //   notify.error(result.message || "ユーザーの削除に失敗しました。");
+          // }
+        }}
+        user={userToDelete}
+      />
     </div>
   );
 }

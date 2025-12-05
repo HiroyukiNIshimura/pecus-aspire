@@ -6,11 +6,13 @@ import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
+import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import { FilterIcon, SearchIcon } from '@/components/icons';
 import type { SkillListItemResponse, SkillStatistics } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { skillNameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
@@ -47,9 +49,20 @@ export default function AdminSkillsClient({
   const [filterUnusedOnly, setFilterUnusedOnly] = useState<boolean>(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
+  // 削除モーダルの状態
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<SkillListItemResponse | null>(null);
+
   // バリデーション
   const nameValidation = useValidation(skillNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
+  const notify = useNotify();
+
+  // 削除ボタンクリック時のハンドラ
+  const handleDeleteClick = useCallback((skill: SkillListItemResponse) => {
+    setSkillToDelete(skill);
+    setIsDeleteModalOpen(true);
+  }, []);
 
   // ページ変更処理
   const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
@@ -385,7 +398,11 @@ export default function AdminSkillsClient({
                               >
                                 編集
                               </button>
-                              <button type="button" className="btn btn-sm btn-outline btn-error">
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline btn-error"
+                                onClick={() => handleDeleteClick(skill)}
+                              >
                                 削除
                               </button>
                             </div>
@@ -497,6 +514,32 @@ export default function AdminSkillsClient({
 
       {/* Footer */}
       <AdminFooter />
+
+      {/* 削除確認モーダル */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSkillToDelete(null);
+        }}
+        onConfirm={async () => {
+          // TODO: 削除APIの実装後に以下のコードを追加
+          // const result = await deleteSkill(skillToDelete!.id);
+          // if (result.success) {
+          //   handleFilterChange();
+          //   notify.success("スキルを削除しました");
+          // } else {
+          //   notify.error(result.message || "スキルの削除に失敗しました。");
+          // }
+        }}
+        itemType="スキル"
+        itemName={skillToDelete?.name || ''}
+        additionalWarning={
+          skillToDelete?.userCount && skillToDelete.userCount > 0
+            ? `このスキルは${skillToDelete.userCount}人のユーザーに関連付けられています。`
+            : undefined
+        }
+      />
     </div>
   );
 }
