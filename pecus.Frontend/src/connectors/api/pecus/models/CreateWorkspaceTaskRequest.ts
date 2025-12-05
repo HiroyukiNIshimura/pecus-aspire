@@ -25,9 +25,9 @@ export type CreateWorkspaceTaskRequest = {
      */
     startDate?: string | null;
     /**
-     * 期限日時(ISO 8601 形式)
+     * 期限日時(ISO 8601 形式)（必須）
      */
-    dueDate?: string | null;
+    dueDate: string;
     /**
      * 予定工数（時間）
      */

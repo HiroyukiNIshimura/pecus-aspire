@@ -328,13 +328,20 @@ export default function EditWorkspaceTaskModal({
           return date.toISOString();
         };
 
+        // dueDateは必須なので変換して必ずnon-nullを保証
+        const dueDateISO = toISODateString(data.dueDate);
+        if (!dueDateISO) {
+          setServerErrors([{ key: 0, message: '期限日は必須です。' }]);
+          return;
+        }
+
         const requestData: UpdateWorkspaceTaskRequest = {
           content: data.content,
           taskTypeId: data.taskTypeId,
           assignedUserId: selectedAssignee.id,
           priority: data.priority as TaskPriority | undefined,
           startDate: toISODateString(data.startDate),
-          dueDate: toISODateString(data.dueDate),
+          dueDate: dueDateISO,
           estimatedHours: data.estimatedHours || null,
           actualHours: data.actualHours || null,
           progressPercentage: data.progressPercentage ?? 0,

@@ -39,7 +39,18 @@ export const createWorkspaceTaskSchema = z.object({
   ),
   priority: z.enum(['Low', 'Medium', 'High', 'Critical']).default('Medium'),
   startDate: z.string().optional().nullable(),
-  dueDate: z.string().optional().nullable(),
+  dueDate: z
+    .string()
+    .min(1, '期限日は必須です。')
+    .refine(
+      (val) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dueDate = new Date(val);
+        return dueDate >= today;
+      },
+      { message: '期限日は今日以降の日付を指定してください。' },
+    ),
   estimatedHours: z.preprocess((val) => {
     if (val === '' || val === null || val === undefined) return undefined;
     const num = Number(val);
@@ -79,7 +90,18 @@ export const updateWorkspaceTaskSchema = z
     ),
     priority: z.enum(['Low', 'Medium', 'High', 'Critical']).default('Medium'),
     startDate: z.string().optional().nullable(),
-    dueDate: z.string().optional().nullable(),
+    dueDate: z
+      .string()
+      .min(1, '期限日は必須です。')
+      .refine(
+        (val) => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(val);
+          return dueDate >= today;
+        },
+        { message: '期限日は今日以降の日付を指定してください。' },
+      ),
     estimatedHours: z.preprocess((val) => {
       if (val === '' || val === null || val === undefined) return undefined;
       const num = Number(val);

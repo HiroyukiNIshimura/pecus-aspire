@@ -177,7 +177,7 @@
           "Admin - Skill"
         ],
         "summary": "スキル一覧取得（ページネーション）",
-        "description": "スキルの一覧をページネーションで取得します。\r\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
+        "description": "スキルの一覧をページネーションで取得します。\n統計情報として、スキルのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５スキル、利用されていないスキルのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -570,7 +570,7 @@
           "Admin - Tag"
         ],
         "summary": "タグ一覧取得（ページネーション）",
-        "description": "タグの一覧をページネーションで取得します。\r\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\r\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
+        "description": "タグの一覧をページネーションで取得します。\n統計情報として、タグのトータル件数、アクティブ/非アクティブ件数、\n利用されているトップ５タグ、利用されていないタグのリストを含みます。",
         "parameters": [
           {
             "name": "Page",
@@ -1057,7 +1057,7 @@
           {
             "name": "SkillFilterMode",
             "in": "query",
-            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\r\nデフォルトは \"and\"",
+            "description": "スキルフィルターのモード（\"and\": すべてのスキルを保有、\"or\": いずれかのスキルを保有）\nデフォルトは \"and\"",
             "schema": {
               "pattern": "^(and|or)$",
               "type": "string"
@@ -1177,7 +1177,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）",
-        "description": "\r\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\r\n            指定されたスキル以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\r\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
+        "description": "\n管理者が組織内のユーザーのスキルを設定します（洗い替え）。\n            指定されたスキル以外は削除されます。\n\n<strong>重要</strong>：このエンドポイントは管理者による操作であり、\n            ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。",
         "parameters": [
           {
             "name": "id",
@@ -1260,7 +1260,7 @@
           "Admin - User"
         ],
         "summary": "パスワードなしでユーザーを作成",
-        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\r\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
+        "description": "ユーザー名とメールアドレスのみでユーザーを作成します。パスワードは後で設定されます。\n作成されたユーザーにはパスワード設定用のトークンが発行され、メールで通知されます。",
         "requestBody": {
           "description": "ユーザー作成リクエスト",
           "content": {
@@ -1321,7 +1321,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのパスワードリセットをリクエスト",
-        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\r\nパスワードリセット用のメールがユーザーに送信されます。",
+        "description": "指定したユーザーのパスワードリセットをリクエストします。組織内のユーザーのみ操作可能です。\nパスワードリセット用のメールがユーザーに送信されます。",
         "parameters": [
           {
             "name": "id",
@@ -1374,7 +1374,7 @@
           "Admin - User"
         ],
         "summary": "ユーザーのロールを設定（管理者が他のユーザーのロールを管理）",
-        "description": "\r\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\r\n            指定されたロール以外は削除されます。\r\n\r\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\r\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
+        "description": "\n管理者が組織内のユーザーのロールを設定します（洗い替え）。\n            指定されたロール以外は削除されます。\n\n<strong>重要</strong>：このエンドポイントは管理者による操作です。\n            ユーザーのロールはシステム管理者によってのみ変更されるべきです。",
         "parameters": [
           {
             "name": "id",
@@ -2094,7 +2094,7 @@
           "Admin - Workspace"
         ],
         "summary": "ワークスペースメンバーのロールを変更",
-        "description": "組織に属するユーザーであれば実行可能です。\r\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
+        "description": "組織に属するユーザーであれば実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
         "parameters": [
           {
             "name": "id",
@@ -2512,7 +2512,7 @@
           "Entrance - Organization"
         ],
         "summary": "組織登録（管理者ユーザーも同時作成）",
-        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\r\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\r\n管理者ユーザーへはパスワード設定メールが送信されます。",
+        "description": "新規組織を登録し、管理者ユーザーを同時に作成します。\nこのエンドポイントは未認証でアクセス可能です（新規サインアップ用）。\n管理者ユーザーへはパスワード設定メールが送信されます。",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2565,7 +2565,7 @@
           "Entrance - Password"
         ],
         "summary": "/// パスワードを設定",
-        "description": "メールで送信されたトークンを使ってパスワードを設定します。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードを設定します。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワード設定リクエスト",
           "content": {
@@ -2616,7 +2616,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードリセットをリクエスト",
-        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\r\nパスワードリセット用のメールが送信されます。",
+        "description": "メールアドレスを入力してパスワードリセットをリクエストします。\nパスワードリセット用のメールが送信されます。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -2657,7 +2657,7 @@
           "Entrance - Password"
         ],
         "summary": "パスワードをリセット",
-        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\r\nトークンは24時間有効です。",
+        "description": "メールで送信されたトークンを使ってパスワードをリセットします。\nトークンは24時間有効です。",
         "requestBody": {
           "description": "パスワードリセットリクエスト",
           "content": {
@@ -3044,7 +3044,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイコミッターワークスペース一覧を取得\r\nログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します",
+        "summary": "マイコミッターワークスペース一覧を取得\nログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します",
         "responses": {
           "200": {
             "description": "OK",
@@ -3070,7 +3070,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイコミッターアイテム一覧を取得\r\nログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します",
+        "summary": "マイコミッターアイテム一覧を取得\nログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します",
         "parameters": [
           {
             "name": "Page",
@@ -3135,7 +3135,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイアイテム一覧を取得\r\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
+        "summary": "マイアイテム一覧を取得\nログインユーザーがオーナー、担当者、コミッター、またはPIN済みのアイテムを取得",
         "parameters": [
           {
             "name": "Page",
@@ -3159,7 +3159,7 @@
           {
             "name": "IncludeArchived",
             "in": "query",
-            "description": "アーカイブ済みアイテムを含めるかどうか（デフォルト: false）\r\ntrue の場合、アーカイブ済みアイテムのみ表示\r\nfalse または未指定の場合、アーカイブ済みアイテムを除外",
+            "description": "アーカイブ済みアイテムを含めるかどうか（デフォルト: false）\ntrue の場合、アーカイブ済みアイテムのみ表示\nfalse または未指定の場合、アーカイブ済みアイテムを除外",
             "schema": {
               "type": "boolean"
             }
@@ -3197,7 +3197,7 @@
         "tags": [
           "My"
         ],
-        "summary": "マイタスク一覧を取得\r\nログインユーザーに割り当てられたタスクを全ワークスペース横断で取得",
+        "summary": "マイタスク一覧を取得\nログインユーザーに割り当てられたタスクを全ワークスペース横断で取得",
         "parameters": [
           {
             "name": "Page",
@@ -3304,7 +3304,7 @@
           "Profile"
         ],
         "summary": "自分のプロフィール情報を更新",
-        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\r\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
+        "description": "ユーザーが自身のプロフィール（ユーザー名、アバタータイプ、アバターURL）を更新します。\nスキル変更は別エンドポイント（PUT /api/profile/skills）で実施してください。",
         "requestBody": {
           "description": "更新情報",
           "content": {
@@ -3418,7 +3418,7 @@
           "Profile"
         ],
         "summary": "自分のスキルを設定",
-        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "description": "ユーザーが自身のスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
         "requestBody": {
           "description": "スキルIDのリスト",
           "content": {
@@ -3529,7 +3529,7 @@
           "Profile"
         ],
         "summary": "パスワードを変更",
-        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\r\n現在のパスワードの確認（古いパスワード）が必須です。",
+        "description": "ユーザーが自身のパスワードを変更します。重要なセキュリティ変更です。\n現在のパスワードの確認（古いパスワード）が必須です。",
         "requestBody": {
           "description": "変更情報",
           "content": {
@@ -3750,7 +3750,7 @@
           "Profile - Email"
         ],
         "summary": "メールアドレス変更をリクエスト",
-        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\r\n確認メールが送信され、24時間有効なトークンが発行されます。",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\n確認メールが送信され、24時間有効なトークンが発行されます。",
         "requestBody": {
           "description": "メールアドレス変更リクエスト",
           "content": {
@@ -3844,7 +3844,7 @@
           "Profile - Email"
         ],
         "summary": "メールアドレス変更を確認（トークン検証）",
-        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\r\nトークンは24時間有効で、一度のみ使用可能です。",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\nトークンは24時間有効で、一度のみ使用可能です。",
         "parameters": [
           {
             "name": "token",
@@ -3928,7 +3928,7 @@
           "Profile - Email"
         ],
         "summary": "未使用のメールアドレス変更トークン情報を取得",
-        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\r\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
         "responses": {
           "200": {
             "description": "トークン情報を取得しました（存在する場合）",
@@ -4715,7 +4715,7 @@
           "User"
         ],
         "summary": "ユーザーをあいまい検索",
-        "description": "ユーザー名またはメールアドレスであいまい検索を行います。\r\npgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。\r\nワークスペースへのメンバー追加時などに使用します。",
+        "description": "ユーザー名またはメールアドレスであいまい検索を行います。\npgroonga を使用しているため、日本語の漢字のゆらぎやタイポにも対応します。\nワークスペースへのメンバー追加時などに使用します。",
         "parameters": [
           {
             "name": "Q",
@@ -5233,7 +5233,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースメンバーのロールを変更する（Ownerのみ実行可能）",
-        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\r\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
+        "description": "ワークスペースの Owner ロールを持つユーザーのみ実行可能です。\nただし、Workspace.OwnerId のユーザーを Owner 以外のロールに変更することはできません。",
         "parameters": [
           {
             "name": "id",
@@ -5495,7 +5495,7 @@
           "Workspace"
         ],
         "summary": "ワークスペースのスキルを設定する（Ownerのみ実行可能）",
-        "description": "ワークスペースが必要とするスキルを設定します（洗い替え）。\r\n指定されたスキル以外のスキルは削除されます。",
+        "description": "ワークスペースが必要とするスキルを設定します（洗い替え）。\n指定されたスキル以外のスキルは削除されます。",
         "parameters": [
           {
             "name": "id",
@@ -6035,7 +6035,7 @@
           {
             "name": "SearchQuery",
             "in": "query",
-            "description": "あいまい検索クエリ（Subject, RawBody を対象）\r\npgroonga を使用して日本語のゆらぎやタイポにも対応",
+            "description": "あいまい検索クエリ（Subject, RawBody を対象）\npgroonga を使用して日本語のゆらぎやタイポにも対応",
             "schema": {
               "maxLength": 200,
               "minLength": 0,
@@ -6506,7 +6506,7 @@
           "WorkspaceItem"
         ],
         "summary": "ワークスペースアイテム属性更新",
-        "description": "属性ごとに値を個別に更新します。サポートされる属性:\r\n- assignee: 担当者ID (int? / null で割り当て解除)\r\n- committer: コミッターID (int? / null で割り当て解除)\r\n- priority: 優先度 (TaskPriority enum / null でクリア)\r\n- duedate: 期限日 (DateTime / null でクリア)\r\n- archive: アーカイブ状態 (bool / 必須)",
+        "description": "属性ごとに値を個別に更新します。サポートされる属性:\n- assignee: 担当者ID (int? / null で割り当て解除)\n- committer: コミッターID (int? / null で割り当て解除)\n- priority: 優先度 (TaskPriority enum / null でクリア)\n- duedate: 期限日 (DateTime / null でクリア)\n- archive: アーカイブ状態 (bool / 必須)",
         "parameters": [
           {
             "name": "workspaceId",
@@ -7416,7 +7416,7 @@
           {
             "name": "PageSize",
             "in": "query",
-            "description": "1ページあたりの件数（1〜50、デフォルト10）\r\nカルーセルのためクライアントからの指定を許可",
+            "description": "1ページあたりの件数（1〜50、デフォルト10）\nカルーセルのためクライアントからの指定を許可",
             "schema": {
               "maximum": 50,
               "minimum": 1,
@@ -7993,6 +7993,7 @@
         "required": [
           "assignedUserId",
           "content",
+          "dueDate",
           "taskTypeId"
         ],
         "type": "object",
@@ -8026,9 +8027,8 @@
           },
           "dueDate": {
             "type": "string",
-            "description": "期限日時(ISO 8601 形式)",
-            "format": "date-time",
-            "nullable": true
+            "description": "期限日時(ISO 8601 形式)（必須）",
+            "format": "date-time"
           },
           "estimatedHours": {
             "maximum": 10000,
@@ -8682,7 +8682,7 @@
           }
         },
         "additionalProperties": false,
-        "description": "マイコミッターワークスペースレスポンス\r\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
+        "description": "マイコミッターワークスペースレスポンス\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
       },
       "MyItemRelationType": {
         "enum": [
@@ -8865,9 +8865,8 @@
           },
           "dueDate": {
             "type": "string",
-            "description": "期限日時",
-            "format": "date-time",
-            "nullable": true
+            "description": "期限日時（必須）",
+            "format": "date-time"
           },
           "estimatedHours": {
             "type": "number",
@@ -9287,7 +9286,7 @@
           },
           "direction": {
             "type": "string",
-            "description": "関連の方向（このアイテムから見て）\r\n\"from\": このアイテムが関連元\r\n\"to\": このアイテムが関連先",
+            "description": "関連の方向（このアイテムから見て）\n\"from\": このアイテムが関連元\n\"to\": このアイテムが関連先",
             "nullable": true
           },
           "ownerId": {
@@ -9512,12 +9511,12 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
             "nullable": true
           },
           "userRowVersion": {
             "type": "integer",
-            "description": "ユーザーの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
+            "description": "ユーザーの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
             "format": "int32",
             "nullable": true
           }
@@ -9534,12 +9533,12 @@
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\r\n空のリストまたはnullの場合はすべてのタグを削除します。",
+            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。",
             "nullable": true
           },
           "itemRowVersion": {
             "type": "integer",
-            "description": "アイテムの楽観的ロック用RowVersion。\r\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
+            "description": "アイテムの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
             "format": "int32",
             "nullable": true
           }
@@ -9641,12 +9640,12 @@
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\r\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
             "nullable": true
           },
           "rowVersion": {
             "type": "integer",
-            "description": "ワークスペースの楽観的ロック用RowVersion。\r\n競合検出に使用されます。",
+            "description": "ワークスペースの楽観的ロック用RowVersion。\n競合検出に使用されます。",
             "format": "int32"
           }
         },
@@ -10928,6 +10927,7 @@
       },
       "UpdateWorkspaceTaskRequest": {
         "required": [
+          "dueDate",
           "rowVersion"
         ],
         "type": "object",
@@ -10963,9 +10963,8 @@
           },
           "dueDate": {
             "type": "string",
-            "description": "期限日時(ISO 8601 形式)",
-            "format": "date-time",
-            "nullable": true
+            "description": "期限日時(ISO 8601 形式)（必須）",
+            "format": "date-time"
           },
           "estimatedHours": {
             "maximum": 10000,
@@ -11067,13 +11066,13 @@
           },
           "userAvatarPath": {
             "type": "string",
-            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\r\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
+            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
             "nullable": true
           },
           "identityIconUrl": {
             "minLength": 1,
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\r\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される\n必ず有効なURLが返されるため、クライアント側でnullチェック不要"
           },
           "roles": {
             "type": "array",
@@ -12324,9 +12323,8 @@
           },
           "dueDate": {
             "type": "string",
-            "description": "期限日時",
-            "format": "date-time",
-            "nullable": true
+            "description": "期限日時（必須）",
+            "format": "date-time"
           },
           "estimatedHours": {
             "type": "number",
@@ -12497,7 +12495,6 @@
           "dueSoonCount",
           "dueTodayCount",
           "incompleteCount",
-          "noDueDateCount",
           "overdueCount",
           "totalCount"
         ],
@@ -12536,11 +12533,6 @@
           "dueSoonCount": {
             "type": "integer",
             "description": "近日締め切り件数（7日以内）",
-            "format": "int32"
-          },
-          "noDueDateCount": {
-            "type": "integer",
-            "description": "期限未設定件数",
             "format": "int32"
           },
           "discardedCount": {
@@ -12584,7 +12576,7 @@
           "identityIconUrl": {
             "minLength": 1,
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "$ref": "#/components/schemas/WorkspaceRole"
@@ -12684,7 +12676,7 @@
           "identityIconUrl": {
             "minLength": 1,
             "type": "string",
-            "description": "アイデンティティアイコンURL（表示用）\r\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
+            "description": "アイデンティティアイコンURL（表示用）\nAvatarTypeに応じて適切なURL（Gravatar/UserAvatar/AutoGenerated）が設定される"
           },
           "workspaceRole": {
             "$ref": "#/components/schemas/WorkspaceRole"

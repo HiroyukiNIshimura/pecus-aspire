@@ -32,10 +32,6 @@ export type WorkspaceTaskStatistics = {
      */
     dueSoonCount: number;
     /**
-     * 期限未設定件数
-     */
-    noDueDateCount: number;
-    /**
      * 破棄された件数
      */
     discardedCount: number;

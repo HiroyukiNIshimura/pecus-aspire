@@ -73,9 +73,9 @@ export type WorkspaceTaskDetailResponse = {
      */
     startDate?: string | null;
     /**
-     * 期限日時
+     * 期限日時（必須）
      */
-    dueDate?: string | null;
+    dueDate?: string;
     /**
      * 予定工数（時間）
      */
