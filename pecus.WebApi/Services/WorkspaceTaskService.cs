@@ -237,10 +237,9 @@ public class WorkspaceTaskService
         var totalCount = await query.CountAsync();
         var completedCount = await query.CountAsync(t => t.IsCompleted && !t.IsDiscarded);
         var incompleteCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
-        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart);
-        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayStart && t.DueDate.Value < todayEnd);
-        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayEnd && t.DueDate.Value < sevenDaysLaterEnd);
-        var noDueDateCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && !t.DueDate.HasValue);
+        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart);
+        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayStart && t.DueDate < todayEnd);
+        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayEnd && t.DueDate < sevenDaysLaterEnd);
         var discardedCount = await query.CountAsync(t => t.IsDiscarded);
 
         // タスクに紐づくコメント総数
@@ -257,7 +256,6 @@ public class WorkspaceTaskService
             OverdueCount = overdueCount,
             DueTodayCount = dueTodayCount,
             DueSoonCount = dueSoonCount,
-            NoDueDateCount = noDueDateCount,
             DiscardedCount = discardedCount,
             CommentCount = commentCount,
         };
@@ -330,10 +328,8 @@ public class WorkspaceTaskService
             task.StartDate = request.StartDate.Value;
         }
 
-        if (request.DueDate.HasValue)
-        {
-            task.DueDate = request.DueDate.Value;
-        }
+        // DueDateは必須なので常に更新
+        task.DueDate = request.DueDate;
 
         if (request.EstimatedHours.HasValue)
         {
@@ -655,8 +651,7 @@ public class WorkspaceTaskService
         var pageSize = _config.Pagination.DefaultPageSize;
         var tasks = await query
             .AsSplitQuery() // デカルト爆発防止
-            .OrderByDescending(t => t.DueDate.HasValue ? 0 : 1) // 期限ありを優先
-            .ThenBy(t => t.DueDate) // 期限が近い順
+            .OrderBy(t => t.DueDate) // 期限が近い順
             .ThenByDescending(t => t.CreatedAt)
             .Skip((request.Page - 1) * pageSize)
             .Take(pageSize)
@@ -693,10 +688,9 @@ public class WorkspaceTaskService
         var totalCount = await query.CountAsync();
         var completedCount = await query.CountAsync(t => t.IsCompleted && !t.IsDiscarded);
         var incompleteCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded);
-        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart);
-        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayStart && t.DueDate.Value < todayEnd);
-        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value >= todayEnd && t.DueDate.Value < sevenDaysLaterEnd);
-        var noDueDateCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && !t.DueDate.HasValue);
+        var overdueCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart);
+        var dueTodayCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayStart && t.DueDate < todayEnd);
+        var dueSoonCount = await query.CountAsync(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate >= todayEnd && t.DueDate < sevenDaysLaterEnd);
         var discardedCount = await query.CountAsync(t => t.IsDiscarded);
 
         // タスクに紐づくコメント総数
@@ -713,7 +707,6 @@ public class WorkspaceTaskService
             OverdueCount = overdueCount,
             DueTodayCount = dueTodayCount,
             DueSoonCount = dueSoonCount,
-            NoDueDateCount = noDueDateCount,
             DiscardedCount = discardedCount,
             CommentCount = commentCount,
         };
@@ -872,7 +865,7 @@ public class WorkspaceTaskService
                 WorkspaceId = g.Key,
                 ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
                 CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
-                OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate.HasValue && t.DueDate.Value < todayStart),
+                OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
             })
             .ToDictionaryAsync(x => x.WorkspaceId);
 

@@ -95,9 +95,9 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public DateTimeOffset? StartDate { get; set; }
 
     /// <summary>
-    /// 期限日時
+    /// 期限日時（必須）
     /// </summary>
-    public DateTimeOffset? DueDate { get; set; }
+    public DateTimeOffset DueDate { get; set; }
 
     /// <summary>
     /// 予定工数（時間）

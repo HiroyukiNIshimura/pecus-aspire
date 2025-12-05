@@ -1334,13 +1334,18 @@ public class DatabaseSeeder
                 var priority = priorities[_random.Next(priorities.Length)];
                 var content = taskContents[_random.Next(taskContents.Length)];
 
-                // 開始日と期限日を設定（50%の確率で設定）
+                // 開始日と期限日を設定（期限日は必須）
                 DateTime? startDate = null;
-                DateTime? dueDate = null;
+                DateTimeOffset dueDate;
                 if (_random.Next(2) == 1)
                 {
                     startDate = DateTime.UtcNow.AddDays(-_random.Next(0, 30));
-                    dueDate = startDate.Value.AddDays(_random.Next(1, 60));
+                    dueDate = new DateTimeOffset(startDate.Value.AddDays(_random.Next(1, 60)), TimeSpan.Zero);
+                }
+                else
+                {
+                    // 開始日なしでも期限日は必須
+                    dueDate = new DateTimeOffset(DateTime.UtcNow.AddDays(_random.Next(1, 60)), TimeSpan.Zero);
                 }
 
                 // 予定工数と実績工数

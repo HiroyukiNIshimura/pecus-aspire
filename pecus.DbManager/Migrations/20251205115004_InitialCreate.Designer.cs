@@ -12,7 +12,7 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251204061246_InitialCreate")]
+    [Migration("20251205115004_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace pecus.DbManager.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1183,7 +1183,7 @@ namespace pecus.DbManager.Migrations
                     b.Property<DateTimeOffset?>("DiscardedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("DueDate")
+                    b.Property<DateTimeOffset>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("EstimatedHours")

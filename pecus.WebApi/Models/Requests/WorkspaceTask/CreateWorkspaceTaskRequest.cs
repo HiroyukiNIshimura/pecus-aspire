@@ -39,9 +39,10 @@ public class CreateWorkspaceTaskRequest
     public DateTimeOffset? StartDate { get; set; }
 
     /// <summary>
-    /// 期限日時(ISO 8601 形式)
+    /// 期限日時(ISO 8601 形式)（必須）
     /// </summary>
-    public DateTimeOffset? DueDate { get; set; }
+    [Required(ErrorMessage = "期限日時は必須です。")]
+    public DateTimeOffset DueDate { get; set; }
 
     /// <summary>
     /// 予定工数（時間）

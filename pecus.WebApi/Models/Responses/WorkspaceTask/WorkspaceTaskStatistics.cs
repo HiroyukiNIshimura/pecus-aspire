@@ -47,12 +47,6 @@ public class WorkspaceTaskStatistics
     public required int DueSoonCount { get; set; }
 
     /// <summary>
-    /// 期限未設定件数
-    /// </summary>
-    [Required]
-    public required int NoDueDateCount { get; set; }
-
-    /// <summary>
     /// 破棄された件数
     /// </summary>
     [Required]

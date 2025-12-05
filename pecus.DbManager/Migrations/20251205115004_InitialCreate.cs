@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -742,7 +743,7 @@ namespace pecus.DbManager.Migrations
                     TaskTypeId = table.Column<int>(type: "integer", nullable: false),
                     Priority = table.Column<int>(type: "integer", nullable: true),
                     StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    DueDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    DueDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EstimatedHours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     ActualHours = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     ProgressPercentage = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
