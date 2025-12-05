@@ -437,7 +437,9 @@ export default function CreateWorkspaceTaskModal({
                 {/* 期限日 */}
                 <div className="form-control">
                   <label htmlFor="dueDate" className="label">
-                    <span className="label-text font-semibold">期限日</span>
+                    <span className="label-text font-semibold">
+                      期限日 <span className="text-error">*</span>
+                    </span>
                   </label>
                   <input type="hidden" name="dueDate" value={dueDate} />
                   <DatePicker
