@@ -1,9 +1,9 @@
 /**
  * Iconify (Tailwind CSS) ベースのアイコンコンポーネント
- * @iconify/tailwind4 + Solar Icons を使用してテーマ対応のアイコンを表示
+ * @iconify/tailwind4 + Material Design Icons (mdi) を使用してテーマ対応のアイコンを表示
  *
  * 使用例（直接クラス名を使用）:
- * <span className="icon-[solar--pin-bold] size-5" />
+ * <span className="icon-[mdi--pin] size-5" />
  *
  * ショートカットコンポーネント:
  * <PlusIcon size="lg" />
@@ -55,150 +55,127 @@ const iconProps = (
   title,
 });
 
-// ショートカットアイコンコンポーネント（Solar Icons - Linear スタイル）
+// ショートカットアイコンコンポーネント（Material Design Icons）
 // 静的なクラス名を使用することで Tailwind JIT がビルド時に検出可能
 
 // 基本操作
-export const PlusIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--add-circle-linear]', props)} />;
-export const EditIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--pen-linear]', props)} />;
-export const CloseIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--close-circle-linear]', props)} />;
-export const ClearIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--close-circle-linear]', props)} />;
-export const SearchIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--magnifer-linear]', props)} />;
-export const FilterIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--filter-linear]', props)} />;
-export const DeleteIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--trash-bin-2-linear]', props)} />;
-export const DeleteOutlineIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--trash-bin-2-linear]', props)} />
-);
-export const SaveIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--diskette-linear]', props)} />;
-export const SendIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--plain-linear]', props)} />;
+export const PlusIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--plus-circle-outline]', props)} />;
+export const EditIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--pencil-outline]', props)} />;
+export const CloseIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--close]', props)} />;
+export const ClearIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--close-circle-outline]', props)} />;
+export const SearchIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--magnify]', props)} />;
+export const FilterIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--filter-outline]', props)} />;
+export const DeleteIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--delete-outline]', props)} />;
+export const DeleteOutlineIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--delete-outline]', props)} />;
+export const SaveIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--content-save-outline]', props)} />;
+export const SendIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--send-outline]', props)} />;
 
 // ナビゲーション
-export const ChevronLeftIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--alt-arrow-left-linear]', props)} />
-);
-export const ChevronRightIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--alt-arrow-right-linear]', props)} />
-);
-export const ChevronDownIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--alt-arrow-down-linear]', props)} />
-);
-export const MenuIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--hamburger-menu-linear]', props)} />;
-export const MoreVertIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--menu-dots-bold]', props)} />;
-export const HomeIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--home-2-linear]', props)} />;
+export const ChevronLeftIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--chevron-left]', props)} />;
+export const ChevronRightIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--chevron-right]', props)} />;
+export const ChevronDownIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--chevron-down]', props)} />;
+export const MenuIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--menu]', props)} />;
+export const MoreVertIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--dots-vertical]', props)} />;
+export const HomeIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--home-outline]', props)} />;
 
 // ステータス・通知
-export const CheckIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--check-read-linear]', props)} />;
+export const CheckIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--check]', props)} />;
 export const CheckCircleIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--check-circle-linear]', props)} />
+  <span {...iconProps('icon-[mdi--check-circle-outline]', props)} />
 );
-export const WarningIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--danger-triangle-linear]', props)} />
-);
-export const MessageIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--chat-round-line-linear]', props)} />
-);
+export const WarningIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--alert-outline]', props)} />;
+export const MessageIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--message-outline]', props)} />;
 
 // ユーザー関連
-export const PersonIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--user-linear]', props)} />;
-export const PeopleIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--users-group-rounded-linear]', props)} />
-);
+export const PersonIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--account-outline]', props)} />;
+export const PeopleIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--account-group-outline]', props)} />;
 
 // UI・レイアウト
-export const DashboardIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--widget-2-linear]', props)} />;
-export const GridViewIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--widget-4-linear]', props)} />;
-export const ViewListIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--list-linear]', props)} />;
+export const DashboardIcon: FC<IconProps> = (props) => (
+  <span {...iconProps('icon-[mdi--view-dashboard-outline]', props)} />
+);
+export const GridViewIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--view-grid-outline]', props)} />;
+export const ViewListIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--view-list-outline]', props)} />;
 
 // タスク・管理
-export const TaskIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--checklist-minimalistic-linear]', props)} />
-);
-export const ArchiveIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--archive-linear]', props)} />;
-export const HistoryIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--history-linear]', props)} />;
+export const TaskIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--clipboard-check-outline]', props)} />;
+export const ArchiveIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--archive-outline]', props)} />;
+export const HistoryIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--history]', props)} />;
 export const AssignmentIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--clipboard-text-linear]', props)} />
+  <span {...iconProps('icon-[mdi--clipboard-text-outline]', props)} />
 );
 export const AssignmentIndIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--clipboard-check-linear]', props)} />
+  <span {...iconProps('icon-[mdi--clipboard-account-outline]', props)} />
 );
 
 // 組織・設定
 export const AdminPanelSettingsIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--settings-linear]', props)} />
+  <span {...iconProps('icon-[mdi--cog-outline]', props)} />
 );
-export const BadgeIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--card-linear]', props)} />;
+export const BadgeIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--badge-account-outline]', props)} />;
 export const BusinessIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--buildings-2-linear]', props)} />
+  <span {...iconProps('icon-[mdi--office-building-outline]', props)} />
 );
-export const LocalOfferIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--tag-linear]', props)} />;
-export const PsychologyIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--lightbulb-linear]', props)} />
-);
+export const LocalOfferIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--tag-outline]', props)} />;
+export const PsychologyIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--lightbulb-outline]', props)} />;
 
 // カレンダー
-export const CalendarIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--calendar-linear]', props)} />;
+export const CalendarIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--calendar-outline]', props)} />;
 
 // リンク
-export const LinkIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--link-linear]', props)} />;
-export const LinkOffIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--link-broken-linear]', props)} />;
-export const AddLinkIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--link-circle-linear]', props)} />;
+export const LinkIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--link]', props)} />;
+export const LinkOffIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--link-off]', props)} />;
+export const AddLinkIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--link-plus]', props)} />;
 
 // ピン
-export const PinIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--pin-bold]', props)} />;
-export const PinOutlineIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--pin-linear]', props)} />;
+export const PinIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--pin]', props)} />;
+export const PinOutlineIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--pin-outline]', props)} />;
 
-// トグル・電源（Solar Iconsにはトグルアイコンがないため、電源アイコンで代替）
-export const ToggleOnIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--round-transfer-horizontal-linear]', props)} />
-);
+// トグル・電源
+export const ToggleOnIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--toggle-switch]', props)} />;
 export const ToggleOffIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--round-transfer-horizontal-linear]', props)} />
+  <span {...iconProps('icon-[mdi--toggle-switch-off-outline]', props)} />
 );
-export const PowerOnIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--power-linear]', props)} />;
-export const PowerOffIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--power-linear]', props)} />;
+export const PowerOnIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--power]', props)} />;
+export const PowerOffIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--power-off]', props)} />;
 
 // 編集
 export const EditNoteIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--document-text-linear]', props)} />
+  <span {...iconProps('icon-[mdi--file-document-edit-outline]', props)} />
 );
 
 // チェックボックス
 export const CheckboxIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--check-square-linear]', props)} />
+  <span {...iconProps('icon-[mdi--checkbox-marked-outline]', props)} />
 );
-export const CheckboxBlankIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--stop-linear]', props)} />;
+export const CheckboxBlankIcon: FC<IconProps> = (props) => (
+  <span {...iconProps('icon-[mdi--checkbox-blank-outline]', props)} />
+);
 export const HighlightOffIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--close-circle-linear]', props)} />
+  <span {...iconProps('icon-[mdi--close-circle-outline]', props)} />
 );
 
 // テーマ
-export const SunIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--sun-linear]', props)} />;
-export const MoonIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--moon-linear]', props)} />;
+export const SunIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--white-balance-sunny]', props)} />;
+export const MoonIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--moon-waning-crescent]', props)} />;
 export const AutoBrightnessIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--sun-2-linear]', props)} />
+  <span {...iconProps('icon-[mdi--brightness-auto]', props)} />
 );
 
 // その他
-export const StarIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--star-linear]', props)} />;
-export const StarFilledIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--star-bold]', props)} />;
-export const NoteIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--notes-linear]', props)} />;
-export const HelpIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--question-circle-linear]', props)} />
-);
-export const MailQuestionIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--letter-linear]', props)} />;
-export const BellIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--bell-linear]', props)} />;
-export const UrgentIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--alarm-linear]', props)} />;
+export const StarIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--star-outline]', props)} />;
+export const StarFilledIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--star]', props)} />;
+export const NoteIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--note-outline]', props)} />;
+export const HelpIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--help-circle-outline]', props)} />;
+export const MailQuestionIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--email-outline]', props)} />;
+export const BellIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--bell-outline]', props)} />;
+export const UrgentIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--alarm]', props)} />;
 
 // 数値操作
-export const MinusIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[solar--minus-circle-linear]', props)} />;
+export const MinusIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--minus-circle-outline]', props)} />;
 export const PlusSimpleIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--add-circle-linear]', props)} />
+  <span {...iconProps('icon-[mdi--plus-circle-outline]', props)} />
 );
 
 // ナビゲーション追加
-export const ChevronUpIcon: FC<IconProps> = (props) => (
-  <span {...iconProps('icon-[solar--alt-arrow-up-linear]', props)} />
-);
-
-// default export を削除（動的 name は使用不可のため）
-// 代わりにショートカットコンポーネントを使用してください
+export const ChevronUpIcon: FC<IconProps> = (props) => <span {...iconProps('icon-[mdi--chevron-up]', props)} />;
