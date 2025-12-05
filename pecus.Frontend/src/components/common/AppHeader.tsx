@@ -77,17 +77,26 @@ export default function AppHeader({
           </a>
         </div>
 
-        <div className="navbar-center hidden md:flex">
+        <div className="navbar-center">
           <ul className="menu menu-horizontal px-1">
             <li className={isActive('/') ? 'bg-base-200' : ''}>
-              <a href="/">ダッシュボード</a>
+              <a href="/">
+                <span className="md:hidden icon-[mdi--view-dashboard] size-6" aria-hidden="true"></span>
+                <span className="hidden md:inline">ダッシュボード</span>
+              </a>
             </li>
             <li className={isActive('/workspaces') ? 'bg-base-200' : ''}>
-              <a href="/workspaces">ワークスペース</a>
+              <a href="/workspaces">
+                <span className="md:hidden icon-[mdi--folder-multiple] size-6" aria-hidden="true"></span>
+                <span className="hidden md:inline">ワークスペース</span>
+              </a>
             </li>
             {!loading && showAdminLink && userInfo?.isAdmin && (
               <li className={isActive('/admin') ? 'bg-base-200' : ''}>
-                <a href="/admin">管理者</a>
+                <a href="/admin">
+                  <span className="md:hidden icon-[mdi--shield-account] size-6" aria-hidden="true"></span>
+                  <span className="hidden md:inline">管理者</span>
+                </a>
               </li>
             )}
           </ul>
