@@ -17,7 +17,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { taskPriorityOptions, updateWorkspaceTaskSchema } from '@/schemas/workspaceTaskSchemas';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
-import TaskCommentSection from './TaskCommentSection';
+import TaskCommentSection from '../../../../components/workspaceItems/TaskCommentSection';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {

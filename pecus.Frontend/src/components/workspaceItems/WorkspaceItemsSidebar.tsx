@@ -3,10 +3,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import WorkspaceItemFilterDrawer, {
+  type WorkspaceItemFilters,
+} from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
+import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
 import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import WorkspaceItemFilterDrawer, { type WorkspaceItemFilters } from './WorkspaceItemFilterDrawer';
-import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 /** 優先度に応じた左ボーダー色のクラスを取得 */
 function getPriorityBorderClass(priority?: TaskPriority | null): string {

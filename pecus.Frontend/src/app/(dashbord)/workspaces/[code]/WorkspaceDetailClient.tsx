@@ -29,12 +29,12 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
+import type { WorkspaceItemsSidebarHandle } from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
+import WorkspaceItemsSidebar from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
 import EditWorkspaceModal from '../EditWorkspaceModal';
 import EditWorkspaceSkillsModal from '../EditWorkspaceSkillsModal';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
-import type { WorkspaceItemsSidebarHandle } from './WorkspaceItemsSidebar';
-import WorkspaceItemsSidebar from './WorkspaceItemsSidebar';
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;

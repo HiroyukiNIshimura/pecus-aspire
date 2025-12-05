@@ -1,7 +1,7 @@
 'use client';
 
 import type { WorkspaceTaskDetailResponse } from '@/connectors/api/pecus';
-import TaskCommentSection from './TaskCommentSection';
+import TaskCommentSection from '../../../../components/workspaceItems/TaskCommentSection';
 
 interface TaskCommentModalProps {
   isOpen: boolean;

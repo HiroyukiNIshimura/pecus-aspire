@@ -8,6 +8,7 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import { PecusNotionLikeViewer } from '@/components/editor';
+import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
@@ -18,7 +19,6 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
-import WorkspaceItemDrawer from './WorkspaceItemDrawer';
 import WorkspaceTasks from './WorkspaceTasks';
 
 interface WorkspaceItemDetailProps {
