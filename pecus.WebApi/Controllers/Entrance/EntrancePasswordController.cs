@@ -1,14 +1,11 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pecus.Exceptions;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Common;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;

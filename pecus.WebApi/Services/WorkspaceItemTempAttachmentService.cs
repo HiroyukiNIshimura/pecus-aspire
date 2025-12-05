@@ -1,6 +1,5 @@
-using Pecus.Libs.Image;
+﻿using Pecus.Libs.Image;
 using Pecus.Models.Config;
-using Pecus.Models.Responses.WorkspaceItem;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 

@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;

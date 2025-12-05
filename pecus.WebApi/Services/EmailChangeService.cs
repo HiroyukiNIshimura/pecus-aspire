@@ -1,10 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.User;
-using System.Security.Cryptography;
 
 namespace Pecus.Services;
 

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -147,7 +147,7 @@ public class RefreshTokenService
         {
             try
             {
-                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload!);
+                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload.ToString());
                 if (info != null && info.ExpiresAt > DateTime.UtcNow)
                 {
                     return info;
@@ -192,7 +192,7 @@ public class RefreshTokenService
         {
             try
             {
-                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload!);
+                var info = JsonSerializer.Deserialize<RefreshTokenInfo>(payload.ToString());
                 if (info != null)
                 {
                     var userKey = GetUserKey(info.UserId);

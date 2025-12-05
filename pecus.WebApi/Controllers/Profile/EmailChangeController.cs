@@ -1,4 +1,4 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +7,6 @@ using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.User;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Profile;

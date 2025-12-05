@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace Pecus.Models.Responses.WorkspaceItemRelation;
+﻿namespace Pecus.Models.Responses.WorkspaceItemRelation;
 
 /// <summary>
 /// ワークスペースアイテム関連追加レスポンス

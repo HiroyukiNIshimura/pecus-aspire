@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Writers;
-using Pecus.Models.Responses.Common;
+using Microsoft.OpenApi;
 using Pecus.Services;
 using Swashbuckle.AspNetCore.Swagger;
 

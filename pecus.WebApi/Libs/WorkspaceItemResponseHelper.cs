@@ -1,6 +1,4 @@
-using Pecus.Models.Responses.WorkspaceItem;
-
-namespace Pecus.Libs;
+﻿namespace Pecus.Libs;
 
 /// <summary>
 /// WorkspaceItemのレスポンス構築ヘルパー

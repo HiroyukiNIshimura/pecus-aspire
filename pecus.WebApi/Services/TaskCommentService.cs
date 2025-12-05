@@ -1,10 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
-using Pecus.Models.Requests.TaskComment;
-using Pecus.Models.Responses.TaskComment;
 
 namespace Pecus.Services;
 

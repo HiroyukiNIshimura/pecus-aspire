@@ -1,7 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB.Models;
-using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB;
 

@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Pecus.Models.Responses.Common;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Pecus.Libs;
 

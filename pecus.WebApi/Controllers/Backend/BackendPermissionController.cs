@@ -1,11 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
-using Pecus.Models.Requests;
-using Pecus.Models.Responses.Common;
-using Pecus.Models.Responses.Permission;
-using Pecus.Models.Responses.Role;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Backend;

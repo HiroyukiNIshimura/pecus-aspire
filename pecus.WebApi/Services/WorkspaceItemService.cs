@@ -1,4 +1,4 @@
-using Hangfire;
+﻿using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
@@ -8,8 +8,6 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
-using Pecus.Models.Requests.WorkspaceItem;
-using Pecus.Models.Responses.WorkspaceItem;
 
 namespace Pecus.Services;
 

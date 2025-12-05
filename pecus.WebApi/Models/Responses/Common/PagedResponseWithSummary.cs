@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace Pecus.Models.Responses.Common;
+﻿namespace Pecus.Models.Responses.Common;
 
 /// <summary>
 /// ページネーション付きレスポンス（統計情報付き）

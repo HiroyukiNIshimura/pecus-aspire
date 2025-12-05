@@ -1,5 +1,4 @@
-using Pecus.Models.Responses.Permission;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.Role;
 

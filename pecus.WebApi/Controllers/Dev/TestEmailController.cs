@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Pecus.Exceptions;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
-using Pecus.Models.Responses.Common;
 
 namespace Pecus.Controllers.Dev;
 

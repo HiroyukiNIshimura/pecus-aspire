@@ -1,5 +1,4 @@
-using Bogus;
-using Bogus.Extensions;
+﻿using Bogus.Extensions;
 using Faker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,8 +8,6 @@ using Pecus.Libs.Lexical;
 using Pecus.Libs.Security;
 using Pecus.Libs.Utils;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Pecus.Libs.DB.Seed;
 
