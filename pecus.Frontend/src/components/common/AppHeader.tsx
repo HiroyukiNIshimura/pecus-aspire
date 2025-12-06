@@ -73,7 +73,7 @@ export default function AppHeader({
               alt="Coati Logo"
               className="h-16 w-auto"
             />
-            <span className="pb-2 font-mono">COATI TRACKING</span>
+            <span className="pb-2 font-mono">TASK TRACKING</span>
           </a>
         </div>
 

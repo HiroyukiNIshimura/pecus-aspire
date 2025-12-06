@@ -8,6 +8,7 @@ interface AdminSidebarProps {
 
 const menuItems = [
   { href: '/admin', label: '組織', iconClass: 'icon-[mdi--office-building-outline]' },
+  { href: '/admin/settings', label: '設定', iconClass: 'icon-[mdi--cog-outline]' },
   { href: '/admin/workspaces', label: 'ワークスペース', iconClass: 'icon-[mdi--view-grid-outline]' },
   { href: '/admin/users', label: 'ユーザー', iconClass: 'icon-[mdi--account-group-outline]' },
   { href: '/admin/skills', label: 'スキル', iconClass: 'icon-[mdi--badge-account-outline]' },
