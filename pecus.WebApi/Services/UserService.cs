@@ -108,13 +108,13 @@ public class UserService
     /// <summary>
     /// ユーザーIDで取得(ロールと権限を含む)
     /// </summary>
-        public async Task<User?> GetUserByIdAsync(int userId) =>
-           await _context
-          .Users.Include(u => u.Roles)
-              .ThenInclude(r => r.Permissions)
-          .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-          .Include(u => u.Setting)
-          .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+    public async Task<User?> GetUserByIdAsync(int userId) =>
+       await _context
+      .Users.Include(u => u.Roles)
+          .ThenInclude(r => r.Permissions)
+      .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+      .Include(u => u.Setting)
+      .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
