@@ -47,6 +47,10 @@ public class DatabaseSeeder
         await SeedRolesAsync();
         await SeedGenresAsync();
         await SeedTaskTypesAsync();
+        await SeedUserSettingsAsync();
+
+        // 組織が既に存在する場合でも設定が欠けていれば補完する
+        await SeedOrganizationSettingsAsync();
 
         // 開発環境のみモックデータを投入
         if (isDevelopment)
@@ -110,9 +114,11 @@ public class DatabaseSeeder
         _logger.LogInformation("Seeding development mock data...");
 
         await SeedOrganizationsAsync();
+        await SeedOrganizationSettingsAsync();
         await SeedSkillsAsync();
         await SeedTagsAsync();
         await SeedUsersAsync();
+        await SeedUserSettingsAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
         await SeedWorkspaceSkillsAsync();
@@ -637,6 +643,54 @@ public class DatabaseSeeder
     }
 
     /// <summary>
+    /// 組織設定のシードデータを投入（欠損分を補完）
+    /// </summary>
+    public async Task SeedOrganizationSettingsAsync()
+    {
+        var organizations = await _context.Organizations.ToListAsync();
+        if (!organizations.Any())
+        {
+            return;
+        }
+
+        var existingSettings = await _context.OrganizationSettings
+            .ToDictionaryAsync(x => x.OrganizationId, x => x);
+
+        var settingsToAdd = new List<OrganizationSetting>();
+
+        foreach (var organization in organizations)
+        {
+            if (existingSettings.ContainsKey(organization.Id))
+            {
+                continue;
+            }
+
+            settingsToAdd.Add(
+                new OrganizationSetting
+                {
+                    OrganizationId = organization.Id,
+                    TaskOverdueThreshold = 0,
+                    WeeklyReportDeliveryDay = 0,
+                    MailFromAddress = organization.Email,
+                    MailFromName = organization.Name,
+                    GenerativeApiVendor = GenerativeApiVendor.None,
+                    GenerativeApiKey = null,
+                    Plan = OrganizationPlan.Free,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    UpdatedByUserId = null,
+                }
+            );
+        }
+
+        if (settingsToAdd.Count > 0)
+        {
+            _context.OrganizationSettings.AddRange(settingsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} organization settings", settingsToAdd.Count);
+        }
+    }
+
+    /// <summary>
     /// ユーザーのシードデータを投入
     /// </summary>
     public async Task SeedUsersAsync()
@@ -737,6 +791,46 @@ public class DatabaseSeeder
         else
         {
             _logger.LogInformation("Skipping user seeding, already have {Count} users", existingUserCount);
+        }
+    }
+
+    /// <summary>
+    /// ユーザー設定のシードデータを投入（欠損分を補完）
+    /// </summary>
+    public async Task SeedUserSettingsAsync()
+    {
+        var users = await _context.Users.ToListAsync();
+        if (!users.Any())
+        {
+            return;
+        }
+
+        var existingSettings = await _context.UserSettings.ToDictionaryAsync(x => x.UserId, x => x);
+        var settingsToAdd = new List<UserSetting>();
+
+        foreach (var user in users)
+        {
+            if (existingSettings.ContainsKey(user.Id))
+            {
+                continue;
+            }
+
+            settingsToAdd.Add(
+                new UserSetting
+                {
+                    UserId = user.Id,
+                    CanReceiveEmail = true,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    UpdatedByUserId = null,
+                }
+            );
+        }
+
+        if (settingsToAdd.Count > 0)
+        {
+            _context.UserSettings.AddRange(settingsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} user settings", settingsToAdd.Count);
         }
     }
 

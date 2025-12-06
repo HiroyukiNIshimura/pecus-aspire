@@ -116,6 +116,11 @@ public class User
     public ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
 
     /// <summary>
+    /// ユーザー設定
+    /// </summary>
+    public UserSetting? Setting { get; set; }
+
+    /// <summary>
     /// このユーザーに紐づく端末（デバイス）
     /// </summary>
     public List<Device> Devices { get; set; } = new();

@@ -21,6 +21,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; }
 
     /// <summary>
+    /// ユーザー設定テーブル
+    /// </summary>
+    public DbSet<UserSetting> UserSettings { get; set; }
+
+    /// <summary>
     /// ロールテーブル
     /// </summary>
     public DbSet<Role> Roles { get; set; }
@@ -34,6 +39,11 @@ public class ApplicationDbContext : DbContext
     /// 組織テーブル
     /// </summary>
     public DbSet<Organization> Organizations { get; set; }
+
+    /// <summary>
+    /// 組織設定テーブル
+    /// </summary>
+    public DbSet<OrganizationSetting> OrganizationSettings { get; set; }
 
     /// <summary>
     /// ワークスペーステーブル
@@ -152,6 +162,13 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Username);
             entity.HasIndex(e => e.Email).IsUnique();
 
+            // UserSetting との 1:1 リレーション
+            entity
+                .HasOne(u => u.Setting)
+                .WithOne(s => s.User)
+                .HasForeignKey<UserSetting>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // User と Organization の多対一リレーションシップ
             entity
                 .HasOne(u => u.Organization)
@@ -220,6 +237,26 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PhoneNumber).IsRequired().HasMaxLength(20);
             entity.Property(e => e.Email).HasMaxLength(254);
             entity.HasIndex(e => e.Code).IsUnique();
+        });
+
+        // OrganizationSetting エンティティの設定
+        modelBuilder.Entity<OrganizationSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TaskOverdueThreshold).IsRequired().HasDefaultValue(0);
+            entity.Property(e => e.WeeklyReportDeliveryDay).IsRequired().HasDefaultValue(0);
+            entity.Property(e => e.MailFromAddress).HasMaxLength(254);
+            entity.Property(e => e.MailFromName).HasMaxLength(100);
+            entity.Property(e => e.GenerativeApiKey).HasMaxLength(512);
+
+            entity
+                .HasOne(e => e.Organization)
+                .WithOne(o => o.Setting)
+                .HasForeignKey<OrganizationSetting>(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.OrganizationId).IsUnique();
+            entity.HasIndex(e => e.UpdatedAt);
         });
 
         // Workspaceエンティティの設定
@@ -867,6 +904,15 @@ public class ApplicationDbContext : DbContext
             .ValueGeneratedOnAddOrUpdate()
             .IsConcurrencyToken();
 
+        // UserSetting
+        modelBuilder
+            .Entity<UserSetting>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
         // Role
         modelBuilder
             .Entity<Role>()
@@ -888,6 +934,15 @@ public class ApplicationDbContext : DbContext
         // Organization
         modelBuilder
             .Entity<Organization>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // OrganizationSetting
+        modelBuilder
+            .Entity<OrganizationSetting>()
             .Property(e => e.RowVersion)
             .HasColumnName("xmin")
             .HasColumnType("xid")

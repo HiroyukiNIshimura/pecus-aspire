@@ -86,6 +86,11 @@ public class Organization
     public ICollection<Skill> Skills { get; set; } = new List<Skill>();
 
     /// <summary>
+    /// 組織設定
+    /// </summary>
+    public OrganizationSetting? Setting { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用バージョン番号（PostgreSQL の xmin システムカラム）
     /// </summary>
     public uint RowVersion { get; set; }
