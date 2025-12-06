@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { OrganizationSettingResponse } from './OrganizationSettingResponse';
 /**
  * 組織情報レスポンス
  */
@@ -54,5 +55,6 @@ export type OrganizationResponse = {
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;
+    setting: OrganizationSettingResponse;
 };
 

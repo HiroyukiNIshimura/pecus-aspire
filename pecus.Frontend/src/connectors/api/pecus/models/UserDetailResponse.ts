@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AvatarType } from './AvatarType';
 import type { UserRoleResponse } from './UserRoleResponse';
+import type { UserSettingResponse } from './UserSettingResponse';
 import type { UserSkillResponse } from './UserSkillResponse';
 /**
  * ユーザー詳細レスポンス
@@ -61,5 +62,6 @@ export type UserDetailResponse = {
      * ユーザーの楽観的ロック用RowVersion
      */
     rowVersion: number;
+    setting: UserSettingResponse;
 };
 

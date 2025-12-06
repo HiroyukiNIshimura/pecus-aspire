@@ -28,6 +28,7 @@ export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyRespon
 export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
+export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { ItemWithTasksResponsePagedResponse } from './models/ItemWithTasksResponsePagedResponse';
@@ -43,8 +44,10 @@ export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
 export type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from './models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 export type { MyTaskWorkspaceResponse } from './models/MyTaskWorkspaceResponse';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
+export type { OrganizationPlan } from './models/OrganizationPlan';
 export type { OrganizationResponse } from './models/OrganizationResponse';
 export type { OrganizationResponseConcurrencyErrorResponse } from './models/OrganizationResponseConcurrencyErrorResponse';
+export type { OrganizationSettingResponse } from './models/OrganizationSettingResponse';
 export type { OrganizationWithAdminResponse } from './models/OrganizationWithAdminResponse';
 export type { OSPlatform } from './models/OSPlatform';
 export type { PendingEmailChangeResponse } from './models/PendingEmailChangeResponse';
@@ -114,6 +117,7 @@ export type { UserDetailResponseUserStatisticsPagedResponse } from './models/Use
 export type { UserRoleResponse } from './models/UserRoleResponse';
 export type { UserSearchResultResponse } from './models/UserSearchResultResponse';
 export type { UserSearchSkillResponse } from './models/UserSearchSkillResponse';
+export type { UserSettingResponse } from './models/UserSettingResponse';
 export type { UserSkillResponse } from './models/UserSkillResponse';
 export type { UserStatistics } from './models/UserStatistics';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';

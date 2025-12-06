@@ -8395,6 +8395,16 @@
         "additionalProperties": false,
         "description": "ファイルアップロードレスポンス"
       },
+      "GenerativeApiVendor": {
+        "enum": [
+          "None",
+          "OpenAi",
+          "AzureOpenAi",
+          "Anthropic",
+          "GoogleGemini"
+        ],
+        "type": "string"
+      },
       "GenreCount": {
         "required": [
           "count",
@@ -9208,12 +9218,22 @@
         "additionalProperties": false,
         "description": "組織情報レスポンス（簡易版）"
       },
+      "OrganizationPlan": {
+        "enum": [
+          "Unknown",
+          "Free",
+          "Standard",
+          "Enterprise"
+        ],
+        "type": "string"
+      },
       "OrganizationResponse": {
         "required": [
           "id",
           "name",
           "phoneNumber",
-          "rowVersion"
+          "rowVersion",
+          "setting"
         ],
         "type": "object",
         "properties": {
@@ -9276,6 +9296,9 @@
             "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "int32"
+          },
+          "setting": {
+            "$ref": "#/components/schemas/OrganizationSettingResponse"
           }
         },
         "additionalProperties": false,
@@ -9308,6 +9331,54 @@
         },
         "additionalProperties": false,
         "description": "競合エラーレスポンス（409 Conflict）"
+      },
+      "OrganizationSettingResponse": {
+        "required": [
+          "generativeApiVendor",
+          "plan",
+          "rowVersion",
+          "taskOverdueThreshold",
+          "weeklyReportDeliveryDay"
+        ],
+        "type": "object",
+        "properties": {
+          "taskOverdueThreshold": {
+            "type": "integer",
+            "description": "タスク超過チェックの閾値（日数）",
+            "format": "int32"
+          },
+          "weeklyReportDeliveryDay": {
+            "type": "integer",
+            "description": "週間レポートの配信曜日（0=未設定/日曜起点などクライアント定義）",
+            "format": "int32"
+          },
+          "mailFromAddress": {
+            "maxLength": 254,
+            "type": "string",
+            "description": "メール配信元のメールアドレス",
+            "format": "email",
+            "nullable": true
+          },
+          "mailFromName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "メール配信元のFrom（表示名）",
+            "nullable": true
+          },
+          "generativeApiVendor": {
+            "$ref": "#/components/schemas/GenerativeApiVendor"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/OrganizationPlan"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用RowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織設定レスポンス"
       },
       "OrganizationWithAdminResponse": {
         "required": [
@@ -11418,6 +11489,7 @@
           "loginId",
           "roles",
           "rowVersion",
+          "setting",
           "username"
         ],
         "type": "object",
@@ -11487,6 +11559,9 @@
             "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion",
             "format": "int32"
+          },
+          "setting": {
+            "$ref": "#/components/schemas/UserSettingResponse"
           }
         },
         "additionalProperties": false,
@@ -11650,6 +11725,20 @@
         },
         "additionalProperties": false,
         "description": "ユーザー検索結果に含まれるスキル情報"
+      },
+      "UserSettingResponse": {
+        "required": [
+          "canReceiveEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "canReceiveEmail": {
+            "type": "boolean",
+            "description": "メール受信の可否"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ユーザー設定レスポンス"
       },
       "UserSkillResponse": {
         "required": [
