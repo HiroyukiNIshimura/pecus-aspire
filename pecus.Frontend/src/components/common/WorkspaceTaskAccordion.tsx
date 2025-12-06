@@ -409,7 +409,7 @@ export default function WorkspaceTaskAccordion({
                                   return (
                                     <div
                                       key={task.taskId}
-                                      className={`flex items-center gap-2 p-2 rounded-lg bg-base-200 hover:bg-base-300 transition-colors ${isInactive ? 'opacity-60' : ''}`}
+                                      className={`flex items-center gap-2 p-2 rounded-lg bg-base-200 hover:bg-base-300 transition-colors ${isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''}`}
                                     >
                                       {/* タスクタイプアイコン */}
                                       {iconPath && (
@@ -422,20 +422,18 @@ export default function WorkspaceTaskAccordion({
                                       )}
 
                                       {/* タスク内容 + アイテム名（リンク） */}
-                                      <Link
-                                        href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
-                                        className="flex-1 min-w-0 hover:text-primary transition-colors"
-                                      >
+                                      <div className="flex-1 min-w-0">
                                         <p className="text-sm truncate" title={task.taskContent || undefined}>
                                           {task.taskContent}
                                         </p>
-                                        <p
-                                          className="text-xs text-base-content/50 truncate"
+                                        <Link
+                                          href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
+                                          className="text-xs text-base-content/50 truncate hover:text-primary transition-colors"
                                           title={task.itemSubject || undefined}
                                         >
                                           {task.itemSubject}
-                                        </p>
-                                      </Link>
+                                        </Link>
+                                      </div>
 
                                       {/* 進捗バー（コンパクト） */}
                                       <div className="w-16 flex-shrink-0 hidden sm:block">
@@ -447,13 +445,27 @@ export default function WorkspaceTaskAccordion({
                                       </div>
 
                                       {/* 担当者アバター */}
-                                      {task.assignedUserId && task.assignedAvatarUrl ? (
-                                        <img
-                                          src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                                          alt={task.assignedUsername || '担当者'}
-                                          className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                          title={task.assignedUsername || undefined}
-                                        />
+                                      {task.assignedUserId ? (
+                                        <div className="flex items-center gap-1 min-w-[0]">
+                                          {task.assignedAvatarUrl ? (
+                                            <img
+                                              src={getDisplayIconUrl(task.assignedAvatarUrl)}
+                                              alt={task.assignedUsername || '担当者'}
+                                              className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                                              title={task.assignedUsername || undefined}
+                                            />
+                                          ) : (
+                                            <span className="w-5 h-5 flex-shrink-0 hidden sm:block" />
+                                          )}
+                                          {task.assignedUsername && (
+                                            <span
+                                              className="text-xs text-base-content/70 truncate max-w-[96px] sm:max-w-[120px]"
+                                              title={task.assignedUsername}
+                                            >
+                                              {task.assignedUsername}
+                                            </span>
+                                          )}
+                                        </div>
                                       ) : (
                                         <span className="w-5 h-5 flex-shrink-0 hidden sm:block" />
                                       )}
