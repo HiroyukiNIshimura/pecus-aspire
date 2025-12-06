@@ -114,7 +114,11 @@ public class AdminUserController : BaseAdminController
                 })
                 .ToList() ?? new List<UserSkillResponse>(),
             IsAdmin = targetUser.Roles?.Any(r => r.Name == "Admin") ?? false,
-            IsActive = targetUser.IsActive
+            IsActive = targetUser.IsActive,
+            Setting = new UserSettingResponse
+            {
+                CanReceiveEmail = targetUser.Setting?.CanReceiveEmail ?? true,
+            },
         };
 
         return TypedResults.Ok(response);
@@ -189,6 +193,10 @@ public class AdminUserController : BaseAdminController
             IsAdmin = u.Roles?.Any(r => r.Name == "Admin") ?? false,
             IsActive = u.IsActive,
             RowVersion = u.RowVersion!,
+            Setting = new UserSettingResponse
+            {
+                CanReceiveEmail = u.Setting?.CanReceiveEmail ?? true,
+            },
         });
 
         // 統計情報を取得
@@ -458,6 +466,10 @@ public class AdminUserController : BaseAdminController
             Skills = new List<UserSkillResponse>(),
             IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
             RowVersion = user.RowVersion!,
+            Setting = new UserSettingResponse
+            {
+                CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+            },
         };
 
         return TypedResults.Created($"/api/admin/users/{user.Id}", response);

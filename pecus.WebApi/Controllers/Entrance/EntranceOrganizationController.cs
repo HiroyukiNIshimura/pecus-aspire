@@ -134,6 +134,10 @@ public class EntranceOrganizationController : ControllerBase
                 CreatedAt = adminUser.CreatedAt,
                 RowVersion = adminUser.RowVersion!,
                 IsAdmin = true,
+                Setting = new UserSettingResponse
+                {
+                    CanReceiveEmail = adminUser.Setting?.CanReceiveEmail ?? true,
+                },
             },
         };
         return TypedResults.Ok(response);

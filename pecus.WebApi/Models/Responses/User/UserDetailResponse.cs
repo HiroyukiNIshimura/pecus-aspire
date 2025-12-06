@@ -83,4 +83,10 @@ public class UserDetailResponse : IConflictModel
     /// </summary>
     [Required]
     public required uint RowVersion { get; set; }
+
+    /// <summary>
+    /// ユーザー設定
+    /// </summary>
+    [Required]
+    public required UserSettingResponse Setting { get; set; } = new();
 }

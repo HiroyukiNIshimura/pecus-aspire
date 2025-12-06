@@ -242,6 +242,10 @@ public class ProfileService
             IsAdmin = user.Roles?.Any(r => r.Name == "Admin") ?? false,
             IsActive = user.IsActive,
             RowVersion = user.RowVersion!,
+            Setting = new UserSettingResponse
+            {
+                CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+            },
         };
 
         return response;

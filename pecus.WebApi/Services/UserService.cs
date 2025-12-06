@@ -108,12 +108,13 @@ public class UserService
     /// <summary>
     /// ユーザーIDで取得(ロールと権限を含む)
     /// </summary>
-    public async Task<User?> GetUserByIdAsync(int userId) =>
-        await _context
-       .Users.Include(u => u.Roles)
-            .ThenInclude(r => r.Permissions)
-       .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
-       .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+        public async Task<User?> GetUserByIdAsync(int userId) =>
+           await _context
+          .Users.Include(u => u.Roles)
+              .ThenInclude(r => r.Permissions)
+          .Include(u => u.UserSkills).ThenInclude(us => us.Skill)
+          .Include(u => u.Setting)
+          .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
     /// <summary>
     /// 組織IDでユーザーをページネーション付きで取得
@@ -193,6 +194,7 @@ public class UserService
             .Include(u => u.Roles)
             .Include(u => u.UserSkills)
                 .ThenInclude(us => us.Skill)
+            .Include(u => u.Setting)
             .AsSplitQuery()
             .ToListAsync();
 
@@ -363,6 +365,18 @@ public class UserService
             };
 
             _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // ユーザー設定を作成（初期値はメール受信可）
+            var setting = new UserSetting
+            {
+                UserId = user.Id,
+                CanReceiveEmail = true,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                UpdatedByUserId = createdByUserId,
+            };
+
+            _context.UserSettings.Add(setting);
             await _context.SaveChangesAsync();
 
             // ロールを設定（指定されている場合）
@@ -764,7 +778,10 @@ public class UserService
 
     private async Task RaiseConflictException(int userId)
     {
-        var latestUser = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == userId);
+        var latestUser = await _context.Users
+            .Include(u => u.Roles)
+            .Include(u => u.Setting)
+            .FirstOrDefaultAsync(u => u.Id == userId);
         if (latestUser == null)
         {
             throw new NotFoundException("ユーザーが見つかりません。");
@@ -793,7 +810,13 @@ public class UserService
                 }).ToList(),
                 IsAdmin = latestUser.Roles.Any(r => r.Name == "Admin"),
                 CreatedAt = latestUser.CreatedAt,
-                RowVersion = latestUser.RowVersion!
+                RowVersion = latestUser.RowVersion!,
+                Setting = latestUser.Setting != null
+                    ? new UserSettingResponse
+                    {
+                        CanReceiveEmail = latestUser.Setting.CanReceiveEmail,
+                    }
+                    : new UserSettingResponse(),
             }
         );
     }
