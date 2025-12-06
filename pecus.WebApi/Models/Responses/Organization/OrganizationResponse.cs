@@ -70,4 +70,10 @@ public class OrganizationResponse : IConflictModel
     /// </summary>
     [Required]
     public required uint RowVersion { get; set; }
+
+    /// <summary>
+    /// 組織設定
+    /// </summary>
+    [Required]
+    public required OrganizationSettingResponse Setting { get; set; } = new();
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Models.Config;
@@ -109,6 +110,16 @@ public class EntranceOrganizationController : ControllerBase
                 Email = organization.Email,
                 CreatedAt = organization.CreatedAt,
                 RowVersion = organization.RowVersion!,
+                Setting = new OrganizationSettingResponse
+                {
+                    TaskOverdueThreshold = organization.Setting?.TaskOverdueThreshold ?? 0,
+                    WeeklyReportDeliveryDay = organization.Setting?.WeeklyReportDeliveryDay ?? 0,
+                    MailFromAddress = organization.Setting?.MailFromAddress,
+                    MailFromName = organization.Setting?.MailFromName,
+                    GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
+                    Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
+                    RowVersion = organization.Setting?.RowVersion ?? 0,
+                },
             },
             AdminUser = new UserDetailResponse
             {

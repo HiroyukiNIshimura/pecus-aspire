@@ -2,6 +2,7 @@
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Services;
 
@@ -59,6 +60,24 @@ public class OrganizationService
 
             _context.Organizations.Add(organization);
             await _context.SaveChangesAsync();
+
+            // 組織設定を作成（初期値はFreeプラン）
+            var setting = new OrganizationSetting
+            {
+                OrganizationId = organization.Id,
+                TaskOverdueThreshold = 0,
+                WeeklyReportDeliveryDay = 0,
+                MailFromAddress = organization.Email,
+                MailFromName = organization.Name,
+                GenerativeApiVendor = GenerativeApiVendor.None,
+                GenerativeApiKey = null,
+                Plan = OrganizationPlan.Free,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                UpdatedByUserId = null,
+            };
+            _context.OrganizationSettings.Add(setting);
+            await _context.SaveChangesAsync();
+            organization.Setting = setting;
 
             // 管理者ユーザーを作成（パスワード未設定）
             // User オブジェクトを直接作成し、パスワードは未設定状態で保存
@@ -123,14 +142,20 @@ public class OrganizationService
     /// </summary>
     public async Task<Organization?> GetOrganizationByIdAsync(int organizationId) =>
         await _context
-            .Organizations.Include(o => o.Users)
+            .Organizations
+            .Include(o => o.Users)
+            .Include(o => o.Setting)
             .FirstOrDefaultAsync(o => o.Id == organizationId);
 
     /// <summary>
     /// 組織コードで取得
     /// </summary>
     public async Task<Organization?> GetOrganizationByCodeAsync(string code) =>
-        await _context.Organizations.Include(o => o.Users).FirstOrDefaultAsync(o => o.Code == code);
+        await _context
+            .Organizations
+            .Include(o => o.Users)
+            .Include(o => o.Setting)
+            .FirstOrDefaultAsync(o => o.Code == code);
 
     /// <summary>
     /// 組織をページネーション付きで取得
@@ -140,7 +165,11 @@ public class OrganizationService
         int totalCount
     )> GetOrganizationsPagedAsync(int page, int pageSize, bool? activeOnly = null)
     {
-        var query = _context.Organizations.Include(o => o.Users).AsQueryable();
+        var query = _context
+            .Organizations
+            .Include(o => o.Users)
+            .Include(o => o.Setting)
+            .AsQueryable();
 
         if (activeOnly == true)
         {
@@ -150,7 +179,11 @@ public class OrganizationService
         query = query.OrderBy(o => o.Id);
 
         var totalCount = await query.CountAsync();
-        var organizations = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var organizations = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .AsSplitQuery()
+            .ToListAsync();
 
         return (organizations, totalCount);
     }
@@ -367,7 +400,10 @@ public class OrganizationService
 
     private async Task RaiseConflictException(int organizationId)
     {
-        var latestOrganization = await _context.Organizations.FindAsync(organizationId);
+        var latestOrganization = await _context.Organizations
+            .Include(o => o.Users)
+            .Include(o => o.Setting)
+            .FirstOrDefaultAsync(o => o.Id == organizationId);
         if (latestOrganization == null)
         {
             throw new NotFoundException("組織が見つかりません。");
@@ -388,6 +424,25 @@ public class OrganizationService
                 IsActive = latestOrganization.IsActive,
                 UserCount = latestOrganization.Users.Count,
                 RowVersion = latestOrganization.RowVersion!,
+                Setting = latestOrganization.Setting != null
+                    ? new OrganizationSettingResponse
+                    {
+                        TaskOverdueThreshold = latestOrganization.Setting.TaskOverdueThreshold,
+                        WeeklyReportDeliveryDay = latestOrganization.Setting.WeeklyReportDeliveryDay,
+                        MailFromAddress = latestOrganization.Setting.MailFromAddress,
+                        MailFromName = latestOrganization.Setting.MailFromName,
+                        GenerativeApiVendor = latestOrganization.Setting.GenerativeApiVendor,
+                        Plan = latestOrganization.Setting.Plan,
+                        RowVersion = latestOrganization.Setting.RowVersion,
+                    }
+                    : new OrganizationSettingResponse
+                    {
+                        TaskOverdueThreshold = 0,
+                        WeeklyReportDeliveryDay = 0,
+                        GenerativeApiVendor = GenerativeApiVendor.None,
+                        Plan = OrganizationPlan.Free,
+                        RowVersion = 0,
+                    },
             }
         );
     }

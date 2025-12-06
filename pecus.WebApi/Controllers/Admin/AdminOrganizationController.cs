@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Admin;
@@ -69,6 +70,16 @@ public class AdminOrganizationController : BaseAdminController
             IsActive = organization.IsActive,
             UserCount = organization.Users.Count,
             RowVersion = organization.RowVersion!,
+            Setting = new OrganizationSettingResponse
+            {
+                TaskOverdueThreshold = organization.Setting?.TaskOverdueThreshold ?? 0,
+                WeeklyReportDeliveryDay = organization.Setting?.WeeklyReportDeliveryDay ?? 0,
+                MailFromAddress = organization.Setting?.MailFromAddress,
+                MailFromName = organization.Setting?.MailFromName,
+                GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
+                Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
+                RowVersion = organization.Setting?.RowVersion ?? 0,
+            },
         };
 
         return TypedResults.Ok(response);
@@ -116,6 +127,16 @@ public class AdminOrganizationController : BaseAdminController
             IsActive = organization.IsActive,
             UserCount = organization.Users.Count,
             RowVersion = organization.RowVersion!,
+            Setting = new OrganizationSettingResponse
+            {
+                TaskOverdueThreshold = organization.Setting?.TaskOverdueThreshold ?? 0,
+                WeeklyReportDeliveryDay = organization.Setting?.WeeklyReportDeliveryDay ?? 0,
+                MailFromAddress = organization.Setting?.MailFromAddress,
+                MailFromName = organization.Setting?.MailFromName,
+                GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
+                Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
+                RowVersion = organization.Setting?.RowVersion ?? 0,
+            },
         };
 
         return TypedResults.Ok(response);
