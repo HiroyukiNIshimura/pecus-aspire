@@ -47,8 +47,8 @@
 ## 開発フロー／コマンド
 
 - バックエンド: `dotnet format pecus.sln` → `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`
-- フロントエンド: `npm run format` → `npx tsc --noEmit` → `npm run build` → `npm run dev`
-- API クライアント生成: `npm run generate:client`（自動フックあり）
+- フロントエンド: `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build` → `npm run dev`
+- API クライアント生成: `npm run full:api`（自動フックあり）
 
 ## プロジェクト特有のルール（必ず守る）
 
