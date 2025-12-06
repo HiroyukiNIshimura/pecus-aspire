@@ -121,6 +121,17 @@ export type WorkspaceTaskDetailResponse = {
      */
     commentCount?: number;
     /**
+     * コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）
+     */
+    commentTypeCounts?: {
+        Normal?: number;
+        Memo?: number;
+        HelpWanted?: number;
+        NeedReply?: number;
+        Reminder?: number;
+        Urge?: number;
+    } | null;
+    /**
      * 楽観的ロック用のRowVersion
      */
     rowVersion: number;

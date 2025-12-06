@@ -8,6 +8,16 @@ import { useNotify } from '@/hooks/useNotify';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import TaskEditModal from './TaskEditModal';
 
+type CommentTypeCounts = {
+  HelpWanted?: number;
+  Urge?: number;
+};
+
+const getCommentTypeCounts = (task: TaskWithItemResponse): CommentTypeCounts => {
+  const raw = (task as unknown as { commentTypeCounts?: CommentTypeCounts }).commentTypeCounts;
+  return raw ?? {};
+};
+
 // ワークスペース情報の共通型（タスク用とコミッター用で共通の項目）
 export interface WorkspaceInfo {
   workspaceId: number;
@@ -472,6 +482,10 @@ export default function WorkspaceTaskAccordion({
                                       ? 'bg-warning/70'
                                       : 'bg-base-300/80';
 
+                                  const commentTypeCounts = getCommentTypeCounts(task);
+                                  const hasHelpComment = (commentTypeCounts.HelpWanted ?? 0) > 0;
+                                  const hasUrgeComment = (commentTypeCounts.Urge ?? 0) > 0;
+
                                   return (
                                     <div
                                       key={task.taskId}
@@ -575,6 +589,19 @@ export default function WorkspaceTaskAccordion({
                                           )}
                                           {!task.isCompleted && !task.isDiscarded && (
                                             <span className="sm:hidden">{getPriorityBadge(task.priority)}</span>
+                                          )}
+                                          {hasHelpComment && (
+                                            <span
+                                              className="badge badge-warning badge-xs"
+                                              title="ヘルプ要請のコメントがあります"
+                                            >
+                                              ヘルプ
+                                            </span>
+                                          )}
+                                          {hasUrgeComment && (
+                                            <span className="badge badge-error badge-xs" title="督促コメントがあります">
+                                              督促
+                                            </span>
                                           )}
 
                                           {taskTypes ? (

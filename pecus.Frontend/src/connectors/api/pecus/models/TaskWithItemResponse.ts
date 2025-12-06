@@ -125,5 +125,16 @@ export type TaskWithItemResponse = {
      * アイテムコミッターアバターURL
      */
     itemCommitterAvatarUrl?: string | null;
+    /**
+     * コメントタイプ別件数
+     */
+    commentTypeCounts?: {
+        Normal?: number;
+        Memo?: number;
+        HelpWanted?: number;
+        NeedReply?: number;
+        Reminder?: number;
+        Urge?: number;
+    } | null;
 };
 

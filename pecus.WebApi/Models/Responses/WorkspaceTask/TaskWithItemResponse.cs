@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.Collections.Generic;
 
 namespace Pecus.Models.Responses.WorkspaceTask;
 
@@ -161,4 +162,9 @@ public class TaskWithItemResponse
     /// アイテムコミッターアバターURL
     /// </summary>
     public string? ItemCommitterAvatarUrl { get; set; }
+
+    /// <summary>
+    /// コメントタイプ別件数
+    /// </summary>
+    public Dictionary<TaskCommentType, int> CommentTypeCounts { get; set; } = new();
 }

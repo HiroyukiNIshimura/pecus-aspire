@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
+using System.Collections.Generic;
 
 namespace Pecus.Controllers;
 
@@ -107,13 +109,13 @@ public class WorkspaceTaskController : BaseSecureController
             throw new NotFoundException("タスクが見つかりません。");
         }
 
-        var (task, commentCount) = await _workspaceTaskService.GetWorkspaceTaskAsync(
+        var (task, commentCount, commentTypeCounts) = await _workspaceTaskService.GetWorkspaceTaskAsync(
             workspaceId,
             itemId,
             taskId
         );
 
-        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount));
+        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount, commentTypeCounts));
     }
 
     /// <summary>
@@ -140,7 +142,7 @@ public class WorkspaceTaskController : BaseSecureController
             throw new NotFoundException("ワークスペースアイテムが見つかりません。");
         }
 
-        var (tasks, commentCounts, totalCount) = await _workspaceTaskService.GetWorkspaceTasksAsync(
+        var (tasks, commentCounts, commentTypeCounts, totalCount) = await _workspaceTaskService.GetWorkspaceTasksAsync(
             workspaceId,
             itemId,
             request
@@ -157,7 +159,11 @@ public class WorkspaceTaskController : BaseSecureController
 
         var response = new PagedResponse<WorkspaceTaskDetailResponse, WorkspaceTaskStatistics>
         {
-            Data = tasks.Select(t => BuildTaskDetailResponse(t, commentCounts.GetValueOrDefault(t.Id, 0))),
+            Data = tasks.Select(t => BuildTaskDetailResponse(
+                t,
+                commentCounts.GetValueOrDefault(t.Id, 0),
+                commentTypeCounts.GetValueOrDefault(t.Id, new Dictionary<TaskCommentType, int>())
+            )),
             CurrentPage = request.Page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -248,7 +254,7 @@ public class WorkspaceTaskController : BaseSecureController
             );
         }
 
-        var (task, commentCount) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
+        var (task, commentCount, commentTypeCounts) = await _workspaceTaskService.UpdateWorkspaceTaskAsync(
             workspaceId,
             itemId,
             taskId,
@@ -259,7 +265,7 @@ public class WorkspaceTaskController : BaseSecureController
         {
             Success = true,
             Message = "タスクを更新しました。",
-            WorkspaceTask = BuildTaskDetailResponse(task, commentCount),
+            WorkspaceTask = BuildTaskDetailResponse(task, commentCount, commentTypeCounts),
         };
 
         return TypedResults.Ok(response);
@@ -376,7 +382,12 @@ public class WorkspaceTaskController : BaseSecureController
     /// </summary>
     /// <param name="task">タスクエンティティ</param>
     /// <param name="commentCount">コメント数</param>
-    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
+    /// <param name="commentTypeCounts">コメントタイプ別件数</param>
+    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
+        WorkspaceTask task,
+        int commentCount = 0,
+        Dictionary<TaskCommentType, int>? commentTypeCounts = null
+    )
     {
         return new WorkspaceTaskDetailResponse
         {
@@ -425,6 +436,7 @@ public class WorkspaceTaskController : BaseSecureController
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
+            CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
             RowVersion = task.RowVersion,
         };
     }

@@ -3,7 +3,10 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Config;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Pecus.Services;
 
@@ -182,8 +185,8 @@ public class WorkspaceTaskService
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="taskId">タスクID</param>
-    /// <returns>タスクとコメント数のタプル</returns>
-    public async Task<(WorkspaceTask Task, int CommentCount)> GetWorkspaceTaskAsync(
+    /// <returns>タスクとコメント情報のタプル</returns>
+    public async Task<(WorkspaceTask Task, int CommentCount, Dictionary<TaskCommentType, int> CommentTypeCounts)> GetWorkspaceTaskAsync(
         int workspaceId,
         int itemId,
         int taskId
@@ -204,10 +207,11 @@ public class WorkspaceTaskService
             throw new NotFoundException("タスクが見つかりません。");
         }
 
-        var commentCount = await _context.TaskComments
-            .CountAsync(c => c.WorkspaceTaskId == taskId);
+        var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(new[] { taskId });
+        var commentTypeCounts = commentTypeCountsByTask.GetValueOrDefault(taskId, new Dictionary<TaskCommentType, int>());
+        var commentCount = SumCommentCounts(commentTypeCounts);
 
-        return (task, commentCount);
+        return (task, commentCount, commentTypeCounts);
     }
 
     /// <summary>
@@ -216,8 +220,13 @@ public class WorkspaceTaskService
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="request">フィルタリング・ページネーションリクエスト</param>
-    /// <returns>タスク一覧、コメント数辞書、総件数のタプル</returns>
-    public async Task<(List<WorkspaceTask> Tasks, Dictionary<int, int> CommentCounts, int TotalCount)> GetWorkspaceTasksAsync(
+    /// <returns>タスク一覧、コメント情報辞書、総件数のタプル</returns>
+    public async Task<(
+        List<WorkspaceTask> Tasks,
+        Dictionary<int, int> CommentCounts,
+        Dictionary<int, Dictionary<TaskCommentType, int>> CommentTypeCounts,
+        int TotalCount
+    )> GetWorkspaceTasksAsync(
         int workspaceId,
         int itemId,
         GetWorkspaceTasksRequest request
@@ -267,15 +276,15 @@ public class WorkspaceTaskService
             .Take(pageSize)
             .ToListAsync();
 
-        // 各タスクのコメント数を取得
+        // 各タスクのコメント件数を取得（タイプ別内訳を含む）
         var taskIds = tasks.Select(t => t.Id).ToList();
-        var commentCounts = await _context.TaskComments
-            .Where(c => taskIds.Contains(c.WorkspaceTaskId))
-            .GroupBy(c => c.WorkspaceTaskId)
-            .Select(g => new { TaskId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.TaskId, x => x.Count);
+        var commentTypeCounts = await GetCommentTypeCountsByTaskIdsAsync(taskIds);
+        var commentCounts = commentTypeCounts.ToDictionary(
+            kvp => kvp.Key,
+            kvp => SumCommentCounts(kvp.Value)
+        );
 
-        return (tasks, commentCounts, totalCount);
+        return (tasks, commentCounts, commentTypeCounts, totalCount);
     }
 
     /// <summary>
@@ -333,8 +342,12 @@ public class WorkspaceTaskService
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="taskId">タスクID</param>
     /// <param name="request">更新リクエスト</param>
-    /// <returns>更新されたタスクとコメント数のタプル</returns>
-    public async Task<(WorkspaceTask Task, int CommentCount)> UpdateWorkspaceTaskAsync(
+    /// <returns>更新されたタスクとコメント情報のタプル</returns>
+    public async Task<(
+        WorkspaceTask Task,
+        int CommentCount,
+        Dictionary<TaskCommentType, int> CommentTypeCounts
+    )> UpdateWorkspaceTaskAsync(
         int workspaceId,
         int itemId,
         int taskId,
@@ -460,13 +473,15 @@ public class WorkspaceTaskService
                 .Include(t => t.TaskType)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
-            var latestCommentCount = latestTask != null
-                ? await _context.TaskComments.CountAsync(c => c.WorkspaceTaskId == taskId)
-                : 0;
+            var latestCommentTypeCounts = await GetCommentTypeCountsByTaskIdsAsync(new[] { taskId });
+            var latestTypeCounts = latestCommentTypeCounts.GetValueOrDefault(taskId, new Dictionary<TaskCommentType, int>());
+            var latestCommentCount = SumCommentCounts(latestTypeCounts);
 
             throw new ConcurrencyException<WorkspaceTaskDetailResponse>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
-                latestTask != null ? BuildTaskDetailResponse(latestTask, latestCommentCount) : null
+                latestTask != null
+                    ? BuildTaskDetailResponse(latestTask, latestCommentCount, latestTypeCounts)
+                    : null
             );
         }
 
@@ -490,11 +505,12 @@ public class WorkspaceTaskService
                 .LoadAsync();
         }
 
-        // コメント数を取得
-        var commentCount = await _context.TaskComments
-            .CountAsync(c => c.WorkspaceTaskId == taskId);
+        // コメント数とタイプ別件数を取得
+        var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(new[] { taskId });
+        var commentTypeCounts = commentTypeCountsByTask.GetValueOrDefault(taskId, new Dictionary<TaskCommentType, int>());
+        var commentCount = SumCommentCounts(commentTypeCounts);
 
-        return (task, commentCount);
+        return (task, commentCount, commentTypeCounts);
     }
 
     /// <summary>
@@ -618,7 +634,12 @@ public class WorkspaceTaskService
     /// </summary>
     /// <param name="task">タスクエンティティ</param>
     /// <param name="commentCount">コメント数</param>
-    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
+    /// <param name="commentTypeCounts">コメントタイプ別件数</param>
+    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
+        WorkspaceTask task,
+        int commentCount = 0,
+        Dictionary<TaskCommentType, int>? commentTypeCounts = null
+    )
     {
         return new WorkspaceTaskDetailResponse
         {
@@ -667,6 +688,7 @@ public class WorkspaceTaskService
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
+            CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
             RowVersion = task.RowVersion,
         };
     }
@@ -1039,13 +1061,15 @@ public class WorkspaceTaskService
             .AsSplitQuery()
             .ToListAsync();
 
+        var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(tasks.Select(t => t.Id));
+
         // 期限日でグループ化
         return tasks
             .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
             .Select(g => new TasksByDueDateResponse
             {
                 DueDate = g.Key,
-                Tasks = g.Select(t => BuildTaskWithItemResponse(t)).ToList(),
+                Tasks = g.Select(t => BuildTaskWithItemResponse(t, commentTypeCountsByTask)).ToList(),
             })
             .ToList();
     }
@@ -1080,12 +1104,14 @@ public class WorkspaceTaskService
             .AsSplitQuery()
             .ToListAsync();
 
+        var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(tasks.Select(t => t.Id));
+
         return tasks
             .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
             .Select(g => new TasksByDueDateResponse
             {
                 DueDate = g.Key,
-                Tasks = g.Select(t => BuildTaskWithItemResponse(t)).ToList(),
+                Tasks = g.Select(t => BuildTaskWithItemResponse(t, commentTypeCountsByTask)).ToList(),
             })
             .ToList();
     }
@@ -1094,11 +1120,20 @@ public class WorkspaceTaskService
     /// WorkspaceTaskエンティティからTaskWithItemResponseを生成
     /// </summary>
     /// <param name="task">タスクエンティティ（WorkspaceItem含む）</param>
-    private static TaskWithItemResponse BuildTaskWithItemResponse(WorkspaceTask task)
+    /// <param name="commentTypeCountsByTask">タスクIDをキーとしたコメントタイプ別件数</param>
+    private static TaskWithItemResponse BuildTaskWithItemResponse(
+        WorkspaceTask task,
+        Dictionary<int, Dictionary<TaskCommentType, int>>? commentTypeCountsByTask = null
+    )
     {
         var item = task.WorkspaceItem;
         var workspaceCode = item?.Workspace?.Code ?? "";
         var itemCode = item?.Code ?? "";
+
+        var commentTypeCounts = commentTypeCountsByTask != null
+            && commentTypeCountsByTask.TryGetValue(task.Id, out var typeCounts)
+                ? typeCounts
+                : new Dictionary<TaskCommentType, int>();
 
         return new TaskWithItemResponse
         {
@@ -1159,6 +1194,67 @@ public class WorkspaceTaskService
                     avatarPath: item.Committer.UserAvatarPath
                 )
                 : null,
+            CommentTypeCounts = commentTypeCounts,
         };
+    }
+
+    /// <summary>
+    /// 指定されたタスクID群に対するコメントタイプ別件数を取得する
+    /// </summary>
+    /// <param name="taskIds">タスクIDの列挙</param>
+    /// <returns>タスクIDをキー、コメントタイプ別件数辞書を値とするディクショナリ</returns>
+    private async Task<Dictionary<int, Dictionary<TaskCommentType, int>>> GetCommentTypeCountsByTaskIdsAsync(
+        IEnumerable<int> taskIds
+    )
+    {
+        var idList = taskIds
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+
+        if (idList.Count == 0)
+        {
+            return new Dictionary<int, Dictionary<TaskCommentType, int>>();
+        }
+
+        var grouped = await _context.TaskComments
+            .Where(c => idList.Contains(c.WorkspaceTaskId))
+            .GroupBy(c => new
+            {
+                c.WorkspaceTaskId,
+                CommentType = c.CommentType ?? TaskCommentType.Normal,
+            })
+            .Select(g => new
+            {
+                g.Key.WorkspaceTaskId,
+                g.Key.CommentType,
+                Count = g.Count(),
+            })
+            .ToListAsync();
+
+        var result = new Dictionary<int, Dictionary<TaskCommentType, int>>();
+
+        foreach (var entry in grouped)
+        {
+            if (!result.TryGetValue(entry.WorkspaceTaskId, out var typeCounts))
+            {
+                typeCounts = new Dictionary<TaskCommentType, int>();
+                result[entry.WorkspaceTaskId] = typeCounts;
+            }
+
+            typeCounts[entry.CommentType] = entry.Count;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// コメントタイプ別件数の合計を計算する
+    /// </summary>
+    /// <param name="typeCounts">タイプ別件数ディクショナリ</param>
+    /// <returns>コメント総数</returns>
+    private static int SumCommentCounts(Dictionary<TaskCommentType, int>? typeCounts)
+    {
+        return typeCounts?.Values.Sum() ?? 0;
     }
 }

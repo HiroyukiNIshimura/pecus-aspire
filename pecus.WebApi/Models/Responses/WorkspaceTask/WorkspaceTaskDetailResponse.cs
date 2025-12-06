@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Responses.WorkspaceTask;
@@ -153,6 +154,11 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// コメント数
     /// </summary>
     public int CommentCount { get; set; }
+
+    /// <summary>
+    /// コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）
+    /// </summary>
+    public Dictionary<TaskCommentType, int> CommentTypeCounts { get; set; } = new();
 
     /// <summary>
     /// 楽観的ロック用のRowVersion

@@ -18,6 +18,10 @@ import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
 import EditWorkspaceTaskModal from './EditWorkspaceTaskModal';
 import TaskCommentModal from './TaskCommentModal';
 
+const hasHelpComment = (task: WorkspaceTaskDetailResponse): boolean => (task.commentTypeCounts?.HelpWanted ?? 0) > 0;
+
+const hasUrgeComment = (task: WorkspaceTaskDetailResponse): boolean => (task.commentTypeCounts?.Urge ?? 0) > 0;
+
 /**
  * フロントエンドの TaskStatus を API の TaskStatusFilter に変換
  */
@@ -528,6 +532,16 @@ const WorkspaceTasks = ({
                         {task.isCompleted && <span className="badge badge-success badge-xs">完了</span>}
                         {task.isDiscarded && <span className="badge badge-neutral badge-xs">破棄</span>}
                         {getPriorityBadge(task.priority)}
+                        {hasHelpComment(task) && (
+                          <span className="badge badge-warning badge-xs" title="ヘルプ要請のコメントがあります">
+                            ヘルプ
+                          </span>
+                        )}
+                        {hasUrgeComment(task) && (
+                          <span className="badge badge-error badge-xs" title="督促コメントがあります">
+                            督促
+                          </span>
+                        )}
                       </div>
                     </div>
 

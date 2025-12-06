@@ -11154,6 +11154,38 @@
             "type": "string",
             "description": "アイテムコミッターアバターURL",
             "nullable": true
+          },
+          "commentTypeCounts": {
+            "type": "object",
+            "properties": {
+              "Normal": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Memo": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "HelpWanted": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "NeedReply": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Reminder": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Urge": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "additionalProperties": false,
+            "description": "コメントタイプ別件数",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -13006,6 +13038,38 @@
             "type": "integer",
             "description": "コメント数",
             "format": "int32"
+          },
+          "commentTypeCounts": {
+            "type": "object",
+            "properties": {
+              "Normal": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Memo": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "HelpWanted": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "NeedReply": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Reminder": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "Urge": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "additionalProperties": false,
+            "description": "コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
