@@ -7,6 +7,7 @@ import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspac
 import type { MyItemRelationType } from '../models/MyItemRelationType';
 import type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from '../models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 import type { MyTaskWorkspaceResponse } from '../models/MyTaskWorkspaceResponse';
+import type { OrganizationResponse } from '../models/OrganizationResponse';
 import type { TasksByDueDateResponse } from '../models/TasksByDueDateResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { WorkspaceItemDetailResponsePagedResponse } from '../models/WorkspaceItemDetailResponsePagedResponse';
@@ -108,6 +109,21 @@ export class MyService {
         });
     }
     /**
+     * ログインユーザーの所属組織情報を取得
+     * 組織設定（TaskOverdueThreshold など）を含んだ組織情報を返します。
+     * @returns OrganizationResponse 組織情報を返します
+     * @throws ApiError
+     */
+    public static getApiMyOrganization(): CancelablePromise<OrganizationResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/organization',
+            errors: {
+                404: `組織に所属していない、または組織が見つかりません`,
+            },
+        });
+    }
+    /**
      * マイタスク一覧を取得
      * ログインユーザーに割り当てられたタスクを全ワークスペース横断で取得
      * @param page ページ番号（1から開始）
@@ -165,6 +181,27 @@ export class MyService {
             },
             errors: {
                 404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ログインユーザーがPINしたアイテム一覧を取得
+     * @param page ページ番号（1から開始）
+     * @returns WorkspaceItemDetailResponsePagedResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyPinnedItems(
+        page?: number,
+    ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/pinned-items',
+            query: {
+                'Page': page,
+            },
+            errors: {
+                401: `Unauthorized`,
                 500: `Internal Server Error`,
             },
         });

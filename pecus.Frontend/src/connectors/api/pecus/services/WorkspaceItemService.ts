@@ -468,27 +468,6 @@ export class WorkspaceItemService {
         });
     }
     /**
-     * ログインユーザーがPINしたアイテム一覧を取得
-     * @param page ページ番号（1から開始）
-     * @returns WorkspaceItemDetailResponsePagedResponse OK
-     * @throws ApiError
-     */
-    public static getApiUsersMePinnedItems(
-        page?: number,
-    ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/pinned-items',
-            query: {
-                'Page': page,
-            },
-            errors: {
-                401: `Unauthorized`,
-                500: `Internal Server Error`,
-            },
-        });
-    }
-    /**
      * ワークスペースアイテムに関連を追加
      * @param workspaceId
      * @param itemId

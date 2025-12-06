@@ -3240,6 +3240,37 @@
         }
       }
     },
+    "/api/my/organization": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "ログインユーザーの所属組織情報を取得",
+        "description": "組織設定（TaskOverdueThreshold など）を含んだ組織情報を返します。",
+        "responses": {
+          "200": {
+            "description": "組織情報を返します",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "組織に所属していない、または組織が見つかりません",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/my/tasks": {
       "get": {
         "tags": [
@@ -3354,6 +3385,52 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/my/pinned-items": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "ログインユーザーがPINしたアイテム一覧を取得",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から開始）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceItemDetailResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
@@ -6837,52 +6914,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/users/me/pinned-items": {
-      "get": {
-        "tags": [
-          "WorkspaceItem"
-        ],
-        "summary": "ログインユーザーがPINしたアイテム一覧を取得",
-        "parameters": [
-          {
-            "name": "Page",
-            "in": "query",
-            "description": "ページ番号（1から開始）",
-            "schema": {
-              "maximum": 2147483647,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkspaceItemDetailResponsePagedResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {

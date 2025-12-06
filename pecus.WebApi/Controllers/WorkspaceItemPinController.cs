@@ -121,7 +121,8 @@ public class WorkspaceItemPinController : BaseSecureController
     /// <summary>
     /// ログインユーザーがPINしたアイテム一覧を取得
     /// </summary>
-    [HttpGet("api/users/me/pinned-items")]
+    [Tags("My")]
+    [HttpGet("api/my/pinned-items")]
     [ProducesResponseType(
         typeof(PagedResponse<WorkspaceItemDetailResponse>),
         StatusCodes.Status200OK
