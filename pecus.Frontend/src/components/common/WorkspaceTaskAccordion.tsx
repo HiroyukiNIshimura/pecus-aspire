@@ -401,101 +401,146 @@ export default function WorkspaceTaskAccordion({
                           {/* タスク一覧（期限日グループ展開時） */}
                           {isDueDateExpanded && dueDateGroup.tasks && dueDateGroup.tasks.length > 0 && (
                             <div className="border-t border-base-300 p-2">
-                              <div className="space-y-1">
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
                                 {dueDateGroup.tasks.map((task) => {
                                   const isInactive = task.isCompleted || task.isDiscarded;
                                   const iconPath = getTaskTypeIconPath(task);
+                                  const toneBorderClass = dateInfo.isOverdue
+                                    ? 'border-error/60'
+                                    : dateInfo.isDueToday
+                                      ? 'border-warning/60'
+                                      : 'border-base-300/80';
+                                  const toneBarClass = dateInfo.isOverdue
+                                    ? 'bg-error/70'
+                                    : dateInfo.isDueToday
+                                      ? 'bg-warning/70'
+                                      : 'bg-base-300/80';
 
                                   return (
                                     <div
                                       key={task.taskId}
-                                      className={`flex items-center gap-2 p-2 rounded-lg bg-base-200 hover:bg-base-300 transition-colors ${isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''}`}
+                                      className={`relative p-3 rounded-xl border bg-base-100 shadow-sm hover:shadow-md transition-colors ${toneBorderClass} ${isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''}`}
                                     >
-                                      {/* タスクタイプアイコン */}
-                                      {iconPath && (
-                                        <img
-                                          src={iconPath}
-                                          alt={task.taskTypeName || 'タスクタイプ'}
-                                          className="w-5 h-5 rounded flex-shrink-0"
-                                          title={task.taskTypeName || undefined}
-                                        />
-                                      )}
+                                      <div
+                                        className={`absolute inset-x-3 top-2 h-1.5 rounded-full ${toneBarClass}`}
+                                        aria-hidden="true"
+                                      />
 
-                                      {/* タスク内容 + アイテム名（リンク） */}
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm truncate" title={task.taskContent || undefined}>
-                                          {task.taskContent}
-                                        </p>
-                                        <Link
-                                          href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
-                                          className="text-xs text-base-content/50 truncate hover:text-primary transition-colors"
-                                          title={task.itemSubject || undefined}
+                                      <div className="mt-3 flex items-center justify-between gap-2">
+                                        <span
+                                          className={`badge badge-outline badge-xs ${
+                                            dateInfo.isOverdue
+                                              ? 'border-error text-error'
+                                              : dateInfo.isDueToday
+                                                ? 'border-warning text-warning'
+                                                : 'border-base-300 text-base-content/70'
+                                          }`}
                                         >
-                                          {task.itemSubject}
-                                        </Link>
+                                          {dateInfo.label}
+                                        </span>
+                                        <span className="inline-flex">{getPriorityBadge(task.priority)}</span>
                                       </div>
 
-                                      {/* 進捗バー（コンパクト） */}
-                                      <div className="w-16 flex-shrink-0 hidden sm:block">
-                                        <progress
-                                          className="progress progress-primary w-full h-1"
-                                          value={task.progressPercentage || 0}
-                                          max="100"
-                                        ></progress>
+                                      <div className="mt-2 flex items-start gap-3">
+                                        {iconPath && (
+                                          <img
+                                            src={iconPath}
+                                            alt={task.taskTypeName || 'タスクタイプ'}
+                                            className="w-7 h-7 rounded flex-shrink-0"
+                                            title={task.taskTypeName || undefined}
+                                          />
+                                        )}
+                                        <div className="min-w-0 space-y-1">
+                                          <p
+                                            className="text-sm font-medium leading-tight line-clamp-2"
+                                            title={task.taskContent || undefined}
+                                          >
+                                            {task.taskContent}
+                                          </p>
+                                          <Link
+                                            href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
+                                            className="block text-xs text-base-content/60 line-clamp-1 hover:text-primary transition-colors"
+                                            title={task.itemSubject || undefined}
+                                          >
+                                            {task.itemSubject}
+                                          </Link>
+                                        </div>
                                       </div>
 
-                                      {/* 担当者アバター */}
-                                      {task.assignedUserId ? (
-                                        <div className="flex items-center gap-1 min-w-[0]">
-                                          {task.assignedAvatarUrl ? (
-                                            <img
-                                              src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                                              alt={task.assignedUsername || '担当者'}
-                                              className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                              title={task.assignedUsername || undefined}
-                                            />
-                                          ) : (
-                                            <span className="w-5 h-5 flex-shrink-0 hidden sm:block" />
+                                      <div className="mt-3 flex items-center gap-2 text-xs text-base-content/60">
+                                        <div className="flex items-center gap-1">
+                                          <span
+                                            className="icon-[mdi--progress-check] w-3.5 h-3.5 text-base-content/40"
+                                            aria-hidden="true"
+                                          />
+                                          <span>{Math.round(task.progressPercentage || 0)}%</span>
+                                        </div>
+                                        <div className="flex-1 hidden sm:block">
+                                          <progress
+                                            className="progress progress-primary w-full h-1"
+                                            value={task.progressPercentage || 0}
+                                            max="100"
+                                          ></progress>
+                                        </div>
+                                      </div>
+
+                                      <div className="mt-3 flex items-center justify-between gap-2">
+                                        {task.assignedUserId ? (
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            {task.assignedAvatarUrl ? (
+                                              <img
+                                                src={getDisplayIconUrl(task.assignedAvatarUrl)}
+                                                alt={task.assignedUsername || '担当者'}
+                                                className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                                title={task.assignedUsername || undefined}
+                                              />
+                                            ) : (
+                                              <span className="w-6 h-6 rounded-full bg-base-300" />
+                                            )}
+                                            {task.assignedUsername && (
+                                              <span
+                                                className="text-xs text-base-content/70 truncate max-w-[120px]"
+                                                title={task.assignedUsername}
+                                              >
+                                                {task.assignedUsername}
+                                              </span>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <span className="text-xs text-base-content/50">未担当</span>
+                                        )}
+
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                          {task.isCompleted && (
+                                            <span className="badge badge-success badge-xs">完了</span>
                                           )}
-                                          {task.assignedUsername && (
-                                            <span
-                                              className="text-xs text-base-content/70 truncate max-w-[96px] sm:max-w-[120px]"
-                                              title={task.assignedUsername}
+                                          {task.isDiscarded && (
+                                            <span className="badge badge-neutral badge-xs">破棄</span>
+                                          )}
+                                          {!task.isCompleted && !task.isDiscarded && (
+                                            <span className="sm:hidden">{getPriorityBadge(task.priority)}</span>
+                                          )}
+
+                                          {taskTypes ? (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleOpenTaskEditModal(task, workspace.workspaceId)}
+                                              className="btn btn-ghost btn-xs btn-square"
+                                              title="タスクを編集"
                                             >
-                                              {task.assignedUsername}
-                                            </span>
+                                              <span className="icon-[mdi--pencil] w-4 h-4" aria-hidden="true" />
+                                            </button>
+                                          ) : (
+                                            <Link
+                                              href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
+                                              className="btn btn-ghost btn-xs btn-square"
+                                              title="タスク詳細"
+                                            >
+                                              <span className="icon-[mdi--open-in-new] w-4 h-4" aria-hidden="true" />
+                                            </Link>
                                           )}
                                         </div>
-                                      ) : (
-                                        <span className="w-5 h-5 flex-shrink-0 hidden sm:block" />
-                                      )}
-
-                                      {/* ステータスバッジ */}
-                                      <div className="flex gap-1 flex-shrink-0">
-                                        {task.isCompleted && <span className="badge badge-success badge-xs">完了</span>}
-                                        {task.isDiscarded && <span className="badge badge-neutral badge-xs">破棄</span>}
-                                        {!task.isCompleted && !task.isDiscarded && getPriorityBadge(task.priority)}
                                       </div>
-
-                                      {/* 編集ボタン */}
-                                      {taskTypes ? (
-                                        <button
-                                          type="button"
-                                          onClick={() => handleOpenTaskEditModal(task, workspace.workspaceId)}
-                                          className="btn btn-ghost btn-xs btn-square flex-shrink-0"
-                                          title="タスクを編集"
-                                        >
-                                          <span className="icon-[mdi--pencil] w-4 h-4" aria-hidden="true" />
-                                        </button>
-                                      ) : (
-                                        <Link
-                                          href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
-                                          className="btn btn-ghost btn-xs btn-square flex-shrink-0"
-                                          title="タスク詳細"
-                                        >
-                                          <span className="icon-[mdi--open-in-new] w-4 h-4" aria-hidden="true" />
-                                        </Link>
-                                      )}
                                     </div>
                                   );
                                 })}
