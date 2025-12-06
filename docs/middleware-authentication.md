@@ -29,15 +29,7 @@ Next.js Middlewareを利用した認証システムにより、SSR（サーバ�
 ┌─────────────────────────────────────────────────────────────┐
 │            Client Component (CSR)                           │
 │  - ユーザーアクション（ボタンクリックなど）                       │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│          Axios Interceptor (CSR only)                       │
-│  - 401エラー検出                                              │
-│  - リフレッシュAPIを fetch 直呼び出し（循環回避）               │
-│  - リクエスト再試行                                            │
-│  - 失敗時はログインページへリダイレクト                          │
+│  - OpenAPI グローバル設定で自動トークン付与                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -82,53 +74,41 @@ response.cookies.set('accessToken', data.accessToken, { ... });
 response.cookies.set('refreshToken', data.refreshToken, { ... });
 ```
 
-### Axiosインターセプター（`src/connectors/api/PecusApiClient.ts`）
+### OpenAPI グローバル設定（`src/connectors/api/PecusApiClient.ts`）
 
-**役割**: CSRコンテキストでの認証管理
+**役割**: Server Actions / API Routes / SSR での認証管理
 
-- **実行タイミング**: クライアントサイドでのAPI呼び出し時（動的アクションやボタンクリックなど）
+- **実行タイミング**: `createPecusApiClients()` が呼び出される時点
 - **処理内容**:
-  1. レスポンスで401エラーを検出
-  2. `www-authenticate`ヘッダーで`invalid_token`を確認
-  3. リフレッシュ API を `fetch` で直呼び出し（インターセプターの循環回避）
-  4. 新しいトークンでリクエストを再試行
-  5. リフレッシュ失敗時はログインページへリダイレクト
+  1. OpenAPI グローバルオブジェクトの `TOKEN` プロパティに `getAccessToken()` を登録
+  2. すべての API リクエストが自動的にトークンを付与
+  3. Middleware で事前にリフレッシュされているため、通常は 401 エラーは発生しない
 
-**重要な制約**: `typeof window !== 'undefined'`チェックにより、クライアントサイドでのみインターセプターを有効化
+**実装例**:
 
 ```typescript
-// PecusApiClient.ts の主要ロジック（CSRのみ）
-if (enableRefresh && typeof window !== 'undefined') {
-  instance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const isTokenExpired = /* 401 + invalid_token チェック */;
-
-      if (isTokenExpired && !originalRequest[RETRY_FLAG]) {
-        // インターセプター循環を避けるため、fetch でリフレッシュAPIを直呼び出し
-        const res = await fetch('/api/entrance/auth/refresh', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken: getRefreshToken() })
-        });
-        if (!res.ok) {
-          throw new Error('refresh failed');
-        }
-        const result = await res.json();
-
-        // 新しいトークンで再試行
-        originalRequest.headers.Authorization = `Bearer ${result.accessToken}`;
-        return instance(originalRequest);
-      }
-
-      return Promise.reject(error);
+// PecusApiClient.ts の主要ロジック
+export function createPecusApiClients() {
+  configureOpenAPI(
+    process.env.API_BASE_URL || "https://localhost:7265",
+    async () => {
+      const token = await getAccessToken();
+      return token ?? undefined;
     }
   );
+
+  return createApiClientInstances();
 }
 ```
 
-注意:
-- CSR のリフレッシュのみ `fetch` 直呼び出しを許可します。それ以外の API 呼び出しは `createPecusApiClients()` 経由（SSR/SA）または通常の Axios（CSR）を使用し、WebApi 直 `fetch` は禁止です。
+**トークン取得方式**:
+- Server Actions / API Routes: `SessionManager.getSession()` から Cookie 取得
+- SSR: Middleware で事前リフレッシュ済み
+
+**重要な特徴**:
+- 同期的に呼び出し可能（`await` 不要）
+- リクエストごとに新しい設定が適用される
+- リフレッシュ処理は Middleware に一元化
 
 ## トークンリフレッシュフロー
 
@@ -140,15 +120,13 @@ User Request → Middleware → トークン検証 → リフレッシュ（必�
                            /signin へリダイレクト
 ```
 
-### CSRフロー（Axiosが処理）
+### Server Actions / API Routesフロー（自動付与）
 
 ```
-Button Click → API Call → 401 Error → Axios Interceptor → Server Action → Refresh
-                                                                  ↓ 成功
-                                                            Retry Request
-                                                                  ↓ 失敗
-                                                          /signin へリダイレクト
+Server Action Call → createPecusApiClients() → トークン自動付与 → API Call
 ```
+
+Middleware で事前にリフレッシュされているため、通常は 401 エラーは発生しません。
 
 ## Server Actionsの実装パターン
 
@@ -208,7 +186,7 @@ NODE_TLS_REJECT_UNAUTHORIZED=0  # 開発環境のみ
 ## セキュリティ考慮事項
 
 1. **トークンの保存先**: クッキー（`httpOnly: false`）
-   - クライアントサイドでもアクセス可能（Axios interceptorで使用）
+   - Server Actions / API Routes で `createPecusApiClients()` により自動付与
    - `sameSite: 'strict'`でCSRF対策
    - 本番環境では`secure: true`でHTTPS必須
 
@@ -218,9 +196,9 @@ NODE_TLS_REJECT_UNAUTHORIZED=0  # 開発環境のみ
 
 3. **エラーハンドリング**:
    - Middleware: トークンデコード失敗 → クッキークリア → /signinへリダイレクト
-   - Axios: リフレッシュ失敗 → クライアント側で/signinへリダイレクト
+   - リフレッシュ失敗: クライアント側でセッション終了 → /signinへリダイレクト
 
-4. **競合制御**: インスタンスレベルの`refreshPromise`で複数リクエストの同時リフレッシュを防止
+4. **自動トークン付与**: OpenAPI グローバル設定で、すべての API リクエストに自動的にトークンが付与される
 
 ## トラブルシューティング
 
@@ -243,13 +221,14 @@ const publicPaths = ['/signin', '/signup', '/forgot-password', '/reset-password'
 2. ブラウザの開発者ツールでクッキーが設定されているか確認
 3. サーバーログで`[Middleware]`プレフィックスのログを確認
 
-### 症状: CSRでトークンリフレッシュが動作しない
+### 症状: Server Actions でトークンが付与されない
 
-**原因**: Axiosインターセプターが登録されていない
+**原因**: `createPecusApiClients()` が呼ばれていない
 
 **解決策**:
-1. `createPecusApiClients()`が`enableRefresh=true`（デフォルト）で呼ばれているか確認
-2. クライアントコンポーネント（`'use client'`）から呼ばれているか確認
+1. Server Action 内で `createPecusApiClients()` を呼び出しているか確認
+2. `getAccessToken()` が正しくトークンを取得しているか確認
+3. `SessionManager` または `cookies()` からクッキーが取得できているか確認
 3. ブラウザコンソールで`[PecusApiClient]`ログを確認
 
 ## パフォーマンス最適化

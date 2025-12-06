@@ -2,8 +2,8 @@
 
 本リポのフロントエンド方針（最重要・要約）
 - ブラウザ向け`pecus.Frontend`では、アクセストークン/リフレッシュトークンはクッキー（httpOnly: false）に保存します（`src/middleware.ts`準拠、LocalStorage/SessionStorageは不使用）。
-- SSR では Middleware が期限前に自動リフレッシュし、CSR では Axios インターセプターが必要時にリフレッシュします。
-- Server Actions/API Routes では `cookies()`/`SessionManager` からクッキーを取得し、`createPecusApiClients()`が Authorization を付与します。
+- SSR では Middleware が期限前に自動リフレッシュ、CSR では OpenAPI グローバル設定で自動トークン付与されます（Axios インターセプターと異なり）。
+- Server Actions/API Routes では `cookies()`/`SessionManager` からクッキーを取得し、`createPecusApiClients()`が OpenAPI 設定を通じて自動的に Authorization を付与します。
 
 このドキュメントは、本システムの API を利用するクライアント実装者向けに、認証トークン（アクセストークン／リフレッシュトークン）の扱い方、保管方法、リフレッシュの運用、エラーハンドリング、及び実装例を日本語でまとめたものです。
 
@@ -32,7 +32,8 @@
 
 ブラウザ（本リポの`pecus.Frontend`）
 - クッキーで保存（`httpOnly: false`, `sameSite: 'strict'`, `secure: 本番のみ true`）。
-- クライアントJS（Axios インターセプター）がクッキーからトークンを参照し、必要時に付与・更新します。
+- Server Actions / API Routes では `createPecusApiClients()` が OpenAPI グローバル設定を通じて自動的にトークンを付与します。
+- クライアントコンポーネント（CSR）では OpenAPI 設定で自動付与されるため、追加の実装は不要です。
 
 その他クライアントの指針
 - モバイルアプリ: OSのセキュアストレージ（Keychain/Keystore）を使用。
@@ -64,9 +65,10 @@ curl -X POST https://api.example.com/api/entrance/auth/login \
 ## API リクエスト方法
 
 - すべての保護された API は Authorization ヘッダにアクセストークンを付与して呼び出します。
-- SSR/Server Actions/API Routes では `createPecusApiClients()` が付与、CSR では Axios が付与します。
+- **Server Actions / API Routes / SSR**: `createPecusApiClients()` が OpenAPI グローバル設定を通じて自動的にトークンを付与します。
+- **CSR（クライアントコンポーネント）**: 通常は Server Actions / API Routes 経由で呼び出すため、直接 API 呼び出しは推奨されません。
 
-Fetch の例（概念・サーバー側実装時）:
+Fetch の例（概念・クライアント実装時のみ）:
 
 ```js
 const res = await fetch('/api/workspaces', {
@@ -76,72 +78,29 @@ const res = await fetch('/api/workspaces', {
 });
 ```
 
-Axios の例（概念・サーバー側実装時）:
+OpenAPI クライアント例（本リポの`pecus.Frontend`での実装）:
 
-```js
-axios.get('/api/workspaces', {
-  headers: { Authorization: `Bearer ${accessToken}` }
-});
+```typescript
+// Server Action 内で実行
+const clients = createPecusApiClients(); // トークンが自動的に付与される
+const workspaces = await clients.workspace.postApiWorkspaces(request);
 ```
 
 ## アクセストークン期限切れの扱い（リフレッシュ戦略）
 
-- 401 (Unauthorized) が返ってきた場合、クライアントは次の流れでリフレッシュを試みます：
-  1. 既にリフレッシュ中の処理があるか確認。あればその完了を待つ（同時に複数回リフレッシュを送らないため）。
-  2. リフレッシュトークンをリフレッシュエンドポイントに送り、新しいアクセストークン（と必要に応じて新しいリフレッシュトークン）を受け取る。
-  3. 取得成功で元のリクエストを再実行する。
-  4. 失敗（リフレッシュトークン無効等）であればログアウトフローを実行してクライアント側のトークンを削除し、ログイン画面へ誘導する。
+### SSR（Server-Side Rendering）
+- Next.js Middleware（`src/middleware.ts`）がリクエスト前にトークン期限をチェック。
+- 有効期限が5分未満の場合、自動的にリフレッシュエンドポイントを呼び出し。
+- リフレッシュ成功時は新トークンをクッキーに設定して続行。
+- 失敗時はログインページへリダイレクト。
 
-重要な注意点：リフレッシュ処理は原則サーバー側で「リフレッシュトークンの回転（rotation）」や JTI 登録/ブラックリストなどのセキュリティロジックを行います。クライアントはサーバーの仕様に従って実装してください。
+### Server Actions / API Routes
+- リクエスト時に`createPecusApiClients()`でトークンが自動付与されます。
+- Middleware で事前にリフレッシュされているため、通常は401エラーは発生しません。
 
-### axios インターセプタの実装例（シングル・リフレッシュ実行）
-
-以下はよくあるパターンの簡易実装例です（概念コード）。本リポのブラウザUIでは CSR 時はクッキーから取得、SSR 時は Middleware による事前リフレッシュを前提に動作します。
-
-```js
-let isRefreshing = false;
-let refreshPromise = null;
-
-axios.interceptors.response.use(
-  r => r,
-  async error => {
-    const originalReq = error.config;
-    if (error.response && error.response.status === 401 && !originalReq._retry) {
-  禁止: ブラウザからの WebApi 直 `fetch`、および SSR/Server Actions からの WebApi 直 `fetch`。例外として「リフレッシュ API 呼び出し」は循環回避のため `fetch` 直呼び出しを許可します。
-          .then(res => {
-            const { accessToken, refreshToken } = res.data;
-  - SSR/Server Actions での WebApi 直 `fetch` は禁止です（`createPecusApiClients()` を使用）。
-  - ブラウザから WebApi を直 `fetch` するのも禁止です（Server Actions または API Routes を経由）。
-            return accessToken;
-          })
-          .finally(() => { isRefreshing = false; });
-      }
-
-      const newAccessToken = await refreshPromise;
-      if (!newAccessToken) {
-        // refresh 失敗 -> ログアウト
-        logoutAndRedirect();
-        return Promise.reject(error);
-      }
-
-      originalReq._retry = true;
-      originalReq.headers['Authorization'] = `Bearer ${getAccessToken()}`;
-      return axios(originalReq);
-          // インターセプター循環を避けるため、ここは fetch を使用（例外的に直呼び出し可）
-          refreshPromise = fetch('/api/entrance/auth/refresh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refreshToken: getRefreshToken() })
-          })
-            .then(async (res) => {
-              if (!res.ok) return null;
-              const data = await res.json();
-              const { accessToken, refreshToken } = data;
-              setAccessToken(accessToken);
-              setRefreshToken(refreshToken);
-              return accessToken;
-            })
-            .finally(() => { isRefreshing = false; });
+### 重要な注意点
+- リフレッシュ処理は原則サーバー側で「リフレッシュトークンの回転（rotation）」や JTI 登録/ブラックリストなどのセキュリティロジックを行います。
+- クライアントはサーバーの仕様に従って実装してください。
 
 ## ログアウト（取り消し）
 
@@ -150,7 +109,8 @@ axios.interceptors.response.use(
 
 ## トークン取り消し（サーバー側での一括無効化）
 
-- 管理者操作やセキュリティ事故対応では、サーバーはユーザーに紐づく全リフレッシュトークンを無効化できます（`refresh_user:{userId}` に格納されているトークンを全て削除し、対応する JTI をブラックリストに入れる等）。クライアントはサーバーからの 401/403 を検知してセッション終了等を行ってください。
+- 管理者操作やセキュリティ事故対応では、サーバーはユーザーに紐づく全リフレッシュトークンを無効化できます（`refresh_user:{userId}` に格納されているトークンを全て削除し、対応する JTI をブラックリストに入れる等）。
+- クライアントはサーバーからの 401/403 を検知してセッション終了等を行ってください。
 
 ## エラーハンドリング要件
 
@@ -160,15 +120,15 @@ axios.interceptors.response.use(
 ## セキュリティ考慮
 
 - XSS 対策を最優先にする。アクセストークン／リフレッシュトークンが JavaScript から読めるストレージにある場合、XSS により漏洩するリスクを負う。
-- CSRF: リフレッシュトークンをクッキー経由で送る設計にする場合は CSRF 対策（SameSite/CSRF トークンなど）を実装する。別案として、リフレッシュはリクエストボディにトークンを入れて行うことで CSRF リスクを軽減できる。
+- CSRF: リフレッシュトークンをクッキー経由で送る設計にする場合は CSRF 対策（SameSite/CSRF トークンなど）を実装する。
 - トークンはログに出力しない。エラー時もトークンの断片を含めない。
 
+## チェックリスト
+
 - [ ] アクセストークンを Authorization: Bearer ヘッダで送っている
-- [ ] アクセストークンの失効時に自動でリフレッシュして再実行する仕組みがある
-- [ ] リフレッシュ処理は同時並行を考慮し、二重送信を避けている
 - [ ] リフレッシュ失敗時にセッションを破棄してログイン画面へ誘導する
-- [ ] トークンを安全に保管している（ブラウザは Cookie（httpOnly: false, sameSite: 'strict'）／モバイルはKeychain等）
-- [ ] SSR は Middleware により期限前リフレッシュ、CSR は Axios により401時リフレッシュ
+- [ ] トークンを安全に保管している（ブラウザは Cookie（httpOnly: false, sameSite: 'strict'））
+- [ ] SSR は Middleware により期限前リフレッシュ、Server Actions は自動付与される
 - [ ] トークンをログに出力していない
 
 ---

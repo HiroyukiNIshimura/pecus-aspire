@@ -38,7 +38,7 @@ Pecus Aspire は、.NET Aspire 9.0 を使用した分散マイクロサービス
 
 ## 🔧 必要な環境
 
-- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Docker & Docker Compose** - インフラストラクチャ（PostgreSQL、Redis）
 - **Node.js 18+** - フロントエンド開発用（オプション）
 

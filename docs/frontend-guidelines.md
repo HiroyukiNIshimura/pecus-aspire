@@ -8,7 +8,7 @@
 - **型安全**: TypeScript
 - **状態管理**: jotai
 - **UIライブラリ**: Tailwind CSS + FlyonUI
-- **API通信**: OpenAPI/Swagger定義から自動生成されたAxiosベースの型安全なクライアント（`openapi-typescript-codegen`）
+- **API通信**: OpenAPI/Swagger定義から自動生成された型安全なクライアント（`openapi-typescript-codegen`）
 - **認証**: pecus.WebApiのJWT認証と連携（トークンは Cookie、httpOnly: false）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）
 - **テスト**: Jest, React Testing Library, Playwright など
@@ -64,32 +64,33 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 ### 🔄 トークン管理
 
-- Axiosインターセプターが自動的にトークンリフレッシュを処理
-- Server Actions と API Routes では `SessionManager.getSession()` からトークンを自動取得
-- 明示的なリフレッシュ処理は実装不要
+- **OpenAPI グローバル設定**: `createPecusApiClients()` が OpenAPI の `TOKEN` プロパティに `getAccessToken()` を設定（自動トークン付与）
+- **Server Actions/API Routes**: `createPecusApiClients()` の呼び出しで自動的にトークンが取得・付与される
+- **トークンリフレッシュ**: アプリケーション層（Middleware など）で事前にリフレッシュを行い、API 呼び出し時には常に有効なトークンが付与される
 
 ## 3. API クライアントの自動生成
 
 - **自動生成ファイル**: `src/connectors/api/PecusApiClient.generated.ts` は自動生成されるため、手動で編集しないこと
-- **生成スクリプト**: `scripts/generate-pecus-api-client.js` が OpenAPI 定義から API クライアントを生成
+- **生成スクリプト**: `scripts/generate-pecus-api-client.js` が `src/connectors/api/pecus/services/` 内のサービスクラスをスキャンして、`createApiClientInstances()` ファクトリ関数と `configureOpenAPI()` 設定関数を生成
 - **自動実行**: `npm run dev` / `npm run build` の実行前に自動的に生成スクリプトが実行される（`predev` / `prebuild` フック）
 - **手動実行**: 必要に応じて `npm run generate:client` で手動実行可能
+- **生成内容**: `createApiClientInstances()` はすべてのサービスクラスを返すファクトリ関数。`createPecusApiClients()` はこれを呼び出して OpenAPI 設定を行い、設定済みのサービスインスタンスを返す（`src/connectors/api/PecusApiClient.ts` で定義）
 - **Git管理**: 自動生成ファイルは `.gitignore` に登録済み
- - **編集可/不可のSSoT**: 編集可: `src/connectors/api/PecusApiClient.ts`／編集不可: `src/connectors/api/PecusApiClient.generated.ts`／型の参照: `src/connectors/api/pecus/index.ts`（自動生成エクスポート）
+ - **編集可/不可のSSoT**: 編集可: `src/connectors/api/PecusApiClient.ts`（トークン取得・OpenAPI 設定ロジック）／編集不可: `src/connectors/api/PecusApiClient.generated.ts`（サービスインスタンス定義）／型の参照: `src/connectors/api/pecus/index.ts`（自動生成エクスポート）
 
 ## 4. アクセストークン管理の設計方針
 
  - **保存場所**:
-  - ブラウザでは Cookie（`httpOnly: false`, `sameSite: 'strict'`, `secure: NODE_ENV==='production'`）を使用（`src/middleware.ts` に準拠）。クライアントJSから参照可能で、Axiosインターセプター等で利用します。
-  - Server Actions / API Routes では `next/headers` の `cookies()` または `SessionManager` から取得して付与します。
+  - ブラウザでは Cookie（`httpOnly: false`, `sameSite: 'strict'`, `secure: NODE_ENV==='production'`）を使用（`src/middleware.ts` に準拠）。
+  - Server Actions / API Routes では `next/headers` の `cookies()` または `SessionManager` から取得します。
   - セキュリティ: XSS 対策（CSP/依存性の最小化/入力サニタイズ）を強化。CSRF は `sameSite: 'strict'` を基本とし、必要に応じて追加対策を併用します。
 - **トークン取得**:
-  - `getAccessToken()` Server Action を使用（`src/connectors/api/auth.ts`）
-  - SSR専用で、`SessionManager.getSession()` からトークンを取得
+  - Server Actions / API Routes では `getAccessToken()` を呼び出し（`src/connectors/api/auth.ts`）
+  - `getAccessToken()` 内で `SessionManager.getSession()` または `next/headers` の `cookies()` から取得
+  - `createPecusApiClients()` が自動的にトークン取得関数を OpenAPI に登録
 - **自動リフレッシュ**:
-  - Server Action: `refreshAccessToken()` がリフレッシュ処理を実行
-  - Middleware: Next.js Middleware（`src/middleware.ts`）が保護されたルートへのアクセス前にトークン検証
-  - fetch使用: Axiosインターセプターの循環呼び出しを防ぐため、リフレッシュAPI呼び出しには直接fetchを使用
+  - Next.js Middleware（`src/middleware.ts`）が保護されたルートへのアクセス前にトークン検証・リフレッシュを実行
+  - `refreshAccessToken()` Server Action が実際のリフレッシュ API 呼び出しを行う（直接 `fetch` で実装）
 - **リフレッシュ条件**:
   - アクセストークンの有効期限が切れている場合
   - Middleware でトークン検証失敗時

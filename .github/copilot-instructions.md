@@ -30,7 +30,7 @@
 - 競合制御: UPDATE 時の `DbUpdateConcurrencyException` を catch→`FindAsync()` で最新再取得→`ConcurrencyException<T>` 再スローで統一。DTO は `RowVersion: uint` 必須。
 - 生成物/CI: 自動生成物は `.gitignore` 管理・手動編集禁止。CI は生成スクリプト未実行の検知を重視。
 - 認証/トークン: ブラウザは Cookie（`httpOnly:false`, `sameSite:'strict'`）。SSR/SA は `SessionManager` で取得。自動更新は Axios、リフレッシュのみ直 `fetch` 例外。
-- バージョン表記: 「.NET 9」「EF Core 9」「.NET Aspire x.y」を分離して記載。
+- バージョン表記: 「.NET 10」「EF Core 10」「.NET Aspire x.y」を分離して記載。
 
 ## 参照ドキュメント
 
