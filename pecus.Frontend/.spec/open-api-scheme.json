@@ -8202,6 +8202,12 @@
           "generativeApiVendor": {
             "$ref": "#/components/schemas/GenerativeApiVendor"
           },
+          "generativeApiKey": {
+            "maxLength": 512,
+            "type": "string",
+            "description": "生成APIキー",
+            "nullable": true
+          },
           "plan": {
             "$ref": "#/components/schemas/OrganizationPlan"
           },
@@ -9758,6 +9764,11 @@
           },
           "generativeApiVendor": {
             "$ref": "#/components/schemas/GenerativeApiVendor"
+          },
+          "generativeApiKey": {
+            "type": "string",
+            "description": "生成APIキー",
+            "nullable": true
           },
           "plan": {
             "$ref": "#/components/schemas/OrganizationPlan"

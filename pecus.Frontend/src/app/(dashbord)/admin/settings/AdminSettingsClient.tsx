@@ -1,0 +1,475 @@
+'use client';
+
+import { useState } from 'react';
+import { updateOrganizationSetting } from '@/actions/admin/organizations';
+import AdminFooter from '@/components/admin/AdminFooter';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import type { OrganizationResponse, OrganizationSettingResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useNotify } from '@/hooks/useNotify';
+import {
+  type OrganizationSettingInput,
+  organizationSettingSchemaWithRules,
+} from '@/schemas/organizationSettingSchemas';
+import type { UserInfo } from '@/types/userInfo';
+
+interface AdminSettingsClientProps {
+  initialUser: UserInfo | null;
+  organization: OrganizationResponse;
+  fetchError: string | null;
+}
+
+const normalizeVendor = (value: unknown): OrganizationSettingResponse['generativeApiVendor'] => {
+  if (typeof value === 'string') {
+    switch (value) {
+      case 'None':
+      case 'OpenAi':
+      case 'AzureOpenAi':
+      case 'Anthropic':
+      case 'GoogleGemini':
+        return value;
+      default:
+        return 'None';
+    }
+  }
+
+  if (typeof value === 'number') {
+    switch (value) {
+      case 0:
+        return 'None';
+      case 1:
+        return 'OpenAi';
+      case 2:
+        return 'AzureOpenAi';
+      case 3:
+        return 'Anthropic';
+      case 4:
+        return 'GoogleGemini';
+      default:
+        return 'None';
+    }
+  }
+
+  return 'None';
+};
+
+const normalizePlan = (value: unknown): OrganizationSettingResponse['plan'] => {
+  if (typeof value === 'string') {
+    switch (value) {
+      case 'Unknown':
+      case 'Free':
+      case 'Standard':
+      case 'Enterprise':
+        return value;
+      default:
+        return 'Unknown';
+    }
+  }
+
+  if (typeof value === 'number') {
+    switch (value) {
+      case 0:
+        return 'Unknown';
+      case 1:
+        return 'Free';
+      case 2:
+        return 'Standard';
+      case 3:
+        return 'Enterprise';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  return 'Unknown';
+};
+
+const weekdayOptions: { value: number; label: string }[] = [
+  { value: 0, label: '日曜日' },
+  { value: 1, label: '月曜日' },
+  { value: 2, label: '火曜日' },
+  { value: 3, label: '水曜日' },
+  { value: 4, label: '木曜日' },
+  { value: 5, label: '金曜日' },
+  { value: 6, label: '土曜日' },
+];
+
+const generativeOptions: { value: OrganizationSettingResponse['generativeApiVendor']; label: string }[] = [
+  { value: 'None', label: '未設定' },
+  { value: 'OpenAi', label: 'OpenAI' },
+  { value: 'AzureOpenAi', label: 'Azure OpenAI' },
+  { value: 'Anthropic', label: 'Anthropic' },
+  { value: 'GoogleGemini', label: 'Google Gemini' },
+];
+
+const planOptions: { value: OrganizationSettingResponse['plan']; label: string }[] = [
+  { value: 'Free', label: 'Free' },
+  { value: 'Standard', label: 'Standard' },
+  { value: 'Enterprise', label: 'Enterprise' },
+];
+
+export default function AdminSettingsClient({ initialUser, organization, fetchError }: AdminSettingsClientProps) {
+  const notify = useNotify();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const initialSetting = (organization.setting as OrganizationSettingResponse & {
+    generativeApiKey?: string | null;
+  }) ?? {
+    taskOverdueThreshold: 0,
+    weeklyReportDeliveryDay: 0,
+    mailFromAddress: '',
+    mailFromName: '',
+    generativeApiVendor: 'None' as OrganizationSettingResponse['generativeApiVendor'],
+    plan: 'Free' as OrganizationSettingResponse['plan'],
+    generativeApiKey: '',
+    rowVersion: 0,
+  };
+
+  const [rowVersion, setRowVersion] = useState<number>(initialSetting.rowVersion ?? 0);
+  const [formData, setFormData] = useState<OrganizationSettingInput>({
+    taskOverdueThreshold: initialSetting.taskOverdueThreshold ?? 0,
+    weeklyReportDeliveryDay: initialSetting.weeklyReportDeliveryDay ?? 0,
+    mailFromAddress: initialSetting.mailFromAddress ?? '',
+    mailFromName: initialSetting.mailFromName ?? '',
+    generativeApiVendor: normalizeVendor(initialSetting.generativeApiVendor),
+    plan: normalizePlan(initialSetting.plan),
+    generativeApiKey: initialSetting.generativeApiKey ?? '',
+  });
+
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
+    useFormValidation({
+      schema: organizationSettingSchemaWithRules,
+      onSubmit: async (data) => {
+        try {
+          const result = await updateOrganizationSetting({
+            taskOverdueThreshold: data.taskOverdueThreshold,
+            weeklyReportDeliveryDay: data.weeklyReportDeliveryDay,
+            mailFromAddress: data.mailFromAddress ? String(data.mailFromAddress) : null,
+            mailFromName: data.mailFromName ? String(data.mailFromName) : null,
+            generativeApiVendor: data.generativeApiVendor,
+            plan: data.plan,
+            generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
+            rowVersion,
+          });
+
+          if (result.success) {
+            syncWithResponse(result.data);
+            notify.success('組織設定を更新しました。');
+            return;
+          }
+
+          if (!result.success && result.error === 'conflict' && 'latest' in result && result.latest) {
+            const latest = result.latest.data as OrganizationSettingResponse;
+            syncWithResponse(latest);
+            notify.error(result.message || '他のユーザーが同時に更新しました。最新の設定を反映しました。');
+            return;
+          }
+
+          notify.error(result.message || '組織設定の更新に失敗しました。');
+        } catch (error) {
+          console.error('Failed to update organization setting:', error);
+          notify.error('組織設定の更新中にエラーが発生しました。');
+        }
+      },
+    });
+
+  const syncWithResponse = (setting: OrganizationSettingResponse) => {
+    setRowVersion(setting.rowVersion ?? 0);
+    setFormData({
+      taskOverdueThreshold: setting.taskOverdueThreshold ?? 0,
+      weeklyReportDeliveryDay: setting.weeklyReportDeliveryDay ?? 0,
+      mailFromAddress: setting.mailFromAddress ?? '',
+      mailFromName: setting.mailFromName ?? '',
+      generativeApiVendor: normalizeVendor(setting.generativeApiVendor),
+      plan: normalizePlan(setting.plan),
+      generativeApiKey:
+        (setting as OrganizationSettingResponse & { generativeApiKey?: string | null }).generativeApiKey ?? '',
+    });
+  };
+
+  const handleFieldChange = async (fieldName: keyof OrganizationSettingInput, value: unknown) => {
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [fieldName]: value as never,
+      };
+
+      if (fieldName === 'generativeApiVendor' && value === 'None') {
+        next.generativeApiKey = '' as never;
+      }
+
+      return next;
+    });
+
+    await validateField(fieldName, value);
+  };
+
+  const vendorRequiresKey = formData.generativeApiVendor !== 'None';
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
+
+      <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
+
+      <div className="flex flex-1">
+        <AdminSidebar sidebarOpen={sidebarOpen} />
+
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+
+        <main className="flex-1 p-6 bg-base-100">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">組織設定</h1>
+                <p className="text-base-content/60 mt-1">タスク期限や配信設定を更新します</p>
+              </div>
+            </div>
+
+            {fetchError && (
+              <div className="alert alert-error">
+                <span>{fetchError}</span>
+              </div>
+            )}
+
+            <form ref={formRef} onSubmit={handleSubmit} className="card">
+              <div className="card-body space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label" htmlFor="input-task-overdue">
+                      <span className="label-text font-semibold">
+                        タスク超過閾値（日） <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <div
+                      className={`input input-bordered flex items-center ${shouldShowError('taskOverdueThreshold') ? 'input-error' : ''}`}
+                    >
+                      <input
+                        id="input-task-overdue"
+                        name="taskOverdueThreshold"
+                        type="text"
+                        inputMode="numeric"
+                        value={formData.taskOverdueThreshold || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            handleFieldChange('taskOverdueThreshold', 0);
+                          } else {
+                            const num = parseInt(val, 10);
+                            if (!Number.isNaN(num) && num >= 0 && num <= 365) {
+                              handleFieldChange('taskOverdueThreshold', num);
+                            }
+                          }
+                        }}
+                        className="flex-1 bg-transparent outline-none min-w-0"
+                        placeholder="0"
+                        disabled={isSubmitting}
+                        aria-label="タスク超過閾値入力"
+                      />
+                      <span className="my-auto flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                          aria-label="1日減らす"
+                          onClick={() =>
+                            handleFieldChange('taskOverdueThreshold', Math.max(0, formData.taskOverdueThreshold - 1))
+                          }
+                          disabled={isSubmitting || formData.taskOverdueThreshold <= 0}
+                        >
+                          <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                          aria-label="1日増やす"
+                          onClick={() =>
+                            handleFieldChange('taskOverdueThreshold', Math.min(365, formData.taskOverdueThreshold + 1))
+                          }
+                          disabled={isSubmitting || formData.taskOverdueThreshold >= 365}
+                        >
+                          <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
+                        </button>
+                      </span>
+                    </div>
+                    {shouldShowError('taskOverdueThreshold') && (
+                      <span className="label-text-alt text-error">{getFieldError('taskOverdueThreshold')}</span>
+                    )}
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label" htmlFor="select-weekly-report-day">
+                      <span className="label-text font-semibold">
+                        週間レポート配信曜日 <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <select
+                      id="select-weekly-report-day"
+                      name="weeklyReportDeliveryDay"
+                      className={`select select-bordered ${shouldShowError('weeklyReportDeliveryDay') ? 'select-error' : ''}`}
+                      value={formData.weeklyReportDeliveryDay}
+                      onChange={(e) => handleFieldChange('weeklyReportDeliveryDay', Number(e.target.value))}
+                      required
+                    >
+                      {weekdayOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {shouldShowError('weeklyReportDeliveryDay') && (
+                      <span className="label-text-alt text-error">{getFieldError('weeklyReportDeliveryDay')}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label" htmlFor="input-mail-from-address">
+                      <span className="label-text font-semibold">メール配信元アドレス</span>
+                    </label>
+                    <input
+                      id="input-mail-from-address"
+                      name="mailFromAddress"
+                      type="email"
+                      className={`input input-bordered ${shouldShowError('mailFromAddress') ? 'input-error' : ''}`}
+                      value={formData.mailFromAddress ?? ''}
+                      onChange={(e) => handleFieldChange('mailFromAddress', e.target.value)}
+                      placeholder="noreply@example.com"
+                    />
+                    {shouldShowError('mailFromAddress') && (
+                      <span className="label-text-alt text-error">{getFieldError('mailFromAddress')}</span>
+                    )}
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label" htmlFor="input-mail-from-name">
+                      <span className="label-text font-semibold">メール配信元名</span>
+                    </label>
+                    <input
+                      id="input-mail-from-name"
+                      name="mailFromName"
+                      type="text"
+                      className={`input input-bordered ${shouldShowError('mailFromName') ? 'input-error' : ''}`}
+                      value={formData.mailFromName ?? ''}
+                      onChange={(e) => handleFieldChange('mailFromName', e.target.value)}
+                      placeholder="Pecus サポート"
+                    />
+                    {shouldShowError('mailFromName') && (
+                      <span className="label-text-alt text-error">{getFieldError('mailFromName')}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label" htmlFor="select-generative-vendor">
+                      <span className="label-text font-semibold">
+                        生成APIベンダー <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <select
+                      id="select-generative-vendor"
+                      name="generativeApiVendor"
+                      className={`select select-bordered ${shouldShowError('generativeApiVendor') ? 'select-error' : ''}`}
+                      value={formData.generativeApiVendor}
+                      onChange={(e) => handleFieldChange('generativeApiVendor', e.target.value)}
+                      required
+                    >
+                      {generativeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {shouldShowError('generativeApiVendor') && (
+                      <span className="label-text-alt text-error">{getFieldError('generativeApiVendor')}</span>
+                    )}
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label" htmlFor="select-plan">
+                      <span className="label-text font-semibold">
+                        プラン <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <select
+                      id="select-plan"
+                      name="plan"
+                      className={`select select-bordered ${shouldShowError('plan') ? 'select-error' : ''}`}
+                      value={formData.plan}
+                      onChange={(e) => handleFieldChange('plan', e.target.value)}
+                      required
+                    >
+                      {planOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {shouldShowError('plan') && (
+                      <span className="label-text-alt text-error">{getFieldError('plan')}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label" htmlFor="input-generative-api-key">
+                      <span className="label-text font-semibold">
+                        生成APIキー {vendorRequiresKey && <span className="text-error">*</span>}
+                      </span>
+                    </label>
+                    <input
+                      id="input-generative-api-key"
+                      name="generativeApiKey"
+                      type="password"
+                      className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
+                      value={formData.generativeApiKey ?? ''}
+                      onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
+                      placeholder="sk-..."
+                      disabled={!vendorRequiresKey}
+                    />
+                    {shouldShowError('generativeApiKey') && (
+                      <span className="label-text-alt text-error">{getFieldError('generativeApiKey')}</span>
+                    )}
+                    {!vendorRequiresKey && (
+                      <span className="label-text-alt text-xs text-base-content/60">
+                        ベンダーが未設定の場合、APIキーは保存されません。
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => {
+                      resetForm();
+                      syncWithResponse(initialSetting);
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    リセット
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? '更新中...' : '保存'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+
+      <AdminFooter />
+    </div>
+  );
+}

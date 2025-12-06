@@ -40,6 +40,11 @@ public class OrganizationSettingResponse : IConflictModel
     public GenerativeApiVendor GenerativeApiVendor { get; set; }
 
     /// <summary>
+    /// 生成APIキー
+    /// </summary>
+    public string? GenerativeApiKey { get; set; }
+
+    /// <summary>
     /// 利用プラン
     /// </summary>
     [Required]

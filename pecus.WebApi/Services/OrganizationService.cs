@@ -272,11 +272,22 @@ public class OrganizationService
             await RaiseConflictException(organizationId);
         }
 
+        // 生成APIベンダーが指定されている場合は API キー必須
+        if (request.GenerativeApiVendor != GenerativeApiVendor.None && string.IsNullOrWhiteSpace(request.GenerativeApiKey))
+        {
+            throw new InvalidOperationException("生成APIベンダーを利用する場合、APIキーは必須です。");
+        }
+
+        var normalizedApiKey = request.GenerativeApiVendor == GenerativeApiVendor.None
+            ? null
+            : request.GenerativeApiKey?.Trim();
+
         setting.TaskOverdueThreshold = request.TaskOverdueThreshold;
         setting.WeeklyReportDeliveryDay = request.WeeklyReportDeliveryDay;
         setting.MailFromAddress = request.MailFromAddress;
         setting.MailFromName = request.MailFromName;
         setting.GenerativeApiVendor = request.GenerativeApiVendor;
+        setting.GenerativeApiKey = normalizedApiKey;
         setting.Plan = request.Plan;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
@@ -297,6 +308,7 @@ public class OrganizationService
             MailFromAddress = setting.MailFromAddress,
             MailFromName = setting.MailFromName,
             GenerativeApiVendor = setting.GenerativeApiVendor,
+            GenerativeApiKey = setting.GenerativeApiKey,
             Plan = setting.Plan,
             RowVersion = setting.RowVersion,
         };
@@ -491,6 +503,7 @@ public class OrganizationService
                         MailFromAddress = latestOrganization.Setting.MailFromAddress,
                         MailFromName = latestOrganization.Setting.MailFromName,
                         GenerativeApiVendor = latestOrganization.Setting.GenerativeApiVendor,
+                        GenerativeApiKey = latestOrganization.Setting.GenerativeApiKey,
                         Plan = latestOrganization.Setting.Plan,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
@@ -499,6 +512,7 @@ public class OrganizationService
                         TaskOverdueThreshold = 0,
                         WeeklyReportDeliveryDay = 0,
                         GenerativeApiVendor = GenerativeApiVendor.None,
+                        GenerativeApiKey = null,
                         Plan = OrganizationPlan.Free,
                         RowVersion = 0,
                     },

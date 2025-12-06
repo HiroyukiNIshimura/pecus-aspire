@@ -1,7 +1,11 @@
 'use server';
 
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { OrganizationResponse } from '@/connectors/api/pecus';
+import type {
+  AdminUpdateOrganizationSettingRequest,
+  OrganizationResponse,
+  OrganizationSettingResponse,
+} from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
 
 /**
@@ -55,6 +59,51 @@ export async function updateOrganization(request: {
 
     console.error('Failed to update organization:', error);
     return parseErrorResponse(error, '組織情報の更新に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 自組織の設定を更新
+ * @note 409 Conflict: 並行更新による競合。最新データを返す
+ */
+export async function updateOrganizationSetting(request: {
+  taskOverdueThreshold?: number;
+  weeklyReportDeliveryDay?: number;
+  mailFromAddress?: string | null;
+  mailFromName?: string | null;
+  generativeApiVendor: OrganizationSettingResponse['generativeApiVendor'];
+  plan: OrganizationSettingResponse['plan'];
+  generativeApiKey?: string | null;
+  rowVersion: number;
+}): Promise<ApiResponse<OrganizationSettingResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const payload: AdminUpdateOrganizationSettingRequest & { generativeApiKey?: string | null } = {
+      ...request,
+    };
+
+    const response = await api.adminOrganization.putApiAdminOrganizationSetting(payload);
+    return { success: true, data: response };
+  } catch (error) {
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = (payload as Record<string, unknown>).current as OrganizationSettingResponse | undefined;
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrencyError.message,
+        latest: current
+          ? {
+              type: 'organizationSetting',
+              data: current,
+            }
+          : undefined,
+      } as ApiResponse<OrganizationSettingResponse>;
+    }
+
+    console.error('Failed to update organization setting:', error);
+    return parseErrorResponse(error, '組織設定の更新に失敗しました');
   }
 }
 

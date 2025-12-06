@@ -35,9 +35,16 @@ public class AdminUpdateOrganizationSettingRequest
 
     /// <summary>
     /// 利用する生成APIベンダー
+    /// GenerativeApiVendor.Noneの場合、生成APIは利用しない。
     /// </summary>
     [Required(ErrorMessage = "生成APIベンダーは必須です。")]
     public required GenerativeApiVendor GenerativeApiVendor { get; set; }
+
+    /// <summary>
+    /// 生成APIキー
+    /// </summary>
+    [MaxLength(512, ErrorMessage = "生成APIキーは512文字以内で入力してください。")]
+    public string? GenerativeApiKey { get; set; }
 
     /// <summary>
     /// 利用プラン

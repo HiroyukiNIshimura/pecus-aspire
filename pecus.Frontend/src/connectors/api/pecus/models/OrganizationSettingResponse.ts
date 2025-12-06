@@ -25,6 +25,10 @@ export type OrganizationSettingResponse = {
      */
     mailFromName?: string | null;
     generativeApiVendor: GenerativeApiVendor;
+    /**
+     * 生成APIキー
+     */
+    generativeApiKey?: string | null;
     plan: OrganizationPlan;
     /**
      * 楽観的ロック用RowVersion
