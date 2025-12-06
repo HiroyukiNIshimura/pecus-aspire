@@ -520,7 +520,7 @@ export default function CreateWorkspaceTaskModal({
                   </div>
                 )}
                 {assigneeLoadCheck?.isExceeded && selectedAssignee && (
-                  <div className="alert alert-warning">
+                  <div className="alert alert-soft alert-warning">
                     <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
                     <div>
                       <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
