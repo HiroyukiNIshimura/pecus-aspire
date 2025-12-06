@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 export type SessionData = {
   accessToken: string;
   refreshToken: string;
+  /** アクセストークンの有効期限（ISO文字列）。クッキー寿命計算に利用 */
+  accessExpiresAt?: string;
+  /** リフレッシュトークンの有効期限（ISO文字列）。クッキー寿命計算に利用 */
+  refreshExpiresAt?: string;
   user: {
     id: number;
     name: string;
@@ -53,17 +57,41 @@ export class SessionManager {
       const cookieStore = await cookies();
       const userString = JSON.stringify(data.user);
 
-      const cookieOptions = {
+      // ExpiresAt は UTC の ISO 文字列を想定
+      const toMaxAgeSeconds = (expiresAt?: string, fallbackSeconds: number = 60 * 60 * 24 * 30) => {
+        if (!expiresAt) return fallbackSeconds;
+        const expiresMs = Date.parse(expiresAt);
+        if (Number.isNaN(expiresMs)) return fallbackSeconds;
+
+        const diffSeconds = Math.floor((expiresMs - Date.now()) / 1000);
+        return diffSeconds > 0 ? diffSeconds : fallbackSeconds;
+      };
+
+      const accessMaxAge = toMaxAgeSeconds(data.accessExpiresAt, 60 * 60); // デフォルト1時間
+      const refreshMaxAge = toMaxAgeSeconds(data.refreshExpiresAt, 60 * 60 * 24 * 30); // デフォルト30日
+
+      const baseCookieOptions = {
         path: '/',
         httpOnly: false,
         sameSite: 'strict' as const,
         secure: process.env.NODE_ENV === 'production', // 本番環境でのみHTTPS必須
-        maxAge: 60 * 60 * 24 * 7, // 7日間保持
       };
 
-      cookieStore.set(SessionManager.ACCESS_TOKEN_KEY, data.accessToken, cookieOptions);
-      cookieStore.set(SessionManager.REFRESH_TOKEN_KEY, data.refreshToken, cookieOptions);
-      cookieStore.set(SessionManager.USER_KEY, userString, cookieOptions);
+      cookieStore.set(SessionManager.ACCESS_TOKEN_KEY, data.accessToken, {
+        ...baseCookieOptions,
+        maxAge: accessMaxAge,
+      });
+
+      cookieStore.set(SessionManager.REFRESH_TOKEN_KEY, data.refreshToken, {
+        ...baseCookieOptions,
+        maxAge: refreshMaxAge,
+      });
+
+      // user クッキーはリフレッシュトークンと同じ寿命に合わせる
+      cookieStore.set(SessionManager.USER_KEY, userString, {
+        ...baseCookieOptions,
+        maxAge: refreshMaxAge,
+      });
 
       console.log('Server  Session saved successfully');
     } catch (error) {

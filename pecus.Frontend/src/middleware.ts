@@ -45,17 +45,35 @@ async function attemptRefresh(
     const data = await refreshResponse.json();
     console.log('[Middleware] Token refreshed successfully');
 
+    const toMaxAgeSeconds = (expiresAt?: string, fallbackSeconds: number = 60 * 60 * 24 * 30) => {
+      if (!expiresAt) return fallbackSeconds;
+      const expiresMs = Date.parse(expiresAt);
+      if (Number.isNaN(expiresMs)) return fallbackSeconds;
+      const diffSeconds = Math.floor((expiresMs - Date.now()) / 1000);
+      return diffSeconds > 0 ? diffSeconds : fallbackSeconds;
+    };
+
     // 新しいトークンをクッキーに設定してリクエストを続行
     const response = NextResponse.next();
-    const cookieOptions = {
+    const baseCookieOptions = {
       path: '/',
       httpOnly: false,
       sameSite: 'strict' as const,
       secure: process.env.NODE_ENV === 'production',
     };
 
-    response.cookies.set('accessToken', data.accessToken, cookieOptions);
-    response.cookies.set('refreshToken', data.refreshToken, cookieOptions);
+    const accessMaxAge = toMaxAgeSeconds(data.expiresAt, 60 * 60);
+    const refreshMaxAge = toMaxAgeSeconds(data.refreshExpiresAt, 60 * 60 * 24 * 30);
+
+    response.cookies.set('accessToken', data.accessToken, {
+      ...baseCookieOptions,
+      maxAge: accessMaxAge,
+    });
+
+    response.cookies.set('refreshToken', data.refreshToken, {
+      ...baseCookieOptions,
+      maxAge: refreshMaxAge,
+    });
 
     // userクッキーが存在しない場合、アクセストークンからユーザー情報を復元
     if (!existingUserCookie) {
@@ -69,7 +87,10 @@ async function attemptRefresh(
           email: decoded.email ?? '',
           roles: [] as string[], // ロールはJWTから直接取得するのが複雑なため空配列で初期化
         };
-        response.cookies.set('user', JSON.stringify(userInfo), cookieOptions);
+        response.cookies.set('user', JSON.stringify(userInfo), {
+          ...baseCookieOptions,
+          maxAge: refreshMaxAge,
+        });
         console.log('[Middleware] User cookie restored from token');
       } catch (decodeError) {
         console.error('[Middleware] Failed to decode new access token:', decodeError);

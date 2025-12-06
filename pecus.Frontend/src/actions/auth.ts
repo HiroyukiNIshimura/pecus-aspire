@@ -58,6 +58,8 @@ export async function login(request: {
     const sessionData: SessionData = {
       accessToken,
       refreshToken,
+      accessExpiresAt: response.expiresAt,
+      refreshExpiresAt: response.refreshExpiresAt ?? undefined,
       user: {
         id: response.userId || 0,
         name: response.username || '',
