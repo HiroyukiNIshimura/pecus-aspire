@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
-import { createWorkspaceTask } from '@/actions/workspaceTask';
+import { checkAssigneeTaskLoad, createWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { CreateWorkspaceTaskRequest, TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
+import type {
+  AssigneeTaskLoadResponse,
+  CreateWorkspaceTaskRequest,
+  TaskPriority,
+  UserSearchResultResponse,
+} from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { createWorkspaceTaskSchema, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
@@ -65,6 +70,18 @@ export default function CreateWorkspaceTaskModal({
   // タスクタイプ状態
   const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
 
+  // 担当者負荷チェック
+  const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
+  const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
+  const [isCheckingAssigneeLoad, setIsCheckingAssigneeLoad] = useState(false);
+
+  const toISODateString = useCallback((dateStr: string | undefined | null): string | null => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+  }, []);
+
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
       schema: createWorkspaceTaskSchema,
@@ -75,14 +92,6 @@ export default function CreateWorkspaceTaskModal({
           setServerErrors([{ key: 0, message: '担当者を選択してください。' }]);
           return;
         }
-
-        // 日付を ISO 8601 形式（UTC）に変換
-        const toISODateString = (dateStr: string | undefined | null): string | null => {
-          if (!dateStr) return null;
-          // ローカル日付文字列（YYYY-MM-DD）を UTC の ISO 8601 形式に変換
-          const date = new Date(dateStr);
-          return date.toISOString();
-        };
 
         // dueDateは必須なので変換して必ずnon-nullを保証
         const dueDateISO = toISODateString(data.dueDate);
@@ -181,8 +190,53 @@ export default function CreateWorkspaceTaskModal({
       setDueDate('');
       setEstimatedHours(0);
       setTaskTypeId(null);
+      setAssigneeLoadCheck(null);
+      setAssigneeLoadError(null);
+      setIsCheckingAssigneeLoad(false);
     }
   }, [isOpen, resetForm]);
+
+  // 担当者×期限日のタスク負荷チェック
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!selectedAssignee || !dueDate) {
+      setAssigneeLoadCheck(null);
+      setAssigneeLoadError(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const runCheck = async () => {
+      setIsCheckingAssigneeLoad(true);
+      setAssigneeLoadError(null);
+
+      const dueDateISO = toISODateString(dueDate);
+      if (!dueDateISO) {
+        setIsCheckingAssigneeLoad(false);
+        return;
+      }
+
+      const result = await checkAssigneeTaskLoad(workspaceId, itemId, selectedAssignee.id, dueDateISO);
+
+      if (cancelled) return;
+
+      if (result.success) {
+        setAssigneeLoadCheck(result.data);
+      } else {
+        setAssigneeLoadCheck(null);
+        setAssigneeLoadError(result.message);
+      }
+
+      setIsCheckingAssigneeLoad(false);
+    };
+
+    runCheck();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedAssignee?.id, dueDate, workspaceId, itemId, isOpen, toISODateString]);
 
   // ドロップダウン外クリックで閉じる
   useEffect(() => {
@@ -449,6 +503,35 @@ export default function CreateWorkspaceTaskModal({
                     disabled={isSubmitting}
                   />
                 </div>
+              </div>
+
+              {/* 担当者負荷チェック結果 */}
+              <div className="space-y-2">
+                {isCheckingAssigneeLoad && (
+                  <div className="alert alert-info">
+                    <span className="loading loading-spinner loading-sm" aria-hidden="true" />
+                    <span>担当者のタスク状況を確認しています...</span>
+                  </div>
+                )}
+                {assigneeLoadError && (
+                  <div className="alert alert-warning">
+                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                    <span>{assigneeLoadError}</span>
+                  </div>
+                )}
+                {assigneeLoadCheck?.isExceeded && selectedAssignee && (
+                  <div className="alert alert-warning">
+                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
+                      <p className="text-sm">
+                        {selectedAssignee.username} のタスクが同じ期限日 {dueDate} に{' '}
+                        {assigneeLoadCheck.projectedTaskCount} 件 （閾値 {assigneeLoadCheck.threshold}{' '}
+                        件）と集中しています。担当者の負荷を考慮して、期限日の調整や担当者の変更を検討してください。
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 予定工数 */}

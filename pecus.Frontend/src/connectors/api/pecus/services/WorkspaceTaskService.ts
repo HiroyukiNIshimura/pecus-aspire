@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadResponse';
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
@@ -136,6 +137,39 @@ export class WorkspaceTaskService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 担当者のタスク負荷を期限日ごとにチェック
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @param assignedUserId 担当ユーザーID
+     * @param dueDate 期限日時（ISO 8601 形式）
+     * @returns AssigneeTaskLoadResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesItemsTasksAssigneeLoadCheck(
+        workspaceId: number,
+        itemId: number,
+        assignedUserId: number,
+        dueDate: string,
+    ): CancelablePromise<AssigneeTaskLoadResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/assignee-load-check',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            query: {
+                'AssignedUserId': assignedUserId,
+                'DueDate': dueDate,
+            },
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });

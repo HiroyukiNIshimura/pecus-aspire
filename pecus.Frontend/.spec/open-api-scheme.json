@@ -7789,6 +7789,93 @@
           }
         }
       }
+    },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/assignee-load-check": {
+      "get": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "担当者のタスク負荷を期限日ごとにチェック",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "AssignedUserId",
+            "in": "query",
+            "description": "担当ユーザーID",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "DueDate",
+            "in": "query",
+            "description": "期限日時（ISO 8601 形式）",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssigneeTaskLoadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7889,6 +7976,42 @@
         },
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
+      },
+      "AssigneeTaskLoadResponse": {
+        "type": "object",
+        "properties": {
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日（UTC, 日単位）",
+            "format": "date-time"
+          },
+          "threshold": {
+            "type": "integer",
+            "description": "しきい値（組織設定 TaskOverdueThreshold）",
+            "format": "int32"
+          },
+          "activeTaskCount": {
+            "type": "integer",
+            "description": "現在の未完了・未破棄タスク数",
+            "format": "int32"
+          },
+          "projectedTaskCount": {
+            "type": "integer",
+            "description": "新規作成を含めた想定タスク数",
+            "format": "int32"
+          },
+          "isExceeded": {
+            "type": "boolean",
+            "description": "しきい値を超過しているか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "担当者の期限日別タスク負荷レスポンス"
       },
       "AvatarType": {
         "enum": [

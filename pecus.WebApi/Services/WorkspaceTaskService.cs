@@ -112,6 +112,71 @@ public class WorkspaceTaskService
     }
 
     /// <summary>
+    /// 担当者の期限日別タスク負荷をチェック
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">チェックリクエスト</param>
+    /// <returns>負荷情報</returns>
+    public async Task<AssigneeTaskLoadResponse> CheckAssigneeTaskLoadAsync(
+        int workspaceId,
+        int itemId,
+        CheckAssigneeTaskLoadRequest request
+    )
+    {
+        var workspaceItem = await _context.WorkspaceItems
+            .Include(wi => wi.Workspace!)
+                .ThenInclude(w => w.Organization!)
+                    .ThenInclude(o => o.Setting)
+            .FirstOrDefaultAsync(wi => wi.Id == itemId && wi.WorkspaceId == workspaceId);
+
+        if (workspaceItem == null)
+        {
+            throw new NotFoundException("ワークスペースアイテムが見つかりません。");
+        }
+
+        var workspace = workspaceItem.Workspace
+            ?? throw new InvalidOperationException("ワークスペース情報が見つかりません。");
+
+        var organization = workspace.Organization
+            ?? throw new InvalidOperationException("組織情報が見つかりません。");
+
+        // 設定が未ロード／未設定の場合に備えフェッチしてしきい値を取得
+        var threshold = organization.Setting?.TaskOverdueThreshold
+            ?? await _context.OrganizationSettings
+                .Where(s => s.OrganizationId == organization.Id)
+                .Select(s => (int?)s.TaskOverdueThreshold)
+                .FirstOrDefaultAsync()
+            ?? 0;
+
+        // 期限日（クライアント指定のオフセットを保持したまま日単位で集計）
+        // Date をそのまま使うと Offset 情報が保持され、同一ローカル日で集計可能
+        var localDate = request.DueDate.Date;
+        var startOfDay = new DateTimeOffset(localDate, request.DueDate.Offset).ToUniversalTime();
+        var endOfDay = startOfDay.AddDays(1);
+
+        var activeTaskCount = await _context.WorkspaceTasks
+            .Where(t => t.OrganizationId == organization.Id)
+            .Where(t => t.AssignedUserId == request.AssignedUserId)
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .Where(t => t.DueDate >= startOfDay && t.DueDate < endOfDay)
+            .CountAsync();
+
+        var projectedTaskCount = activeTaskCount + 1;
+        var isExceeded = threshold > 0 && projectedTaskCount > threshold;
+
+        return new AssigneeTaskLoadResponse
+        {
+            AssignedUserId = request.AssignedUserId,
+            DueDate = startOfDay,
+            Threshold = threshold,
+            ActiveTaskCount = activeTaskCount,
+            ProjectedTaskCount = projectedTaskCount,
+            IsExceeded = isExceeded,
+        };
+    }
+
+    /// <summary>
     /// ワークスペースタスクを取得
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

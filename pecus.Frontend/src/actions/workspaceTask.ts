@@ -1,7 +1,8 @@
 'use server';
 
-import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
+import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  AssigneeTaskLoadResponse,
   CreateWorkspaceTaskRequest,
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
@@ -10,6 +11,7 @@ import type {
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
+import { validationError } from './types';
 
 /**
  * ワークスペースアイテムのタスク一覧を取得
@@ -175,5 +177,36 @@ export async function updateWorkspaceTask(
       error: 'server',
       message: err.body?.message || err.message || 'タスクの更新に失敗しました',
     };
+  }
+}
+
+/**
+ * 担当者の期限日別タスク負荷をチェック
+ */
+export async function checkAssigneeTaskLoad(
+  workspaceId: number,
+  itemId: number,
+  assignedUserId?: number,
+  dueDate?: string,
+): Promise<ApiResponse<AssigneeTaskLoadResponse>> {
+  if (!assignedUserId) {
+    return validationError('担当者を選択してください。');
+  }
+  if (!dueDate) {
+    return validationError('期限日を選択してください。');
+  }
+
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasksAssigneeLoadCheck(
+      workspaceId,
+      itemId,
+      assignedUserId,
+      dueDate,
+    );
+
+    return { success: true, data: response };
+  } catch (error) {
+    return parseErrorResponse(error, '担当者のタスク負荷の確認に失敗しました');
   }
 }

@@ -171,6 +171,47 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
+    /// 担当者のタスク負荷を期限日ごとにチェック
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="request">チェックリクエスト</param>
+    /// <returns>担当者の期限日別タスク負荷</returns>
+    [HttpGet("assignee-load-check")]
+    [ProducesResponseType(typeof(AssigneeTaskLoadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<AssigneeTaskLoadResponse>> CheckAssigneeTaskLoad(
+        int workspaceId,
+        int itemId,
+        [FromQuery] CheckAssigneeTaskLoadRequest request
+    )
+    {
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException("ワークスペースのメンバーのみがタスクを確認できます。");
+        }
+
+        var response = await _workspaceTaskService.CheckAssigneeTaskLoadAsync(
+            workspaceId,
+            itemId,
+            request
+        );
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// タスク更新
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
