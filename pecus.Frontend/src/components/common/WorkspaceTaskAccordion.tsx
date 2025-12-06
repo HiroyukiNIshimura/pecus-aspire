@@ -133,15 +133,15 @@ export default function WorkspaceTaskAccordion({
   const notify = useNotify();
   const notifyRef = useRef(notify);
 
-  // 展開中のワークスペースID
-  const [expandedWorkspaceId, setExpandedWorkspaceId] = useState<number | null>(null);
+  // 展開中のワークスペースID（複数同時展開を許可してスクロールジャンプを防ぐ）
+  const [expandedWorkspaceIds, setExpandedWorkspaceIds] = useState<Set<number>>(new Set());
 
   // ワークスペースごとのタスクデータ
   const [tasksByWorkspace, setTasksByWorkspace] = useState<
     Record<number, { dueDateGroups: TasksByDueDateResponse[]; loading: boolean; loaded: boolean }>
   >({});
 
-  // 展開中の期限日グループ
+  // 展開中の期限日グループ（workspaceId + dueDateKey で一意にする）
   const [expandedDueDates, setExpandedDueDates] = useState<Set<string>>(new Set());
 
   // タスク編集モーダル状態
@@ -156,16 +156,33 @@ export default function WorkspaceTaskAccordion({
   // ワークスペース展開時にタスクを取得
   const handleWorkspaceToggle = useCallback(
     async (workspaceId: number) => {
-      if (expandedWorkspaceId === workspaceId) {
-        // 閉じる
-        setExpandedWorkspaceId(null);
-        setExpandedDueDates(new Set());
+      const isCurrentlyExpanded = expandedWorkspaceIds.has(workspaceId);
+
+      if (isCurrentlyExpanded) {
+        // 閉じる（該当ワークスペースの期限展開状態だけクリア）
+        setExpandedWorkspaceIds((prev) => {
+          const next = new Set(prev);
+          next.delete(workspaceId);
+          return next;
+        });
+        setExpandedDueDates((prev) => {
+          const next = new Set(prev);
+          [...next].forEach((key) => {
+            if (key.startsWith(`${workspaceId}__`)) {
+              next.delete(key);
+            }
+          });
+          return next;
+        });
         return;
       }
 
-      // 開く
-      setExpandedWorkspaceId(workspaceId);
-      setExpandedDueDates(new Set());
+      // 開く（他の開いているワークスペースはそのままにしてスクロールジャンプを抑制）
+      setExpandedWorkspaceIds((prev) => {
+        const next = new Set(prev);
+        next.add(workspaceId);
+        return next;
+      });
 
       // 既にデータがある場合はスキップ
       if (tasksByWorkspace[workspaceId]?.loaded) {
@@ -201,21 +218,41 @@ export default function WorkspaceTaskAccordion({
         }));
       }
     },
-    [expandedWorkspaceId, tasksByWorkspace, fetchTasks],
+    [expandedWorkspaceIds, tasksByWorkspace, fetchTasks],
   );
 
   // 期限日グループの展開トグル
-  const handleDueDateToggle = useCallback((dueDate: string) => {
+  const handleDueDateToggle = useCallback((workspaceId: number, dueDate: string) => {
+    const key = `${workspaceId}__${dueDate}`;
     setExpandedDueDates((prev) => {
       const next = new Set(prev);
-      if (next.has(dueDate)) {
-        next.delete(dueDate);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(dueDate);
+        next.add(key);
       }
       return next;
     });
   }, []);
+
+  const handleDueDateExpandAll = useCallback(
+    (workspaceId: number, groups: TasksByDueDateResponse[] | undefined, expand: boolean) => {
+      if (!groups) return;
+      setExpandedDueDates((prev) => {
+        const next = new Set(prev);
+        groups.forEach((g) => {
+          const key = `${workspaceId}__${g.dueDate || 'no-date'}`;
+          if (expand) {
+            next.add(key);
+          } else {
+            next.delete(key);
+          }
+        });
+        return next;
+      });
+    },
+    [],
+  );
 
   // タスク編集モーダルを開く
   const handleOpenTaskEditModal = useCallback((task: TaskWithItemResponse, workspaceId: number) => {
@@ -267,8 +304,12 @@ export default function WorkspaceTaskAccordion({
   return (
     <div className="space-y-4">
       {workspaces.map((workspace) => {
-        const isExpanded = expandedWorkspaceId === workspace.workspaceId;
+        const isExpanded = expandedWorkspaceIds.has(workspace.workspaceId);
         const wsData = tasksByWorkspace[workspace.workspaceId];
+        const displayedTaskCount = wsData?.dueDateGroups?.reduce((sum, group) => sum + (group.tasks?.length || 0), 0);
+        const allDueKeys =
+          wsData?.dueDateGroups?.map((g) => `${workspace.workspaceId}__${g.dueDate || 'no-date'}`) || [];
+        const allExpanded = allDueKeys.length > 0 && allDueKeys.every((k) => expandedDueDates.has(k));
 
         return (
           <div key={workspace.workspaceId} className="card bg-base-200">
@@ -322,7 +363,7 @@ export default function WorkspaceTaskAccordion({
                       </span>
                     )}
                     <span className="badge badge-primary badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
-                      {workspace.activeTaskCount} タスク
+                      {displayedTaskCount ?? workspace.activeTaskCount} タスク
                     </span>
                     {workspace.overdueTaskCount > 0 && (
                       <span className="badge badge-error badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
@@ -330,6 +371,20 @@ export default function WorkspaceTaskAccordion({
                       </span>
                     )}
                   </div>
+                  {/* 期限グループ一括展開 */}
+                  {isExpanded && wsData?.dueDateGroups?.length ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDueDateExpandAll(workspace.workspaceId, wsData.dueDateGroups, !allExpanded);
+                      }}
+                      className="btn btn-ghost btn-xs"
+                      title={allExpanded ? 'すべて畳む' : 'すべて開く'}
+                    >
+                      {allExpanded ? '全部閉じる' : '全部開く'}
+                    </button>
+                  ) : null}
                   {/* 展開アイコン */}
                   <span
                     className={`icon-[mdi--chevron-down] w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -352,7 +407,8 @@ export default function WorkspaceTaskAccordion({
                   <div className="p-4 space-y-3">
                     {wsData?.dueDateGroups.map((dueDateGroup) => {
                       const dueDateKey = dueDateGroup.dueDate || 'no-date';
-                      const isDueDateExpanded = expandedDueDates.has(dueDateKey);
+                      const compositeKey = `${workspace.workspaceId}__${dueDateKey}`;
+                      const isDueDateExpanded = expandedDueDates.has(compositeKey);
                       const dateInfo = dueDateGroup.dueDate
                         ? getDueDateLabel(dueDateGroup.dueDate)
                         : { label: '期限未設定', isOverdue: false, isDueToday: false };
@@ -363,7 +419,7 @@ export default function WorkspaceTaskAccordion({
                           <button
                             type="button"
                             className="card-body p-3 cursor-pointer hover:bg-base-200 transition-colors rounded-t-2xl w-full text-left"
-                            onClick={() => handleDueDateToggle(dueDateKey)}
+                            onClick={() => handleDueDateToggle(workspace.workspaceId, dueDateKey)}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
