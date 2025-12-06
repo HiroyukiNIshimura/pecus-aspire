@@ -6,7 +6,7 @@ namespace Pecus.Models.Responses.Organization;
 /// <summary>
 /// 組織設定レスポンス
 /// </summary>
-public class OrganizationSettingResponse
+public class OrganizationSettingResponse : IConflictModel
 {
     /// <summary>
     /// タスク超過チェックの閾値（日数）

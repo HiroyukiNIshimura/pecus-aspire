@@ -148,6 +148,7 @@ public class EntranceOrganizationController : ControllerBase
                 Setting = new UserSettingResponse
                 {
                     CanReceiveEmail = adminUser.Setting?.CanReceiveEmail ?? true,
+                    RowVersion = adminUser.Setting?.RowVersion ?? 0,
                 },
             },
         };

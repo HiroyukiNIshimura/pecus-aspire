@@ -111,6 +111,79 @@
         }
       }
     },
+    "/api/admin/organization/setting": {
+      "put": {
+        "tags": [
+          "Admin - Organization"
+        ],
+        "summary": "自組織の設定を更新",
+        "description": "タスク期限や配信設定などの組織設定を更新します。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateOrganizationSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateOrganizationSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateOrganizationSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSettingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSettingResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/admin/skills": {
       "post": {
         "tags": [
@@ -3601,6 +3674,120 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDetailResponseConcurrencyErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/setting": {
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のユーザー設定を更新",
+        "description": "メール受信可否など、個人の設定を更新します。",
+        "requestBody": {
+          "description": "設定更新リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserSettingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserSettingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserSettingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponseConcurrencyErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponseConcurrencyErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSettingResponseConcurrencyErrorResponse"
                 }
               }
             }
@@ -7977,6 +8164,56 @@
         "additionalProperties": false,
         "description": "組織更新リクエスト（管理者用）"
       },
+      "AdminUpdateOrganizationSettingRequest": {
+        "required": [
+          "generativeApiVendor",
+          "plan",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "taskOverdueThreshold": {
+            "maximum": 365,
+            "minimum": 0,
+            "type": "integer",
+            "description": "タスク超過チェックの閾値（日数）。0で未設定。",
+            "format": "int32"
+          },
+          "weeklyReportDeliveryDay": {
+            "maximum": 7,
+            "minimum": 0,
+            "type": "integer",
+            "description": "週間レポートの配信曜日（0=未設定 / 1=日曜〜7=土曜を想定）",
+            "format": "int32"
+          },
+          "mailFromAddress": {
+            "maxLength": 254,
+            "type": "string",
+            "description": "メール配信元アドレス",
+            "format": "email",
+            "nullable": true
+          },
+          "mailFromName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "メール配信元名",
+            "nullable": true
+          },
+          "generativeApiVendor": {
+            "$ref": "#/components/schemas/GenerativeApiVendor"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/OrganizationPlan"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用RowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "組織設定更新リクエスト（管理者用）"
+      },
       "AssigneeTaskLoadResponse": {
         "type": "object",
         "properties": {
@@ -9533,6 +9770,34 @@
         },
         "additionalProperties": false,
         "description": "組織設定レスポンス"
+      },
+      "OrganizationSettingResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/OrganizationSettingResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "OrganizationWithAdminResponse": {
         "required": [
@@ -11396,6 +11661,26 @@
         "additionalProperties": false,
         "description": "タスクコメント更新リクエスト"
       },
+      "UpdateUserSettingRequest": {
+        "required": [
+          "canReceiveEmail",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "canReceiveEmail": {
+            "type": "boolean",
+            "description": "メールを受信するかどうか"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "ユーザー設定の楽観的ロック用 RowVersion",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "自ユーザー設定の更新リクエスト"
+      },
       "UpdateWorkspaceItemAssigneeRequest": {
         "required": [
           "rowVersion"
@@ -11921,10 +12206,43 @@
           "canReceiveEmail": {
             "type": "boolean",
             "description": "メール受信の可否"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "ユーザー設定の楽観的ロック用 RowVersion",
+            "format": "int32"
           }
         },
         "additionalProperties": false,
         "description": "ユーザー設定レスポンス"
+      },
+      "UserSettingResponseConcurrencyErrorResponse": {
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTPステータスコード",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "エラーメッセージ"
+          },
+          "details": {
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
+          },
+          "current": {
+            "$ref": "#/components/schemas/UserSettingResponse"
+          }
+        },
+        "additionalProperties": false,
+        "description": "競合エラーレスポンス（409 Conflict）"
       },
       "UserSkillResponse": {
         "required": [

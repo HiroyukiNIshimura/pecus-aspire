@@ -118,6 +118,7 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = targetUser.Setting?.CanReceiveEmail ?? true,
+                RowVersion = targetUser.Setting?.RowVersion ?? 0,
             },
         };
 
@@ -196,6 +197,7 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = u.Setting?.CanReceiveEmail ?? true,
+                RowVersion = u.Setting?.RowVersion ?? 0,
             },
         });
 
@@ -469,6 +471,7 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+                RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };
 

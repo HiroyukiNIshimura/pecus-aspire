@@ -3,7 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AdminUpdateOrganizationRequest } from '../models/AdminUpdateOrganizationRequest';
+import type { AdminUpdateOrganizationSettingRequest } from '../models/AdminUpdateOrganizationSettingRequest';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
+import type { OrganizationSettingResponse } from '../models/OrganizationSettingResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -37,6 +39,29 @@ export class AdminOrganizationService {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/admin/organization',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 自組織の設定を更新
+     * タスク期限や配信設定などの組織設定を更新します。
+     * @param requestBody
+     * @returns OrganizationSettingResponse OK
+     * @throws ApiError
+     */
+    public static putApiAdminOrganizationSetting(
+        requestBody?: AdminUpdateOrganizationSettingRequest,
+    ): CancelablePromise<OrganizationSettingResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/admin/organization/setting',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

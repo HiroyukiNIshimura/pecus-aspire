@@ -1,0 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Pecus.Models.Requests.User;
+
+/// <summary>
+/// 自ユーザー設定の更新リクエスト
+/// </summary>
+public class UpdateUserSettingRequest
+{
+    /// <summary>
+    /// メールを受信するかどうか
+    /// </summary>
+    [Required(ErrorMessage = "メール受信設定は必須です。")]
+    public required bool CanReceiveEmail { get; set; }
+
+    /// <summary>
+    /// ユーザー設定の楽観的ロック用 RowVersion
+    /// </summary>
+    [Required(ErrorMessage = "RowVersionは必須です。")]
+    public required uint RowVersion { get; set; }
+}

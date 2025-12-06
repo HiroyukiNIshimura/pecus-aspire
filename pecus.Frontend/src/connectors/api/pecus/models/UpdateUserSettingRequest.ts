@@ -3,16 +3,16 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * ユーザー設定レスポンス
+ * 自ユーザー設定の更新リクエスト
  */
-export type UserSettingResponse = {
+export type UpdateUserSettingRequest = {
     /**
-     * メール受信の可否
+     * メールを受信するかどうか
      */
     canReceiveEmail: boolean;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */
-    rowVersion?: number;
+    rowVersion: number;
 };
 

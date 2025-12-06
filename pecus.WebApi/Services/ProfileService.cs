@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
@@ -143,6 +144,97 @@ public class ProfileService
     }
 
     /// <summary>
+    /// 自ユーザーの設定を更新
+    /// </summary>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="request">更新リクエスト</param>
+    /// <returns>更新後の設定レスポンス。ユーザーが見つからない場合は null</returns>
+    public async Task<UserSettingResponse?> UpdateOwnSettingAsync(int userId, UpdateUserSettingRequest request)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.Setting)
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+
+            if (user == null)
+            {
+                _logger.LogWarning("ユーザー設定更新失敗: ユーザーが見つかりません。UserId: {UserId}", userId);
+                return null;
+            }
+
+            var setting = user.Setting;
+
+            if (setting == null)
+            {
+                setting = new UserSetting
+                {
+                    UserId = userId,
+                    CanReceiveEmail = request.CanReceiveEmail,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    UpdatedByUserId = userId,
+                };
+
+                _context.UserSettings.Add(setting);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new UserSettingResponse
+                {
+                    CanReceiveEmail = setting.CanReceiveEmail,
+                    RowVersion = setting.RowVersion,
+                };
+            }
+
+            // 楽観的ロック：クライアントのRowVersionと一致しない場合は競合として扱う
+            if (setting.RowVersion != request.RowVersion)
+            {
+                await RaiseSettingConflictException(userId);
+            }
+
+            setting.CanReceiveEmail = request.CanReceiveEmail;
+            setting.UpdatedAt = DateTimeOffset.UtcNow;
+            setting.UpdatedByUserId = userId;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            _logger.LogInformation(
+                "ユーザー設定を更新しました。UserId: {UserId}, CanReceiveEmail: {CanReceiveEmail}",
+                userId,
+                request.CanReceiveEmail
+            );
+
+            return new UserSettingResponse
+            {
+                CanReceiveEmail = setting.CanReceiveEmail,
+                RowVersion = setting.RowVersion,
+            };
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogWarning(
+                "ユーザー設定更新失敗: 競合が発生しました。UserId: {UserId}, Error: {Error}",
+                userId,
+                ex.Message
+            );
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(
+                "ユーザー設定更新失敗: 予期しないエラーが発生しました。UserId: {UserId}, Error: {Error}",
+                userId,
+                ex.Message
+            );
+            throw;
+        }
+    }
+
+    /// <summary>
     /// ユーザーのデバイスを削除（関連するリフレッシュトークンも削除）
     /// </summary>
     /// <param name="userId">ユーザーID</param>
@@ -245,6 +337,7 @@ public class ProfileService
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+                RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };
 
@@ -496,6 +589,24 @@ public class ProfileService
         );
 
         return true;
+    }
+
+    private async Task RaiseSettingConflictException(int userId)
+    {
+        var latestSetting = await _context.UserSettings.FirstOrDefaultAsync(us => us.UserId == userId);
+        if (latestSetting == null)
+        {
+            throw new NotFoundException("ユーザー設定が見つかりません。");
+        }
+
+        throw new ConcurrencyException<UserSettingResponse>(
+            "別のユーザーが同時に設定を変更しました。最新の設定を取得して再度操作してください。",
+            new UserSettingResponse
+            {
+                CanReceiveEmail = latestSetting.CanReceiveEmail,
+                RowVersion = latestSetting.RowVersion,
+            }
+        );
     }
 
 }

@@ -815,6 +815,7 @@ public class UserService
                     ? new UserSettingResponse
                     {
                         CanReceiveEmail = latestUser.Setting.CanReceiveEmail,
+                        RowVersion = latestUser.Setting.RowVersion,
                     }
                     : new UserSettingResponse(),
             }

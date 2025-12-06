@@ -15,10 +15,12 @@
 
 import type {
   OrganizationResponse,
+  OrganizationSettingResponse,
   SkillDetailResponse,
   TagDetailResponse,
   TaskCommentDetailResponse,
   UserDetailResponse,
+  UserSettingResponse,
   WorkspaceDetailResponse,
   WorkspaceItemDetailResponse,
   WorkspaceTaskDetailResponse,
@@ -67,6 +69,10 @@ export type ConflictLatestData =
       data: OrganizationResponse;
     }
   | {
+      type: 'organizationSetting';
+      data: OrganizationSettingResponse;
+    }
+  | {
       type: 'skill';
       data: SkillDetailResponse;
     }
@@ -81,6 +87,10 @@ export type ConflictLatestData =
   | {
       type: 'user';
       data: UserDetailResponse;
+    }
+  | {
+      type: 'userSetting';
+      data: UserSettingResponse;
     }
   | {
       type: 'workspace';

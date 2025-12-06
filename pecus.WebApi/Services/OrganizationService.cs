@@ -3,6 +3,8 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Requests.Organization;
+using Pecus.Models.Responses.Organization;
 
 namespace Pecus.Services;
 
@@ -241,6 +243,63 @@ public class OrganizationService
         }
 
         return organization;
+    }
+
+    /// <summary>
+    /// 組織設定を更新（管理者用）
+    /// </summary>
+    public async Task<OrganizationSettingResponse> AdminUpdateOrganizationSettingAsync(
+        int organizationId,
+        AdminUpdateOrganizationSettingRequest request,
+        int? updatedByUserId = null
+    )
+    {
+        var organization = await _context.Organizations.FindAsync(organizationId);
+        if (organization == null)
+        {
+            throw new NotFoundException("組織が見つかりません。");
+        }
+
+        var setting = await _context.OrganizationSettings.FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+        if (setting == null)
+        {
+            throw new NotFoundException("組織設定が見つかりません。");
+        }
+
+        // 楽観的ロックチェック
+        if (setting.RowVersion != request.RowVersion)
+        {
+            await RaiseConflictException(organizationId);
+        }
+
+        setting.TaskOverdueThreshold = request.TaskOverdueThreshold;
+        setting.WeeklyReportDeliveryDay = request.WeeklyReportDeliveryDay;
+        setting.MailFromAddress = request.MailFromAddress;
+        setting.MailFromName = request.MailFromName;
+        setting.GenerativeApiVendor = request.GenerativeApiVendor;
+        setting.Plan = request.Plan;
+        setting.UpdatedAt = DateTimeOffset.UtcNow;
+        setting.UpdatedByUserId = updatedByUserId;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await RaiseConflictException(organizationId);
+        }
+
+        return new OrganizationSettingResponse
+        {
+            TaskOverdueThreshold = setting.TaskOverdueThreshold,
+            WeeklyReportDeliveryDay = setting.WeeklyReportDeliveryDay,
+            MailFromAddress = setting.MailFromAddress,
+            MailFromName = setting.MailFromName,
+            GenerativeApiVendor = setting.GenerativeApiVendor,
+            Plan = setting.Plan,
+            RowVersion = setting.RowVersion,
+        };
     }
     public async Task<Organization> BackendUpdateOrganizationAsync(
         int organizationId,

@@ -7,7 +7,9 @@ import type { SetOwnSkillsRequest } from '../models/SetOwnSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdatePasswordRequest } from '../models/UpdatePasswordRequest';
 import type { UpdateProfileRequest } from '../models/UpdateProfileRequest';
+import type { UpdateUserSettingRequest } from '../models/UpdateUserSettingRequest';
 import type { UserDetailResponse } from '../models/UserDetailResponse';
+import type { UserSettingResponse } from '../models/UserSettingResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -42,6 +44,29 @@ export class ProfileService {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/profile',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+                409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 自分のユーザー設定を更新
+     * メール受信可否など、個人の設定を更新します。
+     * @param requestBody 設定更新リクエスト
+     * @returns UserSettingResponse OK
+     * @throws ApiError
+     */
+    public static putApiProfileSetting(
+        requestBody?: UpdateUserSettingRequest,
+    ): CancelablePromise<UserSettingResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/profile/setting',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

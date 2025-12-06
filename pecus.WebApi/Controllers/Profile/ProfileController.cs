@@ -89,6 +89,32 @@ public class ProfileController : BaseSecureController
     }
 
     /// <summary>
+    /// 自分のユーザー設定を更新
+    /// </summary>
+    /// <remarks>
+    /// メール受信可否など、個人の設定を更新します。
+    /// </remarks>
+    /// <param name="request">設定更新リクエスト</param>
+    /// <returns>更新後のユーザー設定</returns>
+    [HttpPut("setting")]
+    [ProducesResponseType(typeof(UserSettingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<UserSettingResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<UserSettingResponse>> UpdateUserSetting(UpdateUserSettingRequest request)
+    {
+        var response = await _profileService.UpdateOwnSettingAsync(CurrentUserId, request);
+
+        if (response == null)
+        {
+            throw new NotFoundException("ユーザーが見つかりません。");
+        }
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// 自分のスキルを設定
     /// </summary>
     /// <remarks>

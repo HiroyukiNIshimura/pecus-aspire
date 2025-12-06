@@ -141,4 +141,34 @@ public class AdminOrganizationController : BaseAdminController
 
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// 自組織の設定を更新
+    /// </summary>
+    /// <remarks>
+    /// タスク期限や配信設定などの組織設定を更新します。
+    /// </remarks>
+    [HttpPut("setting")]
+    [ProducesResponseType(typeof(OrganizationSettingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ConcurrencyErrorResponse<OrganizationSettingResponse>), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<OrganizationSettingResponse>> UpdateMyOrganizationSetting(
+        [FromBody] AdminUpdateOrganizationSettingRequest request
+    )
+    {
+        if (CurrentUser?.OrganizationId == null)
+        {
+            throw new NotFoundException("ユーザーが組織に所属していません。");
+        }
+
+        var setting = await _organizationService.AdminUpdateOrganizationSettingAsync(
+            organizationId: CurrentUser.OrganizationId.Value,
+            request: request,
+            updatedByUserId: CurrentUserId
+        );
+
+        return TypedResults.Ok(setting);
+    }
 }
