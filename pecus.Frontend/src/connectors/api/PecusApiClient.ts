@@ -217,16 +217,17 @@ export const parseErrorResponse = (error: unknown, defaultMessage?: string): Err
  * - getAccessToken() が自動的にトークンを取得
  */
 export function createPecusApiClients() {
-  // OpenAPI 設定を初期化
-  configureOpenAPI(
+  // BASE URL を環境に応じて決定
+  const baseUrl =
     process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "https://localhost:7265",
-    async () => {
-      const token = await getAccessToken();
-      return token ?? undefined;
-    },
-  );
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    "https://localhost:7265";
+
+  // OpenAPI 設定を初期化
+  configureOpenAPI(baseUrl, async () => {
+    const token = await getAccessToken();
+    return token ?? undefined;
+  });
 
   // API サービスインスタンスを返す
   return createApiClientInstances();

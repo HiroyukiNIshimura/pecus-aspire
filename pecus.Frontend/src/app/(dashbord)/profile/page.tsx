@@ -31,7 +31,7 @@ export default async function ProfileSettingsPage() {
     }
 
     // 保留中のメールアドレス変更を取得
-    pendingEmailChange = await api.profileEmail.getApiProfileEmailPending();
+    pendingEmailChange = await api.profile.getApiProfileEmailPending();
   } catch (error) {
     console.error('Failed to fetch profile data:', error);
 
