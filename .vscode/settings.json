@@ -49,5 +49,8 @@
   "shellcheck.ignorePatterns": {
     "**/.env*": true
   },
-  "editor.defaultFormatter": "biomejs.biome"
+  "editor.defaultFormatter": "biomejs.biome",
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }
