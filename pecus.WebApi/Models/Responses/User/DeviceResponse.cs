@@ -92,4 +92,9 @@ public class DeviceResponse
     /// 端末が無効化されているか
     /// </summary>
     public bool DeviceIsRevoked { get; set; }
+
+    /// <summary>
+    /// ハッシュ化されたデバイス識別子（現在の端末判定用）
+    /// </summary>
+    public string? HashedIdentifier { get; set; }
 }

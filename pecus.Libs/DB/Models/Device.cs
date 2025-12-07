@@ -75,13 +75,6 @@ public class Device
     public string? Timezone { get; set; }
 
     /// <summary>
-    /// 当該端末に紐づく有効リフレッシュトークン数（表示専用）。
-    /// DB 上で集計してセットする想定のためマップしないプロパティにすることが想定されます。
-    /// </summary>
-    [NotMapped]
-    public int RefreshTokenCount { get; set; }
-
-    /// <summary>
     /// 無効化フラグ（端末を管理者またはユーザーが無効化したか）
     /// </summary>
     public bool IsRevoked { get; set; }

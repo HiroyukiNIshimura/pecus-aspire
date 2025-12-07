@@ -1,9 +1,42 @@
+'use client';
+
+import { useState } from 'react';
 import type { DeviceResponse } from '@/connectors/api/pecus';
 
 interface DevicesTabProps {
   devices: DeviceResponse[];
   isLoading?: boolean;
   error?: string | null;
+}
+
+/**
+ * 現在のブラウザからデバイス情報を取得
+ * C#側のDeviceType/OSPlatform enumに合わせた値を返す
+ */
+function detectCurrentDeviceInfo(): { deviceType: string; os: string; userAgent: string } {
+  const userAgent = navigator.userAgent;
+
+  // デバイスタイプの判定（C#側のDeviceType enumに合わせる）
+  // Browser = 1, MobileApp = 2, DesktopApp = 3, Other = 99
+  // ブラウザからのアクセスは全て 'Browser'
+  const deviceType = 'Browser';
+
+  // OSの判定（C#側のOSPlatform enumに合わせる）
+  // Unknown = 0, Windows = 1, MacOS = 2, Linux = 3, iOS = 4, Android = 5
+  let os = 'Unknown';
+  if (/Windows/i.test(userAgent)) {
+    os = 'Windows';
+  } else if (/Mac OS X|Macintosh/i.test(userAgent)) {
+    os = 'MacOS';
+  } else if (/Android/i.test(userAgent)) {
+    os = 'Android';
+  } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+    os = 'iOS'; // C#側は小文字の 'i'
+  } else if (/Linux/i.test(userAgent)) {
+    os = 'Linux';
+  }
+
+  return { deviceType, os, userAgent };
 }
 
 const formatDateTime = (value?: string) => {
@@ -37,6 +70,20 @@ const InfoItem = ({ label, value }: { label: string; value?: string | null }) =>
 );
 
 export default function DevicesTab({ devices, isLoading = false, error }: DevicesTabProps) {
+  // 現在のブラウザのデバイス情報を取得
+  const [currentDeviceInfo, setCurrentDeviceInfo] = useState<{
+    deviceType: string;
+    os: string;
+    userAgent: string;
+  } | null>(null);
+
+  // クライアントサイドでのみデバイス情報を取得
+  if (typeof window !== 'undefined' && currentDeviceInfo === null) {
+    // SSR時はnullのまま、クライアント時に取得
+    const info = detectCurrentDeviceInfo();
+    setCurrentDeviceInfo(info);
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-base-300 bg-base-200/50 px-6 py-10 text-center">
@@ -116,27 +163,37 @@ export default function DevicesTab({ devices, isLoading = false, error }: Device
     );
   };
 
-  const isTokenValid = (device: DeviceResponse) => {
-    // トークンの有効期限が切れている場合は無効
-    if (device.tokenExpiresAt && Date.parse(device.tokenExpiresAt) <= now) return false;
-    return true;
+  const isCurrentDevice = (device: DeviceResponse) => {
+    // クライアントサイドでのみ判定可能
+    if (!currentDeviceInfo) {
+      return false;
+    }
+
+    // DeviceType, OS, UserAgent(client) の組み合わせで現在のデバイスを判定
+    // hashedIdentifierはIPアドレスを含むためフロントエンドでは再現できない
+    const deviceTypeMatch = device.deviceType === currentDeviceInfo.deviceType;
+    const osMatch = device.os === currentDeviceInfo.os;
+    const clientMatch = device.client === currentDeviceInfo.userAgent;
+
+    // 全て一致する場合に現在のデバイスと判定
+    return deviceTypeMatch && osMatch && clientMatch;
   };
 
-  const activeDevices = devices.filter((d) => isTokenValid(d));
-  const revokedDevices = devices.filter((d) => !isTokenValid(d));
+  const activeDevices = devices.filter((d) => isCurrentDevice(d));
+  const revokedDevices = devices.filter((d) => !isCurrentDevice(d));
 
   return (
     <div className="space-y-6">
       {activeDevices.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-base-content">有効な端末</h3>
+          <h3 className="text-lg font-semibold text-base-content">現在の端末</h3>
           <div className="space-y-4">{activeDevices.map((d) => renderCard(d))}</div>
         </div>
       )}
 
       {revokedDevices.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-base-content">無効な端末</h3>
+          <h3 className="text-lg font-semibold text-base-content">その他の端末</h3>
           <div className="space-y-4">{revokedDevices.map((d) => renderCard(d))}</div>
         </div>
       )}

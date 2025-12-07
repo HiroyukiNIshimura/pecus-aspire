@@ -120,7 +120,8 @@ public class ProfileService
             .Include(rt => rt.Device)
             .Where(rt =>
                 rt.UserId == userId &&
-                rt.Device != null && !rt.Device.IsRevoked &&
+                rt.IsRevoked == false &&
+                rt.Device != null && rt.Device.IsRevoked == false &&
                 rt.DeviceId != null)
             .OrderByDescending(rt => rt.CreatedAt)
             .ToListAsync();
@@ -144,6 +145,7 @@ public class ProfileService
             LastSeenLocation = rt.Device?.LastSeenLocation,
             Timezone = rt.Device?.Timezone,
             DeviceIsRevoked = rt.Device?.IsRevoked ?? false,
+            HashedIdentifier = rt.Device?.HashedIdentifier,
         }).ToList();
 
         return response;

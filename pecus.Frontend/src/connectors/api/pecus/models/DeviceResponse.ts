@@ -74,5 +74,9 @@ export type DeviceResponse = {
      * 端末が無効化されているか
      */
     deviceIsRevoked?: boolean;
+    /**
+     * ハッシュ化されたデバイス識別子（現在の端末判定用）
+     */
+    hashedIdentifier?: string | null;
 };
 

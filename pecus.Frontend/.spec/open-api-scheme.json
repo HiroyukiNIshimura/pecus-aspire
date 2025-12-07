@@ -8665,6 +8665,11 @@
           "deviceIsRevoked": {
             "type": "boolean",
             "description": "端末が無効化されているか"
+          },
+          "hashedIdentifier": {
+            "type": "string",
+            "description": "ハッシュ化されたデバイス識別子（現在の端末判定用）",
+            "nullable": true
           }
         },
         "additionalProperties": false,
