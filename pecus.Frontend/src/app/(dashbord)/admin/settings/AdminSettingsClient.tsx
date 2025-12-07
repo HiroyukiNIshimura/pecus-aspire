@@ -304,27 +304,37 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
 
                   <div className="form-control">
-                    <label className="label" htmlFor="select-weekly-report-day">
-                      <span className="label-text font-semibold">
-                        週間レポート配信曜日 <span className="text-error">*</span>
-                      </span>
+                    <label className="label" htmlFor="weeklyReportDeliveryDay">
+                      <span className="label-text font-semibold">週間レポート配信曜日 </span>
                     </label>
-                    <select
-                      id="select-weekly-report-day"
+                    <input
+                      id="weeklyReportDeliveryDay"
                       name="weeklyReportDeliveryDay"
-                      className={`select select-bordered ${shouldShowError('weeklyReportDeliveryDay') ? 'select-error' : ''}`}
+                      type="hidden"
                       value={formData.weeklyReportDeliveryDay}
-                      onChange={(e) => handleFieldChange('weeklyReportDeliveryDay', Number(e.target.value))}
+                      readOnly
                       required
+                    />
+                    <div
+                      className={`flex flex-wrap gap-2 ${shouldShowError('weeklyReportDeliveryDay') ? 'ring-2 ring-error rounded-lg p-2' : ''}`}
                     >
                       {weekdayOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleFieldChange('weeklyReportDeliveryDay', option.value)}
+                          className={`btn btn-sm ${
+                            formData.weeklyReportDeliveryDay === option.value ? 'btn-primary' : 'btn-outline'
+                          }`}
+                          aria-label={`曜日選択: ${option.label}`}
+                          disabled={isSubmitting}
+                        >
                           {option.label}
-                        </option>
+                        </button>
                       ))}
-                    </select>
+                    </div>
                     {shouldShowError('weeklyReportDeliveryDay') && (
-                      <span className="label-text-alt text-error">{getFieldError('weeklyReportDeliveryDay')}</span>
+                      <span className="label-text-alt text-error mt-2">{getFieldError('weeklyReportDeliveryDay')}</span>
                     )}
                   </div>
                 </div>
@@ -332,7 +342,9 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
                     <label className="label" htmlFor="input-mail-from-address">
-                      <span className="label-text font-semibold">メール配信元アドレス</span>
+                      <span className="label-text font-semibold">
+                        メール配信元アドレス <span className="text-error">*</span>
+                      </span>
                     </label>
                     <input
                       id="input-mail-from-address"
@@ -342,6 +354,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       value={formData.mailFromAddress ?? ''}
                       onChange={(e) => handleFieldChange('mailFromAddress', e.target.value)}
                       placeholder="noreply@example.com"
+                      required
                     />
                     {shouldShowError('mailFromAddress') && (
                       <span className="label-text-alt text-error">{getFieldError('mailFromAddress')}</span>
@@ -350,7 +363,9 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
 
                   <div className="form-control">
                     <label className="label" htmlFor="input-mail-from-name">
-                      <span className="label-text font-semibold">メール配信元名</span>
+                      <span className="label-text font-semibold">
+                        メール配信元名 <span className="text-error">*</span>
+                      </span>
                     </label>
                     <input
                       id="input-mail-from-name"
@@ -360,6 +375,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       value={formData.mailFromName ?? ''}
                       onChange={(e) => handleFieldChange('mailFromName', e.target.value)}
                       placeholder="Pecus サポート"
+                      required
                     />
                     {shouldShowError('mailFromName') && (
                       <span className="label-text-alt text-error">{getFieldError('mailFromName')}</span>
@@ -394,6 +410,32 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
 
                   <div className="form-control">
+                    <label className="label" htmlFor="input-generative-api-key">
+                      <span className="label-text font-semibold">
+                        生成APIキー {vendorRequiresKey && <span className="text-error">*</span>}
+                      </span>
+                    </label>
+                    <input
+                      id="input-generative-api-key"
+                      name="generativeApiKey"
+                      type="password"
+                      className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
+                      value={formData.generativeApiKey ?? ''}
+                      onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
+                      placeholder=""
+                      disabled={!vendorRequiresKey}
+                    />
+                    {shouldShowError('generativeApiKey') && (
+                      <span className="label-text-alt text-error">{getFieldError('generativeApiKey')}</span>
+                    )}
+                    {!vendorRequiresKey && (
+                      <span className="label-text-alt text-xs text-base-content/60">
+                        ベンダーが未設定の場合、APIキーは保存されません。
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="form-control">
                     <label className="label" htmlFor="select-plan">
                       <span className="label-text font-semibold">
                         プラン <span className="text-error">*</span>
@@ -415,34 +457,6 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                     </select>
                     {shouldShowError('plan') && (
                       <span className="label-text-alt text-error">{getFieldError('plan')}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="form-control">
-                    <label className="label" htmlFor="input-generative-api-key">
-                      <span className="label-text font-semibold">
-                        生成APIキー {vendorRequiresKey && <span className="text-error">*</span>}
-                      </span>
-                    </label>
-                    <input
-                      id="input-generative-api-key"
-                      name="generativeApiKey"
-                      type="password"
-                      className={`input input-bordered ${shouldShowError('generativeApiKey') ? 'input-error' : ''}`}
-                      value={formData.generativeApiKey ?? ''}
-                      onChange={(e) => handleFieldChange('generativeApiKey', e.target.value)}
-                      placeholder="sk-..."
-                      disabled={!vendorRequiresKey}
-                    />
-                    {shouldShowError('generativeApiKey') && (
-                      <span className="label-text-alt text-error">{getFieldError('generativeApiKey')}</span>
-                    )}
-                    {!vendorRequiresKey && (
-                      <span className="label-text-alt text-xs text-base-content/60">
-                        ベンダーが未設定の場合、APIキーは保存されません。
-                      </span>
                     )}
                   </div>
                 </div>

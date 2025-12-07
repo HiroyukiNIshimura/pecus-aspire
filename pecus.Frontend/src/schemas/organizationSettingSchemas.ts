@@ -33,18 +33,23 @@ export const organizationSettingSchema = z.object({
       .min(0, '週間レポート配信曜日は0以上で入力してください。')
       .max(7, '週間レポート配信曜日は7以下で入力してください。'),
   ),
-  mailFromAddress: z.preprocess((val) => {
-    if (val === '' || val === null || val === undefined) return undefined;
-    return val;
-  }, z
-    .string()
-    .max(254, 'メールアドレスは254文字以内で入力してください。')
-    .email('有効なメールアドレスを入力してください。')
-    .optional()),
-  mailFromName: z.preprocess((val) => {
-    if (val === '' || val === null || val === undefined) return undefined;
-    return val;
-  }, z.string().max(100, 'メール配信元名は100文字以内で入力してください。').optional()),
+  mailFromAddress: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      return val;
+    },
+    z
+      .string({ message: 'メール配信元アドレスは必須です。' })
+      .max(254, 'メールアドレスは254文字以内で入力してください。')
+      .email('有効なメールアドレスを入力してください。'),
+  ),
+  mailFromName: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined;
+      return val;
+    },
+    z.string({ message: 'メール配信元名は必須です。' }).max(100, 'メール配信元名は100文字以内で入力してください。'),
+  ),
   generativeApiVendor: z.enum(generativeVendors, {
     message: '生成APIベンダーを選択してください。',
   }),
