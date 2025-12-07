@@ -33,6 +33,7 @@ public class GlobalExceptionFilter : IExceptionFilter
         // 例外タイプごとにハンドリング
         var result = context.Exception switch
         {
+            UnauthorizedException ex => HandleUnauthorizedException(ex, context),
             NotFoundException ex => HandleNotFoundException(ex, context),
             BadRequestException ex => HandleBadRequestException(ex, context),
             DuplicateException ex => HandleDuplicateException(ex, context),
@@ -65,6 +66,28 @@ public class GlobalExceptionFilter : IExceptionFilter
         return new ObjectResult(response)
         {
             StatusCode = StatusCodes.Status409Conflict,
+        };
+    }
+
+    /// <summary>
+    /// UnauthorizedException: 401 Unauthorized
+    /// </summary>
+    private IActionResult HandleUnauthorizedException(UnauthorizedException ex, ExceptionContext context)
+    {
+        _logger.LogWarning(
+            "Unauthorized Exception: {Message}",
+            ex.Message
+        );
+
+        return new ObjectResult(
+            new ErrorResponse
+            {
+                StatusCode = StatusCodes.Status401Unauthorized,
+                Message = ex.Message,
+            }
+        )
+        {
+            StatusCode = StatusCodes.Status401Unauthorized,
         };
     }
 

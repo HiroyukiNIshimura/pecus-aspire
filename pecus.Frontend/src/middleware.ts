@@ -33,12 +33,21 @@ async function attemptRefresh(
 
     if (!refreshResponse.ok) {
       console.error('[Middleware] Refresh failed:', refreshResponse.status);
+      console.error('[Middleware] About to delete cookies and redirect to /signin');
 
       // リフレッシュトークンも無効な場合はクッキーをクリアしてログインページへ
       const response = NextResponse.redirect(new URL('/signin', request.url));
+
+      // キャッシュ無効化ヘッダーを設定（ブラウザ・CDKの両方に対して）
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      response.headers.set('Surrogate-Control', 'no-store');
+
       response.cookies.delete('accessToken');
       response.cookies.delete('refreshToken');
       response.cookies.delete('user');
+
       return response;
     }
 
@@ -55,6 +64,13 @@ async function attemptRefresh(
 
     // 新しいトークンをクッキーに設定してリクエストを続行
     const response = NextResponse.next();
+
+    // キャッシュ無効化ヘッダーを設定（SSRコンポーネントのキャッシュを回避）
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+
     const baseCookieOptions = {
       path: '/',
       httpOnly: false,
@@ -103,6 +119,13 @@ async function attemptRefresh(
 
     // エラー時はクッキーをクリアしてログインページへ
     const response = NextResponse.redirect(new URL('/signin', request.url));
+
+    // キャッシュ無効化ヘッダーを設定
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+
     response.cookies.delete('accessToken');
     response.cookies.delete('refreshToken');
     response.cookies.delete('user');
@@ -159,7 +182,13 @@ export async function middleware(request: NextRequest) {
     // 有効期限が5分以上残っている場合はそのまま通過
     if (expiresIn > 300) {
       console.log(`[Middleware] Access token valid for ${expiresIn}s, allowing access`);
-      return NextResponse.next();
+      const response = NextResponse.next();
+      // 保護されたページもキャッシュ無効化（セッション依存のため）
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      response.headers.set('Surrogate-Control', 'no-store');
+      return response;
     }
 
     // 有効期限が5分未満の場合はリフレッシュを試行
@@ -176,6 +205,13 @@ export async function middleware(request: NextRequest) {
 
     // リフレッシュトークンもない場合はクッキーをクリア
     const response = NextResponse.redirect(new URL('/signin', request.url));
+
+    // キャッシュ無効化ヘッダーを設定
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+
     response.cookies.delete('accessToken');
     response.cookies.delete('refreshToken');
     response.cookies.delete('user');

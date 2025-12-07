@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Services;
 
@@ -34,25 +35,25 @@ public class RefreshController : ControllerBase
     [AllowAnonymous]
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(RefreshResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<RefreshResponse>> Refresh([FromBody] RefreshRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.RefreshToken))
         {
-            throw new InvalidOperationException("RefreshToken is required");
+            throw new UnauthorizedException("RefreshToken is required");
         }
 
         var info = await _refreshService.ValidateRefreshTokenAsync(request.RefreshToken);
         if (info == null)
         {
-            throw new InvalidOperationException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid refresh token");
         }
 
         var user = await _userService.GetUserByIdAsync(info.UserId);
         if (user == null)
         {
-            throw new InvalidOperationException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid refresh token");
         }
 
         // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
