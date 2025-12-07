@@ -216,14 +216,6 @@ public class RefreshTokenService
             if (dbToken != null)
             {
                 dbToken.IsRevoked = true;
-
-                // 3. このトークンが関連付けられているDeviceも無効化
-                if (dbToken.Device != null && !dbToken.Device.IsRevoked)
-                {
-                    dbToken.Device.IsRevoked = true;
-                    dbToken.Device.LastSeenAt = DateTime.UtcNow;
-                }
-
                 await _context.SaveChangesAsync();
             }
 
