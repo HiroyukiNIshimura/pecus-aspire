@@ -131,6 +131,7 @@ export default function CommitterDashboardClient({
             emptyIconClass="icon-[mdi--clipboard-text-off-outline]"
             showItemCount={true}
             taskTypes={taskTypes}
+            displayMode="assigned"
             currentUser={
               userInfo
                 ? {

@@ -53,6 +53,8 @@ interface WorkspaceTaskAccordionProps {
     email: string;
     identityIconUrl: string | null;
   } | null;
+  /** 表示モード: 'assigned' = 担当者のみ表示, 'committer' = コミッターのみ表示, 'both' = 両方表示（デフォルト） */
+  displayMode?: 'assigned' | 'committer' | 'both';
 }
 
 /**
@@ -139,6 +141,7 @@ export default function WorkspaceTaskAccordion({
   showItemCount = false,
   taskTypes,
   currentUser,
+  displayMode = 'both',
 }: WorkspaceTaskAccordionProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -555,30 +558,69 @@ export default function WorkspaceTaskAccordion({
                                       </div>
 
                                       <div className="mt-3 flex items-center justify-between gap-2">
-                                        {task.assignedUserId ? (
-                                          <div className="flex items-center gap-2 min-w-0">
-                                            {task.assignedAvatarUrl ? (
-                                              <img
-                                                src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                                                alt={task.assignedUsername || '担当者'}
-                                                className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                                                title={task.assignedUsername || undefined}
-                                              />
-                                            ) : (
-                                              <span className="w-6 h-6 rounded-full bg-base-300" />
-                                            )}
-                                            {task.assignedUsername && (
-                                              <span
-                                                className="text-xs text-base-content/70 truncate max-w-[120px]"
-                                                title={task.assignedUsername}
-                                              >
-                                                {task.assignedUsername}
-                                              </span>
-                                            )}
-                                          </div>
-                                        ) : (
-                                          <span className="text-xs text-base-content/50">未担当</span>
-                                        )}
+                                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                          {/* 担当者情報 */}
+                                          {(displayMode === 'both' || displayMode === 'assigned') && (
+                                            <div>
+                                              <p className="text-xs text-base-content/50 mb-1">担当者</p>
+                                              {task.assignedUserId ? (
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                  {task.assignedAvatarUrl ? (
+                                                    <img
+                                                      src={getDisplayIconUrl(task.assignedAvatarUrl)}
+                                                      alt={task.assignedUsername || '担当者'}
+                                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                                                      title={task.assignedUsername || undefined}
+                                                    />
+                                                  ) : (
+                                                    <span className="w-5 h-5 rounded-full bg-base-300 flex-shrink-0" />
+                                                  )}
+                                                  {task.assignedUsername && (
+                                                    <span
+                                                      className="text-xs text-base-content/70 truncate"
+                                                      title={task.assignedUsername}
+                                                    >
+                                                      {task.assignedUsername}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              ) : (
+                                                <span className="text-xs text-base-content/50">--</span>
+                                              )}
+                                            </div>
+                                          )}
+
+                                          {/* コミッター情報 */}
+                                          {(displayMode === 'both' || displayMode === 'committer') && (
+                                            <div>
+                                              <p className="text-xs text-base-content/50 mb-1">コミッター</p>
+                                              {task.itemCommitterId ? (
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                  {task.itemCommitterAvatarUrl ? (
+                                                    <img
+                                                      src={getDisplayIconUrl(task.itemCommitterAvatarUrl)}
+                                                      alt={task.itemCommitterUsername || 'コミッター'}
+                                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                                                      title={task.itemCommitterUsername || undefined}
+                                                    />
+                                                  ) : (
+                                                    <span className="w-5 h-5 rounded-full bg-base-300 flex-shrink-0" />
+                                                  )}
+                                                  {task.itemCommitterUsername && (
+                                                    <span
+                                                      className="text-xs text-base-content/70 truncate"
+                                                      title={task.itemCommitterUsername}
+                                                    >
+                                                      {task.itemCommitterUsername}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              ) : (
+                                                <span className="text-xs text-base-content/50">--</span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
 
                                         <div className="flex items-center gap-1 flex-shrink-0">
                                           {task.isCompleted && (

@@ -125,6 +125,7 @@ export default function MyTasksDashboardClient({
             emptyIconClass="icon-[mdi--clipboard-check-outline]"
             showItemCount={false}
             taskTypes={taskTypes}
+            displayMode="committer"
             currentUser={
               userInfo
                 ? {
