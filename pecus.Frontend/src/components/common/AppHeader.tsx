@@ -12,6 +12,7 @@ interface AppHeaderProps {
   loading?: boolean;
   showAdminLink?: boolean;
   hideProfileMenu?: boolean;
+  hideSettingsMenu?: boolean;
   onLogout?: () => void;
 }
 
@@ -21,6 +22,7 @@ export default function AppHeader({
   loading = false,
   showAdminLink = true,
   hideProfileMenu = false,
+  hideSettingsMenu = false,
   onLogout,
 }: AppHeaderProps) {
   const { theme, changeTheme, mounted, resolvedTheme } = useTheme();
@@ -165,17 +167,22 @@ export default function AppHeader({
               {!hideProfileMenu && (
                 <li>
                   <a className="dropdown-item" href="/profile">
+                    <span className="icon-[mdi--account] size-5" aria-hidden="true" />
                     プロフィール
                   </a>
                 </li>
               )}
-              <li>
-                <a className="dropdown-item" href="/settings">
-                  設定
-                </a>
-              </li>
+              {!hideSettingsMenu && (
+                <li>
+                  <a className="dropdown-item" href="/profile/settings">
+                    <span className="icon-[mdi--cog] size-5" aria-hidden="true" />
+                    設定
+                  </a>
+                </li>
+              )}
               <li>
                 <button type="button" className="dropdown-item w-full text-left" onClick={handleLogout}>
+                  <span className="icon-[mdi--logout] size-5" aria-hidden="true" />
                   ログアウト
                 </button>
               </li>

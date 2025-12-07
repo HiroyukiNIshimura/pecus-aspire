@@ -13,6 +13,7 @@ import type {
   MessageResponse,
   SuccessResponse,
   UserDetailResponse,
+  UserSettingResponse,
 } from '@/connectors/api/pecus';
 import type { UpdateEmailFormInput, UpdatePasswordFormInput, UpdateSkillsFormInput } from '@/schemas/profileSchemas';
 import type { ApiResponse } from './types';
@@ -221,5 +222,42 @@ export async function deleteAvatarFile(fileData: {
   } catch (error) {
     console.error('Failed to delete avatar file:', error);
     return parseErrorResponse(error, '削除に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ユーザー設定を更新
+ * 楽観的ロックで競合を検出
+ */
+export async function updateUserSetting(request: {
+  canReceiveEmail: boolean;
+  rowVersion: number;
+}): Promise<ApiResponse<UserSettingResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.profile.putApiProfileSetting({
+      canReceiveEmail: request.canReceiveEmail,
+      rowVersion: request.rowVersion,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    // 409 Conflict（並行更新）を検出
+    const concurrencyError = detectConcurrencyError(error);
+    if (concurrencyError) {
+      const payload = concurrencyError.payload ?? {};
+      const current = payload.current as UserSettingResponse | undefined;
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrencyError.message,
+        latest: {
+          type: 'userSetting',
+          data: current as UserSettingResponse,
+        },
+      };
+    }
+
+    console.error('Failed to update user setting:', error);
+    return parseErrorResponse(error, 'ユーザー設定の更新に失敗しました');
   }
 }
