@@ -8,15 +8,20 @@ namespace Pecus.Models.Responses.User;
 public class DeviceResponse
 {
     /// <summary>
-    /// 端末ID
+    /// リフレッシュトークンID（セッションID）
     /// </summary>
     [Required]
-    public required int Id { get; set; }
+    public required int RefreshTokenId { get; set; }
 
     /// <summary>
-    /// 表示用短ID
+    /// 紐づく端末ID（端末情報が無い場合は null）
     /// </summary>
-    public string PublicId { get; set; } = string.Empty;
+    public int? DeviceId { get; set; }
+
+    /// <summary>
+    /// 表示用短ID（端末がある場合）
+    /// </summary>
+    public string? PublicId { get; set; }
 
     /// <summary>
     /// 表示名
@@ -26,12 +31,12 @@ public class DeviceResponse
     /// <summary>
     /// 端末の種類
     /// </summary>
-    public string DeviceType { get; set; } = string.Empty;
+    public string? DeviceType { get; set; }
 
     /// <summary>
     /// OS
     /// </summary>
-    public string OS { get; set; } = string.Empty;
+    public string? OS { get; set; }
 
     /// <summary>
     /// クライアント情報
@@ -42,6 +47,21 @@ public class DeviceResponse
     /// アプリバージョン
     /// </summary>
     public string? AppVersion { get; set; }
+
+    /// <summary>
+    /// トークン作成日時
+    /// </summary>
+    public DateTimeOffset TokenCreatedAt { get; set; }
+
+    /// <summary>
+    /// トークン有効期限
+    /// </summary>
+    public DateTimeOffset TokenExpiresAt { get; set; }
+
+    /// <summary>
+    /// トークンが無効化されているか
+    /// </summary>
+    public bool TokenIsRevoked { get; set; }
 
     /// <summary>
     /// 初回確認日時
@@ -69,12 +89,7 @@ public class DeviceResponse
     public string? Timezone { get; set; }
 
     /// <summary>
-    /// 有効なリフレッシュトークン数
+    /// 端末が無効化されているか
     /// </summary>
-    public int RefreshTokenCount { get; set; }
-
-    /// <summary>
-    /// 無効化フラグ
-    /// </summary>
-    public bool IsRevoked { get; set; }
+    public bool DeviceIsRevoked { get; set; }
 }

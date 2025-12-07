@@ -2526,8 +2526,8 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
@@ -3518,6 +3518,348 @@
         }
       }
     },
+    "/api/profile/devices": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分の有効なデバイス情報の一覧を取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/devices/{deviceId}": {
+      "delete": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "自分のデバイスを削除",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "description": "デバイスID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/profile/email/request-change": {
+      "post": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "メールアドレス変更をリクエスト",
+        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\n確認メールが送信され、24時間有効なトークンが発行されます。",
+        "requestBody": {
+          "description": "メールアドレス変更リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "確認メールを送信しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエストが無効です（パスワード不一致、重複メールアドレスなど）",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/profile/email/verify": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "メールアドレス変更を確認（トークン検証）",
+        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\nトークンは24時間有効で、一度のみ使用可能です。",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "確認トークン（GUIDベース、32文字）",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "メールアドレスの変更が完了しました",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "トークンが無効または期限切れです",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザーまたはトークンが見つかりません",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
+    "/api/profile/email/pending": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "未使用のメールアドレス変更トークン情報を取得",
+        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
+        "responses": {
+          "200": {
+            "description": "トークン情報を取得しました（存在する場合）",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "有効なトークンが存在しません"
+          },
+          "500": {
+            "description": "サーバーエラー"
+          }
+        }
+      }
+    },
     "/api/profile": {
       "get": {
         "tags": [
@@ -3999,348 +4341,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/profile/devices": {
-      "get": {
-        "tags": [
-          "Profile - Device"
-        ],
-        "summary": "自分の有効なデバイス情報の一覧を取得",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceResponse"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/profile/devices/{deviceId}": {
-      "delete": {
-        "tags": [
-          "Profile - Device"
-        ],
-        "summary": "自分のデバイスを削除",
-        "parameters": [
-          {
-            "name": "deviceId",
-            "in": "path",
-            "description": "デバイスID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/profile/email/request-change": {
-      "post": {
-        "tags": [
-          "Profile - Email"
-        ],
-        "summary": "メールアドレス変更をリクエスト",
-        "description": "新しいメールアドレスとパスワード（本人確認用）を送信します。\n確認メールが送信され、24時間有効なトークンが発行されます。",
-        "requestBody": {
-          "description": "メールアドレス変更リクエスト",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestEmailChangeRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestEmailChangeRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RequestEmailChangeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "確認メールを送信しました",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeRequestResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "リクエストが無効です（パスワード不一致、重複メールアドレスなど）",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーが見つかりません",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー"
-          }
-        }
-      }
-    },
-    "/api/profile/email/verify": {
-      "get": {
-        "tags": [
-          "Profile - Email"
-        ],
-        "summary": "メールアドレス変更を確認（トークン検証）",
-        "description": "確認メールに記載されたトークンを検証し、メールアドレスを変更します。\nトークンは24時間有効で、一度のみ使用可能です。",
-        "parameters": [
-          {
-            "name": "token",
-            "in": "query",
-            "description": "確認トークン（GUIDベース、32文字）",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "メールアドレスの変更が完了しました",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmailChangeVerifyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "トークンが無効または期限切れです",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "ユーザーまたはトークンが見つかりません",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "サーバーエラー"
-          }
-        }
-      }
-    },
-    "/api/profile/email/pending": {
-      "get": {
-        "tags": [
-          "Profile - Email"
-        ],
-        "summary": "未使用のメールアドレス変更トークン情報を取得",
-        "description": "ユーザーの有効な（未使用かつ期限内の）メールアドレス変更トークン情報を取得します。\nトークン本体は返しませんが、新しいメールアドレスと有効期限を確認できます。",
-        "responses": {
-          "200": {
-            "description": "トークン情報を取得しました（存在する場合）",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PendingEmailChangeResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "有効なトークンが存在しません"
-          },
-          "500": {
-            "description": "サーバーエラー"
           }
         }
       }
@@ -8578,18 +8578,24 @@
       },
       "DeviceResponse": {
         "required": [
-          "id"
+          "refreshTokenId"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "refreshTokenId": {
             "type": "integer",
-            "description": "端末ID",
+            "description": "リフレッシュトークンID（セッションID）",
             "format": "int32"
+          },
+          "deviceId": {
+            "type": "integer",
+            "description": "紐づく端末ID（端末情報が無い場合は null）",
+            "format": "int32",
+            "nullable": true
           },
           "publicId": {
             "type": "string",
-            "description": "表示用短ID",
+            "description": "表示用短ID（端末がある場合）",
             "nullable": true
           },
           "name": {
@@ -8617,6 +8623,20 @@
             "description": "アプリバージョン",
             "nullable": true
           },
+          "tokenCreatedAt": {
+            "type": "string",
+            "description": "トークン作成日時",
+            "format": "date-time"
+          },
+          "tokenExpiresAt": {
+            "type": "string",
+            "description": "トークン有効期限",
+            "format": "date-time"
+          },
+          "tokenIsRevoked": {
+            "type": "boolean",
+            "description": "トークンが無効化されているか"
+          },
           "firstSeenAt": {
             "type": "string",
             "description": "初回確認日時",
@@ -8642,14 +8662,9 @@
             "description": "タイムゾーン",
             "nullable": true
           },
-          "refreshTokenCount": {
-            "type": "integer",
-            "description": "有効なリフレッシュトークン数",
-            "format": "int32"
-          },
-          "isRevoked": {
+          "deviceIsRevoked": {
             "type": "boolean",
-            "description": "無効化フラグ"
+            "description": "端末が無効化されているか"
           }
         },
         "additionalProperties": false,
@@ -13758,12 +13773,6 @@
     },
     {
       "name": "Profile"
-    },
-    {
-      "name": "Profile - Device"
-    },
-    {
-      "name": "Profile - Email"
     },
     {
       "name": "Tag"

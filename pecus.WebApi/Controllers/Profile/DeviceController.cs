@@ -9,7 +9,7 @@ namespace Pecus.Controllers.Profile;
 /// デバイス管理コントローラー
 /// </summary>
 [Route("api/profile/devices")]
-[Tags("Profile - Device")]
+[Tags("Profile")]
 public class DeviceController : BaseSecureController
 {
     private readonly ProfileService _profileService;

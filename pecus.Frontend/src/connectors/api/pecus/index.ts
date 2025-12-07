@@ -163,8 +163,6 @@ export { FileService } from './services/FileService';
 export { MasterService } from './services/MasterService';
 export { MyService } from './services/MyService';
 export { ProfileService } from './services/ProfileService';
-export { ProfileDeviceService } from './services/ProfileDeviceService';
-export { ProfileEmailService } from './services/ProfileEmailService';
 export { TagService } from './services/TagService';
 export { TaskCommentService } from './services/TaskCommentService';
 export { TestEmailService } from './services/TestEmailService';

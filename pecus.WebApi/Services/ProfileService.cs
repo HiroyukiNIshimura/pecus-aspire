@@ -110,34 +110,43 @@ public class ProfileService
     }
 
     /// <summary>
-    /// ユーザーの有効なデバイス情報の一覧を取得
+    /// ユーザーの有効なデバイス（リフレッシュトークン）情報の一覧を取得
     /// </summary>
     /// <param name="userId">ユーザーID</param>
-    /// <returns>デバイス情報の一覧</returns>
+    /// <returns>デバイス（セッション）情報の一覧</returns>
     public async Task<List<DeviceResponse>> GetUserDevicesAsync(int userId)
     {
-        var devices = await _context.Devices
-            .Where(d => d.UserId == userId && !d.IsRevoked)
-            .Include(d => d.RefreshTokens)
-            .OrderByDescending(d => d.LastSeenAt)
+        var now = DateTimeOffset.UtcNow;
+
+        var tokens = await _context.RefreshTokens
+            .Include(rt => rt.Device)
+            .Where(rt =>
+                rt.UserId == userId &&
+                !rt.IsRevoked &&
+                rt.ExpiresAt > now &&
+                (rt.Device == null || !rt.Device.IsRevoked))
+            .OrderByDescending(rt => rt.CreatedAt)
             .ToListAsync();
 
-        var response = devices.Select(d => new DeviceResponse
+        var response = tokens.Select(rt => new DeviceResponse
         {
-            Id = d.Id,
-            PublicId = d.PublicId,
-            Name = d.Name,
-            DeviceType = d.DeviceType.ToString(),
-            OS = d.OS.ToString(),
-            Client = d.Client,
-            AppVersion = d.AppVersion,
-            FirstSeenAt = d.FirstSeenAt,
-            LastSeenAt = d.LastSeenAt,
-            LastIpMasked = d.LastIpMasked,
-            LastSeenLocation = d.LastSeenLocation,
-            Timezone = d.Timezone,
-            RefreshTokenCount = d.RefreshTokens.Count(rt => !rt.IsRevoked),
-            IsRevoked = d.IsRevoked,
+            RefreshTokenId = rt.Id,
+            TokenCreatedAt = rt.CreatedAt,
+            TokenExpiresAt = rt.ExpiresAt,
+            TokenIsRevoked = rt.IsRevoked,
+            DeviceId = rt.DeviceId,
+            PublicId = rt.Device?.PublicId,
+            Name = rt.Device?.Name,
+            DeviceType = rt.Device?.DeviceType.ToString(),
+            OS = rt.Device?.OS.ToString(),
+            Client = rt.Device?.Client,
+            AppVersion = rt.Device?.AppVersion,
+            FirstSeenAt = rt.Device?.FirstSeenAt ?? rt.CreatedAt,
+            LastSeenAt = rt.Device?.LastSeenAt ?? rt.CreatedAt,
+            LastIpMasked = rt.Device?.LastIpMasked,
+            LastSeenLocation = rt.Device?.LastSeenLocation,
+            Timezone = rt.Device?.Timezone,
+            DeviceIsRevoked = rt.Device?.IsRevoked ?? false,
         }).ToList();
 
         return response;
