@@ -22,6 +22,7 @@ async function attemptRefresh(
   request: NextRequest,
   refreshToken: string,
   existingUserCookie: string | undefined,
+  existingDeviceCookie: string | undefined,
 ): Promise<NextResponse> {
   try {
     const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
@@ -39,23 +40,39 @@ async function attemptRefresh(
     if (forwardedFor) headers['X-Forwarded-For'] = forwardedFor;
     if (clientIp) headers['X-Real-IP'] = clientIp;
 
-    // User-Agent からデバイス情報を解析
-    const { deviceName, deviceType, os } = parseDeviceInfoFromUserAgent(clientUserAgent);
+    let body: RefreshRequest;
+    //existingDeviceCookieが存在する場合はそこからデバイス情報を取得する
+    if (existingDeviceCookie) {
+      const deviceInfo = JSON.parse(existingDeviceCookie);
+      body = {
+        refreshToken,
+        userAgent: deviceInfo.userAgent,
+        ipAddress: clientIp,
+        deviceName: deviceInfo.name,
+        deviceType: deviceInfo.type,
+        os: deviceInfo.os,
+        appVersion: deviceInfo.appVersion,
+        timezone: deviceInfo.timezone,
+        location: deviceInfo.location,
+      };
+    } else {
+      // User-Agent からデバイス情報を解析
+      const { deviceName, deviceType, os } = parseDeviceInfoFromUserAgent(clientUserAgent);
 
-    // タイムゾーンはリクエストヘッダーから取得を試みる（存在しない場合はundefined）
-    const timezone = request.headers.get('x-timezone') ?? undefined;
-
-    const body: RefreshRequest = {
-      refreshToken,
-      userAgent: clientUserAgent,
-      ipAddress: clientIp,
-      deviceName,
-      deviceType,
-      os,
-      appVersion: undefined, // アプリバージョンはブラウザからは取得不可
-      timezone,
-      location: undefined, // ロケーションは別途位置情報APIが必要
-    };
+      // タイムゾーンはリクエストヘッダーから取得を試みる（存在しない場合はundefined）
+      const timezone = request.headers.get('x-timezone') ?? undefined;
+      body = {
+        refreshToken,
+        userAgent: clientUserAgent,
+        ipAddress: clientIp,
+        deviceName,
+        deviceType,
+        os,
+        appVersion: undefined, // アプリバージョンはブラウザからは取得不可
+        timezone,
+        location: undefined, // ロケーションは別途位置情報APIが必要
+      };
+    }
 
     const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
       method: 'POST',
@@ -79,6 +96,7 @@ async function attemptRefresh(
       response.cookies.delete('accessToken');
       response.cookies.delete('refreshToken');
       response.cookies.delete('user');
+      response.cookies.delete('device');
 
       return response;
     }
@@ -145,6 +163,29 @@ async function attemptRefresh(
       }
     }
 
+    // deviceクッキーが存在しない場合、リクエスト情報からデバイス情報を復元
+    if (!existingDeviceCookie) {
+      try {
+        const deviceInfo = {
+          name: body.deviceName,
+          type: body.deviceType,
+          os: body.os,
+          userAgent: body.userAgent,
+          appVersion: body.appVersion,
+          timezone: body.timezone,
+          location: body.location,
+          ipAddress: body.ipAddress,
+        };
+        response.cookies.set('device', JSON.stringify(deviceInfo), {
+          ...baseCookieOptions,
+          maxAge: refreshMaxAge,
+        });
+        console.log('[Middleware] Device cookie restored from request info');
+      } catch (decodeError) {
+        console.error('[Middleware] Failed to set device cookie:', decodeError);
+      }
+    }
+
     return response;
   } catch (error) {
     console.error('[Middleware] Refresh error:', error);
@@ -192,6 +233,7 @@ export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
   const refreshToken = request.cookies.get('refreshToken')?.value;
   const userCookie = request.cookies.get('user')?.value;
+  const deviceCookie = request.cookies.get('device')?.value;
 
   // トークンが存在しない場合はログインページへ
   if (!refreshToken) {
@@ -202,7 +244,7 @@ export async function middleware(request: NextRequest) {
   // アクセストークンがない場合はリフレッシュを試行
   if (!accessToken) {
     console.log('[Middleware] No access token found, attempting refresh with refresh token');
-    return await attemptRefresh(request, refreshToken, userCookie);
+    return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
   }
 
   try {
@@ -225,14 +267,14 @@ export async function middleware(request: NextRequest) {
 
     // 有効期限が5分未満の場合はリフレッシュを試行
     console.log(`[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`);
-    return await attemptRefresh(request, refreshToken, userCookie);
+    return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
   } catch (error) {
     console.error('[Middleware] Token validation error:', error);
 
     // トークンのデコードに失敗した場合、リフレッシュを試行
     if (refreshToken) {
       console.log('[Middleware] Token decode failed, attempting refresh');
-      return await attemptRefresh(request, refreshToken, userCookie);
+      return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
     }
 
     // リフレッシュトークンもない場合はクッキーをクリア

@@ -116,15 +116,12 @@ public class ProfileService
     /// <returns>デバイス（セッション）情報の一覧</returns>
     public async Task<List<DeviceResponse>> GetUserDevicesAsync(int userId)
     {
-        var now = DateTimeOffset.UtcNow;
-
         var tokens = await _context.RefreshTokens
             .Include(rt => rt.Device)
             .Where(rt =>
                 rt.UserId == userId &&
-                !rt.IsRevoked &&
-                rt.ExpiresAt > now &&
-                rt.Device != null)
+                rt.Device != null && !rt.Device.IsRevoked &&
+                rt.DeviceId != null)
             .OrderByDescending(rt => rt.CreatedAt)
             .ToListAsync();
 

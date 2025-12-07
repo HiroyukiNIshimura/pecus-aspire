@@ -29,6 +29,7 @@ export class SessionManager {
   private static readonly ACCESS_TOKEN_KEY = 'accessToken';
   private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private static readonly USER_KEY = 'user';
+  private static readonly DEVICE_KEY = 'device';
 
   // セッション取得（SSR専用）
   static async getSession(): Promise<SessionData | null> {
@@ -99,6 +100,12 @@ export class SessionManager {
 
       // user クッキーはリフレッシュトークンと同じ寿命に合わせる
       cookieStore.set(SessionManager.USER_KEY, userString, {
+        ...baseCookieOptions,
+        maxAge: refreshMaxAge,
+      });
+
+      // device クッキーはリフレッシュトークンと同じ寿命に合わせる
+      cookieStore.set(SessionManager.DEVICE_KEY, JSON.stringify(data.device || {}), {
         ...baseCookieOptions,
         maxAge: refreshMaxAge,
       });

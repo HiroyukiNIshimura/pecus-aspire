@@ -116,8 +116,14 @@ export default function DevicesTab({ devices, isLoading = false, error }: Device
     );
   };
 
-  const activeDevices = devices.filter((d) => !d.deviceIsRevoked);
-  const revokedDevices = devices.filter((d) => d.deviceIsRevoked);
+  const isTokenValid = (device: DeviceResponse) => {
+    // トークンの有効期限が切れている場合は無効
+    if (device.tokenExpiresAt && Date.parse(device.tokenExpiresAt) <= now) return false;
+    return true;
+  };
+
+  const activeDevices = devices.filter((d) => isTokenValid(d));
+  const revokedDevices = devices.filter((d) => !isTokenValid(d));
 
   return (
     <div className="space-y-6">
