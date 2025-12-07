@@ -1171,7 +1171,7 @@ public class DatabaseSeeder
                     {
                         WorkspaceId = workspace.Id,
                         Code = GenerateUniqueCode(),
-                        Subject = _faker.Lorem.Sentence(_random.Next(3, 8)), // 3-7単語の文
+                        Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
                         Body = playgroundJson, // playground.json の内容
                         RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
                         OwnerId = ownerId,
