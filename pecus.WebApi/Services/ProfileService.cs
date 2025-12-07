@@ -123,7 +123,8 @@ public class ProfileService
             .Where(rt =>
                 rt.UserId == userId &&
                 !rt.IsRevoked &&
-                rt.ExpiresAt > now)
+                rt.ExpiresAt > now &&
+                rt.Device != null)
             .OrderByDescending(rt => rt.CreatedAt)
             .ToListAsync();
 

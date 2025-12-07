@@ -52,7 +52,7 @@ public class RefreshTokenService
     /// <param name="userId"></param>
     /// <param name="deviceInfo">デバイス情報（nullの場合はデバイス作成をスキップ）</param>
     /// <returns></returns>
-    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId, DeviceInfo? deviceInfo = null)
+    public async Task<RefreshTokenInfo> CreateRefreshTokenAsync(int userId, DeviceInfo deviceInfo)
     {
         var token = Guid.NewGuid().ToString("N");
         var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
@@ -83,14 +83,10 @@ public class RefreshTokenService
             _context.RefreshTokens.Add(dbToken);
             await _context.SaveChangesAsync();
 
-            // 3. デバイス情報がある場合はDeviceテーブルにレコードを作成
-            if (deviceInfo != null)
+            var changeDevice = await CreateDeviceAsync(userId, deviceInfo, dbToken);
+            if (changeDevice)
             {
-                var changeDevice = await CreateDeviceAsync(userId, deviceInfo, dbToken);
-                if (changeDevice)
-                {
-                    info = info with { ChangeDevice = true };
-                }
+                info = info with { ChangeDevice = true };
             }
 
             // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
@@ -216,6 +212,14 @@ public class RefreshTokenService
             if (dbToken != null)
             {
                 dbToken.IsRevoked = true;
+
+                // 3. このトークンが関連付けられているDeviceも無効化
+                if (dbToken.Device != null && !dbToken.Device.IsRevoked)
+                {
+                    dbToken.Device.IsRevoked = true;
+                    dbToken.Device.LastSeenAt = DateTime.UtcNow;
+                }
+
                 await _context.SaveChangesAsync();
             }
 

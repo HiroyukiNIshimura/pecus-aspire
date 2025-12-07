@@ -23,12 +23,28 @@ async function attemptRefresh(
 ): Promise<NextResponse> {
   try {
     const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+    const clientUserAgent = request.headers.get('user-agent') ?? undefined;
+    const forwardedForHeader = request.headers.get('x-forwarded-for') ?? undefined;
+    const forwardedFor = forwardedForHeader?.split(',')[0].trim() || undefined;
+    const realIp = request.headers.get('x-real-ip') ?? undefined;
+    const clientIp = forwardedFor ?? realIp;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (clientUserAgent) headers['User-Agent'] = clientUserAgent;
+    if (forwardedFor) headers['X-Forwarded-For'] = forwardedFor;
+    if (clientIp) headers['X-Real-IP'] = clientIp;
+
     const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
+      headers,
+      body: JSON.stringify({
+        refreshToken,
+        userAgent: clientUserAgent,
+        ipAddress: clientIp,
+      }),
     });
 
     if (!refreshResponse.ok) {

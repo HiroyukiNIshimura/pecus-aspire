@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers.Entrance;
@@ -22,6 +23,30 @@ public class RefreshController : ControllerBase
         _refreshService = refreshService;
         _userService = userService;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// クライアントのIPアドレスを取得します
+    /// </summary>
+    private string? GetClientIpAddress()
+    {
+        // X-Forwarded-For ヘッダーをチェック（プロキシ経由の場合）
+        var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwardedFor))
+        {
+            // カンマ区切りで複数のIPが含まれる場合があるので、最初のものを取得
+            return forwardedFor.Split(',').First().Trim();
+        }
+
+        // X-Real-IP ヘッダーをチェック（Nginxなどのプロキシ）
+        var realIp = HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(realIp))
+        {
+            return realIp;
+        }
+
+        // RemoteIpAddress を取得
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 
     /// <summary>
@@ -58,7 +83,17 @@ public class RefreshController : ControllerBase
 
         // ローテーション: 古いリフレッシュトークンを無効化して新しいものを発行
         await _refreshService.RevokeRefreshTokenAsync(request.RefreshToken);
-        var newRefresh = await _refreshService.CreateRefreshTokenAsync(user.Id);
+        var deviceInfo = new RefreshTokenService.DeviceInfo(
+            DeviceName: request.DeviceName,
+            DeviceType: request.DeviceType ?? DeviceType.Browser,
+            OS: request.OS ?? OSPlatform.Unknown,
+            UserAgent: request.UserAgent ?? HttpContext.Request.Headers["User-Agent"].ToString(),
+            AppVersion: request.AppVersion,
+            Timezone: request.Timezone,
+            LastSeenLocation: request.Location,
+            IpAddress: request.IpAddress ?? GetClientIpAddress()
+        );
+        var newRefresh = await _refreshService.CreateRefreshTokenAsync(user.Id, deviceInfo);
 
         var accessToken = JwtBearerUtil.GenerateToken(user);
         var expiresAt = JwtBearerUtil.GetTokenExpiration();
