@@ -1,6 +1,85 @@
 import { getLocationFromCoordinates } from '@/actions/geolocation';
+import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import type { DeviceInfo } from '@/libs/atoms/deviceInfoAtom';
+
+/**
+ * User-Agent からデバイス情報を解析する（サーバーサイド/Edge Runtime対応）
+ * Middleware やサーバーコンポーネントから利用可能
+ */
+export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
+  deviceName: string;
+  deviceType: DeviceType;
+  os: OSPlatform;
+} {
+  if (!userAgent) {
+    return {
+      deviceName: 'Unknown Device',
+      deviceType: 'Other',
+      os: 'Unknown',
+    };
+  }
+
+  // OS判定
+  let os: OSPlatform;
+  if (userAgent.includes('Windows')) {
+    os = 'Windows';
+  } else if (userAgent.includes('Mac')) {
+    os = 'MacOS';
+  } else if (userAgent.includes('Linux') && !userAgent.includes('Android')) {
+    os = 'Linux';
+  } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+    os = 'iOS';
+  } else if (userAgent.includes('Android')) {
+    os = 'Android';
+  } else {
+    os = 'Unknown';
+  }
+
+  // デバイスタイプ判定
+  let deviceType: DeviceType;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes('mobile-app') || ua.includes('nativeapp')) {
+    deviceType = 'MobileApp';
+  } else if (ua.includes('electron') || ua.includes('desktop-app')) {
+    deviceType = 'DesktopApp';
+  } else {
+    // 一般的なブラウザUA
+    deviceType = 'Browser';
+  }
+
+  // デバイス名生成（ブラウザ名 + OS名）
+  const browserName = userAgent.includes('Chrome')
+    ? 'Chrome'
+    : userAgent.includes('Firefox')
+      ? 'Firefox'
+      : userAgent.includes('Safari')
+        ? 'Safari'
+        : userAgent.includes('Edge')
+          ? 'Edge'
+          : 'Browser';
+
+  const osName =
+    os === 'Windows'
+      ? 'Windows'
+      : os === 'MacOS'
+        ? 'macOS'
+        : os === 'Linux'
+          ? 'Linux'
+          : os === 'iOS'
+            ? 'iOS'
+            : os === 'Android'
+              ? 'Android'
+              : 'Unknown';
+
+  const deviceName = `${browserName} on ${osName}`;
+
+  return {
+    deviceName,
+    deviceType,
+    os,
+  };
+}
 
 /**
  * 緯度経度からおおよその地域を推定する（フォールバック用）

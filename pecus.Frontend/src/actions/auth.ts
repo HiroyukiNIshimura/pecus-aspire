@@ -66,6 +66,16 @@ export async function login(request: {
         email: response.email || '',
         roles: response.roles ? response.roles.map((role: RoleInfoResponse) => role.name || '') : [],
       },
+      device: {
+        name: request.deviceName,
+        type: request.deviceType,
+        os: request.os,
+        userAgent: request.userAgent,
+        appVersion: request.appVersion,
+        timezone: request.timezone,
+        location: request.location,
+        ipAddress: clientIp,
+      },
     };
 
     await SessionManager.setSession(sessionData);

@@ -13,6 +13,16 @@ export type SessionData = {
     email: string;
     roles: string[];
   };
+  device?: {
+    name?: string;
+    type?: string;
+    os?: string;
+    userAgent?: string;
+    appVersion?: string;
+    timezone?: string;
+    location?: string;
+    ipAddress?: string;
+  };
 };
 
 export class SessionManager {

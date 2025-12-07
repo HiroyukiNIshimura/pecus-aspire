@@ -9917,6 +9917,48 @@
             "minLength": 1,
             "type": "string",
             "description": "クライアントから送られるリフレッシュトークン"
+          },
+          "deviceName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "デバイス名（任意）",
+            "nullable": true
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceType"
+          },
+          "os": {
+            "$ref": "#/components/schemas/OSPlatform"
+          },
+          "userAgent": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "User-Agent（ヘッダー優先、任意）",
+            "nullable": true
+          },
+          "appVersion": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "アプリバージョン（任意）",
+            "nullable": true
+          },
+          "timezone": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "タイムゾーン（任意）",
+            "nullable": true
+          },
+          "location": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "ロケーション（任意）",
+            "nullable": true
+          },
+          "ipAddress": {
+            "maxLength": 45,
+            "type": "string",
+            "description": "IPアドレス（任意、未指定時はサーバー側推定）",
+            "nullable": true
           }
         },
         "additionalProperties": false,

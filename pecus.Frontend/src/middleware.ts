@@ -1,6 +1,8 @@
 import { type JwtPayload, jwtDecode } from 'jwt-decode';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import type { RefreshRequest } from './connectors/api/pecus';
+import { parseDeviceInfoFromUserAgent } from './utils/deviceInfo';
 
 interface CustomJwtPayload extends JwtPayload {
   // JWTのクレームに対応（JwtBearerUtil.csで定義）
@@ -37,14 +39,28 @@ async function attemptRefresh(
     if (forwardedFor) headers['X-Forwarded-For'] = forwardedFor;
     if (clientIp) headers['X-Real-IP'] = clientIp;
 
+    // User-Agent からデバイス情報を解析
+    const { deviceName, deviceType, os } = parseDeviceInfoFromUserAgent(clientUserAgent);
+
+    // タイムゾーンはリクエストヘッダーから取得を試みる（存在しない場合はundefined）
+    const timezone = request.headers.get('x-timezone') ?? undefined;
+
+    const body: RefreshRequest = {
+      refreshToken,
+      userAgent: clientUserAgent,
+      ipAddress: clientIp,
+      deviceName,
+      deviceType,
+      os,
+      appVersion: undefined, // アプリバージョンはブラウザからは取得不可
+      timezone,
+      location: undefined, // ロケーションは別途位置情報APIが必要
+    };
+
     const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        refreshToken,
-        userAgent: clientUserAgent,
-        ipAddress: clientIp,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!refreshResponse.ok) {
