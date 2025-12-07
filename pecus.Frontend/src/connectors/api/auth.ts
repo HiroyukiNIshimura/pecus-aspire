@@ -121,7 +121,9 @@ export async function refreshAccessToken(): Promise<{
  */
 export async function logout(): Promise<void> {
   try {
-    const accessToken = await getAccessToken();
+    const session = await SessionManager.getSession();
+    const accessToken = session?.accessToken;
+    const refreshToken = session?.refreshToken;
 
     // WebAPIのログアウトエンドポイントを呼ぶ（fetchを使用）
     if (accessToken) {
@@ -133,6 +135,7 @@ export async function logout(): Promise<void> {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({ refreshToken: refreshToken || "" }),
         });
       } catch (error) {
         console.error("Failed to call logout API:", error);

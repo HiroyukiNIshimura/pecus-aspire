@@ -114,7 +114,29 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData['user'] 
  */
 export async function logout(): Promise<ApiResponse<null>> {
   try {
-    // セッション情報をクリア（WebAPI呼び出しなし）
+    const session = await SessionManager.getSession();
+    const accessToken = session?.accessToken;
+    const refreshToken = session?.refreshToken;
+
+    // WebAPIのログアウトエンドポイントを呼んでトークンを無効化
+    if (accessToken) {
+      const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
+      try {
+        await fetch(`${apiBaseUrl}/api/entrance/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken: refreshToken || '' }),
+        });
+      } catch (error) {
+        console.error('Failed to call logout API:', error);
+        // エラーは無視してセッションクリアを続行
+      }
+    }
+
+    // セッション情報をクリア
     await SessionManager.clearSession();
 
     return { success: true, data: null };
