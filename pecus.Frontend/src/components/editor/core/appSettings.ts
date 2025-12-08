@@ -47,18 +47,21 @@ export type Settings = typeof INITIAL_SETTINGS;
  */
 export type EditorContextSettings = {
   /** ワークスペースID（画像アップロード用） */
-  workspaceId?: number;
+  workspaceId: number;
   /** アイテムID（画像アップロード用、既存アイテム編集時） */
   itemId?: number;
   /** セッションID（一時ファイルアップロード用、新規作成時） */
   sessionId?: string;
   /** 一時ファイルアップロード成功時のコールバック */
   onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
+  /** ベースURL */
+  baseUrl?: string;
 };
 
 export const DEFAULT_EDITOR_CONTEXT_SETTINGS: EditorContextSettings = {
-  workspaceId: undefined,
+  workspaceId: 0,
   itemId: undefined,
   sessionId: undefined,
   onTempFileUploaded: undefined,
+  baseUrl: undefined,
 };

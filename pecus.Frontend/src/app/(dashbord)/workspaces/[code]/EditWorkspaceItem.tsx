@@ -293,7 +293,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                       onChange={handleEditorChange}
                       debounceMs={500}
                       autoFocus={false}
-                      workspaceId={latestItem.workspaceId}
+                      workspaceId={latestItem.workspaceId!}
                       itemId={latestItem.id}
                     />
                   </div>

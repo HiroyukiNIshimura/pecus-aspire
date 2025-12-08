@@ -10,7 +10,7 @@
 import './Editor.css';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
@@ -29,9 +29,18 @@ export interface NotionLikeViewerProps {
    * Shikiによるコードハイライトを有効化するかどうか
    */
   isCodeShiki?: boolean;
+
+  /**
+   * ワークスペースID
+   * */
+  workspaceId: number;
 }
 
-export default function NotionLikeViewer({ initialViewerState, isCodeShiki = false }: NotionLikeViewerProps) {
+export default function NotionLikeViewer({
+  initialViewerState,
+  isCodeShiki = false,
+  workspaceId,
+}: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
     () => ({
@@ -39,6 +48,20 @@ export default function NotionLikeViewer({ initialViewerState, isCodeShiki = fal
       isCodeShiki,
     }),
     [isCodeShiki],
+  );
+
+  const [baseUrl, setBaseUrl] = useState('');
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
+
+  // エディタコンテキスト設定
+  const editorContext = useMemo(
+    () => ({
+      workspaceId: workspaceId,
+      baseUrl,
+    }),
+    [workspaceId, baseUrl],
   );
 
   const app = useMemo(
@@ -60,7 +83,7 @@ export default function NotionLikeViewer({ initialViewerState, isCodeShiki = fal
 
   return (
     <div className="notion-like-editor">
-      <SettingsContext initialSettings={settings}>
+      <SettingsContext initialSettings={settings} editorContext={editorContext}>
         <LexicalExtensionComposer extension={app} contentEditable={null}>
           <TableContext>
             <div className="viewer-shell">

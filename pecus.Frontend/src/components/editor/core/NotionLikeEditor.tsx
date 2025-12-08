@@ -13,7 +13,7 @@ import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { FlashMessageContext } from '../context/FlashMessageContext';
 import { SettingsContext } from '../context/SettingsContext';
@@ -86,9 +86,9 @@ export interface NotionLikeEditorProps {
   isCodeShiki?: boolean;
 
   /**
-   * ワークスペースID（画像アップロード用）
+   * ワークスペースID
    */
-  workspaceId?: number;
+  workspaceId: number;
 
   /**
    * アイテムID（画像アップロード用、既存アイテム編集時に設定）
@@ -136,15 +136,21 @@ export default function NotionLikeEditor({
     [showToolbar, measureTypingPerf, autoFocus, isCodeShiki],
   );
 
+  const [baseUrl, setBaseUrl] = useState('');
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
+
   // エディタコンテキスト設定（画像アップロード用）
   const editorContext = useMemo(
     () => ({
-      workspaceId,
+      workspaceId: workspaceId ?? 0,
       itemId,
       sessionId,
       onTempFileUploaded,
+      baseUrl,
     }),
-    [workspaceId, itemId, sessionId, onTempFileUploaded],
+    [workspaceId, itemId, sessionId, onTempFileUploaded, baseUrl],
   );
 
   const app = useMemo(

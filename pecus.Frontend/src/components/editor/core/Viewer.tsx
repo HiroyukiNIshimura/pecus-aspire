@@ -19,6 +19,7 @@ import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { CAN_USE_DOM } from '@lexical/utils';
 import { useEffect, useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
+import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
 import CodeActionMenuPlugin from '../plugins/CodeActionMenuPlugin';
 import CodeHighlightPrismPlugin from '../plugins/CodeHighlightPrismPlugin';
 import CodeHighlightShikiPlugin from '../plugins/CodeHighlightShikiPlugin';
@@ -101,6 +102,7 @@ export default function Viewer() {
       <TableCellResizer />
       <ImagesPlugin />
       <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
+      <AutoLinkPlugin />
       <TwitterPlugin />
       <YouTubePlugin />
       <FigmaPlugin />

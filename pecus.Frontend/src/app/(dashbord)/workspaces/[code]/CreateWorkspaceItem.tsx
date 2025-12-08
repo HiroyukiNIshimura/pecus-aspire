@@ -50,7 +50,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
   // エディタに渡す設定（新規作成時はsessionIdを使用）
   const editorSettings: EditorContextSettings = useMemo(
     () => ({
-      workspaceId,
+      workspaceId: workspaceId ?? 0,
       sessionId,
       onTempFileUploaded: handleTempFileUploaded,
     }),
