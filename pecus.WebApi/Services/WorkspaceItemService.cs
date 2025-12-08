@@ -96,10 +96,10 @@ public class WorkspaceItemService
                     {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {{8}}, false, true,
                     {{9}}, {{9}}, {{4}}
                 )
-                RETURNING ""Id"", ""ItemNumber"", xmin";
+                RETURNING ""Id"", ""ItemNumber""";
 
             var now = DateTime.UtcNow;
-            var result = await _context.Database
+            var result = _context.Database
                 .SqlQueryRaw<InsertedItemResult>(
                     insertSql,
                     workspaceId,                           // {0}
@@ -113,7 +113,8 @@ public class WorkspaceItemService
                     request.IsDraft,                       // {8}
                     now                                    // {9}
                 )
-                .FirstAsync();
+                .AsEnumerable()
+                .First();
 
             // 挿入されたアイテムを取得
             var item = await _context.WorkspaceItems.FindAsync(result.Id);
@@ -1399,7 +1400,6 @@ public class WorkspaceItemService
 /// </summary>
 internal class InsertedItemResult
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public int ItemNumber { get; set; }
-    public uint xmin { get; set; }
 }
