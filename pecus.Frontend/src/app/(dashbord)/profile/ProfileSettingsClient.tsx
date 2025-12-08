@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import { detect404ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
@@ -20,6 +21,23 @@ interface ProfileSettingsClientProps {
 
 type TabType = 'basic' | 'skills' | 'security' | 'devices';
 
+// クエリパラメータ値からタブIDへのマッピング
+const tabParamMap: Record<string, TabType> = {
+  basic: 'basic',
+  default: 'basic',
+  skill: 'skills',
+  skills: 'skills',
+  security: 'security',
+  device: 'devices',
+  devices: 'devices',
+};
+
+function getTabFromParam(param: string | null): TabType {
+  if (!param) return 'basic';
+  const normalized = param.toLowerCase();
+  return tabParamMap[normalized] ?? 'basic';
+}
+
 export default function ProfileSettingsClient({
   initialUser,
   initialPendingEmailChange,
@@ -27,7 +45,10 @@ export default function ProfileSettingsClient({
   fetchError,
 }: ProfileSettingsClientProps) {
   const notify = useNotify();
-  const [activeTab, setActiveTab] = useState<TabType>('basic');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('t');
+
+  const [activeTab, setActiveTab] = useState<TabType>(() => getTabFromParam(tabParam));
   const [user, setUser] = useState<UserInfo>(initialUser);
   const [pendingEmailChange, _setPendingEmailChange] = useState<PendingEmailChangeResponse | null>(
     initialPendingEmailChange,
@@ -37,6 +58,12 @@ export default function ProfileSettingsClient({
   const [devicesError, setDevicesError] = useState<string | null>(null);
   const [isDevicesLoading, setIsDevicesLoading] = useState(false);
   const [isDevicesFetched, setIsDevicesFetched] = useState(false);
+
+  // URLパラメータが変わった場合にタブを同期
+  useEffect(() => {
+    const newTab = getTabFromParam(tabParam);
+    setActiveTab(newTab);
+  }, [tabParam]);
 
   const fetchDevices = useCallback(async () => {
     if (isDevicesLoading) return;
