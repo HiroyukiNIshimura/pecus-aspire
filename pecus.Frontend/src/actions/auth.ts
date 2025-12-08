@@ -5,11 +5,7 @@ import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/Pecu
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
-import {
-  type CreateSessionInput,
-  type ServerSessionData,
-  ServerSessionManager,
-} from '@/libs/serverSession';
+import { type CreateSessionInput, type ServerSessionData, ServerSessionManager } from '@/libs/serverSession';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
 
