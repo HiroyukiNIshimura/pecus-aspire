@@ -8,7 +8,6 @@
 'use client';
 
 import './Editor.css';
-import { HorizontalRuleExtension } from '@lexical/extension';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
 import { useMemo } from 'react';

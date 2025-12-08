@@ -8,7 +8,6 @@
 'use client';
 
 import './Editor.css';
-import { HorizontalRuleExtension } from '@lexical/extension';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
