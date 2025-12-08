@@ -20,14 +20,20 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ProfileService {
     /**
-     * 自分の有効なデバイス情報の一覧を取得
+     * 自分の接続しているデバイス情報の一覧を取得
+     * @param refreshToken クライアントから送られるリフレッシュトークン
      * @returns DeviceResponse OK
      * @throws ApiError
      */
-    public static getApiProfileDevices(): CancelablePromise<Array<DeviceResponse>> {
+    public static getApiProfileDevices(
+        refreshToken: string,
+    ): CancelablePromise<Array<DeviceResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/profile/devices',
+            query: {
+                'RefreshToken': refreshToken,
+            },
             errors: {
                 404: `Not Found`,
                 500: `Internal Server Error`,

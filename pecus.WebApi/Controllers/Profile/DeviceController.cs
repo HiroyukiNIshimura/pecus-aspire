@@ -28,15 +28,15 @@ public class DeviceController : BaseSecureController
     }
 
     /// <summary>
-    /// 自分の有効なデバイス情報の一覧を取得
+    /// 自分の接続しているデバイス情報の一覧を取得
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<DeviceResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<List<DeviceResponse>>> GetDevices()
+    public async Task<Ok<List<DeviceResponse>>> GetDevices([FromQuery] GetDeviceRequest request)
     {
-        var response = await _profileService.GetUserDevicesAsync(CurrentUserId);
+        var response = await _profileService.GetUserDevicesAsync(CurrentUserId, request);
 
         if (response == null || response.Count == 0)
         {

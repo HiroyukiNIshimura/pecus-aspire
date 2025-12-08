@@ -70,7 +70,7 @@ export async function requestEmailChange(
 ): Promise<ApiResponse<EmailChangeRequestResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profileEmail.postApiProfileEmailRequestChange({
+    const response = await api.profile.postApiProfileEmailRequestChange({
       newEmail: input.newEmail,
       currentPassword: input.currentPassword,
     });
@@ -89,7 +89,7 @@ export async function requestEmailChange(
 export async function verifyEmailChange(token: string): Promise<ApiResponse<EmailChangeVerifyResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.profileEmail.getApiProfileEmailVerify(token);
+    const response = await api.profile.getApiProfileEmailVerify(token);
 
     return { success: true, data: response };
   } catch (error) {

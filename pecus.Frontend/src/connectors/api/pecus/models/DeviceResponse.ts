@@ -7,13 +7,9 @@
  */
 export type DeviceResponse = {
     /**
-     * リフレッシュトークンID（セッションID）
-     */
-    refreshTokenId: number;
-    /**
      * 紐づく端末ID（端末情報が無い場合は null）
      */
-    deviceId?: number | null;
+    id?: number | null;
     /**
      * 表示用短ID（端末がある場合）
      */
@@ -35,22 +31,6 @@ export type DeviceResponse = {
      */
     client?: string | null;
     /**
-     * アプリバージョン
-     */
-    appVersion?: string | null;
-    /**
-     * トークン作成日時
-     */
-    tokenCreatedAt?: string;
-    /**
-     * トークン有効期限
-     */
-    tokenExpiresAt?: string;
-    /**
-     * トークンが無効化されているか
-     */
-    tokenIsRevoked?: boolean;
-    /**
      * 初回確認日時
      */
     firstSeenAt?: string;
@@ -71,12 +51,8 @@ export type DeviceResponse = {
      */
     timezone?: string | null;
     /**
-     * 端末が無効化されているか
+     * 現在の端末判定用
      */
-    deviceIsRevoked?: boolean;
-    /**
-     * ハッシュ化されたデバイス識別子（現在の端末判定用）
-     */
-    hashedIdentifier?: string | null;
+    isCurrentDevice?: boolean;
 };
 

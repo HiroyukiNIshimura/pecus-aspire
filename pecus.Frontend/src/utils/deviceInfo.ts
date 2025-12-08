@@ -3,11 +3,20 @@ import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
 import type { DeviceInfo } from '@/libs/atoms/deviceInfoAtom';
 
-/**
- * User-Agent からデバイス情報を解析する（サーバーサイド/Edge Runtime対応）
- * Middleware やサーバーコンポーネントから利用可能
- */
-export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
+type UADataBrand = {
+  brand: string;
+  version?: string;
+};
+
+type UADataLike = {
+  brands?: UADataBrand[];
+  platform?: string;
+};
+
+function deriveDeviceInfoFromUserAgent(
+  userAgent: string | undefined,
+  userAgentData?: UADataLike,
+): {
   deviceName: string;
   deviceType: DeviceType;
   os: OSPlatform;
@@ -20,9 +29,20 @@ export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
     };
   }
 
-  // OS判定
+  const platformLower = userAgentData?.platform?.toLowerCase();
+
   let os: OSPlatform;
-  if (userAgent.includes('Windows')) {
+  if (platformLower?.includes('windows')) {
+    os = 'Windows';
+  } else if (platformLower?.includes('mac')) {
+    os = 'MacOS';
+  } else if (platformLower?.includes('linux')) {
+    os = 'Linux';
+  } else if (platformLower?.includes('ios')) {
+    os = 'iOS';
+  } else if (platformLower?.includes('android')) {
+    os = 'Android';
+  } else if (userAgent.includes('Windows')) {
     os = 'Windows';
   } else if (userAgent.includes('Mac')) {
     os = 'MacOS';
@@ -36,7 +56,6 @@ export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
     os = 'Unknown';
   }
 
-  // デバイスタイプ判定
   let deviceType: DeviceType;
   const ua = userAgent.toLowerCase();
   if (ua.includes('mobile-app') || ua.includes('nativeapp')) {
@@ -44,20 +63,29 @@ export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
   } else if (ua.includes('electron') || ua.includes('desktop-app')) {
     deviceType = 'DesktopApp';
   } else {
-    // 一般的なブラウザUA
     deviceType = 'Browser';
   }
 
-  // デバイス名生成（ブラウザ名 + OS名）
-  const browserName = userAgent.includes('Chrome')
-    ? 'Chrome'
-    : userAgent.includes('Firefox')
-      ? 'Firefox'
-      : userAgent.includes('Safari')
-        ? 'Safari'
-        : userAgent.includes('Edge')
-          ? 'Edge'
-          : 'Browser';
+  const brandNames = (userAgentData?.brands || []).map((b) => b.brand.toLowerCase());
+  const hasBrand = (keyword: string | RegExp) =>
+    brandNames.some((name) => (typeof keyword === 'string' ? name.includes(keyword) : keyword.test(name)));
+
+  const isEdgeByBrand = hasBrand(/edge|edg/i);
+  const isEdgeByUA = /Edg([A-Za-z]+)?\//i.test(userAgent);
+  const isFirefox = hasBrand('firefox') || userAgent.includes('Firefox');
+  const isChromeLike = (hasBrand('chromium') || hasBrand('chrome') || userAgent.includes('Chrome')) && !isEdgeByUA;
+  const isSafari = (hasBrand('safari') || /safari/i.test(userAgent)) && !isChromeLike && !isEdgeByUA && !isFirefox;
+
+  const browserName =
+    isEdgeByBrand || isEdgeByUA
+      ? 'Edge'
+      : isFirefox
+        ? 'Firefox'
+        : isChromeLike
+          ? 'Chrome'
+          : isSafari
+            ? 'Safari'
+            : 'Browser';
 
   const osName =
     os === 'Windows'
@@ -79,6 +107,18 @@ export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
     deviceType,
     os,
   };
+}
+
+/**
+ * User-Agent からデバイス情報を解析する（サーバーサイド/Edge Runtime対応）
+ * Middleware やサーバーコンポーネントから利用可能
+ */
+export function parseDeviceInfoFromUserAgent(userAgent: string | undefined): {
+  deviceName: string;
+  deviceType: DeviceType;
+  os: OSPlatform;
+} {
+  return deriveDeviceInfoFromUserAgent(userAgent);
 }
 
 /**
@@ -188,48 +228,8 @@ function getApproximateLocation(latitude: number, longitude: number): string {
  */
 export async function getDeviceInfo(): Promise<DeviceInfo> {
   const userAgent = navigator.userAgent;
-
-  // OS判定 (navigator.userAgentから判定 - navigator.platformは非推奨)
-  let os: OSPlatform;
-  if (userAgent.includes('Windows')) {
-    os = 'Windows';
-  } else if (userAgent.includes('Mac')) {
-    os = 'MacOS';
-  } else if (userAgent.includes('Linux')) {
-    os = 'Linux';
-  } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
-    os = 'iOS';
-  } else if (userAgent.includes('Android')) {
-    os = 'Android';
-  } else {
-    os = 'Unknown';
-  }
-
-  // デバイス名生成（ブラウザ名 + OS名）
-  const browserName = userAgent.includes('Chrome')
-    ? 'Chrome'
-    : userAgent.includes('Firefox')
-      ? 'Firefox'
-      : userAgent.includes('Safari')
-        ? 'Safari'
-        : userAgent.includes('Edge')
-          ? 'Edge'
-          : 'Browser';
-
-  const osName =
-    os === 'Windows'
-      ? 'Windows'
-      : os === 'MacOS'
-        ? 'macOS'
-        : os === 'Linux'
-          ? 'Linux'
-          : os === 'iOS'
-            ? 'iOS'
-            : os === 'Android'
-              ? 'Android'
-              : 'Unknown';
-
-  const deviceName = `${browserName} on ${osName}`;
+  const uaData = (navigator as { userAgentData?: UADataLike }).userAgentData;
+  const parsed = deriveDeviceInfoFromUserAgent(userAgent, uaData);
 
   // Geolocation APIで位置情報を取得し、Nominatim APIで詳細な地域情報に変換
   let location = null;
@@ -240,7 +240,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 3000,
+          timeout: 5000,
           maximumAge: 180000, // 3分以内のキャッシュを使用
         });
       });
@@ -272,9 +272,9 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
 
   return {
     deviceType: 'Browser', // Browser
-    os,
+    os: parsed.os,
     userAgent,
-    deviceName,
+    deviceName: parsed.deviceName,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     appVersion: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
     location,

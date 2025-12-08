@@ -1,42 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type { DeviceResponse } from '@/connectors/api/pecus';
 
 interface DevicesTabProps {
   devices: DeviceResponse[];
   isLoading?: boolean;
   error?: string | null;
-}
-
-/**
- * 現在のブラウザからデバイス情報を取得
- * C#側のDeviceType/OSPlatform enumに合わせた値を返す
- */
-function detectCurrentDeviceInfo(): { deviceType: string; os: string; userAgent: string } {
-  const userAgent = navigator.userAgent;
-
-  // デバイスタイプの判定（C#側のDeviceType enumに合わせる）
-  // Browser = 1, MobileApp = 2, DesktopApp = 3, Other = 99
-  // ブラウザからのアクセスは全て 'Browser'
-  const deviceType = 'Browser';
-
-  // OSの判定（C#側のOSPlatform enumに合わせる）
-  // Unknown = 0, Windows = 1, MacOS = 2, Linux = 3, iOS = 4, Android = 5
-  let os = 'Unknown';
-  if (/Windows/i.test(userAgent)) {
-    os = 'Windows';
-  } else if (/Mac OS X|Macintosh/i.test(userAgent)) {
-    os = 'MacOS';
-  } else if (/Android/i.test(userAgent)) {
-    os = 'Android';
-  } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
-    os = 'iOS'; // C#側は小文字の 'i'
-  } else if (/Linux/i.test(userAgent)) {
-    os = 'Linux';
-  }
-
-  return { deviceType, os, userAgent };
 }
 
 const formatDateTime = (value?: string) => {
@@ -70,20 +39,6 @@ const InfoItem = ({ label, value }: { label: string; value?: string | null }) =>
 );
 
 export default function DevicesTab({ devices, isLoading = false, error }: DevicesTabProps) {
-  // 現在のブラウザのデバイス情報を取得
-  const [currentDeviceInfo, setCurrentDeviceInfo] = useState<{
-    deviceType: string;
-    os: string;
-    userAgent: string;
-  } | null>(null);
-
-  // クライアントサイドでのみデバイス情報を取得
-  if (typeof window !== 'undefined' && currentDeviceInfo === null) {
-    // SSR時はnullのまま、クライアント時に取得
-    const info = detectCurrentDeviceInfo();
-    setCurrentDeviceInfo(info);
-  }
-
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-base-300 bg-base-200/50 px-6 py-10 text-center">
@@ -108,79 +63,50 @@ export default function DevicesTab({ devices, isLoading = false, error }: Device
   const now = Date.now();
 
   const renderCard = (device: DeviceResponse) => {
-    const tokenExpiresAt = device.tokenExpiresAt ? Date.parse(device.tokenExpiresAt) : undefined;
-    const isTokenExpired = tokenExpiresAt ? tokenExpiresAt <= now : false;
-    const tokenStatus: { label: string; tone: 'success' | 'warning' | 'error' } = device.tokenIsRevoked
-      ? { label: 'トークン無効', tone: 'error' }
-      : isTokenExpired
-        ? { label: 'トークン期限切れ', tone: 'warning' }
-        : { label: 'トークン有効', tone: 'success' };
+    const deviceStatus: { label: string; tone: 'success' | 'warning' | 'error' } = device.isCurrentDevice
+      ? { label: 'この端末', tone: 'success' }
+      : { label: 'その他の端末', tone: 'warning' };
 
-    const deviceStatus: { label: string; tone: 'success' | 'warning' | 'error' } = device.deviceIsRevoked
-      ? { label: '端末無効', tone: 'error' }
-      : device.deviceId
-        ? { label: '端末有効', tone: 'success' }
-        : { label: '端末情報なし', tone: 'warning' };
-
-    const deviceLabel = device.publicId || `#${device.refreshTokenId}`;
+    const deviceLabel = device.name ?? device.publicId ?? (device.id != null ? `端末 #${device.id}` : '不明な端末');
+    const key =
+      device.publicId ??
+      (device.id != null
+        ? device.id.toString()
+        : `${device.deviceType ?? 'device'}-${device.lastSeenAt ?? device.firstSeenAt ?? now}`);
 
     return (
-      <div key={device.refreshTokenId} className="rounded-xl border border-base-300 bg-base-200/60 p-4 shadow-sm">
+      <div key={key} className="rounded-xl border border-base-300 bg-base-200/60 p-4 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs text-base-content/60">セッション</p>
+            <p className="text-xs text-base-content/60">端末</p>
             <p className="text-lg font-semibold text-base-content">{deviceLabel}</p>
-            <p className="text-xs text-base-content/50">RefreshTokenId: {device.refreshTokenId}</p>
+            {device.publicId && <p className="text-xs text-base-content/50">Public ID: {device.publicId}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
-            <StatusBadge label={tokenStatus.label} tone={tokenStatus.tone} />
             <StatusBadge label={deviceStatus.label} tone={deviceStatus.tone} />
           </div>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="space-y-3">
-            <InfoItem label="端末名" value={device.name ?? (device.deviceId ? '未設定の端末名' : '端末情報なし')} />
+            <InfoItem label="端末名" value={device.name} />
             <InfoItem label="種類" value={device.deviceType} />
             <InfoItem label="OS" value={device.os} />
             <InfoItem label="クライアント" value={device.client} />
-            <InfoItem label="アプリバージョン" value={device.appVersion} />
+            <InfoItem label="タイムゾーン" value={device.timezone} />
           </div>
           <div className="space-y-3">
             <InfoItem label="初回確認" value={formatDateTime(device.firstSeenAt)} />
             <InfoItem label="最終確認" value={formatDateTime(device.lastSeenAt)} />
             <InfoItem label="最終IP" value={device.lastIpMasked} />
             <InfoItem label="最終場所" value={device.lastSeenLocation} />
-            <InfoItem label="タイムゾーン" value={device.timezone} />
           </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <InfoItem label="トークン作成" value={formatDateTime(device.tokenCreatedAt)} />
-          <InfoItem label="トークン有効期限" value={formatDateTime(device.tokenExpiresAt)} />
         </div>
       </div>
     );
   };
-
-  const isCurrentDevice = (device: DeviceResponse) => {
-    // クライアントサイドでのみ判定可能
-    if (!currentDeviceInfo) {
-      return false;
-    }
-
-    // DeviceType, OS, UserAgent(client) の組み合わせで現在のデバイスを判定
-    // hashedIdentifierはIPアドレスを含むためフロントエンドでは再現できない
-    const deviceTypeMatch = device.deviceType === currentDeviceInfo.deviceType;
-    const osMatch = device.os === currentDeviceInfo.os;
-    const clientMatch = device.client === currentDeviceInfo.userAgent;
-
-    // 全て一致する場合に現在のデバイスと判定
-    return deviceTypeMatch && osMatch && clientMatch;
-  };
-
-  const activeDevices = devices.filter((d) => isCurrentDevice(d));
-  const revokedDevices = devices.filter((d) => !isCurrentDevice(d));
+  const activeDevices = devices.filter((d) => d.isCurrentDevice);
+  const otherDevices = devices.filter((d) => !d.isCurrentDevice);
 
   return (
     <div className="space-y-6">
@@ -191,14 +117,14 @@ export default function DevicesTab({ devices, isLoading = false, error }: Device
         </div>
       )}
 
-      {revokedDevices.length > 0 && (
+      {otherDevices.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-base-content">その他の端末</h3>
-          <div className="space-y-4">{revokedDevices.map((d) => renderCard(d))}</div>
+          <div className="space-y-4">{otherDevices.map((d) => renderCard(d))}</div>
         </div>
       )}
 
-      {activeDevices.length === 0 && revokedDevices.length === 0 && (
+      {activeDevices.length === 0 && otherDevices.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-base-300 bg-base-200/50 px-6 py-10 text-center">
           <p className="text-lg font-semibold text-base-content">接続中の端末はありません</p>
           <p className="mt-2 text-sm text-base-content/70">新しい端末からログインすると、ここに表示されます。</p>
