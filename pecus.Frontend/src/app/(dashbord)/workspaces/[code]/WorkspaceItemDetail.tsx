@@ -316,7 +316,10 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {item.body && (
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">本文</h3>
-              <PecusNotionLikeViewer initialViewerState={item.body} workspaceId={item.workspaceId!} />
+              <PecusNotionLikeViewer
+                initialViewerState={item.body}
+                autoLinkSettings={{ workspaceId: item.workspaceId! }}
+              />
             </div>
           )}
 

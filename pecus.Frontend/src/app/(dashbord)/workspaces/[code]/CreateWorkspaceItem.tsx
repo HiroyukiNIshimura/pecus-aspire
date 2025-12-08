@@ -4,8 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
-import { PecusNotionLikeEditor } from '@/components/editor';
-import type { EditorContextSettings } from '@/components/editor/core/appSettings';
+import { PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -47,15 +46,12 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     });
   }, []);
 
-  // エディタに渡す設定（新規作成時はsessionIdを使用）
-  const editorSettings: EditorContextSettings = useMemo(
-    () => ({
-      workspaceId: workspaceId ?? 0,
-      sessionId,
-      onTempFileUploaded: handleTempFileUploaded,
-    }),
-    [workspaceId, sessionId, handleTempFileUploaded],
-  );
+  // 画像アップロードハンドラー（新規アイテム作成用）
+  const imageUploadHandler = useNewItemImageUploadHandler({
+    workspaceId: workspaceId ?? 0,
+    sessionId,
+    onTempFileUploaded: handleTempFileUploaded,
+  });
 
   // フォーム検証フック
   const {
@@ -239,9 +235,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     onChange={handleEditorChange}
                     debounceMs={500}
                     autoFocus={false}
-                    workspaceId={editorSettings.workspaceId}
-                    sessionId={editorSettings.sessionId}
-                    onTempFileUploaded={editorSettings.onTempFileUploaded}
+                    imageUploadHandler={imageUploadHandler}
                   />
                 </div>
               </div>{' '}

@@ -11,6 +11,7 @@ import './Editor.css';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
 import { useEffect, useMemo, useState } from 'react';
+import { AutoLinkProvider, type AutoLinkSettings } from '../context/AutoLinkContext';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
@@ -31,15 +32,16 @@ export interface NotionLikeViewerProps {
   isCodeShiki?: boolean;
 
   /**
-   * ワークスペースID
-   * */
-  workspaceId: number;
+   * AutoLink設定（アイテムコードリンク生成用）
+   * 省略した場合はアイテムコードのリンク変換は行われない
+   */
+  autoLinkSettings?: AutoLinkSettings;
 }
 
 export default function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = false,
-  workspaceId,
+  autoLinkSettings,
 }: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -55,13 +57,13 @@ export default function NotionLikeViewer({
     setBaseUrl(window.location.origin);
   }, []);
 
-  // エディタコンテキスト設定
-  const editorContext = useMemo(
+  // AutoLink設定（外部から渡された設定にbaseUrlを補完）
+  const resolvedAutoLinkSettings = useMemo<AutoLinkSettings>(
     () => ({
-      workspaceId: workspaceId,
-      baseUrl,
+      ...autoLinkSettings,
+      baseUrl: autoLinkSettings?.baseUrl ?? baseUrl,
     }),
-    [workspaceId, baseUrl],
+    [autoLinkSettings, baseUrl],
   );
 
   const app = useMemo(
@@ -74,23 +76,22 @@ export default function NotionLikeViewer({
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
         editable: false,
-        // dependencies: [
-        //   HorizontalRuleExtension
-        // ],
       }),
     [initialViewerState],
   );
 
   return (
     <div className="notion-like-editor">
-      <SettingsContext initialSettings={settings} editorContext={editorContext}>
-        <LexicalExtensionComposer extension={app} contentEditable={null}>
-          <TableContext>
-            <div className="viewer-shell">
-              <Viewer />
-            </div>
-          </TableContext>
-        </LexicalExtensionComposer>
+      <SettingsContext initialSettings={settings}>
+        <AutoLinkProvider settings={resolvedAutoLinkSettings}>
+          <LexicalExtensionComposer extension={app} contentEditable={null}>
+            <TableContext>
+              <div className="viewer-shell">
+                <Viewer />
+              </div>
+            </TableContext>
+          </LexicalExtensionComposer>
+        </AutoLinkProvider>
       </SettingsContext>
     </div>
   );

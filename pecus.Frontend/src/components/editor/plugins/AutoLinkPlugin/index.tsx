@@ -9,7 +9,7 @@
 import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
 import type { JSX } from 'react';
 import { useMemo } from 'react';
-import { useEditorContext } from '../../context/SettingsContext';
+import { useAutoLinkSettings } from '../../context/AutoLinkContext';
 
 const URL_REGEX =
   /((https?:\/\/(www\.)?)|(www\.))((localhost(:\d+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)(?<![-.+():%])/;
@@ -43,7 +43,7 @@ const BASE_MATCHERS = [
 ];
 
 export default function LexicalAutoLinkPlugin(): JSX.Element {
-  const { baseUrl, workspaceId } = useEditorContext();
+  const { baseUrl, workspaceId } = useAutoLinkSettings();
 
   const matchers = useMemo(() => {
     if (!baseUrl || !workspaceId) {

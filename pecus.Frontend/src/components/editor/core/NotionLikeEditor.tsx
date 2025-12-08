@@ -13,9 +13,10 @@ import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { FlashMessageContext } from '../context/FlashMessageContext';
+import { type ImageUploadHandler, ImageUploadProvider } from '../context/ImageUploadContext';
 import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
 import { ToolbarContext } from '../context/ToolbarContext';
@@ -27,6 +28,7 @@ import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
 import { INITIAL_SETTINGS } from './appSettings';
 import { buildHTMLConfig } from './buildHTMLConfig';
 import Editor from './Editor';
+
 export interface NotionLikeEditorProps {
   /**
    * ツールバーの表示
@@ -86,26 +88,10 @@ export interface NotionLikeEditorProps {
   isCodeShiki?: boolean;
 
   /**
-   * ワークスペースID
+   * 画像アップロードハンドラー
+   * 指定しない場合はローカルプレビューモードで動作（アップロードなし）
    */
-  workspaceId: number;
-
-  /**
-   * アイテムID（画像アップロード用、既存アイテム編集時に設定）
-   */
-  itemId?: number;
-
-  /**
-   * セッションID（新規アイテム作成時の一時ファイルアップロード用）
-   */
-  sessionId?: string;
-
-  /**
-   * 一時ファイルアップロード完了時のコールバック
-   * @param tempFileId - 一時ファイルID
-   * @param previewUrl - プレビューURL
-   */
-  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
+  imageUploadHandler?: ImageUploadHandler;
 }
 
 export default function NotionLikeEditor({
@@ -119,10 +105,7 @@ export default function NotionLikeEditor({
   onChangeMarkdown,
   debounceMs = 300,
   isCodeShiki = false,
-  workspaceId,
-  itemId,
-  sessionId,
-  onTempFileUploaded,
+  imageUploadHandler,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -136,23 +119,6 @@ export default function NotionLikeEditor({
     [showToolbar, measureTypingPerf, autoFocus, isCodeShiki],
   );
 
-  const [baseUrl, setBaseUrl] = useState('');
-  useEffect(() => {
-    setBaseUrl(window.location.origin);
-  }, []);
-
-  // エディタコンテキスト設定（画像アップロード用）
-  const editorContext = useMemo(
-    () => ({
-      workspaceId: workspaceId ?? 0,
-      itemId,
-      sessionId,
-      onTempFileUploaded,
-      baseUrl,
-    }),
-    [workspaceId, itemId, sessionId, onTempFileUploaded, baseUrl],
-  );
-
   const app = useMemo(
     () =>
       defineExtension({
@@ -162,9 +128,6 @@ export default function NotionLikeEditor({
         namespace: 'NotionLikeEditor',
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
-        // dependencies: [
-        //   HorizontalRuleExtension
-        // ],
       }),
     [initialEditorState],
   );
@@ -217,22 +180,24 @@ export default function NotionLikeEditor({
   return (
     <div className="notion-like-editor">
       <FlashMessageContext>
-        <SettingsContext initialSettings={settings} editorContext={editorContext}>
-          <LexicalExtensionComposer extension={app} contentEditable={null}>
-            <SharedHistoryContext>
-              <TableContext>
-                <ToolbarContext>
-                  <div className="editor-shell">
-                    <Editor />
-                  </div>
-                  {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
-                    <OnChangePlugin onChange={handleChange} />
-                  )}
-                  {measureTypingPerf && <TypingPerfPlugin />}
-                </ToolbarContext>
-              </TableContext>
-            </SharedHistoryContext>
-          </LexicalExtensionComposer>
+        <SettingsContext initialSettings={settings}>
+          <ImageUploadProvider handler={imageUploadHandler ?? null}>
+            <LexicalExtensionComposer extension={app} contentEditable={null}>
+              <SharedHistoryContext>
+                <TableContext>
+                  <ToolbarContext>
+                    <div className="editor-shell">
+                      <Editor />
+                    </div>
+                    {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
+                      <OnChangePlugin onChange={handleChange} />
+                    )}
+                    {measureTypingPerf && <TypingPerfPlugin />}
+                  </ToolbarContext>
+                </TableContext>
+              </SharedHistoryContext>
+            </LexicalExtensionComposer>
+          </ImageUploadProvider>
         </SettingsContext>
       </FlashMessageContext>
     </div>

@@ -41,27 +41,3 @@ export const INITIAL_SETTINGS: Record<SettingName, boolean> = {
 export type SettingName = keyof typeof DEFAULT_SETTINGS;
 
 export type Settings = typeof INITIAL_SETTINGS;
-
-/**
- * エディタコンテキスト設定（画像アップロード等で使用）
- */
-export type EditorContextSettings = {
-  /** ワークスペースID（画像アップロード用） */
-  workspaceId: number;
-  /** アイテムID（画像アップロード用、既存アイテム編集時） */
-  itemId?: number;
-  /** セッションID（一時ファイルアップロード用、新規作成時） */
-  sessionId?: string;
-  /** 一時ファイルアップロード成功時のコールバック */
-  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
-  /** ベースURL */
-  baseUrl?: string;
-};
-
-export const DEFAULT_EDITOR_CONTEXT_SETTINGS: EditorContextSettings = {
-  workspaceId: 0,
-  itemId: undefined,
-  sessionId: undefined,
-  onTempFileUploaded: undefined,
-  baseUrl: undefined,
-};

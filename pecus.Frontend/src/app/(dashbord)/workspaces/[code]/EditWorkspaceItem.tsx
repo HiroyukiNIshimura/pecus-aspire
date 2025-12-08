@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
 import TagInput from '@/components/common/TagInput';
-import { PecusNotionLikeEditor } from '@/components/editor';
+import { PecusNotionLikeEditor, useExistingItemImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
@@ -287,12 +287,10 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                   </div>
                   <div>
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
-                    <PecusNotionLikeEditor
+                    <EditWorkspaceItemEditor
                       key={editorInitKey}
                       initialEditorState={initialEditorState}
                       onChange={handleEditorChange}
-                      debounceMs={500}
-                      autoFocus={false}
                       workspaceId={latestItem.workspaceId!}
                       itemId={latestItem.id}
                     />
@@ -362,5 +360,36 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * 既存アイテム編集用のエディタコンポーネント
+ * 画像アップロードハンドラーを設定した状態でNotionLikeEditorをラップ
+ */
+function EditWorkspaceItemEditor({
+  workspaceId,
+  itemId,
+  initialEditorState,
+  onChange,
+}: {
+  workspaceId: number;
+  itemId: number;
+  initialEditorState?: string;
+  onChange?: (editorState: string) => void;
+}) {
+  const imageUploadHandler = useExistingItemImageUploadHandler({
+    workspaceId,
+    itemId,
+  });
+
+  return (
+    <PecusNotionLikeEditor
+      initialEditorState={initialEditorState}
+      onChange={onChange}
+      debounceMs={500}
+      autoFocus={false}
+      imageUploadHandler={imageUploadHandler}
+    />
   );
 }

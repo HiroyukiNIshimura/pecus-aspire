@@ -6,6 +6,8 @@
  * - pecus/: Pecus固有の型
  */
 
+import type { ImageUploadHandler } from '../context/ImageUploadContext';
+
 /**
  * エディタの基本設定
  */
@@ -51,17 +53,11 @@ export interface EditorSettings {
 }
 
 /**
- * エディタコンテキスト（Pecus固有の拡張用）
+ * エディタコンテキスト（画像アップロードハンドラー等の注入用）
  */
 export interface EditorContext {
-  /** ワークスペースID（画像アップロード用） */
-  workspaceId?: number;
-  /** アイテムID（既存アイテム編集時に設定） */
-  itemId?: number;
-  /** セッションID（新規アイテム作成時の一時ファイルアップロード用） */
-  sessionId?: string;
-  /** 一時ファイルアップロード完了時のコールバック */
-  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
+  /** 画像アップロードハンドラー */
+  imageUploadHandler?: ImageUploadHandler;
 }
 
 /**
@@ -94,18 +90,12 @@ export interface CoreEditorProps extends EditorChangeCallbacks {
   debounceMs?: number;
   /** Shikiによるコードハイライトを有効化するかどうか */
   isCodeShiki?: boolean;
+  /** 画像アップロードハンドラー（指定しない場合はローカルプレビューモード） */
+  imageUploadHandler?: ImageUploadHandler;
 }
 
 /**
  * Pecus固有エディタのProps
+ * 現在はCoreEditorPropsと同じ（workspaceId等はハンドラー側で管理）
  */
-export interface PecusEditorProps extends CoreEditorProps {
-  /** ワークスペースID（画像アップロード用） */
-  workspaceId?: number;
-  /** アイテムID（画像アップロード用、既存アイテム編集時に設定） */
-  itemId?: number;
-  /** セッションID（新規アイテム作成時の一時ファイルアップロード用） */
-  sessionId?: string;
-  /** 一時ファイルアップロード完了時のコールバック */
-  onTempFileUploaded?: (tempFileId: string, previewUrl: string) => void;
-}
+export type PecusEditorProps = CoreEditorProps;

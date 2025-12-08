@@ -9,15 +9,13 @@
 import type * as React from 'react';
 import type { JSX } from 'react';
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import type { EditorContextSettings, SettingName } from '../core/appSettings';
+import type { SettingName } from '../core/appSettings';
 
-import { DEFAULT_EDITOR_CONTEXT_SETTINGS, DEFAULT_SETTINGS, INITIAL_SETTINGS } from '../core/appSettings';
+import { DEFAULT_SETTINGS, INITIAL_SETTINGS } from '../core/appSettings';
 
 type SettingsContextShape = {
   setOption: (name: SettingName, value: boolean) => void;
   settings: Record<SettingName, boolean>;
-  /** エディタコンテキスト設定（画像アップロード用の workspaceId/itemId 等） */
-  editorContext: EditorContextSettings;
 };
 
 const Context: React.Context<SettingsContextShape> = createContext({
@@ -25,30 +23,19 @@ const Context: React.Context<SettingsContextShape> = createContext({
     return;
   },
   settings: INITIAL_SETTINGS,
-  editorContext: DEFAULT_EDITOR_CONTEXT_SETTINGS,
 });
 
 export const SettingsContext = ({
   children,
   initialSettings,
-  editorContext,
 }: {
   children: ReactNode;
   initialSettings?: Partial<Record<SettingName, boolean>>;
-  editorContext?: EditorContextSettings;
 }): JSX.Element => {
   const [settings, setSettings] = useState(() => ({
     ...INITIAL_SETTINGS,
     ...initialSettings,
   }));
-
-  const editorContextValue = useMemo(
-    () => ({
-      ...DEFAULT_EDITOR_CONTEXT_SETTINGS,
-      ...editorContext,
-    }),
-    [editorContext],
-  );
 
   const setOption = useCallback((setting: SettingName, value: boolean) => {
     setSettings((options) => ({
@@ -59,22 +46,14 @@ export const SettingsContext = ({
   }, []);
 
   const contextValue = useMemo(() => {
-    return { setOption, settings, editorContext: editorContextValue };
-  }, [setOption, settings, editorContextValue]);
+    return { setOption, settings };
+  }, [setOption, settings]);
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 };
 
 export const useSettings = (): SettingsContextShape => {
   return useContext(Context);
-};
-
-/**
- * エディタコンテキスト設定を取得するフック（画像アップロード用）
- */
-export const useEditorContext = (): EditorContextSettings => {
-  const { editorContext } = useContext(Context);
-  return editorContext;
 };
 
 function setURLParam(param: SettingName, value: null | boolean) {

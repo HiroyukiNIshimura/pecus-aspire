@@ -31,7 +31,7 @@ import {
 } from 'lexical';
 import type { JSX } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { useEditorContext } from '../../context/SettingsContext';
+import { useImageUpload } from '../../context/ImageUploadContext';
 import { $createImageNode, $isImageNode, ImageNode, type ImagePayload } from '../../nodes/ImageNode';
 import Button from '../../ui/Button';
 import { DialogActions, DialogButtonsList } from '../../ui/Dialog';
@@ -74,7 +74,7 @@ export function InsertImageUriDialogBody({ onClick }: { onClick: (payload: Inser
 }
 
 export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: InsertImagePayload) => void }) {
-  const { workspaceId, itemId, sessionId, onTempFileUploaded } = useEditorContext();
+  const imageUploadHandler = useImageUpload();
   const [altText, setAltText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -82,11 +82,7 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
   const [previewSrc, setPreviewSrc] = useState<string>('');
 
   const isDisabled = !selectedFile || isUploading;
-  // 既存アイテム編集時
-  const canUploadToItem = workspaceId !== undefined && itemId !== undefined;
-  // 新規アイテム作成時（一時アップロード）
-  const canUploadToTemp = workspaceId !== undefined && sessionId !== undefined;
-  const canUpload = canUploadToItem || canUploadToTemp;
+  const canUpload = imageUploadHandler !== null;
 
   const handleFileSelect = (files: FileList | null) => {
     if (files?.[0]) {
@@ -107,7 +103,7 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
   const handleConfirm = async () => {
     if (!selectedFile) return;
 
-    // workspaceId が未設定の場合はローカルプレビュー（既存動作）
+    // ハンドラーが未設定の場合はローカルプレビュー（既存動作）
     if (!canUpload) {
       if (previewSrc) {
         onClick({ altText, src: previewSrc });
@@ -119,45 +115,16 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
     setUploadError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      // 既存アイテム編集時: 通常のアップロード
-      if (canUploadToItem) {
-        const response = await fetch(`/api/workspaces/${workspaceId}/items/${itemId}/attachments`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Upload result:', result);
-          onClick({ altText, src: result.url });
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          setUploadError(errorData.error || 'アップロードに失敗しました');
-        }
-      }
-      // 新規アイテム作成時: 一時領域にアップロード
-      else if (canUploadToTemp) {
-        const response = await fetch(`/api/workspaces/${workspaceId}/temp-attachments/${sessionId}`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Temp upload result:', result);
-          // コールバックで一時ファイルIDを通知
-          onTempFileUploaded?.(result.tempFileId, result.previewUrl);
-          onClick({ altText, src: result.previewUrl });
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          setUploadError(errorData.error || 'アップロードに失敗しました');
-        }
-      }
-    } catch {
-      setUploadError('アップロード中にエラーが発生しました');
+      const result = await imageUploadHandler.uploadImage(selectedFile);
+      onClick({
+        altText,
+        src: result.url,
+        width: result.width,
+        height: result.height,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'アップロードに失敗しました';
+      setUploadError(message);
     } finally {
       setIsUploading(false);
     }
@@ -181,7 +148,7 @@ export function InsertImageUploadedDialogBody({ onClick }: { onClick: (payload: 
       {uploadError && <div className="text-error text-sm mt-2">{uploadError}</div>}
       {!canUpload && selectedFile && (
         <div className="text-warning text-sm mt-2">
-          ワークスペース情報が未設定のため、ローカルプレビューモードで動作します
+          アップロードハンドラーが未設定のため、ローカルプレビューモードで動作します
         </div>
       )}
       <DialogActions>
