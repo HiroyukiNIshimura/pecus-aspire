@@ -891,6 +891,24 @@ public class DatabaseSeeder
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Added 100 workspaces completed");
 
+                // 各ワークスペースにアイテム連番シーケンスを作成
+                var allWorkspaces = await _context.Workspaces.ToListAsync();
+                foreach (var ws in allWorkspaces)
+                {
+                    if (string.IsNullOrEmpty(ws.ItemNumberSequenceName))
+                    {
+                        var sequenceName = $"workspace_{ws.Id}_item_seq";
+#pragma warning disable EF1002 // シーケンス名は識別子のためパラメータ化不可、値はシステム生成で安全
+                        await _context.Database.ExecuteSqlRawAsync(
+                            $@"CREATE SEQUENCE IF NOT EXISTS ""{sequenceName}"" START WITH 1 INCREMENT BY 1"
+                        );
+#pragma warning restore EF1002
+                        ws.ItemNumberSequenceName = sequenceName;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Created item number sequences for all workspaces");
+
                 // ワークスペースメンバーを割り当て
                 await SeedWorkspaceMembersAsync();
             }
@@ -1162,15 +1180,19 @@ public class DatabaseSeeder
                     continue;
                 }
 
+                // ワークスペース内の連番カウンター
+                int itemNumber = 0;
+
                 // 各ワークスペースに50件のアイテムを作成
                 for (int i = 0; i < 50; i++)
                 {
+                    itemNumber++;
                     var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
 
                     var workspaceItem = new WorkspaceItem
                     {
                         WorkspaceId = workspace.Id,
-                        Code = GenerateUniqueCode(),
+                        ItemNumber = itemNumber,
                         Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
                         Body = playgroundJson, // playground.json の内容
                         RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
@@ -1207,6 +1229,24 @@ public class DatabaseSeeder
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} workspace items in total", totalItemsAdded);
+
+            // シーケンスを各ワークスペースの最大ItemNumber+1に更新
+            foreach (var workspace in workspaces)
+            {
+                if (!string.IsNullOrEmpty(workspace.ItemNumberSequenceName))
+                {
+                    var maxItemNumber = await _context.WorkspaceItems
+                        .Where(wi => wi.WorkspaceId == workspace.Id)
+                        .MaxAsync(wi => (int?)wi.ItemNumber) ?? 0;
+
+#pragma warning disable EF1002 // シーケンス名・値はシステム生成で安全
+                    await _context.Database.ExecuteSqlRawAsync(
+                        $@"SELECT setval('""{workspace.ItemNumberSequenceName}""', {maxItemNumber}, true)"
+                    );
+#pragma warning restore EF1002
+                }
+            }
+            _logger.LogInformation("Updated item number sequences to current max values");
         }
     }
 
@@ -1343,14 +1383,6 @@ public class DatabaseSeeder
             await _context.SaveChangesAsync();
             _logger.LogInformation("Added {Count} workspace item relations in total", totalRelationsAdded);
         }
-    }
-
-    /// <summary>
-    /// ユニークなコードを生成
-    /// </summary>
-    private string GenerateUniqueCode()
-    {
-        return CodeGenerator.GenerateWorkspaceItemCode();
     }
 
     /// <summary>

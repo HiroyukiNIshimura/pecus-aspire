@@ -60,6 +60,17 @@ public class WorkspaceService
             _context.Workspaces.Add(workspace);
             await _context.SaveChangesAsync();
 
+            // ワークスペースアイテム連番用シーケンスを作成
+            // シーケンス名はシステム生成（workspace_{id}_item_seq）のため安全
+            var sequenceName = $"workspace_{workspace.Id}_item_seq";
+#pragma warning disable EF1002 // シーケンス名は識別子のためパラメータ化不可、値はシステム生成で安全
+            await _context.Database.ExecuteSqlRawAsync(
+                $@"CREATE SEQUENCE IF NOT EXISTS ""{sequenceName}"" START WITH 1 INCREMENT BY 1"
+            );
+#pragma warning restore EF1002
+            workspace.ItemNumberSequenceName = sequenceName;
+            await _context.SaveChangesAsync();
+
             // ワークスペースを作成したユーザーを自動的にOwnerとして参加させる
             if (createdByUserId.HasValue)
             {

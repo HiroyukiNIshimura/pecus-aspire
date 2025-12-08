@@ -12,7 +12,7 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251205115004_InitialCreate")]
+    [Migration("20251208034033_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -341,6 +341,67 @@ namespace pecus.DbManager.Migrations
                         .IsUnique();
 
                     b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.OrganizationSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GenerativeApiKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("GenerativeApiVendor")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MailFromAddress")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("MailFromName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Plan")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("TaskOverdueThreshold")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WeeklyReportDeliveryDay")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedAt");
+
+                    b.ToTable("OrganizationSettings");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Permission", b =>
@@ -777,6 +838,40 @@ namespace pecus.DbManager.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanReceiveEmail")
+                        .HasColumnType("boolean");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserSettings");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSkill", b =>
                 {
                     b.Property<int>("UserId")
@@ -830,6 +925,10 @@ namespace pecus.DbManager.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ItemNumberSequenceName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -881,11 +980,6 @@ namespace pecus.DbManager.Migrations
                     b.Property<string>("Body")
                         .HasColumnType("text");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
                     b.Property<int?>("CommitterId")
                         .HasColumnType("integer");
 
@@ -907,6 +1001,9 @@ namespace pecus.DbManager.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<int>("ItemNumber")
+                        .HasColumnType("integer");
 
                     b.Property<int>("OwnerId")
                         .HasColumnType("integer");
@@ -954,7 +1051,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.HasIndex("WorkspaceId", "Code")
+                    b.HasIndex("WorkspaceId", "ItemNumber")
                         .IsUnique();
 
                     b.ToTable("WorkspaceItems");
@@ -1369,6 +1466,17 @@ namespace pecus.DbManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Pecus.Libs.DB.Models.OrganizationSetting", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.Organization", "Organization")
+                        .WithOne("Setting")
+                        .HasForeignKey("Pecus.Libs.DB.Models.OrganizationSetting", "OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Pecus.Libs.DB.Models.RefreshToken", b =>
                 {
                     b.HasOne("Pecus.Libs.DB.Models.Device", "Device")
@@ -1464,6 +1572,17 @@ namespace pecus.DbManager.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("Pecus.Libs.DB.Models.UserSetting", b =>
+                {
+                    b.HasOne("Pecus.Libs.DB.Models.User", "User")
+                        .WithOne("Setting")
+                        .HasForeignKey("Pecus.Libs.DB.Models.UserSetting", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.UserSkill", b =>
@@ -1787,6 +1906,8 @@ namespace pecus.DbManager.Migrations
 
             modelBuilder.Entity("Pecus.Libs.DB.Models.Organization", b =>
                 {
+                    b.Navigation("Setting");
+
                     b.Navigation("Skills");
 
                     b.Navigation("Tags");
@@ -1816,6 +1937,8 @@ namespace pecus.DbManager.Migrations
             modelBuilder.Entity("Pecus.Libs.DB.Models.User", b =>
                 {
                     b.Navigation("Devices");
+
+                    b.Navigation("Setting");
 
                     b.Navigation("UserSkills");
 

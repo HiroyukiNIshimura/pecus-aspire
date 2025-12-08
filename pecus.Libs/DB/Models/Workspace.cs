@@ -81,6 +81,11 @@ public class Workspace
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// ワークスペースアイテム連番用シーケンス名
+    /// </summary>
+    public string? ItemNumberSequenceName { get; set; }
+
+    /// <summary>
     /// このワークスペースに参加しているユーザー
     /// </summary>
     public ICollection<WorkspaceUser> WorkspaceUsers { get; set; } = new List<WorkspaceUser>();

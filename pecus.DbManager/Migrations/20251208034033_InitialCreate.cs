@@ -121,6 +121,35 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrganizationSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
+                    TaskOverdueThreshold = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    WeeklyReportDeliveryDay = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    MailFromAddress = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: true),
+                    MailFromName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    GenerativeApiVendor = table.Column<int>(type: "integer", nullable: false),
+                    GenerativeApiKey = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    Plan = table.Column<int>(type: "integer", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationSettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrganizationSettings_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -337,6 +366,29 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CanReceiveEmail = table.Column<bool>(type: "boolean", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSettings_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Workspaces",
                 columns: table => new
                 {
@@ -353,6 +405,7 @@ namespace pecus.DbManager.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    ItemNumberSequenceName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -447,7 +500,7 @@ namespace pecus.DbManager.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
-                    Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    ItemNumber = table.Column<int>(type: "integer", nullable: false),
                     Subject = table.Column<string>(type: "text", nullable: false),
                     Body = table.Column<string>(type: "text", nullable: true),
                     RawBody = table.Column<string>(type: "text", nullable: true),
@@ -930,6 +983,17 @@ namespace pecus.DbManager.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrganizationSettings_OrganizationId",
+                table: "OrganizationSettings",
+                column: "OrganizationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrganizationSettings_UpdatedAt",
+                table: "OrganizationSettings",
+                column: "UpdatedAt");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Permissions_Name",
                 table: "Permissions",
                 column: "Name",
@@ -1063,6 +1127,12 @@ namespace pecus.DbManager.Migrations
                 column: "Username");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserSettings_UserId",
+                table: "UserSettings",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserSkills_AddedAt",
                 table: "UserSkills",
                 column: "AddedAt");
@@ -1169,9 +1239,9 @@ namespace pecus.DbManager.Migrations
                 column: "UpdatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkspaceItems_WorkspaceId_Code",
+                name: "IX_WorkspaceItems_WorkspaceId_ItemNumber",
                 table: "WorkspaceItems",
-                columns: new[] { "WorkspaceId", "Code" },
+                columns: new[] { "WorkspaceId", "ItemNumber" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1311,6 +1381,9 @@ namespace pecus.DbManager.Migrations
                 name: "EmailChangeTokens");
 
             migrationBuilder.DropTable(
+                name: "OrganizationSettings");
+
+            migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
@@ -1321,6 +1394,9 @@ namespace pecus.DbManager.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
+
+            migrationBuilder.DropTable(
+                name: "UserSettings");
 
             migrationBuilder.DropTable(
                 name: "UserSkills");

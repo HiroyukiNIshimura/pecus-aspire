@@ -74,51 +74,53 @@ public class WorkspaceItemService
                 }
             }
 
-            // ユニークなコードを生成（重複チェック付き）
-            string code;
-            int maxRetries = 10;
-            int retryCount = 0;
-
-            do
+            // シーケンス名を取得（ワークスペース作成時に作成済み）
+            if (string.IsNullOrEmpty(workspace.ItemNumberSequenceName))
             {
-                code = CodeGenerator.GenerateWorkspaceItemCode();
-                var exists = await _context.WorkspaceItems.AnyAsync(wi =>
-                    wi.WorkspaceId == workspaceId && wi.Code == code
+                throw new InvalidOperationException(
+                    "ワークスペースのアイテム連番シーケンスが設定されていません。"
                 );
+            }
 
-                if (!exists)
-                    break;
+            // シーケンスから次の連番を取得してINSERT（完全なアトミック操作）
+            var insertSql = $@"
+                INSERT INTO ""WorkspaceItems"" (
+                    ""WorkspaceId"", ""ItemNumber"", ""Subject"", ""Body"", ""RawBody"",
+                    ""OwnerId"", ""AssigneeId"", ""Priority"", ""DueDate"",
+                    ""IsDraft"", ""IsArchived"", ""IsActive"",
+                    ""CreatedAt"", ""UpdatedAt"", ""UpdatedByUserId""
+                )
+                VALUES (
+                    {{0}},
+                    nextval('""{workspace.ItemNumberSequenceName}""'),
+                    {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {{8}}, false, true,
+                    {{9}}, {{9}}, {{4}}
+                )
+                RETURNING ""Id"", ""ItemNumber"", xmin";
 
-                retryCount++;
-                if (retryCount >= maxRetries)
-                {
-                    throw new InvalidOperationException(
-                        "ユニークなコードの生成に失敗しました。しばらくしてから再度お試しください。"
-                    );
-                }
-            } while (true);
+            var now = DateTime.UtcNow;
+            var result = await _context.Database
+                .SqlQueryRaw<InsertedItemResult>(
+                    insertSql,
+                    workspaceId,                           // {0}
+                    request.Subject,                       // {1}
+                    request.Body ?? (object)DBNull.Value,  // {2}
+                    string.Empty,                          // {3} RawBody
+                    ownerId,                               // {4}
+                    request.AssigneeId ?? (object)DBNull.Value, // {5}
+                    request.Priority.HasValue ? (int)request.Priority.Value : DBNull.Value, // {6}
+                    request.DueDate ?? (object)DBNull.Value, // {7}
+                    request.IsDraft,                       // {8}
+                    now                                    // {9}
+                )
+                .FirstAsync();
 
-            // アイテムを作成
-            var item = new WorkspaceItem
+            // 挿入されたアイテムを取得
+            var item = await _context.WorkspaceItems.FindAsync(result.Id);
+            if (item == null)
             {
-                WorkspaceId = workspaceId,
-                Code = code,
-                Subject = request.Subject,
-                Body = request.Body,
-                RawBody = string.Empty, // Hangfire ジョブで非同期更新
-                OwnerId = ownerId,
-                AssigneeId = request.AssigneeId,
-                Priority = request.Priority,
-                DueDate = request.DueDate,
-                IsDraft = request.IsDraft,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                UpdatedByUserId = ownerId,
-                IsActive = true,
-            };
-
-            _context.WorkspaceItems.Add(item);
-            await _context.SaveChangesAsync();
+                throw new InvalidOperationException("アイテムの作成に失敗しました。");
+            }
 
             // タグの処理
             if (request.TagNames != null && request.TagNames.Any())
@@ -311,6 +313,12 @@ public class WorkspaceItemService
     /// </summary>
     public async Task<WorkspaceItem> GetWorkspaceItemByCodeAsync(int workspaceId, string code)
     {
+        // コードを ItemNumber に変換
+        if (!int.TryParse(code, out var itemNumber))
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
         var item = await _context
             .WorkspaceItems.Include(wi => wi.Workspace)
             .Include(wi => wi.Owner)
@@ -326,7 +334,7 @@ public class WorkspaceItemService
             .ThenInclude(r => r.FromItem)
             .ThenInclude(fi => fi!.Owner)
             .AsSplitQuery()
-            .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Code == code);
+            .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.ItemNumber == itemNumber);
 
         if (item == null)
         {
@@ -565,7 +573,7 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
@@ -607,7 +615,7 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
@@ -1178,6 +1186,8 @@ public class WorkspaceItemService
         };
     }
 
+
+
     /// <summary>
     /// コンテンツ内のURLを置換（部分一致で拡張子付きURLも対応）
     /// </summary>
@@ -1382,4 +1392,14 @@ public class WorkspaceItemService
             await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
         }
     }
+}
+
+/// <summary>
+/// INSERT ... RETURNING の結果を受け取るための内部クラス
+/// </summary>
+internal class InsertedItemResult
+{
+    public Guid Id { get; set; }
+    public int ItemNumber { get; set; }
+    public uint xmin { get; set; }
 }

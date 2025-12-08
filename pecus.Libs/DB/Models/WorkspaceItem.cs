@@ -18,9 +18,14 @@ public class WorkspaceItem
     public int WorkspaceId { get; set; }
 
     /// <summary>
-    /// コード（ワークスペース内でユニークなハッシュ文字列）
+    /// ワークスペース内で一意の連番（人間が読みやすいコード）
     /// </summary>
-    public string Code { get; set; } = string.Empty;
+    public int ItemNumber { get; set; }
+
+    /// <summary>
+    /// 表示用コード（ItemNumber の文字列表現）
+    /// </summary>
+    public string Code => ItemNumber.ToString();
 
     /// <summary>
     /// 件名

@@ -266,6 +266,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Code).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.ItemNumberSequenceName).HasMaxLength(128);
             entity.HasIndex(e => e.Code).IsUnique();
 
             // Workspace と Organization の多対一リレーションシップ
@@ -341,7 +342,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<WorkspaceItem>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Code).IsRequired().HasMaxLength(64);
+            entity.Property(e => e.ItemNumber).IsRequired();
+            entity.Ignore(e => e.Code); // Code は計算プロパティのため無視
             entity.Property(e => e.Subject).IsRequired(); // TEXT型として扱う
             entity.Property(e => e.IsArchived).HasDefaultValue(false);
             entity.Property(e => e.IsDraft).HasDefaultValue(true);
@@ -382,7 +384,7 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull);
 
             // インデックス
-            entity.HasIndex(wi => new { wi.WorkspaceId, wi.Code }).IsUnique();
+            entity.HasIndex(wi => new { wi.WorkspaceId, wi.ItemNumber }).IsUnique();
             entity.HasIndex(wi => wi.OwnerId);
             entity.HasIndex(wi => wi.AssigneeId);
             entity.HasIndex(wi => wi.CommitterId);
