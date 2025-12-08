@@ -1,35 +1,26 @@
 'use client';
 
+import type { LinkMatcher } from '@lexical/react/LexicalAutoLinkPlugin';
 import { createContext, type ReactNode, useContext, useMemo } from 'react';
-
-/**
- * AutoLink設定の型
- * アイテムコード（#123 など）をリンクに変換するための設定
- */
-export interface AutoLinkSettings {
-  /** ベースURL（リンク生成用） */
-  baseUrl?: string;
-  /** ワークスペースID（アイテムコードリンク生成用） */
-  workspaceId?: number;
-}
 
 /**
  * AutoLinkコンテキストの値
  */
 interface AutoLinkContextValue {
-  settings: AutoLinkSettings;
+  /** カスタムのLinkMatcher配列 */
+  customMatchers: LinkMatcher[];
 }
 
 const AutoLinkContext = createContext<AutoLinkContextValue>({
-  settings: {},
+  customMatchers: [],
 });
 
 /**
- * AutoLink設定を取得するフック
+ * カスタムMatcherを取得するフック
  */
-export function useAutoLinkSettings(): AutoLinkSettings {
+export function useCustomLinkMatchers(): LinkMatcher[] {
   const context = useContext(AutoLinkContext);
-  return context.settings;
+  return context.customMatchers;
 }
 
 /**
@@ -37,10 +28,14 @@ export function useAutoLinkSettings(): AutoLinkSettings {
  */
 interface AutoLinkProviderProps {
   children: ReactNode;
-  settings?: AutoLinkSettings;
+  /** カスタムのLinkMatcher配列（BASE_MATCHERSに追加される） */
+  customMatchers?: LinkMatcher[];
 }
 
-export function AutoLinkProvider({ children, settings = {} }: AutoLinkProviderProps) {
-  const value = useMemo(() => ({ settings }), [settings]);
+export function AutoLinkProvider({ children, customMatchers = [] }: AutoLinkProviderProps) {
+  const value = useMemo(() => ({ customMatchers }), [customMatchers]);
   return <AutoLinkContext.Provider value={value}>{children}</AutoLinkContext.Provider>;
 }
+
+// 型のエクスポート
+export type { LinkMatcher } from '@lexical/react/LexicalAutoLinkPlugin';

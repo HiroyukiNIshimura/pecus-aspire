@@ -20,21 +20,26 @@
 // コアエディタのエクスポート
 export { Editor } from './core';
 export type {
-  AutoLinkSettings,
   ExistingItemUploadOptions,
   ImageUploadHandler,
   ImageUploadResult,
+  ItemCodeLinkMatcherOptions,
+  LinkMatcher,
   NewItemUploadOptions,
   NotionLikeViewerProps,
 } from './pecus';
-// Pecus固有エディタのエクスポート（デフォルト）
-// 画像アップロードハンドラーのフックとユーティリティ
+// Pecus固有エディタのエクスポート
+// 画像アップロードハンドラーのフック
+// AutoLink Matcherのフック
 export {
+  createLinkMatcherWithRegExp,
   PecusNotionLikeEditor,
   PecusNotionLikeViewer,
   useExistingItemImageUploadHandler,
+  useItemCodeLinkMatchers,
   useNewItemImageUploadHandler,
 } from './pecus';
+
 // 型定義のエクスポート
 export type {
   CoreEditorProps,

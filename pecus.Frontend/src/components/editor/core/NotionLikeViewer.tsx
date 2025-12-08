@@ -10,8 +10,8 @@
 import './Editor.css';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import { defineExtension } from 'lexical';
-import { useEffect, useMemo, useState } from 'react';
-import { AutoLinkProvider, type AutoLinkSettings } from '../context/AutoLinkContext';
+import { useMemo } from 'react';
+import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
@@ -32,16 +32,16 @@ export interface NotionLikeViewerProps {
   isCodeShiki?: boolean;
 
   /**
-   * AutoLink設定（アイテムコードリンク生成用）
-   * 省略した場合はアイテムコードのリンク変換は行われない
+   * カスタムのAutoLink Matcher配列
+   * URLやメールアドレスの基本Matcherに追加される
    */
-  autoLinkSettings?: AutoLinkSettings;
+  customLinkMatchers?: LinkMatcher[];
 }
 
 export default function NotionLikeViewer({
   initialViewerState,
   isCodeShiki = false,
-  autoLinkSettings,
+  customLinkMatchers,
 }: NotionLikeViewerProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -50,20 +50,6 @@ export default function NotionLikeViewer({
       isCodeShiki,
     }),
     [isCodeShiki],
-  );
-
-  const [baseUrl, setBaseUrl] = useState('');
-  useEffect(() => {
-    setBaseUrl(window.location.origin);
-  }, []);
-
-  // AutoLink設定（外部から渡された設定にbaseUrlを補完）
-  const resolvedAutoLinkSettings = useMemo<AutoLinkSettings>(
-    () => ({
-      ...autoLinkSettings,
-      baseUrl: autoLinkSettings?.baseUrl ?? baseUrl,
-    }),
-    [autoLinkSettings, baseUrl],
   );
 
   const app = useMemo(
@@ -83,7 +69,7 @@ export default function NotionLikeViewer({
   return (
     <div className="notion-like-editor">
       <SettingsContext initialSettings={settings}>
-        <AutoLinkProvider settings={resolvedAutoLinkSettings}>
+        <AutoLinkProvider customMatchers={customLinkMatchers}>
           <LexicalExtensionComposer extension={app} contentEditable={null}>
             <TableContext>
               <div className="viewer-shell">

@@ -15,6 +15,7 @@ import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
 import { useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { FlashMessageContext } from '../context/FlashMessageContext';
 import { type ImageUploadHandler, ImageUploadProvider } from '../context/ImageUploadContext';
 import { SettingsContext } from '../context/SettingsContext';
@@ -92,6 +93,12 @@ export interface NotionLikeEditorProps {
    * 指定しない場合はローカルプレビューモードで動作（アップロードなし）
    */
   imageUploadHandler?: ImageUploadHandler;
+
+  /**
+   * カスタムのAutoLink Matcher配列
+   * URLやメールアドレスの基本Matcherに追加される
+   */
+  customLinkMatchers?: LinkMatcher[];
 }
 
 export default function NotionLikeEditor({
@@ -106,6 +113,7 @@ export default function NotionLikeEditor({
   debounceMs = 300,
   isCodeShiki = false,
   imageUploadHandler,
+  customLinkMatchers,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -182,21 +190,23 @@ export default function NotionLikeEditor({
       <FlashMessageContext>
         <SettingsContext initialSettings={settings}>
           <ImageUploadProvider handler={imageUploadHandler ?? null}>
-            <LexicalExtensionComposer extension={app} contentEditable={null}>
-              <SharedHistoryContext>
-                <TableContext>
-                  <ToolbarContext>
-                    <div className="editor-shell">
-                      <Editor />
-                    </div>
-                    {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
-                      <OnChangePlugin onChange={handleChange} />
-                    )}
-                    {measureTypingPerf && <TypingPerfPlugin />}
-                  </ToolbarContext>
-                </TableContext>
-              </SharedHistoryContext>
-            </LexicalExtensionComposer>
+            <AutoLinkProvider customMatchers={customLinkMatchers}>
+              <LexicalExtensionComposer extension={app} contentEditable={null}>
+                <SharedHistoryContext>
+                  <TableContext>
+                    <ToolbarContext>
+                      <div className="editor-shell">
+                        <Editor />
+                      </div>
+                      {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
+                        <OnChangePlugin onChange={handleChange} />
+                      )}
+                      {measureTypingPerf && <TypingPerfPlugin />}
+                    </ToolbarContext>
+                  </TableContext>
+                </SharedHistoryContext>
+              </LexicalExtensionComposer>
+            </AutoLinkProvider>
           </ImageUploadProvider>
         </SettingsContext>
       </FlashMessageContext>

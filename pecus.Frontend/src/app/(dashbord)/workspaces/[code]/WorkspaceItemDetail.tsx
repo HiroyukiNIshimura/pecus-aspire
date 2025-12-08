@@ -7,7 +7,7 @@ import {
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
-import { PecusNotionLikeViewer } from '@/components/editor';
+import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -316,10 +316,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {item.body && (
             <div className="mb-4">
               <h3 className="text-lg font-bold mb-2">本文</h3>
-              <PecusNotionLikeViewer
-                initialViewerState={item.body}
-                autoLinkSettings={{ workspaceId: item.workspaceId! }}
-              />
+              <WorkspaceItemBodyViewer body={item.body} workspaceId={item.workspaceId!} />
             </div>
           )}
 
@@ -567,3 +564,13 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 );
 
 export default WorkspaceItemDetail;
+
+/**
+ * 本文表示用のビューアーコンポーネント
+ * アイテムコードリンク用のMatcherを設定した状態でViewerをラップ
+ */
+function WorkspaceItemBodyViewer({ body, workspaceId }: { body: string; workspaceId: number }) {
+  const itemCodeMatchers = useItemCodeLinkMatchers({ workspaceId });
+
+  return <PecusNotionLikeViewer initialViewerState={body} customLinkMatchers={itemCodeMatchers} />;
+}
