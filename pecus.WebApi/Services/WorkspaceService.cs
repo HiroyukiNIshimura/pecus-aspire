@@ -257,6 +257,16 @@ public class WorkspaceService
             return false;
         }
 
+        // ワークスペースアイテム連番シーケンスを削除
+        if (!string.IsNullOrEmpty(workspace.ItemNumberSequenceName))
+        {
+#pragma warning disable EF1002 // シーケンス名は識別子のためパラメータ化不可、値はシステム生成で安全
+            await _context.Database.ExecuteSqlRawAsync(
+                $@"DROP SEQUENCE IF EXISTS ""{workspace.ItemNumberSequenceName}"""
+            );
+#pragma warning restore EF1002
+        }
+
         //カスケードで関連テーブルのレコードも消える
         _context.Workspaces.Remove(workspace);
         await _context.SaveChangesAsync();

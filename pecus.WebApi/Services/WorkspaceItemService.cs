@@ -82,46 +82,36 @@ public class WorkspaceItemService
                 );
             }
 
-            // シーケンスから次の連番を取得してINSERT（完全なアトミック操作）
-            var insertSql = $@"
-                INSERT INTO ""WorkspaceItems"" (
-                    ""WorkspaceId"", ""ItemNumber"", ""Subject"", ""Body"", ""RawBody"",
-                    ""OwnerId"", ""AssigneeId"", ""Priority"", ""DueDate"",
-                    ""IsDraft"", ""IsArchived"", ""IsActive"",
-                    ""CreatedAt"", ""UpdatedAt"", ""UpdatedByUserId""
-                )
-                VALUES (
-                    {{0}},
-                    nextval('""{workspace.ItemNumberSequenceName}""'),
-                    {{1}}, {{2}}, {{3}}, {{4}}, {{5}}, {{6}}, {{7}}, {{8}}, false, true,
-                    {{9}}, {{9}}, {{4}}
-                )
-                RETURNING ""Id"", ""ItemNumber""";
+            // シーケンスから次の連番を取得（アトミック操作）
+            // シーケンス名はワークスペース作成時に内部生成されるため、SQLインジェクションのリスクなし
+#pragma warning disable EF1002
+            var itemNumber = await _context.Database
+                .SqlQueryRaw<int>($@"SELECT nextval('""{workspace.ItemNumberSequenceName}""')::int AS ""Value""")
+                .FirstAsync();
+#pragma warning restore EF1002
 
             var now = DateTime.UtcNow;
-            var result = _context.Database
-                .SqlQueryRaw<InsertedItemResult>(
-                    insertSql,
-                    workspaceId,                           // {0}
-                    request.Subject,                       // {1}
-                    request.Body ?? (object)DBNull.Value,  // {2}
-                    string.Empty,                          // {3} RawBody
-                    ownerId,                               // {4}
-                    request.AssigneeId ?? (object)DBNull.Value, // {5}
-                    request.Priority.HasValue ? (int)request.Priority.Value : DBNull.Value, // {6}
-                    request.DueDate ?? (object)DBNull.Value, // {7}
-                    request.IsDraft,                       // {8}
-                    now                                    // {9}
-                )
-                .AsEnumerable()
-                .First();
-
-            // 挿入されたアイテムを取得
-            var item = await _context.WorkspaceItems.FindAsync(result.Id);
-            if (item == null)
+            var item = new WorkspaceItem
             {
-                throw new InvalidOperationException("アイテムの作成に失敗しました。");
-            }
+                WorkspaceId = workspaceId,
+                ItemNumber = itemNumber,
+                Subject = request.Subject,
+                Body = request.Body,
+                RawBody = string.Empty,
+                OwnerId = ownerId,
+                AssigneeId = request.AssigneeId,
+                Priority = request.Priority,
+                DueDate = request.DueDate,
+                IsDraft = request.IsDraft,
+                IsArchived = false,
+                IsActive = true,
+                CreatedAt = now,
+                UpdatedAt = now,
+                UpdatedByUserId = ownerId,
+            };
+
+            _context.WorkspaceItems.Add(item);
+            await _context.SaveChangesAsync();
 
             // タグの処理
             if (request.TagNames != null && request.TagNames.Any())
@@ -1393,13 +1383,4 @@ public class WorkspaceItemService
             await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
         }
     }
-}
-
-/// <summary>
-/// INSERT ... RETURNING の結果を受け取るための内部クラス
-/// </summary>
-internal class InsertedItemResult
-{
-    public int Id { get; set; }
-    public int ItemNumber { get; set; }
 }
