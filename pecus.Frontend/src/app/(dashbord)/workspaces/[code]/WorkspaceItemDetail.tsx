@@ -229,7 +229,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
               <div className="flex items-center gap-2 flex-wrap">
-                {item.code && <span className="text-xs text-base-content/50 font-mono"># {item.code}</span>}
+                {item.code && <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>}
                 {item.priority !== undefined && item.priority !== null && (
                   <div
                     className={`badge ${
