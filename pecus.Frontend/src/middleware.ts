@@ -1,215 +1,52 @@
-import { type JwtPayload, jwtDecode } from 'jwt-decode';
+/**
+ * Next.js Middleware - セッション認証
+ *
+ * セキュリティ改善: Cookie には sessionId のみ保存し、
+ * トークンは Redis に保持（ServerSessionManager 経由）。
+ *
+ * Edge Runtime の制限により、middleware では Redis に直接アクセスできないため、
+ * sessionId の存在確認のみ行い、詳細なトークン検証は Server Components に委譲する。
+ *
+ * @see docs/auth-architecture-redesign.md
+ * @see src/libs/serverSession.ts
+ */
+
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { RefreshRequest } from './connectors/api/pecus';
-import { parseDeviceInfoFromUserAgent } from './utils/deviceInfo';
 
-interface CustomJwtPayload extends JwtPayload {
-  // JWTのクレームに対応（JwtBearerUtil.csで定義）
-  userId?: string; // number形式の文字列として格納
-  username?: string;
-  email?: string;
-  // rolesは複数のroleクレームとして格納されるため、jwt-decodeでは取得方法が異なる
+/** sessionId Cookie のキー名（serverSession.ts と同期） */
+const SESSION_COOKIE_KEY = 'sessionId';
+
+/**
+ * キャッシュ無効化ヘッダーを設定
+ */
+function setNoCacheHeaders(response: NextResponse): void {
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+  response.headers.set('Surrogate-Control', 'no-store');
 }
 
 /**
- * リフレッシュトークンを使用してアクセストークンを再取得
- * @param request NextRequest
- * @param refreshToken リフレッシュトークン
- * @param existingUserCookie 既存のuserクッキー（存在する場合）
+ * セッション Cookie を削除してログインページへリダイレクト
  */
-async function attemptRefresh(
-  request: NextRequest,
-  refreshToken: string,
-  existingUserCookie: string | undefined,
-  existingDeviceCookie: string | undefined,
-): Promise<NextResponse> {
-  try {
-    const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
-    const clientUserAgent = request.headers.get('user-agent') ?? undefined;
-    const forwardedForHeader = request.headers.get('x-forwarded-for') ?? undefined;
-    const forwardedFor = forwardedForHeader?.split(',')[0].trim() || undefined;
-    const realIp = request.headers.get('x-real-ip') ?? undefined;
-    const clientIp = forwardedFor ?? realIp;
-
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (clientUserAgent) headers['User-Agent'] = clientUserAgent;
-    if (forwardedFor) headers['X-Forwarded-For'] = forwardedFor;
-    if (clientIp) headers['X-Real-IP'] = clientIp;
-
-    let body: RefreshRequest;
-    //existingDeviceCookieが存在する場合はそこからデバイス情報を取得する
-    if (existingDeviceCookie) {
-      const deviceInfo = JSON.parse(existingDeviceCookie);
-      body = {
-        refreshToken,
-        userAgent: deviceInfo.userAgent,
-        ipAddress: clientIp,
-        deviceName: deviceInfo.name,
-        deviceType: deviceInfo.type,
-        os: deviceInfo.os,
-        appVersion: deviceInfo.appVersion,
-        timezone: deviceInfo.timezone,
-        location: deviceInfo.location,
-      };
-    } else {
-      // User-Agent からデバイス情報を解析
-      const { deviceName, deviceType, os } = parseDeviceInfoFromUserAgent(clientUserAgent);
-
-      // タイムゾーンはリクエストヘッダーから取得を試みる（存在しない場合はundefined）
-      const timezone = request.headers.get('x-timezone') ?? undefined;
-      body = {
-        refreshToken,
-        userAgent: clientUserAgent,
-        ipAddress: clientIp,
-        deviceName,
-        deviceType,
-        os,
-        appVersion: undefined, // アプリバージョンはブラウザからは取得不可
-        timezone,
-        location: undefined, // ロケーションは別途位置情報APIが必要
-      };
-    }
-
-    const refreshResponse = await fetch(`${apiBaseUrl}/api/entrance/refresh`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
-
-    if (!refreshResponse.ok) {
-      console.error('[Middleware] Refresh failed:', refreshResponse.status);
-      console.error('[Middleware] About to delete cookies and redirect to /signin');
-
-      // リフレッシュトークンも無効な場合はクッキーをクリアしてログインページへ
-      const response = NextResponse.redirect(new URL('/signin', request.url));
-
-      // キャッシュ無効化ヘッダーを設定（ブラウザ・CDKの両方に対して）
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
-      response.headers.set('Surrogate-Control', 'no-store');
-
-      response.cookies.delete('accessToken');
-      response.cookies.delete('refreshToken');
-      response.cookies.delete('user');
-      response.cookies.delete('device');
-
-      return response;
-    }
-
-    const data = await refreshResponse.json();
-    console.log('[Middleware] Token refreshed successfully');
-
-    const toMaxAgeSeconds = (expiresAt?: string, fallbackSeconds: number = 60 * 60 * 24 * 30) => {
-      if (!expiresAt) return fallbackSeconds;
-      const expiresMs = Date.parse(expiresAt);
-      if (Number.isNaN(expiresMs)) return fallbackSeconds;
-      const diffSeconds = Math.floor((expiresMs - Date.now()) / 1000);
-      return diffSeconds > 0 ? diffSeconds : fallbackSeconds;
-    };
-
-    // 新しいトークンをクッキーに設定してリクエストを続行
-    const response = NextResponse.next();
-
-    // キャッシュ無効化ヘッダーを設定（SSRコンポーネントのキャッシュを回避）
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-
-    const baseCookieOptions = {
-      path: '/',
-      httpOnly: false,
-      sameSite: 'strict' as const,
-      secure: process.env.NODE_ENV === 'production',
-    };
-
-    const accessMaxAge = toMaxAgeSeconds(data.expiresAt, 60 * 60);
-    const refreshMaxAge = toMaxAgeSeconds(data.refreshExpiresAt, 60 * 60 * 24 * 30);
-
-    response.cookies.set('accessToken', data.accessToken, {
-      ...baseCookieOptions,
-      maxAge: accessMaxAge,
-    });
-
-    response.cookies.set('refreshToken', data.refreshToken, {
-      ...baseCookieOptions,
-      maxAge: refreshMaxAge,
-    });
-
-    // userクッキーが存在しない場合、アクセストークンからユーザー情報を復元
-    if (!existingUserCookie) {
-      try {
-        const decoded = jwtDecode<CustomJwtPayload>(data.accessToken);
-        // JWTのクレームからユーザー情報を構築
-        // userId は文字列として格納されているので数値に変換
-        const userInfo = {
-          id: decoded.userId ? Number.parseInt(decoded.userId, 10) : 0,
-          name: decoded.username ?? '',
-          email: decoded.email ?? '',
-          roles: [] as string[], // ロールはJWTから直接取得するのが複雑なため空配列で初期化
-        };
-        response.cookies.set('user', JSON.stringify(userInfo), {
-          ...baseCookieOptions,
-          maxAge: refreshMaxAge,
-        });
-        console.log('[Middleware] User cookie restored from token');
-      } catch (decodeError) {
-        console.error('[Middleware] Failed to decode new access token:', decodeError);
-      }
-    }
-
-    // deviceクッキーが存在しない場合、リクエスト情報からデバイス情報を復元
-    if (!existingDeviceCookie) {
-      try {
-        const deviceInfo = {
-          name: body.deviceName,
-          type: body.deviceType,
-          os: body.os,
-          userAgent: body.userAgent,
-          appVersion: body.appVersion,
-          timezone: body.timezone,
-          location: body.location,
-          ipAddress: body.ipAddress,
-        };
-        response.cookies.set('device', JSON.stringify(deviceInfo), {
-          ...baseCookieOptions,
-          maxAge: refreshMaxAge,
-        });
-        console.log('[Middleware] Device cookie restored from request info');
-      } catch (decodeError) {
-        console.error('[Middleware] Failed to set device cookie:', decodeError);
-      }
-    }
-
-    return response;
-  } catch (error) {
-    console.error('[Middleware] Refresh error:', error);
-
-    // エラー時はクッキーをクリアしてログインページへ
-    const response = NextResponse.redirect(new URL('/signin', request.url));
-
-    // キャッシュ無効化ヘッダーを設定
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
-    response.cookies.delete('user');
-    return response;
-  }
+function redirectToSignIn(request: NextRequest): NextResponse {
+  const response = NextResponse.redirect(new URL('/signin', request.url));
+  setNoCacheHeaders(response);
+  response.cookies.delete(SESSION_COOKIE_KEY);
+  // 旧形式の Cookie も削除（移行期間中）
+  response.cookies.delete('accessToken');
+  response.cookies.delete('refreshToken');
+  response.cookies.delete('user');
+  response.cookies.delete('device');
+  return response;
 }
+
 /**
  * Next.js Middleware
  *
- * 全ページアクセス時にトークンの有効性をチェックし、
- * 期限切れの場合は自動的にリフレッシュを試行します。
+ * 全ページアクセス時に sessionId の存在をチェック。
+ * 詳細なトークン検証と自動リフレッシュは Server Components / API で行う。
  *
  * 実行タイミング：
  * - サーバーコンポーネントのレンダリング前
@@ -224,68 +61,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // クッキーからトークンを取得
-  const accessToken = request.cookies.get('accessToken')?.value;
-  const refreshToken = request.cookies.get('refreshToken')?.value;
-  const userCookie = request.cookies.get('user')?.value;
-  const deviceCookie = request.cookies.get('device')?.value;
+  // Cookie から sessionId を取得
+  const sessionId = request.cookies.get(SESSION_COOKIE_KEY)?.value;
 
-  // トークンが存在しない場合はログインページへ
-  if (!refreshToken) {
-    console.log('[Middleware] No refresh token found, redirecting to signin');
-    return NextResponse.redirect(new URL('/signin', request.url));
-  }
-
-  // アクセストークンがない場合はリフレッシュを試行
-  if (!accessToken) {
-    console.log('[Middleware] No access token found, attempting refresh with refresh token');
-    return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
-  }
-
-  try {
-    // アクセストークンの有効期限をチェック
-    const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(accessToken);
-    const now = Math.floor(Date.now() / 1000);
-    const expiresIn = (decoded.exp ?? 0) - now;
-
-    // 有効期限が5分以上残っている場合はそのまま通過
-    if (expiresIn > 300) {
-      console.log(`[Middleware] Access token valid for ${expiresIn}s, allowing access`);
-      const response = NextResponse.next();
-      // 保護されたページもキャッシュ無効化（セッション依存のため）
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
-      response.headers.set('Surrogate-Control', 'no-store');
-      return response;
+  // sessionId が存在しない場合はログインページへ
+  if (!sessionId) {
+    // 旧形式の Cookie が残っている場合も移行のためリダイレクト
+    const hasLegacyCookies = request.cookies.get('accessToken')?.value || request.cookies.get('refreshToken')?.value;
+    if (hasLegacyCookies) {
+      console.log('[Middleware] Legacy cookies found, clearing and redirecting to signin');
+    } else {
+      console.log('[Middleware] No sessionId found, redirecting to signin');
     }
-
-    // 有効期限が5分未満の場合はリフレッシュを試行
-    console.log(`[Middleware] Access token expiring in ${expiresIn}s, attempting refresh`);
-    return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
-  } catch (error) {
-    console.error('[Middleware] Token validation error:', error);
-
-    // トークンのデコードに失敗した場合、リフレッシュを試行
-    if (refreshToken) {
-      console.log('[Middleware] Token decode failed, attempting refresh');
-      return await attemptRefresh(request, refreshToken, userCookie, deviceCookie);
-    }
-
-    // リフレッシュトークンもない場合はクッキーをクリア
-    const response = NextResponse.redirect(new URL('/signin', request.url));
-
-    // キャッシュ無効化ヘッダーを設定
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, proxy-revalidate');
-    response.headers.set('Pragma', 'no-cache');
-    response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-
-    response.cookies.delete('accessToken');
-    response.cookies.delete('refreshToken');
-    response.cookies.delete('user');
-    return response;
+    return redirectToSignIn(request);
   }
+
+  // sessionId が存在する場合はリクエストを続行
+  // 詳細なセッション検証（Redis 参照、トークンリフレッシュ等）は
+  // Server Components / Server Actions で ServerSessionManager を使用して行う
+  console.log(`[Middleware] SessionId found: ${sessionId.substring(0, 8)}..., allowing access`);
+
+  const response = NextResponse.next();
+  // 保護されたページはキャッシュ無効化（セッション依存のため）
+  setNoCacheHeaders(response);
+
+  return response;
 }
 
 // Middleware を適用するパスを指定
@@ -296,8 +96,9 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, *.svg, *.png, *.webp, *.ico (static assets)
+     * - scripts, styles (public assets)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon\\.ico|.*\\.svg$|.*\\.png$|.*\\.webp$|.*\\.ico$|scripts|styles|icons).*)',
   ],
 };

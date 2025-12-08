@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { parseRouterError, unauthorizedError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import { SessionManager } from '@/libs/session';
+import { ServerSessionManager } from '@/libs/serverSession';
 
 export async function GET() {
   try {
-    const refreshToken = await SessionManager.getRefreshToken();
+    const refreshToken = await ServerSessionManager.getRefreshToken();
     if (!refreshToken) {
       return unauthorizedError('リフレッシュトークンが見つかりません。再度ログインしてください。');
     }

@@ -5,12 +5,19 @@ import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/Pecu
 import type { LoginResponse, RoleInfoResponse } from '@/connectors/api/pecus';
 import type { DeviceType } from '@/connectors/api/pecus/models/DeviceType';
 import type { OSPlatform } from '@/connectors/api/pecus/models/OSPlatform';
-import { type SessionData, SessionManager } from '@/libs/session';
+import {
+  type CreateSessionInput,
+  type ServerSessionData,
+  ServerSessionManager,
+} from '@/libs/serverSession';
 import type { ApiResponse } from './types';
 import { serverError } from './types';
 
 /**
  * Server Action: ログイン
+ *
+ * 認証成功時、Redis にセッションを作成し、Cookie には sessionId のみ保存。
+ * トークンはブラウザに送信されない（Redis 内に保持）。
  */
 export async function login(request: {
   loginIdentifier: string;
@@ -32,7 +39,7 @@ export async function login(request: {
       headersList.get('cf-connecting-ip') || // Cloudflare 対応
       undefined;
 
-    const api = createPecusApiClients(); // OpenAPI設定を使用（引数不要）
+    const api = createPecusApiClients();
     const response = await api.entranceAuth.postApiEntranceAuthLogin({
       loginIdentifier: request.loginIdentifier,
       password: request.password,
@@ -54,12 +61,12 @@ export async function login(request: {
       return serverError('Invalid response from server');
     }
 
-    // セッション情報を保存
-    const sessionData: SessionData = {
+    // Redis にセッションを作成（Cookie には sessionId のみ保存）
+    const sessionInput: CreateSessionInput = {
       accessToken,
       refreshToken,
-      accessExpiresAt: response.expiresAt,
-      refreshExpiresAt: response.refreshExpiresAt ?? undefined,
+      accessExpiresAt: response.expiresAt || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      refreshExpiresAt: response.refreshExpiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       user: {
         id: response.userId || 0,
         name: response.username || '',
@@ -78,7 +85,7 @@ export async function login(request: {
       },
     };
 
-    await SessionManager.setSession(sessionData);
+    await ServerSessionManager.createSession(sessionInput);
 
     return { success: true, data: response };
   } catch (error) {
@@ -94,15 +101,15 @@ export async function login(request: {
  * - ログイン済みならユーザー情報を返す
  * - 未認証なら null を返す
  */
-export async function getCurrentUser(): Promise<ApiResponse<SessionData['user'] | null>> {
+export async function getCurrentUser(): Promise<ApiResponse<ServerSessionData['user'] | null>> {
   try {
-    const session = await SessionManager.getSession();
+    const user = await ServerSessionManager.getUser();
 
-    if (!session || !session.user) {
+    if (!user) {
       return { success: true, data: null };
     }
 
-    return { success: true, data: session.user };
+    return { success: true, data: user };
   } catch (error) {
     console.error('Failed to get current user:', error);
     return parseErrorResponse(error, 'ユーザー情報の取得に失敗しました');
@@ -111,24 +118,26 @@ export async function getCurrentUser(): Promise<ApiResponse<SessionData['user'] 
 
 /**
  * Server Action: ログアウト
+ *
+ * 1. WebAPI のログアウトエンドポイントを呼び出してトークンを無効化
+ * 2. Redis からセッションを削除
+ * 3. Cookie から sessionId を削除
  */
 export async function logout(): Promise<ApiResponse<null>> {
   try {
-    const session = await SessionManager.getSession();
-    const accessToken = session?.accessToken;
-    const refreshToken = session?.refreshToken;
+    const session = await ServerSessionManager.getSession();
 
     // WebAPIのログアウトエンドポイントを呼んでトークンを無効化
-    if (accessToken) {
+    if (session?.accessToken) {
       const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
       try {
         await fetch(`${apiBaseUrl}/api/entrance/logout`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${session.accessToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ refreshToken: refreshToken || '' }),
+          body: JSON.stringify({ refreshToken: session.refreshToken || '' }),
         });
       } catch (error) {
         console.error('Failed to call logout API:', error);
@@ -136,8 +145,8 @@ export async function logout(): Promise<ApiResponse<null>> {
       }
     }
 
-    // セッション情報をクリア
-    await SessionManager.clearSession();
+    // Redis セッションと Cookie を削除
+    await ServerSessionManager.destroySession();
 
     return { success: true, data: null };
   } catch (error) {
