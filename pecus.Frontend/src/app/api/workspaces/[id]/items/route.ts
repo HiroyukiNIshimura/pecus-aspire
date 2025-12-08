@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { ensureAccessToken } from '@/app/api/apiRouteAuth';
 import { badRequestError, parseRouterError, unauthorizedError } from '@/app/api/routerError';
-import { getAccessToken } from '@/connectors/api/auth';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { TaskPriority } from '@/connectors/api/pecus';
 
@@ -18,13 +18,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const workspaceId = parseInt(id, 10);
-
-    // トークン取得状況を確認
-    const token = await getAccessToken();
-    if (!token) {
-      console.warn('WorkspaceItems API Route - No access token available');
-      return unauthorizedError('認証が必要です。再ログインしてください。');
-    }
 
     const searchParams = request.nextUrl.searchParams;
 
