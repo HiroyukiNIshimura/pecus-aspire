@@ -186,7 +186,7 @@ export default function AdminSkillsClient({
           <div className="max-w-7xl mx-auto">
             {/* Error Alert */}
             {fetchError && (
-              <div className="alert alert-error mb-6" role="alert">
+              <div className="alert alert-soft alert-error mb-6" role="alert">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="stroke-current shrink-0 h-6 w-6"

@@ -207,7 +207,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
     if (error) {
       return (
-        <div className="alert alert-error">
+        <div className="alert alert-soft alert-error">
           <span>{error}</span>
         </div>
       );
@@ -215,7 +215,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
     if (!item) {
       return (
-        <div className="alert alert-warning">
+        <div className="alert alert-soft alert-warning">
           <span>アイテムが見つかりません。</span>
         </div>
       );

@@ -62,7 +62,7 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
           </div>
 
           {fetchError && (
-            <div className="alert alert-error mb-4">
+            <div className="alert alert-soft alert-error mb-4">
               <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
               <span>{fetchError}</span>
             </div>

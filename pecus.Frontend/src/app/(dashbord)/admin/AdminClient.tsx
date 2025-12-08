@@ -70,7 +70,7 @@ export default function AdminClient({
             <h1 className="text-3xl font-bold mb-6">組織</h1>
 
             {clientError ? (
-              <div className="alert alert-error mb-4">
+              <div className="alert alert-soft alert-error mb-4">
                 <div>
                   <span>組織情報の取得に失敗しました: </span>
                   <span className="font-mono">{clientError.message || `エラーコード: ${clientError.code}`}</span>

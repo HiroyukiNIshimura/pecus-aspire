@@ -293,7 +293,7 @@ export default function EditWorkspaceClient({
 
             {/* エラー表示 */}
             {fetchError && (
-              <div className="alert alert-error mb-6">
+              <div className="alert alert-soft alert-error mb-6">
                 <span>{fetchError}</span>
               </div>
             )}

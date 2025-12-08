@@ -129,7 +129,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
 
             {/* サーバーエラー表示 */}
             {!isLoading && serverErrors.length > 0 && (
-              <div className="alert alert-error mb-4">
+              <div className="alert alert-soft alert-error mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"

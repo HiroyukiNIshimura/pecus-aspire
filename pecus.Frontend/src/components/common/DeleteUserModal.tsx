@@ -90,7 +90,7 @@ export default function DeleteUserModal({ isOpen, onClose, onConfirm, user }: De
           {/* モーダルボディ */}
           <div className="p-6">
             {/* 警告メッセージ */}
-            <div className="alert alert-error mb-4">
+            <div className="alert alert-soft alert-error mb-4">
               <span className="icon-[mdi--alert-outline] w-5 h-5" aria-hidden="true" />
               <div>
                 <p className="font-semibold">重要な警告</p>

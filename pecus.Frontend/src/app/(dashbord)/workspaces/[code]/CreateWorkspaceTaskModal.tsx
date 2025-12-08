@@ -290,7 +290,7 @@ export default function CreateWorkspaceTaskModal({
           <div className="p-6">
             {/* サーバーエラー表示 */}
             {serverErrors.length > 0 && (
-              <div className="alert alert-error mb-4">
+              <div className="alert alert-soft alert-error mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
@@ -508,13 +508,13 @@ export default function CreateWorkspaceTaskModal({
               {/* 担当者負荷チェック結果 */}
               <div className="space-y-2">
                 {isCheckingAssigneeLoad && (
-                  <div className="alert alert-info">
+                  <div className="alert alert-soft alert-info">
                     <span className="loading loading-spinner loading-sm" aria-hidden="true" />
                     <span>担当者のタスク状況を確認しています...</span>
                   </div>
                 )}
                 {assigneeLoadError && (
-                  <div className="alert alert-warning">
+                  <div className="alert alert-soft alert-warning">
                     <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
                     <span>{assigneeLoadError}</span>
                   </div>

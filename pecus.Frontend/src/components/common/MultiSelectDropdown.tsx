@@ -179,7 +179,7 @@ export default function MultiSelectDropdown({
 
       {/* 変更検知メッセージ */}
       {changeMessage && (
-        <div className="alert alert-info mt-3">
+        <div className="alert alert-soft alert-info mt-3">
           <span className="text-sm">{changeMessage}</span>
         </div>
       )}

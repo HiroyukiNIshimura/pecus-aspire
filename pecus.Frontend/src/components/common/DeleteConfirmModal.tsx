@@ -109,7 +109,7 @@ export default function DeleteConfirmModal({
 
             {/* 追加の警告メッセージ */}
             {additionalWarning && (
-              <div className="alert alert-warning mb-4">
+              <div className="alert alert-soft alert-warning mb-4">
                 <span className="icon-[mdi--alert-outline] w-5 h-5" aria-hidden="true" />
                 <span className="text-sm">{additionalWarning}</span>
               </div>

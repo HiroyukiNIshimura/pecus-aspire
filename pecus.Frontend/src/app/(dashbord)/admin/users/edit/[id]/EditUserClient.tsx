@@ -212,7 +212,7 @@ export default function EditUserClient({
 
             {/* エラー表示 */}
             {fetchError && (
-              <div className="alert alert-error mb-6">
+              <div className="alert alert-soft alert-error mb-6">
                 <span>{fetchError}</span>
               </div>
             )}
@@ -297,7 +297,7 @@ export default function EditUserClient({
                       </div>
                     </div>
                     {isActiveChanged && (
-                      <div className="alert alert-info mt-2">
+                      <div className="alert alert-soft alert-info mt-2">
                         <span className="text-sm">
                           {isActive ? '✓ ユーザーを有効化します' : '✗ ユーザーを無効化します'}
                         </span>

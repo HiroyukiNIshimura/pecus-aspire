@@ -260,7 +260,7 @@ export default function WorkspaceItemDrawer({
         <div className="flex-1 p-4 space-y-4">
           {/* エラーメッセージ */}
           {error && (
-            <div className="alert alert-error">
+            <div className="alert alert-soft alert-error">
               <span>{error}</span>
             </div>
           )}

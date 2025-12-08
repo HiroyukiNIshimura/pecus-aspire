@@ -234,7 +234,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             </div>
 
             {fetchError && (
-              <div className="alert alert-error">
+              <div className="alert alert-soft alert-error">
                 <span>{fetchError}</span>
               </div>
             )}

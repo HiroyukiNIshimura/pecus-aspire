@@ -104,7 +104,7 @@ export default function LoginFormClient() {
 
           {/* === API エラー表示エリア（ログイン失敗など） === */}
           {apiError && (
-            <div className="alert alert-error" role="alert">
+            <div className="alert alert-soft alert-error" role="alert">
               {apiError}
             </div>
           )}

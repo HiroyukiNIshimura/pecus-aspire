@@ -80,7 +80,7 @@ export default function EmailChangeTab({
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       {/* 保留中のメールアドレス変更 */}
       {pendingEmail && pendingExpiresAt && (
-        <div className="alert alert-warning">
+        <div className="alert alert-soft alert-warning">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="stroke-current shrink-0 h-6 w-6"
@@ -108,7 +108,7 @@ export default function EmailChangeTab({
       )}
 
       {/* 説明 */}
-      <div className="alert alert-info">
+      <div className="alert alert-soft alert-info">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

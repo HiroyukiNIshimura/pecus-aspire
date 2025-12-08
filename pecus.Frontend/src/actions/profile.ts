@@ -118,6 +118,21 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
 }
 
 /**
+ * Server Action: 自分のデバイスを削除
+ */
+export async function deleteDevice(deviceId: number): Promise<ApiResponse<MessageResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.profile.deleteApiProfileDevices(deviceId);
+
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to delete device:', error);
+    return parseErrorResponse(error, '接続端末の削除に失敗しました');
+  }
+}
+
+/**
  * Server Action: スキルを設定（洗い替え）
  * @param input クライアント側で Zod 検証済みのデータ
  */

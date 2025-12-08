@@ -296,7 +296,7 @@ export default function AdminUsersClient({
 
             {/* Error Message */}
             {fetchError && (
-              <div className="alert alert-error mb-6">
+              <div className="alert alert-soft alert-error mb-6">
                 <span>{fetchError}</span>
               </div>
             )}

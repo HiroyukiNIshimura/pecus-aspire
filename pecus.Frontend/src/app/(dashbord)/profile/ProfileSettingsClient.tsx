@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import { detect404ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { DeviceResponse, MasterSkillResponse, PendingEmailChangeResponse } from '@/connectors/api/pecus';
@@ -38,6 +38,47 @@ export default function ProfileSettingsClient({
   const [isDevicesLoading, setIsDevicesLoading] = useState(false);
   const [isDevicesFetched, setIsDevicesFetched] = useState(false);
 
+  const fetchDevices = useCallback(async () => {
+    if (isDevicesLoading) return;
+
+    setIsDevicesLoading(true);
+    setDevicesError(null);
+    try {
+      const res = await fetch('/api/profile/devices', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const error = new Error(`Failed to fetch devices: ${res.status}`) as Error & { status?: number };
+        error.status = res.status;
+        throw error;
+      }
+
+      const result = (await res.json()) as DeviceResponse[];
+      setDevices(result);
+    } catch (error) {
+      const status =
+        typeof error === 'object' && error !== null && 'status' in error
+          ? (error as { status?: number }).status
+          : undefined;
+      const notFound = status === 404 || detect404ValidationError(error);
+
+      if (notFound) {
+        setDevices([]);
+        return;
+      }
+
+      const parsed = parseErrorResponse(error, '接続端末の取得に失敗しました');
+      setDevicesError(parsed.message);
+      // エラー時も再試行ループを避けるため空配列をセット
+      setDevices([]);
+    } finally {
+      setIsDevicesLoading(false);
+      setIsDevicesFetched(true);
+    }
+  }, [isDevicesLoading]);
+
   const tabs: { id: TabType; label: string }[] = [
     { id: 'basic', label: '基本情報' },
     { id: 'skills', label: 'スキル' },
@@ -47,49 +88,10 @@ export default function ProfileSettingsClient({
 
   // 接続端末一覧を遅延取得（タブが初めて開かれたとき）
   useEffect(() => {
-    const fetchDevices = async () => {
-      setIsDevicesLoading(true);
-      setDevicesError(null);
-      try {
-        const res = await fetch('/api/profile/devices', {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          const error = new Error(`Failed to fetch devices: ${res.status}`) as Error & { status?: number };
-          error.status = res.status;
-          throw error;
-        }
-
-        const result = (await res.json()) as DeviceResponse[];
-        setDevices(result);
-      } catch (error) {
-        const status =
-          typeof error === 'object' && error !== null && 'status' in error
-            ? (error as { status?: number }).status
-            : undefined;
-        const notFound = status === 404 || detect404ValidationError(error);
-
-        if (notFound) {
-          setDevices([]);
-          return;
-        }
-
-        const parsed = parseErrorResponse(error, '接続端末の取得に失敗しました');
-        setDevicesError(parsed.message);
-        // エラー時も再試行ループを避けるため空配列をセット
-        setDevices([]);
-      } finally {
-        setIsDevicesLoading(false);
-        setIsDevicesFetched(true);
-      }
-    };
-
     if (activeTab === 'devices' && !isDevicesFetched && !isDevicesLoading) {
       fetchDevices();
     }
-  }, [activeTab, isDevicesFetched, isDevicesLoading]);
+  }, [activeTab, fetchDevices, isDevicesFetched, isDevicesLoading]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -153,7 +155,13 @@ export default function ProfileSettingsClient({
               />
             )}
             {activeTab === 'devices' && (
-              <DevicesTab devices={devices ?? []} isLoading={isDevicesLoading} error={devicesError} />
+              <DevicesTab
+                devices={devices ?? []}
+                isLoading={isDevicesLoading}
+                error={devicesError}
+                notify={notify}
+                onRefreshDevices={fetchDevices}
+              />
             )}
           </div>
         </div>
