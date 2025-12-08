@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { ensureAccessToken } from '@/app/api/apiRouteAuth';
-import { badRequestError, parseRouterError, unauthorizedError } from '@/app/api/routerError';
+import { badRequestError, parseRouterError } from '@/app/api/routerError';
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
 import type { TaskPriority } from '@/connectors/api/pecus';
 
