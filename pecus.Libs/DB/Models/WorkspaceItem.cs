@@ -23,9 +23,9 @@ public class WorkspaceItem
     public int ItemNumber { get; set; }
 
     /// <summary>
-    /// 表示用コード（ItemNumber の文字列表現）
+    /// 表示用コード（ItemNumber の文字列表現、pgroonga 検索対象）
     /// </summary>
-    public string Code => ItemNumber.ToString();
+    public string Code { get; set; } = string.Empty;
 
     /// <summary>
     /// 件名

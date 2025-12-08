@@ -343,7 +343,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ItemNumber).IsRequired();
-            entity.Ignore(e => e.Code); // Code は計算プロパティのため無視
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(20); // pgroonga 検索対象カラム
             entity.Property(e => e.Subject).IsRequired(); // TEXT型として扱う
             entity.Property(e => e.IsArchived).HasDefaultValue(false);
             entity.Property(e => e.IsDraft).HasDefaultValue(true);

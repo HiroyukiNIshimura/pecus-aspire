@@ -7,6 +7,7 @@ namespace Pecus.Libs.Utils;
 /// - スペース区切り → AND検索（例: "aaa bbb" → "aaa bbb"）
 /// - パイプ(|)区切り → OR検索（例: "aaa|bbb" → "(aaa OR bbb)"）
 /// - 混合 → AND + OR（例: "aaa bbb|ccc" → "aaa (bbb OR ccc)"）
+/// - #数字 → アイテムコード前方一致検索（例: "#123" → "123*"）
 /// </para>
 /// </summary>
 public static class PgroongaQueryBuilder
@@ -54,7 +55,7 @@ public static class PgroongaQueryBuilder
     {
         var orKeywords = part
             .Split('|', StringSplitOptions.RemoveEmptyEntries)
-            .Select(EscapeKeyword)
+            .Select(ConvertKeyword)
             .Where(k => !string.IsNullOrEmpty(k))
             .ToArray();
 
@@ -70,6 +71,29 @@ public static class PgroongaQueryBuilder
 
         // 複数キーワードは括弧で囲んで OR 結合
         return $"({string.Join(" OR ", orKeywords)})";
+    }
+
+    /// <summary>
+    /// キーワードを pgroonga クエリに変換
+    /// #xxx 形式のアイテムコード検索を前方一致に変換
+    /// </summary>
+    private static string ConvertKeyword(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = keyword.Trim();
+
+        // #xxx 形式（# + 数字のみ）をアイテムコード前方一致検索に変換
+        if (trimmed.StartsWith('#') && trimmed.Length > 1 && trimmed[1..].All(char.IsDigit))
+        {
+            // # を除去して前方一致用ワイルドカード追加
+            return trimmed[1..] + "*";
+        }
+
+        return EscapeKeyword(trimmed);
     }
 
     /// <summary>
@@ -93,7 +117,6 @@ public static class PgroongaQueryBuilder
         }
 
         return keyword
-            .Trim()
             .Replace("\\", "\\\\") // バックスラッシュ（エスケープ文字）
             .Replace("\"", "\\\"") // ダブルクォート（フレーズ検索）
             .Replace("(", "\\(") // 括弧（グループ化）

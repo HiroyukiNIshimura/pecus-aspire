@@ -95,6 +95,7 @@ public class WorkspaceItemService
             {
                 WorkspaceId = workspaceId,
                 ItemNumber = itemNumber,
+                Code = itemNumber.ToString(),
                 Subject = request.Subject,
                 Body = request.Body,
                 RawBody = string.Empty,
@@ -454,12 +455,14 @@ public class WorkspaceItemService
 
     /// <summary>
     /// pgroonga を使用してワークスペースアイテムをあいまい検索
-    /// Subject, RawBody, 関連タグ名を対象に日本語のゆらぎやタイポにも対応した検索を行う
+    /// Subject, RawBody, Code, 関連タグ名を対象に日本語のゆらぎやタイポにも対応した検索を行う
     /// <para>
     /// 検索クエリの書式:
     /// - スペース区切り → AND検索（例: "aaa bbb" → aaa AND bbb）
     /// - パイプ(|)区切り → OR検索（例: "aaa|bbb" → aaa OR bbb）
     /// - 混合 → AND + OR（例: "aaa bbb|ccc" → aaa AND (bbb OR ccc)）
+    /// - #数字 → アイテムコード前方一致検索（例: "#123 猫" → Code が 123 で始まる AND 猫を含む）
+    /// - 複数#数字は OR として扱う（例: "#123 #456" → Code が 123 OR 456 で始まる）
     /// </para>
     /// </summary>
     private async Task<(List<WorkspaceItem> Items, int TotalCount)> GetWorkspaceItemsWithPgroongaAsync(
@@ -536,10 +539,11 @@ public class WorkspaceItemService
 
         var filterClause = string.Join(" AND ", filterClauses);
 
-        // 検索条件（Subject, RawBody, タグ名を対象）
+        // 検索条件（Subject, RawBody, Code, タグ名を対象）
+        // Code を追加することで #123 形式のアイテムコード検索に対応
         // タグ名検索のために LEFT JOIN で Tags テーブルを結合
         // DISTINCT ON で重複排除（1アイテムに複数タグがある場合の対策）
-        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""RawBody""] &@~ {1} OR t.""Name"" &@~ {1})";
+        var searchCondition = @"(ARRAY[wi.""Subject"", wi.""RawBody"", wi.""Code""] &@~ {1} OR t.""Name"" &@~ {1})";
 
         // カウント用クエリを実行（SqlQueryRaw<int> は "Value" カラムを期待する）
         // タグ結合による重複を DISTINCT でカウント
@@ -564,7 +568,7 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin
@@ -606,7 +610,7 @@ public class WorkspaceItemService
             // DISTINCT と ORDER BY pgroonga_score() の併用は PostgreSQL の制約でエラーになるため
             // サブクエリで重複排除してから外側でスコア順にソート
             var mainSql = $@"
-                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
+                SELECT sub.""Id"", sub.""WorkspaceId"", sub.""ItemNumber"", sub.""Code"", sub.""Subject"", sub.""RawBody"", sub.""Body"",
                        sub.""OwnerId"", sub.""AssigneeId"", sub.""CommitterId"", sub.""UpdatedByUserId"",
                        sub.""IsDraft"", sub.""IsArchived"", sub.""IsActive"", sub.""Priority"", sub.""DueDate"",
                        sub.""CreatedAt"", sub.""UpdatedAt"", sub.xmin

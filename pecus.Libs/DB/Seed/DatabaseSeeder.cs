@@ -1,5 +1,4 @@
-﻿using Bogus;
-using Bogus.Extensions;
+﻿using Bogus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB.Models;
@@ -72,6 +71,7 @@ public class DatabaseSeeder
     /// <remarks>
     /// シードデータ投入後に pgroonga インデックスを再構築することで、
     /// 新しく追加されたデータが検索対象に含まれるようになります。
+    /// WorkspaceItems のインデックスは Subject, RawBody, Code を含みます。
     /// </remarks>
     private async Task ReindexPgroongaAsync()
     {
@@ -84,7 +84,7 @@ public class DatabaseSeeder
                 @"REINDEX INDEX CONCURRENTLY idx_users_pgroonga;"
             );
 
-            // WorkspaceItems テーブルの pgroonga インデックスを再構築
+            // WorkspaceItems テーブルの pgroonga インデックスを再構築（Subject, RawBody, Code）
             await _context.Database.ExecuteSqlRawAsync(
                 @"REINDEX INDEX CONCURRENTLY idx_workspaceitems_pgroonga;"
             );
@@ -1193,6 +1193,7 @@ public class DatabaseSeeder
                     {
                         WorkspaceId = workspace.Id,
                         ItemNumber = itemNumber,
+                        Code = itemNumber.ToString(),
                         Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
                         Body = playgroundJson, // playground.json の内容
                         RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
