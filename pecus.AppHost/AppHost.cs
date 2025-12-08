@@ -51,11 +51,18 @@ try
         .WithExternalHttpEndpoints()
         .WithHttpHealthCheck("/");
 
+    // Frontendの設定(開発環境モード)
     var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
         .WithReference(pecusApi)
+        .WithReference(redis)
         .WaitFor(pecusApi)
         .WithNpmPackageInstallation()
-        .WithExternalHttpEndpoints();
+        .WithExternalHttpEndpoints()
+        .WithEnvironment(context =>
+        {
+            context.EnvironmentVariables["REDIS_HOST"] = redis.Resource.PrimaryEndpoint.Property(EndpointProperty.Host);
+            context.EnvironmentVariables["REDIS_PORT"] = redis.Resource.PrimaryEndpoint.Property(EndpointProperty.Port);
+        });
 
     builder.Build().Run();
 }
