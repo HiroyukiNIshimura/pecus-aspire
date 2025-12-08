@@ -176,6 +176,7 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
       {otherDevices.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-base-content">その他の端末</h3>
+          <p>ネットカフェなどの公共の場所からのアクセスや心当たりの無い端末は積極的に削除してください。</p>
           <div className="space-y-4">{otherDevices.map((d) => renderCard(d))}</div>
         </div>
       )}
@@ -197,7 +198,7 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
         onConfirm={handleConfirmDelete}
         itemType="端末"
         itemName={targetDeviceLabel}
-        additionalWarning="この端末からのセッションが最長数十分で失効し、再度ログインが必要になります。"
+        additionalWarning="この端末からのセッションが最長でも数十分後に失効し、再度ログインが必要になります。"
       />
     </div>
   );
