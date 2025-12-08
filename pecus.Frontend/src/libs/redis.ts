@@ -1,22 +1,46 @@
 import Redis, { type RedisOptions } from 'ioredis';
 
-// 環境変数から接続情報を取得
-const REDIS_HOST = process.env.REDIS_HOST;
-const REDIS_PORT = process.env.REDIS_PORT;
+// Aspire から提供される接続文字列を取得
+// 形式: "localhost:port,password=xxx" または "host:port,password=xxx"
+const REDIS_CONNECTION_STRING = process.env.ConnectionStrings__redis;
 
-if (!REDIS_HOST) {
-  throw new Error('環境変数 REDIS_HOST が設定されていません');
+if (!REDIS_CONNECTION_STRING) {
+  throw new Error('環境変数 ConnectionStrings__redis が設定されていません');
 }
 
-if (!REDIS_PORT) {
-  throw new Error('環境変数 REDIS_PORT が設定されていません');
+/**
+ * Aspire の Redis 接続文字列をパースする
+ * 形式: "host:port,password=xxx" または "host:port,password=xxx,ssl=true"
+ */
+function parseRedisConnectionString(connectionString: string): RedisOptions {
+  const parts = connectionString.split(',');
+  const hostPort = parts[0];
+  const [host, portStr] = hostPort.split(':');
+  const port = Number.parseInt(portStr || '6379', 10);
+
+  if (Number.isNaN(port)) {
+    throw new Error(`Redis接続文字列のポート番号が不正です: ${portStr}`);
+  }
+
+  const options: RedisOptions = {
+    host,
+    port,
+  };
+
+  // その他のオプションをパース (password=xxx, ssl=true など)
+  for (let i = 1; i < parts.length; i++) {
+    const [key, value] = parts[i].split('=');
+    if (key === 'password') {
+      options.password = value;
+    } else if (key === 'ssl' && value === 'true') {
+      options.tls = {};
+    }
+  }
+
+  return options;
 }
 
-const REDIS_PORT_NUMBER = Number.parseInt(REDIS_PORT, 10);
-
-if (Number.isNaN(REDIS_PORT_NUMBER)) {
-  throw new Error(`環境変数 REDIS_PORT の値が不正です: ${REDIS_PORT}`);
-}
+const parsedOptions = parseRedisConnectionString(REDIS_CONNECTION_STRING);
 
 // シングルトンインスタンスを保持
 let redisInstance: Redis | null = null;
@@ -25,8 +49,7 @@ let redisInstance: Redis | null = null;
  * Redisクライアントのオプション設定
  */
 const redisOptions: RedisOptions = {
-  host: REDIS_HOST,
-  port: REDIS_PORT_NUMBER,
+  ...parsedOptions,
   // 再接続時の設定
   retryStrategy: (times: number) => {
     // 最大10回まで再接続を試行
@@ -46,8 +69,6 @@ const redisOptions: RedisOptions = {
   maxRetriesPerRequest: 3,
   // 接続が切れた場合にエラーをスローする
   enableOfflineQueue: true,
-  // TLS設定（本番環境で必要に応じて設定）
-  // tls: process.env.NODE_ENV === 'production' ? {} : undefined,
 };
 
 /**
@@ -63,7 +84,7 @@ export function getRedisClient(): Redis {
 
   // 接続イベントのハンドリング
   redisInstance.on('connect', () => {
-    console.log(`Redis connected to ${REDIS_HOST}:${REDIS_PORT_NUMBER}`);
+    console.log(`Redis connected to ${parsedOptions.host}:${parsedOptions.port}`);
   });
 
   redisInstance.on('ready', () => {

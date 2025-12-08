@@ -57,12 +57,7 @@ try
         .WithReference(redis)
         .WaitFor(pecusApi)
         .WithNpmPackageInstallation()
-        .WithExternalHttpEndpoints()
-        .WithEnvironment(context =>
-        {
-            context.EnvironmentVariables["REDIS_HOST"] = redis.Resource.PrimaryEndpoint.Property(EndpointProperty.Host);
-            context.EnvironmentVariables["REDIS_PORT"] = redis.Resource.PrimaryEndpoint.Property(EndpointProperty.Port);
-        });
+        .WithExternalHttpEndpoints();
 
     builder.Build().Run();
 }
