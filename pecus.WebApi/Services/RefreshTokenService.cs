@@ -89,6 +89,12 @@ public class RefreshTokenService
                 info = info with { ChangeDevice = true };
             }
 
+            // CreateDeviceAsyncでDeviceIdが設定された場合、RefreshTokenの更新を保存
+            if (dbToken.DeviceId.HasValue)
+            {
+                await _context.SaveChangesAsync();
+            }
+
             // --- 1ユーザーあたりの有効トークン数制限: 古いトークンを失効させる ---
             var activeTokens = await _context.RefreshTokens
                 .Where(t => t.UserId == userId && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
@@ -201,34 +207,38 @@ public class RefreshTokenService
         await _db.KeyDeleteAsync(key);
 
         // 2. DB でも無効化フラグを立てる（監査用）
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        // 競合エラーが発生した場合は、別のリクエストが既に無効化したとみなして無視（冪等性）
         try
         {
-            var dbToken = await _context.RefreshTokens
-                .Include(t => t.Device) // 関連するDeviceをロード
-                .Where(t => t.Token == token)
-                .FirstOrDefaultAsync();
+            // ExecuteUpdateAsyncを使用して競合を回避
+            // xminによる楽観的ロックを回避するため、直接UPDATE文を発行
+            var affected = await _context.RefreshTokens
+                .Where(t => t.Token == token && !t.IsRevoked)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(t => t.IsRevoked, true));
 
-            if (dbToken != null)
+            if (affected > 0)
             {
-                dbToken.IsRevoked = true;
-
                 // 3. このトークンが関連付けられているDeviceも無効化
-                if (dbToken.Device != null && !dbToken.Device.IsRevoked)
+                var dbToken = await _context.RefreshTokens
+                    .AsNoTracking()
+                    .Where(t => t.Token == token)
+                    .Select(t => new { t.DeviceId })
+                    .FirstOrDefaultAsync();
+
+                if (dbToken?.DeviceId != null)
                 {
-                    dbToken.Device.IsRevoked = true;
-                    dbToken.Device.LastSeenAt = DateTime.UtcNow;
+                    await _context.Devices
+                        .Where(d => d.Id == dbToken.DeviceId && !d.IsRevoked)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(d => d.IsRevoked, true)
+                            .SetProperty(d => d.LastSeenAt, DateTime.UtcNow));
                 }
-
-                await _context.SaveChangesAsync();
             }
-
-            await transaction.CommitAsync();
         }
-        catch
+        catch (DbUpdateConcurrencyException)
         {
-            await transaction.RollbackAsync();
-            throw;
+            // 競合エラーは無視（別のリクエストが既に処理済み）
         }
     }
 
@@ -252,45 +262,36 @@ public class RefreshTokenService
 
         await _db.KeyDeleteAsync(userKey);
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             // 2. DB でもユーザーの全トークンを無効化（監査用）
-            var dbTokens = await _context.RefreshTokens
-                .Include(t => t.Device) // 関連するDeviceをロード
-                .Where(t => t.UserId == userId && !t.IsRevoked)
+            // ExecuteUpdateAsyncを使用して競合を回避
+            var deviceIds = await _context.RefreshTokens
+                .AsNoTracking()
+                .Where(t => t.UserId == userId && !t.IsRevoked && t.DeviceId != null)
+                .Select(t => t.DeviceId!.Value)
+                .Distinct()
                 .ToListAsync();
 
-            foreach (var dbToken in dbTokens)
-            {
-                dbToken.IsRevoked = true;
-            }
+            await _context.RefreshTokens
+                .Where(t => t.UserId == userId && !t.IsRevoked)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(t => t.IsRevoked, true));
 
             // 3. このユーザーの全Deviceも無効化
-            var userDevices = dbTokens
-                .Where(t => t.Device != null)
-                .Select(t => t.Device!)
-                .Distinct()
-                .Where(d => !d.IsRevoked);
-
-            var now = DateTime.UtcNow;
-            foreach (var device in userDevices)
+            if (deviceIds.Count > 0)
             {
-                device.IsRevoked = true;
-                device.LastSeenAt = now;
+                var now = DateTime.UtcNow;
+                await _context.Devices
+                    .Where(d => deviceIds.Contains(d.Id) && !d.IsRevoked)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(d => d.IsRevoked, true)
+                        .SetProperty(d => d.LastSeenAt, now));
             }
-
-            if (dbTokens.Any() || userDevices.Any())
-            {
-                await _context.SaveChangesAsync();
-            }
-
-            await transaction.CommitAsync();
         }
-        catch
+        catch (DbUpdateConcurrencyException)
         {
-            await transaction.RollbackAsync();
-            throw;
+            // 競合エラーは無視（別のリクエストが既に処理済み）
         }
     }
 
@@ -345,29 +346,28 @@ public class RefreshTokenService
 
         // 既存のデバイスを検索（同じ識別子のデバイスが存在するか）
         var existingDevice = await _context.Devices
-            .Include(d => d.RefreshTokens) // RefreshTokensをロード
-            .FirstOrDefaultAsync(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked);
+            .AsNoTracking()
+            .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked)
+            .Select(d => new { d.Id })
+            .FirstOrDefaultAsync();
 
         // デバイスの件数
         var deviceCount = await _context.Devices.CountAsync(d => d.UserId == userId && !d.IsRevoked);
 
         if (existingDevice != null)
         {
-            // 既存デバイスの最終確認日時を更新
-            existingDevice.LastSeenAt = now;
-            existingDevice.LastIpMasked = MaskIpAddress(deviceInfo.IpAddress);
-            existingDevice.Timezone = deviceInfo.Timezone;
-            existingDevice.LastSeenLocation = deviceInfo.LastSeenLocation;
+            // 既存デバイスの最終確認日時を更新（ExecuteUpdateAsyncで競合回避）
+            await _context.Devices
+                .Where(d => d.Id == existingDevice.Id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(d => d.LastSeenAt, now)
+                    .SetProperty(d => d.LastIpMasked, MaskIpAddress(deviceInfo.IpAddress))
+                    .SetProperty(d => d.Timezone, deviceInfo.Timezone)
+                    .SetProperty(d => d.LastSeenLocation, deviceInfo.LastSeenLocation));
 
-            // リフレッシュトークンをデバイスに関連付け（まだ関連付けられていない場合）
-            if (!existingDevice.RefreshTokens.Any(rt => rt.Id == refreshToken.Id))
-            {
-                existingDevice.RefreshTokens.Add(refreshToken);
-                refreshToken.DeviceId = existingDevice.Id; // 逆方向の関連付け
-                refreshToken.Device = existingDevice;
-            }
+            // リフレッシュトークンをデバイスに関連付け
+            refreshToken.DeviceId = existingDevice.Id;
 
-            await _context.SaveChangesAsync();
             return false; // 既存デバイスを更新しただけ
         }
 
@@ -387,18 +387,20 @@ public class RefreshTokenService
             Timezone = deviceInfo.Timezone,
             LastSeenLocation = deviceInfo.LastSeenLocation,
             IsRevoked = false,
-            UserId = userId,
-            RefreshTokens = new List<RefreshToken> { refreshToken } // 作成時に直接関連付け
+            UserId = userId
         };
 
         _context.Devices.Add(device);
+
+        // デバイスを先に保存してIDを取得
         await _context.SaveChangesAsync();
 
-        // RefreshTokenのDevice関連付けを更新
+        // RefreshTokenにDeviceIdを設定（ナビゲーションプロパティではなくFKのみ）
         refreshToken.DeviceId = device.Id;
-        refreshToken.Device = device;
-        await _context.SaveChangesAsync();
 
-        return deviceCount > 0; // 1件もデバイスがない状態で新規デバイスを作成
+        // RefreshTokenの更新はトランザクション終了時にまとめて保存されるため、
+        // ここでは SaveChangesAsync を呼ばない（呼び出し元で SaveChanges される）
+
+        return deviceCount > 0; // 既にデバイスがある状態で新規デバイスを作成
     }
 }
