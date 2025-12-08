@@ -9,7 +9,7 @@
 - **状態管理**: jotai
 - **UIライブラリ**: Tailwind CSS + FlyonUI
 - **API通信**: OpenAPI/Swagger定義から自動生成された型安全なクライアント（`openapi-typescript-codegen`）
-- **認証**: pecus.WebApiのJWT認証と連携（トークンは Cookie、httpOnly: false）
+- **認証**: pecus.WebApiのJWT認証と連携（Redis ベースのサーバーサイドセッション、Cookie には sessionId のみ保存）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）
 - **テスト**: Jest, React Testing Library, Playwright など
 - **CI/CD**: GitHub Actions等での自動ビルド・デプロイ
@@ -21,12 +21,12 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 **基本方針**: 読み取り操作（Query）と変更操作（Mutation）を分離し、クライアントから `pecus.WebApi` への直接アクセスは禁止
 
 ### 許可/禁止マトリクス（要点）
-- SSR（Server Component）: 許可（`createPecusApiClients()` 経由・`SessionManager`でトークン取得）
+- SSR（Server Component）: 許可（`createPecusApiClients()` 経由・`ServerSessionManager`でトークン取得）
 - Server Actions: 許可（`createPecusApiClients()` 経由）。`fetch('http://webapi...')` は禁止
 - Next.js API Routes: 許可（`createPecusApiClients()` 経由・サーバー側で実行）
 - クライアントコンポーネント: 直接呼び出し禁止（Server Actions / API Routes を経由）
 - ブラウザからWebApi直叩き: 禁止（トークン露出防止・監査性確保）
- - Next.js Middleware: 許可（例外）。`/api/entrance/refresh` への直接 `fetch` によりトークンを更新可（`src/middleware.ts` の実装に従う）
+- Next.js Middleware: sessionId の存在チェックのみ（Redis アクセスなし、Edge Runtime 対応）
 
 ### 📖 読み取り操作（データ取得）
 
@@ -40,7 +40,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
   - クライアント → `Next.js API Routes` → `pecus.WebApi` の流れ
   - `src/app/api/admin/workspaces/route.ts` など
   - API Routes内で `createPecusApiClients()` を使用して `pecus.WebApi` にアクセス
-    - トークンはサーバーサイドの `SessionManager`（`pecus.Frontend/src/libs/session.ts`、next/headers の cookies() を使用）から自動取得
+    - トークンはサーバーサイドの `ServerSessionManager`（`pecus.Frontend/src/libs/serverSession.ts`、Redis から自動取得）から取得
 
 ### ✏️ 変更操作（データ変更）
 
@@ -66,7 +66,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 - **OpenAPI グローバル設定**: `createPecusApiClients()` が OpenAPI の `TOKEN` プロパティに `getAccessToken()` を設定（自動トークン付与）
 - **Server Actions/API Routes**: `createPecusApiClients()` の呼び出しで自動的にトークンが取得・付与される
-- **トークンリフレッシュ**: アプリケーション層（Middleware など）で事前にリフレッシュを行い、API 呼び出し時には常に有効なトークンが付与される
+- **トークンリフレッシュ**: `getAccessToken()` 呼び出し時に `ServerSessionManager.getValidAccessToken()` が有効期限をチェックし、必要に応じて自動リフレッシュを実行
 
 ## 3. API クライアントの自動生成
 
@@ -80,32 +80,65 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 ## 4. アクセストークン管理の設計方針
 
- - **保存場所**:
-  - ブラウザでは Cookie（`httpOnly: false`, `sameSite: 'strict'`, `secure: NODE_ENV==='production'`）を使用（`src/middleware.ts` に準拠）。
-  - Server Actions / API Routes では `next/headers` の `cookies()` または `SessionManager` から取得します。
-  - セキュリティ: XSS 対策（CSP/依存性の最小化/入力サニタイズ）を強化。CSRF は `sameSite: 'strict'` を基本とし、必要に応じて追加対策を併用します。
-- **トークン取得**:
-  - Server Actions / API Routes では `getAccessToken()` を呼び出し（`src/connectors/api/auth.ts`）
-  - `getAccessToken()` 内で `SessionManager.getSession()` または `next/headers` の `cookies()` から取得
-  - `createPecusApiClients()` が自動的にトークン取得関数を OpenAPI に登録
-- **自動リフレッシュ**:
-  - Next.js Middleware（`src/middleware.ts`）が保護されたルートへのアクセス前にトークン検証・リフレッシュを実行
-  - `refreshAccessToken()` Server Action が実際のリフレッシュ API 呼び出しを行う（直接 `fetch` で実装）
-- **リフレッシュ条件**:
-  - アクセストークンの有効期限が切れている場合
-  - Middleware でトークン検証失敗時
-  - リフレッシュトークンが有効な場合のみ実行
-- **失敗時の処理**:
-  - リフレッシュ失敗時（400エラー）はセッションをクリアして `/signin` へリダイレクト
-  - その他のエラーはエラーページへ遷移
-- **セッション管理**: `SessionManager`クラス（`src/libs/session.ts`）で一元管理
+> 詳細は `docs/auth-architecture-redesign.md` を参照
 
-実装サンプルは
-- `pecus.Frontend/src/connectors/api/auth.ts`: トークン取得・リフレッシュのServer Actions
-- `pecus.Frontend/src/libs/session.ts`: SessionManager（server-side cookies を利用した実装）
-- `pecus.Frontend/src/middleware.ts`: トークン検証とリフレッシュのMiddleware
-- `pecus.Frontend/src/connectors/api/PecusApiClient.ts`: API クライアント設定（手動編集可能）
-- `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts`: API クライアント生成部分（自動生成）
+### 保存場所
+
+| 情報 | 保存場所 | 備考 |
+|------|----------|------|
+| sessionId | Cookie（`httpOnly: true`, `sameSite: 'strict'`） | ブラウザに残るのはこれのみ |
+| accessToken | Redis（Next.js サーバー側） | ブラウザには送信しない |
+| refreshToken | Redis（Next.js サーバー側） | ブラウザには送信しない |
+| user/device 情報 | Redis（Next.js サーバー側） | セッションデータとして保持 |
+
+### セキュリティ特性
+
+- **XSS 耐性**: トークンがブラウザに存在しないため、XSS でトークンを盗まれるリスクがない
+- **ネットカフェ対策**: 端末にトークンが残らない（sessionId のみ、httpOnly で保護）
+- **即時無効化**: Redis からセッションを削除するだけで即座にログアウト可能
+
+### トークン取得フロー
+
+1. Server Actions / API Routes で `getAccessToken()` を呼び出し
+2. `ServerSessionManager.getValidAccessToken()` が Redis からセッションを取得
+3. アクセストークンの有効期限をチェック（5分のバッファ）
+4. 期限切れ間近なら `ServerSessionManager.refreshTokens()` で自動リフレッシュ
+5. 有効なアクセストークンを返す
+
+### 自動リフレッシュ
+
+- **トリガー**: `getAccessToken()` 呼び出し時に有効期限が5分未満の場合
+- **処理**: `ServerSessionManager.refreshTokens()` が WebAPI の `/api/entrance/refresh` を呼び出し
+- **更新**: Redis 上のセッションデータを更新（Cookie の sessionId は変更なし）
+
+### 失敗時の処理
+
+- リフレッシュ失敗時: Redis セッションを削除、Cookie をクリア、ログインページへリダイレクト
+- セッション期限切れ: Middleware が sessionId 不在を検知してログインページへリダイレクト
+
+### Middleware の役割
+
+- sessionId Cookie の存在チェックのみ（Edge Runtime 対応）
+- Redis アクセスは行わない（Server Components / Server Actions に委譲）
+- 旧形式の Cookie（accessToken, refreshToken, user, device）を検出した場合は削除してログインページへリダイレクト
+
+### セッション管理
+
+- **クラス**: `ServerSessionManager`（`src/libs/serverSession.ts`）
+- **ストレージ**: Redis（キー: `frontend:session:{sessionId}`）
+- **TTL**: 最大30日（スライディングセッション、非アクティブ7日で期限切れ）
+
+### 実装ファイル
+
+| ファイル | 役割 |
+|----------|------|
+| `src/libs/serverSession.ts` | `ServerSessionManager` - Redis ベースのセッション管理（メイン） |
+| `src/libs/session.ts` | 互換レイヤー（非推奨、ServerSessionManager に委譲） |
+| `src/connectors/api/auth.ts` | トークン取得・リフレッシュの Server Actions |
+| `src/middleware.ts` | sessionId 存在チェック（Edge Runtime 対応） |
+| `src/actions/auth.ts` | ログイン・ログアウトの Server Actions |
+| `src/connectors/api/PecusApiClient.ts` | API クライアント設定（手動編集可能） |
+| `src/connectors/api/PecusApiClient.generated.ts` | API クライアント生成部分（自動生成） |
 
 ## 5. Next.js 実装ガイド
 

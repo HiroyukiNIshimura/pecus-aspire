@@ -19,7 +19,7 @@
 - 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す。
 - フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。
 - フロント UI は Tailwind CSS と `FlyonUI` を利用しています。絶対にFlyonUIのデザインを壊さないでください。**daisyUIは使用しない。** **アイコンは"@iconify/tailwind4" https://iconify.design/ を使用する**
-- セッション/トークン: ブラウザは Cookie に保存（httpOnly: false）。Middleware が期限前に自動リフレッシュし、必要に応じてサーバー側ユーティリティ（`src/libs/session.ts`）を併用する。
+- セッション/トークン: Cookie には `sessionId` のみ保存（`httpOnly: true`）。トークンは Redis に保持し、`ServerSessionManager`（`src/libs/serverSession.ts`）経由で取得。詳細は `docs/auth-architecture-redesign.md` 参照。
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
@@ -32,7 +32,7 @@
 - フロント API 呼び出し: 読取は SSR(Server Component)で、変更は Server Actions で、いずれも `createPecusApiClients()` 経由。ブラウザ直 fetch と SA/SSR からの WebApi 直 fetch は禁止（例外: リフレッシュ API のみ循環回避で直 fetch 可）。
 - 競合制御: UPDATE 時の `DbUpdateConcurrencyException` を catch→`FindAsync()` で最新再取得→`ConcurrencyException<T>` 再スローで統一。DTO は `RowVersion: uint` 必須。
 - 生成物/CI: 自動生成物は `.gitignore` 管理・手動編集禁止。CI は生成スクリプト未実行の検知を重視。
-- 認証/トークン: ブラウザは Cookie（`httpOnly:false`, `sameSite:'strict'`）。SSR/SA は `SessionManager` で取得。自動更新は Axios、リフレッシュのみ直 `fetch` 例外。
+- 認証/トークン: Cookie には `sessionId` のみ（`httpOnly:true`, `sameSite:'strict'`）。SSR/SA は `ServerSessionManager` で取得。トークンは Redis に保持され、`getAccessToken()` 呼び出し時に自動リフレッシュ。
 - バージョン表記: 「.NET 10」「EF Core 10」「.NET Aspire x.y」を分離して記載。
 
 ## 参照ドキュメント
@@ -68,7 +68,7 @@
 - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` — `HandleConcurrencyException`（IConcurrencyException → HTTP 409 へ変換）
 - `pecus.WebApi/Exceptions/ConcurrencyException.cs` — `ConcurrencyException<T>` の定義（ConflictedModel を含む）
 - `pecus.WebApi/Models/Requests/*` — リクエスト DTO 例（更新リクエストに `RowVersion` を含める）
-- `pecus.Frontend/src/libs/session.ts` — `SessionManager`（server-side cookies を使ったセッション管理）
+- `pecus.Frontend/src/libs/serverSession.ts` — `ServerSessionManager`（Redis ベースのセッション管理）
 - `pecus.Frontend/scripts/generate-pecus-api-client.js` — API クライアント生成スクリプト（生成物は編集禁止）
 
 ## 作業時のチェックリスト（短い）
