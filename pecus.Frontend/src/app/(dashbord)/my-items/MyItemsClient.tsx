@@ -275,6 +275,8 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                               </div>
                             </div>
 
+                            {/* アイテムコード */}
+                            <span className="text-xs text-base-content/50 font-mono"># {item.code}</span>
                             {/* 件名 */}
                             <Link href={`/workspaces/${item.workspaceCode}?itemCode=${item.code}`}>
                               <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words line-clamp-2">

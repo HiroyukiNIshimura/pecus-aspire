@@ -530,6 +530,9 @@ export default function WorkspaceTaskAccordion({
                                           >
                                             {task.taskContent}
                                           </p>
+                                          <span className="text-xs text-base-content/50 font-mono">
+                                            アイテム: #{task.itemCode}
+                                          </span>
                                           <Link
                                             href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
                                             className="block text-xs text-base-content/60 line-clamp-1 hover:text-primary transition-colors"

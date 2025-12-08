@@ -229,7 +229,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-bold mb-2">{item.subject || '（未設定）'}</h2>
               <div className="flex items-center gap-2 flex-wrap">
-                {item.code && <code className="text-sm badge badge-soft badge-md">{item.code}</code>}
+                {item.code && <span className="text-xs text-base-content/50 font-mono"># {item.code}</span>}
                 {item.priority !== undefined && item.priority !== null && (
                   <div
                     className={`badge ${
@@ -412,6 +412,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   >
                     {/* アイテム情報 */}
                     <div className="flex-1 min-w-0">
+                      <span className="text-xs text-base-content/50 font-mono">#{related.code}</span>
                       <button
                         type="button"
                         onClick={() => related.id && related.code && onItemSelect(related.id, related.code)}

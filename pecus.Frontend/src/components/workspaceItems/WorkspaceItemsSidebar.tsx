@@ -542,10 +542,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                           )}
 
                           <div className="flex-1 min-w-0">
-                            {/* 1行目: 件名 */}
+                            {/* 1行目: コード */}
+                            <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>
+                            {/* 2行目: 件名 */}
                             <div className="truncate">{item.subject || '（未設定）'}</div>
 
-                            {/* 2行目: ステータスアイコン群（常に表示） */}
+                            {/* 3行目: ステータスアイコン群（常に表示） */}
                             <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
                               {/* 下書き */}
                               {item.isDraft && (
