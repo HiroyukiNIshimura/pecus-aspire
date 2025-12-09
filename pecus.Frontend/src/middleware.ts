@@ -28,17 +28,12 @@ function setNoCacheHeaders(response: NextResponse): void {
 }
 
 /**
- * セッション Cookie を削除してログインページへリダイレクト
+ * セッションを削除してログインページへリダイレクト
  */
 function redirectToSignIn(request: NextRequest): NextResponse {
   const response = NextResponse.redirect(new URL('/signin', request.url));
   setNoCacheHeaders(response);
   response.cookies.delete(SESSION_COOKIE_KEY);
-  // 旧形式の Cookie も削除（移行期間中）
-  response.cookies.delete('accessToken');
-  response.cookies.delete('refreshToken');
-  response.cookies.delete('user');
-  response.cookies.delete('device');
   return response;
 }
 

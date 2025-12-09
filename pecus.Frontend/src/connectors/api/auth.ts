@@ -58,38 +58,3 @@ export async function refreshAccessToken(): Promise<{
     throw error;
   }
 }
-
-/**
- * ログアウト処理
- *
- * @deprecated auth.ts の logout は非推奨です。
- * 代わりに src/actions/auth.ts の logout() を使用してください。
- */
-export async function logout(): Promise<void> {
-  try {
-    const session = await ServerSessionManager.getSession();
-
-    // WebAPIのログアウトエンドポイントを呼ぶ
-    if (session?.accessToken) {
-      const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
-      try {
-        await fetch(`${apiBaseUrl}/api/entrance/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refreshToken: session.refreshToken || '' }),
-        });
-      } catch (error) {
-        console.error('Failed to call logout API:', error);
-        // エラーは無視してセッションクリアを続行
-      }
-    }
-
-    await ServerSessionManager.destroySession();
-  } catch (error) {
-    console.error('Failed to logout:', error);
-    throw error;
-  }
-}
