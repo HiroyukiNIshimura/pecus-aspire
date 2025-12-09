@@ -33,6 +33,9 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
     try {
       const result = await updateUserSetting({
         canReceiveEmail: settings.canReceiveEmail,
+        canReceiveRealtimeNotification: settings.canReceiveRealtimeNotification,
+        timeZone: settings.timeZone,
+        language: settings.language,
         rowVersion: settings.rowVersion ?? 0,
       });
 
