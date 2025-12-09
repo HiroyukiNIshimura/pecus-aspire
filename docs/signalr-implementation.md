@@ -32,7 +32,7 @@ public async Task JoinWorkspace(int workspaceId, string userName)
 
 | チャネル名 | 参加のタイミング | 離脱のタイミング | 補足 |
 | --- | --- | --- | --- |
-| `organization:{organizationId}` | `/`に遷移 | ログアウト | Disconnect時は離脱 |
+| `organization:{organizationId}` | ログイン成功時 | ログアウト | Disconnect時は離脱 |
 | `workspace:{workspaceId}` | `/workspaces/{code}`に遷移 | ログアウトまたは別のワークスペースに移動（排他的に1つのみ参加） | Disconnect時は離脱 |
 | `item:{itemId}` | `/workspaces/{code}?itemCode={itemCode}`に遷移 | ログアウトまたは別のアイテムに移動（排他的に1つのみ参加） | Disconnect時は離脱。ワークスペースチャネルにも同時参加 |
 | `user:{userId}` | ユーザーが任意にチャネルを開設 or 招待された際 | ログアウトまたは開設者がチャネルを閉じた際 | 組織内チャット用。Disconnect時は離脱 |
