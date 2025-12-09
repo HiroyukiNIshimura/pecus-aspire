@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AvatarType } from './AvatarType';
+import type { LoginDeviceInfo } from './LoginDeviceInfo';
 import type { RoleInfoResponse } from './RoleInfoResponse';
 /**
  * ログインレスポンス
@@ -57,5 +58,6 @@ export type LoginResponse = {
      * リフレッシュトークンの有効期限（UTC）
      */
     refreshExpiresAt?: string | null;
+    device?: LoginDeviceInfo;
 };
 

@@ -34,6 +34,7 @@ export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { ItemWithTasksResponsePagedResponse } from './models/ItemWithTasksResponsePagedResponse';
+export type { LoginDeviceInfo } from './models/LoginDeviceInfo';
 export type { LoginRequest } from './models/LoginRequest';
 export type { LoginResponse } from './models/LoginResponse';
 export type { MasterGenreResponse } from './models/MasterGenreResponse';

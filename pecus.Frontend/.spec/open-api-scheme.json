@@ -8896,6 +8896,28 @@
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
       },
+      "LoginDeviceInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "デバイスID",
+            "format": "int32",
+            "nullable": true
+          },
+          "publicId": {
+            "type": "string",
+            "description": "デバイスの公開ID（セッション管理用）",
+            "nullable": true
+          },
+          "isNewDevice": {
+            "type": "boolean",
+            "description": "新規デバイスかどうか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ログインレスポンス用のデバイス情報（最小限）"
+      },
       "LoginRequest": {
         "required": [
           "deviceType",
@@ -9028,6 +9050,9 @@
             "description": "リフレッシュトークンの有効期限（UTC）",
             "format": "date-time",
             "nullable": true
+          },
+          "device": {
+            "$ref": "#/components/schemas/LoginDeviceInfo"
           }
         },
         "additionalProperties": false,

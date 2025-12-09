@@ -124,6 +124,12 @@ public class EntranceAuthController : ControllerBase
                 .ToList(),
             RefreshToken = refreshToken.Token,
             RefreshExpiresAt = refreshToken.ExpiresAt,
+            Device = new LoginDeviceInfo
+            {
+                Id = refreshToken.DeviceId,
+                PublicId = refreshToken.DevicePublicId,
+                IsNewDevice = refreshToken.ChangeDevice
+            }
         };
 
         if (refreshToken.ChangeDevice)

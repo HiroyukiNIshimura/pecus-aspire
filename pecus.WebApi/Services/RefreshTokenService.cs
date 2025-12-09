@@ -30,7 +30,14 @@ public class RefreshTokenService
         _context = context;
     }
 
-    public record RefreshTokenInfo(string Token, int UserId, DateTimeOffset ExpiresAt, bool ChangeDevice = false);
+    public record RefreshTokenInfo(
+        string Token,
+        int UserId,
+        DateTimeOffset ExpiresAt,
+        bool ChangeDevice = false,
+        string? DevicePublicId = null,
+        int? DeviceId = null
+    );
 
     /// <summary>
     /// デバイス作成情報
@@ -56,6 +63,7 @@ public class RefreshTokenService
     {
         var token = Guid.NewGuid().ToString("N");
         var expiresAt = DateTime.UtcNow.Add(_refreshTokenTtl);
+        // デバイス情報は後で設定するため、初期値は null
         var info = new RefreshTokenInfo(token, userId, expiresAt);
 
         // 1. Redis にキャッシュ（高速アクセス用）
@@ -83,11 +91,13 @@ public class RefreshTokenService
             _context.RefreshTokens.Add(dbToken);
             await _context.SaveChangesAsync();
 
-            var changeDevice = await CreateDeviceAsync(userId, deviceInfo, dbToken);
-            if (changeDevice)
+            var (changeDevice, devicePublicId, deviceId) = await CreateDeviceAsync(userId, deviceInfo, dbToken);
+            info = info with
             {
-                info = info with { ChangeDevice = true };
-            }
+                ChangeDevice = changeDevice,
+                DevicePublicId = devicePublicId,
+                DeviceId = deviceId
+            };
 
             // CreateDeviceAsyncでDeviceIdが設定された場合、RefreshTokenの更新を保存
             if (dbToken.DeviceId.HasValue)
@@ -338,7 +348,8 @@ public class RefreshTokenService
     /// <summary>
     /// Deviceテーブルにレコードを作成します
     /// </summary>
-    private async Task<bool> CreateDeviceAsync(int userId, DeviceInfo deviceInfo, RefreshToken refreshToken)
+    /// <returns>(isNewDevice, devicePublicId, deviceId)</returns>
+    private async Task<(bool IsNewDevice, string? DevicePublicId, int? DeviceId)> CreateDeviceAsync(int userId, DeviceInfo deviceInfo, RefreshToken refreshToken)
     {
         var now = DateTime.UtcNow;
         var publicId = Guid.NewGuid().ToString("N").Substring(0, 8); // 短縮GUID
@@ -348,7 +359,7 @@ public class RefreshTokenService
         var existingDevice = await _context.Devices
             .AsNoTracking()
             .Where(d => d.UserId == userId && d.HashedIdentifier == hashedIdentifier && !d.IsRevoked)
-            .Select(d => new { d.Id })
+            .Select(d => new { d.Id, d.PublicId })
             .FirstOrDefaultAsync();
 
         // デバイスの件数
@@ -368,7 +379,7 @@ public class RefreshTokenService
             // リフレッシュトークンをデバイスに関連付け
             refreshToken.DeviceId = existingDevice.Id;
 
-            return false; // 既存デバイスを更新しただけ
+            return (false, existingDevice.PublicId, existingDevice.Id); // 既存デバイスを更新しただけ
         }
 
         // 新しいデバイスを作成
@@ -401,6 +412,7 @@ public class RefreshTokenService
         // RefreshTokenの更新はトランザクション終了時にまとめて保存されるため、
         // ここでは SaveChangesAsync を呼ばない（呼び出し元で SaveChanges される）
 
-        return deviceCount > 0; // 既にデバイスがある状態で新規デバイスを作成
+        // 既にデバイスがある状態で新規デバイスを作成した場合は isNewDevice = true
+        return (deviceCount > 0, device.PublicId, device.Id);
     }
 }

@@ -44,6 +44,8 @@ export interface ServerSessionData {
 
   /** デバイス情報 */
   device?: {
+    /** デバイスの公開ID（バックエンドの Device.PublicId と紐づけ） */
+    publicId?: string;
     name?: string;
     type?: string;
     os?: string;
@@ -287,6 +289,81 @@ export class ServerSessionManager {
     } catch (error) {
       console.error('[ServerSession] Failed to destroy session:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 特定デバイスの publicId に紐づくセッションを検索して削除
+   *
+   * @param devicePublicId バックエンドの Device.PublicId
+   * @returns 削除したセッション数
+   */
+  static async destroySessionsByDevicePublicId(devicePublicId: string): Promise<number> {
+    try {
+      const redis = getRedisClient();
+      const pattern = `${SESSION_KEY_PREFIX}*`;
+      const keys = await redis.keys(pattern);
+
+      let deletedCount = 0;
+      for (const key of keys) {
+        const sessionJson = await redis.get(key);
+        if (!sessionJson) continue;
+
+        try {
+          const session: ServerSessionData = JSON.parse(sessionJson);
+          // デバイスの publicId と照合
+          if (session.device?.publicId === devicePublicId) {
+            await redis.del(key);
+            deletedCount++;
+            console.log(`[ServerSession] Destroyed session for device: ${devicePublicId}`);
+          }
+        } catch {
+          // パース失敗は無視
+        }
+      }
+
+      return deletedCount;
+    } catch (error) {
+      console.error('[ServerSession] Failed to destroy sessions by device:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * 現在のユーザーの全セッションを削除（自分のセッションを除く）
+   *
+   * @param currentSessionId 維持するセッション ID（現在のセッション）
+   * @param userId ユーザー ID
+   * @returns 削除したセッション数
+   */
+  static async destroyOtherSessions(currentSessionId: string, userId: number): Promise<number> {
+    try {
+      const redis = getRedisClient();
+      const pattern = `${SESSION_KEY_PREFIX}*`;
+      const keys = await redis.keys(pattern);
+
+      let deletedCount = 0;
+      for (const key of keys) {
+        const sessionJson = await redis.get(key);
+        if (!sessionJson) continue;
+
+        try {
+          const session: ServerSessionData = JSON.parse(sessionJson);
+          // 同じユーザーで、かつ現在のセッション以外を削除
+          if (session.user.id === userId && session.sessionId !== currentSessionId) {
+            await redis.del(key);
+            deletedCount++;
+          }
+        } catch {
+          // パース失敗は無視
+        }
+      }
+
+      console.log(`[ServerSession] Destroyed ${deletedCount} other sessions for user: ${userId}`);
+      return deletedCount;
+    } catch (error) {
+      console.error('[ServerSession] Failed to destroy other sessions:', error);
+      return 0;
     }
   }
 

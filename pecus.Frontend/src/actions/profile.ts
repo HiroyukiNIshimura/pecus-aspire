@@ -119,16 +119,92 @@ export async function updateUserPassword(input: UpdatePasswordFormInput): Promis
 
 /**
  * Server Action: 自分のデバイスを削除
+ *
+ * バックエンドでデバイスを削除し、該当デバイスの Redis セッションも削除する
  */
 export async function deleteDevice(deviceId: number): Promise<ApiResponse<MessageResponse>> {
   try {
+    const { ServerSessionManager } = await import('@/libs/serverSession');
     const api = createPecusApiClients();
+
+    // セッションからリフレッシュトークンを取得
+    const refreshToken = await ServerSessionManager.getRefreshToken();
+    if (!refreshToken) {
+      return { success: false, error: 'unauthorized', message: 'ログインが必要です' };
+    }
+
+    // まずデバイス一覧を取得して対象デバイスの publicId を確認
+    const devices = await api.profile.getApiProfileDevices(refreshToken);
+    const targetDevice = devices.find((d) => d.id === deviceId);
+    const devicePublicId = targetDevice?.publicId;
+
+    // バックエンドでデバイスを削除
     const response = await api.profile.deleteApiProfileDevices(deviceId);
+
+    // Redis セッションも削除（publicId がある場合）
+    if (devicePublicId) {
+      const deletedCount = await ServerSessionManager.destroySessionsByDevicePublicId(devicePublicId);
+      console.log(`[deleteDevice] Destroyed ${deletedCount} Redis sessions for device: ${devicePublicId}`);
+    }
 
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to delete device:', error);
     return parseErrorResponse(error, '接続端末の削除に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 他の全デバイスをログアウト
+ *
+ * 現在のセッションを除く、同一ユーザーの全セッションを Redis から削除し、
+ * バックエンドで他のデバイスを無効化する
+ */
+export async function logoutOtherDevices(): Promise<
+  ApiResponse<{ deletedSessionCount: number; deletedDeviceCount: number }>
+> {
+  try {
+    const { ServerSessionManager } = await import('@/libs/serverSession');
+
+    // 現在のセッション情報を取得
+    const session = await ServerSessionManager.getSession();
+    if (!session) {
+      return { success: false, error: 'unauthorized', message: 'ログインが必要です' };
+    }
+
+    const api = createPecusApiClients();
+
+    // 現在のデバイスの publicId を取得
+    const currentDevicePublicId = session.device?.publicId;
+
+    // デバイス一覧を取得して、現在のデバイス以外を削除
+    const devices = await api.profile.getApiProfileDevices(session.refreshToken);
+    const otherDevices = devices.filter((d) => d.publicId !== currentDevicePublicId && !d.isCurrentDevice);
+
+    let deletedDeviceCount = 0;
+    for (const device of otherDevices) {
+      if (device.id) {
+        try {
+          await api.profile.deleteApiProfileDevices(device.id);
+          deletedDeviceCount++;
+        } catch (error) {
+          console.error(`Failed to delete device ${device.id}:`, error);
+        }
+      }
+    }
+
+    // Redis から他のセッションを削除
+    const deletedSessionCount = await ServerSessionManager.destroyOtherSessions(session.sessionId, session.user.id);
+
+    console.log(`[logoutOtherDevices] Deleted ${deletedDeviceCount} devices, ${deletedSessionCount} sessions`);
+
+    return {
+      success: true,
+      data: { deletedSessionCount, deletedDeviceCount },
+    };
+  } catch (error) {
+    console.error('Failed to logout other devices:', error);
+    return parseErrorResponse(error, '他デバイスのログアウトに失敗しました');
   }
 }
 

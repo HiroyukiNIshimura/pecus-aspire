@@ -70,6 +70,7 @@ export async function login(request: {
         roles: response.roles ? response.roles.map((role: RoleInfoResponse) => role.name || '') : [],
       },
       device: {
+        publicId: response.device?.publicId ?? undefined,
         name: request.deviceName,
         type: request.deviceType,
         os: request.os,

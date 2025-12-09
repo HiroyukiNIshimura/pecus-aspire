@@ -76,4 +76,30 @@ public class LoginResponse
     /// リフレッシュトークンの有効期限（UTC）
     /// </summary>
     public DateTimeOffset? RefreshExpiresAt { get; set; }
+
+    /// <summary>
+    /// ログインに使用したデバイス情報
+    /// </summary>
+    public LoginDeviceInfo? Device { get; set; }
+}
+
+/// <summary>
+/// ログインレスポンス用のデバイス情報（最小限）
+/// </summary>
+public class LoginDeviceInfo
+{
+    /// <summary>
+    /// デバイスID
+    /// </summary>
+    public int? Id { get; set; }
+
+    /// <summary>
+    /// デバイスの公開ID（セッション管理用）
+    /// </summary>
+    public string? PublicId { get; set; }
+
+    /// <summary>
+    /// 新規デバイスかどうか
+    /// </summary>
+    public bool IsNewDevice { get; set; }
 }
