@@ -63,6 +63,7 @@ import {
 import type { JSX } from 'react';
 import { type Dispatch, useCallback, useEffect, useState } from 'react';
 
+import { useFullscreen } from '../../context/FullscreenContext';
 import { useSettings } from '../../context/SettingsContext';
 import { blockTypeToBlockName, useToolbarState } from '../../context/ToolbarContext';
 import useModal from '../../hooks/useModal';
@@ -568,6 +569,7 @@ export default function ToolbarPlugin({
   const [modal, showModal] = useModal();
   const [isEditable, setIsEditable] = useState(() => editor.isEditable());
   const { toolbarState, updateToolbarState } = useToolbarState();
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const dispatchToolbarCommand = <T extends LexicalCommand<unknown>>(
     command: T,
@@ -1280,6 +1282,16 @@ export default function ToolbarPlugin({
         editor={activeEditor}
         isRTL={toolbarState.isRTL}
       />
+      <Divider />
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        className="toolbar-item spaced"
+        aria-label={isFullscreen ? '全画面モードを終了' : '全画面モード'}
+        title={isFullscreen ? '全画面モードを終了 (Esc)' : '全画面モード'}
+      >
+        <i className={`format ${isFullscreen ? 'fullscreen-exit' : 'fullscreen'}`} />
+      </button>
 
       {modal}
     </div>

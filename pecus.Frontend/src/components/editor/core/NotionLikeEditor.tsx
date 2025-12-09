@@ -17,6 +17,7 @@ import { useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { FlashMessageContext } from '../context/FlashMessageContext';
+import { FullscreenProvider, useFullscreen } from '../context/FullscreenContext';
 import { type ImageUploadHandler, ImageUploadProvider } from '../context/ImageUploadContext';
 import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
@@ -186,7 +187,58 @@ export default function NotionLikeEditor({
   );
 
   return (
-    <div className="notion-like-editor">
+    <FullscreenProvider>
+      <EditorContainer
+        settings={settings}
+        imageUploadHandler={imageUploadHandler}
+        customLinkMatchers={customLinkMatchers}
+        app={app}
+        onChange={onChange}
+        onChangePlainText={onChangePlainText}
+        onChangeHtml={onChangeHtml}
+        onChangeMarkdown={onChangeMarkdown}
+        handleChange={handleChange}
+        measureTypingPerf={measureTypingPerf}
+      />
+    </FullscreenProvider>
+  );
+}
+
+/**
+ * 全画面モード対応のエディタコンテナ
+ * useFullscreenを使用するため、FullscreenProvider内で呼び出す必要がある
+ */
+function EditorContainer({
+  settings,
+  imageUploadHandler,
+  customLinkMatchers,
+  app,
+  onChange,
+  onChangePlainText,
+  onChangeHtml,
+  onChangeMarkdown,
+  handleChange,
+  measureTypingPerf,
+}: {
+  settings: ReturnType<typeof useMemo<typeof INITIAL_SETTINGS & { showToolbar: boolean; autoFocus: boolean; measureTypingPerf: boolean; isCodeShiki: boolean }>>;
+  imageUploadHandler?: ImageUploadHandler;
+  customLinkMatchers?: LinkMatcher[];
+  app: ReturnType<typeof defineExtension>;
+  onChange?: (editorState: string) => void;
+  onChangePlainText?: (plainText: string) => void;
+  onChangeHtml?: (html: string) => void;
+  onChangeMarkdown?: (markdown: string) => void;
+  handleChange: (editorState: EditorState, editor: LexicalEditor) => void;
+  measureTypingPerf: boolean;
+}) {
+  const { isFullscreen } = useFullscreen();
+
+  return (
+    <div
+      className={`notion-like-editor ${
+        isFullscreen ? 'fixed inset-0 z-[9999] bg-base-100 flex flex-col' : ''
+      }`}
+    >
       <FlashMessageContext>
         <SettingsContext initialSettings={settings}>
           <ImageUploadProvider handler={imageUploadHandler ?? null}>
@@ -195,8 +247,8 @@ export default function NotionLikeEditor({
                 <SharedHistoryContext>
                   <TableContext>
                     <ToolbarContext>
-                      <div className="editor-shell">
-                        <Editor />
+                      <div className={`editor-shell ${isFullscreen ? 'flex-1 flex flex-col overflow-hidden' : ''}`}>
+                        <Editor isFullscreen={isFullscreen} />
                       </div>
                       {(onChange || onChangePlainText || onChangeHtml || onChangeMarkdown) && (
                         <OnChangePlugin onChange={handleChange} />

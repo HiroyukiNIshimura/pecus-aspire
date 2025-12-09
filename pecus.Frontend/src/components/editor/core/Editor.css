@@ -538,6 +538,16 @@ i.bold {
   background-image: url(../images/icons/sticky.svg);
 }
 
+.notion-like-editor i.fullscreen,
+.notion-like-editor i.format.fullscreen {
+  background-image: url(../images/icons/fullscreen.svg);
+}
+
+.notion-like-editor i.fullscreen-exit,
+.notion-like-editor i.format.fullscreen-exit {
+  background-image: url(../images/icons/fullscreen-exit.svg);
+}
+
 .notion-like-editor i.mic,
 .notion-like-editor i.icon.mic {
   background-image: url(../images/icons/mic.svg);
@@ -1371,6 +1381,12 @@ i.bold {
   top: 0;
   z-index: 2000;
   overflow-y: hidden; /* disable vertical scroll*/
+}
+
+/* 全画面モード時はツールバーの角丸を外す */
+.notion-like-editor.fixed .toolbar {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .notion-like-editor .toolbar .toolbar-item:focus {

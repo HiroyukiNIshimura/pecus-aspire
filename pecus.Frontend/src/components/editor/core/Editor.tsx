@@ -67,7 +67,7 @@ import TwitterPlugin from '../plugins/TwitterPlugin';
 import YouTubePlugin from '../plugins/YouTubePlugin';
 import ContentEditable from '../ui/ContentEditable';
 
-export default function Editor() {
+export default function Editor({ isFullscreen = false }: { isFullscreen?: boolean }) {
   const { historyState } = useSharedHistoryContext();
   const {
     settings: {
@@ -132,7 +132,7 @@ export default function Editor() {
         />
       )}
       {showToolbar && <ShortcutsPlugin editor={activeEditor} setIsLinkEditMode={setIsLinkEditMode} />}
-      <div className="editor-container">
+      <div className={`editor-container ${isFullscreen ? 'flex-1 overflow-auto' : ''}`}>
         {isMaxLength && <MaxLengthPlugin maxLength={30} />}
         <DragDropPaste />
         {autoFocus && <AutoFocusPlugin />}
