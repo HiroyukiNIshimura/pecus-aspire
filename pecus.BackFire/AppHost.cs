@@ -41,7 +41,7 @@ builder.Services.AddHangfire(
     (serviceProvider, config) =>
     {
         var redis = builder.Configuration.GetConnectionString("redis");
-        config.UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
+        config.UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:", Db = 1 });
     }
 );
 

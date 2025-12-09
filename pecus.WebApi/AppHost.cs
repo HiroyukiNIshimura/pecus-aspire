@@ -93,7 +93,7 @@ builder.Services.AddSignalR(options =>
         // ハンドシェイクタイムアウト
         options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     })
-    .AddStackExchangeRedis(redisConnectionString, options =>
+   .AddStackExchangeRedis(options =>
     {
         options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
     });
@@ -143,7 +143,7 @@ builder.Services.AddHangfire(
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
+            .UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:", Db = 1 });
     }
 );
 
