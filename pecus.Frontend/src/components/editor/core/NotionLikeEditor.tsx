@@ -220,7 +220,16 @@ function EditorContainer({
   handleChange,
   measureTypingPerf,
 }: {
-  settings: ReturnType<typeof useMemo<typeof INITIAL_SETTINGS & { showToolbar: boolean; autoFocus: boolean; measureTypingPerf: boolean; isCodeShiki: boolean }>>;
+  settings: ReturnType<
+    typeof useMemo<
+      typeof INITIAL_SETTINGS & {
+        showToolbar: boolean;
+        autoFocus: boolean;
+        measureTypingPerf: boolean;
+        isCodeShiki: boolean;
+      }
+    >
+  >;
   imageUploadHandler?: ImageUploadHandler;
   customLinkMatchers?: LinkMatcher[];
   app: ReturnType<typeof defineExtension>;
@@ -234,11 +243,7 @@ function EditorContainer({
   const { isFullscreen } = useFullscreen();
 
   return (
-    <div
-      className={`notion-like-editor ${
-        isFullscreen ? 'fixed inset-0 z-[9999] bg-base-100 flex flex-col' : ''
-      }`}
-    >
+    <div className={`notion-like-editor ${isFullscreen ? 'fixed inset-0 z-[9999] bg-base-100 flex flex-col' : ''}`}>
       <FlashMessageContext>
         <SettingsContext initialSettings={settings}>
           <ImageUploadProvider handler={imageUploadHandler ?? null}>
