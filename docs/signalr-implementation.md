@@ -28,6 +28,28 @@ public async Task JoinWorkspace(int workspaceId, string userName)
 }
 ```
 
+## プロジェクトで利用するチャネル（グループ）
+
+| チャネル名 | 参加のタイミング | 離脱のタイミング | 補足 |
+| --- | --- | --- | --- |
+| `organization:{organizationId}` | `/`に遷移 | ログアウト | Disconnect時は離脱 |
+| `workspace:{workspaceId}` | `/workspaces/{code}`に遷移 | ログアウトまたは別のワークスペースに移動（排他的に1つのみ参加） | Disconnect時は離脱 |
+| `item:{itemId}` | `/workspaces/{code}?itemCode={itemCode}`に遷移 | ログアウトまたは別のアイテムに移動（排他的に1つのみ参加） | Disconnect時は離脱。ワークスペースチャネルにも同時参加 |
+| `user:{userId}` | ユーザーが任意にチャネルを開設 or 招待された際 | ログアウトまたは開設者がチャネルを閉じた際 | 組織内チャット用。Disconnect時は離脱 |
+
+### チャネル参加の組み合わせ例
+
+```
+アイテム詳細表示中:
+├── organization:1    （常時参加）
+├── workspace:42      （現在のワークスペース）
+└── item:123          （現在のアイテム）
+
+ワークスペース一覧表示中:
+├── organization:1    （常時参加）
+└── workspace:42      （現在のワークスペース）
+```
+
 ## 本番向け設計方針
 
 ### 原則
@@ -115,20 +137,9 @@ public class NotificationService
             });
     }
 
-    /// <summary>
-    /// ワークスペースの特定ユーザー以外に通知を送信
-    /// </summary>
-    public async Task SendToWorkspaceExceptUserAsync(int workspaceId, int excludeUserId, string eventType, object payload)
-    {
-        await _hubContext.Clients
-            .GroupExcept($"workspace:{workspaceId}", GetConnectionIdsForUser(excludeUserId))
-            .SendAsync("ReceiveNotification", new
-            {
-                EventType = eventType,
-                Payload = payload,
-                Timestamp = DateTimeOffset.UtcNow
-            });
-    }
+    // NOTE: 特定ユーザー除外の SendToWorkspaceExceptUserAsync は、
+    // ユーザーID→接続IDのマッピング管理が必要なため、実装時に検討する。
+    // 代替案: フロント側で自分のアクションかどうかを判定して表示を制御する。
 
     /// <summary>
     /// 特定ユーザーに通知を送信
@@ -160,17 +171,17 @@ public class WorkspaceItemService
         var item = await _context.WorkspaceItems.AddAsync(...);
         await _context.SaveChangesAsync();
 
-        // 通知送信（作成者以外に）
-        await _notificationService.SendToWorkspaceExceptUserAsync(
+        // 通知送信（ワークスペース全員に送信、フロント側で自分のアクションは表示制御）
+        await _notificationService.SendToWorkspaceAsync(
             item.WorkspaceId,
-            userId,
             "workspace_item:created",
             new
             {
                 ItemId = item.Id,
                 ItemCode = item.Code,
                 Subject = item.Subject,
-                CreatedBy = userName
+                CreatedByUserId = userId,  // フロント側で自分かどうか判定用
+                CreatedByUserName = userName
             }
         );
 
