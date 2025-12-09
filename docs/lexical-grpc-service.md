@@ -132,7 +132,7 @@ await app.listen(port, host);
 ## 次のステップ
 
 1. [x] Proto定義の作成（`pecus.Protos/lexical/lexical.proto`）✅
-2. [ ] NestJSプロジェクトの初期化（Biome設定含む）
+2. [x] NestJSプロジェクトの初期化（Biome設定含む）✅
 3. [ ] ヘッドレス用ノード定義の作成
 4. [ ] Aspire統合（`AppHost.cs`）
 5. [ ] 変換ロジックの実装
@@ -306,3 +306,4 @@ message ConvertResponse {
 | 2025-12-09 | サービス名 `pecus.LexicalConverterService`、ポート設定（環境変数）、Biome採用を決定。設計完了 |
 | 2025-12-09 | C# ↔ Node.js 間の gRPC 型注意事項を追加 |
 | 2025-12-09 | Proto定義を作成（`pecus.Protos/lexical/lexical.proto`）|
+| 2025-12-09 | NestJSプロジェクト初期化完了（`pecus.LexicalConverterService`）|
