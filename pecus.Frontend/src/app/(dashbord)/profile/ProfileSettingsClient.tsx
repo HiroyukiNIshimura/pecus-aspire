@@ -55,6 +55,7 @@ export default function ProfileSettingsClient({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [devices, setDevices] = useState<DeviceResponse[] | null>(null);
+  const [currentDevicePublicId, setCurrentDevicePublicId] = useState<string | null>(null);
   const [devicesError, setDevicesError] = useState<string | null>(null);
   const [isDevicesLoading, setIsDevicesLoading] = useState(false);
   const [isDevicesFetched, setIsDevicesFetched] = useState(false);
@@ -82,8 +83,9 @@ export default function ProfileSettingsClient({
         throw error;
       }
 
-      const result = (await res.json()) as DeviceResponse[];
-      setDevices(result);
+      const result = (await res.json()) as { devices: DeviceResponse[]; currentDevicePublicId: string | null };
+      setDevices(result.devices);
+      setCurrentDevicePublicId(result.currentDevicePublicId);
     } catch (error) {
       const status =
         typeof error === 'object' && error !== null && 'status' in error
@@ -184,6 +186,7 @@ export default function ProfileSettingsClient({
             {activeTab === 'devices' && (
               <DevicesTab
                 devices={devices ?? []}
+                currentDevicePublicId={currentDevicePublicId}
                 isLoading={isDevicesLoading}
                 error={devicesError}
                 notify={notify}

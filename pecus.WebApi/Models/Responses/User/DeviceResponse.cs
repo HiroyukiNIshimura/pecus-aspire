@@ -61,9 +61,4 @@ public class DeviceResponse
     /// タイムゾーン
     /// </summary>
     public string? Timezone { get; set; }
-
-    /// <summary>
-    /// 現在の端末判定用
-    /// </summary>
-    public bool IsCurrentDevice { get; set; }
 }

@@ -113,12 +113,10 @@ public class ProfileService
     /// ユーザーの接続したデバイス情報の一覧を取得
     /// </summary>
     /// <param name="userId">ユーザーID</param>
-    /// <param name="request">取得リクエスト</param>
     /// <returns>デバイス（セッション）情報の一覧</returns>
-    public async Task<List<DeviceResponse>> GetUserDevicesAsync(int userId, GetDeviceRequest request)
+    public async Task<List<DeviceResponse>> GetUserDevicesAsync(int userId)
     {
         var devices = await _context.Devices
-            .Include(d => d.RefreshTokens.Where(rt => rt.IsRevoked == false))
             .Where(d => d.UserId == userId && d.IsRevoked == false)
             .OrderByDescending(d => d.LastSeenAt)
             .ToListAsync();
@@ -136,7 +134,6 @@ public class ProfileService
             LastIpMasked = d.LastIpMasked,
             LastSeenLocation = d.LastSeenLocation,
             Timezone = d.Timezone,
-            IsCurrentDevice = d.RefreshTokens.Any(rt => rt.Token == request.RefreshToken),
         }).ToList();
 
         return response;

@@ -3524,18 +3524,6 @@
           "Profile"
         ],
         "summary": "自分の接続しているデバイス情報の一覧を取得",
-        "parameters": [
-          {
-            "name": "RefreshToken",
-            "in": "query",
-            "description": "クライアントから送られるリフレッシュトークン",
-            "required": true,
-            "schema": {
-              "maxLength": 512,
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -8646,10 +8634,6 @@
             "type": "string",
             "description": "タイムゾーン",
             "nullable": true
-          },
-          "isCurrentDevice": {
-            "type": "boolean",
-            "description": "現在の端末判定用"
           }
         },
         "additionalProperties": false,

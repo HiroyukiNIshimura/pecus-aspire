@@ -127,14 +127,8 @@ export async function deleteDevice(deviceId: number): Promise<ApiResponse<Messag
     const { ServerSessionManager } = await import('@/libs/serverSession');
     const api = createPecusApiClients();
 
-    // セッションからリフレッシュトークンを取得
-    const refreshToken = await ServerSessionManager.getRefreshToken();
-    if (!refreshToken) {
-      return { success: false, error: 'unauthorized', message: 'ログインが必要です' };
-    }
-
     // まずデバイス一覧を取得して対象デバイスの publicId を確認
-    const devices = await api.profile.getApiProfileDevices(refreshToken);
+    const devices = await api.profile.getApiProfileDevices();
     const targetDevice = devices.find((d) => d.id === deviceId);
     const devicePublicId = targetDevice?.publicId;
 
@@ -178,8 +172,8 @@ export async function logoutOtherDevices(): Promise<
     const currentDevicePublicId = session.device?.publicId;
 
     // デバイス一覧を取得して、現在のデバイス以外を削除
-    const devices = await api.profile.getApiProfileDevices(session.refreshToken);
-    const otherDevices = devices.filter((d) => d.publicId !== currentDevicePublicId && !d.isCurrentDevice);
+    const devices = await api.profile.getApiProfileDevices();
+    const otherDevices = devices.filter((d) => d.publicId !== currentDevicePublicId);
 
     let deletedDeviceCount = 0;
     for (const device of otherDevices) {

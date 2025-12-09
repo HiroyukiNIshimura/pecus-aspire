@@ -50,9 +50,5 @@ export type DeviceResponse = {
      * タイムゾーン
      */
     timezone?: string | null;
-    /**
-     * 現在の端末判定用
-     */
-    isCurrentDevice?: boolean;
 };
 

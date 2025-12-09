@@ -7,6 +7,7 @@ import type { DeviceResponse } from '@/connectors/api/pecus';
 
 interface DevicesTabProps {
   devices: DeviceResponse[];
+  currentDevicePublicId: string | null;
   isLoading?: boolean;
   error?: string | null;
   notify: {
@@ -35,7 +36,14 @@ const InfoItem = ({ label, value }: { label: string; value?: string | null }) =>
   </div>
 );
 
-export default function DevicesTab({ devices, isLoading = false, error, notify, onRefreshDevices }: DevicesTabProps) {
+export default function DevicesTab({
+  devices,
+  currentDevicePublicId,
+  isLoading = false,
+  error,
+  notify,
+  onRefreshDevices,
+}: DevicesTabProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [targetDevice, setTargetDevice] = useState<DeviceResponse | null>(null);
@@ -107,6 +115,7 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
   const now = Date.now();
 
   const renderCard = (device: DeviceResponse) => {
+    const isCurrentDevice = device.publicId != null && device.publicId === currentDevicePublicId;
     const deviceLabel = device.name ?? device.publicId ?? (device.id != null ? `端末 #${device.id}` : '不明な端末');
     const key =
       device.publicId ??
@@ -123,7 +132,7 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
             {device.publicId && <p className="text-xs text-base-content/50">Public ID: {device.publicId}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
-            {!device.isCurrentDevice && device.id != null && (
+            {!isCurrentDevice && device.id != null && (
               <button
                 type="button"
                 className="btn btn-outline btn-error btn-sm"
@@ -161,8 +170,8 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
       </div>
     );
   };
-  const activeDevices = devices.filter((d) => d.isCurrentDevice);
-  const otherDevices = devices.filter((d) => !d.isCurrentDevice);
+  const activeDevices = devices.filter((d) => d.publicId != null && d.publicId === currentDevicePublicId);
+  const otherDevices = devices.filter((d) => d.publicId == null || d.publicId !== currentDevicePublicId);
 
   return (
     <div className="space-y-6">
@@ -198,7 +207,7 @@ export default function DevicesTab({ devices, isLoading = false, error, notify, 
         onConfirm={handleConfirmDelete}
         itemType="端末"
         itemName={targetDeviceLabel}
-        additionalWarning="この端末からのセッションが最長でも数十分後に失効し、再度ログインが必要になります。"
+        additionalWarning="この端末からのセッションを即座に失効させます。再度ログインが必要になります。"
       />
     </div>
   );
