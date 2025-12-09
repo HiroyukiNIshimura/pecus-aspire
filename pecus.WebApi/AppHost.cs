@@ -93,7 +93,7 @@ builder.Services.AddSignalR(options =>
         // ハンドシェイクタイムアウト
         options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     })
-   .AddStackExchangeRedis(options =>
+   .AddStackExchangeRedis(redisConnectionString, options =>
     {
         options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
     });

@@ -27,6 +27,7 @@ import type {
   WorkspaceRole,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
 import type { WorkspaceItemsSidebarHandle } from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
@@ -62,6 +63,7 @@ export default function WorkspaceDetailClient({
   const router = useRouter();
   const pathname = usePathname();
   const notify = useNotify();
+  const { connectionState, joinWorkspace, leaveWorkspace, onNotification } = useSignalRContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -174,6 +176,52 @@ export default function WorkspaceDetailClient({
       window.removeEventListener('popstate', handlePopState);
     };
   }, [router]);
+
+  // ===== SignalR ワークスペースグループ参加・離脱 =====
+  const workspaceIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    // ユーザー名を取得（username を優先、なければ name）
+    const displayName = userInfo?.username || userInfo?.name || 'ゲスト';
+    const workspaceId = currentWorkspaceDetail.id;
+
+    // 既に同じワークスペースに参加済みの場合はスキップ
+    if (workspaceIdRef.current === workspaceId) {
+      return;
+    }
+
+    // 接続が確立されたらワークスペースグループに参加
+    if (connectionState === 'connected' && workspaceId && displayName) {
+      workspaceIdRef.current = workspaceId;
+      joinWorkspace(workspaceId, displayName);
+    }
+
+    // クリーンアップ時にグループから離脱
+    return () => {
+      if (workspaceIdRef.current !== null) {
+        leaveWorkspace(workspaceIdRef.current);
+        workspaceIdRef.current = null;
+      }
+    };
+  }, [connectionState, currentWorkspaceDetail.id, userInfo?.username, userInfo?.name, joinWorkspace, leaveWorkspace]);
+
+  // ===== SignalR 通知受信ハンドラー =====
+  // コンポーネントマウント時に一度だけ登録し、アンマウント時にクリーンアップ
+  useEffect(() => {
+    const handler = (notification: SignalRNotification) => {
+      // ワークスペース参加通知を処理
+      if (notification.eventType === 'workspace:user_joined') {
+        const payload = notification.payload as { UserName?: string; Message?: string };
+        const message = payload.Message || `${payload.UserName || 'ゲスト'}がワークスペースにやってきました！`;
+        notify.info(message);
+      }
+    };
+
+    const unsubscribe = onNotification(handler);
+
+    return unsubscribe;
+    // notify を依存配列から除外（useRef ベースのため参照は安定）
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onNotification]);
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 

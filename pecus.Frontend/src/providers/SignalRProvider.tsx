@@ -41,16 +41,16 @@ interface SignalRContextValue {
   disconnect: () => Promise<void>;
 
   /** 組織グループに参加 */
-  joinOrganization: (organizationId: string) => Promise<void>;
+  joinOrganization: (organizationId: number) => Promise<void>;
 
   /** 組織グループから離脱 */
-  leaveOrganization: (organizationId: string) => Promise<void>;
+  leaveOrganization: (organizationId: number) => Promise<void>;
 
   /** ワークスペースグループに参加 */
-  joinWorkspace: (workspaceId: string) => Promise<void>;
+  joinWorkspace: (workspaceId: number, userName?: string) => Promise<void>;
 
   /** ワークスペースグループから離脱 */
-  leaveWorkspace: (workspaceId: string) => Promise<void>;
+  leaveWorkspace: (workspaceId: number) => Promise<void>;
 
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
@@ -173,7 +173,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
       // 通知受信ハンドラー
       connection.on('ReceiveNotification', (notification: SignalRNotification) => {
-        console.log('[SignalR] Notification received:', notification.eventType);
+        console.log('[SignalR] Notification received:', notification.eventType, 'handlers:', handlersRef.current.size);
         for (const handler of handlersRef.current) {
           try {
             handler(notification);
@@ -215,16 +215,24 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * 組織グループに参加
    */
-  const joinOrganization = useCallback(async (organizationId: string) => {
+  const joinOrganization = useCallback(async (organizationId: number) => {
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       console.warn('[SignalR] Cannot join organization: not connected');
       return;
     }
 
+    const groupKey = `organization:${organizationId}`;
+
+    // 既に参加済みの場合はスキップ（クライアント側のトラッキング用）
+    if (joinedGroupsRef.current.has(groupKey)) {
+      console.log(`[SignalR] Already joined organization: ${organizationId}`);
+      return;
+    }
+
     try {
       await connection.invoke('JoinOrganization', organizationId);
-      joinedGroupsRef.current.add(`organization:${organizationId}`);
+      joinedGroupsRef.current.add(groupKey);
       console.log(`[SignalR] Joined organization: ${organizationId}`);
     } catch (error) {
       console.error('[SignalR] Failed to join organization:', error);
@@ -234,7 +242,10 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * 組織グループから離脱
    */
-  const leaveOrganization = useCallback(async (organizationId: string) => {
+  const leaveOrganization = useCallback(async (organizationId: number) => {
+    const groupKey = `organization:${organizationId}`;
+    joinedGroupsRef.current.delete(groupKey);
+
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       return;
@@ -242,7 +253,6 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
     try {
       await connection.invoke('LeaveOrganization', organizationId);
-      joinedGroupsRef.current.delete(`organization:${organizationId}`);
       console.log(`[SignalR] Left organization: ${organizationId}`);
     } catch (error) {
       console.error('[SignalR] Failed to leave organization:', error);
@@ -251,17 +261,28 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
   /**
    * ワークスペースグループに参加
+   * @param workspaceId ワークスペースID（整数）
+   * @param userName 現在のユーザー名（通知表示用）
    */
-  const joinWorkspace = useCallback(async (workspaceId: string) => {
+  const joinWorkspace = useCallback(async (workspaceId: number, userName?: string) => {
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       console.warn('[SignalR] Cannot join workspace: not connected');
       return;
     }
 
+    const groupKey = `workspace:${workspaceId}`;
+
+    // 既に参加済みの場合はスキップ（クライアント側のトラッキング用）
+    if (joinedGroupsRef.current.has(groupKey)) {
+      console.log(`[SignalR] Already joined workspace: ${workspaceId}`);
+      return;
+    }
+
     try {
-      await connection.invoke('JoinWorkspace', workspaceId);
-      joinedGroupsRef.current.add(`workspace:${workspaceId}`);
+      // サーバー側で重複通知を防ぐため、クライアント側では単純に呼び出す
+      await connection.invoke('JoinWorkspace', workspaceId, userName ?? 'Unknown');
+      joinedGroupsRef.current.add(groupKey);
       console.log(`[SignalR] Joined workspace: ${workspaceId}`);
     } catch (error) {
       console.error('[SignalR] Failed to join workspace:', error);
@@ -271,7 +292,10 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * ワークスペースグループから離脱
    */
-  const leaveWorkspace = useCallback(async (workspaceId: string) => {
+  const leaveWorkspace = useCallback(async (workspaceId: number) => {
+    const groupKey = `workspace:${workspaceId}`;
+    joinedGroupsRef.current.delete(groupKey);
+
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       return;
@@ -279,7 +303,6 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
     try {
       await connection.invoke('LeaveWorkspace', workspaceId);
-      joinedGroupsRef.current.delete(`workspace:${workspaceId}`);
       console.log(`[SignalR] Left workspace: ${workspaceId}`);
     } catch (error) {
       console.error('[SignalR] Failed to leave workspace:', error);

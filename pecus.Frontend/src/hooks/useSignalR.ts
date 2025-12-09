@@ -49,7 +49,7 @@ export function useSignalRConnection() {
  * @param organizationId 組織ID
  * @param handlers イベントハンドラーのマップ
  */
-export function useOrganizationUpdates(organizationId: string | undefined, handlers?: EventHandlers) {
+export function useOrganizationUpdates(organizationId: number | undefined, handlers?: EventHandlers) {
   const { connectionState, joinOrganization, leaveOrganization, onNotification } = useSignalRContext();
 
   // グループ参加/離脱
@@ -86,7 +86,7 @@ export function useOrganizationUpdates(organizationId: string | undefined, handl
  * @param workspaceId ワークスペースID
  * @param handlers イベントハンドラーのマップ
  */
-export function useWorkspaceUpdates(workspaceId: string | undefined, handlers?: EventHandlers) {
+export function useWorkspaceUpdates(workspaceId: number | undefined, handlers?: EventHandlers) {
   const { connectionState, joinWorkspace, leaveWorkspace, onNotification } = useSignalRContext();
 
   // グループ参加/離脱
