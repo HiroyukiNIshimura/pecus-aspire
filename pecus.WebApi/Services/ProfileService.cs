@@ -168,6 +168,9 @@ public class ProfileService
                 {
                     UserId = userId,
                     CanReceiveEmail = request.CanReceiveEmail,
+                    CanReceiveRealtimeNotification = request.CanReceiveRealtimeNotification,
+                    TimeZone = request.TimeZone,
+                    Language = request.Language,
                     UpdatedAt = DateTimeOffset.UtcNow,
                     UpdatedByUserId = userId,
                 };
@@ -333,6 +336,9 @@ public class ProfileService
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+                CanReceiveRealtimeNotification = user.Setting?.CanReceiveRealtimeNotification ?? true,
+                TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
+                Language = user.Setting?.Language ?? "ja-JP",
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };

@@ -26,6 +26,24 @@ public class UserSetting
     public bool CanReceiveEmail { get; set; } = true;
 
     /// <summary>
+    /// リアルタイム通知の可否
+    /// </summary>
+    ///
+    public bool CanReceiveRealtimeNotification { get; set; } = true;
+
+    /// <summary>
+    /// タイムゾーン（TODO：未使用）
+    /// IANA zone name
+    /// </summary>
+    public string TimeZone { get; set; } = "Asia/Tokyo";
+
+    /// <summary>
+    /// 言語設定（TODO：未使用）
+    /// </summary>
+    public string Language { get; set; } = "ja-JP";
+
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }
