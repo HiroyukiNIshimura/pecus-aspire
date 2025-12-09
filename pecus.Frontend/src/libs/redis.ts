@@ -2,10 +2,10 @@ import Redis, { type RedisOptions } from 'ioredis';
 
 // Aspire から提供される接続文字列を取得
 // 形式: "localhost:port,password=xxx" または "host:port,password=xxx"
-const REDIS_CONNECTION_STRING = process.env.ConnectionStrings__redis;
+const REDIS_CONNECTION_STRING = process.env.ConnectionStrings__redisFrontend;
 
 if (!REDIS_CONNECTION_STRING) {
-  throw new Error('環境変数 ConnectionStrings__redis が設定されていません');
+  throw new Error('環境変数 ConnectionStrings__redisFrontend が設定されていません');
 }
 
 /**

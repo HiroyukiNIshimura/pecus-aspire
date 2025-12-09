@@ -52,9 +52,12 @@ try
         .WithHttpHealthCheck("/");
 
     // Frontendの設定(開発環境モード)
+    var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();
+
     var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
         .WithReference(pecusApi)
-        .WithReference(redis)
+        .WithReference(redisFrontend)
+        .WaitFor(redisFrontend)
         .WaitFor(pecusApi)
         .WithNpmPackageInstallation()
         .WithExternalHttpEndpoints();
