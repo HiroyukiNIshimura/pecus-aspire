@@ -11726,13 +11726,30 @@
       "UpdateUserSettingRequest": {
         "required": [
           "canReceiveEmail",
-          "rowVersion"
+          "canReceiveRealtimeNotification",
+          "language",
+          "rowVersion",
+          "timeZone"
         ],
         "type": "object",
         "properties": {
           "canReceiveEmail": {
             "type": "boolean",
             "description": "メールを受信するかどうか"
+          },
+          "canReceiveRealtimeNotification": {
+            "type": "boolean",
+            "description": "リアルタイム通知の可否"
+          },
+          "timeZone": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タイムゾーン（TODO：未使用）\r\nIANA zone name"
+          },
+          "language": {
+            "minLength": 1,
+            "type": "string",
+            "description": "言語設定（TODO：未使用）"
           },
           "rowVersion": {
             "type": "integer",
@@ -12261,13 +12278,30 @@
       },
       "UserSettingResponse": {
         "required": [
-          "canReceiveEmail"
+          "canReceiveEmail",
+          "canReceiveRealtimeNotification",
+          "language",
+          "timeZone"
         ],
         "type": "object",
         "properties": {
           "canReceiveEmail": {
             "type": "boolean",
             "description": "メール受信の可否"
+          },
+          "canReceiveRealtimeNotification": {
+            "type": "boolean",
+            "description": "リアルタイム通知の可否"
+          },
+          "timeZone": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タイムゾーン（TODO：未使用）\r\nIANA zone name"
+          },
+          "language": {
+            "minLength": 1,
+            "type": "string",
+            "description": "言語設定（TODO：未使用）"
           },
           "rowVersion": {
             "type": "integer",
