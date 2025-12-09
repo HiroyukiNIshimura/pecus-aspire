@@ -20,6 +20,16 @@ interface EditWorkspaceItemProps {
 export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, currentUserId }: EditWorkspaceItemProps) {
   const notify = useNotify();
 
+  // モーダル表示時にbodyのスクロールを無効化
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // 最新アイテムデータ
   const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
   const [isLoadingItem, setIsLoadingItem] = useState(false);
@@ -197,31 +207,28 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
 
   return (
     <>
-      {/* モーダル背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} aria-hidden="true" />
+      {/* フルスクリーンモーダル */}
+      <div className="fixed inset-0 z-50 flex flex-col bg-base-100">
+        {/* モーダルヘッダー */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <span className="icon-[mdi--pencil-outline] size-5 sm:size-6" aria-hidden="true" />
+            アイテム編集
+          </h2>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle"
+            onClick={handleClose}
+            disabled={isSubmitting || isLoadingItem}
+            aria-label="閉じる"
+          >
+            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+          </button>
+        </div>
 
-      {/* モーダルコンテンツ */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-        <div className="bg-base-100 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:max-w-6xl sm:w-full sm:h-auto sm:max-h-[90vh] overflow-y-auto">
-          {/* モーダルヘッダー */}
-          <div className="flex items-center justify-between p-6 border-b border-base-300">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
-              アイテム編集
-            </h2>
-            <button
-              type="button"
-              className="btn btn-sm btn-circle"
-              onClick={handleClose}
-              disabled={isSubmitting || isLoadingItem}
-              aria-label="閉じる"
-            >
-              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* モーダルボディ */}
-          <div className="p-6">
+        {/* モーダルボディ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-6xl mx-auto">
             {/* アイテム読み込みエラー表示 */}
             {itemLoadError && (
               <div className="alert alert-soft alert-error mb-4">
@@ -285,7 +292,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
                   <div className="label">
                     <span className="label-text font-semibold">本文</span>
                   </div>
-                  <div>
+                  <div className="overflow-auto max-h-[50vh]">
                     {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
                     <EditWorkspaceItemEditor
                       key={editorInitKey}

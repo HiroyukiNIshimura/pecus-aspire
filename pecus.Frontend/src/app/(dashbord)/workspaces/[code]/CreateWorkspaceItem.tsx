@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
@@ -18,6 +18,16 @@ interface CreateWorkspaceItemProps {
 }
 
 export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCreate }: CreateWorkspaceItemProps) {
+  // モーダル表示時にbodyのスクロールを無効化
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
@@ -150,31 +160,28 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
 
   return (
     <>
-      {/* モーダル背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleClose} aria-hidden="true" />
+      {/* フルスクリーンモーダル */}
+      <div className="fixed inset-0 z-50 flex flex-col bg-base-100">
+        {/* モーダルヘッダー */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <span className="icon-[mdi--plus-circle-outline] size-5 sm:size-6" aria-hidden="true" />
+            新規アイテム作成
+          </h2>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            aria-label="閉じる"
+          >
+            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+          </button>
+        </div>
 
-      {/* モーダルコンテンツ */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
-        <div className="bg-base-100 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:max-w-6xl sm:w-full sm:h-auto sm:max-h-[90vh] overflow-y-auto">
-          {/* モーダルヘッダー */}
-          <div className="flex items-center justify-between p-6 border-b border-base-300">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--plus-circle-outline] size-6" aria-hidden="true" />
-              新規アイテム作成
-            </h2>
-            <button
-              type="button"
-              className="btn btn-sm btn-circle"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              aria-label="閉じる"
-            >
-              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* モーダルボディ */}
-          <div className="p-6">
+        {/* モーダルボディ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-6xl mx-auto">
             {/* グローバルエラー表示 */}
             {globalError && (
               <div className="alert alert-soft alert-error mb-4">
@@ -230,7 +237,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 <div className="label">
                   <span className="label-text font-semibold">本文</span>
                 </div>
-                <div>
+                <div className="overflow-auto max-h-[50vh]">
                   <PecusNotionLikeEditor
                     onChange={handleEditorChange}
                     debounceMs={500}

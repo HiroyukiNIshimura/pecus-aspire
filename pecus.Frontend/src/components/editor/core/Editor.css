@@ -13,9 +13,10 @@
   padding-left: 1rem;
 }
 .notion-like-editor .editor-shell {
-  margin: 20px auto;
+  margin: 0;
   border-radius: 2px;
-  max-width: 1100px;
+  max-width: 100%;
+  width: 100%;
   color: var(--color-base-content);
   position: relative;
   line-height: 1.7;
