@@ -131,7 +131,7 @@ await app.listen(port, host);
 
 ## 次のステップ
 
-1. [ ] Proto定義の作成（`pecus.Protos/lexical/lexical.proto`）
+1. [x] Proto定義の作成（`pecus.Protos/lexical/lexical.proto`）✅
 2. [ ] NestJSプロジェクトの初期化（Biome設定含む）
 3. [ ] ヘッドレス用ノード定義の作成
 4. [ ] Aspire統合（`AppHost.cs`）
@@ -255,12 +255,16 @@ message File {
 
 ---
 
-## 参考: Proto定義案
+## Proto定義（実装済み）
+
+ファイル: `pecus.Protos/lexical/lexical.proto`
 
 ```protobuf
 syntax = "proto3";
 
 package pecus.lexical;
+
+option csharp_namespace = "Pecus.Lexical.Grpc";
 
 service LexicalConverter {
   // Lexical JSON → HTML
@@ -280,7 +284,8 @@ message ConvertRequest {
 message ConvertResponse {
   bool success = 1;
   string result = 2;
-  string error_message = 3;
+  optional string error_message = 3;  // エラー時のみ
+  int32 processing_time_ms = 4;       // 処理時間（ミリ秒）
 }
 ```
 
@@ -300,3 +305,4 @@ message ConvertResponse {
 | 2025-12-09 | Proto定義の配置場所を `pecus.Protos/` 新規作成に決定 |
 | 2025-12-09 | サービス名 `pecus.LexicalConverterService`、ポート設定（環境変数）、Biome採用を決定。設計完了 |
 | 2025-12-09 | C# ↔ Node.js 間の gRPC 型注意事項を追加 |
+| 2025-12-09 | Proto定義を作成（`pecus.Protos/lexical/lexical.proto`）|

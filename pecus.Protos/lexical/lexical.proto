@@ -1,0 +1,46 @@
+// Lexical Converter Service - gRPC Proto Definition
+// C# (pecus.WebApi) ↔ Node.js (pecus.LexicalConverterService) 間の通信契約
+//
+// 注意事項:
+// - int64/uint64 は使用禁止（JavaScript の Number 制限）
+// - Enum は 0 番目を UNSPECIFIED に
+// - Optional フィールドは明示的に optional を付ける
+
+syntax = "proto3";
+
+package pecus.lexical;
+
+option csharp_namespace = "Pecus.Lexical.Grpc";
+
+// Lexical JSON を各形式に変換するサービス
+service LexicalConverter {
+  // Lexical JSON → HTML 変換
+  rpc ToHtml(ConvertRequest) returns (ConvertResponse);
+
+  // Lexical JSON → Markdown 変換
+  rpc ToMarkdown(ConvertRequest) returns (ConvertResponse);
+
+  // Lexical JSON → プレーンテキスト変換
+  rpc ToPlainText(ConvertRequest) returns (ConvertResponse);
+}
+
+// 変換リクエスト
+message ConvertRequest {
+  // Lexical EditorState JSON 文字列
+  string lexical_json = 1;
+}
+
+// 変換レスポンス
+message ConvertResponse {
+  // 変換成功フラグ
+  bool success = 1;
+
+  // 変換結果（HTML, Markdown, or PlainText）
+  string result = 2;
+
+  // エラー時のメッセージ（success=false の場合のみ）
+  optional string error_message = 3;
+
+  // 処理時間（ミリ秒）
+  int32 processing_time_ms = 4;
+}
