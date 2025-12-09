@@ -50,9 +50,6 @@ let redisInstance: Redis | null = null;
  */
 const redisOptions: RedisOptions = {
   ...parsedOptions,
-  // Redis db0 を使用（セッション用、バックエンドの TokenBlacklistService と同じ）
-  // db1: Hangfire, db2: SignalR
-  db: 0,
   // 再接続時の設定
   retryStrategy: (times: number) => {
     // 最大10回まで再接続を試行

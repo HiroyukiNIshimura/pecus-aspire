@@ -83,7 +83,7 @@ builder.Services.AddMemoryCache(); // 分散キャッシュとして
 // Aspire 経由で Redis 接続文字列を取得
 var redisConnectionString = builder.Configuration.GetConnectionString("redis") ?? "localhost:6379";
 
-// SignalR + Redis バックプレーン（Redis db2 を使用）
+// SignalR + Redis バックプレーン
 builder.Services.AddSignalR(options =>
     {
         // KeepAlive間隔（デフォルト: 15秒）
@@ -93,7 +93,7 @@ builder.Services.AddSignalR(options =>
         // ハンドシェイクタイムアウト
         options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     })
-    .AddStackExchangeRedis($"{redisConnectionString},defaultDatabase=2", options =>
+    .AddStackExchangeRedis(redisConnectionString, options =>
     {
         options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
     });
@@ -134,7 +134,7 @@ builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
 
-// Hangfireの設定（Redis db1 を使用）
+// Hangfireの設定
 builder.Services.AddHangfire(
     (serviceProvider, configuration) =>
     {
@@ -143,7 +143,7 @@ builder.Services.AddHangfire(
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UseRedisStorage($"{redis},defaultDatabase=1", new RedisStorageOptions { Prefix = "hangfire:" });
+            .UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
     }
 );
 
