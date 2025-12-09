@@ -55,8 +55,8 @@ public TokenBlacklistService(IConnectionMultiplexer redis)
 builder.Services.AddHangfire((serviceProvider, configuration) =>
 {
     var redis = builder.Configuration.GetConnectionString("redis");
-    configuration.UseRedisStorage(redis, new RedisStorageOptions 
-    { 
+    configuration.UseRedisStorage(redis, new RedisStorageOptions
+    {
         Prefix = "hangfire:",
         Db = 1  // db1 を明示的に指定
     });
