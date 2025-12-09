@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Pecus.Filters;
+using Pecus.Hubs;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
@@ -13,6 +14,7 @@ using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
+using StackExchange.Redis;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -53,9 +55,48 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // セキュリティ関連サービスの登録
 builder.Services.AddSingleton<FrontendUrlResolver>();
 
+// CORS設定（開発環境のみ - SignalR用）
+// 本番環境ではリバースプロキシ経由で同一ドメインになるためCORS不要
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("SignalRPolicy", policy =>
+        {
+            policy
+                .WithOrigins(
+                    "http://localhost:3000",
+                    "https://localhost:3000"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // SignalR に必要
+        });
+    });
+}
+
 // Redisキャッシュの登録
 builder.AddRedisClient("redis");
 builder.Services.AddMemoryCache(); // 分散キャッシュとして
+
+// SignalR + Redis バックプレーンの登録
+// Aspire 経由で Redis 接続文字列を取得
+var redisConnectionString = builder.Configuration.GetConnectionString("redis") ?? "localhost:6379";
+
+// SignalR + Redis バックプレーン（Redis db2 を使用）
+builder.Services.AddSignalR(options =>
+    {
+        // KeepAlive間隔（デフォルト: 15秒）
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+        // クライアントタイムアウト（デフォルト: 30秒、KeepAliveの2倍推奨）
+        options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+        // ハンドシェイクタイムアウト
+        options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+    })
+    .AddStackExchangeRedis($"{redisConnectionString},defaultDatabase=2", options =>
+    {
+        options.Configuration.ChannelPrefix = RedisChannel.Literal("coati-signalr");
+    });
 
 // ヘルパーの登録
 builder.Services.AddScoped<OrganizationAccessHelper>();
@@ -81,6 +122,7 @@ builder.Services.AddScoped<FileUploadService>();
 builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<SkillService>();
 builder.Services.AddScoped<MasterDataService>();
+builder.Services.AddScoped<NotificationService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();
@@ -92,7 +134,7 @@ builder.Services.AddScoped<EmailTasks>();
 builder.Services.AddScoped<ImageTasks>();
 builder.Services.AddScoped<WorkspaceItemTasks>();
 
-// Hangfireの設定
+// Hangfireの設定（Redis db1 を使用）
 builder.Services.AddHangfire(
     (serviceProvider, configuration) =>
     {
@@ -101,7 +143,7 @@ builder.Services.AddHangfire(
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UseRedisStorage(redis, new RedisStorageOptions { Prefix = "hangfire:" });
+            .UseRedisStorage($"{redis},defaultDatabase=1", new RedisStorageOptions { Prefix = "hangfire:" });
     }
 );
 
@@ -147,6 +189,7 @@ builder
         options.Events = new JwtBearerEvents
         {
             // リクエスト受信時にトークンヘッダーの有無やリクエストパスをログ出力
+            // SignalR の WebSocket 接続時はクエリパラメータからトークンを取得
             OnMessageReceived = context =>
             {
                 try
@@ -154,6 +197,18 @@ builder
                     var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
                     var hasAuthHeader = context.Request.Headers.ContainsKey("Authorization");
                     logger?.LogDebug("JwtBearer: MessageReceived Path={Path} HasAuthorizationHeader={HasAuth}", context.HttpContext.Request.Path, hasAuthHeader);
+
+                    // SignalR Hub へのリクエストの場合、クエリパラメータからトークンを取得
+                    var path = context.HttpContext.Request.Path;
+                    if (path.StartsWithSegments("/hubs"))
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            context.Token = accessToken;
+                            logger?.LogDebug("JwtBearer: SignalR token extracted from query parameter");
+                        }
+                    }
                 }
                 catch { /* ログ失敗してもトークン処理は継続 */ }
 
@@ -313,10 +368,18 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 app.UseHttpsRedirection();
 
+// CORS（開発環境のみ - SignalR用）
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("SignalRPolicy");
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// SignalR Hub エンドポイント
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapDefaultEndpoints();
 
 app.Run();

@@ -10,10 +10,12 @@ public class TokenBlacklistService
     private readonly IConnectionMultiplexer _redis;
     private readonly IDatabase _db;
 
+    // Redis db0 を使用（セッション用、フロントエンドの ServerSessionManager と同じ）
+    // db1: Hangfire, db2: SignalR
     public TokenBlacklistService(IConnectionMultiplexer redis)
     {
         _redis = redis;
-        _db = _redis.GetDatabase();
+        _db = _redis.GetDatabase(0);
     }
 
     public async Task BlacklistTokenAsync(string jti, DateTime expiresAt)
