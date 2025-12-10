@@ -289,6 +289,7 @@ public class OrganizationService
         setting.GenerativeApiVendor = request.GenerativeApiVendor;
         setting.GenerativeApiKey = normalizedApiKey;
         setting.Plan = request.Plan;
+        setting.HelpNotificationTarget = request.HelpNotificationTarget;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
 
@@ -310,6 +311,7 @@ public class OrganizationService
             GenerativeApiVendor = setting.GenerativeApiVendor,
             GenerativeApiKey = setting.GenerativeApiKey,
             Plan = setting.Plan,
+            HelpNotificationTarget = setting.HelpNotificationTarget,
             RowVersion = setting.RowVersion,
         };
     }
@@ -505,6 +507,7 @@ public class OrganizationService
                         GenerativeApiVendor = latestOrganization.Setting.GenerativeApiVendor,
                         GenerativeApiKey = latestOrganization.Setting.GenerativeApiKey,
                         Plan = latestOrganization.Setting.Plan,
+                        HelpNotificationTarget = latestOrganization.Setting.HelpNotificationTarget,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
                     : new OrganizationSettingResponse
@@ -514,6 +517,7 @@ public class OrganizationService
                         GenerativeApiVendor = GenerativeApiVendor.None,
                         GenerativeApiKey = null,
                         Plan = OrganizationPlan.Free,
+                        HelpNotificationTarget = null,
                         RowVersion = 0,
                     },
             }

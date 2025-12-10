@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { GenerativeApiVendor } from './GenerativeApiVendor';
+import type { HelpNotificationTarget } from './HelpNotificationTarget';
 import type { OrganizationPlan } from './OrganizationPlan';
 /**
  * 組織設定更新リクエスト（管理者用）
@@ -30,6 +31,7 @@ export type AdminUpdateOrganizationSettingRequest = {
      */
     generativeApiKey?: string | null;
     plan: OrganizationPlan;
+    helpNotificationTarget?: HelpNotificationTarget;
     /**
      * 楽観的ロック用RowVersion
      */

@@ -73,6 +73,7 @@ export async function updateOrganizationSetting(request: {
   mailFromName?: string | null;
   generativeApiVendor: OrganizationSettingResponse['generativeApiVendor'];
   plan: OrganizationSettingResponse['plan'];
+  helpNotificationTarget?: OrganizationSettingResponse['helpNotificationTarget'];
   generativeApiKey?: string | null;
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {

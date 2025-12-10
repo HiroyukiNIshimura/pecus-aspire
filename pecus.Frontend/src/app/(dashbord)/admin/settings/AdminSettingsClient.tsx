@@ -5,7 +5,7 @@ import { updateOrganizationSetting } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
-import type { OrganizationResponse, OrganizationSettingResponse } from '@/connectors/api/pecus';
+import type { HelpNotificationTarget, OrganizationResponse, OrganizationSettingResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import {
@@ -109,6 +109,11 @@ const planOptions: { value: OrganizationSettingResponse['plan']; label: string }
   { value: 'Enterprise', label: 'Enterprise' },
 ];
 
+const helpNotificationTargetOptions: { value: HelpNotificationTarget; label: string }[] = [
+  { value: 'Organization', label: '組織全体' },
+  { value: 'WorkspaceUsers', label: 'ワークスペースユーザー' },
+];
+
 export default function AdminSettingsClient({ initialUser, organization, fetchError }: AdminSettingsClientProps) {
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -122,6 +127,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     mailFromName: '',
     generativeApiVendor: 'None' as OrganizationSettingResponse['generativeApiVendor'],
     plan: 'Free' as OrganizationSettingResponse['plan'],
+    helpNotificationTarget: undefined as OrganizationSettingResponse['helpNotificationTarget'],
     generativeApiKey: '',
     rowVersion: 0,
   };
@@ -134,6 +140,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     mailFromName: initialSetting.mailFromName ?? '',
     generativeApiVendor: normalizeVendor(initialSetting.generativeApiVendor),
     plan: normalizePlan(initialSetting.plan),
+    helpNotificationTarget: initialSetting.helpNotificationTarget ?? null,
     generativeApiKey: initialSetting.generativeApiKey ?? '',
   });
 
@@ -149,6 +156,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             mailFromName: data.mailFromName ? String(data.mailFromName) : null,
             generativeApiVendor: data.generativeApiVendor,
             plan: data.plan,
+            helpNotificationTarget: data.helpNotificationTarget ?? undefined,
             generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
             rowVersion,
           });
@@ -183,6 +191,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
       mailFromName: setting.mailFromName ?? '',
       generativeApiVendor: normalizeVendor(setting.generativeApiVendor),
       plan: normalizePlan(setting.plan),
+      helpNotificationTarget: setting.helpNotificationTarget ?? null,
       generativeApiKey:
         (setting as OrganizationSettingResponse & { generativeApiKey?: string | null }).generativeApiKey ?? '',
     });
@@ -255,7 +264,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                         name="taskOverdueThreshold"
                         type="text"
                         inputMode="numeric"
-                        value={formData.taskOverdueThreshold || ''}
+                        value={formData.taskOverdueThreshold}
                         onChange={(e) => {
                           const val = e.target.value;
                           if (val === '') {
@@ -457,6 +466,33 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                     {shouldShowError('plan') && (
                       <span className="label-text-alt text-error">{getFieldError('plan')}</span>
                     )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label" htmlFor="select-help-notification-target">
+                      <span className="label-text font-semibold">ヘルプコメント通知先</span>
+                    </label>
+                    <select
+                      id="select-help-notification-target"
+                      name="helpNotificationTarget"
+                      className={`select select-bordered ${shouldShowError('helpNotificationTarget') ? 'select-error' : ''}`}
+                      value={formData.helpNotificationTarget ?? ''}
+                      onChange={(e) => handleFieldChange('helpNotificationTarget', e.target.value)}
+                    >
+                      {helpNotificationTargetOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {shouldShowError('helpNotificationTarget') && (
+                      <span className="label-text-alt text-error">{getFieldError('helpNotificationTarget')}</span>
+                    )}
+                    <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                      担当者からのヘルプコメントを誰に通知するかを設定します。
+                    </span>
                   </div>
                 </div>
 

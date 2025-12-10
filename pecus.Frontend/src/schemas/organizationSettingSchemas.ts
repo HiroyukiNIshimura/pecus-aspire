@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { GenerativeApiVendor, OrganizationPlan } from '@/connectors/api/pecus';
+import type { GenerativeApiVendor, HelpNotificationTarget, OrganizationPlan } from '@/connectors/api/pecus';
 
 const generativeVendors: readonly [GenerativeApiVendor, ...GenerativeApiVendor[]] = [
   'None',
@@ -14,6 +14,11 @@ const organizationPlans: readonly [OrganizationPlan, ...OrganizationPlan[]] = [
   'Free',
   'Standard',
   'Enterprise',
+];
+
+const helpNotificationTargets: readonly [HelpNotificationTarget, ...HelpNotificationTarget[]] = [
+  'Organization',
+  'WorkspaceUsers',
 ];
 
 export const organizationSettingSchema = z.object({
@@ -56,6 +61,12 @@ export const organizationSettingSchema = z.object({
   plan: z.enum(organizationPlans, {
     message: 'プランを選択してください。',
   }),
+  helpNotificationTarget: z
+    .enum(helpNotificationTargets, {
+      message: 'ヘルプ通知先を選択してください。',
+    })
+    .optional()
+    .nullable(),
   generativeApiKey: z.preprocess((val) => {
     if (val === '' || val === null || val === undefined) return undefined;
     if (typeof val === 'string') return val.trim();

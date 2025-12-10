@@ -53,6 +53,11 @@ public class AdminUpdateOrganizationSettingRequest
     public required OrganizationPlan Plan { get; set; }
 
     /// <summary>
+    /// ヘルプコメント通知の送信先
+    /// </summary>
+    public HelpNotificationTarget? HelpNotificationTarget { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

@@ -76,6 +76,7 @@ public class MyOrganizationController : BaseSecureController
                 MailFromName = organization.Setting?.MailFromName,
                 GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
                 Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
+                HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };

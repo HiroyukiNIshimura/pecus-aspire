@@ -58,6 +58,11 @@ public class OrganizationSetting
     public OrganizationPlan Plan { get; set; } = OrganizationPlan.Free;
 
     /// <summary>
+    /// ヘルプコメント通知の送信先
+    /// </summary>
+    public HelpNotificationTarget? HelpNotificationTarget { get; set; }
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

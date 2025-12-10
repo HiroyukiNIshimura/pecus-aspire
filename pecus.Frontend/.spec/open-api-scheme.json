@@ -8211,6 +8211,9 @@
           "plan": {
             "$ref": "#/components/schemas/OrganizationPlan"
           },
+          "helpNotificationTarget": {
+            "$ref": "#/components/schemas/HelpNotificationTarget"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用RowVersion",
@@ -8812,6 +8815,13 @@
         },
         "additionalProperties": false,
         "description": "ジャンルごとのワークスペース数"
+      },
+      "HelpNotificationTarget": {
+        "enum": [
+          "Organization",
+          "WorkspaceUsers"
+        ],
+        "type": "string"
       },
       "ItemWithTasksResponse": {
         "required": [
@@ -9781,6 +9791,9 @@
           },
           "plan": {
             "$ref": "#/components/schemas/OrganizationPlan"
+          },
+          "helpNotificationTarget": {
+            "$ref": "#/components/schemas/HelpNotificationTarget"
           },
           "rowVersion": {
             "type": "integer",

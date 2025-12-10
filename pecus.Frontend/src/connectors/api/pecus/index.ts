@@ -32,6 +32,7 @@ export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
+export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { ItemWithTasksResponsePagedResponse } from './models/ItemWithTasksResponsePagedResponse';
 export type { LoginDeviceInfo } from './models/LoginDeviceInfo';
