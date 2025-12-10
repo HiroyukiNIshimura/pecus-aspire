@@ -791,6 +791,7 @@ public class UserService
             new UserDetailResponse
             {
                 Id = latestUser.Id,
+                OrganizationId = latestUser.OrganizationId,
                 LoginId = latestUser.LoginId,
                 Username = latestUser.Username,
                 Email = latestUser.Email,

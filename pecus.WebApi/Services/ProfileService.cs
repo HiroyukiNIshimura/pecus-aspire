@@ -303,6 +303,7 @@ public class ProfileService
         var response = new UserDetailResponse
         {
             Id = user.Id,
+            OrganizationId = user.OrganizationId,
             LoginId = user.LoginId,
             Username = user.Username,
             Email = user.Email,

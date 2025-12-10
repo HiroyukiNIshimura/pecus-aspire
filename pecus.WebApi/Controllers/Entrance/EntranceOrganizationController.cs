@@ -124,6 +124,7 @@ public class EntranceOrganizationController : ControllerBase
             AdminUser = new UserDetailResponse
             {
                 Id = adminUser.Id,
+                OrganizationId = adminUser.OrganizationId,
                 LoginId = adminUser.LoginId,
                 Username = adminUser.Username,
                 Email = adminUser.Email,

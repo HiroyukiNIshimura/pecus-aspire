@@ -1,44 +1,54 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Pecus.Libs;
-using System.Collections.Concurrent;
 
 namespace Pecus.Hubs;
 
 /// <summary>
 /// リアルタイム通知用の SignalR Hub。
-/// ユーザー、組織、ワークスペース単位でグループ管理を行い、
-/// 各種イベント通知をクライアントにプッシュする。
+/// グループ管理のみを担当し、通知送信は NotificationService から行う。
 /// </summary>
+/// <remarks>
+/// グループ設計:
+/// - organization:{organizationId} - ログイン成功時に自動参加、ログアウトまで保持
+/// - workspace:{workspaceId} - ワークスペースページ表示中のみ参加（排他的）
+/// - item:{itemId} - アイテム詳細表示中のみ参加（排他的、workspace にも同時参加）
+/// - user:{userId} - 将来の個人チャット用（ペンディング）
+/// </remarks>
 [Authorize]
 public class NotificationHub : Hub
 {
     private readonly ILogger<NotificationHub> _logger;
+    private readonly OrganizationAccessHelper _accessHelper;
 
-    /// <summary>
-    /// React StrictMode 対策: 短時間内の重複参加通知を防ぐ。
-    /// キー: "ConnectionId:GroupName", 値: 最終参加時刻
-    /// </summary>
-    private static readonly ConcurrentDictionary<string, DateTime> _recentJoins = new();
-    private static readonly TimeSpan _joinDebounceTime = TimeSpan.FromMilliseconds(500);
-
-    public NotificationHub(ILogger<NotificationHub> logger)
+    public NotificationHub(ILogger<NotificationHub> logger, OrganizationAccessHelper accessHelper)
     {
         _logger = logger;
+        _accessHelper = accessHelper;
     }
 
     /// <summary>
     /// クライアント接続時の処理。
-    /// ユーザー固有のグループに自動参加させる。
+    /// 組織グループに自動参加させる。
     /// </summary>
     public override async Task OnConnectedAsync()
     {
         var userId = GetUserId();
-        if (userId != 0)
+        var organizationId = GetOrganizationId();
+
+        if (organizationId.HasValue)
         {
-            // ユーザー固有のグループに参加（個人通知用）
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"user:{userId}");
-            _logger.LogInformation("SignalR: User {UserId} connected. ConnectionId={ConnectionId}", userId, Context.ConnectionId);
+            var groupName = $"organization:{organizationId.Value}";
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            _logger.LogInformation(
+                "SignalR: User {UserId} connected and joined {GroupName}. ConnectionId={ConnectionId}",
+                userId, groupName, Context.ConnectionId);
+        }
+        else
+        {
+            _logger.LogInformation(
+                "SignalR: User {UserId} connected (no organization). ConnectionId={ConnectionId}",
+                userId, Context.ConnectionId);
         }
 
         await base.OnConnectedAsync();
@@ -46,102 +56,65 @@ public class NotificationHub : Hub
 
     /// <summary>
     /// クライアント切断時の処理。
+    /// グループからの離脱は SignalR が自動で行う。
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = GetUserId();
-        if (userId != 0)
-        {
-            _logger.LogInformation("SignalR: User {UserId} disconnected. ConnectionId={ConnectionId}", userId, Context.ConnectionId);
-        }
 
         if (exception != null)
         {
-            _logger.LogWarning(exception, "SignalR: Disconnected with error. ConnectionId={ConnectionId}", Context.ConnectionId);
+            _logger.LogWarning(exception,
+                "SignalR: User {UserId} disconnected with error. ConnectionId={ConnectionId}",
+                userId, Context.ConnectionId);
         }
-
-        // 切断時に該当接続の参加記録をクリア
-        var keysToRemove = _recentJoins.Keys
-            .Where(k => k.StartsWith($"{Context.ConnectionId}:"))
-            .ToList();
-        foreach (var key in keysToRemove)
+        else
         {
-            _recentJoins.TryRemove(key, out _);
+            _logger.LogInformation(
+                "SignalR: User {UserId} disconnected. ConnectionId={ConnectionId}",
+                userId, Context.ConnectionId);
         }
 
         await base.OnDisconnectedAsync(exception);
     }
 
     /// <summary>
-    /// 組織グループに参加する。
-    /// クライアントが組織ページを開いた際に呼び出す。
-    /// </summary>
-    /// <param name="organizationId">組織ID</param>
-    public async Task JoinOrganization(int organizationId)
-    {
-        var groupName = $"organization:{organizationId}";
-        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-        _logger.LogDebug("SignalR: ConnectionId={ConnectionId} joined {GroupName}", Context.ConnectionId, groupName);
-    }
-
-    /// <summary>
-    /// 組織グループから離脱する。
-    /// </summary>
-    /// <param name="organizationId">組織ID</param>
-    public async Task LeaveOrganization(int organizationId)
-    {
-        var groupName = $"organization:{organizationId}";
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-        _logger.LogDebug("SignalR: ConnectionId={ConnectionId} left {GroupName}", Context.ConnectionId, groupName);
-    }
-
-    /// <summary>
     /// ワークスペースグループに参加する。
-    /// クライアントがワークスペースページを開いた際に呼び出す。
-    /// 他のワークスペースメンバーに参加通知を送信する。
+    /// 他のワークスペースから自動的に離脱する（排他的参加）。
+    /// ワークスペースの有効なメンバーでない場合はグループに参加しない。
     /// </summary>
-    /// <param name="workspaceId">ワークスペースID</param>
-    /// <param name="userName">ユーザー名（表示用）</param>
-    public async Task JoinWorkspace(int workspaceId, string userName)
+    /// <param name="workspaceId">参加するワークスペースID</param>
+    /// <param name="previousWorkspaceId">離脱するワークスペースID（なければ null または 0）</param>
+    public async Task JoinWorkspace(int workspaceId, int? previousWorkspaceId = null)
     {
-        var groupName = $"workspace:{workspaceId}";
         var userId = GetUserId();
-        var joinKey = $"{Context.ConnectionId}:{groupName}";
-        var now = DateTime.UtcNow;
 
-        // React StrictMode 対策: 短時間内の重複参加は通知をスキップ
-        var shouldNotify = true;
-        if (_recentJoins.TryGetValue(joinKey, out var lastJoinTime))
+        // ワークスペースの有効なメンバーかチェック
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
         {
-            if (now - lastJoinTime < _joinDebounceTime)
-            {
-                shouldNotify = false;
-                _logger.LogDebug("SignalR: Skipping duplicate join notification for {GroupName}. ConnectionId={ConnectionId}", groupName, Context.ConnectionId);
-            }
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping join",
+                userId, workspaceId);
+            return;
         }
-        _recentJoins[joinKey] = now;
 
-        // グループに参加
+        // 前のワークスペースから離脱
+        if (previousWorkspaceId.HasValue && previousWorkspaceId.Value > 0 && previousWorkspaceId.Value != workspaceId)
+        {
+            var prevGroupName = $"workspace:{previousWorkspaceId.Value}";
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevGroupName);
+            _logger.LogDebug(
+                "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching workspace)",
+                Context.ConnectionId, prevGroupName);
+        }
+
+        // 新しいワークスペースに参加
+        var groupName = $"workspace:{workspaceId}";
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-        // 他のメンバーに参加通知を送信（重複でない場合のみ）
-        if (shouldNotify)
-        {
-            await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
-            {
-                EventType = "workspace:user_joined",
-                Payload = new
-                {
-                    WorkspaceId = workspaceId,
-                    UserId = userId,
-                    UserName = userName,
-                    Message = $"{userName}がワークスペースにやってきました！"
-                },
-                Timestamp = DateTimeOffset.UtcNow
-            });
-        }
-
-        _logger.LogDebug("SignalR: ConnectionId={ConnectionId} joined {GroupName}, notified={Notified}", Context.ConnectionId, groupName, shouldNotify);
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} joined {GroupName}",
+            Context.ConnectionId, groupName);
     }
 
     /// <summary>
@@ -152,8 +125,80 @@ public class NotificationHub : Hub
     {
         var groupName = $"workspace:{workspaceId}";
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-        // 注意: 離脱時に _recentJoins をクリアしない（StrictMode で Leave→Join が短時間で発生するため）
-        _logger.LogDebug("SignalR: ConnectionId={ConnectionId} left {GroupName}", Context.ConnectionId, groupName);
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} left {GroupName}",
+            Context.ConnectionId, groupName);
+    }
+
+    /// <summary>
+    /// アイテムグループに参加する。
+    /// 他のアイテムから自動的に離脱する（排他的参加）。
+    /// ワークスペースグループにも同時に参加する。
+    /// ワークスペースの有効なメンバーでない場合はグループに参加しない。
+    /// </summary>
+    /// <param name="itemId">参加するアイテムID</param>
+    /// <param name="workspaceId">アイテムが属するワークスペースID</param>
+    /// <param name="previousItemId">離脱するアイテムID（なければ null または 0）</param>
+    /// <param name="previousWorkspaceId">離脱するワークスペースID（なければ null または 0）</param>
+    public async Task JoinItem(int itemId, int workspaceId, int? previousItemId = null, int? previousWorkspaceId = null)
+    {
+        var userId = GetUserId();
+
+        // ワークスペースの有効なメンバーかチェック
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping item join",
+                userId, workspaceId);
+            return;
+        }
+
+        // 前のアイテムから離脱
+        if (previousItemId.HasValue && previousItemId.Value > 0 && previousItemId.Value != itemId)
+        {
+            var prevItemGroup = $"item:{previousItemId.Value}";
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevItemGroup);
+            _logger.LogDebug(
+                "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching item)",
+                Context.ConnectionId, prevItemGroup);
+        }
+
+        // ワークスペースも変わる場合は切り替え
+        if (previousWorkspaceId.HasValue && previousWorkspaceId.Value > 0 && previousWorkspaceId.Value != workspaceId)
+        {
+            var prevWorkspaceGroup = $"workspace:{previousWorkspaceId.Value}";
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevWorkspaceGroup);
+            _logger.LogDebug(
+                "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching workspace via item)",
+                Context.ConnectionId, prevWorkspaceGroup);
+        }
+
+        // ワークスペースグループに参加
+        var workspaceGroup = $"workspace:{workspaceId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, workspaceGroup);
+
+        // アイテムグループに参加
+        var itemGroup = $"item:{itemId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, itemGroup);
+
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} joined {ItemGroup} and {WorkspaceGroup}",
+            Context.ConnectionId, itemGroup, workspaceGroup);
+    }
+
+    /// <summary>
+    /// アイテムグループから離脱する。
+    /// ワークスペースグループには残る。
+    /// </summary>
+    /// <param name="itemId">アイテムID</param>
+    public async Task LeaveItem(int itemId)
+    {
+        var groupName = $"item:{itemId}";
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} left {GroupName}",
+            Context.ConnectionId, groupName);
     }
 
     /// <summary>
@@ -175,6 +220,28 @@ public class NotificationHub : Hub
         {
             _logger.LogWarning(ex, "SignalR: Failed to get UserId from principal");
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// JWT トークンから組織IDを取得する。
+    /// </summary>
+    private int? GetOrganizationId()
+    {
+        var principal = Context.User;
+        if (principal?.Identity?.IsAuthenticated != true)
+        {
+            return null;
+        }
+
+        try
+        {
+            return JwtBearerUtil.GetOrganizationIdFromPrincipal(principal);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SignalR: Failed to get OrganizationId from principal");
+            return null;
         }
     }
 }

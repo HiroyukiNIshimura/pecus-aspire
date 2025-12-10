@@ -15,6 +15,11 @@ public class UserDetailResponse : IConflictModel
     public required int Id { get; set; }
 
     /// <summary>
+    /// 組織ID
+    /// </summary>
+    public int? OrganizationId { get; set; }
+
+    /// <summary>
     /// ログインID
     /// </summary>
     [Required]

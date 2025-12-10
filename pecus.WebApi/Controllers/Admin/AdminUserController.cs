@@ -86,6 +86,7 @@ public class AdminUserController : BaseAdminController
         var response = new UserDetailResponse
         {
             Id = targetUser.Id,
+            OrganizationId = targetUser.OrganizationId,
             LoginId = targetUser.LoginId,
             Username = targetUser.Username,
             Email = targetUser.Email,
@@ -164,6 +165,7 @@ public class AdminUserController : BaseAdminController
         var userResponses = users.Select(u => new UserDetailResponse
         {
             Id = u.Id,
+            OrganizationId = u.OrganizationId,
             LoginId = u.LoginId,
             Username = u.Username,
             Email = u.Email,
@@ -444,6 +446,7 @@ public class AdminUserController : BaseAdminController
         var response = new UserDetailResponse
         {
             Id = user.Id,
+            OrganizationId = user.OrganizationId,
             LoginId = user.LoginId,
             Username = user.Username,
             Email = user.Email,

@@ -20,6 +20,7 @@ import type { UserInfo } from '@/types/userInfo';
 export function mapUserResponseToUserInfo(userResponse: UserDetailResponse): UserInfo {
   return {
     id: userResponse.id,
+    organizationId: userResponse.organizationId,
     name: userResponse.username ?? null,
     email: userResponse.email ?? null,
     roles: userResponse.roles ?? [],

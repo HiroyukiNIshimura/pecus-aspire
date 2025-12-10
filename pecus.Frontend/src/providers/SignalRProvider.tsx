@@ -28,6 +28,14 @@ export interface SignalRNotification {
 export type NotificationHandler = (notification: SignalRNotification) => void;
 
 /**
+ * 現在参加中のグループ情報
+ */
+interface CurrentGroups {
+  workspaceId: number | null;
+  itemId: number | null;
+}
+
+/**
  * SignalR Context の値
  */
 interface SignalRContextValue {
@@ -40,20 +48,23 @@ interface SignalRContextValue {
   /** 接続を切断する */
   disconnect: () => Promise<void>;
 
-  /** 組織グループに参加 */
-  joinOrganization: (organizationId: number) => Promise<void>;
-
-  /** 組織グループから離脱 */
-  leaveOrganization: (organizationId: number) => Promise<void>;
-
-  /** ワークスペースグループに参加 */
-  joinWorkspace: (workspaceId: number, userName?: string) => Promise<void>;
+  /** ワークスペースグループに参加（排他的：前のワークスペースから自動離脱） */
+  joinWorkspace: (workspaceId: number) => Promise<void>;
 
   /** ワークスペースグループから離脱 */
   leaveWorkspace: (workspaceId: number) => Promise<void>;
 
+  /** アイテムグループに参加（排他的：前のアイテムから自動離脱、ワークスペースにも参加） */
+  joinItem: (itemId: number, workspaceId: number) => Promise<void>;
+
+  /** アイテムグループから離脱 */
+  leaveItem: (itemId: number) => Promise<void>;
+
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
+
+  /** 現在参加中のグループ情報 */
+  currentGroups: CurrentGroups;
 }
 
 // ========================================
@@ -75,15 +86,20 @@ interface SignalRProviderProps {
 /**
  * SignalR 接続を管理する Provider
  *
- * ログイン済みのページで wrap して使用する。
- * 自動再接続、グループ管理、通知受信を提供。
+ * ダッシュボードレイアウトで wrap して使用する。
+ * - 接続時に組織グループへ自動参加（サーバー側で処理）
+ * - ワークスペース/アイテムは排他的参加（1つのみ）
  */
 export function SignalRProvider({ children, autoConnect = true }: SignalRProviderProps) {
   const [connectionState, setConnectionState] = useState<SignalRConnectionState>('disconnected');
+  const [currentGroups, setCurrentGroups] = useState<CurrentGroups>({
+    workspaceId: null,
+    itemId: null,
+  });
+
   const connectionRef = useRef<HubConnection | null>(null);
-  const connectingRef = useRef<boolean>(false); // 接続中フラグ（重複接続防止）
+  const connectingRef = useRef<boolean>(false);
   const handlersRef = useRef<Set<NotificationHandler>>(new Set());
-  const joinedGroupsRef = useRef<Set<string>>(new Set());
 
   /**
    * 接続を開始する
@@ -123,22 +139,19 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
           },
         })
         .withAutomaticReconnect({
-          // カスタム再接続間隔（0秒、2秒、10秒、30秒、null で停止）
           nextRetryDelayInMilliseconds: (retryContext) => {
             if (retryContext.previousRetryCount === 0) return 0;
             if (retryContext.previousRetryCount === 1) return 2000;
             if (retryContext.previousRetryCount === 2) return 10000;
             if (retryContext.previousRetryCount < 10) return 30000;
-            // 10回以上失敗したら停止
             return null;
           },
         })
         .configureLogging(LogLevel.Information)
         .build();
 
-      // サーバータイムアウト設定（サーバー側の ClientTimeoutInterval と合わせる）
-      connection.serverTimeoutInMilliseconds = 30000; // 30秒
-      connection.keepAliveIntervalInMilliseconds = 15000; // 15秒
+      connection.serverTimeoutInMilliseconds = 30000;
+      connection.keepAliveIntervalInMilliseconds = 15000;
 
       // イベントハンドラーを設定
       connection.onreconnecting(() => {
@@ -149,31 +162,21 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       connection.onreconnected(async () => {
         console.log('[SignalR] Reconnected');
         setConnectionState('connected');
-
-        // 再接続時にグループを再参加
-        for (const group of joinedGroupsRef.current) {
-          try {
-            const [type, id] = group.split(':');
-            if (type === 'organization') {
-              await connection.invoke('JoinOrganization', id);
-            } else if (type === 'workspace') {
-              await connection.invoke('JoinWorkspace', id);
-            }
-          } catch (error) {
-            console.error(`[SignalR] Failed to rejoin group ${group}:`, error);
-          }
-        }
+        // 組織グループへの再参加はサーバー側の OnConnectedAsync で自動処理される
+        // ワークスペース/アイテムは再参加が必要
+        // ただし、再接続時に currentGroups の値を使って再参加すると
+        // 状態が古い可能性があるため、ページ側で再参加を呼び出す設計とする
       });
 
       connection.onclose((error) => {
         console.log('[SignalR] Connection closed', error);
         setConnectionState('disconnected');
-        joinedGroupsRef.current.clear();
+        setCurrentGroups({ workspaceId: null, itemId: null });
       });
 
       // 通知受信ハンドラー
       connection.on('ReceiveNotification', (notification: SignalRNotification) => {
-        console.log('[SignalR] Notification received:', notification.eventType, 'handlers:', handlersRef.current.size);
+        console.log('[SignalR] Notification received:', notification.eventType);
         for (const handler of handlersRef.current) {
           try {
             handler(notification);
@@ -187,7 +190,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       await connection.start();
       connectionRef.current = connection;
       setConnectionState('connected');
-      console.log('[SignalR] Connected');
+      console.log('[SignalR] Connected (organization group joined automatically)');
     } catch (error) {
       console.error('[SignalR] Connection failed:', error);
       setConnectionState('disconnected');
@@ -207,105 +210,130 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
         console.error('[SignalR] Disconnect error:', error);
       }
       connectionRef.current = null;
-      joinedGroupsRef.current.clear();
+      setCurrentGroups({ workspaceId: null, itemId: null });
       setConnectionState('disconnected');
     }
   }, []);
 
   /**
-   * 組織グループに参加
+   * ワークスペースグループに参加（排他的）
    */
-  const joinOrganization = useCallback(async (organizationId: number) => {
-    const connection = connectionRef.current;
-    if (!connection || connection.state !== HubConnectionState.Connected) {
-      console.warn('[SignalR] Cannot join organization: not connected');
-      return;
-    }
+  const joinWorkspace = useCallback(
+    async (workspaceId: number) => {
+      const connection = connectionRef.current;
+      if (!connection || connection.state !== HubConnectionState.Connected) {
+        console.warn('[SignalR] Cannot join workspace: not connected');
+        return;
+      }
 
-    const groupKey = `organization:${organizationId}`;
+      // 既に同じワークスペースに参加済みの場合はスキップ
+      if (currentGroups.workspaceId === workspaceId) {
+        console.log(`[SignalR] Already in workspace: ${workspaceId}`);
+        return;
+      }
 
-    // 既に参加済みの場合はスキップ（クライアント側のトラッキング用）
-    if (joinedGroupsRef.current.has(groupKey)) {
-      console.log(`[SignalR] Already joined organization: ${organizationId}`);
-      return;
-    }
-
-    try {
-      await connection.invoke('JoinOrganization', organizationId);
-      joinedGroupsRef.current.add(groupKey);
-      console.log(`[SignalR] Joined organization: ${organizationId}`);
-    } catch (error) {
-      console.error('[SignalR] Failed to join organization:', error);
-    }
-  }, []);
-
-  /**
-   * 組織グループから離脱
-   */
-  const leaveOrganization = useCallback(async (organizationId: number) => {
-    const groupKey = `organization:${organizationId}`;
-    joinedGroupsRef.current.delete(groupKey);
-
-    const connection = connectionRef.current;
-    if (!connection || connection.state !== HubConnectionState.Connected) {
-      return;
-    }
-
-    try {
-      await connection.invoke('LeaveOrganization', organizationId);
-      console.log(`[SignalR] Left organization: ${organizationId}`);
-    } catch (error) {
-      console.error('[SignalR] Failed to leave organization:', error);
-    }
-  }, []);
-
-  /**
-   * ワークスペースグループに参加
-   * @param workspaceId ワークスペースID（整数）
-   * @param userName 現在のユーザー名（通知表示用）
-   */
-  const joinWorkspace = useCallback(async (workspaceId: number, userName?: string) => {
-    const connection = connectionRef.current;
-    if (!connection || connection.state !== HubConnectionState.Connected) {
-      console.warn('[SignalR] Cannot join workspace: not connected');
-      return;
-    }
-
-    const groupKey = `workspace:${workspaceId}`;
-
-    // 既に参加済みの場合はスキップ（クライアント側のトラッキング用）
-    if (joinedGroupsRef.current.has(groupKey)) {
-      console.log(`[SignalR] Already joined workspace: ${workspaceId}`);
-      return;
-    }
-
-    try {
-      // サーバー側で重複通知を防ぐため、クライアント側では単純に呼び出す
-      await connection.invoke('JoinWorkspace', workspaceId, userName ?? 'Unknown');
-      joinedGroupsRef.current.add(groupKey);
-      console.log(`[SignalR] Joined workspace: ${workspaceId}`);
-    } catch (error) {
-      console.error('[SignalR] Failed to join workspace:', error);
-    }
-  }, []);
+      try {
+        // サーバー側で前のワークスペースからの離脱も処理
+        await connection.invoke('JoinWorkspace', workspaceId, currentGroups.workspaceId ?? 0);
+        setCurrentGroups((prev) => ({
+          ...prev,
+          workspaceId,
+          itemId: null, // ワークスペース移動時はアイテムもクリア
+        }));
+        console.log(`[SignalR] Joined workspace: ${workspaceId}`);
+      } catch (error) {
+        console.error('[SignalR] Failed to join workspace:', error);
+      }
+    },
+    [currentGroups.workspaceId],
+  );
 
   /**
    * ワークスペースグループから離脱
    */
   const leaveWorkspace = useCallback(async (workspaceId: number) => {
-    const groupKey = `workspace:${workspaceId}`;
-    joinedGroupsRef.current.delete(groupKey);
-
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
+      setCurrentGroups((prev) => ({
+        ...prev,
+        workspaceId: prev.workspaceId === workspaceId ? null : prev.workspaceId,
+        itemId: null,
+      }));
       return;
     }
 
     try {
       await connection.invoke('LeaveWorkspace', workspaceId);
+      setCurrentGroups((prev) => ({
+        ...prev,
+        workspaceId: prev.workspaceId === workspaceId ? null : prev.workspaceId,
+        itemId: null,
+      }));
       console.log(`[SignalR] Left workspace: ${workspaceId}`);
     } catch (error) {
       console.error('[SignalR] Failed to leave workspace:', error);
+    }
+  }, []);
+
+  /**
+   * アイテムグループに参加（排他的、ワークスペースにも同時参加）
+   */
+  const joinItem = useCallback(
+    async (itemId: number, workspaceId: number) => {
+      const connection = connectionRef.current;
+      if (!connection || connection.state !== HubConnectionState.Connected) {
+        console.warn('[SignalR] Cannot join item: not connected');
+        return;
+      }
+
+      // 既に同じアイテムに参加済みの場合はスキップ
+      if (currentGroups.itemId === itemId) {
+        console.log(`[SignalR] Already viewing item: ${itemId}`);
+        return;
+      }
+
+      try {
+        await connection.invoke(
+          'JoinItem',
+          itemId,
+          workspaceId,
+          currentGroups.itemId ?? 0,
+          currentGroups.workspaceId ?? 0,
+        );
+        setCurrentGroups({
+          workspaceId,
+          itemId,
+        });
+        console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
+      } catch (error) {
+        console.error('[SignalR] Failed to join item:', error);
+      }
+    },
+    [currentGroups.itemId, currentGroups.workspaceId],
+  );
+
+  /**
+   * アイテムグループから離脱（ワークスペースには残る）
+   */
+  const leaveItem = useCallback(async (itemId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      setCurrentGroups((prev) => ({
+        ...prev,
+        itemId: prev.itemId === itemId ? null : prev.itemId,
+      }));
+      return;
+    }
+
+    try {
+      await connection.invoke('LeaveItem', itemId);
+      setCurrentGroups((prev) => ({
+        ...prev,
+        itemId: prev.itemId === itemId ? null : prev.itemId,
+      }));
+      console.log(`[SignalR] Left item: ${itemId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to leave item:', error);
     }
   }, []);
 
@@ -321,7 +349,6 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
   // 自動接続
   useEffect(() => {
-    // StrictMode による二重実行を防ぐためのフラグ
     let isMounted = true;
 
     const startConnection = async () => {
@@ -334,7 +361,6 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
     return () => {
       isMounted = false;
-      // クリーンアップ時に接続を切断
       if (connectionRef.current) {
         connectionRef.current.stop();
         connectionRef.current = null;
@@ -346,11 +372,12 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     connectionState,
     connect,
     disconnect,
-    joinOrganization,
-    leaveOrganization,
     joinWorkspace,
     leaveWorkspace,
+    joinItem,
+    leaveItem,
     onNotification,
+    currentGroups,
   };
 
   return <SignalRContext.Provider value={value}>{children}</SignalRContext.Provider>;
@@ -362,8 +389,6 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
 /**
  * SignalR Context を取得する Hook
- *
- * SignalRProvider の外で使用するとエラーをスローする。
  */
 export function useSignalRContext(): SignalRContextValue {
   const context = useContext(SignalRContext);

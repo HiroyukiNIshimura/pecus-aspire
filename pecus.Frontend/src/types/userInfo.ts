@@ -4,6 +4,7 @@
  */
 export type UserInfo = {
   id: number;
+  organizationId?: number | null;
   name: string;
   email: string;
   roles: {

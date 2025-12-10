@@ -180,8 +180,6 @@ export default function WorkspaceDetailClient({
   // ===== SignalR ワークスペースグループ参加・離脱 =====
   const workspaceIdRef = useRef<number | null>(null);
   useEffect(() => {
-    // ユーザー名を取得（username を優先、なければ name）
-    const displayName = userInfo?.username || userInfo?.name || 'ゲスト';
     const workspaceId = currentWorkspaceDetail.id;
 
     // 既に同じワークスペースに参加済みの場合はスキップ
@@ -190,9 +188,9 @@ export default function WorkspaceDetailClient({
     }
 
     // 接続が確立されたらワークスペースグループに参加
-    if (connectionState === 'connected' && workspaceId && displayName) {
+    if (connectionState === 'connected' && workspaceId) {
       workspaceIdRef.current = workspaceId;
-      joinWorkspace(workspaceId, displayName);
+      joinWorkspace(workspaceId);
     }
 
     // クリーンアップ時にグループから離脱
@@ -202,18 +200,15 @@ export default function WorkspaceDetailClient({
         workspaceIdRef.current = null;
       }
     };
-  }, [connectionState, currentWorkspaceDetail.id, userInfo?.username, userInfo?.name, joinWorkspace, leaveWorkspace]);
+  }, [connectionState, currentWorkspaceDetail.id, joinWorkspace, leaveWorkspace]);
 
   // ===== SignalR 通知受信ハンドラー =====
   // コンポーネントマウント時に一度だけ登録し、アンマウント時にクリーンアップ
   useEffect(() => {
     const handler = (notification: SignalRNotification) => {
-      // ワークスペース参加通知を処理
-      if (notification.eventType === 'workspace:user_joined') {
-        const payload = notification.payload as { UserName?: string; Message?: string };
-        const message = payload.Message || `${payload.UserName || 'ゲスト'}がワークスペースにやってきました！`;
-        notify.info(message);
-      }
+      // 将来の通知ハンドリング用に予約
+      // 例: workspace:item_created, workspace:item_updated など
+      console.log('[WorkspaceDetail] Received notification:', notification.eventType);
     };
 
     const unsubscribe = onNotification(handler);

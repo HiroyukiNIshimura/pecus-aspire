@@ -43,6 +43,7 @@ namespace Pecus.Libs
                 ),
                 new Claim("username", user.Username),
                 new Claim("userId", user.Id.ToString()),
+                new Claim("organizationId", user.OrganizationId?.ToString() ?? ""),
             };
 
             // ロール情報をクレームに追加
@@ -202,6 +203,40 @@ namespace Pecus.Libs
             }
 
             return userId;
+        }
+
+        /// <summary>
+        /// ClaimsPrincipalから組織IDを取得
+        /// </summary>
+        /// <param name="principal">ClaimsPrincipal（HttpContext.Userなど）</param>
+        /// <returns>組織ID（null の場合は組織未所属）</returns>
+        /// <exception cref="InvalidOperationException">認証されていない場合</exception>
+        public static int? GetOrganizationIdFromPrincipal(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (principal.Identity?.IsAuthenticated != true)
+            {
+                throw new InvalidOperationException(
+                    "ユーザーが認証されていません。"
+                );
+            }
+
+            var orgIdClaim = principal.FindFirst("organizationId");
+            if (orgIdClaim == null || string.IsNullOrEmpty(orgIdClaim.Value))
+            {
+                return null;
+            }
+
+            if (!int.TryParse(orgIdClaim.Value, out int orgId))
+            {
+                return null;
+            }
+
+            return orgId;
         }
 
         /// <summary>

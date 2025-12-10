@@ -44,44 +44,9 @@ export function useSignalRConnection() {
 }
 
 /**
- * 組織のリアルタイム更新を購読する Hook
- *
- * @param organizationId 組織ID
- * @param handlers イベントハンドラーのマップ
- */
-export function useOrganizationUpdates(organizationId: number | undefined, handlers?: EventHandlers) {
-  const { connectionState, joinOrganization, leaveOrganization, onNotification } = useSignalRContext();
-
-  // グループ参加/離脱
-  useEffect(() => {
-    if (!organizationId || connectionState !== 'connected') {
-      return;
-    }
-
-    joinOrganization(organizationId);
-
-    return () => {
-      leaveOrganization(organizationId);
-    };
-  }, [organizationId, connectionState, joinOrganization, leaveOrganization]);
-
-  // 通知ハンドラー登録
-  useEffect(() => {
-    if (!handlers) {
-      return;
-    }
-
-    return onNotification((notification: SignalRNotification) => {
-      const handler = handlers[notification.eventType];
-      if (handler) {
-        handler(notification.payload, notification.timestamp);
-      }
-    });
-  }, [handlers, onNotification]);
-}
-
-/**
  * ワークスペースのリアルタイム更新を購読する Hook
+ *
+ * 排他的参加：このワークスペースに参加すると、前のワークスペースから自動離脱する。
  *
  * @param workspaceId ワークスペースID
  * @param handlers イベントハンドラーのマップ
@@ -101,6 +66,47 @@ export function useWorkspaceUpdates(workspaceId: number | undefined, handlers?: 
       leaveWorkspace(workspaceId);
     };
   }, [workspaceId, connectionState, joinWorkspace, leaveWorkspace]);
+
+  // 通知ハンドラー登録
+  useEffect(() => {
+    if (!handlers) {
+      return;
+    }
+
+    return onNotification((notification: SignalRNotification) => {
+      const handler = handlers[notification.eventType];
+      if (handler) {
+        handler(notification.payload, notification.timestamp);
+      }
+    });
+  }, [handlers, onNotification]);
+}
+
+/**
+ * アイテム詳細表示時のリアルタイム更新を購読する Hook
+ *
+ * 排他的参加：このアイテムに参加すると、前のアイテムから自動離脱する。
+ * ワークスペースグループにも同時参加する。
+ *
+ * @param itemId アイテムID
+ * @param workspaceId アイテムが属するワークスペースID
+ * @param handlers イベントハンドラーのマップ
+ */
+export function useItemUpdates(itemId: number | undefined, workspaceId: number | undefined, handlers?: EventHandlers) {
+  const { connectionState, joinItem, leaveItem, onNotification } = useSignalRContext();
+
+  // グループ参加/離脱
+  useEffect(() => {
+    if (!itemId || !workspaceId || connectionState !== 'connected') {
+      return;
+    }
+
+    joinItem(itemId, workspaceId);
+
+    return () => {
+      leaveItem(itemId);
+    };
+  }, [itemId, workspaceId, connectionState, joinItem, leaveItem]);
 
   // 通知ハンドラー登録
   useEffect(() => {

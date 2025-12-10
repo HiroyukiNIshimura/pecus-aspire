@@ -15,6 +15,10 @@ export type UserDetailResponse = {
      */
     id: number;
     /**
+     * 組織ID
+     */
+    organizationId?: number | null;
+    /**
      * ログインID
      */
     loginId: string;
