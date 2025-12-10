@@ -145,6 +145,7 @@ public class EntranceOrganizationController : ControllerBase
                     })
                     .ToList() ?? new List<UserRoleResponse>(),
                 CreatedAt = adminUser.CreatedAt,
+                LastLoginAt = adminUser.LastLoginAt,
                 RowVersion = adminUser.RowVersion!,
                 IsAdmin = true,
                 Setting = new UserSettingResponse

@@ -811,6 +811,7 @@ public class UserService
                 }).ToList(),
                 IsAdmin = latestUser.Roles.Any(r => r.Name == "Admin"),
                 CreatedAt = latestUser.CreatedAt,
+                LastLoginAt = latestUser.LastLoginAt,
                 RowVersion = latestUser.RowVersion!,
                 Setting = latestUser.Setting != null
                     ? new UserSettingResponse

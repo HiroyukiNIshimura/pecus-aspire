@@ -63,6 +63,10 @@ export type UserDetailResponse = {
      */
     createdAt?: string;
     /**
+     * 最終ログイン日時
+     */
+    lastLoginAt?: string | null;
+    /**
      * ユーザーの楽観的ロック用RowVersion
      */
     rowVersion: number;
