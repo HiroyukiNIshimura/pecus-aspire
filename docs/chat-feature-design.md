@@ -29,21 +29,21 @@
 │ Type            │  │    │ ChatRoomId (FK)     │────┘  │ Username        │
 │ Name            │  └───>│ UserId (FK)         │───────│ ...             │
 │ OrganizationId  │       │ Role                │       └─────────────────┘
-│ DmUserPair      │       │ JoinedAt            │
-│ CreatedByUserId │       │ LastReadAt          │
-│ CreatedAt       │       └─────────────────────┘
-│ UpdatedAt       │
-└─────────────────┘
-        │
-        │ 1:N
-        ▼
-┌─────────────────┐
-│   ChatMessage   │
-├─────────────────┤
-│ Id (PK)         │
-│ ChatRoomId (FK) │
-│ SenderUserId    │
-│ MessageType     │
+│ DmUserPair      │       │ JoinedAt            │              │
+│ CreatedByUserId │       │ LastReadAt          │              │
+│ CreatedAt       │       └─────────────────────┘              │
+│ UpdatedAt       │                                            │
+└─────────────────┘                                            │
+        │                                                      │
+        │ 1:N                                                  │
+        ▼                                                      │
+┌─────────────────┐       ┌─────────────────────┐              │
+│   ChatMessage   │       │  ChatMessageRead    │              │
+├─────────────────┤       ├─────────────────────┤              │
+│ Id (PK)         │──────>│ ChatMessageId (FK)  │              │
+│ ChatRoomId (FK) │       │ UserId (FK)         │──────────────┘
+│ SenderUserId    │       │ ReadAt              │
+│ MessageType     │       └─────────────────────┘
 │ Content         │
 │ CreatedAt       │
 │ UpdatedAt       │
@@ -287,6 +287,9 @@ public class ChatMessage
     /// </summary>
     public int? ReplyToMessageId { get; set; }
     public ChatMessage? ReplyToMessage { get; set; }
+
+    // Navigation Properties
+    public ICollection<ChatMessageRead> ReadBy { get; set; } = new List<ChatMessageRead>();
 }
 ```
 
@@ -316,6 +319,36 @@ public enum ChatMessageType
     File = 3,
 }
 ```
+
+---
+
+### ChatMessageRead（メッセージ既読）
+
+メッセージごとの既読状態を管理する中間テーブル。
+
+```csharp
+public class ChatMessageRead
+{
+    /// <summary>
+    /// メッセージID
+    /// </summary>
+    public int ChatMessageId { get; set; }
+    public ChatMessage ChatMessage { get; set; } = null!;
+
+    /// <summary>
+    /// 既読したユーザーID
+    /// </summary>
+    public int UserId { get; set; }
+    public User User { get; set; } = null!;
+
+    /// <summary>
+    /// 既読日時
+    /// </summary>
+    public DateTimeOffset ReadAt { get; set; } = DateTimeOffset.UtcNow;
+}
+```
+
+> **Note**: 主キーは `(ChatMessageId, UserId)` の複合キー
 
 ---
 
@@ -354,6 +387,19 @@ entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
 
 // 未読メッセージ取得用
 entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt, e.IsDeleted });
+```
+
+### ChatMessageRead
+
+```csharp
+// 複合主キー
+entity.HasKey(e => new { e.ChatMessageId, e.UserId });
+
+// ユーザーの既読メッセージ取得用
+entity.HasIndex(e => e.UserId);
+
+// メッセージの既読者一覧取得用（外部キーで自動作成されるが明示）
+entity.HasIndex(e => e.ChatMessageId);
 ```
 
 ---
@@ -443,7 +489,7 @@ chat:{chatRoomId}
 | `chat:user_left` | Hub | 退室通知 |
 | `chat:user_typing` | Hub | 入力中通知 |
 | `chat:message_sent` | NotificationService | メッセージ送信 |
-| `chat:message_read` | NotificationService | 既読通知 |
+| `chat:message_read` | NotificationService | 既読通知（誰がどのメッセージまで読んだか） |
 
 ---
 
