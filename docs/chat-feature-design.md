@@ -493,6 +493,78 @@ chat:{chatRoomId}
 
 ---
 
+## 既読管理方式
+
+### ウォーターマーク方式（推奨）
+
+「どこまで読んだか」を `ChatRoomMember.LastReadAt` で管理するシンプルな方式を採用。
+
+```
+既読ウォーターマーク: メッセージCの送信時刻
+┌─────────────────────┐
+│ メッセージ A        │ ← 既読
+│ メッセージ B        │ ← 既読
+│ メッセージ C ───────│ ← 既読（ここまで）
+│ メッセージ D        │ ← 未読
+│ メッセージ E        │ ← 未読
+└─────────────────────┘
+```
+
+### 更新タイミング
+
+| タイミング | 処理 |
+|-----------|------|
+| チャット画面フォーカス時 | 最新メッセージの時刻で `LastReadAt` を更新 |
+| 新着メッセージ受信時（画面アクティブ & 最下部表示中） | `LastReadAt` を更新 |
+| スクロールが最下部に到達 | `LastReadAt` を更新 |
+
+### 未読カウントの計算
+
+```csharp
+// ルームごとの未読メッセージ数を取得
+var unreadCount = await _context.ChatMessages
+    .Where(m => m.ChatRoomId == roomId)
+    .Where(m => m.CreatedAt > member.LastReadAt)
+    .Where(m => !m.IsDeleted)
+    .CountAsync();
+```
+
+### フロントエンド実装例
+
+```typescript
+const markAsRead = async (roomId: number) => {
+  await updateLastReadAt(roomId, new Date());
+};
+
+// チャット画面フォーカス時
+useEffect(() => {
+  if (isFocused && messages.length > 0) {
+    markAsRead(roomId);
+  }
+}, [isFocused]);
+
+// スクロールが最下部に到達時
+const handleScrollToBottom = () => {
+  markAsRead(roomId);
+};
+
+// 新着メッセージ受信時（画面アクティブなら）
+onNewMessage((msg) => {
+  if (document.hasFocus() && isScrolledToBottom) {
+    markAsRead(roomId);
+  }
+});
+```
+
+### 補足: メッセージ単位の既読（オプション）
+
+グループチャットで「誰が読んだか」を表示したい場合は `ChatMessageRead` テーブルを使用。
+ただし、メッセージ数 × ユーザー数のレコードが発生するためパフォーマンスに注意。
+
+基本はウォーターマーク方式（`LastReadAt`）で運用し、必要に応じて個別既読を追加する。
+
+---
+
 ## API エンドポイント（案）
 
 ### チャットルーム
