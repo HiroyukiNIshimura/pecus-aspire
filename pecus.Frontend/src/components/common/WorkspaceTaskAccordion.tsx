@@ -281,7 +281,7 @@ export default function WorkspaceTaskAccordion({
     setEditingWorkspaceId(null);
   }, []);
 
-  // タスク編集成功時の処理
+  // タスク編集成功時の処理（モーダルは閉じずにデータのみ更新）
   const handleTaskEditSuccess = useCallback(() => {
     // 該当ワークスペースのタスクを再取得
     if (editingWorkspaceId) {
@@ -299,8 +299,8 @@ export default function WorkspaceTaskAccordion({
         }
       });
     }
-    handleCloseTaskEditModal();
-  }, [editingWorkspaceId, fetchTasks, handleCloseTaskEditModal]);
+    // モーダルは閉じない（ユーザーが明示的に閉じるまで開いたまま）
+  }, [editingWorkspaceId, fetchTasks]);
 
   // ワークスペースが空の場合
   if (workspaces.length === 0) {
