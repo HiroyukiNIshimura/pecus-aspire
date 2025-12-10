@@ -15,12 +15,17 @@
 - [x] ワークスペースメンバーチェック（非メンバーはグループ参加不可）
 - [x] フロントエンド `SignalRProvider` の更新
 - [x] 暫定コード（`_recentJoins` など）の削除
+- [x] Redis ベースのプレゼンス管理（`SignalRPresenceService`）
+- [x] プレゼンス通知（ワークスペース/組織/アイテム）
+- [x] プレゼンス UI コンポーネント
 
 ### 未実装
 
 - [ ] `NotificationService` による通知送信
 - [ ] 各サービスからの通知送信呼び出し
 - [ ] チャット機能（後述）
+
+> **プレゼンス機能の詳細**: [signalr-presence.md](./signalr-presence.md) を参照
 
 ---
 
@@ -121,23 +126,28 @@ public class NotificationHub : Hub
     }
 
     // ワークスペース参加（排他的、メンバーチェックあり）
-    public async Task JoinWorkspace(int workspaceId, int? previousWorkspaceId = null)
+    // Redis で現在の状態を管理するため previousWorkspaceId は不要
+    public async Task<List<WorkspacePresenceUser>> JoinWorkspace(int workspaceId)
     {
         var userId = GetUserId();
         if (!await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId))
-            return; // 非メンバーは静かにスキップ
+            return new List<WorkspacePresenceUser>();
 
-        // 前のワークスペースから離脱
-        if (previousWorkspaceId > 0 && previousWorkspaceId != workspaceId)
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"workspace:{previousWorkspaceId}");
+        // Redis から現在のワークスペースを取得し、必要なら離脱
+        var currentWsId = await _presenceService.GetConnectionWorkspaceIdAsync(Context.ConnectionId);
+        if (currentWsId.HasValue && currentWsId != workspaceId)
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"workspace:{currentWsId}");
 
         await Groups.AddToGroupAsync(Context.ConnectionId, $"workspace:{workspaceId}");
+        // ... 既存ユーザー一覧を返す
     }
 
     // アイテム参加（排他的、ワークスペースにも同時参加）
-    public async Task JoinItem(int itemId, int workspaceId, int? previousItemId, int? previousWorkspaceId)
+    // Redis で現在の状態を管理するため previous* は不要
+    public async Task<List<ItemPresenceUser>> JoinItem(int itemId, int workspaceId)
     {
         // メンバーチェック後、workspace と item 両方のグループに参加
+        // 既存ユーザー一覧を返す
     }
 }
 ```
@@ -149,9 +159,11 @@ interface SignalRContextValue {
   connectionState: SignalRConnectionState;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
-  joinWorkspace: (workspaceId: number) => Promise<void>;
+  // 既存ユーザー一覧を返す（プレゼンス表示用）
+  joinWorkspace: (workspaceId: number) => Promise<WorkspacePresenceUser[]>;
   leaveWorkspace: (workspaceId: number) => Promise<void>;
-  joinItem: (itemId: number, workspaceId: number) => Promise<void>;
+  // 既存ユーザー一覧を返す（プレゼンス表示用）
+  joinItem: (itemId: number, workspaceId: number) => Promise<ItemPresenceUser[]>;
   leaveItem: (itemId: number) => Promise<void>;
   onNotification: (handler: NotificationHandler) => () => void;
   currentGroups: { workspaceId: number | null; itemId: number | null };
@@ -160,7 +172,7 @@ interface SignalRContextValue {
 
 - 接続時に組織グループへの参加はサーバー側で自動処理
 - `currentGroups` で現在参加中のワークスペース/アイテムを追跡
-- 排他的参加: 新しいグループ参加時に前のグループIDをサーバーに送信
+- 排他的参加: サーバー側（Redis）で現在の状態を管理、前のグループIDの送信は不要
 
 ---
 
@@ -247,6 +259,17 @@ public async Task JoinChat(int chatRoomId)
 | `task:completed` | タスクが完了した | `{ TaskId, ItemId, CompletedByUserId }` |
 | `comment:added` | コメントが追加された | `{ CommentId, ItemId, CreatedByUserId }` |
 
+### プレゼンス系（Hub から送信）
+
+| イベントタイプ | 説明 | ペイロード |
+|---------------|------|-----------|
+| `workspace:user_joined` | ワークスペースに参加 | `{ workspaceId, userId, userName, identityIconUrl }` |
+| `workspace:user_left` | ワークスペースから離脱 | `{ workspaceId, userId }` |
+| `organization:user_joined` | 組織に接続 | `{ organizationId, userId, userName, identityIconUrl }` |
+| `organization:user_left` | 組織から切断 | `{ organizationId, userId }` |
+| `item:user_joined` | アイテム閲覧開始 | `{ itemId, userId, userName, identityIconUrl }` |
+| `item:user_left` | アイテム閲覧終了 | `{ itemId, userId }` |
+
 ### アイテム編集系（Hub から送信）
 
 | イベントタイプ | 説明 | ペイロード |
@@ -277,6 +300,7 @@ public async Task JoinChat(int chatRoomId)
 
 - SignalR は Redis バックプレーンを使用しているため、複数サーバーインスタンス間で通知が共有される
 - `static ConcurrentDictionary` のような状態管理は避ける（サーバー間で共有されない）
+- プレゼンス情報は Redis（db2）で管理（`SignalRPresenceService` を参照）
 
 ### パフォーマンス
 

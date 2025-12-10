@@ -17,6 +17,15 @@ public record WorkspacePresenceUser(
 );
 
 /// <summary>
+/// 組織/アイテムに入室中のユーザー情報（汎用）
+/// </summary>
+public record PresenceUser(
+    int UserId,
+    string UserName,
+    string? IdentityIconUrl
+);
+
+/// <summary>
 /// リアルタイム通知用の SignalR Hub。
 /// グループ管理のみを担当し、通知送信は NotificationService から行う。
 /// プレゼンス情報は Redis で管理し、スケールアウトに対応。
@@ -57,13 +66,17 @@ public class NotificationHub : Hub
         var userId = GetUserId();
         var organizationId = GetOrganizationId();
 
-        // Redis に接続情報を登録
-        await _presenceService.RegisterConnectionAsync(Context.ConnectionId, userId);
+        // Redis に接続情報を登録（組織情報も含む）
+        await _presenceService.RegisterConnectionAsync(Context.ConnectionId, userId, organizationId);
 
         if (organizationId.HasValue)
         {
             var groupName = $"organization:{organizationId.Value}";
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+            // 組織メンバーに参加を通知
+            await NotifyOrganizationUserJoined(organizationId.Value, userId);
+
             _logger.LogInformation(
                 "SignalR: User {UserId} connected and joined {GroupName}. ConnectionId={ConnectionId}",
                 userId, groupName, Context.ConnectionId);
@@ -81,11 +94,21 @@ public class NotificationHub : Hub
     /// <summary>
     /// クライアント切断時の処理。
     /// グループからの離脱は SignalR が自動で行う。
-    /// 参加中のワークスペースがあれば離脱通知を送信する。
+    /// 参加中のワークスペース/アイテム/組織があれば離脱通知を送信する。
     /// </summary>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = GetUserId();
+
+        // 参加中のアイテムがあれば離脱通知を送信
+        var itemId = await _presenceService.GetConnectionItemAsync(Context.ConnectionId);
+        if (itemId.HasValue)
+        {
+            await NotifyItemUserLeft(itemId.Value, userId);
+            _logger.LogDebug(
+                "SignalR: User {UserId} left item {ItemId} on disconnect",
+                userId, itemId.Value);
+        }
 
         // 参加中のワークスペースがあれば離脱通知を送信
         var workspaceId = await _presenceService.GetConnectionWorkspaceAsync(Context.ConnectionId);
@@ -95,6 +118,16 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} left workspace {WorkspaceId} on disconnect",
                 userId, workspaceId.Value);
+        }
+
+        // 参加中の組織があれば離脱通知を送信
+        var organizationId = await _presenceService.GetConnectionOrganizationAsync(Context.ConnectionId);
+        if (organizationId.HasValue)
+        {
+            await NotifyOrganizationUserLeft(organizationId.Value, userId);
+            _logger.LogDebug(
+                "SignalR: User {UserId} left organization {OrganizationId} on disconnect",
+                userId, organizationId.Value);
         }
 
         // Redis から接続情報を削除
@@ -232,7 +265,8 @@ public class NotificationHub : Hub
     /// </summary>
     /// <param name="itemId">参加するアイテムID</param>
     /// <param name="workspaceId">アイテムが属するワークスペースID</param>
-    public async Task JoinItem(int itemId, int workspaceId)
+    /// <returns>既に入室しているユーザー一覧</returns>
+    public async Task<List<PresenceUser>> JoinItem(int itemId, int workspaceId)
     {
         var userId = GetUserId();
 
@@ -247,7 +281,7 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping item join",
                 userId, workspaceId);
-            return;
+            return [];
         }
 
         // 前のアイテムから離脱（Redis から取得）
@@ -256,6 +290,10 @@ public class NotificationHub : Hub
         {
             var prevItemGroup = $"item:{currentItemId.Value}";
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevItemGroup);
+
+            // 前のアイテムのメンバーに離脱を通知
+            await NotifyItemUserLeft(currentItemId.Value, userId);
+
             _logger.LogDebug(
                 "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching item)",
                 Context.ConnectionId, prevItemGroup);
@@ -276,6 +314,28 @@ public class NotificationHub : Hub
                 Context.ConnectionId, prevWorkspaceGroup);
         }
 
+        // 既にこのアイテムに入室しているユーザーIDを Redis から取得（自分以外）
+        var existingUserIds = await _presenceService.GetItemUserIdsAsync(itemId, Context.ConnectionId);
+
+        // DBからユーザー情報を取得
+        var userInfos = await _context.Users
+            .Where(u => existingUserIds.Contains(u.Id) && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .ToListAsync();
+
+        var existingUsers = userInfos.Select(u => new PresenceUser(
+            u.Id,
+            u.Username,
+            IdentityIconHelper.GetIdentityIconUrl(u.AvatarType, u.Id, u.Username, u.Email, u.UserAvatarPath)
+        )).ToList();
+
         // ワークスペースグループに参加
         var workspaceGroup = $"workspace:{workspaceId}";
         await Groups.AddToGroupAsync(Context.ConnectionId, workspaceGroup);
@@ -294,11 +354,19 @@ public class NotificationHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, itemGroup);
 
         // Redis にアイテム情報を登録
-        await _presenceService.SetConnectionItemAsync(Context.ConnectionId, itemId);
+        await _presenceService.AddConnectionToItemAsync(Context.ConnectionId, itemId);
+
+        // アイテムが変わった場合は参加通知
+        if (!currentItemId.HasValue || currentItemId.Value != itemId)
+        {
+            await NotifyItemUserJoined(itemId, userId);
+        }
 
         _logger.LogDebug(
             "SignalR: ConnectionId={ConnectionId} joined {ItemGroup} and {WorkspaceGroup}",
             Context.ConnectionId, itemGroup, workspaceGroup);
+
+        return existingUsers;
     }
 
     /// <summary>
@@ -316,7 +384,14 @@ public class NotificationHub : Hub
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
         // Redis からアイテム情報を削除
-        await _presenceService.ClearConnectionItemAsync(Context.ConnectionId);
+        await _presenceService.RemoveConnectionFromItemAsync(Context.ConnectionId, itemId);
+
+        // アイテム参加者に離脱を通知
+        var userId = GetUserId();
+        if (userId != 0)
+        {
+            await NotifyItemUserLeft(itemId, userId);
+        }
 
         _logger.LogDebug(
             "SignalR: ConnectionId={ConnectionId} left {GroupName}",
@@ -450,6 +525,178 @@ public class NotificationHub : Hub
         catch (Exception ex)
         {
             _logger.LogError(ex, "SignalR: Failed to notify workspace user left");
+        }
+    }
+
+    /// <summary>
+    /// 組織にユーザーが参加したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyOrganizationUserJoined(int organizationId, int userId)
+    {
+        try
+        {
+            // ユーザー情報を取得
+            var user = await _context.Users
+                .Where(u => u.Id == userId && u.IsActive)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.AvatarType,
+                    u.UserAvatarPath
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                _logger.LogWarning("SignalR: User {UserId} not found for organization presence notification", userId);
+                return;
+            }
+
+            var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                user.AvatarType,
+                user.Id,
+                user.Username,
+                user.Email,
+                user.UserAvatarPath);
+
+            var groupName = $"organization:{organizationId}";
+            await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+            {
+                EventType = "organization:user_joined",
+                Payload = new
+                {
+                    OrganizationId = organizationId,
+                    UserId = userId,
+                    UserName = user.Username,
+                    IdentityIconUrl = identityIconUrl
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified organization:{OrganizationId} that user {UserId} joined",
+                organizationId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify organization user joined");
+        }
+    }
+
+    /// <summary>
+    /// 組織からユーザーが離脱したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyOrganizationUserLeft(int organizationId, int userId)
+    {
+        try
+        {
+            var groupName = $"organization:{organizationId}";
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "organization:user_left",
+                Payload = new
+                {
+                    OrganizationId = organizationId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified organization:{OrganizationId} that user {UserId} left",
+                organizationId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify organization user left");
+        }
+    }
+
+    /// <summary>
+    /// アイテムにユーザーが参加したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyItemUserJoined(int itemId, int userId)
+    {
+        try
+        {
+            // ユーザー情報を取得
+            var user = await _context.Users
+                .Where(u => u.Id == userId && u.IsActive)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.AvatarType,
+                    u.UserAvatarPath
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                _logger.LogWarning("SignalR: User {UserId} not found for item presence notification", userId);
+                return;
+            }
+
+            var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                user.AvatarType,
+                user.Id,
+                user.Username,
+                user.Email,
+                user.UserAvatarPath);
+
+            var groupName = $"item:{itemId}";
+            await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+            {
+                EventType = "item:user_joined",
+                Payload = new
+                {
+                    ItemId = itemId,
+                    UserId = userId,
+                    UserName = user.Username,
+                    IdentityIconUrl = identityIconUrl
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified item:{ItemId} that user {UserId} joined",
+                itemId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify item user joined");
+        }
+    }
+
+    /// <summary>
+    /// アイテムからユーザーが離脱したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyItemUserLeft(int itemId, int userId)
+    {
+        try
+        {
+            var groupName = $"item:{itemId}";
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "item:user_left",
+                Payload = new
+                {
+                    ItemId = itemId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified item:{ItemId} that user {UserId} left",
+                itemId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify item user left");
         }
     }
 }

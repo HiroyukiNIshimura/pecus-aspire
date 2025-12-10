@@ -37,6 +37,24 @@ export interface WorkspacePresenceUser {
 }
 
 /**
+ * 組織プレゼンスユーザー情報（サーバーから返される）
+ */
+export interface OrganizationPresenceUser {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+/**
+ * アイテムプレゼンスユーザー情報（サーバーから返される）
+ */
+export interface ItemPresenceUser {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+/**
  * 現在参加中のグループ情報
  */
 interface CurrentGroups {
@@ -66,7 +84,7 @@ interface SignalRContextValue {
   leaveWorkspace: (workspaceId: number) => Promise<void>;
 
   /** アイテムグループに参加（排他的：前のアイテムから自動離脱、ワークスペースにも参加） */
-  joinItem: (itemId: number, workspaceId: number) => Promise<void>;
+  joinItem: (itemId: number, workspaceId: number) => Promise<ItemPresenceUser[]>;
 
   /** アイテムグループから離脱 */
   leaveItem: (itemId: number) => Promise<void>;
@@ -288,29 +306,32 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * アイテムグループに参加（排他的、ワークスペースにも同時参加）
    */
-  const joinItem = useCallback(async (itemId: number, workspaceId: number) => {
+  const joinItem = useCallback(async (itemId: number, workspaceId: number): Promise<ItemPresenceUser[]> => {
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       console.warn('[SignalR] Cannot join item: not connected');
-      return;
+      return [];
     }
 
     // 既に同じアイテムに参加済みの場合はスキップ
     if (currentGroups.itemId === itemId) {
       console.log(`[SignalR] Already viewing item: ${itemId}`);
-      return;
+      return [];
     }
 
     try {
       // サーバー側で前のアイテム/ワークスペースからの離脱も処理（Redis で状態管理）
-      await connection.invoke('JoinItem', itemId, workspaceId);
+      // 戻り値は既存のプレゼンスユーザー一覧
+      const existingUsers = await connection.invoke<ItemPresenceUser[]>('JoinItem', itemId, workspaceId);
       setCurrentGroups({
         workspaceId,
         itemId,
       });
       console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
+      return existingUsers ?? [];
     } catch (error) {
       console.error('[SignalR] Failed to join item:', error);
+      return [];
     }
   }, []);
 
