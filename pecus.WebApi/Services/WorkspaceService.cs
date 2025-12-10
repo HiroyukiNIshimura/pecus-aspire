@@ -863,6 +863,7 @@ public class WorkspaceService
                     avatarPath: createdByUser.UserAvatarPath
                 ),
                 IsActive = createdByUser.IsActive,
+                LastLoginAt = createdByUser.LastLoginAt,
             }
             : new WorkspaceDetailUserResponse { UserName = "" };
 
@@ -880,6 +881,7 @@ public class WorkspaceService
                     avatarPath: updatedByUser.UserAvatarPath
                 ),
                 IsActive = updatedByUser.IsActive,
+                LastLoginAt = updatedByUser.LastLoginAt,
             }
             : new WorkspaceDetailUserResponse { UserName = "" };
 
@@ -900,6 +902,7 @@ public class WorkspaceService
                 ),
                 WorkspaceRole = wu.WorkspaceRole,
                 IsActive = wu.User.IsActive,
+                LastLoginAt = wu.User.LastLoginAt,
             })
             .ToList();
 
@@ -917,6 +920,7 @@ public class WorkspaceService
                     avatarPath: workspace.Owner.UserAvatarPath
                 ),
                 IsActive = workspace.Owner.IsActive,
+                LastLoginAt = workspace.Owner.LastLoginAt,
             }
             : null;
 

@@ -12591,6 +12591,12 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "description": "最終ログイン日時",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -13811,6 +13817,12 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "description": "最終ログイン日時",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false,

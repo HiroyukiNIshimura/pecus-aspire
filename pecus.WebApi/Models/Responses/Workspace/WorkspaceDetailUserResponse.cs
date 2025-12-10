@@ -36,4 +36,9 @@ public class WorkspaceDetailUserResponse
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// 最終ログイン日時
+    /// </summary>
+    public DateTime? LastLoginAt { get; set; }
 }

@@ -88,6 +88,7 @@ public class AdminWorkspaceController : BaseAdminController
                         avatarPath: workspace.Owner.UserAvatarPath
                     ),
                     IsActive = workspace.Owner.IsActive,
+                    LastLoginAt = workspace.Owner.LastLoginAt,
                 }
                 : null,
             RowVersion = workspace.RowVersion!,
@@ -172,6 +173,7 @@ public class AdminWorkspaceController : BaseAdminController
                         avatarPath: workspace.Owner.UserAvatarPath
                     ),
                     IsActive = workspace.Owner.IsActive,
+                    LastLoginAt = workspace.Owner.LastLoginAt,
                 }
                 : null,
             RowVersion = workspace.RowVersion!,
@@ -262,6 +264,7 @@ public class AdminWorkspaceController : BaseAdminController
                         ),
                         WorkspaceRole = wu.WorkspaceRole,
                         IsActive = wu.User.IsActive,
+                        LastLoginAt = wu.User.LastLoginAt,
                     })
                     .ToList(),
                 Owner = w.Owner != null
@@ -278,6 +281,7 @@ public class AdminWorkspaceController : BaseAdminController
                             avatarPath: w.Owner.UserAvatarPath
                         ),
                         IsActive = w.Owner.IsActive,
+                        LastLoginAt = w.Owner.LastLoginAt,
                     }
                     : null,
             })
