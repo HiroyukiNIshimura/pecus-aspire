@@ -103,7 +103,7 @@ pecus.Protos/
 
 ### サービス名
 
-**採用**: `pecus.LexicalConverterService`
+**採用**: `pecus.LexicalConverter`
 
 ### ネットワーク設定
 

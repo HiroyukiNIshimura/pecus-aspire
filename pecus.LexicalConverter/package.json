@@ -1,5 +1,5 @@
 {
-  "name": "pecus.lexicalconverterservice",
+  "name": "pecus.lexicalconverter",
   "version": "1.0.0",
   "description": "Lexical JSON to HTML/Markdown/PlainText converter gRPC service",
   "main": "dist/main.js",

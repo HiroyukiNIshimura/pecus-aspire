@@ -26,7 +26,7 @@ pecus.Protos/
 
 ### Node.js 側
 
-`pecus.LexicalConverterService` で gRPC サーバーとして使用:
+`pecus.LexicalConverter` で gRPC サーバーとして使用:
 
 ```bash
 # proto ファイルを参照（シンボリックリンクまたはコピー）
