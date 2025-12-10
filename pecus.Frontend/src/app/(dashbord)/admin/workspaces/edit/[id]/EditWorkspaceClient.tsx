@@ -8,7 +8,6 @@ import {
   updateWorkspace,
   updateWorkspaceMemberRole,
 } from '@/actions/admin/workspace';
-import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -259,7 +258,7 @@ export default function EditWorkspaceClient({
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}

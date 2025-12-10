@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { updateSkill } from '@/actions/admin/skills';
-import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -83,7 +82,7 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
@@ -244,9 +243,6 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
           </div>
         </main>
       </div>
-
-      {/* Footer */}
-      <AdminFooter />
     </div>
   );
 }

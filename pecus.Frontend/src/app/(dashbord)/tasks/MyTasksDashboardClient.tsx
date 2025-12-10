@@ -67,7 +67,7 @@ export default function MyTasksDashboardClient({
   const totalOverdue = workspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex flex-1">

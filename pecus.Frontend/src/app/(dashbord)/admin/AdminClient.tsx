@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -49,7 +48,7 @@ export default function AdminClient({
   }, [clientError, router]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />
@@ -199,8 +198,6 @@ export default function AdminClient({
           </div>
         </main>
       </div>
-
-      <AdminFooter />
     </div>
   );
 }

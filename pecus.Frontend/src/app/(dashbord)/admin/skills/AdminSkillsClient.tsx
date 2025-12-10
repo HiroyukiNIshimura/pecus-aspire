@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { deleteSkill } from '@/actions/admin/skills';
-import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
@@ -163,7 +162,7 @@ export default function AdminSkillsClient({
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
@@ -511,9 +510,6 @@ export default function AdminSkillsClient({
           </div>
         </main>
       </div>
-
-      {/* Footer */}
-      <AdminFooter />
 
       {/* 削除確認モーダル */}
       <DeleteConfirmModal

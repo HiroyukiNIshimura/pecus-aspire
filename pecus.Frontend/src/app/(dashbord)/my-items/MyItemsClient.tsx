@@ -138,7 +138,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
   }, [fetchError, notify]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-1 flex-col">
       <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex flex-1">
@@ -352,11 +352,6 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
           </div>
         </main>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-base-200 text-base-content p-4 text-center">
-        <p>&copy; 2025 Pecus. All rights reserved.</p>
-      </footer>
     </div>
   );
 }
