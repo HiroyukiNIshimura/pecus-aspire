@@ -2,71 +2,79 @@
 
 ## 概要
 
-本プロジェクトでは SignalR を使用してリアルタイム通知を実装しています。このドキュメントでは、現在の実装状況と今後の実装方針を記載します。
+本プロジェクトでは SignalR を使用してリアルタイム通知を実装しています。このドキュメントでは、実装状況と設計方針を記載します。
 
-## 現在の実装状況（2025-12-09）
+## 実装状況（2025-12-10）
 
-### 疎通テスト完了
+### 完了
 
-- ワークスペース詳細ページで SignalR 接続が確立される
-- ユーザーがワークスペースにアクセスすると、他のメンバーに通知が表示される
-- React StrictMode による重複通知問題を解決済み
+- [x] JWT トークンに `organizationId` クレームを追加
+- [x] `NotificationHub` をグループ管理専用にリファクタリング
+- [x] 接続時に組織グループへ自動参加
+- [x] ワークスペース/アイテムの排他的グループ参加
+- [x] ワークスペースメンバーチェック（非メンバーはグループ参加不可）
+- [x] フロントエンド `SignalRProvider` の更新
+- [x] 暫定コード（`_recentJoins` など）の削除
 
-### 暫定実装（要リファクタリング）
+### 未実装
 
-現在の `NotificationHub.JoinWorkspace` には以下の問題があります：
+- [ ] `NotificationService` による通知送信
+- [ ] 各サービスからの通知送信呼び出し
+- [ ] チャット機能（後述）
 
-```csharp
-// ❌ 現在の実装: グループ参加と通知送信が混在
-public async Task JoinWorkspace(int workspaceId, string userName)
-{
-    // グループ参加
-    await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+---
 
-    // 通知送信（本来ここにあるべきではない）
-    await Clients.GroupExcept(...).SendAsync("ReceiveNotification", ...);
-}
-```
+## グループ設計
 
-## プロジェクトで利用するチャネル（グループ）
+### 通知用グループ
 
-| チャネル名 | 参加のタイミング | 離脱のタイミング | 補足 |
-| --- | --- | --- | --- |
-| `organization:{organizationId}` | ログイン成功時 | ログアウト | Disconnect時は離脱 |
-| `workspace:{workspaceId}` | `/workspaces/{code}`に遷移 | ログアウトまたは別のワークスペースに移動（排他的に1つのみ参加） | Disconnect時は離脱 |
-| `item:{itemId}` | `/workspaces/{code}?itemCode={itemCode}`に遷移 | ログアウトまたは別のアイテムに移動（排他的に1つのみ参加） | Disconnect時は離脱。ワークスペースチャネルにも同時参加 |
-| `user:{userId}` | ユーザーが任意にチャネルを開設 or 招待された際 | ログアウトまたは開設者がチャネルを閉じた際 | 組織内チャット用。Disconnect時は離脱 |
+| グループ名 | 参加タイミング | 離脱タイミング | 排他的 | 補足 |
+|-----------|---------------|---------------|--------|------|
+| `organization:{organizationId}` | SignalR 接続時（自動） | 切断時 | No | JWT の `organizationId` から取得 |
+| `workspace:{workspaceId}` | ワークスペースページ表示 | 別ワークスペースへ移動 or 切断 | Yes | メンバーチェックあり |
+| `item:{itemId}` | アイテム詳細表示 | 別アイテムへ移動 or 切断 | Yes | workspace にも同時参加 |
 
-### チャネル参加の組み合わせ例
+### チャット用グループ（将来実装）
+
+| グループ名 | 用途 | 補足 |
+|-----------|------|------|
+| `chat:{chatRoomId}` | チャットルーム | DB で管理（下記参照） |
+
+### グループ参加の組み合わせ例
 
 ```
 アイテム詳細表示中:
-├── organization:1    （常時参加）
-├── workspace:42      （現在のワークスペース）
-└── item:123          （現在のアイテム）
+├── organization:1    （接続時に自動参加）
+├── workspace:42      （アイテム参加時に自動参加）
+└── item:123          （明示的に参加）
 
 ワークスペース一覧表示中:
-├── organization:1    （常時参加）
-└── workspace:42      （現在のワークスペース）
+├── organization:1    （接続時に自動参加）
+└── workspace:42      （明示的に参加）
+
+ダッシュボード表示中:
+└── organization:1    （接続時に自動参加）
 ```
 
-## 本番向け設計方針
+---
+
+## アーキテクチャ
 
 ### 原則
 
 1. **Hub はグループ管理のみを担当**: 参加/離脱の処理だけを行う
 2. **通知送信は NotificationService から**: ビジネスロジック層から通知を送信
-3. **Hub から直接通知を送らない**: Hub メソッドはクライアントからの呼び出しに応答するだけ
-
-### アーキテクチャ
+3. **入退室通知のみ Hub で直接送信可**: チャットの入退室など、Hub イベントに直結するもの
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ Frontend (React)                                                │
 │ ┌─────────────────┐  ┌────────────────────────────────────────┐ │
-│ │ SignalRProvider │  │ WorkspaceDetailClient                  │ │
-│ │ - connect()     │  │ - joinWorkspace() でグループ参加       │ │
-│ │ - onNotification│  │ - onNotification() で通知受信          │ │
+│ │ SignalRProvider │  │ 各ページコンポーネント                  │
+│ │ - connect()     │  │ - joinWorkspace() でグループ参加       │
+│ │ - joinWorkspace │  │ - joinItem() でアイテムグループ参加    │
+│ │ - joinItem      │  │ - onNotification() で通知受信          │
+│ │ - onNotification│  │                                        │
 │ └─────────────────┘  └────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               │ WebSocket
@@ -76,141 +84,192 @@ public async Task JoinWorkspace(int workspaceId, string userName)
 │ ┌─────────────────┐  ┌────────────────────────────────────────┐ │
 │ │ NotificationHub │  │ NotificationService                    │ │
 │ │ - JoinWorkspace │  │ - SendToWorkspaceAsync()               │ │
-│ │ - LeaveWorkspace│  │ - SendToUserAsync()                    │ │
-│ │ (グループ管理のみ)│  │ - SendToOrganizationAsync()            │ │
+│ │ - LeaveWorkspace│  │ - SendToOrganizationAsync()            │ │
+│ │ - JoinItem      │  │ - SendToItemAsync()                    │ │
+│ │ - LeaveItem     │  │ - SendToChatAsync()                    │ │
+│ │ (グループ管理)   │  │                                        │ │
 │ └─────────────────┘  └────────────────────────────────────────┘ │
-│                              ▲                                   │
-│                              │ IHubContext<NotificationHub>     │
-│ ┌────────────────────────────┴────────────────────────────────┐ │
-│ │ WorkspaceService / WorkspaceItemService / etc.              │ │
-│ │ - アイテム作成時に NotificationService.SendToWorkspace()     │ │
-│ └─────────────────────────────────────────────────────────────┘ │
+│         │                          ▲                            │
+│         │ メンバーチェック          │ IHubContext<NotificationHub>│
+│         ▼                          │                            │
+│ ┌─────────────────┐  ┌─────────────┴──────────────────────────┐ │
+│ │ AccessHelper    │  │ 各 Service（WorkspaceItemService 等）   │ │
+│ └─────────────────┘  └────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 実装例
+---
 
-#### 1. NotificationHub（グループ管理のみ）
+## 実装詳細
+
+### NotificationHub
 
 ```csharp
 [Authorize]
 public class NotificationHub : Hub
 {
-    public async Task JoinWorkspace(int workspaceId)
+    private readonly OrganizationAccessHelper _accessHelper;
+
+    // 接続時: 組織グループに自動参加
+    public override async Task OnConnectedAsync()
     {
+        var organizationId = GetOrganizationId(); // JWT から取得
+        if (organizationId.HasValue)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"organization:{organizationId}");
+        }
+    }
+
+    // ワークスペース参加（排他的、メンバーチェックあり）
+    public async Task JoinWorkspace(int workspaceId, int? previousWorkspaceId = null)
+    {
+        var userId = GetUserId();
+        if (!await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId))
+            return; // 非メンバーは静かにスキップ
+
+        // 前のワークスペースから離脱
+        if (previousWorkspaceId > 0 && previousWorkspaceId != workspaceId)
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"workspace:{previousWorkspaceId}");
+
         await Groups.AddToGroupAsync(Context.ConnectionId, $"workspace:{workspaceId}");
     }
 
-    public async Task LeaveWorkspace(int workspaceId)
+    // アイテム参加（排他的、ワークスペースにも同時参加）
+    public async Task JoinItem(int itemId, int workspaceId, int? previousItemId, int? previousWorkspaceId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"workspace:{workspaceId}");
+        // メンバーチェック後、workspace と item 両方のグループに参加
     }
-
-    // 通知送信メソッドは持たない
 }
 ```
 
-#### 2. NotificationService（通知送信）
+### SignalRProvider（フロントエンド）
+
+```typescript
+interface SignalRContextValue {
+  connectionState: SignalRConnectionState;
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
+  joinWorkspace: (workspaceId: number) => Promise<void>;
+  leaveWorkspace: (workspaceId: number) => Promise<void>;
+  joinItem: (itemId: number, workspaceId: number) => Promise<void>;
+  leaveItem: (itemId: number) => Promise<void>;
+  onNotification: (handler: NotificationHandler) => () => void;
+  currentGroups: { workspaceId: number | null; itemId: number | null };
+}
+```
+
+- 接続時に組織グループへの参加はサーバー側で自動処理
+- `currentGroups` で現在参加中のワークスペース/アイテムを追跡
+- 排他的参加: 新しいグループ参加時に前のグループIDをサーバーに送信
+
+---
+
+## チャット機能設計（将来実装）
+
+### グループ形式
+
+```
+chat:{chatRoomId}
+```
+
+DB でチャットルームを管理し、1:1 DM もグループチャットも統一的に扱う。
+
+### ChatRoom エンティティ
 
 ```csharp
-public class NotificationService
+public class ChatRoom
 {
-    private readonly IHubContext<NotificationHub> _hubContext;
+    public int Id { get; set; }
+    public ChatRoomType Type { get; set; }  // Dm, Group, Ai
+    public string? Name { get; set; }       // Group/Ai の場合のみ
+    public int OrganizationId { get; set; }
+    public int CreatedByUserId { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public NotificationService(IHubContext<NotificationHub> hubContext)
-    {
-        _hubContext = hubContext;
-    }
+    // DM の重複防止用（例: "5_12" = ユーザー5とユーザー12）
+    public string? DmUserPair { get; set; }
 
-    /// <summary>
-    /// ワークスペースの全メンバーに通知を送信
-    /// </summary>
-    public async Task SendToWorkspaceAsync(int workspaceId, string eventType, object payload)
-    {
-        await _hubContext.Clients
-            .Group($"workspace:{workspaceId}")
-            .SendAsync("ReceiveNotification", new
-            {
-                EventType = eventType,
-                Payload = payload,
-                Timestamp = DateTimeOffset.UtcNow
-            });
-    }
+    public ICollection<ChatRoomMember> Members { get; set; }
+    public ICollection<ChatMessage> Messages { get; set; }
+}
 
-    // NOTE: 特定ユーザー除外の SendToWorkspaceExceptUserAsync は、
-    // ユーザーID→接続IDのマッピング管理が必要なため、実装時に検討する。
-    // 代替案: フロント側で自分のアクションかどうかを判定して表示を制御する。
-
-    /// <summary>
-    /// 特定ユーザーに通知を送信
-    /// </summary>
-    public async Task SendToUserAsync(int userId, string eventType, object payload)
-    {
-        await _hubContext.Clients
-            .Group($"user:{userId}")
-            .SendAsync("ReceiveNotification", new
-            {
-                EventType = eventType,
-                Payload = payload,
-                Timestamp = DateTimeOffset.UtcNow
-            });
-    }
+public enum ChatRoomType
+{
+    Dm,      // 1:1 ダイレクトメッセージ
+    Group,   // グループチャット（3人以上）
+    Ai       // AI アシスタントとのチャット
 }
 ```
 
-#### 3. サービス層での使用例
+### 通知の責任分担
+
+| 通知タイプ | 送信元 | 理由 |
+|-----------|--------|------|
+| `chat:user_joined` | Hub | 入退室は Hub イベントに直結 |
+| `chat:user_left` | Hub | 同上 |
+| `chat:user_typing` | Hub | リアルタイム性が重要 |
+| `chat:message_sent` | NotificationService | ビジネスロジック |
+| `chat:message_read` | NotificationService | 同上 |
+
+### Hub 実装例
 
 ```csharp
-public class WorkspaceItemService
+public async Task JoinChat(int chatRoomId)
 {
-    private readonly NotificationService _notificationService;
+    var userId = GetUserId();
+    // メンバーチェック（ChatRoomMember に存在するか）
 
-    public async Task<WorkspaceItem> CreateItemAsync(CreateWorkspaceItemRequest request, int userId)
+    var groupName = $"chat:{chatRoomId}";
+    await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+    // 入室通知（自分以外に送信）
+    await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
     {
-        // アイテム作成処理...
-        var item = await _context.WorkspaceItems.AddAsync(...);
-        await _context.SaveChangesAsync();
-
-        // 通知送信（ワークスペース全員に送信、フロント側で自分のアクションは表示制御）
-        await _notificationService.SendToWorkspaceAsync(
-            item.WorkspaceId,
-            "workspace_item:created",
-            new
-            {
-                ItemId = item.Id,
-                ItemCode = item.Code,
-                Subject = item.Subject,
-                CreatedByUserId = userId,  // フロント側で自分かどうか判定用
-                CreatedByUserName = userName
-            }
-        );
-
-        return item;
-    }
+        EventType = "chat:user_joined",
+        Payload = new { ChatRoomId = chatRoomId, UserId = userId },
+        Timestamp = DateTimeOffset.UtcNow
+    });
 }
 ```
 
-## 通知イベントタイプ一覧（予定）
+---
+
+## 通知イベントタイプ一覧
+
+### 通知系（NotificationService から送信）
 
 | イベントタイプ | 説明 | ペイロード |
 |---------------|------|-----------|
-| `workspace:user_joined` | ユーザーがワークスペースにアクセス | `{ UserId, UserName }` |
-| `workspace:user_left` | ユーザーがワークスペースから離脱 | `{ UserId, UserName }` |
-| `workspace_item:created` | アイテムが作成された | `{ ItemId, ItemCode, Subject, CreatedBy }` |
-| `workspace_item:updated` | アイテムが更新された | `{ ItemId, ItemCode, Subject, UpdatedBy }` |
-| `workspace_item:deleted` | アイテムが削除された | `{ ItemId, ItemCode, DeletedBy }` |
-| `workspace_item:assigned` | アイテムがアサインされた | `{ ItemId, AssigneeId, AssigneeName }` |
-| `task:created` | タスクが作成された | `{ TaskId, ItemId, Content, CreatedBy }` |
-| `task:completed` | タスクが完了した | `{ TaskId, ItemId, CompletedBy }` |
-| `comment:added` | コメントが追加された | `{ CommentId, ItemId, Content, CreatedBy }` |
+| `workspace_item:created` | アイテムが作成された | `{ ItemId, ItemCode, Subject, CreatedByUserId }` |
+| `workspace_item:updated` | アイテムが更新された | `{ ItemId, ItemCode, UpdatedByUserId }` |
+| `workspace_item:deleted` | アイテムが削除された | `{ ItemId, ItemCode, DeletedByUserId }` |
+| `task:created` | タスクが作成された | `{ TaskId, ItemId, CreatedByUserId }` |
+| `task:completed` | タスクが完了した | `{ TaskId, ItemId, CompletedByUserId }` |
+| `comment:added` | コメントが追加された | `{ CommentId, ItemId, CreatedByUserId }` |
 
-## TODO
+### アイテム編集系（Hub から送信）
 
-- [ ] `NotificationHub` から通知送信ロジックを削除し、グループ管理のみにする
-- [ ] `NotificationService` に通知送信メソッドを集約
-- [ ] 各サービスで適切なタイミングで通知を送信
-- [ ] フロントエンドで通知タイプごとの表示処理を実装
-- [ ] 既存の暫定コード（StrictMode 対策の `_recentJoins`）を削除
+| イベントタイプ | 説明 | ペイロード |
+|---------------|------|-----------|
+| `item:editing_started` | ユーザーがアイテム編集を開始 | `{ ItemId, UserId, UserName, IdentityIconUrl }` |
+| `item:editing_ended` | ユーザーがアイテム編集を終了 | `{ ItemId, UserId }` |
+
+### チャット系（Hub から送信）
+
+| イベントタイプ | 説明 | ペイロード |
+|---------------|------|-----------|
+| `chat:user_joined` | ユーザーがチャットを開いた | `{ ChatRoomId, UserId }` |
+| `chat:user_left` | ユーザーがチャットを閉じた | `{ ChatRoomId, UserId }` |
+| `chat:user_typing` | ユーザーが入力中 | `{ ChatRoomId, UserId }` |
+
+### チャット系（NotificationService から送信）
+
+| イベントタイプ | 説明 | ペイロード |
+|---------------|------|-----------|
+| `chat:message_sent` | メッセージが送信された | `{ ChatRoomId, MessageId, SenderId, Content }` |
+| `chat:message_read` | メッセージが既読になった | `{ ChatRoomId, MessageId, ReadByUserId }` |
+
+---
 
 ## 注意事項
 
@@ -223,6 +282,13 @@ public class WorkspaceItemService
 
 - 頻繁な通知（タイピング中など）は debounce/throttle を検討
 - 大量のメンバーがいるワークスペースでは通知の最適化が必要
+
+### セキュリティ
+
+- グループ参加時は必ずメンバーチェックを行う
+- 非メンバーはエラーを返さず静かにスキップ（情報漏洩防止）
+
+---
 
 ## 参考資料
 
