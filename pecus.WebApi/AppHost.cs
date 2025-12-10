@@ -9,6 +9,7 @@ using Pecus.Hubs;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Security;
@@ -127,6 +128,14 @@ builder.Services.AddScoped<NotificationService>();
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddSingleton<TokenBlacklistService>();
+
+// Lexical Converter gRPC サービスの登録
+var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
+builder.Services.AddSingleton<ILexicalConverterService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
+    return new LexicalConverterService(lexicalConverterEndpoint, logger);
+});
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();

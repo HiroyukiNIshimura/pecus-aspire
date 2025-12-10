@@ -27,6 +27,13 @@ try
         .WithReference(pecusDb)
         .WaitFor(pecusDb);
 
+    // Lexical Converter (Node.js gRPC Service)
+    var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
+        .WithNpmPackageInstallation()
+        .WithHttpEndpoint(targetPort: 5100, name: "grpc", isProxied: false)
+        .WithEnvironment("GRPC_PORT", "5100")
+        .WithEnvironment("GRPC_HOST", "0.0.0.0");
+
     // WebApi の uploads フォルダの絶対パスを取得
     var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
     var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
@@ -36,27 +43,26 @@ try
     .AddProject<Projects.pecus_BackFire>("backfire")
     .WithReference(redis)
     .WithReference(pecusDb)
+    .WithReference(lexicalConverter)
     .WaitFor(redis)
     .WaitFor(pecusDb)
-    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath);
+    .WaitFor(lexicalConverter)
+    .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
+    .WithEnvironment("LexicalConverter__Endpoint", "http://localhost:5100");
 
     var pecusApi = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")
         .WithReference(pecusDb)
         .WithReference(redis)
+        .WithReference(lexicalConverter)
         .WaitFor(pecusDb)
         .WaitFor(redis)
         .WaitFor(dbManager)
         .WaitFor(backfire)
+        .WaitFor(lexicalConverter)
         .WithExternalHttpEndpoints()
-        .WithHttpHealthCheck("/");
-
-    // Lexical Converter (Node.js gRPC Service)
-    var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
-        .WithNpmPackageInstallation()
-        .WithHttpEndpoint(targetPort: 5100, name: "grpc", isProxied: false)
-        .WithEnvironment("GRPC_PORT", "5100")
-        .WithEnvironment("GRPC_HOST", "0.0.0.0");
+        .WithHttpHealthCheck("/")
+        .WithEnvironment("LexicalConverter__Endpoint", "http://localhost:5100");
 
     // Frontendの設定(開発環境モード)
     var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();

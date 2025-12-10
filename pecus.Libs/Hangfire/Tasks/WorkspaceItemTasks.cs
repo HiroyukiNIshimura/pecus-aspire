@@ -11,16 +11,22 @@ namespace Pecus.Libs.Hangfire.Tasks;
 public class WorkspaceItemTasks
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILexicalConverterService _lexicalConverter;
     private readonly ILogger<WorkspaceItemTasks> _logger;
 
     /// <summary>
     /// WorkspaceItemTasks のコンストラクタ
     /// </summary>
     /// <param name="context">DBコンテキスト</param>
+    /// <param name="lexicalConverter">Lexical変換サービス</param>
     /// <param name="logger">ロガー</param>
-    public WorkspaceItemTasks(ApplicationDbContext context, ILogger<WorkspaceItemTasks> logger)
+    public WorkspaceItemTasks(
+        ApplicationDbContext context,
+        ILexicalConverterService lexicalConverter,
+        ILogger<WorkspaceItemTasks> logger)
     {
         _context = context;
+        _lexicalConverter = lexicalConverter;
         _logger = logger;
     }
 
@@ -61,19 +67,38 @@ public class WorkspaceItemTasks
                 return;
             }
 
-            // Body から RawBody を抽出
-            var rawBody = LexicalTextExtractor.ExtractText(item.Body);
+            // gRPC サービス経由で Body からプレーンテキストを抽出
+            var result = await _lexicalConverter.ToPlainTextAsync(item.Body ?? string.Empty);
 
-            // RawBody を更新
-            item.RawBody = rawBody;
+            if (!result.Success)
+            {
+                _logger.LogError(
+                    "Failed to convert Lexical JSON to plain text for WorkspaceItem {WorkspaceItemId}: {ErrorMessage}",
+                    workspaceItemId,
+                    result.ErrorMessage
+                );
+                throw new InvalidOperationException($"Lexical conversion failed: {result.ErrorMessage}");
+            }
+
+            item.RawBody = result.Result;
+
+            if (result.UnknownNodes.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Unknown nodes detected for WorkspaceItem {WorkspaceItemId}: {UnknownNodes}",
+                    workspaceItemId,
+                    string.Join(", ", result.UnknownNodes)
+                );
+            }
 
             await _context.SaveChangesAsync();
 
             _logger.LogInformation(
                 "Successfully updated RawBody for WorkspaceItem {WorkspaceItemId}. " +
-                "Extracted text length: {TextLength}",
+                "Extracted text length: {TextLength}, ProcessingTime: {ProcessingTimeMs}ms",
                 workspaceItemId,
-                rawBody.Length
+                item.RawBody.Length,
+                result.ProcessingTimeMs
             );
         }
         catch (Exception ex)

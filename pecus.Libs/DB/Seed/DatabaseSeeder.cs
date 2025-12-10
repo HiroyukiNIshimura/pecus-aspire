@@ -1162,7 +1162,8 @@ public class DatabaseSeeder
 
             // playground.json を読み込み
             var playgroundJson = await LoadPlaygroundJsonAsync();
-            var rawBody = LexicalTextExtractor.ExtractText(playgroundJson);
+            // シードデータでは RawBody は空文字（実際のデータ投入時に gRPC で生成される）
+            var rawBody = string.Empty;
 
             int totalItemsAdded = 0;
 

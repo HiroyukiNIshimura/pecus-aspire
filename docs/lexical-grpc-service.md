@@ -9,7 +9,20 @@ LexicalエディタのノードデータをHTML、Markdown、プレーンテキ�
 | 項目 | 状態 |
 |------|------|
 | 設計フェーズ | ✅ 完了 |
-| 実装フェーズ | ⚪ 未着手 |
+| 実装フェーズ | ✅ 完了 |
+
+---
+
+## 利用シーン
+
+このサービスは以下の場面で利用されます：
+
+| 用途 | 変換形式 | 説明 |
+|------|----------|------|
+| **全文検索用テキスト抽出** | PlainText | バックグラウンドジョブでNodeデータからプレーンテキストを抽出し、曖昧検索用インデックスを作成 |
+| **メール通知** | HTML / PlainText | アイテム作成・更新時のメール本文生成（HTMLメール、テキストメール両対応） |
+| **エクスポート機能** | Markdown / HTML | 本文のエクスポート機能としてMarkdown形式やHTML形式で出力 |
+| **プレビュー表示** | HTML | エディタ外でのコンテンツプレビュー表示 |
 
 ---
 
@@ -136,7 +149,7 @@ await app.listen(port, host);
 3. [x] ヘッドレス用ノード定義の作成 ✅
 4. [x] Aspire統合（`AppHost.cs`）✅
 5. [x] 変換ロジックの実装 ✅
-6. [ ] テスト
+6. [x] 実践テスト（WorkspaceItemTasks移行）✅
 
 ---
 
@@ -359,3 +372,5 @@ Editor側に新しいカスタムノードを追加した場合：
 | 2025-12-10 | ヘッドレス用ノード定義を作成（18種類）、`pecus.LexicalConverter/src/lexical/nodes/` に配置 |
 | 2025-12-10 | 未知ノード検出機能を追加、Proto定義に `unknown_nodes` フィールドを追加 |
 | 2025-12-10 | Aspire統合完了、`pecus.AppHost/AppHost.cs` に `lexicalconverter` を追加 |
+| 2025-12-10 | WorkspaceItemTasksをgRPCサービスに移行、実践テスト完了 |
+| 2025-12-10 | `LexicalTextExtractor.cs` を削除（gRPCサービスに完全移行）|

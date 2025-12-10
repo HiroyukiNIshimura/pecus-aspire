@@ -4,6 +4,7 @@ using Pecus.BackFire;
 using Pecus.BackFire.Services;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 
@@ -27,6 +28,14 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 // メール関連サービスの登録
 builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Lexical Converter gRPC サービスの登録
+var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
+builder.Services.AddSingleton<ILexicalConverterService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
+    return new LexicalConverterService(lexicalConverterEndpoint, logger);
+});
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();
