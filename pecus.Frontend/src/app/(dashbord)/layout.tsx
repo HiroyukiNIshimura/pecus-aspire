@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import AppFooter from '@/components/common/AppFooter';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 
 interface DashboardLayoutProps {
@@ -17,10 +16,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SignalRProvider>
-      <div className="flex min-h-screen flex-col">
-        {children}
-        <AppFooter />
-      </div>
+      <div className="flex h-full flex-col">{children}</div>
     </SignalRProvider>
   );
 }

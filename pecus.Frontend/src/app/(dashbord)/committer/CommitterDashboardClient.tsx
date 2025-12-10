@@ -87,7 +87,7 @@ export default function CommitterDashboardClient({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-auto h-[calc(100vh-4rem)]">
+        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-auto">
           {/* ページヘッダー */}
           <div className="mb-6">
             <div className="flex items-center gap-3">

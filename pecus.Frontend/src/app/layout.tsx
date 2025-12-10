@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
+import AppFooter from '@/components/common/AppFooter';
 import FlyonuiScript from '@/libs/flyon/FlyonuiScript';
 
 const notoSansJP = Noto_Sans_JP({
@@ -60,8 +61,11 @@ export default function RootLayout({
             `,
           }}
         />
-        <div className="relative h-screen w-full">
-          <div className="">{children}</div>
+        <div className="flex h-screen flex-col">
+          <main id="scrollableDiv" className="flex-1 overflow-auto">
+            {children}
+          </main>
+          <AppFooter />
         </div>
         <FlyonuiScript />
         <script src="/scripts/flyonui.js"></script>

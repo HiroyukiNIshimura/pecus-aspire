@@ -6,7 +6,8 @@
  */
 export default function AppFooter() {
   return (
-    <footer className="bg-base-200 text-base-content p-4 text-center">
+    //デザイン中フッターが表示されていないのに気がつかない時があるので背景色をつけて目立たせる
+    <footer className="text-base-content p-4 text-center" style={{ backgroundColor: '#8FA0A8' }}>
       <p>&copy; 2025 Pecus. All rights reserved.</p>
     </footer>
   );

@@ -11,6 +11,15 @@
 @plugin "@iconify/tailwind4";
 @import "react-day-picker/style.css";
 
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0%;
+  padding: 0%;
+  overflow: hidden
+}
+
+
 /* font-mono クラスを上書き（HackGen を使用） */
 .font-mono {
   font-family: var(--font-hackgen), "Source Han Code JP", "Noto Sans Mono CJK JP", monospace;
