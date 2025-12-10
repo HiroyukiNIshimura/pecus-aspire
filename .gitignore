@@ -138,3 +138,5 @@ uploads/
 
 .specs/*
 temp/*
+
+node_modules/

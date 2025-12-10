@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
-import type { LexicalService } from './lexical.service';
+// biome-ignore lint/style/useImportType: NestJS DI requires runtime class reference
+import { LexicalService } from './lexical.service';
 
 export interface ConvertRequest {
   lexicalJson: string;
@@ -11,6 +12,7 @@ export interface ConvertResponse {
   result: string;
   errorMessage?: string;
   processingTimeMs: number;
+  unknownNodes: string[];
 }
 
 @Controller()
@@ -21,11 +23,12 @@ export class LexicalController {
   toHtml(request: ConvertRequest): ConvertResponse {
     const startTime = Date.now();
     try {
-      const result = this.lexicalService.toHtml(request.lexicalJson);
+      const { result, unknownNodes } = this.lexicalService.toHtml(request.lexicalJson);
       return {
         success: true,
         result,
         processingTimeMs: Date.now() - startTime,
+        unknownNodes,
       };
     } catch (error) {
       return {
@@ -33,6 +36,7 @@ export class LexicalController {
         result: '',
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         processingTimeMs: Date.now() - startTime,
+        unknownNodes: [],
       };
     }
   }
@@ -41,11 +45,12 @@ export class LexicalController {
   toMarkdown(request: ConvertRequest): ConvertResponse {
     const startTime = Date.now();
     try {
-      const result = this.lexicalService.toMarkdown(request.lexicalJson);
+      const { result, unknownNodes } = this.lexicalService.toMarkdown(request.lexicalJson);
       return {
         success: true,
         result,
         processingTimeMs: Date.now() - startTime,
+        unknownNodes,
       };
     } catch (error) {
       return {
@@ -53,6 +58,7 @@ export class LexicalController {
         result: '',
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         processingTimeMs: Date.now() - startTime,
+        unknownNodes: [],
       };
     }
   }
@@ -61,11 +67,12 @@ export class LexicalController {
   toPlainText(request: ConvertRequest): ConvertResponse {
     const startTime = Date.now();
     try {
-      const result = this.lexicalService.toPlainText(request.lexicalJson);
+      const { result, unknownNodes } = this.lexicalService.toPlainText(request.lexicalJson);
       return {
         success: true,
         result,
         processingTimeMs: Date.now() - startTime,
+        unknownNodes,
       };
     } catch (error) {
       return {
@@ -73,6 +80,7 @@ export class LexicalController {
         result: '',
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         processingTimeMs: Date.now() - startTime,
+        unknownNodes: [],
       };
     }
   }

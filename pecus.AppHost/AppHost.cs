@@ -51,6 +51,13 @@ try
         .WithExternalHttpEndpoints()
         .WithHttpHealthCheck("/");
 
+    // Lexical Converter (Node.js gRPC Service)
+    var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
+        .WithNpmPackageInstallation()
+        .WithHttpEndpoint(targetPort: 5100, name: "grpc", isProxied: false)
+        .WithEnvironment("GRPC_PORT", "5100")
+        .WithEnvironment("GRPC_HOST", "0.0.0.0");
+
     // Frontendの設定(開発環境モード)
     var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();
 

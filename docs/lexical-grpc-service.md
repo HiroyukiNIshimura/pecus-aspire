@@ -133,9 +133,9 @@ await app.listen(port, host);
 
 1. [x] Proto定義の作成（`pecus.Protos/lexical/lexical.proto`）✅
 2. [x] NestJSプロジェクトの初期化（Biome設定含む）✅
-3. [ ] ヘッドレス用ノード定義の作成
-4. [ ] Aspire統合（`AppHost.cs`）
-5. [ ] 変換ロジックの実装
+3. [x] ヘッドレス用ノード定義の作成 ✅
+4. [x] Aspire統合（`AppHost.cs`）✅
+5. [x] 変換ロジックの実装 ✅
 6. [ ] テスト
 
 ---
@@ -286,8 +286,57 @@ message ConvertResponse {
   string result = 2;
   optional string error_message = 3;  // エラー時のみ
   int32 processing_time_ms = 4;       // 処理時間（ミリ秒）
+  repeated string unknown_nodes = 5;  // 未登録ノードタイプ一覧
 }
 ```
+
+---
+
+## 未知ノード検出機能
+
+### 概要
+
+Editor側で新しいカスタムノードを追加し、`pecus.LexicalConverter` 側で対応するノード定義がない場合、変換時にそのノードは**スキップ**されます。
+
+この際、エラーにはならず、レスポンスの `unknown_nodes` フィールドに未登録のノードタイプが返されます。
+
+### 動作例
+
+```json
+// リクエスト（未知の "badge" ノードを含む）
+{
+  "lexicalJson": "{\"root\":{\"children\":[{\"type\":\"badge\",\"text\":\"NEW\"}]}}"
+}
+
+// レスポンス
+{
+  "success": true,
+  "result": "<p></p>",
+  "processingTimeMs": 5,
+  "unknownNodes": ["badge"]  // ← 未知ノードが報告される
+}
+```
+
+### C#側でのハンドリング例
+
+```csharp
+var response = await lexicalClient.ToHtmlAsync(request);
+
+if (response.UnknownNodes.Count > 0)
+{
+    _logger.LogWarning(
+        "未登録のノードタイプが検出されました: {Nodes}",
+        string.Join(", ", response.UnknownNodes));
+}
+```
+
+### ノード追加時のチェックリスト
+
+Editor側に新しいカスタムノードを追加した場合：
+
+- [ ] `pecus.LexicalConverter/src/lexical/nodes/` にヘッドレス版を作成
+- [ ] `nodes/index.ts` の `CustomNodes` 配列に追加
+- [ ] `npm run build` で動作確認
 
 ---
 
@@ -307,3 +356,6 @@ message ConvertResponse {
 | 2025-12-09 | C# ↔ Node.js 間の gRPC 型注意事項を追加 |
 | 2025-12-09 | Proto定義を作成（`pecus.Protos/lexical/lexical.proto`）|
 | 2025-12-09 | NestJSプロジェクト初期化完了（`pecus.LexicalConverterService`）|
+| 2025-12-10 | ヘッドレス用ノード定義を作成（18種類）、`pecus.LexicalConverter/src/lexical/nodes/` に配置 |
+| 2025-12-10 | 未知ノード検出機能を追加、Proto定義に `unknown_nodes` フィールドを追加 |
+| 2025-12-10 | Aspire統合完了、`pecus.AppHost/AppHost.cs` に `lexicalconverter` を追加 |

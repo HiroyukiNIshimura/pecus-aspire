@@ -24,3 +24,4 @@ proto/*.ts
 # Logs
 *.log
 npm-debug.log*
+

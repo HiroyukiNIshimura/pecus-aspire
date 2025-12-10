@@ -43,4 +43,7 @@ message ConvertResponse {
 
   // 処理時間（ミリ秒）
   int32 processing_time_ms = 4;
+
+  // 未登録のノードタイプ一覧（変換時にスキップされたノード）
+  repeated string unknown_nodes = 5;
 }

@@ -8,11 +8,89 @@ import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { OverflowNode } from '@lexical/overflow';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
-import { Injectable } from '@nestjs/common';
-import { $getRoot } from 'lexical';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
+import { $getRoot, type Klass, type LexicalNode } from 'lexical';
+import { initializeDomEnvironment } from './dom-environment';
+import { CustomNodes } from './nodes';
+
+/** 変換結果 */
+export interface ConvertResult {
+  result: string;
+  unknownNodes: string[];
+}
+
+/** 登録済みノードタイプのセット */
+const REGISTERED_NODE_TYPES: Set<string> = new Set([
+  // Lexical標準ノード
+  'root',
+  'paragraph',
+  'text',
+  'linebreak',
+  // @lexical/rich-text
+  'heading',
+  'quote',
+  // @lexical/list
+  'list',
+  'listitem',
+  // @lexical/code
+  'code',
+  'code-highlight',
+  // @lexical/table
+  'table',
+  'tablecell',
+  'tablerow',
+  // @lexical/link
+  'link',
+  'autolink',
+  // @lexical/overflow
+  'overflow',
+  // @lexical/mark
+  'mark',
+]);
+
+// カスタムノードのタイプを追加
+for (const NodeClass of CustomNodes) {
+  REGISTERED_NODE_TYPES.add((NodeClass as Klass<LexicalNode> & { getType(): string }).getType());
+}
 
 @Injectable()
-export class LexicalService {
+export class LexicalService implements OnModuleInit {
+  onModuleInit() {
+    // DOM環境を初期化（jsdomを使用）
+    initializeDomEnvironment();
+  }
+
+  /**
+   * JSONから未登録のノードタイプを検出する
+   */
+  private detectUnknownNodes(lexicalJson: string): string[] {
+    const unknown: Set<string> = new Set();
+
+    const checkNode = (node: Record<string, unknown>) => {
+      const nodeType = node.type;
+      if (typeof nodeType === 'string' && !REGISTERED_NODE_TYPES.has(nodeType)) {
+        unknown.add(nodeType);
+      }
+      const children = node.children;
+      if (Array.isArray(children)) {
+        for (const child of children) {
+          checkNode(child as Record<string, unknown>);
+        }
+      }
+    };
+
+    try {
+      const parsed = JSON.parse(lexicalJson) as { root?: Record<string, unknown> };
+      if (parsed.root) {
+        checkNode(parsed.root);
+      }
+    } catch {
+      // JSONパースエラーは無視（後続の変換処理でエラーになる）
+    }
+
+    return [...unknown];
+  }
+
   private createEditor() {
     return createHeadlessEditor({
       nodes: [
@@ -29,7 +107,8 @@ export class LexicalService {
         LinkNode,
         OverflowNode,
         MarkNode,
-        // カスタムノードは後で追加
+        // カスタムノード
+        ...CustomNodes,
       ],
       onError: (error) => {
         throw error;
@@ -37,30 +116,39 @@ export class LexicalService {
     });
   }
 
-  toHtml(lexicalJson: string): string {
+  toHtml(lexicalJson: string): ConvertResult {
+    const unknownNodes = this.detectUnknownNodes(lexicalJson);
     const editor = this.createEditor();
     const editorState = editor.parseEditorState(lexicalJson);
 
-    return editorState.read(() => {
+    const result = editorState.read(() => {
       return $generateHtmlFromNodes(editor);
     });
+
+    return { result, unknownNodes };
   }
 
-  toMarkdown(lexicalJson: string): string {
+  toMarkdown(lexicalJson: string): ConvertResult {
+    const unknownNodes = this.detectUnknownNodes(lexicalJson);
     const editor = this.createEditor();
     const editorState = editor.parseEditorState(lexicalJson);
 
-    return editorState.read(() => {
+    const result = editorState.read(() => {
       return $convertToMarkdownString(TRANSFORMERS);
     });
+
+    return { result, unknownNodes };
   }
 
-  toPlainText(lexicalJson: string): string {
+  toPlainText(lexicalJson: string): ConvertResult {
+    const unknownNodes = this.detectUnknownNodes(lexicalJson);
     const editor = this.createEditor();
     const editorState = editor.parseEditorState(lexicalJson);
 
-    return editorState.read(() => {
+    const result = editorState.read(() => {
       return $getRoot().getTextContent();
     });
+
+    return { result, unknownNodes };
   }
 }
