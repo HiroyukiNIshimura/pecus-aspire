@@ -8,7 +8,6 @@ import {
   updateWorkspace,
   updateWorkspaceMemberRole,
 } from '@/actions/admin/workspace';
-import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -489,9 +488,6 @@ export default function EditWorkspaceClient({
           </div>
         </main>
       </div>
-
-      {/* Footer */}
-      <AdminFooter />
 
       {/* メンバー削除確認モーダル */}
       <RemoveMemberModal
