@@ -1,5 +1,6 @@
 'use client';
 
+import MemberActionMenu from '@/components/common/MemberActionMenu';
 import MemberCard from '@/components/common/MemberCard';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 
@@ -102,17 +103,31 @@ export default function WorkspaceMemberList({
         ) : (
           /* メンバーグリッド */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {sortedMembers.map((member) => (
-              <MemberCard
-                key={getMemberId(member)}
-                member={member}
-                editable={editable}
-                isWorkspaceOwner={ownerId !== undefined && getMemberId(member) === ownerId}
-                onRemove={onRemoveMember}
-                onChangeRole={onChangeRole}
-                isHighlighted={highlightedUserIds?.has(getMemberId(member)) ?? false}
-              />
-            ))}
+            {sortedMembers.map((member) => {
+              const memberId = getMemberId(member);
+              const memberName = member.username ?? member.userName ?? '';
+              const isOwner = ownerId !== undefined && memberId === ownerId;
+
+              return (
+                <MemberCard
+                  key={memberId}
+                  member={member}
+                  isWorkspaceOwner={isOwner}
+                  isHighlighted={highlightedUserIds?.has(memberId) ?? false}
+                  actionSlot={
+                    editable && !isOwner ? (
+                      <MemberActionMenu
+                        userId={memberId}
+                        userName={memberName}
+                        currentRole={member.workspaceRole || 'Viewer'}
+                        onChangeRole={onChangeRole}
+                        onRemove={onRemoveMember}
+                      />
+                    ) : null
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </div>
