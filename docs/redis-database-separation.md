@@ -20,6 +20,7 @@
 |----|------|----------|----------------------|
 | **db0** | トークンブラックリスト | `TokenBlacklistService` | `user_jtis:*`, `refresh:*`, `refresh_user:*` |
 | **db1** | Hangfire（バックグラウンドジョブ） | `AppHost.cs` | `hangfire:*`（`RedisStorageOptions.Db = 1`） |
+| **db2** | SignalR プレゼンス | `SignalRPresenceService` | `presence:conn_user:*`, `presence:conn_ws:*`, `presence:conn_item:*`, `presence:ws_conns:*` |
 
 ## DB 番号の割り当て（Frontend Redis）
 
@@ -116,6 +117,7 @@ var frontend = builder.AddNpmApp("frontend", "../pecus.Frontend", "dev")
 |------|------|
 | トークンブラックリスト | Backend Redis に接続 → `SELECT 0` → `FLUSHDB` |
 | Hangfire | Backend Redis に接続 → `SELECT 1` → `FLUSHDB` |
+| SignalR プレゼンス | Backend Redis に接続 → `SELECT 2` → `FLUSHDB` |
 | セッション | Frontend Redis に接続 → `SELECT 0` → `FLUSHDB` |
 
 ### 確認コマンド
@@ -129,6 +131,9 @@ SELECT 0
 DBSIZE
 
 SELECT 1
+DBSIZE
+
+SELECT 2
 DBSIZE
 
 # Pub/Sub チャンネルを確認（SignalR 用）

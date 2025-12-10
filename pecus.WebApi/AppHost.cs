@@ -129,6 +129,9 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddSingleton<TokenBlacklistService>();
 
+// SignalR プレゼンスサービス（Redis ベース、スケールアウト対応）
+builder.Services.AddSingleton<SignalRPresenceService>();
+
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
 builder.Services.AddSingleton<ILexicalConverterService>(sp =>

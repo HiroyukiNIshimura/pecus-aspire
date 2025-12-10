@@ -28,6 +28,15 @@ export interface SignalRNotification {
 export type NotificationHandler = (notification: SignalRNotification) => void;
 
 /**
+ * ワークスペースプレゼンスユーザー情報（サーバーから返される）
+ */
+export interface WorkspacePresenceUser {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+/**
  * 現在参加中のグループ情報
  */
 interface CurrentGroups {
@@ -48,8 +57,10 @@ interface SignalRContextValue {
   /** 接続を切断する */
   disconnect: () => Promise<void>;
 
-  /** ワークスペースグループに参加（排他的：前のワークスペースから自動離脱） */
-  joinWorkspace: (workspaceId: number) => Promise<void>;
+  /** ワークスペースグループに参加（排他的：前のワークスペースから自動離脱）
+   *  @returns 既にワークスペースにいるユーザー一覧
+   */
+  joinWorkspace: (workspaceId: number) => Promise<WorkspacePresenceUser[]>;
 
   /** ワークスペースグループから離脱 */
   leaveWorkspace: (workspaceId: number) => Promise<void>;
@@ -218,35 +229,34 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * ワークスペースグループに参加（排他的）
    */
-  const joinWorkspace = useCallback(
-    async (workspaceId: number) => {
-      const connection = connectionRef.current;
-      if (!connection || connection.state !== HubConnectionState.Connected) {
-        console.warn('[SignalR] Cannot join workspace: not connected');
-        return;
-      }
+  const joinWorkspace = useCallback(async (workspaceId: number): Promise<WorkspacePresenceUser[]> => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot join workspace: not connected');
+      return [];
+    }
 
-      // 既に同じワークスペースに参加済みの場合はスキップ
-      if (currentGroups.workspaceId === workspaceId) {
-        console.log(`[SignalR] Already in workspace: ${workspaceId}`);
-        return;
-      }
+    // 既に同じワークスペースに参加済みの場合はスキップ
+    if (currentGroups.workspaceId === workspaceId) {
+      console.log(`[SignalR] Already in workspace: ${workspaceId}`);
+      return [];
+    }
 
-      try {
-        // サーバー側で前のワークスペースからの離脱も処理
-        await connection.invoke('JoinWorkspace', workspaceId, currentGroups.workspaceId ?? 0);
-        setCurrentGroups((prev) => ({
-          ...prev,
-          workspaceId,
-          itemId: null, // ワークスペース移動時はアイテムもクリア
-        }));
-        console.log(`[SignalR] Joined workspace: ${workspaceId}`);
-      } catch (error) {
-        console.error('[SignalR] Failed to join workspace:', error);
-      }
-    },
-    [currentGroups.workspaceId],
-  );
+    try {
+      // サーバー側で前のワークスペースからの離脱も処理（Redis で状態管理）
+      // 戻り値は既存のプレゼンスユーザー一覧
+      const existingUsers = await connection.invoke<WorkspacePresenceUser[]>('JoinWorkspace', workspaceId);
+      setCurrentGroups((prev) => ({
+        ...prev,
+        workspaceId,
+        itemId: null, // ワークスペース移動時はアイテムもクリア
+      }));
+      return existingUsers ?? [];
+    } catch (error) {
+      console.error('[SignalR] Failed to join workspace:', error);
+      return [];
+    }
+  }, []);
 
   /**
    * ワークスペースグループから離脱
@@ -278,39 +288,31 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   /**
    * アイテムグループに参加（排他的、ワークスペースにも同時参加）
    */
-  const joinItem = useCallback(
-    async (itemId: number, workspaceId: number) => {
-      const connection = connectionRef.current;
-      if (!connection || connection.state !== HubConnectionState.Connected) {
-        console.warn('[SignalR] Cannot join item: not connected');
-        return;
-      }
+  const joinItem = useCallback(async (itemId: number, workspaceId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot join item: not connected');
+      return;
+    }
 
-      // 既に同じアイテムに参加済みの場合はスキップ
-      if (currentGroups.itemId === itemId) {
-        console.log(`[SignalR] Already viewing item: ${itemId}`);
-        return;
-      }
+    // 既に同じアイテムに参加済みの場合はスキップ
+    if (currentGroups.itemId === itemId) {
+      console.log(`[SignalR] Already viewing item: ${itemId}`);
+      return;
+    }
 
-      try {
-        await connection.invoke(
-          'JoinItem',
-          itemId,
-          workspaceId,
-          currentGroups.itemId ?? 0,
-          currentGroups.workspaceId ?? 0,
-        );
-        setCurrentGroups({
-          workspaceId,
-          itemId,
-        });
-        console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
-      } catch (error) {
-        console.error('[SignalR] Failed to join item:', error);
-      }
-    },
-    [currentGroups.itemId, currentGroups.workspaceId],
-  );
+    try {
+      // サーバー側で前のアイテム/ワークスペースからの離脱も処理（Redis で状態管理）
+      await connection.invoke('JoinItem', itemId, workspaceId);
+      setCurrentGroups({
+        workspaceId,
+        itemId,
+      });
+      console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to join item:', error);
+    }
+  }, []);
 
   /**
    * アイテムグループから離脱（ワークスペースには残る）

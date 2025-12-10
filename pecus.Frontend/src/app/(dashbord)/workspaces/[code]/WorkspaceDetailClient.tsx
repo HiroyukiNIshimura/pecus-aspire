@@ -19,6 +19,7 @@ import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
+import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
   MasterGenreResponse,
   MasterSkillResponse,
@@ -28,6 +29,7 @@ import type {
   WorkspaceRole,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
 import type { WorkspaceItemsSidebarHandle } from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
@@ -67,6 +69,8 @@ export default function WorkspaceDetailClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  // プレゼンス初期ユーザー一覧（joinWorkspaceの戻り値）
+  const [initialPresenceUsers, setInitialPresenceUsers] = useState<WorkspacePresenceUser[]>([]);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
   const mobileSidebarComponentRef = useRef<WorkspaceItemsSidebarHandle>(null);
@@ -179,33 +183,66 @@ export default function WorkspaceDetailClient({
 
   // ===== SignalR ワークスペースグループ参加・離脱 =====
   const workspaceIdRef = useRef<number | null>(null);
+  const hasJoinedRef = useRef(false);
+  const joinWorkspaceRef = useRef(joinWorkspace);
+  joinWorkspaceRef.current = joinWorkspace;
+
+  // setInitialPresenceUsersをrefで保持
+  const setInitialPresenceUsersRef = useRef(setInitialPresenceUsers);
+  setInitialPresenceUsersRef.current = setInitialPresenceUsers;
+
   useEffect(() => {
     const workspaceId = currentWorkspaceDetail.id;
 
-    // 既に同じワークスペースに参加済みの場合はスキップ
-    if (workspaceIdRef.current === workspaceId) {
-      return;
-    }
-
-    // 接続が確立されたらワークスペースグループに参加
-    if (connectionState === 'connected' && workspaceId) {
+    // 接続が確立されていて、まだ参加していない場合のみ参加
+    if (connectionState === 'connected' && workspaceId && !hasJoinedRef.current) {
       workspaceIdRef.current = workspaceId;
-      joinWorkspace(workspaceId);
+      hasJoinedRef.current = true;
+      // joinWorkspaceは既存ユーザー一覧を返す
+      joinWorkspaceRef.current(workspaceId).then((users) => {
+        setInitialPresenceUsersRef.current(users);
+      });
     }
 
-    // クリーンアップ時にグループから離脱
+    // 切断された場合はフラグをリセット（再接続時に再参加できるように）
+    if (connectionState === 'disconnected') {
+      hasJoinedRef.current = false;
+      setInitialPresenceUsersRef.current([]);
+    }
+  }, [connectionState, currentWorkspaceDetail.id]); // joinWorkspace を依存配列から削除
+
+  // ワークスペースが変わった場合の処理（別のuseEffect）
+  const leaveWorkspaceRef = useRef(leaveWorkspace);
+  leaveWorkspaceRef.current = leaveWorkspace;
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
-      if (workspaceIdRef.current !== null) {
-        leaveWorkspace(workspaceIdRef.current);
-        workspaceIdRef.current = null;
-      }
+      isMountedRef.current = false;
+      const workspaceToLeave = workspaceIdRef.current;
+
+      // React Strict Mode 対策: 少し遅延させて本当にアンマウントか確認
+      setTimeout(() => {
+        if (!isMountedRef.current && workspaceToLeave !== null) {
+          leaveWorkspaceRef.current(workspaceToLeave);
+        }
+      }, 100);
+
+      workspaceIdRef.current = null;
+      hasJoinedRef.current = false;
     };
-  }, [connectionState, currentWorkspaceDetail.id, joinWorkspace, leaveWorkspace]);
+  }, []); // 空の依存配列 - アンマウント時のみ実行
 
   // ===== SignalR 通知受信ハンドラー =====
   // コンポーネントマウント時に一度だけ登録し、アンマウント時にクリーンアップ
   useEffect(() => {
     const handler = (notification: SignalRNotification) => {
+      // workspace:user_joined/left は WorkspacePresence で処理するためスキップ
+      if (notification.eventType === 'workspace:user_joined' || notification.eventType === 'workspace:user_left') {
+        return;
+      }
       // 将来の通知ハンドリング用に予約
       // 例: workspace:item_created, workspace:item_updated など
       console.log('[WorkspaceDetail] Received notification:', notification.eventType);
@@ -1049,6 +1086,15 @@ export default function WorkspaceDetailClient({
           </div>
         </div>
       </div>
+
+      {/* ワークスペース参加者のリアルタイム表示 */}
+      {userInfo && (
+        <WorkspacePresence
+          workspaceId={currentWorkspaceDetail.id}
+          currentUserId={userInfo.id}
+          initialUsers={initialPresenceUsers}
+        />
+      )}
     </div>
   );
 }

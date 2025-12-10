@@ -8,6 +8,7 @@ import {
   updateWorkspace,
   updateWorkspaceMemberRole,
 } from '@/actions/admin/workspace';
+import AdminFooter from '@/components/admin/AdminFooter';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';

@@ -25,3 +25,59 @@ https://daypicker.dev/docs/styling#css-variables */
   --rdp-accent-color: var(--color-accent)
 }
 
+/* ワークスペース参加者表示用アニメーション */
+
+/* 入場アニメーション - ポンッと現れる */
+@keyframes bubbleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 退場アニメーション - スーッと消える */
+@keyframes bubbleOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(10px);
+  }
+}
+
+/* ふわふわ浮遊アニメーション */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* 後方互換性のため残す */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
