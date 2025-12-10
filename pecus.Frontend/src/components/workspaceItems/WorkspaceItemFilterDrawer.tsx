@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import BooleanFilterGroup from '@/components/common/BooleanFilterGroup';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { TaskPriority, UserSearchResultResponse } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 export interface WorkspaceItemFilters {
   /** 担当者ID */
@@ -106,10 +106,11 @@ function UserSearchFilter({
       </div>
       {selectedUser ? (
         <div className="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
-          <img
-            src={getDisplayIconUrl(selectedUser.identityIconUrl)}
-            alt={selectedUser.username}
-            className="w-6 h-6 rounded-full object-cover"
+          <UserAvatar
+            userName={selectedUser.username}
+            identityIconUrl={selectedUser.identityIconUrl}
+            size={24}
+            showName={false}
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{selectedUser.username}</p>
@@ -148,10 +149,11 @@ function UserSearchFilter({
                   className="w-full flex items-center gap-2 p-2 hover:bg-base-200 transition-colors text-left"
                   onClick={() => onSelectUser(user)}
                 >
-                  <img
-                    src={getDisplayIconUrl(user.identityIconUrl)}
-                    alt={user.username || 'User'}
-                    className="w-6 h-6 rounded-full object-cover"
+                  <UserAvatar
+                    userName={user.username}
+                    identityIconUrl={user.identityIconUrl}
+                    size={24}
+                    showName={false}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{user.username}</p>

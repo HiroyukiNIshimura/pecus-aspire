@@ -864,7 +864,7 @@ public class WorkspaceService
                 ),
                 IsActive = createdByUser.IsActive,
             }
-            : new WorkspaceDetailUserResponse { UserName = "Unknown" };
+            : new WorkspaceDetailUserResponse { UserName = "" };
 
         // UpdatedBy の構築
         var updatedBy = updatedByUser != null
@@ -881,7 +881,7 @@ public class WorkspaceService
                 ),
                 IsActive = updatedByUser.IsActive,
             }
-            : new WorkspaceDetailUserResponse { UserName = "Unknown" };
+            : new WorkspaceDetailUserResponse { UserName = "" };
 
         // Members の構築
         var members = workspace.WorkspaceUsers

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /**
  * スキルマッチング用のスキル情報
@@ -230,10 +230,11 @@ export default function AddMemberModal({
           <div className="bg-base-200 rounded-lg p-4 my-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img
-                  src={getDisplayIconUrl(selectedUser.identityIconUrl)}
-                  alt={selectedUser.username || 'User Avatar'}
-                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                <UserAvatar
+                  userName={selectedUser.username}
+                  identityIconUrl={selectedUser.identityIconUrl}
+                  size={40}
+                  showName={false}
                 />
                 <div>
                   <p className="font-semibold">{selectedUser.username}</p>
@@ -415,10 +416,11 @@ export default function AddMemberModal({
                         onClick={() => handleSelectUser(user)}
                       >
                         {/* アバター */}
-                        <img
-                          src={getDisplayIconUrl(user.identityIconUrl)}
-                          alt={user.username || 'User Avatar'}
-                          className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-0.5"
+                        <UserAvatar
+                          userName={user.username}
+                          identityIconUrl={user.identityIconUrl}
+                          size={40}
+                          showName={false}
                         />
 
                         {/* ユーザー情報 */}

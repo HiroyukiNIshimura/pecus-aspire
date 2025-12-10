@@ -6,6 +6,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
+import UserAvatar from '@/components/common/UserAvatar';
 import type {
   MyItemRelationType,
   WorkspaceItemDetailResponse,
@@ -13,7 +14,6 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface MyItemsClientProps {
   initialUser?: UserInfo | null;
@@ -290,32 +290,24 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                             {/* オーナー */}
                             <div className="flex items-center text-sm gap-2">
                               <span className="text-base-content/70 w-20 flex-shrink-0">オーナー</span>
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                {item.ownerAvatarUrl && (
-                                  <img
-                                    src={getDisplayIconUrl(item.ownerAvatarUrl)}
-                                    alt=""
-                                    className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                  />
-                                )}
-                                <span className="truncate">{item.ownerUsername || '-'}</span>
-                              </div>
+                              <UserAvatar
+                                userName={item.ownerUsername}
+                                identityIconUrl={item.ownerAvatarUrl}
+                                size={20}
+                                nameClassName="truncate"
+                              />
                             </div>
 
                             {/* 担当者 */}
                             {item.assigneeUsername && (
                               <div className="flex items-center text-sm gap-2">
                                 <span className="text-base-content/70 w-20 flex-shrink-0">担当</span>
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  {item.assigneeAvatarUrl && (
-                                    <img
-                                      src={getDisplayIconUrl(item.assigneeAvatarUrl)}
-                                      alt=""
-                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                    />
-                                  )}
-                                  <span className="truncate">{item.assigneeUsername}</span>
-                                </div>
+                                <UserAvatar
+                                  userName={item.assigneeUsername}
+                                  identityIconUrl={item.assigneeAvatarUrl}
+                                  size={20}
+                                  nameClassName="truncate"
+                                />
                               </div>
                             )}
 
@@ -323,16 +315,12 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                             {item.committerUsername && (
                               <div className="flex items-center text-sm gap-2">
                                 <span className="text-base-content/70 w-20 flex-shrink-0">コミッター</span>
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                  {item.committerAvatarUrl && (
-                                    <img
-                                      src={getDisplayIconUrl(item.committerAvatarUrl)}
-                                      alt=""
-                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                    />
-                                  )}
-                                  <span className="truncate">{item.committerUsername}</span>
-                                </div>
+                                <UserAvatar
+                                  userName={item.committerUsername}
+                                  identityIconUrl={item.committerAvatarUrl}
+                                  size={20}
+                                  nameClassName="truncate"
+                                />
                               </div>
                             )}
 

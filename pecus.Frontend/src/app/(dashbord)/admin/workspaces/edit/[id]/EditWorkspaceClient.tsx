@@ -11,6 +11,7 @@ import {
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import UserAvatar from '@/components/common/UserAvatar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import GenreSelect from '@/components/workspaces/GenreSelect';
@@ -26,7 +27,6 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 interface EditWorkspaceClientProps {
   initialUser: UserInfo | null;
@@ -317,14 +317,12 @@ export default function EditWorkspaceClient({
                     <p className="text-sm text-base-content/60">オーナー</p>
                     {workspaceDetail.owner ? (
                       <div className="flex items-center gap-2 mt-1">
-                        {workspaceDetail.owner.identityIconUrl && (
-                          <img
-                            src={getDisplayIconUrl(workspaceDetail.owner.identityIconUrl)}
-                            alt={workspaceDetail.owner.userName || 'オーナー'}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        )}
-                        <p className="text-lg font-semibold">{workspaceDetail.owner.userName || '-'}</p>
+                        <UserAvatar
+                          userName={workspaceDetail.owner.userName || 'オーナー'}
+                          identityIconUrl={workspaceDetail.owner.identityIconUrl}
+                          size={24}
+                          nameClassName="text-lg font-semibold"
+                        />
                         {workspaceDetail.owner.isActive === false && (
                           <span className="badge badge-outline badge-warning badge-xs">非アクティブ</span>
                         )}

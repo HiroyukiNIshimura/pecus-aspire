@@ -13,6 +13,7 @@ import {
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
+import UserAvatar from '@/components/common/UserAvatar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
@@ -29,7 +30,6 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 import type { WorkspaceItemsSidebarHandle } from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
 import WorkspaceItemsSidebar from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
 import EditWorkspaceModal from '../EditWorkspaceModal';
@@ -799,14 +799,12 @@ export default function WorkspaceDetailClient({
                     <div>
                       <span className="text-xs text-base-content/70">オーナー</span>
                       <div className="flex items-center gap-2 mt-1">
-                        {currentWorkspaceDetail.owner.identityIconUrl && (
-                          <img
-                            src={getDisplayIconUrl(currentWorkspaceDetail.owner.identityIconUrl)}
-                            alt={currentWorkspaceDetail.owner.userName}
-                            className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                          />
-                        )}
-                        <p className="font-semibold truncate">{currentWorkspaceDetail.owner.userName}</p>
+                        <UserAvatar
+                          userName={currentWorkspaceDetail.owner.userName}
+                          identityIconUrl={currentWorkspaceDetail.owner.identityIconUrl}
+                          size={20}
+                          nameClassName="font-semibold truncate"
+                        />
                       </div>
                     </div>
                   )}
@@ -826,14 +824,12 @@ export default function WorkspaceDetailClient({
                     <div>
                       <span className="text-xs text-base-content/70">更新者</span>
                       <div className="flex items-center gap-2 mt-1">
-                        {currentWorkspaceDetail.updatedBy.identityIconUrl && (
-                          <img
-                            src={getDisplayIconUrl(currentWorkspaceDetail.updatedBy.identityIconUrl)}
-                            alt={currentWorkspaceDetail.updatedBy.userName}
-                            className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                          />
-                        )}
-                        <p className="font-semibold truncate">{currentWorkspaceDetail.updatedBy.userName}</p>
+                        <UserAvatar
+                          userName={currentWorkspaceDetail.updatedBy.userName}
+                          identityIconUrl={currentWorkspaceDetail.updatedBy.identityIconUrl}
+                          size={20}
+                          nameClassName="font-semibold truncate"
+                        />
                       </div>
                     </div>
                   )}

@@ -7,9 +7,9 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /** コメントタイプのラベルと色 */
 /** コメントの最大文字数 */
@@ -314,10 +314,11 @@ export default function TaskCommentSection({
               >
                 {/* アバター */}
                 <div className="flex-shrink-0">
-                  <img
-                    src={getDisplayIconUrl(comment.avatarUrl)}
-                    alt={comment.username || 'User'}
-                    className="w-8 h-8 rounded-full object-cover"
+                  <UserAvatar
+                    userName={comment.username}
+                    identityIconUrl={comment.avatarUrl}
+                    size={32}
+                    showName={false}
                   />
                 </div>
 

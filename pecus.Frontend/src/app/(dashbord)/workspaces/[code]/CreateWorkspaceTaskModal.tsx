@@ -5,6 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { checkAssigneeTaskLoad, createWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import UserAvatar from '@/components/common/UserAvatar';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   AssigneeTaskLoadResponse,
@@ -15,7 +16,6 @@ import type {
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { createWorkspaceTaskSchema, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -406,10 +406,11 @@ export default function CreateWorkspaceTaskModal({
                 <input type="hidden" name="assignedUserId" value={selectedAssignee?.id || ''} />
                 {selectedAssignee ? (
                   <div className="input input-bordered flex items-center gap-2">
-                    <img
-                      src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
-                      alt={selectedAssignee.username}
-                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    <UserAvatar
+                      userName={selectedAssignee.username}
+                      identityIconUrl={selectedAssignee.identityIconUrl}
+                      size={24}
+                      showName={false}
                     />
                     <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
                     <button
@@ -450,10 +451,11 @@ export default function CreateWorkspaceTaskModal({
                             className="w-full flex items-center gap-2 p-3 hover:bg-base-200 transition-colors text-left"
                             onClick={() => handleSelectAssignee(user)}
                           >
-                            <img
-                              src={getDisplayIconUrl(user.identityIconUrl)}
-                              alt={user.username || 'User'}
-                              className="w-6 h-6 rounded-full object-cover"
+                            <UserAvatar
+                              userName={user.username}
+                              identityIconUrl={user.identityIconUrl}
+                              size={24}
+                              showName={false}
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{user.username}</p>

@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { updateWorkspaceItemAssignee, updateWorkspaceItemAttribute } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/DatePicker';
+import UserAvatar from '@/components/common/UserAvatar';
 import type {
   ErrorResponse,
   TaskPriority,
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
 } from '@/connectors/api/pecus';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /** 優先度のラベル定義 */
 const PRIORITY_OPTIONS: { value: TaskPriority | null; label: string; className: string }[] = [
@@ -292,18 +292,12 @@ export default function WorkspaceItemDrawer({
                 const assignee = getSelectedMember(selectedAssigneeId);
                 return assignee ? (
                   <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
-                    {assignee.identityIconUrl ? (
-                      <img
-                        src={getDisplayIconUrl(assignee.identityIconUrl)}
-                        alt={assignee.userName || 'ユーザー'}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">
-                        ？
-                      </div>
-                    )}
-                    <span className="text-sm font-semibold">{assignee.userName}</span>
+                    <UserAvatar
+                      userName={assignee.userName}
+                      identityIconUrl={assignee.identityIconUrl}
+                      size={24}
+                      nameClassName="text-sm font-semibold"
+                    />
                   </div>
                 ) : null;
               })()}
@@ -337,18 +331,12 @@ export default function WorkspaceItemDrawer({
                   const committer = getSelectedMember(selectedCommitterId);
                   return committer ? (
                     <div className="mt-2 flex items-center gap-2 p-2 bg-base-200 rounded">
-                      {committer.identityIconUrl ? (
-                        <img
-                          src={getDisplayIconUrl(committer.identityIconUrl)}
-                          alt={committer.userName || 'ユーザー'}
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs">
-                          ？
-                        </div>
-                      )}
-                      <span className="text-sm font-semibold">{committer.userName}</span>
+                      <UserAvatar
+                        userName={committer.userName}
+                        identityIconUrl={committer.identityIconUrl}
+                        size={24}
+                        nameClassName="text-sm font-semibold"
+                      />
                     </div>
                   ) : null;
                 })()}

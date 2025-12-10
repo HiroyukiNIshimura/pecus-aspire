@@ -7,6 +7,7 @@ import {
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
+import UserAvatar from '@/components/common/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
@@ -17,7 +18,6 @@ import type {
   WorkspaceItemDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
 
@@ -335,14 +335,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <div>
                 <span className="text-xs text-base-content/70">オーナー</span>
                 <div className="flex items-center gap-2 mt-1">
-                  {item.ownerAvatarUrl && (
-                    <img
-                      src={getDisplayIconUrl(item.ownerAvatarUrl)}
-                      alt={item.ownerUsername || 'ユーザー'}
-                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                    />
-                  )}
-                  <p className="font-semibold truncate">{item.ownerUsername}</p>
+                  <UserAvatar
+                    userName={item.ownerUsername}
+                    identityIconUrl={item.ownerAvatarUrl}
+                    size={20}
+                    nameClassName="font-semibold truncate"
+                  />
                 </div>
               </div>
             )}
@@ -360,14 +358,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <span className="text-xs text-base-content/70">担当者</span>
               {item.assigneeId ? (
                 <div className="flex items-center gap-2 mt-1">
-                  {item.assigneeAvatarUrl && (
-                    <img
-                      src={getDisplayIconUrl(item.assigneeAvatarUrl)}
-                      alt={item.assigneeUsername || 'ユーザー'}
-                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                    />
-                  )}
-                  <p className="font-semibold truncate">{item.assigneeUsername}</p>
+                  <UserAvatar
+                    userName={item.assigneeUsername}
+                    identityIconUrl={item.assigneeAvatarUrl}
+                    size={20}
+                    nameClassName="font-semibold truncate"
+                  />
                 </div>
               ) : (
                 <p className="font-semibold text-base-content/50">未割当</p>
@@ -425,16 +421,12 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                       <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
                         {related.isArchived && <span className="badge badge-xs badge-neutral">アーカイブ</span>}
                         {related.ownerId && (
-                          <>
-                            {related.ownerAvatarUrl && (
-                              <img
-                                src={getDisplayIconUrl(related.ownerAvatarUrl)}
-                                alt={related.ownerUsername || 'ユーザー'}
-                                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
-                              />
-                            )}
-                            <span className="truncate">{related.ownerUsername}</span>
-                          </>
+                          <UserAvatar
+                            userName={related.ownerUsername}
+                            identityIconUrl={related.ownerAvatarUrl}
+                            size={16}
+                            nameClassName="truncate"
+                          />
                         )}
                       </div>
                     </div>

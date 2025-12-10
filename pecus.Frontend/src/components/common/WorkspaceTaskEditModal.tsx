@@ -5,6 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import UserAvatar from '@/components/common/UserAvatar';
 import TaskCommentSection from '@/components/workspaceItems/TaskCommentSection';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -17,7 +18,6 @@ import type {
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { taskPriorityOptions, updateWorkspaceTaskSchema } from '@/schemas/workspaceTaskSchemas';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -547,16 +547,12 @@ export default function WorkspaceTaskEditModal({
               <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
                 <span className="text-base-content/50">コミッター:</span>
                 {itemCommitterName ? (
-                  <>
-                    {itemCommitterAvatarUrl && (
-                      <img
-                        src={getDisplayIconUrl(itemCommitterAvatarUrl)}
-                        alt={itemCommitterName}
-                        className="w-5 h-5 rounded-full object-cover"
-                      />
-                    )}
-                    <span className="font-medium">{itemCommitterName}</span>
-                  </>
+                  <UserAvatar
+                    userName={itemCommitterName}
+                    identityIconUrl={itemCommitterAvatarUrl}
+                    size={20}
+                    nameClassName="font-medium"
+                  />
                 ) : (
                   <span className="text-base-content/50 italic">未設定</span>
                 )}
@@ -741,10 +737,11 @@ export default function WorkspaceTaskEditModal({
                       <input type="hidden" name="assignedUserId" value={selectedAssignee?.id || ''} />
                       {selectedAssignee ? (
                         <div className="input input-bordered flex items-center gap-2">
-                          <img
-                            src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
-                            alt={selectedAssignee.username}
-                            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                          <UserAvatar
+                            userName={selectedAssignee.username}
+                            identityIconUrl={selectedAssignee.identityIconUrl}
+                            size={24}
+                            showName={false}
                           />
                           <span className="text-sm truncate flex-1">{selectedAssignee.username}</span>
                           <button
@@ -790,10 +787,11 @@ export default function WorkspaceTaskEditModal({
                                   className="w-full flex items-center gap-2 p-3 hover:bg-base-200 transition-colors text-left"
                                   onClick={() => handleSelectAssignee(user)}
                                 >
-                                  <img
-                                    src={getDisplayIconUrl(user.identityIconUrl)}
-                                    alt={user.username || 'User'}
-                                    className="w-6 h-6 rounded-full object-cover"
+                                  <UserAvatar
+                                    userName={user.username}
+                                    identityIconUrl={user.identityIconUrl}
+                                    size={24}
+                                    showName={false}
                                   />
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium truncate">{user.username}</p>
@@ -1071,14 +1069,12 @@ export default function WorkspaceTaskEditModal({
                         {task.createdByUserId && (
                           <div className="flex items-center gap-2">
                             <span>作成者:</span>
-                            {task.createdByAvatarUrl && (
-                              <img
-                                src={getDisplayIconUrl(task.createdByAvatarUrl)}
-                                alt={task.createdByUsername || ''}
-                                className="w-5 h-5 rounded-full object-cover"
-                              />
-                            )}
-                            <span>{task.createdByUsername}</span>
+                            <UserAvatar
+                              userName={task.createdByUsername}
+                              identityIconUrl={task.createdByAvatarUrl}
+                              size={20}
+                              nameClassName=""
+                            />
                           </div>
                         )}
                         {task.createdAt && <div>作成日時: {new Date(task.createdAt).toLocaleString('ja-JP')}</div>}

@@ -5,6 +5,7 @@ import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskStatusFilter as TaskStatusFilterType,
@@ -13,7 +14,6 @@ import type {
   WorkspaceTaskStatistics,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
 import EditWorkspaceTaskModal from './EditWorkspaceTaskModal';
 import TaskCommentModal from './TaskCommentModal';
@@ -329,16 +329,12 @@ const WorkspaceTasks = ({
             <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
               <span className="text-base-content/50">コミッター:</span>
               {itemCommitterName ? (
-                <>
-                  {itemCommitterAvatarUrl && (
-                    <img
-                      src={getDisplayIconUrl(itemCommitterAvatarUrl)}
-                      alt={itemCommitterName}
-                      className="w-5 h-5 rounded-full object-cover"
-                    />
-                  )}
-                  <span className="font-medium">{itemCommitterName}</span>
-                </>
+                <UserAvatar
+                  userName={itemCommitterName}
+                  identityIconUrl={itemCommitterAvatarUrl}
+                  size={20}
+                  nameClassName="font-medium"
+                />
               ) : (
                 <span className="text-base-content/50 italic">未設定</span>
               )}
@@ -380,16 +376,12 @@ const WorkspaceTasks = ({
           <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
             <span className="text-base-content/50">コミッター:</span>
             {itemCommitterName ? (
-              <>
-                {itemCommitterAvatarUrl && (
-                  <img
-                    src={getDisplayIconUrl(itemCommitterAvatarUrl)}
-                    alt={itemCommitterName}
-                    className="w-5 h-5 rounded-full object-cover"
-                  />
-                )}
-                <span className="font-medium">{itemCommitterName}</span>
-              </>
+              <UserAvatar
+                userName={itemCommitterName}
+                identityIconUrl={itemCommitterAvatarUrl}
+                size={20}
+                nameClassName="font-medium"
+              />
             ) : (
               <span className="text-base-content/50 italic">未設定</span>
             )}
@@ -422,10 +414,11 @@ const WorkspaceTasks = ({
           </div>
           {selectedAssignee ? (
             <div className="input input-xs input-bordered flex items-center gap-1.5 pr-1">
-              <img
-                src={getDisplayIconUrl(selectedAssignee.identityIconUrl)}
-                alt={selectedAssignee.username}
-                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+              <UserAvatar
+                userName={selectedAssignee.username}
+                identityIconUrl={selectedAssignee.identityIconUrl}
+                size={16}
+                showName={false}
               />
               <span className="text-xs truncate flex-1">{selectedAssignee.username}</span>
               <button
@@ -465,10 +458,11 @@ const WorkspaceTasks = ({
                       className="w-full flex items-center gap-2 p-2 hover:bg-base-200 transition-colors text-left"
                       onClick={() => handleSelectAssignee(user)}
                     >
-                      <img
-                        src={getDisplayIconUrl(user.identityIconUrl)}
-                        alt={user.username || 'User'}
-                        className="w-5 h-5 rounded-full object-cover"
+                      <UserAvatar
+                        userName={user.username}
+                        identityIconUrl={user.identityIconUrl}
+                        size={20}
+                        showName={false}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{user.username}</p>
@@ -569,16 +563,12 @@ const WorkspaceTasks = ({
                       {/* 担当者 */}
                       <div className="flex items-center gap-1.5 h-5">
                         {task.assignedUserId ? (
-                          <>
-                            {task.assignedAvatarUrl && (
-                              <img
-                                src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                                alt={task.assignedUsername || '担当者'}
-                                className="w-4 h-4 rounded-full object-cover flex-shrink-0"
-                              />
-                            )}
-                            <span className="text-xs truncate">{task.assignedUsername}</span>
-                          </>
+                          <UserAvatar
+                            userName={task.assignedUsername}
+                            identityIconUrl={task.assignedAvatarUrl}
+                            size={16}
+                            nameClassName="text-xs truncate"
+                          />
                         ) : (
                           <span className="text-xs text-base-content/30">—</span>
                         )}

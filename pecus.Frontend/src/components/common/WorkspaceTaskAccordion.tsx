@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import { getDisplayIconUrl } from '@/utils/imageUrl';
 import TaskEditModal from './TaskEditModal';
 
 type CommentTypeCounts = {
@@ -567,26 +567,12 @@ export default function WorkspaceTaskAccordion({
                                             <div>
                                               <p className="text-xs text-base-content/50 mb-1">担当者</p>
                                               {task.assignedUserId ? (
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                  {task.assignedAvatarUrl ? (
-                                                    <img
-                                                      src={getDisplayIconUrl(task.assignedAvatarUrl)}
-                                                      alt={task.assignedUsername || '担当者'}
-                                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                                      title={task.assignedUsername || undefined}
-                                                    />
-                                                  ) : (
-                                                    <span className="w-5 h-5 rounded-full bg-base-300 flex-shrink-0" />
-                                                  )}
-                                                  {task.assignedUsername && (
-                                                    <span
-                                                      className="text-xs text-base-content/70 truncate"
-                                                      title={task.assignedUsername}
-                                                    >
-                                                      {task.assignedUsername}
-                                                    </span>
-                                                  )}
-                                                </div>
+                                                <UserAvatar
+                                                  userName={task.assignedUsername}
+                                                  identityIconUrl={task.assignedAvatarUrl}
+                                                  size={20}
+                                                  nameClassName="text-xs text-base-content/70 truncate"
+                                                />
                                               ) : (
                                                 <span className="text-xs text-base-content/50">--</span>
                                               )}
@@ -598,26 +584,12 @@ export default function WorkspaceTaskAccordion({
                                             <div>
                                               <p className="text-xs text-base-content/50 mb-1">コミッター</p>
                                               {task.itemCommitterId ? (
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                  {task.itemCommitterAvatarUrl ? (
-                                                    <img
-                                                      src={getDisplayIconUrl(task.itemCommitterAvatarUrl)}
-                                                      alt={task.itemCommitterUsername || 'コミッター'}
-                                                      className="w-5 h-5 rounded-full object-cover flex-shrink-0"
-                                                      title={task.itemCommitterUsername || undefined}
-                                                    />
-                                                  ) : (
-                                                    <span className="w-5 h-5 rounded-full bg-base-300 flex-shrink-0" />
-                                                  )}
-                                                  {task.itemCommitterUsername && (
-                                                    <span
-                                                      className="text-xs text-base-content/70 truncate"
-                                                      title={task.itemCommitterUsername}
-                                                    >
-                                                      {task.itemCommitterUsername}
-                                                    </span>
-                                                  )}
-                                                </div>
+                                                <UserAvatar
+                                                  userName={task.itemCommitterUsername}
+                                                  identityIconUrl={task.itemCommitterAvatarUrl}
+                                                  size={20}
+                                                  nameClassName="text-xs text-base-content/70 truncate"
+                                                />
                                               ) : (
                                                 <span className="text-xs text-base-content/50">--</span>
                                               )}
