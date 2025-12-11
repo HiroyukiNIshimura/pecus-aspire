@@ -45,8 +45,10 @@
 | ActionType | 説明 | Details 例 | 記録条件 |
 |------------|------|-----------|---------|
 | `TaskAdded` | タスク追加 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中" }` | タスク作成時 |
-| `TaskCompleted` | タスク完了 | `{ "taskId": 1, "content": "スクリーンショット撮影" }` | IsCompleted = true 時 |
-| `TaskDiscarded` | タスク破棄 | `{ "taskId": 1, "content": "スクリーンショット撮影" }` | IsDiscarded = true 時 |
+| `TaskCompleted` | タスク完了 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "completedBy": "鈴木" }` | IsCompleted = true 時 |
+| `TaskDiscarded` | タスク破棄 | `{ "taskId": 1, "content": "スクリーンショット撮影", "assignee": "田中", "discardedBy": "鈴木" }` | IsDiscarded = true 時 |
+
+※ `completedBy` / `discardedBy` は操作したユーザー。担当者本人の場合もあればコミッターの場合もある。
 
 **変更検出の仕組み:**
 - `ActivityTasks.CreateChangeDetails<T>(oldValue, newValue)` が `EqualityComparer<T>.Default` で新旧値を比較
