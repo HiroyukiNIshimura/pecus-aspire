@@ -1,0 +1,31 @@
+@model Pecus.Libs.Mail.Templates.Models.TaskCompletedEmailModel
+
+タスクが完了しました
+@Model.WorkspaceName のタスクが完了しました。
+
+@if (!string.IsNullOrWhiteSpace(Model.TaskTitle))
+{
+@:タイトル: @Model.TaskTitle
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskCode))
+{
+@:タスクコード: @Model.TaskCode
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.AssigneeName))
+{
+@:担当者: @Model.AssigneeName
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.CompletedByName))
+{
+@:完了者: @Model.CompletedByName
+@:
+}
+完了日時 (JST): @Model.CompletedAt.ToString("yyyy/MM/dd HH:mm")
+ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+
+タスクを確認: @Model.TaskUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

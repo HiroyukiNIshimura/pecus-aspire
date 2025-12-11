@@ -1,0 +1,51 @@
+@model Pecus.Libs.Mail.Templates.Models.ItemCreatedEmailModel
+
+アイテムが公開されました
+@Model.WorkspaceName で新しいアイテムが公開されました。
+
+@if (!string.IsNullOrWhiteSpace(Model.ItemTitle))
+{
+@:タイトル: @Model.ItemTitle
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.ItemCode))
+{
+@:アイテムコード: @Model.ItemCode
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.ItemType))
+{
+@:種別: @Model.ItemType
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.Channel))
+{
+@:チャンネル: @Model.Channel
+@:
+}
+作成者: @Model.CreatedByName
+作成日時 (JST): @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+
+@if (!string.IsNullOrWhiteSpace(Model.BodyText))
+{
+@:
+@:アイテム本文:
+@:--------------------
+@: @Model.BodyText
+@:--------------------
+@:
+}
+else if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
+{
+@:
+@:アイテム本文 (HTML):
+@:--------------------
+@: @Model.BodyHtml
+@:--------------------
+@:
+}
+
+アイテムを確認: @Model.ItemUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

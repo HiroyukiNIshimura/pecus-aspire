@@ -1,0 +1,52 @@
+@model Pecus.Libs.Mail.Templates.Models.ItemCreatedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>アイテムが公開されました</h2>
+
+<p>@Model.WorkspaceName で新しいアイテムが公開されました。</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ItemTitle))
+{
+    <p><strong>タイトル:</strong> @Model.ItemTitle</p>
+}
+
+<ul>
+    @if (!string.IsNullOrWhiteSpace(Model.ItemCode))
+    {
+        <li>アイテムコード: @Model.ItemCode</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.ItemType))
+    {
+        <li>種別: @Model.ItemType</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Channel))
+    {
+        <li>チャンネル: @Model.Channel</li>
+    }
+    <li>作成者: @Model.CreatedByName</li>
+    <li>作成日時 (JST): @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+</ul>
+
+@if (!string.IsNullOrWhiteSpace(Model.BodyHtml) || !string.IsNullOrWhiteSpace(Model.BodyText))
+{
+    <h3>アイテム本文</h3>
+    @if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
+    {
+        <div style="margin:16px 0;">
+            @Html.Raw(Model.BodyHtml)
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.BodyText))
+    {
+        <div style="margin:16px 0; white-space:pre-wrap;">@Model.BodyText</div>
+    }
+}
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.ItemUrl" class="button">アイテムを確認</a>
+</div>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>

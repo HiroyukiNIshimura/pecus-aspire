@@ -1,0 +1,41 @@
+@model Pecus.Libs.Mail.Templates.Models.TaskCreatedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>タスクが作成されました</h2>
+
+<p>@Model.WorkspaceName で新しいタスクが作成されました。</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.TaskTitle))
+{
+    <p><strong>タイトル:</strong> @Model.TaskTitle</p>
+}
+
+<ul>
+    @if (!string.IsNullOrWhiteSpace(Model.TaskCode))
+    {
+        <li>タスクコード: @Model.TaskCode</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Priority))
+    {
+        <li>優先度: @Model.Priority</li>
+    }
+    @if (Model.DueDate.HasValue)
+    {
+        <li>期限: @Model.DueDate.Value.ToString("yyyy/MM/dd HH:mm")</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.AssigneeName))
+    {
+        <li>担当者: @Model.AssigneeName</li>
+    }
+    <li>作成者: @Model.CreatedByName</li>
+    <li>作成日時 (JST): @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+</ul>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.TaskUrl" class="button">タスクを確認</a>
+</div>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>

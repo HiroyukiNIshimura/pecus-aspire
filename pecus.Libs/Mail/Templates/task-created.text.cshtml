@@ -1,0 +1,37 @@
+@model Pecus.Libs.Mail.Templates.Models.TaskCreatedEmailModel
+
+タスクが作成されました
+@Model.WorkspaceName で新しいタスクが作成されました。
+
+@if (!string.IsNullOrWhiteSpace(Model.TaskTitle))
+{
+@:タイトル: @Model.TaskTitle
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskCode))
+{
+@:タスクコード: @Model.TaskCode
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.Priority))
+{
+@:優先度: @Model.Priority
+@:
+}
+@if (Model.DueDate.HasValue)
+{
+@:期限: @Model.DueDate.Value.ToString("yyyy/MM/dd HH:mm")
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.AssigneeName))
+{
+@:担当者: @Model.AssigneeName
+@:
+}
+作成者: @Model.CreatedByName
+作成日時 (JST): @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+
+タスクを確認: @Model.TaskUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。
