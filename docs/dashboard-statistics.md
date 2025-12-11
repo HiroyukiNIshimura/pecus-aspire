@@ -374,3 +374,10 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 - [ ] 統計 API の認可ルール（組織管理者のみ / 全メンバー閲覧可）
 - [ ] グラフ表示ライブラリの選定（フロントエンド）
 - [ ] 統計データのエクスポート機能の要否
+
+---
+
+## 関連ドキュメント
+
+- [アクティビティ要件定義](activity-requirements.md) - データソースの詳細
+- [タスクフォーカス推奨機能](task-focus-recommendation.md) - 同じデータを使った「次にやるべきタスク」推奨機能
