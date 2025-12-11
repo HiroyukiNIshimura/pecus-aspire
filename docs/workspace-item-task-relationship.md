@@ -260,14 +260,28 @@ Workspace (1) ─────────── (N) WorkspaceItem
 ## Activity との関係
 
 **Activity は WorkspaceItem に対する操作履歴を記録する**。
+ただし、監視目的ではなく「何が起きたか」を振り返るための記録。
 
-WorkspaceTask に対する操作履歴は現時点では Activity に含まれていない。
-将来的にタスクの Activity も記録する場合は、別途設計が必要。
+> 📖 **設計理念**（[activity-requirements.md](activity-requirements.md) より）
+>
+> アクティビティはユーザーを監視するためのものではない。
+> 寝ていようが酒を飲んでいようが、タスクが進めばそれでいい。
+> 「誰が何時間働いたか」ではなく「タスクに何が起きたか」を記録する。
 
-| エンティティ | Activity 記録 |
-|-------------|--------------|
-| WorkspaceItem | ✅ 記録対象（Created, SubjectUpdated, BodyUpdated 等） |
-| WorkspaceTask | ❌ 現時点では対象外 |
+### なぜ WorkspaceTask には Activity を記録しないのか
+
+| エンティティ | Activity 記録 | 理由 |
+|-------------|--------------|------|
+| **WorkspaceItem** | ✅ 記録対象 | アイテムは「成果物」。何が起きたかを残す価値がある |
+| **WorkspaceTask** | ❌ 現時点では対象外 | タスクは「作業」。完了したかどうかだけが重要 |
+
+**タスクの状態変化はタスクエンティティ自体から取得できる**:
+- `IsCompleted` / `IsDiscarded` — 完了・破棄状態
+- `ProgressPercentage` — 進捗率
+- `UpdatedAt` — 最終更新日時
+
+Hangfire がジョブを処理していくように、人間がタスクを処理していく。
+ワーカーがいつ起きてたかではなく、**ジョブが完了したかどうか**だけを見る。
 
 ---
 
