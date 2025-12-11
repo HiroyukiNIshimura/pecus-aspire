@@ -7,6 +7,7 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
+using Pecus.Libs.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -36,6 +37,9 @@ builder.Services.AddSingleton<ILexicalConverterService>(sp =>
     var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
     return new LexicalConverterService(lexicalConverterEndpoint, logger);
 });
+
+// サービスの登録
+builder.Services.AddScoped<ActivityService>();
 
 // Hangfireタスクの登録
 builder.Services.AddScoped<HangfireTasks>();

@@ -6,6 +6,7 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Services;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 
@@ -259,6 +260,17 @@ public class WorkspaceItemService
             // RawBody 更新ジョブをエンキュー
             _backgroundJobClient.Enqueue<WorkspaceItemTasks>(x =>
                 x.UpdateRawBodyAsync(item.Id, item.RowVersion)
+            );
+
+            // Activity 記録ジョブをエンキュー
+            _backgroundJobClient.Enqueue<ActivityService>(x =>
+                x.RecordActivityAsync(
+                    workspaceId,
+                    item.Id,
+                    ownerId,
+                    ActivityActionType.Created,
+                    null
+                )
             );
 
             return item;

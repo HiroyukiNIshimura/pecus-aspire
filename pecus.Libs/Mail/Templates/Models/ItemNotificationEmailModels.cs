@@ -1,5 +1,8 @@
 namespace Pecus.Libs.Mail.Templates.Models;
 
+/// <summary>
+/// アイテム作成通知メールテンプレート用のモデル
+/// </summary>
 public class ItemCreatedEmailModel
 {
     /// <summary>宛先ユーザー名（受信者表示名）</summary>

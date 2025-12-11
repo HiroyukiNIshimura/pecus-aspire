@@ -13,6 +13,7 @@ using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Security;
+using Pecus.Libs.Services;
 using Pecus.Models.Config;
 using Pecus.Services;
 using StackExchange.Redis;
@@ -124,6 +125,7 @@ builder.Services.AddScoped<TagService>();
 builder.Services.AddScoped<SkillService>();
 builder.Services.AddScoped<MasterDataService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ActivityService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();
