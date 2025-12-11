@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// アクティビティ（操作履歴）エンティティ
+/// 監査目的ではなく、分析・集計・タイムライン表示を目的とする
 /// </summary>
 public class Activity
 {
@@ -27,52 +29,28 @@ public class Activity
     public int ItemId { get; set; }
 
     /// <summary>
-    /// 操作したユーザーID（外部キー、NULL可）
+    /// 操作したユーザーID（NULL = システム操作）
     /// </summary>
     public int? UserId { get; set; }
 
     /// <summary>
-    /// 操作コード（例: "ITEM.CREATE", "ITEM.UPDATE", "ITEM.DELETE"）
+    /// 操作タイプ（enum）
     /// </summary>
     [Required]
-    [MaxLength(100)]
-    public string Action { get; set; } = string.Empty;
+    public ActivityActionType ActionType { get; set; }
 
     /// <summary>
-    /// 操作カテゴリ（集計用、例: "CREATE", "UPDATE", "DELETE"）
+    /// 操作の詳細データ（jsonb形式）
+    /// 例: { "from": "TODO", "to": "DOING" }, { "fileName": "doc.pdf", "fileSize": 12345 }
     /// </summary>
-    [Required]
-    [MaxLength(50)]
-    public string ActionCategory { get; set; } = string.Empty;
+    [Column(TypeName = "jsonb")]
+    public string? Details { get; set; }
 
     /// <summary>
     /// 操作日時（UTC）
     /// </summary>
     [Required]
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-
-    /// <summary>
-    /// 変更前のデータ（jsonb形式）
-    /// </summary>
-    [Column(TypeName = "jsonb")]
-    public string? BeforeData { get; set; }
-
-    /// <summary>
-    /// 変更後のデータ（jsonb形式、任意）
-    /// </summary>
-    [Column(TypeName = "jsonb")]
-    public string? AfterData { get; set; }
-
-    /// <summary>
-    /// 拡張メタデータ（jsonb形式、IP・UserAgent・RequestId等）
-    /// </summary>
-    [Column(TypeName = "jsonb")]
-    public string? Metadata { get; set; }
-
-    /// <summary>
-    /// システム操作フラグ（ユーザー操作 vs システム自動操作）
-    /// </summary>
-    public bool IsSystem { get; set; } = false;
 
     // Navigation Properties
 

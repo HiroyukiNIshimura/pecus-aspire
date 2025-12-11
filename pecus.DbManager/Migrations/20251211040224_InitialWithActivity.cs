@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace pecus.DbManager.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialWithActivity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -134,6 +134,7 @@ namespace pecus.DbManager.Migrations
                     GenerativeApiVendor = table.Column<int>(type: "integer", nullable: false),
                     GenerativeApiKey = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     Plan = table.Column<int>(type: "integer", nullable: false),
+                    HelpNotificationTarget = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -373,6 +374,9 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     CanReceiveEmail = table.Column<bool>(type: "boolean", nullable: false),
+                    CanReceiveRealtimeNotification = table.Column<bool>(type: "boolean", nullable: false),
+                    TimeZone = table.Column<string>(type: "text", nullable: false),
+                    Language = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -501,6 +505,7 @@ namespace pecus.DbManager.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
                     ItemNumber = table.Column<int>(type: "integer", nullable: false),
+                    Code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Subject = table.Column<string>(type: "text", nullable: false),
                     Body = table.Column<string>(type: "text", nullable: true),
                     RawBody = table.Column<string>(type: "text", nullable: true),
@@ -620,13 +625,9 @@ namespace pecus.DbManager.Migrations
                     WorkspaceId = table.Column<int>(type: "integer", nullable: false),
                     ItemId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: true),
-                    Action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ActionCategory = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ActionType = table.Column<int>(type: "integer", nullable: false),
+                    Details = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    BeforeData = table.Column<string>(type: "jsonb", nullable: true),
-                    AfterData = table.Column<string>(type: "jsonb", nullable: true),
-                    Metadata = table.Column<string>(type: "jsonb", nullable: true),
-                    IsSystem = table.Column<bool>(type: "boolean", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
@@ -884,9 +885,9 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Activities_ActionCategory",
+                name: "IX_Activities_ActionType",
                 table: "Activities",
-                column: "ActionCategory");
+                column: "ActionType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Activities_CreatedAt",

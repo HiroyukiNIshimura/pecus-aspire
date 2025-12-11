@@ -662,14 +662,11 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.WorkspaceId).IsRequired();
             entity.Property(e => e.ItemId).IsRequired();
-            entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.ActionCategory).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ActionType).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
 
             // jsonb カラムの設定
-            entity.Property(e => e.BeforeData).HasColumnType("jsonb");
-            entity.Property(e => e.AfterData).HasColumnType("jsonb");
-            entity.Property(e => e.Metadata).HasColumnType("jsonb");
+            entity.Property(e => e.Details).HasColumnType("jsonb");
 
             // Activity と Workspace の多対一リレーションシップ
             entity
@@ -696,7 +693,7 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(a => a.WorkspaceId);
             entity.HasIndex(a => a.ItemId);
             entity.HasIndex(a => a.UserId);
-            entity.HasIndex(a => a.ActionCategory);
+            entity.HasIndex(a => a.ActionType);
             entity.HasIndex(a => a.CreatedAt);
             // 複合インデックス（頻繁な統計クエリ用）
             entity.HasIndex(a => new { a.WorkspaceId, a.CreatedAt });

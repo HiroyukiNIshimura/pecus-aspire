@@ -30,33 +30,17 @@ namespace pecus.DbManager.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ActionCategory")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("AfterData")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("BeforeData")
-                        .HasColumnType("jsonb");
+                    b.Property<int>("ActionType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsSystem")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Details")
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("jsonb");
 
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
@@ -72,7 +56,7 @@ namespace pecus.DbManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActionCategory");
+                    b.HasIndex("ActionType");
 
                     b.HasIndex("CreatedAt");
 
