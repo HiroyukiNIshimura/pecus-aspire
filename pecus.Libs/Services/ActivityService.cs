@@ -33,10 +33,11 @@ public class ActivityService
     /// <param name="itemId">アイテムID</param>
     /// <param name="userId">操作したユーザーID（NULL = システム操作）</param>
     /// <param name="actionType">操作タイプ</param>
-    /// <param name="details">操作の詳細データ（JSON文字列）</param>
+    /// <param name="details">操作の詳細データ（JSON文字列、呼び出し元で事前にシリアライズ済み）</param>
     /// <remarks>
     /// このメソッドはHangfireのバックグラウンドジョブとして実行されます。
     /// エラーが発生した場合はログに記録し、Hangfireのリトライ機能に委ねます。
+    /// detailsがnullまたは空の場合、変更がないと判断して記録をスキップします。
     /// </remarks>
     public async Task RecordActivityAsync(
         int workspaceId,
@@ -48,6 +49,18 @@ public class ActivityService
     {
         try
         {
+            // Created以外でdetailsがnullまたは空の場合は変更なしと判断してスキップ
+            if (actionType != ActivityActionType.Created && string.IsNullOrWhiteSpace(details))
+            {
+                _logger.LogInformation(
+                    "Skipping activity recording (no change detected): WorkspaceId={WorkspaceId}, ItemId={ItemId}, ActionType={ActionType}",
+                    workspaceId,
+                    itemId,
+                    actionType
+                );
+                return;
+            }
+
             _logger.LogInformation(
                 "Recording activity: WorkspaceId={WorkspaceId}, ItemId={ItemId}, UserId={UserId}, ActionType={ActionType}",
                 workspaceId,
@@ -147,5 +160,42 @@ public class ActivityService
             .Include(a => a.Item)
             .Include(a => a.User)
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// 変更検出用ヘルパー: 2つの値が異なる場合にJSON形式のdetailsを生成
+    /// </summary>
+    /// <typeparam name="T">比較する値の型</typeparam>
+    /// <param name="oldValue">変更前の値</param>
+    /// <param name="newValue">変更後の値</param>
+    /// <returns>変更があればJSON文字列、変更がなければnull</returns>
+    public static string? CreateChangeDetails<T>(T? oldValue, T? newValue)
+    {
+        // 値が同じ場合はnullを返す（変更なし）
+        if (EqualityComparer<T>.Default.Equals(oldValue, newValue))
+        {
+            return null;
+        }
+
+        // 変更があった場合はJSON化して返す
+        return System.Text.Json.JsonSerializer.Serialize(new { old = oldValue, @new = newValue });
+    }
+
+    /// <summary>
+    /// 本文更新専用の変更検出ヘルパー: oldValueのみを保存（データサイズ削減のため）
+    /// </summary>
+    /// <param name="oldValue">変更前の本文</param>
+    /// <param name="newValue">変更後の本文</param>
+    /// <returns>変更があればJSON文字列（oldのみ）、変更がなければnull</returns>
+    public static string? CreateBodyChangeDetails(string? oldValue, string? newValue)
+    {
+        // 値が同じ場合はnullを返す（変更なし）
+        if (EqualityComparer<string>.Default.Equals(oldValue, newValue))
+        {
+            return null;
+        }
+
+        // 本文の場合は old のみを保存（new は現在の Item.Body から取得可能）
+        return System.Text.Json.JsonSerializer.Serialize(new { old = oldValue });
     }
 }

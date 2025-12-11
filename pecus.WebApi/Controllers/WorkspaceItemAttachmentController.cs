@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Image;
+using Pecus.Libs.Services;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -139,6 +141,22 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             );
         }
 
+        // Activity 記録（ファイル追加）
+        var fileAddedDetails = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            fileName = fileName,
+            fileSize = file.Length
+        });
+        _backgroundJobClient.Enqueue<ActivityService>(x =>
+            x.RecordActivityAsync(
+                workspaceId,
+                itemId,
+                CurrentUserId,
+                ActivityActionType.FileAdded,
+                fileAddedDetails
+            )
+        );
+
         var response = new WorkspaceItemAttachmentResponse
         {
             Id = attachment.Id,
@@ -237,6 +255,21 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             itemId,
             attachmentId,
             CurrentUserId
+        );
+
+        // Activity 記録（ファイル削除）
+        var fileRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            fileName = attachment.FileName
+        });
+        _backgroundJobClient.Enqueue<ActivityService>(x =>
+            x.RecordActivityAsync(
+                workspaceId,
+                itemId,
+                CurrentUserId,
+                ActivityActionType.FileRemoved,
+                fileRemovedDetails
+            )
         );
 
         // 物理ファイルを削除

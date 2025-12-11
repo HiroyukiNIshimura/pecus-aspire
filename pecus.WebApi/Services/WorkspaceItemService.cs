@@ -262,15 +262,9 @@ public class WorkspaceItemService
                 x.UpdateRawBodyAsync(item.Id, item.RowVersion)
             );
 
-            // Activity 記録ジョブをエンキュー
+            // Activity 記録ジョブをエンキュー（Created は details が null でも記録）
             _backgroundJobClient.Enqueue<ActivityService>(x =>
-                x.RecordActivityAsync(
-                    workspaceId,
-                    item.Id,
-                    ownerId,
-                    ActivityActionType.Created,
-                    null
-                )
+                x.RecordActivityAsync(workspaceId, item.Id, ownerId, ActivityActionType.Created, null)
             );
 
             return item;
@@ -800,6 +794,19 @@ public class WorkspaceItemService
             );
         }
 
+        // 変更前のスナップショットを作成
+        var snapshot = new
+        {
+            Subject = item.Subject,
+            Body = item.Body,
+            AssigneeId = item.AssigneeId,
+            Priority = item.Priority,
+            CommitterId = item.CommitterId,
+            IsDraft = item.IsDraft,
+            IsArchived = item.IsArchived,
+            DueDate = item.DueDate
+        };
+
         // プロパティを更新
         if (!string.IsNullOrEmpty(request.Subject))
         {
@@ -944,6 +951,27 @@ public class WorkspaceItemService
             );
         }
 
+        // Activity記録（変更があった場合のみ）
+        // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
+        var bodyDetails = ActivityService.CreateBodyChangeDetails(snapshot.Body, item.Body);
+        if (bodyDetails != null)
+        {
+            _backgroundJobClient.Enqueue<ActivityService>(x =>
+                x.RecordActivityAsync(workspaceId, itemId, userId, ActivityActionType.BodyUpdated, bodyDetails)
+            );
+        }
+
+        // その他の項目は通常通り old/new を記録
+        RecordItemChanges(workspaceId, itemId, userId,
+            (ActivityActionType.SubjectUpdated, snapshot.Subject, item.Subject),
+            (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId),
+            (ActivityActionType.PriorityChanged, snapshot.Priority, item.Priority),
+            (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId),
+            (ActivityActionType.DraftChanged, snapshot.IsDraft, item.IsDraft),
+            (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived),
+            (ActivityActionType.DueDateChanged, snapshot.DueDate, item.DueDate)
+        );
+
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
         await _context.Entry(item).Reference(wi => wi.Owner).LoadAsync();
@@ -1003,6 +1031,14 @@ public class WorkspaceItemService
             throw new InvalidOperationException("オーナーのみがアイテムをアーカイブできます。");
         }
 
+        // 変更前のスナップショットを作成
+        var snapshot = new
+        {
+            IsDraft = item.IsDraft,
+            IsArchived = item.IsArchived,
+            CommitterId = item.CommitterId
+        };
+
         // ステータス更新
         if (request.IsDraft.HasValue)
         {
@@ -1031,6 +1067,13 @@ public class WorkspaceItemService
         {
             await RaiseConflictException(itemId);
         }
+
+        // Activity記録（変更があった場合のみ）
+        RecordItemChanges(workspaceId, itemId, userId,
+            (ActivityActionType.DraftChanged, snapshot.IsDraft, item.IsDraft),
+            (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived),
+            (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId)
+        );
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -1082,6 +1125,12 @@ public class WorkspaceItemService
             }
         }
 
+        // 変更前のスナップショットを作成
+        var snapshot = new
+        {
+            AssigneeId = item.AssigneeId
+        };
+
         try
         {
             item.AssigneeId = request.AssigneeId;
@@ -1095,6 +1144,11 @@ public class WorkspaceItemService
         {
             await RaiseConflictException(itemId);
         }
+
+        // Activity記録（変更があった場合のみ）
+        RecordItemChanges(workspaceId, itemId, userId,
+            (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId)
+        );
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -1229,6 +1283,16 @@ public class WorkspaceItemService
             throw new NotFoundException("アイテムが見つかりません。");
         }
 
+        // 変更前のスナップショットを作成
+        var snapshot = new
+        {
+            AssigneeId = item.AssigneeId,
+            CommitterId = item.CommitterId,
+            Priority = item.Priority,
+            DueDate = item.DueDate,
+            IsArchived = item.IsArchived
+        };
+
         // 属性に応じて値を更新
         switch (attribute)
         {
@@ -1267,6 +1331,40 @@ public class WorkspaceItemService
         catch (DbUpdateConcurrencyException)
         {
             await RaiseConflictException(itemId);
+        }
+
+        // Activity記録（変更があった場合のみ、属性に応じて記録）
+        switch (attribute)
+        {
+            case WorkspaceItemAttribute.Assignee:
+                RecordItemChanges(workspaceId, itemId, userId,
+                    (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId)
+                );
+                break;
+
+            case WorkspaceItemAttribute.Committer:
+                RecordItemChanges(workspaceId, itemId, userId,
+                    (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId)
+                );
+                break;
+
+            case WorkspaceItemAttribute.Priority:
+                RecordItemChanges(workspaceId, itemId, userId,
+                    (ActivityActionType.PriorityChanged, snapshot.Priority, item.Priority)
+                );
+                break;
+
+            case WorkspaceItemAttribute.Duedate:
+                RecordItemChanges(workspaceId, itemId, userId,
+                    (ActivityActionType.DueDateChanged, snapshot.DueDate, item.DueDate)
+                );
+                break;
+
+            case WorkspaceItemAttribute.Archive:
+                RecordItemChanges(workspaceId, itemId, userId,
+                    (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived)
+                );
+                break;
         }
 
         // ナビゲーションプロパティをロード
@@ -1397,6 +1495,31 @@ public class WorkspaceItemService
         if (item.CommitterId.HasValue)
         {
             await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
+        }
+    }
+
+    /// <summary>
+    /// アイテムの変更を一括でActivity記録
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">アイテムID</param>
+    /// <param name="userId">操作ユーザーID</param>
+    /// <param name="changes">変更のタプル配列（ActionType, 旧値, 新値）</param>
+    private void RecordItemChanges(
+        int workspaceId,
+        int itemId,
+        int userId,
+        params (ActivityActionType ActionType, object? OldValue, object? NewValue)[] changes)
+    {
+        foreach (var (actionType, oldValue, newValue) in changes)
+        {
+            var details = ActivityService.CreateChangeDetails(oldValue, newValue);
+            if (details != null)
+            {
+                _backgroundJobClient.Enqueue<ActivityService>(x =>
+                    x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
+                );
+            }
         }
     }
 }

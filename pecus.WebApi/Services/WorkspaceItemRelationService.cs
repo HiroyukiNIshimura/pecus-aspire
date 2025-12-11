@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Services;
 
 namespace Pecus.Services;
 
@@ -12,14 +15,17 @@ public class WorkspaceItemRelationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WorkspaceItemRelationService> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public WorkspaceItemRelationService(
         ApplicationDbContext context,
-        ILogger<WorkspaceItemRelationService> logger
+        ILogger<WorkspaceItemRelationService> logger,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _context = context;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -102,6 +108,22 @@ public class WorkspaceItemRelationService
             request.RelationType
         );
 
+        // Activity記録（RelationAdded）
+        var relationDetails = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            relatedItemId = request.ToItemId,
+            relationType = request.RelationType?.ToString()
+        });
+        _backgroundJobClient.Enqueue<ActivityService>(x =>
+            x.RecordActivityAsync(
+                workspaceId,
+                fromItemId,
+                createdByUserId,
+                ActivityActionType.RelationAdded,
+                relationDetails
+            )
+        );
+
         return createdRelation;
     }
 
@@ -174,6 +196,11 @@ public class WorkspaceItemRelationService
             throw new NotFoundException("指定された関連が見つかりません。");
         }
 
+        // Activity記録用に情報を保持
+        var fromItemId = relation.FromItemId;
+        var toItemId = relation.ToItemId;
+        var relationType = relation.RelationType;
+
         _context.WorkspaceItemRelations.Remove(relation);
 
         await _context.SaveChangesAsync();
@@ -183,6 +210,22 @@ public class WorkspaceItemRelationService
             relationId,
             relation.FromItemId,
             relation.ToItemId
+        );
+
+        // Activity記録（RelationRemoved）- fromItem 側に記録
+        var relationRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            relatedItemId = toItemId,
+            relationType = relationType?.ToString()
+        });
+        _backgroundJobClient.Enqueue<ActivityService>(x =>
+            x.RecordActivityAsync(
+                workspaceId,
+                fromItemId,
+                currentUserId,
+                ActivityActionType.RelationRemoved,
+                relationRemovedDetails
+            )
         );
     }
 
