@@ -1,0 +1,51 @@
+@model Pecus.Libs.Mail.Templates.Models.ReminderCommentEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>督促通知</h2>
+
+<p>@Model.RemindedByName さんからタスクに対し督促がありました。</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ItemTitle))
+{
+    <p><strong>アイテム:</strong> @Model.ItemTitle</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.TaskContent))
+{
+    <p><strong>タスク:</strong> @Model.TaskContent</p>
+}
+
+<div style="background-color:#fff3cd; padding:15px; margin:15px 0; border-left:4px solid #ffc107;">
+    <p style="margin:0; white-space:pre-wrap;">@Model.CommentBody</p>
+</div>
+
+<ul>
+    @if (!string.IsNullOrWhiteSpace(Model.ItemCode))
+    {
+        <li>アイテムコード: @Model.ItemCode</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.TaskPriority))
+    {
+        <li>タスク優先度: @Model.TaskPriority</li>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.TaskAssigneeName))
+    {
+        <li>タスク担当者: @Model.TaskAssigneeName</li>
+    }
+    @if (Model.TaskDueDate.HasValue)
+    {
+        <li>タスク期限 (JST): @Model.TaskDueDate.Value.ToString("yyyy/MM/dd HH:mm")</li>
+    }
+    <li>督促者: @Model.RemindedByName</li>
+    <li>投稿日時 (JST): @Model.CommentedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
+    <li>組織: @Model.OrganizationName</li>
+</ul>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.ItemUrl" class="button">アイテムを確認</a>
+</div>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>

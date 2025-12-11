@@ -1,0 +1,38 @@
+@model Pecus.Libs.Mail.Templates.Models.HelpCommentEmailModel
+
+ヘルプ要求が投稿されました
+
+@Model.RequesterName さんがヘルプを要求しています。
+
+アイテム: @Model.ItemTitle
+@if (!string.IsNullOrWhiteSpace(Model.TaskContent))
+{
+@:タスク: @Model.TaskContent
+}
+
+コメント:
+---
+@Model.CommentBody
+---
+
+詳細:
+@if (!string.IsNullOrWhiteSpace(Model.ItemCode))
+{
+@:- アイテムコード: @Model.ItemCode
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskPriority))
+{
+@:- タスク優先度: @Model.TaskPriority
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskAssigneeName))
+{
+@:- タスク担当者: @Model.TaskAssigneeName
+}
+- 要求者: @Model.RequesterName
+- 投稿日時 (JST): @Model.CommentedAt.ToString("yyyy/MM/dd HH:mm")
+- ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+- 組織: @Model.OrganizationName
+
+アイテムを確認: @Model.ItemUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

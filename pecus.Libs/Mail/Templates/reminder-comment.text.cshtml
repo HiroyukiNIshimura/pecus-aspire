@@ -1,0 +1,42 @@
+@model Pecus.Libs.Mail.Templates.Models.ReminderCommentEmailModel
+
+督促通知
+
+@Model.RemindedByName さんからタスクに対し督促がありました。
+
+アイテム: @Model.ItemTitle
+@if (!string.IsNullOrWhiteSpace(Model.TaskContent))
+{
+@:タスク: @Model.TaskContent
+}
+
+コメント:
+---
+@Model.CommentBody
+---
+
+詳細:
+@if (!string.IsNullOrWhiteSpace(Model.ItemCode))
+{
+@:- アイテムコード: @Model.ItemCode
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskPriority))
+{
+@:- タスク優先度: @Model.TaskPriority
+}
+@if (!string.IsNullOrWhiteSpace(Model.TaskAssigneeName))
+{
+@:- タスク担当者: @Model.TaskAssigneeName
+}
+@if (Model.TaskDueDate.HasValue)
+{
+@:- タスク期限 (JST): @Model.TaskDueDate.Value.ToString("yyyy/MM/dd HH:mm")
+}
+- 督促者: @Model.RemindedByName
+- 投稿日時 (JST): @Model.CommentedAt.ToString("yyyy/MM/dd HH:mm")
+- ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+- 組織: @Model.OrganizationName
+
+アイテムを確認: @Model.ItemUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

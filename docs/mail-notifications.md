@@ -13,15 +13,15 @@
 | 5 | ユーザー登録（歓迎メール） | 当該ユーザー | welcome | `Templates/welcome.html.cshtml`, `.text.cshtml` が存在します（WelcomeEmailModel） |
 | 6 | ワークスペースへの加入通知 | 当該ユーザー | workspace-joined | `Templates/workspace-joined.html.cshtml`, `.text.cshtml` を追加済み（WorkspaceJoinedEmailModel） |
 | 7 | 疑わしい端末からのログイン通知 | 当該ユーザー | security-notification | `Templates/security-notification.html.cshtml`, `.text.cshtml` が存在します（SecurityNotificationEmailModel） |
-| 8 | ヘルプコメント（ヘルプ要求） | 組織管理者 / ワークスペースユーザー（設定による） | （テンプレートなし） | 組織設定で送信先を制御。テンプレ作成検討 |
-| 9 | 督促コメント（リマインダー） | 担当者（タスク担当者等） | （テンプレートなし） | タスク管理用のテンプレート（reminder）を検討 |
+| 8 | ヘルプコメント（ヘルプ要求） | 組織管理者 / ワークスペースユーザー（設定による） | help-comment | `Templates/help-comment.html.cshtml`, `.text.cshtml` を追加（HelpCommentEmailModel） |
+| 9 | 督促コメント（リマインダー） | 担当者（タスク担当者等） | reminder-comment | `Templates/reminder-comment.html.cshtml`, `.text.cshtml` を追加（ReminderCommentEmailModel） |
 | 10 | アイテム作成（公開時） | ワークスペースのユーザー（ウォッチャー等） | item-created | プレーンテキスト/HTML本文を埋め込み済み |
 | 11 | アイテム更新（公開時） | ワークスペースのユーザー | （テンプレートなし） | 更新種別（件名変更/担当者変更等）を本文で分ける設計を推奨 |
 | 12 | タスク作成通知 | タスク担当者・担当者・コミッタ・オーナー | task-created | `Templates/task-created.html.cshtml`, `.text.cshtml` を追加（TaskCreatedEmailModel） |
 | 13 | タスク完了通知 | 担当者・コミッタ・オーナー | task-completed | `Templates/task-completed.html.cshtml`, `.text.cshtml` を追加（TaskCompletedEmailModel） |
-| 14 | ワークスペース作成通知 | 組織ユーザー | （テンプレートなし） | |
-| 15 | ワークスペース更新通知 | 組織ユーザー | （テンプレートなし） | 変更の種類（カテゴリ/名前等）を本文に反映するテンプレ検討 |
-| 16 | ワークスペース削除通知 | 組織ユーザー | （テンプレートなし） | 削除は重要な操作のため確認フローと併せて設計を推奨 |
+| 14 | ワークスペース作成通知 | 組織ユーザー | workspace-created | `Templates/workspace-created.html.cshtml`, `.text.cshtml` を追加（WorkspaceCreatedEmailModel） |
+| 15 | ワークスペース更新通知 | 組織ユーザー | workspace-updated | `Templates/workspace-updated.html.cshtml`, `.text.cshtml` を追加（WorkspaceUpdatedEmailModel） |
+| 16 | ワークスペース削除通知 | 組織ユーザー | workspace-deleted | `Templates/workspace-deleted.html.cshtml`, `.text.cshtml` を追加（WorkspaceDeletedEmailModel） |
 
 ## テンプレート管理・追加時の注意
 

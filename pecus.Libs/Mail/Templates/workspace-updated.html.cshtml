@@ -1,0 +1,55 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceUpdatedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>ワークスペースが更新されました</h2>
+
+<p>@Model.WorkspaceName が更新されました。</p>
+
+<div style="background-color:#e3f2fd; padding:15px; margin:15px 0; border-left:4px solid #2196F3;">
+    <h3 style="margin-top:0;">変更内容</h3>
+    @if (Model.Changes.Any())
+    {
+        <ul style="margin-bottom:0;">
+            @foreach (var change in Model.Changes)
+            {
+                <li>@change</li>
+            }
+        </ul>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.OldWorkspaceName) && !string.IsNullOrWhiteSpace(Model.NewWorkspaceName))
+{
+    <p><strong>名前:</strong> @Model.OldWorkspaceName → @Model.NewWorkspaceName</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.OldCategoryName) || !string.IsNullOrWhiteSpace(Model.NewCategoryName))
+{
+    <p><strong>カテゴリ:</strong> @(Model.OldCategoryName ?? "(なし)") → @(Model.NewCategoryName ?? "(なし)")</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.OldDescription) || !string.IsNullOrWhiteSpace(Model.NewDescription))
+{
+    <p><strong>説明:</strong></p>
+    <div style="background-color:#ffebee; padding:10px; margin:5px 0;">
+        <p style="margin:0; white-space:pre-wrap; text-decoration:line-through; color:#666;">@(Model.OldDescription ?? "(なし)")</p>
+    </div>
+    <div style="background-color:#e8f5e9; padding:10px; margin:5px 0;">
+        <p style="margin:0; white-space:pre-wrap;">@(Model.NewDescription ?? "(なし)")</p>
+    </div>
+}
+
+<ul>
+    <li>ワークスペースコード: @Model.WorkspaceCode</li>
+    <li>更新者: @Model.UpdatedByName</li>
+    <li>更新日時 (JST): @Model.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</li>
+    <li>組織: @Model.OrganizationName</li>
+</ul>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.WorkspaceUrl" class="button">ワークスペースを表示</a>
+</div>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>

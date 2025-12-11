@@ -1,0 +1,37 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceDeletedEmailModel
+
+【重要】ワークスペースが削除されました
+
+以下のワークスペースが削除されました。
+
+ワークスペース名: @Model.WorkspaceName
+
+詳細:
+- ワークスペースコード: @Model.WorkspaceCode
+@if (!string.IsNullOrWhiteSpace(Model.CategoryName))
+{
+@:- カテゴリ: @Model.CategoryName
+}
+- 削除者: @Model.DeletedByName
+- 削除日時 (JST): @Model.DeletedAt.ToString("yyyy/MM/dd HH:mm")
+- 組織: @Model.OrganizationName
+
+@if (!string.IsNullOrWhiteSpace(Model.DeletionReason))
+{
+@:削除理由:
+@:---
+@:@Model.DeletionReason
+@:---
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.BackupInfo))
+{
+@:バックアップ・復旧について:
+@:---
+@:@Model.BackupInfo
+@:---
+@:
+}
+このワークスペースに含まれていたデータへのアクセスはできなくなりました。
+
+この削除に心当たりがない場合、または誤って削除された可能性がある場合は、すぐに管理者またはサポートまでご連絡ください。

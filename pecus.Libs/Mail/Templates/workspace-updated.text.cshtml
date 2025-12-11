@@ -1,0 +1,41 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceUpdatedEmailModel
+
+ワークスペースが更新されました
+
+@Model.WorkspaceName が更新されました。
+
+変更内容:
+@if (Model.Changes.Any())
+{
+@foreach (var change in Model.Changes)
+{
+@:- @change
+}
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.OldWorkspaceName) && !string.IsNullOrWhiteSpace(Model.NewWorkspaceName))
+{
+@:名前: @Model.OldWorkspaceName → @Model.NewWorkspaceName
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.OldCategoryName) || !string.IsNullOrWhiteSpace(Model.NewCategoryName))
+{
+@:カテゴリ: @(Model.OldCategoryName ?? "(なし)") → @(Model.NewCategoryName ?? "(なし)")
+@:
+}
+@if (!string.IsNullOrWhiteSpace(Model.OldDescription) || !string.IsNullOrWhiteSpace(Model.NewDescription))
+{
+@:説明の変更:
+@:[旧] @(Model.OldDescription ?? "(なし)")
+@:[新] @(Model.NewDescription ?? "(なし)")
+@:
+}
+詳細:
+- ワークスペースコード: @Model.WorkspaceCode
+- 更新者: @Model.UpdatedByName
+- 更新日時 (JST): @Model.UpdatedAt.ToString("yyyy/MM/dd HH:mm")
+- 組織: @Model.OrganizationName
+
+ワークスペースを表示: @Model.WorkspaceUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。
