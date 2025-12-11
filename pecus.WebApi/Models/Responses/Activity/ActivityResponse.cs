@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Activity;
 
@@ -45,6 +46,7 @@ public class ActivityResponse
     /// <summary>
     /// 操作タイプ
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<ActivityActionType>))]
     public ActivityActionType ActionType { get; set; }
 
     /// <summary>

@@ -7,6 +7,7 @@ import {
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
+import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
 import UserAvatar from '@/components/common/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
@@ -54,6 +55,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isDrawerClosing, setIsDrawerClosing] = useState(false);
     const [isPinLoading, setIsPinLoading] = useState(false);
+    const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
     // 関連削除モーダルの状態
     const [deleteRelationModal, setDeleteRelationModal] = useState<{
@@ -278,6 +280,15 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 )}
                 {item.pinCount !== undefined && item.pinCount > 0 && <span className="text-xs">{item.pinCount}</span>}
               </button>
+              {/* タイムラインボタン */}
+              <button
+                type="button"
+                onClick={() => setIsTimelineOpen(true)}
+                className="btn btn-secondary btn-sm gap-1"
+                title="タイムラインを表示"
+              >
+                <span className="icon-[mdi--history] size-4" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 onClick={handleEditClick}
@@ -495,6 +506,14 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           members={members}
           onItemUpdate={(updatedItem) => setItem(updatedItem)}
           currentUserId={currentUserId}
+        />
+
+        {/* タイムラインモーダル */}
+        <ItemActivityTimeline
+          workspaceId={workspaceId}
+          itemId={itemId}
+          isOpen={isTimelineOpen}
+          onClose={() => setIsTimelineOpen(false)}
         />
 
         {/* 関連削除確認モーダル */}

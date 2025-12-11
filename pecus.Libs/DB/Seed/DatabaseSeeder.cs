@@ -128,6 +128,7 @@ public class DatabaseSeeder
         await SeedWorkspaceItemRelationsAsync();
         await SeedWorkspaceTasksAsync();
         await SeedTaskCommentsAsync();
+        await SeedActivitiesAsync();
 
         _logger.LogInformation("Development mock data seeding completed");
     }
@@ -1171,9 +1172,17 @@ public class DatabaseSeeder
             var rawBody = string.Empty;
 
             int totalItemsAdded = 0;
+            const int maxTotalItems = 1000; // 全体で最大1000件
+            var itemsPerWorkspace = Math.Max(5, maxTotalItems / workspaces.Count); // ワークスペースあたりの件数
 
             foreach (var workspace in workspaces)
             {
+                // 上限チェック
+                if (totalItemsAdded >= maxTotalItems)
+                {
+                    break;
+                }
+
                 // このワークスペースのメンバーを取得
                 var workspaceMembers = await _context.WorkspaceUsers
                     .Where(wu => wu.WorkspaceId == workspace.Id)
@@ -1189,8 +1198,9 @@ public class DatabaseSeeder
                 // ワークスペース内の連番カウンター
                 int itemNumber = 0;
 
-                // 各ワークスペースに50件のアイテムを作成
-                for (int i = 0; i < 50; i++)
+                // ワークスペースあたりのアイテム数を作成（全体上限あり）
+                var itemsToCreate = Math.Min(itemsPerWorkspace, maxTotalItems - totalItemsAdded);
+                for (int i = 0; i < itemsToCreate; i++)
                 {
                     itemNumber++;
                     var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
@@ -1245,6 +1255,12 @@ public class DatabaseSeeder
                     var maxItemNumber = await _context.WorkspaceItems
                         .Where(wi => wi.WorkspaceId == workspace.Id)
                         .MaxAsync(wi => (int?)wi.ItemNumber) ?? 0;
+
+                    // アイテムがない場合はスキップ（setvalに0は設定できない）
+                    if (maxItemNumber == 0)
+                    {
+                        continue;
+                    }
 
 #pragma warning disable EF1002 // シーケンス名・値はシステム生成で安全
                     await _context.Database.ExecuteSqlRawAsync(
@@ -1640,5 +1656,153 @@ public class DatabaseSeeder
 
         await _context.SaveChangesAsync();
         _logger.LogInformation("Added {Count} task comments in total", totalCommentsAdded);
+    }
+
+    /// <summary>
+    /// アクティビティのシードデータを投入（1アイテムに30〜50件）
+    /// </summary>
+    public async Task SeedActivitiesAsync()
+    {
+        if (await _context.Activities.AnyAsync())
+        {
+            _logger.LogInformation("Activities already seeded, skipping");
+            return;
+        }
+
+        var items = await _context.WorkspaceItems
+            .Include(wi => wi.Workspace)
+            .ThenInclude(w => w!.WorkspaceUsers)
+            .ToListAsync();
+
+        if (!items.Any())
+        {
+            _logger.LogWarning("No workspace items found for seeding activities");
+            return;
+        }
+
+        var actionTypes = Enum.GetValues<ActivityActionType>();
+        int totalActivitiesAdded = 0;
+
+        foreach (var item in items)
+        {
+            // 各アイテムに30〜50件のアクティビティを作成
+            var activityCount = _random.Next(30, 51);
+            var memberIds = item.Workspace?.WorkspaceUsers?.Select(wu => wu.UserId).ToList() ?? [];
+
+            if (memberIds.Count == 0)
+            {
+                continue;
+            }
+
+            // 作成日時を基準に時系列でアクティビティを生成
+            var baseDate = item.CreatedAt;
+
+            for (int i = 0; i < activityCount; i++)
+            {
+                var actionType = i == 0
+                    ? ActivityActionType.Created  // 最初は必ず作成
+                    : actionTypes[_random.Next(actionTypes.Length)];
+
+                // Created は最初だけなので、それ以外の場合はスキップ
+                if (i > 0 && actionType == ActivityActionType.Created)
+                {
+                    actionType = ActivityActionType.BodyUpdated;
+                }
+
+                var userId = memberIds[_random.Next(memberIds.Count)];
+                var createdAt = baseDate.AddMinutes(_random.Next(1, 60) * i);
+
+                var activity = new Activity
+                {
+                    WorkspaceId = item.WorkspaceId,
+                    ItemId = item.Id,
+                    UserId = userId,
+                    ActionType = actionType,
+                    Details = GenerateActivityDetails(actionType),
+                    CreatedAt = createdAt,
+                };
+
+                _context.Activities.Add(activity);
+                totalActivitiesAdded++;
+
+                // 1000件ごとに保存してメモリを節約
+                if (totalActivitiesAdded % 1000 == 0)
+                {
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Added {Count} activities", totalActivitiesAdded);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Added {Count} activities in total", totalActivitiesAdded);
+    }
+
+    /// <summary>
+    /// アクティビティのDetailsを生成
+    /// </summary>
+    private string? GenerateActivityDetails(ActivityActionType actionType)
+    {
+        return actionType switch
+        {
+            ActivityActionType.Created => null,
+            ActivityActionType.SubjectUpdated => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = _faker.Lorem.Sentence(3),
+                @new = _faker.Lorem.Sentence(3)
+            }),
+            ActivityActionType.BodyUpdated => null, // 本文更新は詳細なし
+            ActivityActionType.FileAdded => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                fileName = _faker.System.FileName(),
+                fileSize = _random.Next(1024, 10485760)
+            }),
+            ActivityActionType.FileRemoved => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                fileName = _faker.System.FileName()
+            }),
+            ActivityActionType.StatusChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = "TODO",
+                @new = _random.Next(3) switch { 0 => "DOING", 1 => "REVIEW", _ => "DONE" }
+            }),
+            ActivityActionType.AssigneeChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = _random.Next(2) == 0 ? null : _faker.Name.FullName(),
+                @new = _faker.Name.FullName()
+            }),
+            ActivityActionType.RelationAdded => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                relatedItemId = _random.Next(1, 100)
+            }),
+            ActivityActionType.RelationRemoved => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                relatedItemId = _random.Next(1, 100)
+            }),
+            ActivityActionType.ArchivedChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                @new = _random.Next(2) == 1
+            }),
+            ActivityActionType.DraftChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                @new = _random.Next(2) == 1
+            }),
+            ActivityActionType.CommitterChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = _random.Next(2) == 0 ? null : _faker.Name.FullName(),
+                @new = _faker.Name.FullName()
+            }),
+            ActivityActionType.PriorityChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = "Medium",
+                @new = _random.Next(4) switch { 0 => "Low", 1 => "Medium", 2 => "High", _ => "Critical" }
+            }),
+            ActivityActionType.DueDateChanged => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                old = _random.Next(2) == 0 ? null : DateTime.UtcNow.AddDays(-_random.Next(1, 30)).ToString("o"),
+                @new = DateTime.UtcNow.AddDays(_random.Next(1, 60)).ToString("o")
+            }),
+            _ => null
+        };
     }
 }
