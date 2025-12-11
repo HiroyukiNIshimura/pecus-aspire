@@ -12124,6 +12124,12 @@
             "description": "作成日時",
             "format": "date-time"
           },
+          "lastLoginAt": {
+            "type": "string",
+            "description": "最終ログイン日時",
+            "format": "date-time",
+            "nullable": true
+          },
           "rowVersion": {
             "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion",
@@ -12585,6 +12591,12 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "description": "最終ログイン日時",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -13805,6 +13817,12 @@
           "isActive": {
             "type": "boolean",
             "description": "アクティブフラグ"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "description": "最終ログイン日時",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false,

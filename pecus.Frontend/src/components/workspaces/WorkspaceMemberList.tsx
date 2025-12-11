@@ -23,16 +23,9 @@ export interface MemberItem {
   workspaceRole?: WorkspaceRole;
   /** アクティブフラグ */
   isActive?: boolean;
+  /** 最終ログイン日時 */
+  lastLoginAt?: string | null;
 }
-
-/**
- * ロールの表示設定（ソート用）
- */
-const roleConfig: Record<WorkspaceRole, { order: number }> = {
-  Owner: { order: 0 },
-  Member: { order: 1 },
-  Viewer: { order: 2 },
-};
 
 /** メンバー情報からユーザーIDを取得 */
 const getMemberId = (member: MemberItem): number => member.userId ?? member.id ?? 0;
@@ -68,11 +61,11 @@ export default function WorkspaceMemberList({
   onChangeRole,
   highlightedUserIds,
 }: WorkspaceMemberListProps) {
-  // 権限の優先順位でソート
+  // 最終ログイン日時でソート（新しい順、nullは最後）
   const sortedMembers = [...members].sort((a, b) => {
-    const orderA = roleConfig[a.workspaceRole || 'Viewer']?.order ?? 3;
-    const orderB = roleConfig[b.workspaceRole || 'Viewer']?.order ?? 3;
-    return orderA - orderB;
+    const dateA = a.lastLoginAt ? new Date(a.lastLoginAt).getTime() : 0;
+    const dateB = b.lastLoginAt ? new Date(b.lastLoginAt).getTime() : 0;
+    return dateB - dateA;
   });
 
   return (

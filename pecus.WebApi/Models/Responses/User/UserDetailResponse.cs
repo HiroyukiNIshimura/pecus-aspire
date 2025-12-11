@@ -84,6 +84,11 @@ public class UserDetailResponse : IConflictModel
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
+    /// 最終ログイン日時
+    /// </summary>
+    public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>
     /// ユーザーの楽観的ロック用RowVersion
     /// </summary>
     [Required]

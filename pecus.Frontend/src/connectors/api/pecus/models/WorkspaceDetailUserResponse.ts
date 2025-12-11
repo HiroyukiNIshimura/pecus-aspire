@@ -28,5 +28,9 @@ export type WorkspaceDetailUserResponse = {
      * アクティブフラグ
      */
     isActive?: boolean;
+    /**
+     * 最終ログイン日時
+     */
+    lastLoginAt?: string | null;
 };
 

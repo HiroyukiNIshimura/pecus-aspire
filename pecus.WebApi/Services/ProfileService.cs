@@ -317,6 +317,7 @@ public class ProfileService
                 avatarPath: user.UserAvatarPath
             ),
             CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
             Roles = user.Roles?
                 .Select(r => new UserRoleResponse
                 {
