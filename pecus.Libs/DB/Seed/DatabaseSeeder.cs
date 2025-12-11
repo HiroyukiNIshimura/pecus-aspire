@@ -1768,11 +1768,13 @@ public class DatabaseSeeder
             }),
             ActivityActionType.RelationAdded => System.Text.Json.JsonSerializer.Serialize(new
             {
-                relatedItemId = _random.Next(1, 100)
+                relatedItemCode = _random.Next(1, 100).ToString(),
+                relationType = "Related"
             }),
             ActivityActionType.RelationRemoved => System.Text.Json.JsonSerializer.Serialize(new
             {
-                relatedItemId = _random.Next(1, 100)
+                relatedItemCode = _random.Next(1, 100).ToString(),
+                relationType = "Related"
             }),
             ActivityActionType.ArchivedChanged => System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -1789,8 +1791,8 @@ public class DatabaseSeeder
             }),
             ActivityActionType.PriorityChanged => System.Text.Json.JsonSerializer.Serialize(new
             {
-                old = "Medium",
-                @new = _random.Next(4) switch { 0 => "Low", 1 => "Medium", 2 => "High", _ => "Critical" }
+                old = "中",
+                @new = _random.Next(4) switch { 0 => "低", 1 => "中", 2 => "高", _ => "緊急" }
             }),
             ActivityActionType.DueDateChanged => System.Text.Json.JsonSerializer.Serialize(new
             {

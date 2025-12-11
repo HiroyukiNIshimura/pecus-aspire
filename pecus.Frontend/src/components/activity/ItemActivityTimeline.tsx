@@ -52,6 +52,22 @@ function getDateKey(dateString: string): string {
   return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
+/** ファイルサイズを人間が読みやすい形式に変換 */
+function formatFileSize(bytes: number | null | undefined): string | null {
+  if (bytes == null || bytes <= 0) return null;
+
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+
+  return `${size.toFixed(unitIndex > 0 ? 1 : 0)} ${units[unitIndex]}`;
+}
+
 /** 詳細データをパースして表示用テキストを生成 */
 function formatDetails(actionType: ActivityActionType, details: string | null | undefined): string | null {
   if (!details) return null;
@@ -73,8 +89,10 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
         return parsed.new ? 'アーカイブしました' : 'アーカイブを解除しました';
       case 'DraftChanged':
         return parsed.new ? '下書きに変更しました' : '公開しました';
-      case 'FileAdded':
-        return `${parsed.fileName}`;
+      case 'FileAdded': {
+        const size = formatFileSize(parsed.fileSize);
+        return `${parsed.fileName}${size ? ` (${size})` : ''}`;
+      }
       case 'FileRemoved':
         return `${parsed.fileName}`;
       case 'RelationAdded':
