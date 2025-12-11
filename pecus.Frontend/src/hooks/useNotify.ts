@@ -26,6 +26,7 @@ export function useNotify() {
             icon: {
               className: 'icon-[solar--check-circle-linear] !text-success',
               tagName: 'span',
+              text: 'success',
             },
           },
           {
@@ -34,6 +35,7 @@ export function useNotify() {
             icon: {
               className: 'icon-[solar--close-circle-linear] !text-error',
               tagName: 'span',
+              text: 'error',
             },
           },
           {
@@ -42,6 +44,7 @@ export function useNotify() {
             icon: {
               className: 'icon-[solar--danger-triangle-linear] !text-warning',
               tagName: 'span',
+              text: 'warning',
             },
           },
           {
@@ -50,6 +53,7 @@ export function useNotify() {
             icon: {
               className: 'icon-[solar--info-circle-linear] !text-info',
               tagName: 'span',
+              text: 'info',
             },
           },
         ],
