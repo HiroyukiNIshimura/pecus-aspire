@@ -42,6 +42,9 @@ public class ItemCreatedEmailModel
     public string ItemUrl { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// アイテム更新通知メールテンプレート用のモデル
+/// </summary>
 public class ItemUpdatedEmailModel
 {
     /// <summary>宛先ユーザー名（受信者表示名）</summary>
