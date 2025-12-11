@@ -7,6 +7,7 @@
 
 ## 関連ドキュメント
 
+- [ワークスペース・アイテム・タスクの関係](workspace-item-task-relationship.md) - エンティティの基本構造
 - [ダッシュボード統計機能](dashboard-statistics.md) - 同じデータソースを使用
 - [アクティビティ要件定義](activity-requirements.md) - 設計理念を共有
 

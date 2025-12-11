@@ -3,7 +3,19 @@
 ## 概要
 
 組織内のタスク状況・チーム活動を可視化するダッシュボード統計機能の設計。
-Activity テーブルと WorkspaceItem テーブルを主なデータソースとして、組織レベルの統計情報を提供する。
+Activity テーブル、WorkspaceItem テーブル、WorkspaceTask テーブルを主なデータソースとして、組織レベルの統計情報を提供する。
+
+### WorkspaceItem と WorkspaceTask の違い
+
+| エンティティ | 役割 | 例 |
+|------------|------|-----|
+| **WorkspaceItem** | コンテンツ（ページ、ドキュメント、情報） | 「ログイン手順」ページ、「API仕様書」 |
+| **WorkspaceTask** | 作業単位（やるべきこと） | 「キャプチャ撮影」「説明執筆」「レビュー」 |
+
+**重要**:
+- **タスクは必ずアイテムに紐づく**（Workspace → Item → Task の階層構造）
+- ワークスペースが「操作マニュアル」の場合、アイテムは「ページ」であり、タスクは「そのページを作る作業」
+- 統計機能では**両方を別々に集計**する必要がある
 
 ## 設計理念
 
@@ -35,10 +47,10 @@ Activity テーブルと WorkspaceItem テーブルを主なデータソース�
 
 | 組織統計 | 個人統計へのフィルタ |
 |---------|---------------------|
-| 進行中タスク数 | `AssigneeId = 自分` |
-| 完了タスク数 | Activity `UserId = 自分 && ArchivedChanged` |
-| 期限切れタスク数 | `AssigneeId = 自分 && DueDate < now` |
-| 優先度別タスク数 | `AssigneeId = 自分` でグループ |
+| 進行中タスク数 | `AssignedUserId = 自分` |
+| 完了タスク数 | `AssignedUserId = 自分 && IsCompleted = true` |
+| 期限切れタスク数 | `AssignedUserId = 自分 && DueDate < now && !IsCompleted` |
+| 優先度別タスク数 | `AssignedUserId = 自分` でグループ |
 | 週次作成/完了推移 | Activity `UserId = 自分` |
 | アクション別件数 | Activity `UserId = 自分` |
 
@@ -50,8 +62,9 @@ Activity テーブルと WorkspaceItem テーブルを主なデータソース�
 
 | エンティティ | 主要フィールド | 用途 |
 |-------------|--------------|------|
-| **Activity** | `WorkspaceId`, `ItemId`, `UserId`, `ActionType`, `Details`(jsonb), `CreatedAt` | アクティビティベースの統計 |
-| **WorkspaceItem** | `WorkspaceId`, `Priority`, `DueDate`, `IsArchived`, `IsDraft`, `AssigneeId`, `CommitterId`, `CreatedAt`, `UpdatedAt` | タスクベースの統計 |
+| **Activity** | `WorkspaceId`, `ItemId`, `UserId`, `ActionType`, `Details`(jsonb), `CreatedAt` | アイテム変更のアクティビティ統計 |
+| **WorkspaceItem** | `WorkspaceId`, `IsArchived`, `IsDraft`, `CreatedAt`, `UpdatedAt` | アイテム（コンテンツ）の統計 |
+| **WorkspaceTask** | `WorkspaceId`, `WorkspaceItemId`(nullable), `AssignedUserId`, `Priority`, `DueDate`, `IsCompleted`, `IsDiscarded`, `EstimatedHours`, `ProgressPercentage`, `CreatedAt` | タスク（作業）の統計 |
 | **WorkspaceUser** | `WorkspaceId`, `UserId`, `WorkspaceRole`, `JoinedAt`, `LastAccessedAt` | ユーザー参加状況 |
 | **User** | `OrganizationId`, `IsActive`, `LastLoginAt` | 組織メンバー情報 |
 
@@ -59,18 +72,18 @@ Activity テーブルと WorkspaceItem テーブルを主なデータソース�
 
 ## 統計カテゴリ
 
-### 1. タスクサマリ（WorkspaceItem ベース）
+### 1. タスクサマリ（WorkspaceTask ベース）
 
 リアルタイムでタスクの現在状態を集計。
 
 | 統計項目 | 説明 | クエリ条件 |
 |---------|------|-----------|
-| **進行中タスク数** | 公開済み・未アーカイブ | `!IsDraft && !IsArchived` |
-| **下書きタスク数** | 下書き状態 | `IsDraft` |
-| **完了タスク数** | アーカイブ済み | `IsArchived` |
-| **期限切れタスク数** | 期限超過の未完了タスク | `DueDate < now && !IsArchived` |
-| **今週期限タスク数** | 今週中に期限 | `DueDate BETWEEN now AND endOfWeek && !IsArchived` |
-| **未アサインタスク数** | 担当者未設定の公開タスク | `AssigneeId IS NULL && !IsDraft && !IsArchived` |
+| **進行中タスク数** | 未完了・未破棄 | `!IsCompleted && !IsDiscarded` |
+| **完了タスク数** | 完了済み | `IsCompleted` |
+| **破棄タスク数** | 破棄済み | `IsDiscarded` |
+| **期限切れタスク数** | 期限超過の未完了タスク | `DueDate < now && !IsCompleted && !IsDiscarded` |
+| **今週期限タスク数** | 今週中に期限 | `DueDate BETWEEN now AND endOfWeek && !IsCompleted` |
+| **未アサインタスク数** | 担当者未設定 | `AssignedUserId IS NULL && !IsCompleted && !IsDiscarded` |
 
 #### 優先度別タスク数
 
@@ -84,11 +97,21 @@ Activity テーブルと WorkspaceItem テーブルを主なデータソース�
 ```sql
 -- 例: 優先度別タスク数
 SELECT Priority, COUNT(*)
-FROM WorkspaceItems
+FROM WorkspaceTasks
 WHERE WorkspaceId IN (組織内ワークスペース)
-  AND NOT IsDraft AND NOT IsArchived
+  AND NOT IsCompleted AND NOT IsDiscarded
 GROUP BY Priority
 ```
+
+### 2. アイテムサマリ（WorkspaceItem ベース）
+
+コンテンツ（ページ、ドキュメント）の状態を集計。
+
+| 統計項目 | 説明 | クエリ条件 |
+|---------|------|-----------|
+| **公開アイテム数** | 公開済み・未アーカイブ | `!IsDraft && !IsArchived` |
+| **下書きアイテム数** | 下書き状態 | `IsDraft` |
+| **アーカイブ済み数** | アーカイブ済み | `IsArchived` |
 
 ---
 
@@ -109,24 +132,24 @@ GROUP BY Priority
 
 | ActionType | 統計的意味 |
 |------------|-----------|
-| `Created` | タスク発生量 |
-| `ArchivedChanged` (new=true) | タスク消化量 |
-| `SubjectUpdated` / `BodyUpdated` | タスク詳細化の活動 |
+| `Created` | アイテム作成量 |
+| `ArchivedChanged` (new=true) | アイテム整理量 |
+| `SubjectUpdated` / `BodyUpdated` | コンテンツ更新活動 |
 | `AssigneeChanged` | アサイン調整頻度 |
 | `PriorityChanged` | 優先度見直し頻度 |
-| `FileAdded` / `FileRemoved` | 成果物添付活動 |
-| `RelationAdded` / `RelationRemoved` | タスク関連付け活動 |
+| `FileAdded` / `FileRemoved` | 添付ファイル活動 |
+| `RelationAdded` / `RelationRemoved` | アイテム関連付け活動 |
 
 ---
 
-### 3. ユーザー・チーム統計
+### 4. ユーザー・チーム統計
 
 | 統計項目 | 説明 | 計算方法 |
-|---------|------|---------|
-| **担当者別タスク数** | 各ユーザーの保有タスク | `GROUP BY AssigneeId` |
-| **担当者別完了数** | 各ユーザーが完了したタスク | Activity `ArchivedChanged` を `UserId` で集計 |
+|---------|------|----------|
+| **担当者別タスク数** | 各ユーザーの保有タスク | WorkspaceTask `GROUP BY AssignedUserId` |
+| **担当者別完了数** | 各ユーザーが完了したタスク | WorkspaceTask `IsCompleted = true GROUP BY AssignedUserId` |
 | **タスク消化率** | 完了 / (保有 + 完了) | 上記2つの比率 |
-| **貢献度** | アクティビティ数 | `COUNT(*) GROUP BY UserId` |
+| **貢献度** | アクティビティ数 | Activity `COUNT(*) GROUP BY UserId` |
 | **平均タスク保有数** | ユーザー平均 | 担当タスク総数 / アクティブユーザー数 |
 
 **注意**: 貢献度は「操作回数」であり、「働いた時間」や「成果の質」ではない。
@@ -134,7 +157,7 @@ GROUP BY Priority
 
 ---
 
-### 4. 期間比較・トレンド
+### 5. 期間比較・トレンド
 
 | 統計項目 | 説明 | 期間例 |
 |---------|------|-------|
@@ -153,11 +176,12 @@ GROUP BY Priority
 
 ---
 
-### 5. ワークスペース別統計
+### 6. ワークスペース別統計
 
 | 統計項目 | 説明 |
 |---------|------|
-| **ワークスペース別タスク数** | 各ワークスペースのタスク状況 |
+| **ワークスペース別タスク数** | 各ワークスペースのタスク状況（WorkspaceTask） |
+| **ワークスペース別アイテム数** | 各ワークスペースのコンテンツ数（WorkspaceItem） |
 | **ワークスペース別アクティビティ** | 活発なワークスペース |
 | **ワークスペース別メンバー数** | チーム規模 |
 
@@ -167,10 +191,11 @@ GROUP BY Priority
 
 | 統計項目 | 理由 | 対応案 |
 |---------|------|-------|
-| **ステータス別タスク数** | WorkspaceItem に `Status` カラムがない | Activity の `StatusChanged` から最新ステータスを逆算するか、WorkspaceItem に Status を追加 |
+| **ステータス別アイテム数** | WorkspaceItem に `Status` カラムがない | Activity の `StatusChanged` から最新ステータスを逆算するか、WorkspaceItem に Status を追加 |
 | **作業時間** | 開始/終了時刻を記録していない | 設計理念により対象外 |
 | **コメント数** | コメント機能が Activity に含まれていない | 必要なら `CommentAdded` ActionType を追加 |
-| **タスク完了までの平均時間** | 作成日〜アーカイブ日の差分で計算可能だが、Activity からは直接取れない | WorkspaceItem の CreatedAt と Activity の ArchivedChanged を JOIN |
+| **タスク完了までの平均時間** | WorkspaceTask の CreatedAt 〜 CompletedAt で計算可能 | 直接クエリ可能 |
+| **アイテムごとのタスク進捗** | WorkspaceTask.WorkspaceItemId で紐付け | 集計クエリで対応可能 |
 
 ---
 
@@ -237,10 +262,9 @@ GROUP BY Priority
 ├─────────────────────────────────────────────────────────────────┤
 │  📝 今週やったこと                                              │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │ • タスク完了: 8件                                         │ │
-│  │ • タスク作成: 3件                                         │ │
+│  │ • タスク完了: 8件（WorkspaceTask）                        │ │
+│  │ • アイテム更新: 15件（件名/本文変更など）                  │ │
 │  │ • ファイル添付: 5件                                       │ │
-│  │ • 件名/本文更新: 12件                                     │ │
 │  └───────────────────────────────────────────────────────────┘ │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
@@ -379,5 +403,6 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 
 ## 関連ドキュメント
 
+- [ワークスペース・アイテム・タスクの関係](workspace-item-task-relationship.md) - エンティティの基本構造
 - [アクティビティ要件定義](activity-requirements.md) - データソースの詳細
 - [タスクフォーカス推奨機能](task-focus-recommendation.md) - 同じデータを使った「次にやるべきタスク」推奨機能
