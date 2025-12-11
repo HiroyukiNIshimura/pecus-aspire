@@ -770,9 +770,11 @@ public class WorkspaceItemService
         int userId
     )
     {
-        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
-            wi.WorkspaceId == workspaceId && wi.Id == itemId
-        );
+        // ユーザー名を取得するため Include でロード
+        var item = await _context.WorkspaceItems
+            .Include(wi => wi.Assignee)
+            .Include(wi => wi.Committer)
+            .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Id == itemId);
 
         if (item == null)
         {
@@ -793,14 +795,16 @@ public class WorkspaceItemService
             );
         }
 
-        // 変更前のスナップショットを作成
+        // 変更前のスナップショットを作成（ユーザー名を含む）
         var snapshot = new
         {
             Subject = item.Subject,
             Body = item.Body,
             AssigneeId = item.AssigneeId,
+            AssigneeName = item.Assignee?.Username,
             Priority = item.Priority,
             CommitterId = item.CommitterId,
+            CommitterName = item.Committer?.Username,
             IsDraft = item.IsDraft,
             IsArchived = item.IsArchived,
             DueDate = item.DueDate
@@ -950,26 +954,63 @@ public class WorkspaceItemService
             );
         }
 
-        // Activity記録（変更があった場合のみ）
+        // Activity記録（変更があった場合のみ、型安全なビルダーを使用）
         // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
-        var bodyDetails = ActivityTasks.CreateBodyChangeDetails(snapshot.Body, item.Body);
-        if (bodyDetails != null)
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.BodyUpdated,
+            ActivityDetailsBuilder.BuildBodyChangeDetails(snapshot.Body, item.Body));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.SubjectUpdated,
+            ActivityDetailsBuilder.BuildStringChangeDetails(snapshot.Subject, item.Subject));
+
+        // 担当者・コミッター変更: ユーザー名を取得してから記録
+        string? newAssigneeName = null;
+        string? newCommitterName = null;
+
+        if (snapshot.AssigneeId != item.AssigneeId && item.AssigneeId.HasValue)
         {
-            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
-                x.RecordActivityAsync(workspaceId, itemId, userId, ActivityActionType.BodyUpdated, bodyDetails)
-            );
+            var assignee = await _context.Users.FindAsync(item.AssigneeId.Value);
+            newAssigneeName = assignee?.Username;
+        }
+        else
+        {
+            newAssigneeName = snapshot.AssigneeName;
         }
 
-        // その他の項目は通常通り old/new を記録
-        RecordItemChanges(workspaceId, itemId, userId,
-            (ActivityActionType.SubjectUpdated, snapshot.Subject, item.Subject),
-            (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId),
-            (ActivityActionType.PriorityChanged, snapshot.Priority, item.Priority),
-            (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId),
-            (ActivityActionType.DraftChanged, snapshot.IsDraft, item.IsDraft),
-            (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived),
-            (ActivityActionType.DueDateChanged, snapshot.DueDate, item.DueDate)
-        );
+        if (snapshot.CommitterId != item.CommitterId && item.CommitterId.HasValue)
+        {
+            var committer = await _context.Users.FindAsync(item.CommitterId.Value);
+            newCommitterName = committer?.Username;
+        }
+        else
+        {
+            newCommitterName = snapshot.CommitterName;
+        }
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.AssigneeChanged,
+            ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.AssigneeName, newAssigneeName));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.CommitterChanged,
+            ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.CommitterName, newCommitterName));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.PriorityChanged,
+            ActivityDetailsBuilder.BuildPriorityChangeDetails(snapshot.Priority, item.Priority));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.DraftChanged,
+            ActivityDetailsBuilder.BuildBoolChangeDetails(snapshot.IsDraft, item.IsDraft));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.ArchivedChanged,
+            ActivityDetailsBuilder.BuildBoolChangeDetails(snapshot.IsArchived, item.IsArchived));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.DueDateChanged,
+            ActivityDetailsBuilder.BuildDateTimeChangeDetails(snapshot.DueDate, item.DueDate));
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -1035,7 +1076,8 @@ public class WorkspaceItemService
         {
             IsDraft = item.IsDraft,
             IsArchived = item.IsArchived,
-            CommitterId = item.CommitterId
+            CommitterId = item.CommitterId,
+            CommitterName = item.Committer?.Username
         };
 
         // ステータス更新
@@ -1068,11 +1110,27 @@ public class WorkspaceItemService
         }
 
         // Activity記録（変更があった場合のみ）
-        RecordItemChanges(workspaceId, itemId, userId,
-            (ActivityActionType.DraftChanged, snapshot.IsDraft, item.IsDraft),
-            (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived),
-            (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId)
-        );
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.DraftChanged,
+            ActivityDetailsBuilder.BuildBoolChangeDetails(snapshot.IsDraft, item.IsDraft));
+
+        EnqueueActivityIfChanged(workspaceId, itemId, userId,
+            ActivityActionType.ArchivedChanged,
+            ActivityDetailsBuilder.BuildBoolChangeDetails(snapshot.IsArchived, item.IsArchived));
+
+        // コミッター変更: 新しいユーザー名を取得
+        if (snapshot.CommitterId != item.CommitterId)
+        {
+            string? newCommitterName = null;
+            if (item.CommitterId.HasValue)
+            {
+                var committer = await _context.Users.FindAsync(item.CommitterId.Value);
+                newCommitterName = committer?.Username;
+            }
+            EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                ActivityActionType.CommitterChanged,
+                ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.CommitterName, newCommitterName));
+        }
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -1127,7 +1185,8 @@ public class WorkspaceItemService
         // 変更前のスナップショットを作成
         var snapshot = new
         {
-            AssigneeId = item.AssigneeId
+            AssigneeId = item.AssigneeId,
+            AssigneeName = item.Assignee?.Username
         };
 
         try
@@ -1145,9 +1204,18 @@ public class WorkspaceItemService
         }
 
         // Activity記録（変更があった場合のみ）
-        RecordItemChanges(workspaceId, itemId, userId,
-            (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId)
-        );
+        if (snapshot.AssigneeId != item.AssigneeId)
+        {
+            string? newAssigneeName = null;
+            if (item.AssigneeId.HasValue)
+            {
+                var assignee = await _context.Users.FindAsync(item.AssigneeId.Value);
+                newAssigneeName = assignee?.Username;
+            }
+            EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                ActivityActionType.AssigneeChanged,
+                ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.AssigneeName, newAssigneeName));
+        }
 
         // ナビゲーションプロパティをロード
         await _context.Entry(item).Reference(wi => wi.Workspace).LoadAsync();
@@ -1286,7 +1354,9 @@ public class WorkspaceItemService
         var snapshot = new
         {
             AssigneeId = item.AssigneeId,
+            AssigneeName = item.Assignee?.Username,
             CommitterId = item.CommitterId,
+            CommitterName = item.Committer?.Username,
             Priority = item.Priority,
             DueDate = item.DueDate,
             IsArchived = item.IsArchived
@@ -1336,33 +1406,51 @@ public class WorkspaceItemService
         switch (attribute)
         {
             case WorkspaceItemAttribute.Assignee:
-                RecordItemChanges(workspaceId, itemId, userId,
-                    (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId)
-                );
+                if (snapshot.AssigneeId != item.AssigneeId)
+                {
+                    string? newAssigneeName = null;
+                    if (item.AssigneeId.HasValue)
+                    {
+                        var assignee = await _context.Users.FindAsync(item.AssigneeId.Value);
+                        newAssigneeName = assignee?.Username;
+                    }
+                    EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                        ActivityActionType.AssigneeChanged,
+                        ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.AssigneeName, newAssigneeName));
+                }
                 break;
 
             case WorkspaceItemAttribute.Committer:
-                RecordItemChanges(workspaceId, itemId, userId,
-                    (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId)
-                );
+                if (snapshot.CommitterId != item.CommitterId)
+                {
+                    string? newCommitterName = null;
+                    if (item.CommitterId.HasValue)
+                    {
+                        var committer = await _context.Users.FindAsync(item.CommitterId.Value);
+                        newCommitterName = committer?.Username;
+                    }
+                    EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                        ActivityActionType.CommitterChanged,
+                        ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.CommitterName, newCommitterName));
+                }
                 break;
 
             case WorkspaceItemAttribute.Priority:
-                RecordItemChanges(workspaceId, itemId, userId,
-                    (ActivityActionType.PriorityChanged, snapshot.Priority, item.Priority)
-                );
+                EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                    ActivityActionType.PriorityChanged,
+                    ActivityDetailsBuilder.BuildPriorityChangeDetails(snapshot.Priority, item.Priority));
                 break;
 
             case WorkspaceItemAttribute.Duedate:
-                RecordItemChanges(workspaceId, itemId, userId,
-                    (ActivityActionType.DueDateChanged, snapshot.DueDate, item.DueDate)
-                );
+                EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                    ActivityActionType.DueDateChanged,
+                    ActivityDetailsBuilder.BuildDateTimeChangeDetails(snapshot.DueDate, item.DueDate));
                 break;
 
             case WorkspaceItemAttribute.Archive:
-                RecordItemChanges(workspaceId, itemId, userId,
-                    (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived)
-                );
+                EnqueueActivityIfChanged(workspaceId, itemId, userId,
+                    ActivityActionType.ArchivedChanged,
+                    ActivityDetailsBuilder.BuildBoolChangeDetails(snapshot.IsArchived, item.IsArchived));
                 break;
         }
 
@@ -1498,27 +1586,24 @@ public class WorkspaceItemService
     }
 
     /// <summary>
-    /// アイテムの変更を一括でActivity記録
+    /// 変更がある場合のみActivityをエンキュー
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="itemId">アイテムID</param>
     /// <param name="userId">操作ユーザーID</param>
-    /// <param name="changes">変更のタプル配列（ActionType, 旧値, 新値）</param>
-    private void RecordItemChanges(
+    /// <param name="actionType">アクションタイプ</param>
+    /// <param name="details">ActivityDetailsBuilder で生成されたJSON（nullなら変更なし）</param>
+    private void EnqueueActivityIfChanged(
         int workspaceId,
         int itemId,
         int userId,
-        params (ActivityActionType ActionType, object? OldValue, object? NewValue)[] changes)
+        ActivityActionType actionType,
+        string? details)
     {
-        foreach (var (actionType, oldValue, newValue) in changes)
-        {
-            var details = ActivityTasks.CreateChangeDetails(oldValue, newValue);
-            if (details != null)
-            {
-                _backgroundJobClient.Enqueue<ActivityTasks>(x =>
-                    x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
-                );
-            }
-        }
+        if (details == null) return;
+
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+            x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
+        );
     }
 }

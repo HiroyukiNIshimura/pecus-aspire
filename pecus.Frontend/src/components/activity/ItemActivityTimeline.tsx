@@ -66,22 +66,26 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
         return `「${parsed.old}」→「${parsed.new}」`;
       case 'AssigneeChanged':
       case 'CommitterChanged':
+        // 改善: サーバー側でユーザー名が直接入っている
         return `${parsed.old ?? '未割当'} → ${parsed.new ?? '未割当'}`;
       case 'PriorityChanged':
+        // 改善: サーバー側で日本語ラベルが直接入っている
+        return `${parsed.old ?? 'なし'} → ${parsed.new ?? 'なし'}`;
       case 'StatusChanged':
         return `${parsed.old} → ${parsed.new}`;
       case 'ArchivedChanged':
         return parsed.new ? 'アーカイブしました' : 'アーカイブを解除しました';
       case 'DraftChanged':
-        return parsed.new ? '下書きに変更しました' : '下書きを解除しました';
+        return parsed.new ? '下書きに変更しました' : '公開しました';
       case 'FileAdded':
         return `${parsed.fileName}`;
       case 'FileRemoved':
         return `${parsed.fileName}`;
       case 'RelationAdded':
-        return `アイテム #${parsed.relatedItemId}`;
+        // 改善: アイテムコードが含まれる
+        return `#${parsed.relatedItemCode}${parsed.relationType ? ` (${parsed.relationType})` : ''}`;
       case 'RelationRemoved':
-        return `アイテム #${parsed.relatedItemId}`;
+        return `#${parsed.relatedItemCode}${parsed.relationType ? ` (${parsed.relationType})` : ''}`;
       case 'DueDateChanged': {
         const oldDate = parsed.old ? new Date(parsed.old).toLocaleDateString('ja-JP') : 'なし';
         const newDate = parsed.new ? new Date(parsed.new).toLocaleDateString('ja-JP') : 'なし';

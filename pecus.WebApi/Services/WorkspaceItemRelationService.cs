@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -108,12 +109,11 @@ public class WorkspaceItemRelationService
             request.RelationType
         );
 
-        // Activity記録（RelationAdded）
-        var relationDetails = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            relatedItemId = request.ToItemId,
-            relationType = request.RelationType?.ToString()
-        });
+        // Activity記録（RelationAdded）- アイテムコードを含める
+        var relationDetails = ActivityDetailsBuilder.BuildRelationAddedDetails(
+            toItem.Code,
+            request.RelationType?.ToString()
+        );
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
@@ -198,7 +198,7 @@ public class WorkspaceItemRelationService
 
         // Activity記録用に情報を保持
         var fromItemId = relation.FromItemId;
-        var toItemId = relation.ToItemId;
+        var toItemCode = relation.ToItem!.Code;
         var relationType = relation.RelationType;
 
         _context.WorkspaceItemRelations.Remove(relation);
@@ -206,18 +206,17 @@ public class WorkspaceItemRelationService
         await _context.SaveChangesAsync();
 
         _logger.LogInformation(
-            "ワークスペースアイテム関連を削除しました。RelationId: {RelationId}, FromItemId: {FromItemId}, ToItemId: {ToItemId}",
+            "ワークスペースアイテム関連を削除しました。RelationId: {RelationId}, FromItemId: {FromItemId}, ToItemCode: {ToItemCode}",
             relationId,
             relation.FromItemId,
-            relation.ToItemId
+            toItemCode
         );
 
         // Activity記録（RelationRemoved） - fromItem 側に記録
-        var relationRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            relatedItemId = toItemId,
-            relationType = relationType?.ToString()
-        });
+        var relationRemovedDetails = ActivityDetailsBuilder.BuildRelationRemovedDetails(
+            toItemCode,
+            relationType?.ToString()
+        );
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,

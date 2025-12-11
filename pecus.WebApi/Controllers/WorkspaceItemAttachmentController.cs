@@ -141,11 +141,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         }
 
         // Activity 記録（ファイル追加）
-        var fileAddedDetails = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            fileName = fileName,
-            fileSize = file.Length
-        });
+        var fileAddedDetails = ActivityDetailsBuilder.BuildFileAddedDetails(fileName, file.Length);
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
@@ -257,10 +253,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         );
 
         // Activity 記録（ファイル削除）
-        var fileRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            fileName = attachment.FileName
-        });
+        var fileRemovedDetails = ActivityDetailsBuilder.BuildFileRemovedDetails(attachment.FileName);
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,

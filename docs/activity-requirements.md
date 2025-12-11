@@ -137,11 +137,11 @@ public enum ActivityActionType
 ```
 サービス層（アイテム更新など）
     ↓
-変更前スナップショット作成
+変更前スナップショット作成（ユーザー名を含む）
     ↓
 アイテム更新処理
     ↓
-変更検出（ActivityTasks.CreateChangeDetails）
+変更検出（ActivityDetailsBuilder で型安全にJSON生成）
     ↓
 変更がある場合のみ BackgroundJob.Enqueue<ActivityTasks>(x => x.RecordActivityAsync(...))
     ↓
@@ -152,25 +152,43 @@ Activity テーブルに INSERT
 
 **実装アーキテクチャ:**
 
-1. **ActivityTasks** (`pecus.Libs/Hangfire/Tasks/ActivityTasks.cs`) - Hangfire ジョブ
-   - `RecordActivityAsync()`: Hangfireジョブとして実行されるアクティビティ記録メソッド
-   - `CreateChangeDetails<T>()`: 新旧値を比較し、変更がある場合のみJSON文字列を返す静的ヘルパー
-   - `CreateBodyChangeDetails()`: 本文更新専用。oldのみを保存してデータサイズを削減
+1. **ActivityDetailsBuilder** (`pecus.Libs/ActivityDetailsBuilder.cs`) - 型安全なJSON生成ヘルパー
+   - `BuildUserChangeDetails()`: ユーザー名（担当者・コミッター）の変更用
+   - `BuildPriorityChangeDetails()`: 優先度の変更用（日本語ラベル付き）
+   - `BuildStringChangeDetails()`: 文字列の変更用
+   - `BuildBodyChangeDetails()`: 本文更新用（oldのみ保存）
+   - `BuildBoolChangeDetails()`: bool値の変更用
+   - `BuildDateTimeChangeDetails()`: 日時の変更用
+   - `BuildFileAddedDetails()`: ファイル追加用
+   - `BuildFileRemovedDetails()`: ファイル削除用
+   - `BuildRelationAddedDetails()`: 関連追加用（アイテムコード付き）
+   - `BuildRelationRemovedDetails()`: 関連削除用（アイテムコード付き）
 
-2. **ActivityService** (`pecus.WebApi/Services/ActivityService.cs`) - コントローラーサービス層
+2. **ActivityTasks** (`pecus.Libs/Hangfire/Tasks/ActivityTasks.cs`) - Hangfire ジョブ
+   - `RecordActivityAsync()`: Hangfireジョブとして実行されるアクティビティ記録メソッド
+   - **責務: DBへのINSERTのみ**（変更検出やJSON生成は行わない）
+
+3. **ActivityService** (`pecus.WebApi/Services/ActivityService.cs`) - コントローラーサービス層
    - `GetActivitiesByItemIdAsync()`: アイテムIDでアクティビティ取得
    - `GetActivitiesByUserIdAsync()`: ユーザーIDでアクティビティ取得
    - `GetActivitiesByWorkspaceIdAsync()`: ワークスペースIDでアクティビティ取得
 
-3. **WorkspaceItemService での利用パターン** (`pecus.WebApi/Services/WorkspaceItemService.cs`)
+4. **WorkspaceItemService での利用パターン** (`pecus.WebApi/Services/WorkspaceItemService.cs`)
    ```csharp
-   // スナップショットパターン: 更新前の値を匿名オブジェクトで保持
+   // スナップショットパターン: 更新前の値を匿名オブジェクトで保持（ユーザー名を含む）
+   var item = await _context.WorkspaceItems
+       .Include(wi => wi.Assignee)
+       .Include(wi => wi.Committer)
+       .FirstOrDefaultAsync(wi => wi.WorkspaceId == workspaceId && wi.Id == itemId);
+
    var snapshot = new {
        Subject = item.Subject,
        Body = item.Body,
        AssigneeId = item.AssigneeId,
+       AssigneeName = item.Assignee?.Username,  // UI表示用にユーザー名も保持
        Priority = item.Priority,
        CommitterId = item.CommitterId,
+       CommitterName = item.Committer?.Username,
        IsDraft = item.IsDraft,
        IsArchived = item.IsArchived,
        DueDate = item.DueDate
@@ -182,53 +200,57 @@ Activity テーブルに INSERT
    // ... その他の更新 ...
    await _context.SaveChangesAsync();
 
-   // 一括でActivity記録（変更があった項目のみ記録される）
-   // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
-   var bodyDetails = ActivityTasks.CreateBodyChangeDetails(snapshot.Body, item.Body);
-   if (bodyDetails != null)
+   // Activity記録（変更があった場合のみ、型安全なビルダーを使用）
+   EnqueueActivityIfChanged(workspaceId, itemId, userId,
+       ActivityActionType.BodyUpdated,
+       ActivityDetailsBuilder.BuildBodyChangeDetails(snapshot.Body, item.Body));
+
+   EnqueueActivityIfChanged(workspaceId, itemId, userId,
+       ActivityActionType.SubjectUpdated,
+       ActivityDetailsBuilder.BuildStringChangeDetails(snapshot.Subject, item.Subject));
+
+   // 担当者変更: ユーザー名を取得してから記録
+   if (snapshot.AssigneeId != item.AssigneeId)
    {
-       _backgroundJobClient.Enqueue<ActivityTasks>(x =>
-           x.RecordActivityAsync(workspaceId, itemId, userId, ActivityActionType.BodyUpdated, bodyDetails)
-       );
+       string? newAssigneeName = null;
+       if (item.AssigneeId.HasValue)
+       {
+           var assignee = await _context.Users.FindAsync(item.AssigneeId.Value);
+           newAssigneeName = assignee?.Username;
+       }
+       EnqueueActivityIfChanged(workspaceId, itemId, userId,
+           ActivityActionType.AssigneeChanged,
+           ActivityDetailsBuilder.BuildUserChangeDetails(snapshot.AssigneeName, newAssigneeName));
    }
 
-   // その他の項目は通常通り old/new を記録
-   RecordItemChanges(workspaceId, itemId, userId,
-       (ActivityActionType.SubjectUpdated, snapshot.Subject, item.Subject),
-       (ActivityActionType.AssigneeChanged, snapshot.AssigneeId, item.AssigneeId),
-       (ActivityActionType.PriorityChanged, snapshot.Priority, item.Priority),
-       (ActivityActionType.CommitterChanged, snapshot.CommitterId, item.CommitterId),
-       (ActivityActionType.DraftChanged, snapshot.IsDraft, item.IsDraft),
-       (ActivityActionType.ArchivedChanged, snapshot.IsArchived, item.IsArchived),
-       (ActivityActionType.DueDateChanged, snapshot.DueDate, item.DueDate)
-   );
+   EnqueueActivityIfChanged(workspaceId, itemId, userId,
+       ActivityActionType.PriorityChanged,
+       ActivityDetailsBuilder.BuildPriorityChangeDetails(snapshot.Priority, item.Priority));
 
-   // RecordItemChanges ヘルパーメソッド（private）
-   private void RecordItemChanges(
-       int workspaceId, int itemId, int userId,
-       params (ActivityActionType ActionType, object? OldValue, object? NewValue)[] changes)
+   EnqueueActivityIfChanged(workspaceId, itemId, userId,
+       ActivityActionType.DueDateChanged,
+       ActivityDetailsBuilder.BuildDateTimeChangeDetails(snapshot.DueDate, item.DueDate));
+
+   // EnqueueActivityIfChanged ヘルパーメソッド（private）
+   private void EnqueueActivityIfChanged(
+       int workspaceId,
+       int itemId,
+       int userId,
+       ActivityActionType actionType,
+       string? details)
    {
-       foreach (var (actionType, oldValue, newValue) in changes)
-       {
-           var details = ActivityTasks.CreateChangeDetails(oldValue, newValue);
-           if (details != null)
-           {
-               _backgroundJobClient.Enqueue<ActivityTasks>(x =>
-                   x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
-               );
-           }
-       }
+       if (details == null) return;
+
+       _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+           x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
+       );
    }
    ```
 
-3. **ファイル操作での利用パターン** (`pecus.WebApi/Controllers/WorkspaceItemAttachmentController.cs`)
+5. **ファイル操作での利用パターン** (`pecus.WebApi/Controllers/WorkspaceItemAttachmentController.cs`)
    ```csharp
    // ファイル追加時
-   var fileAddedDetails = System.Text.Json.JsonSerializer.Serialize(new
-   {
-       fileName = fileName,
-       fileSize = file.Length
-   });
+   var fileAddedDetails = ActivityDetailsBuilder.BuildFileAddedDetails(fileName, file.Length);
    _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
@@ -240,10 +262,7 @@ Activity テーブルに INSERT
    );
 
    // ファイル削除時
-   var fileRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
-   {
-       fileName = attachment.FileName
-   });
+   var fileRemovedDetails = ActivityDetailsBuilder.BuildFileRemovedDetails(attachment.FileName);
    _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
@@ -255,15 +274,14 @@ Activity テーブルに INSERT
    );
    ```
 
-4. **関係アイテム操作での利用パターン** (`pecus.WebApi/Services/WorkspaceItemRelationService.cs`)
+6. **関係アイテム操作での利用パターン** (`pecus.WebApi/Services/WorkspaceItemRelationService.cs`)
    ```csharp
-   // 関係追加時
-   var relationDetails = System.Text.Json.JsonSerializer.Serialize(new
-   {
-       relatedItemId = request.ToItemId,
-       relationType = request.RelationType?.ToString()
-   });
-   _backgroundJobClient.Enqueue<ActivityService>(x =>
+   // 関係追加時（アイテムコードを含める）
+   var relationDetails = ActivityDetailsBuilder.BuildRelationAddedDetails(
+       toItem.Code,
+       request.RelationType?.ToString()
+   );
+   _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
            fromItemId,
@@ -274,11 +292,10 @@ Activity テーブルに INSERT
    );
 
    // 関係削除時
-   var relationRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
-   {
-       relatedItemId = toItemId,
-       relationType = relationType?.ToString()
-   });
+   var relationRemovedDetails = ActivityDetailsBuilder.BuildRelationRemovedDetails(
+       toItemCode,
+       relationType?.ToString()
+   );
    _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
@@ -290,7 +307,7 @@ Activity テーブルに INSERT
    );
    ```
 
-5. **アクティビティ取得API** (`pecus.WebApi/Controllers/ActivityController.cs`)
+7. **アクティビティ取得API** (`pecus.WebApi/Controllers/ActivityController.cs`)
    - `GET /api/activities/items/{itemId}`: アイテムのタイムライン表示用
    - `GET /api/activities/users/{userId}`: ユーザー活動レポート用
    - `GET /api/activities/workspaces/{workspaceId}`: ワークスペース統計用
