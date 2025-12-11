@@ -7,6 +7,10 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { ActivityActionType } from './models/ActivityActionType';
+export type { ActivityPeriod } from './models/ActivityPeriod';
+export type { ActivityResponse } from './models/ActivityResponse';
+export type { ActivityResponsePagedResponse } from './models/ActivityResponsePagedResponse';
 export type { AddUserToWorkspaceRequest } from './models/AddUserToWorkspaceRequest';
 export type { AddWorkspaceItemRelationRequest } from './models/AddWorkspaceItemRelationRequest';
 export type { AddWorkspaceItemRelationResponse } from './models/AddWorkspaceItemRelationResponse';
@@ -152,6 +156,7 @@ export type { WorkspaceUserDetailResponse } from './models/WorkspaceUserDetailRe
 export type { WorkspaceUserDetailResponseObjectPagedResponse } from './models/WorkspaceUserDetailResponseObjectPagedResponse';
 export type { WorkspaceUserItem } from './models/WorkspaceUserItem';
 
+export { ActivityService } from './services/ActivityService';
 export { AdminOrganizationService } from './services/AdminOrganizationService';
 export { AdminSkillService } from './services/AdminSkillService';
 export { AdminTagService } from './services/AdminTagService';

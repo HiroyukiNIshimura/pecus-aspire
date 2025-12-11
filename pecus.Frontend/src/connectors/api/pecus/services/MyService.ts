@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ActivityPeriod } from '../models/ActivityPeriod';
+import type { ActivityResponsePagedResponse } from '../models/ActivityResponsePagedResponse';
 import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasksResponsePagedResponse';
 import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
@@ -15,6 +17,26 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class MyService {
+    /**
+     * 自分のアクティビティ一覧を取得（活動レポート用）
+     * @param page ページ番号（1から開始）
+     * @param period 期間フィルタ（省略時は全期間）
+     * @returns ActivityResponsePagedResponse OK
+     * @throws ApiError
+     */
+    public static getApiMyActivities(
+        page?: number,
+        period?: ActivityPeriod,
+    ): CancelablePromise<ActivityResponsePagedResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/my/activities',
+            query: {
+                'Page': page,
+                'Period': period,
+            },
+        });
+    }
     /**
      * マイコミッターワークスペース一覧を取得
      * ログインユーザーがコミッターとして割り当てられたアイテムを持つワークスペースの一覧を取得します

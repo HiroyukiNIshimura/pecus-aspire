@@ -6,6 +6,68 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/workspaces/{workspaceId}/items/{itemId}/activities": {
+      "get": {
+        "tags": [
+          "Activity"
+        ],
+        "summary": "アイテムのアクティビティ一覧を取得（タイムライン表示用）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "アイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "ページ番号（1から開始）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityResponsePagedResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/organization": {
       "get": {
         "tags": [
@@ -3108,6 +3170,47 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/my/activities": {
+      "get": {
+        "tags": [
+          "My"
+        ],
+        "summary": "自分のアクティビティ一覧を取得（活動レポート用）",
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "description": "ページ番号（1から開始）",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Period",
+            "in": "query",
+            "description": "期間フィルタ（省略時は全期間）",
+            "schema": {
+              "$ref": "#/components/schemas/ActivityPeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityResponsePagedResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8067,6 +8170,138 @@
   },
   "components": {
     "schemas": {
+      "ActivityActionType": {
+        "enum": [
+          "Created",
+          "SubjectUpdated",
+          "BodyUpdated",
+          "FileAdded",
+          "FileRemoved",
+          "StatusChanged",
+          "AssigneeChanged",
+          "RelationAdded",
+          "RelationRemoved",
+          "ArchivedChanged",
+          "DraftChanged",
+          "CommitterChanged",
+          "PriorityChanged",
+          "DueDateChanged"
+        ],
+        "type": "string"
+      },
+      "ActivityPeriod": {
+        "enum": [
+          "Today",
+          "Yesterday",
+          "ThisWeek",
+          "LastWeek",
+          "ThisMonth",
+          "LastMonth"
+        ],
+        "type": "string",
+        "description": "アクティビティの期間フィルタ"
+      },
+      "ActivityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "アクティビティID",
+            "format": "int64"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "itemId": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "itemCode": {
+            "type": "string",
+            "description": "アイテムコード",
+            "nullable": true
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
+          },
+          "userId": {
+            "type": "integer",
+            "description": "ユーザーID（NULL = システム操作）",
+            "format": "int32",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
+          },
+          "actionType": {
+            "$ref": "#/components/schemas/ActivityActionType"
+          },
+          "details": {
+            "type": "string",
+            "description": "操作の詳細データ（JSON文字列）",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "アクティビティレスポンス"
+      },
+      "ActivityResponsePagedResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ページネーション付きレスポンス"
+      },
       "AddUserToWorkspaceRequest": {
         "required": [
           "userId"
@@ -13842,6 +14077,9 @@
     { }
   ],
   "tags": [
+    {
+      "name": "Activity"
+    },
     {
       "name": "Admin - Organization"
     },

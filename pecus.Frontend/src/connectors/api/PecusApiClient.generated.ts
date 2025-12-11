@@ -3,6 +3,7 @@
 
 import { OpenAPI } from "./pecus/core/OpenAPI";
 import {
+  ActivityService,
   AdminOrganizationService,
   AdminSkillService,
   AdminTagService,
@@ -53,6 +54,7 @@ export function configureOpenAPI(
  */
 export function createApiClientInstances() {
   return {
+    activity: ActivityService,
     adminOrganization: AdminOrganizationService,
     adminSkill: AdminSkillService,
     adminTag: AdminTagService,

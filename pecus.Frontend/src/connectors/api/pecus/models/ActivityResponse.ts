@@ -1,0 +1,48 @@
+/* generated using openapi-typescript-codegen -- do not edit */
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+import type { ActivityActionType } from './ActivityActionType';
+/**
+ * アクティビティレスポンス
+ */
+export type ActivityResponse = {
+    /**
+     * アクティビティID
+     */
+    id?: number;
+    /**
+     * ワークスペースID
+     */
+    workspaceId?: number;
+    /**
+     * アイテムID
+     */
+    itemId?: number;
+    /**
+     * アイテムコード
+     */
+    itemCode?: string | null;
+    /**
+     * アイテム件名
+     */
+    itemSubject?: string | null;
+    /**
+     * ユーザーID（NULL = システム操作）
+     */
+    userId?: number | null;
+    /**
+     * ユーザー名
+     */
+    username?: string | null;
+    actionType?: ActivityActionType;
+    /**
+     * 操作の詳細データ（JSON文字列）
+     */
+    details?: string | null;
+    /**
+     * 作成日時
+     */
+    createdAt?: string;
+};
+
