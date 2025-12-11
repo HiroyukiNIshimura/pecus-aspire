@@ -6,7 +6,6 @@ using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Image;
-using Pecus.Libs.Services;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -147,7 +146,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
             fileName = fileName,
             fileSize = file.Length
         });
-        _backgroundJobClient.Enqueue<ActivityService>(x =>
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
                 itemId,
@@ -262,7 +261,7 @@ public class WorkspaceItemAttachmentController : BaseSecureController
         {
             fileName = attachment.FileName
         });
-        _backgroundJobClient.Enqueue<ActivityService>(x =>
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
                 itemId,

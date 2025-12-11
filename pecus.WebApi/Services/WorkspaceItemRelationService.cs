@@ -4,7 +4,7 @@ using Pecus.Exceptions;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Services;
+using Pecus.Libs.Hangfire.Tasks;
 
 namespace Pecus.Services;
 
@@ -114,7 +114,7 @@ public class WorkspaceItemRelationService
             relatedItemId = request.ToItemId,
             relationType = request.RelationType?.ToString()
         });
-        _backgroundJobClient.Enqueue<ActivityService>(x =>
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
                 fromItemId,
@@ -212,13 +212,13 @@ public class WorkspaceItemRelationService
             relation.ToItemId
         );
 
-        // Activity記録（RelationRemoved）- fromItem 側に記録
+        // Activity記録（RelationRemoved） - fromItem 側に記録
         var relationRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
         {
             relatedItemId = toItemId,
             relationType = relationType?.ToString()
         });
-        _backgroundJobClient.Enqueue<ActivityService>(x =>
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(
                 workspaceId,
                 fromItemId,

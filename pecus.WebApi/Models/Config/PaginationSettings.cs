@@ -6,8 +6,13 @@ namespace Pecus.Models.Config
     public class PaginationSettings
     {
         /// <summary>
-        /// ページサイズ
+        /// デフォルトページサイズ
         /// </summary>
         public int DefaultPageSize { get; set; } = 20;
+
+        /// <summary>
+        /// 最大ページサイズ
+        /// </summary>
+        public int MaxPageSize { get; set; } = 100;
     }
 }

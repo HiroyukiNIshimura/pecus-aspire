@@ -39,8 +39,8 @@
 | `DueDateChanged` | 期限変更 | `{ "old": "2025-12-01T00:00:00Z", "new": "2025-12-15T00:00:00Z" }` | 変更時のみ |
 
 **変更検出の仕組み:**
-- `ActivityService.CreateChangeDetails<T>(oldValue, newValue)` が `EqualityComparer<T>.Default` で新旧値を比較
-- 本文更新専用の `ActivityService.CreateBodyChangeDetails(oldValue, newValue)` は `old` のみを保存（データサイズ削減のため）
+- `ActivityTasks.CreateChangeDetails<T>(oldValue, newValue)` が `EqualityComparer<T>.Default` で新旧値を比較
+- 本文更新専用の `ActivityTasks.CreateBodyChangeDetails(oldValue, newValue)` は `old` のみを保存（データサイズ削減のため）
 - 変更がない場合は `null` を返し、null チェックで Hangfire ジョブのエンキューをスキップ
 - `Created` アクションのみ Details が `null` でも記録される
 
@@ -141,9 +141,9 @@ public enum ActivityActionType
     ↓
 アイテム更新処理
     ↓
-変更検出（ActivityService.CreateChangeDetails）
+変更検出（ActivityTasks.CreateChangeDetails）
     ↓
-変更がある場合のみ BackgroundJob.Enqueue<ActivityService>(x => x.RecordActivityAsync(...))
+変更がある場合のみ BackgroundJob.Enqueue<ActivityTasks>(x => x.RecordActivityAsync(...))
     ↓
 Hangfire Worker
     ↓
@@ -152,13 +152,17 @@ Activity テーブルに INSERT
 
 **実装アーキテクチャ:**
 
-1. **ActivityService** (`pecus.Libs/Services/ActivityService.cs`)
+1. **ActivityTasks** (`pecus.Libs/Hangfire/Tasks/ActivityTasks.cs`) - Hangfire ジョブ
    - `RecordActivityAsync()`: Hangfireジョブとして実行されるアクティビティ記録メソッド
    - `CreateChangeDetails<T>()`: 新旧値を比較し、変更がある場合のみJSON文字列を返す静的ヘルパー
    - `CreateBodyChangeDetails()`: 本文更新専用。oldのみを保存してデータサイズを削減
-   - 各種 Get メソッド: アイテム/ユーザー/ワークスペース単位でのアクティビティ取得
 
-2. **WorkspaceItemService での利用パターン** (`pecus.WebApi/Services/WorkspaceItemService.cs`)
+2. **ActivityService** (`pecus.WebApi/Services/ActivityService.cs`) - コントローラーサービス層
+   - `GetActivitiesByItemIdAsync()`: アイテムIDでアクティビティ取得
+   - `GetActivitiesByUserIdAsync()`: ユーザーIDでアクティビティ取得
+   - `GetActivitiesByWorkspaceIdAsync()`: ワークスペースIDでアクティビティ取得
+
+3. **WorkspaceItemService での利用パターン** (`pecus.WebApi/Services/WorkspaceItemService.cs`)
    ```csharp
    // スナップショットパターン: 更新前の値を匿名オブジェクトで保持
    var snapshot = new {
@@ -180,10 +184,10 @@ Activity テーブルに INSERT
 
    // 一括でActivity記録（変更があった項目のみ記録される）
    // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
-   var bodyDetails = ActivityService.CreateBodyChangeDetails(snapshot.Body, item.Body);
+   var bodyDetails = ActivityTasks.CreateBodyChangeDetails(snapshot.Body, item.Body);
    if (bodyDetails != null)
    {
-       _backgroundJobClient.Enqueue<ActivityService>(x =>
+       _backgroundJobClient.Enqueue<ActivityTasks>(x =>
            x.RecordActivityAsync(workspaceId, itemId, userId, ActivityActionType.BodyUpdated, bodyDetails)
        );
    }
@@ -206,10 +210,10 @@ Activity テーブルに INSERT
    {
        foreach (var (actionType, oldValue, newValue) in changes)
        {
-           var details = ActivityService.CreateChangeDetails(oldValue, newValue);
+           var details = ActivityTasks.CreateChangeDetails(oldValue, newValue);
            if (details != null)
            {
-               _backgroundJobClient.Enqueue<ActivityService>(x =>
+               _backgroundJobClient.Enqueue<ActivityTasks>(x =>
                    x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
                );
            }
@@ -225,7 +229,7 @@ Activity テーブルに INSERT
        fileName = fileName,
        fileSize = file.Length
    });
-   _backgroundJobClient.Enqueue<ActivityService>(x =>
+   _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
            itemId,
@@ -240,7 +244,7 @@ Activity テーブルに INSERT
    {
        fileName = attachment.FileName
    });
-   _backgroundJobClient.Enqueue<ActivityService>(x =>
+   _backgroundJobClient.Enqueue<ActivityTasks>(x =>
        x.RecordActivityAsync(
            workspaceId,
            itemId,
@@ -250,6 +254,51 @@ Activity テーブルに INSERT
        )
    );
    ```
+
+4. **関係アイテム操作での利用パターン** (`pecus.WebApi/Services/WorkspaceItemRelationService.cs`)
+   ```csharp
+   // 関係追加時
+   var relationDetails = System.Text.Json.JsonSerializer.Serialize(new
+   {
+       relatedItemId = request.ToItemId,
+       relationType = request.RelationType?.ToString()
+   });
+   _backgroundJobClient.Enqueue<ActivityService>(x =>
+       x.RecordActivityAsync(
+           workspaceId,
+           fromItemId,
+           createdByUserId,
+           ActivityActionType.RelationAdded,
+           relationDetails
+       )
+   );
+
+   // 関係削除時
+   var relationRemovedDetails = System.Text.Json.JsonSerializer.Serialize(new
+   {
+       relatedItemId = toItemId,
+       relationType = relationType?.ToString()
+   });
+   _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+       x.RecordActivityAsync(
+           workspaceId,
+           fromItemId,
+           currentUserId,
+           ActivityActionType.RelationRemoved,
+           relationRemovedDetails
+       )
+   );
+   ```
+
+5. **アクティビティ取得API** (`pecus.WebApi/Controllers/ActivityController.cs`)
+   - `GET /api/activities/items/{itemId}`: アイテムのタイムライン表示用
+   - `GET /api/activities/users/{userId}`: ユーザー活動レポート用
+   - `GET /api/activities/workspaces/{workspaceId}`: ワークスペース統計用
+
+   全エンドポイント共通:
+   - ページネーション対応（`page`, `pageSize`）
+   - 日付範囲フィルタ（`startDate`, `endDate`）
+   - ページサイズ上限: 100件
 
 **パフォーマンス特性:**
 - 変更検出（`CreateChangeDetails`）: 1-2ms（メモリ内比較＋JSON生成）
@@ -288,7 +337,7 @@ Activity テーブルに INSERT
 - [x] 本文更新時のデータサイズ問題 → `old` のみ保存に変更（`new` は Item.Body から取得可能）
 - [x] ファイル操作のActivity記録（`FileAdded`, `FileRemoved`） → `WorkspaceItemAttachmentController` に実装済み
 - [x] 関係アイテム操作のActivity記録（`RelationAdded`, `RelationRemoved`） → `WorkspaceItemRelationService` に実装済み
-- [ ] アクティビティ取得APIエンドポイントの実装（タイムライン表示用）
+- [x] アクティビティ取得APIエンドポイントの実装（タイムライン表示用） → `ActivityController` に実装済み
 - [ ] 具体的なUI/UX設計
 
 ## 設計理念

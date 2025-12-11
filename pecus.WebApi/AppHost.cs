@@ -13,7 +13,6 @@ using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Security;
-using Pecus.Libs.Services;
 using Pecus.Models.Config;
 using Pecus.Services;
 using StackExchange.Redis;

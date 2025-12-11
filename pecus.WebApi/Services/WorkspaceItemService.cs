@@ -6,7 +6,6 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Libs.Services;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
 
@@ -263,7 +262,7 @@ public class WorkspaceItemService
             );
 
             // Activity 記録ジョブをエンキュー（Created は details が null でも記録）
-            _backgroundJobClient.Enqueue<ActivityService>(x =>
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
                 x.RecordActivityAsync(workspaceId, item.Id, ownerId, ActivityActionType.Created, null)
             );
 
@@ -953,10 +952,10 @@ public class WorkspaceItemService
 
         // Activity記録（変更があった場合のみ）
         // 本文更新は別途処理（oldのみ保存してデータサイズ削減）
-        var bodyDetails = ActivityService.CreateBodyChangeDetails(snapshot.Body, item.Body);
+        var bodyDetails = ActivityTasks.CreateBodyChangeDetails(snapshot.Body, item.Body);
         if (bodyDetails != null)
         {
-            _backgroundJobClient.Enqueue<ActivityService>(x =>
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
                 x.RecordActivityAsync(workspaceId, itemId, userId, ActivityActionType.BodyUpdated, bodyDetails)
             );
         }
@@ -1513,10 +1512,10 @@ public class WorkspaceItemService
     {
         foreach (var (actionType, oldValue, newValue) in changes)
         {
-            var details = ActivityService.CreateChangeDetails(oldValue, newValue);
+            var details = ActivityTasks.CreateChangeDetails(oldValue, newValue);
             if (details != null)
             {
-                _backgroundJobClient.Enqueue<ActivityService>(x =>
+                _backgroundJobClient.Enqueue<ActivityTasks>(x =>
                     x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
                 );
             }

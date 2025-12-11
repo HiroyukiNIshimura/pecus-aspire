@@ -30,6 +30,11 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
     protected int CurrentUserId { get; private set; }
 
     /// <summary>
+    /// 現在認証されているユーザーが所属する組織ID
+    /// </summary>
+    protected int? CurrentOrganizationId { get; private set; }
+
+    /// <summary>
     /// 現在認証されているユーザー（有効性確認済み）
     /// ユーザーのロール情報も含まれています
     /// 読み取り専用でアクション内で参照可能です
@@ -59,6 +64,14 @@ public abstract class BaseSecureController : ControllerBase, IAsyncActionFilter
             // ユーザーID取得
             CurrentUserId = JwtBearerUtil.GetUserIdFromPrincipal(User);
             if (CurrentUserId == 0)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            // 組織ID取得
+            CurrentOrganizationId = JwtBearerUtil.GetOrganizationIdFromPrincipal(User);
+            if (!CurrentOrganizationId.HasValue || CurrentOrganizationId == 0)
             {
                 context.Result = new UnauthorizedResult();
                 return;
