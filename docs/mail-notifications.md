@@ -11,7 +11,7 @@
 | 3 | パスワードリセット | 当該ユーザー | password-reset | `Templates/password-reset.html.cshtml`, `.text.cshtml` が存在します |
 | 4 | ユーザー登録時のパスワード設定（初回パスワード設定） | 当該ユーザー | password-setup | `Templates/password-setup.html.cshtml`, `.text.cshtml` が存在します |
 | 5 | ユーザー登録（歓迎メール） | 当該ユーザー | welcome | `Templates/welcome.html.cshtml`, `.text.cshtml` が存在します（WelcomeEmailModel） |
-| 6 | ワークスペースへの加入通知 | 当該ユーザー | （テンプレートなし） | 必要であれば `workspace-joined` 等のテンプレートを作成検討 |
+| 6 | ワークスペースへの加入通知 | 当該ユーザー | workspace-joined | `Templates/workspace-joined.html.cshtml`, `.text.cshtml` を追加済み（WorkspaceJoinedEmailModel） |
 | 7 | 疑わしい端末からのログイン通知 | 当該ユーザー | security-notification | `Templates/security-notification.html.cshtml`, `.text.cshtml` が存在します（SecurityNotificationEmailModel） |
 | 8 | ヘルプコメント（ヘルプ要求） | 組織管理者 / ワークスペースユーザー（設定による） | （テンプレートなし） | 組織設定で送信先を制御。テンプレ作成検討 |
 | 9 | 督促コメント（リマインダー） | 担当者（タスク担当者等） | （テンプレートなし） | タスク管理用のテンプレート（reminder）を検討 |

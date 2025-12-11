@@ -1,0 +1,18 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceJoinedEmailModel
+
+@Model.UserName さん、@Model.WorkspaceName への参加が完了しました。
+
+@if (!string.IsNullOrWhiteSpace(Model.InviterName))
+{
+@:招待者: @Model.InviterName
+@:
+}
+ワークスペースを開くには、以下のリンクをご利用ください。
+- ワークスペースを開く: @Model.FrontendWorkspaceUrl
+
+参加情報:
+- ワークスペース名: @Model.WorkspaceName
+- ワークスペースコード: @Model.WorkspaceCode
+- 参加日時 (JST): @Model.JoinedAt.ToString("yyyy/MM/dd HH:mm")
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

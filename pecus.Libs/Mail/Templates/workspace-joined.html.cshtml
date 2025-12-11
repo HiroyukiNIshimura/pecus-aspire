@@ -1,0 +1,32 @@
+@model Pecus.Libs.Mail.Templates.Models.WorkspaceJoinedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>@Model.UserName さん、@Model.WorkspaceName への参加が完了しました</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.InviterName))
+{
+    <p>@Model.InviterName さんから招待され、ワークスペースに参加しました。</p>
+}
+else
+{
+    <p>@Model.WorkspaceName に参加しました。</p>
+}
+
+<p>以下のリンクからワークスペースを開いてください。</p>
+
+<div style="text-align:center; margin:20px 0;">
+    <a href="@Model.FrontendWorkspaceUrl" class="button">ワークスペースを開く</a>
+</div>
+
+<div class="divider"></div>
+
+<p><strong>参加情報:</strong></p>
+<ul>
+    <li>ワークスペース名: @Model.WorkspaceName</li>
+    <li>ワークスペースコード: @Model.WorkspaceCode</li>
+    <li>参加日時 (JST): @Model.JoinedAt.ToString("yyyy/MM/dd HH:mm")</li>
+</ul>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
