@@ -9,7 +9,7 @@ using Pecus.Services;
 
 namespace Pecus.Controllers;
 
-[Route("api/activities")]
+[Route("api/workspaces/{workspaceId}/activities")]
 [Produces("application/json")]
 [Tags("Activity")]
 public class ActivityController : BaseSecureController
@@ -40,14 +40,22 @@ public class ActivityController : BaseSecureController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ActivitiesResponse>> GetItemActivities(
+        int workspaceId,
         int itemId,
         [FromQuery] GetActivitiesRequest request
     )
     {
+        // ワークスペースへのアクセス権を確認
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
         var pageSize = _config.Pagination.DefaultPageSize;
 
         var result = await _activityService.GetActivitiesByItemIdAsync(
-            request.WorkspaceId,
+            workspaceId,
             itemId,
             request.Page,
             pageSize,
@@ -56,13 +64,6 @@ public class ActivityController : BaseSecureController
         );
 
         if (result == null)
-        {
-            throw new NotFoundException("アイテムが見つかりません。");
-        }
-
-        // ワークスペースへのアクセス権を確認
-        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, request.WorkspaceId);
-        if (!hasAccess)
         {
             throw new NotFoundException("アイテムが見つかりません。");
         }
@@ -95,63 +96,9 @@ public class ActivityController : BaseSecureController
     }
 
     /// <summary>
-    /// ユーザーのアクティビティ一覧を取得（活動レポート用）
+    /// ワークスペース内の全アクティビティを取得（統計用）
     /// </summary>
-    [HttpGet("users/{userId}")]
-    [ProducesResponseType(typeof(ActivitiesResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<ActivitiesResponse>> GetUserActivities(
-        int userId,
-        [FromQuery] GetActivitiesRequest request
-    )
-    {
-        // 指定ユーザーが同じ組織に所属しているかチェック
-        var canAccess = await _accessHelper.CanAccessUserAsync(CurrentUserId, userId);
-        if (!canAccess)
-        {
-            throw new NotFoundException("ユーザーが見つかりません。");
-        }
-
-        var pageSize = _config.Pagination.DefaultPageSize;
-
-        var (activities, totalCount) = await _activityService.GetActivitiesByUserIdAsync(
-            userId,
-            request.Page,
-            pageSize,
-            request.StartDate,
-            request.EndDate
-        );
-
-        var response = new ActivitiesResponse
-        {
-            Activities = activities
-                .Select(a => new ActivityResponse
-                {
-                    Id = a.Id,
-                    WorkspaceId = a.WorkspaceId,
-                    ItemId = a.ItemId,
-                    ItemCode = a.Item?.Code ?? string.Empty,
-                    ItemSubject = a.Item?.Subject ?? string.Empty,
-                    UserId = a.UserId,
-                    Username = a.User?.Username,
-                    ActionType = a.ActionType,
-                    Details = a.Details,
-                    CreatedAt = a.CreatedAt,
-                })
-                .ToList(),
-            TotalCount = totalCount,
-            Page = request.Page,
-            PageSize = pageSize,
-        };
-
-        return TypedResults.Ok(response);
-    }
-
-    /// <summary>
-    /// ワークスペースのアクティビティ一覧を取得（統計用）
-    /// </summary>
-    [HttpGet("workspaces/{workspaceId}")]
+    [HttpGet]
     [ProducesResponseType(typeof(ActivitiesResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -8,11 +8,6 @@ namespace Pecus.Models.Requests.Activity;
 public class GetActivitiesRequest
 {
     /// <summary>
-    /// ワークスペースID（アイテムアクティビティ取得時に使用）
-    /// </summary>
-    public int WorkspaceId { get; set; }
-
-    /// <summary>
     /// ページ番号（1から開始）
     /// </summary>
     [Range(1, int.MaxValue)]
