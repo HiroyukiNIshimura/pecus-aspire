@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Pecus.Libs.DB.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB.Models;
 
