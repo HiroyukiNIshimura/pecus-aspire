@@ -8177,7 +8177,6 @@
           "BodyUpdated",
           "FileAdded",
           "FileRemoved",
-          "StatusChanged",
           "AssigneeChanged",
           "RelationAdded",
           "RelationRemoved",

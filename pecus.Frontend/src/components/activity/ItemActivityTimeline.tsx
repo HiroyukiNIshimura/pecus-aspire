@@ -19,7 +19,6 @@ const actionTypeConfig: Record<ActivityActionType, { icon: string; badgeClass: s
   BodyUpdated: { icon: 'icon-[mdi--text-box-edit]', badgeClass: 'badge-primary' },
   FileAdded: { icon: 'icon-[mdi--file-plus]', badgeClass: 'badge-success' },
   FileRemoved: { icon: 'icon-[mdi--file-remove]', badgeClass: 'badge-error' },
-  StatusChanged: { icon: 'icon-[mdi--swap-horizontal]', badgeClass: 'badge-info' },
   AssigneeChanged: { icon: 'icon-[mdi--account-switch]', badgeClass: 'badge-info' },
   RelationAdded: { icon: 'icon-[mdi--link-plus]', badgeClass: 'badge-success' },
   RelationRemoved: { icon: 'icon-[mdi--link-off]', badgeClass: 'badge-error' },
@@ -37,7 +36,6 @@ const actionTypeLabels: Record<ActivityActionType, string> = {
   BodyUpdated: '本文を更新',
   FileAdded: 'ファイルを追加',
   FileRemoved: 'ファイルを削除',
-  StatusChanged: 'ステータスを変更',
   AssigneeChanged: '担当者を変更',
   RelationAdded: '関連を追加',
   RelationRemoved: '関連を削除',
@@ -71,8 +69,6 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
       case 'PriorityChanged':
         // 改善: サーバー側で日本語ラベルが直接入っている
         return `${parsed.old ?? 'なし'} → ${parsed.new ?? 'なし'}`;
-      case 'StatusChanged':
-        return `${parsed.old} → ${parsed.new}`;
       case 'ArchivedChanged':
         return parsed.new ? 'アーカイブしました' : 'アーカイブを解除しました';
       case 'DraftChanged':

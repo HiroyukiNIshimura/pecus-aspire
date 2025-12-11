@@ -1761,11 +1761,6 @@ public class DatabaseSeeder
             {
                 fileName = _faker.System.FileName()
             }),
-            ActivityActionType.StatusChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = "TODO",
-                @new = _random.Next(3) switch { 0 => "DOING", 1 => "REVIEW", _ => "DONE" }
-            }),
             ActivityActionType.AssigneeChanged => System.Text.Json.JsonSerializer.Serialize(new
             {
                 old = _random.Next(2) == 0 ? null : _faker.Name.FullName(),

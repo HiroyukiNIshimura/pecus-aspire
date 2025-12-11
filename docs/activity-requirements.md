@@ -87,7 +87,7 @@ public class Activity
 }
 ```
 
-## ActionType Enum（案）
+## ActionType Enum
 
 ```csharp
 public enum ActivityActionType
@@ -97,7 +97,6 @@ public enum ActivityActionType
     BodyUpdated,
     FileAdded,
     FileRemoved,
-    StatusChanged,
     AssigneeChanged,
     RelationAdded,
     RelationRemoved,

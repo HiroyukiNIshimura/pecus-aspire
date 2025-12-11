@@ -27,10 +27,6 @@ public enum ActivityActionType
     FileRemoved,
 
     /// <summary>
-    /// ステータス変更
-    /// </summary>
-    StatusChanged,
-    /// <summary>
     /// 担当者変更
     /// </summary>
     AssigneeChanged,
