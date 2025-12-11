@@ -323,16 +323,6 @@ Activity テーブルに INSERT
 - 合計オーバーヘッド: 3-5ms（UI をブロックしない範囲）
 - Activity の INSERT 自体は非同期で実行されるため、メインリクエストには影響なし
 
-## 削除した項目（現行 Activity.cs から）
-
-| 項目 | 削除理由 |
-|------|---------|
-| `Action` | `ActionType`（enum）に統一 |
-| `ActionCategory` | 不要。ActionType から分類可能 |
-| `BeforeData` / `AfterData` | 監査向け。`Details` に必要な差分だけ保持 |
-| `Metadata` | 監査向け（IP等）。今回は不要 |
-| `IsSystem` | `UserId = NULL` で判断可能 |
-
 ## インデックス設計
 
 パフォーマンスを考慮し、以下のインデックスを設定済み（`ApplicationDbContext.cs` で定義）:
@@ -356,7 +346,7 @@ Activity テーブルに INSERT
 - [x] 関係アイテム操作のActivity記録（`RelationAdded`, `RelationRemoved`） → `WorkspaceItemRelationService` に実装済み
 - [x] アクティビティ取得APIエンドポイントの実装（タイムライン表示用） → `ActivityController` に実装済み
 - [x] 具体的なUI/UX設計
-- [ ] バックエンドでアクティビティを作成する場合、old/newの値がIdやコード値になってしまっている。
+- [x] バックエンドでアクティビティを作成する場合、old/newの値がIdやコード値になってしまっている。
 - [ ] 本文を変更した場合のUI側での見せ方
 - [ ] その他、変更内容詳細のUI側での見せ方
 
