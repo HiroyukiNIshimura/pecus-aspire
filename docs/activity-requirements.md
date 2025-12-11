@@ -338,7 +338,10 @@ Activity テーブルに INSERT
 - [x] ファイル操作のActivity記録（`FileAdded`, `FileRemoved`） → `WorkspaceItemAttachmentController` に実装済み
 - [x] 関係アイテム操作のActivity記録（`RelationAdded`, `RelationRemoved`） → `WorkspaceItemRelationService` に実装済み
 - [x] アクティビティ取得APIエンドポイントの実装（タイムライン表示用） → `ActivityController` に実装済み
-- [ ] 具体的なUI/UX設計
+- [x] 具体的なUI/UX設計
+- [ ] バックエンドでアクティビティを作成する場合、old/newの値がIdやコード値になってしまっている。
+- [ ] 本文を変更した場合のUI側での見せ方
+- [ ] その他、変更内容詳細のUI側での見せ方
 
 ## 設計理念
 

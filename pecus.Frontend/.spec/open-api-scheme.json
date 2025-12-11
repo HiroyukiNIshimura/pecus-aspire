@@ -8240,6 +8240,11 @@
             "description": "ユーザー名",
             "nullable": true
           },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "ユーザーのアイデンティティアイコンURL",
+            "nullable": true
+          },
           "actionType": {
             "$ref": "#/components/schemas/ActivityActionType"
           },

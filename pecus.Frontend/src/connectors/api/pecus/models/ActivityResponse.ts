@@ -35,6 +35,10 @@ export type ActivityResponse = {
      * ユーザー名
      */
     username?: string | null;
+    /**
+     * ユーザーのアイデンティティアイコンURL
+     */
+    identityIconUrl?: string | null;
     actionType?: ActivityActionType;
     /**
      * 操作の詳細データ（JSON文字列）

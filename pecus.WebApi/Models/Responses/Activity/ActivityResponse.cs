@@ -44,6 +44,11 @@ public class ActivityResponse
     public string? Username { get; set; }
 
     /// <summary>
+    /// ユーザーのアイデンティティアイコンURL
+    /// </summary>
+    public string? IdentityIconUrl { get; set; }
+
+    /// <summary>
     /// 操作タイプ
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<ActivityActionType>))]

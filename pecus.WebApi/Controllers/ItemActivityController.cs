@@ -96,6 +96,9 @@ public class ItemActivityController : BaseSecureController
         ItemSubject = a.Item?.Subject ?? string.Empty,
         UserId = a.UserId,
         Username = a.User?.Username,
+        IdentityIconUrl = a.User != null
+            ? IdentityIconHelper.GetIdentityIconUrl(a.User.AvatarType, a.User.Id, a.User.Username, a.User.Email, a.User.UserAvatarPath)
+            : null,
         ActionType = a.ActionType,
         Details = a.Details,
         CreatedAt = a.CreatedAt,

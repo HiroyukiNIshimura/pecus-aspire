@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchItemActivities } from '@/actions/activity';
+import UserAvatar from '@/components/common/UserAvatar';
 import type { ActivityActionType, ActivityResponse } from '@/connectors/api/pecus';
 
 interface ItemActivityTimelineProps {
@@ -263,17 +264,22 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
 
                               {/* コンテンツ */}
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium">
-                                      {activity.username || 'システム'}が{label}
-                                    </p>
-                                    {details && (
-                                      <p className="text-xs text-base-content/70 mt-0.5 truncate">{details}</p>
-                                    )}
-                                  </div>
+                                {/* 1行目: ラベル + 時間 */}
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-sm font-medium ms-1">{label}</p>
                                   <span className="text-xs text-base-content/50 whitespace-nowrap">{time}</span>
                                 </div>
+                                {/* 2行目: UserAvatar */}
+                                <div className="mt-2">
+                                  <UserAvatar
+                                    userName={activity.username}
+                                    identityIconUrl={activity.identityIconUrl}
+                                    size={32}
+                                    nameClassName="text-sm text-base-content/70"
+                                  />
+                                </div>
+                                {/* 3行目: 詳細 */}
+                                {details && <p className="text-sm text-base-content/70 mt-2 truncate">{details}</p>}
                               </div>
                             </div>
                           );
