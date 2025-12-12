@@ -352,17 +352,25 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
                                 <span className="text-xs text-base-content/50 whitespace-nowrap">{time}</span>
                               </div>
 
-                              {/* 2行目: ワークスペース + アイテム情報 */}
+                              {/* 2行目: ワークスペース情報 */}
                               <div className="flex items-center gap-2 mt-2 ml-11">
                                 {/* ワークスペースジャンルアイコン */}
                                 {activity.workspaceGenreIcon && (
-                                  <span
-                                    className={`${activity.workspaceGenreIcon} size-4 shrink-0`}
-                                    aria-hidden="true"
+                                  <img
+                                    src={`/icons/genres/${activity.workspaceGenreIcon}.svg`}
+                                    alt={activity.workspaceName || 'ジャンルアイコン'}
+                                    title={activity.workspaceName || 'ジャンル'}
+                                    className="w-4 h-4 flex-shrink-0"
                                   />
                                 )}
-                                <span className="text-sm text-base-content/70 truncate">{activity.workspaceName}</span>
-                                <span className="text-base-content/30">/</span>
+                                <span className="text-sm text-base-content/70">
+                                  {activity.workspaceName || 'Unknown'}
+                                </span>
+                              </div>
+
+                              {/* 3行目: アイテム情報 */}
+                              <div className="flex items-center gap-2 mt-1 ml-11">
+                                <span className="text-xs text-base-content/50 shrink-0">アイテム:</span>
                                 {itemUrl ? (
                                   <Link
                                     href={itemUrl}
@@ -378,7 +386,7 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
                                 )}
                               </div>
 
-                              {/* 3行目: 詳細情報 */}
+                              {/* 4行目: 詳細情報 */}
                               {details && (
                                 <div className="mt-2 ml-11">
                                   <p className="text-sm text-base-content/70 bg-base-200 rounded px-2 py-1 inline-block">
