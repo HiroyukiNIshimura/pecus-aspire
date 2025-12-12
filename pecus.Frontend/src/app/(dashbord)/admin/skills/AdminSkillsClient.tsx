@@ -162,13 +162,13 @@ export default function AdminSkillsClient({
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <LoadingOverlay isLoading={showLoading} message="検索中..." />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
         <AdminSidebar sidebarOpen={sidebarOpen} />
 
@@ -181,7 +181,7 @@ export default function AdminSkillsClient({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {/* Error Alert */}
             {fetchError && (

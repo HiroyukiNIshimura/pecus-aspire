@@ -20,7 +20,7 @@ export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
 
   return (
     <aside
-      className={`bg-base-200 min-h-full p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:relative z-30 lg:w-64 md:w-20 w-64`}
+      className={`bg-base-200 p-4 transition-all duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block fixed md:sticky md:top-0 md:h-[calc(100vh-4rem)] overflow-y-auto z-30 lg:w-64 md:w-20 w-64 h-screen`}
     >
       <h2 className="text-lg font-semibold mb-4 lg:block hidden whitespace-nowrap overflow-hidden text-ellipsis">
         管理者メニュー

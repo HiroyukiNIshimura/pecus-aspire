@@ -67,10 +67,10 @@ export default function MyTasksDashboardClient({
   const totalOverdue = workspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
         <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />
 
@@ -85,7 +85,7 @@ export default function MyTasksDashboardClient({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-y-auto">
           {/* ページヘッダー */}
           <div className="mb-6">
             <div className="flex items-center gap-3">

@@ -234,10 +234,10 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
   const defaultConfig = { icon: 'icon-[mdi--circle]', badgeClass: 'badge-neutral' };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <AppHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
         <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={initialUser?.isAdmin ?? false} />
 
@@ -252,7 +252,7 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="max-w-4xl mx-auto">
             {/* ヘッダー */}
             <div className="flex items-center gap-3 mb-6">

@@ -177,13 +177,13 @@ export default function EditUserClient({
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
         <AdminSidebar sidebarOpen={sidebarOpen} />
 
@@ -196,7 +196,7 @@ export default function EditUserClient({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-5xl mx-auto">
             {/* ページヘッダー */}
             <div className="mb-6 flex justify-between items-center">

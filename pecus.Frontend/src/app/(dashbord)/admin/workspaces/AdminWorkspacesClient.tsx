@@ -198,13 +198,13 @@ export default function AdminWorkspacesClient({
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={isLoading} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
         <AdminSidebar sidebarOpen={sidebarOpen} />
 
@@ -217,7 +217,7 @@ export default function AdminWorkspacesClient({
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">ワークスペース管理</h1>

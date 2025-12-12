@@ -225,12 +225,12 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
   const vendorRequiresKey = formData.generativeApiVendor !== 'None';
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {sidebarOpen && (
@@ -240,7 +240,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
           ></div>
         )}
 
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
               <div>

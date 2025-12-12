@@ -48,12 +48,12 @@ export default function AdminClient({
   }, [clientError, router]);
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-col h-screen overflow-hidden">
       <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <AdminSidebar sidebarOpen={sidebarOpen} />
 
         {/* Overlay for mobile */}
@@ -64,7 +64,7 @@ export default function AdminClient({
           ></div>
         )}
 
-        <main className="flex-1 p-6 bg-base-100">
+        <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">組織</h1>
 
