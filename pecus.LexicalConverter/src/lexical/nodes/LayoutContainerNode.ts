@@ -3,7 +3,15 @@
  * レイアウトコンテナノード
  */
 
-import type { DOMConversionMap, DOMExportOutput, LexicalNode, LexicalUpdateJSON, NodeKey, SerializedElementNode, Spread } from 'lexical';
+import type {
+  DOMConversionMap,
+  DOMExportOutput,
+  LexicalNode,
+  LexicalUpdateJSON,
+  NodeKey,
+  SerializedElementNode,
+  Spread,
+} from 'lexical';
 import { ElementNode } from 'lexical';
 
 export type SerializedLayoutContainerNode = Spread<

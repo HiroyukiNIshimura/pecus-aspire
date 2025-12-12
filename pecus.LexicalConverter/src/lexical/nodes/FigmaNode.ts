@@ -3,7 +3,15 @@
  * Figma埋め込みノード（リンクとして出力）
  */
 
-import type { DOMConversionMap, DOMExportOutput, ElementFormatType, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type {
+  DOMConversionMap,
+  DOMExportOutput,
+  ElementFormatType,
+  LexicalNode,
+  NodeKey,
+  SerializedLexicalNode,
+  Spread,
+} from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 export type SerializedFigmaNode = Spread<
