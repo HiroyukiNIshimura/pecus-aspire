@@ -144,23 +144,6 @@ export default function WorkspaceTaskEditModal({
   // 先行タスク状態
   const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
   const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
-  const [isLoadingPredecessorTasks, setIsLoadingPredecessorTasks] = useState(false);
-
-  // 先行タスク候補を取得
-  const fetchPredecessorTasks = useCallback(
-    async (excludeTaskId?: number) => {
-      setIsLoadingPredecessorTasks(true);
-      try {
-        const result = await getPredecessorTaskOptions(workspaceId, itemId, excludeTaskId);
-        if (result.success) {
-          setPredecessorTaskOptions(result.data || []);
-        }
-      } finally {
-        setIsLoadingPredecessorTasks(false);
-      }
-    },
-    [workspaceId, itemId],
-  );
 
   // タスクデータをフォーム状態に反映
   const syncTaskToForm = useCallback((taskData: WorkspaceTaskDetailResponse) => {
@@ -205,22 +188,28 @@ export default function WorkspaceTaskEditModal({
     setPredecessorTaskId(taskData.predecessorTaskId || null);
   }, []);
 
-  // タスクを取得
+  // タスクと先行タスク候補を並列で取得
   const fetchTask = useCallback(
     async (targetTaskId: number) => {
       setIsLoadingTask(true);
       setServerErrors([]);
 
-      // 先行タスク候補も取得（自タスクを除外）
-      fetchPredecessorTasks(targetTaskId);
-
       try {
-        const result = await getWorkspaceTask(workspaceId, itemId, targetTaskId);
-        if (result.success) {
-          setTask(result.data);
-          syncTaskToForm(result.data);
+        // タスクデータと先行タスク候補を並列で取得
+        const [taskResult, predecessorResult] = await Promise.all([
+          getWorkspaceTask(workspaceId, itemId, targetTaskId),
+          getPredecessorTaskOptions(workspaceId, itemId, targetTaskId),
+        ]);
+
+        if (taskResult.success) {
+          setTask(taskResult.data);
+          syncTaskToForm(taskResult.data);
         } else {
-          notifyRef.current.error(result.message || 'タスクの取得に失敗しました');
+          notifyRef.current.error(taskResult.message || 'タスクの取得に失敗しました');
+        }
+
+        if (predecessorResult.success) {
+          setPredecessorTaskOptions(predecessorResult.data || []);
         }
       } catch {
         notifyRef.current.error('タスクの取得中にエラーが発生しました');
@@ -228,7 +217,7 @@ export default function WorkspaceTaskEditModal({
         setIsLoadingTask(false);
       }
     },
-    [workspaceId, itemId, syncTaskToForm, fetchPredecessorTasks],
+    [workspaceId, itemId, syncTaskToForm],
   );
 
   // 初期化
@@ -238,10 +227,8 @@ export default function WorkspaceTaskEditModal({
         setNavigation(initialNavigation);
         const currentTask = initialNavigation.tasks[initialNavigation.currentIndex];
         if (currentTask) {
-          setTask(currentTask);
-          syncTaskToForm(currentTask);
-          // 先行タスク候補を取得（自タスクを除外）
-          fetchPredecessorTasks(currentTask.id);
+          // initialNavigationがある場合もfetchTaskで先行タスク候補を含めて取得
+          fetchTask(currentTask.id);
           return;
         }
       }
@@ -251,7 +238,7 @@ export default function WorkspaceTaskEditModal({
         fetchTask(taskId);
       }
     }
-  }, [isOpen, taskId, workspaceId, itemId, initialNavigation, syncTaskToForm, fetchPredecessorTasks, fetchTask]);
+  }, [isOpen, taskId, workspaceId, itemId, initialNavigation, fetchTask]);
 
   // 次のタスクに移動
   const handleNextTask = useCallback(async () => {
@@ -894,7 +881,7 @@ export default function WorkspaceTaskEditModal({
                         className="select select-bordered"
                         value={predecessorTaskId || ''}
                         onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
-                        disabled={isSubmitting || isLoadingTask || isLoadingPredecessorTasks}
+                        disabled={isSubmitting || isLoadingTask}
                       >
                         <option value="">なし</option>
                         {predecessorTaskOptions.map((t) => (
@@ -903,14 +890,6 @@ export default function WorkspaceTaskEditModal({
                           </option>
                         ))}
                       </select>
-                      {isLoadingPredecessorTasks && (
-                        <div className="label">
-                          <span className="label-text-alt text-base-content/60">
-                            <span className="loading loading-spinner loading-xs mr-1" aria-hidden="true" />
-                            タスク一覧を読み込み中...
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {/* 工数（予定・実績）を横並び */}

@@ -445,6 +445,14 @@ public class WorkspaceTaskController : BaseSecureController
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
             CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
+            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTask = task.PredecessorTask != null ? new PredecessorTaskInfo
+            {
+                Id = task.PredecessorTask.Id,
+                Content = task.PredecessorTask.Content,
+                IsCompleted = task.PredecessorTask.IsCompleted,
+                WorkspaceItemCode = null  // 一覧では不要
+            } : null,
             RowVersion = task.RowVersion,
         };
     }

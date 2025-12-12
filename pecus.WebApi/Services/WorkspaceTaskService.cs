@@ -275,6 +275,7 @@ public class WorkspaceTaskService
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
             .Include(t => t.TaskType)
+            .Include(t => t.PredecessorTask)
             .Where(t => t.WorkspaceItemId == itemId && t.WorkspaceId == workspaceId);
 
         // ステータスフィルタ
