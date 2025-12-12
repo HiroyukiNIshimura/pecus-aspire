@@ -27,17 +27,23 @@ try
         .WithReference(pecusDb)
         .WaitFor(pecusDb);
 
+    // WebApi の uploads フォルダの絶対パスを取得
+    var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
+    var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
+    Log.Information("Uploads path: {UploadsPath}", uploadsPath);
+
+    // Protos フォルダの絶対パスを取得
+    var protosPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Protos"));
+    var lexicalProtoPath = Path.Combine(protosPath, "lexical", "lexical.proto");
+    Log.Information("Lexical proto path: {LexicalProtoPath}", lexicalProtoPath);
+
     // Lexical Converter (Node.js gRPC Service)
     var lexicalConverter = builder.AddNpmApp("lexicalconverter", "../pecus.LexicalConverter", "start:dev")
         .WithNpmPackageInstallation()
         .WithHttpEndpoint(targetPort: 5100, name: "grpc", isProxied: false)
         .WithEnvironment("GRPC_PORT", "5100")
-        .WithEnvironment("GRPC_HOST", "0.0.0.0");
-
-    // WebApi の uploads フォルダの絶対パスを取得
-    var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
-    var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
-    Log.Information("Uploads path: {UploadsPath}", uploadsPath);
+        .WithEnvironment("GRPC_HOST", "0.0.0.0")
+        .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
 
     var backfire = builder
     .AddProject<Projects.pecus_BackFire>("backfire")
