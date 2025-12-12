@@ -259,67 +259,6 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
               <div className="card-body space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="form-control">
-                    <label className="label" htmlFor="input-task-overdue">
-                      <span className="label-text font-semibold">
-                        タスク超過閾値（日） <span className="text-error">*</span>
-                      </span>
-                    </label>
-                    <div
-                      className={`input input-bordered flex items-center ${shouldShowError('taskOverdueThreshold') ? 'input-error' : ''}`}
-                    >
-                      <input
-                        id="input-task-overdue"
-                        name="taskOverdueThreshold"
-                        type="text"
-                        inputMode="numeric"
-                        value={formData.taskOverdueThreshold}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '') {
-                            handleFieldChange('taskOverdueThreshold', 0);
-                          } else {
-                            const num = parseInt(val, 10);
-                            if (!Number.isNaN(num) && num >= 0 && num <= 365) {
-                              handleFieldChange('taskOverdueThreshold', num);
-                            }
-                          }
-                        }}
-                        className="flex-1 bg-transparent outline-none min-w-0"
-                        placeholder="0"
-                        disabled={isSubmitting}
-                        aria-label="タスク超過閾値入力"
-                      />
-                      <span className="my-auto flex gap-2">
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                          aria-label="1日減らす"
-                          onClick={() =>
-                            handleFieldChange('taskOverdueThreshold', Math.max(0, formData.taskOverdueThreshold - 1))
-                          }
-                          disabled={isSubmitting || formData.taskOverdueThreshold <= 0}
-                        >
-                          <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
-                          aria-label="1日増やす"
-                          onClick={() =>
-                            handleFieldChange('taskOverdueThreshold', Math.min(365, formData.taskOverdueThreshold + 1))
-                          }
-                          disabled={isSubmitting || formData.taskOverdueThreshold >= 365}
-                        >
-                          <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
-                        </button>
-                      </span>
-                    </div>
-                    {shouldShowError('taskOverdueThreshold') && (
-                      <span className="label-text-alt text-error">{getFieldError('taskOverdueThreshold')}</span>
-                    )}
-                  </div>
-
-                  <div className="form-control">
                     <label className="label" htmlFor="weeklyReportDeliveryDay">
                       <span className="label-text font-semibold">週間レポート配信曜日 </span>
                     </label>
@@ -477,70 +416,139 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="form-control">
-                    <label className="label" htmlFor="select-help-notification-target">
-                      <span className="label-text font-semibold">ヘルプコメント通知先</span>
-                    </label>
-                    <select
-                      id="select-help-notification-target"
-                      name="helpNotificationTarget"
-                      className={`select select-bordered ${shouldShowError('helpNotificationTarget') ? 'select-error' : ''}`}
-                      value={formData.helpNotificationTarget ?? ''}
-                      onChange={(e) => handleFieldChange('helpNotificationTarget', e.target.value)}
-                    >
-                      {helpNotificationTargetOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    {shouldShowError('helpNotificationTarget') && (
-                      <span className="label-text-alt text-error">{getFieldError('helpNotificationTarget')}</span>
-                    )}
-                    <span className="label-text-alt text-xs text-base-content/60 mt-1">
-                      担当者からのヘルプコメントを誰に通知するかを設定します。
-                    </span>
+                <div className="divider">タスクの設定</div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="form-control">
+                      <label className="label" htmlFor="input-task-overdue">
+                        <span className="label-text font-semibold">
+                          タスク超過閾値（日） <span className="text-error">*</span>
+                        </span>
+                      </label>
+                      <div
+                        className={`input input-bordered flex items-center ${shouldShowError('taskOverdueThreshold') ? 'input-error' : ''}`}
+                      >
+                        <input
+                          id="input-task-overdue"
+                          name="taskOverdueThreshold"
+                          type="text"
+                          inputMode="numeric"
+                          value={formData.taskOverdueThreshold}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              handleFieldChange('taskOverdueThreshold', 0);
+                            } else {
+                              const num = parseInt(val, 10);
+                              if (!Number.isNaN(num) && num >= 0 && num <= 365) {
+                                handleFieldChange('taskOverdueThreshold', num);
+                              }
+                            }
+                          }}
+                          className="flex-1 bg-transparent outline-none min-w-0"
+                          placeholder="0"
+                          disabled={isSubmitting}
+                          aria-label="タスク超過閾値入力"
+                        />
+                        <span className="my-auto flex gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                            aria-label="1日減らす"
+                            onClick={() =>
+                              handleFieldChange('taskOverdueThreshold', Math.max(0, formData.taskOverdueThreshold - 1))
+                            }
+                            disabled={isSubmitting || formData.taskOverdueThreshold <= 0}
+                          >
+                            <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
+                            aria-label="1日増やす"
+                            onClick={() =>
+                              handleFieldChange(
+                                'taskOverdueThreshold',
+                                Math.min(365, formData.taskOverdueThreshold + 1),
+                              )
+                            }
+                            disabled={isSubmitting || formData.taskOverdueThreshold >= 365}
+                          >
+                            <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
+                          </button>
+                        </span>
+                      </div>
+                      {shouldShowError('taskOverdueThreshold') && (
+                        <span className="label-text-alt text-error">{getFieldError('taskOverdueThreshold')}</span>
+                      )}
+                      <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                        タスクの期限を超過した際に警告表示するまでの猶予日数を設定します。
+                      </span>
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label" htmlFor="select-help-notification-target">
+                        <span className="label-text font-semibold">ヘルプコメント通知先</span>
+                      </label>
+                      <select
+                        id="select-help-notification-target"
+                        name="helpNotificationTarget"
+                        className={`select select-bordered ${shouldShowError('helpNotificationTarget') ? 'select-error' : ''}`}
+                        value={formData.helpNotificationTarget ?? ''}
+                        onChange={(e) => handleFieldChange('helpNotificationTarget', e.target.value)}
+                      >
+                        {helpNotificationTargetOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {shouldShowError('helpNotificationTarget') && (
+                        <span className="label-text-alt text-error">{getFieldError('helpNotificationTarget')}</span>
+                      )}
+                      <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                        担当者からのヘルプコメントを誰に通知するかを設定します。
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="divider">タスク制約設定</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-require-estimate">
+                        <input
+                          id="toggle-require-estimate"
+                          name="requireEstimateOnTaskCreation"
+                          type="checkbox"
+                          className="switch switch-primary"
+                          checked={formData.requireEstimateOnTaskCreation ?? false}
+                          onChange={(e) => handleFieldChange('requireEstimateOnTaskCreation', e.target.checked)}
+                          disabled={isSubmitting}
+                        />
+                        <span className="font-semibold">タスク作成時に見積もりを必須とする</span>
+                      </label>
+                      <p className="text-sm text-base-content/60 pl-12">
+                        有効にすると、タスク作成時に見積もり時間の入力が必須になります。
+                      </p>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="form-control">
-                    <label className="label cursor-pointer justify-start gap-4" htmlFor="toggle-require-estimate">
-                      <input
-                        id="toggle-require-estimate"
-                        name="requireEstimateOnTaskCreation"
-                        type="checkbox"
-                        className="toggle toggle-primary"
-                        checked={formData.requireEstimateOnTaskCreation ?? false}
-                        onChange={(e) => handleFieldChange('requireEstimateOnTaskCreation', e.target.checked)}
-                        disabled={isSubmitting}
-                      />
-                      <span className="label-text font-semibold">タスク作成時に見積もりを必須とする</span>
-                    </label>
-                    <span className="label-text-alt text-xs text-base-content/60 ml-14">
-                      有効にすると、タスク作成時に見積もり時間の入力が必須になります。
-                    </span>
-                  </div>
-
-                  <div className="form-control">
-                    <label className="label cursor-pointer justify-start gap-4" htmlFor="toggle-enforce-predecessor">
-                      <input
-                        id="toggle-enforce-predecessor"
-                        name="enforcePredecessorCompletion"
-                        type="checkbox"
-                        className="toggle toggle-primary"
-                        checked={formData.enforcePredecessorCompletion ?? false}
-                        onChange={(e) => handleFieldChange('enforcePredecessorCompletion', e.target.checked)}
-                        disabled={isSubmitting}
-                      />
-                      <span className="label-text font-semibold">先行タスク完了を強制する</span>
-                    </label>
-                    <span className="label-text-alt text-xs text-base-content/60 ml-14">
-                      有効にすると、先行タスクが完了するまで後続タスクを操作できなくなります。
-                    </span>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-3 cursor-pointer" htmlFor="toggle-enforce-predecessor">
+                        <input
+                          id="toggle-enforce-predecessor"
+                          name="enforcePredecessorCompletion"
+                          type="checkbox"
+                          className="switch switch-primary"
+                          checked={formData.enforcePredecessorCompletion ?? false}
+                          onChange={(e) => handleFieldChange('enforcePredecessorCompletion', e.target.checked)}
+                          disabled={isSubmitting}
+                        />
+                        <span className="font-semibold">先行タスク完了を強制する</span>
+                      </label>
+                      <p className="text-sm text-base-content/60 pl-12">
+                        有効にすると、先行タスクが完了するまで後続タスクを操作できなくなります。
+                      </p>
+                    </div>
                   </div>
                 </div>
 
