@@ -93,6 +93,7 @@ public static class WorkspaceItemResponseHelper
     private static List<RelatedItemInfo> BuildRelatedItemsList(DB.Models.WorkspaceItem item)
     {
         var relatedItems = new List<RelatedItemInfo>();
+        var listIndex = 0;
 
         // このアイテムが関連元のもの（FromItem）
         if (item.RelationsFrom != null)
@@ -103,6 +104,7 @@ public static class WorkspaceItemResponseHelper
                 {
                     relatedItems.Add(new RelatedItemInfo
                     {
+                        ListIndex = listIndex++,
                         RelationId = relation.Id,
                         Id = relation.ToItem.Id,
                         Subject = relation.ToItem.Subject,
@@ -136,6 +138,7 @@ public static class WorkspaceItemResponseHelper
                 {
                     relatedItems.Add(new RelatedItemInfo
                     {
+                        ListIndex = listIndex++,
                         RelationId = relation.Id,
                         Id = relation.FromItem.Id,
                         Subject = relation.FromItem.Subject,

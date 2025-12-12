@@ -8,6 +8,11 @@ namespace Pecus.Models.Responses.WorkspaceItem;
 public class RelatedItemInfo
 {
     /// <summary>
+    /// リスト内での一意なインデックス（フロントエンドのReact key用）
+    /// </summary>
+    public int ListIndex { get; init; }
+
+    /// <summary>
     /// 関連ID（削除時に使用）
     /// </summary>
     public int RelationId { get; set; }

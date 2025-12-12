@@ -8,6 +8,10 @@ import type { RelationType } from './RelationType';
  */
 export type RelatedItemInfo = {
     /**
+     * リスト内での一意なインデックス（フロントエンドのReact key用）
+     */
+    listIndex?: number;
+    /**
      * 関連ID（削除時に使用）
      */
     relationId?: number;

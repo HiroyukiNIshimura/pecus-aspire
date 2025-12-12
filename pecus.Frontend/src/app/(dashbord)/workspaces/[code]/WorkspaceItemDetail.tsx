@@ -414,7 +414,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <div className="space-y-2">
                 {item.relatedItems.map((related) => (
                   <div
-                    key={related.id}
+                    key={related.listIndex}
                     className={`flex items-center gap-2 p-2 rounded ${related.isArchived ? 'bg-base-300 opacity-60' : 'bg-base-200'}`}
                   >
                     {/* アイテム情報 */}

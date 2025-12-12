@@ -10388,6 +10388,11 @@
       "RelatedItemInfo": {
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "relationId": {
             "type": "integer",
             "description": "関連ID（削除時に使用）",
