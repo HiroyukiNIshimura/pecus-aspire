@@ -38,6 +38,7 @@
 | `organization:{organizationId}` | SignalR 接続時（自動） | 切断時 | No | JWT の `organizationId` から取得 |
 | `workspace:{workspaceId}` | ワークスペースページ表示 | 別ワークスペースへ移動 or 切断 | Yes | メンバーチェックあり |
 | `item:{itemId}` | アイテム詳細表示 | 別アイテムへ移動 or 切断 | Yes | workspace にも同時参加 |
+| `task:{taskId}` | タスク詳細表示 | 別タスクへ移動 or 切断 | Yes | タスク編集状態通知用 |
 
 ### チャット用グループ（将来実装）
 
@@ -270,12 +271,18 @@ public async Task JoinChat(int chatRoomId)
 | `item:user_joined` | アイテム閲覧開始 | `{ itemId, userId, userName, identityIconUrl }` |
 | `item:user_left` | アイテム閲覧終了 | `{ itemId, userId }` |
 
-### アイテム編集系（Hub から送信）
+### 編集状態通知系（Hub から送信）
+
+> 詳細は [item-edit-status.md](./item-edit-status.md) を参照
 
 | イベントタイプ | 説明 | ペイロード |
 |---------------|------|-----------|
-| `item:editing_started` | ユーザーがアイテム編集を開始 | `{ ItemId, UserId, UserName, IdentityIconUrl }` |
-| `item:editing_ended` | ユーザーがアイテム編集を終了 | `{ ItemId, UserId }` |
+| `item:edit_started` | ユーザーがアイテム編集を開始 | `{ itemId, userId, userName, identityIconUrl }` |
+| `item:edit_ended` | ユーザーがアイテム編集を終了 | `{ itemId, userId }` |
+| `workspace:edit_started` | ユーザーがワークスペース設定編集を開始 | `{ workspaceId, userId, userName, identityIconUrl }` |
+| `workspace:edit_ended` | ユーザーがワークスペース設定編集を終了 | `{ workspaceId, userId }` |
+| `task:edit_started` | ユーザーがタスク編集を開始 | `{ taskId, userId, userName, identityIconUrl }` |
+| `task:edit_ended` | ユーザーがタスク編集を終了 | `{ taskId, userId }` |
 
 ### チャット系（Hub から送信）
 

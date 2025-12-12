@@ -80,20 +80,21 @@
 | `presence:item_conns:{itemId}` | Set | connectionId の集合 | なし |
 | `presence:org_conns:{organizationId}` | Set | connectionId の集合 | なし |
 
+### 編集状態
+
+> 詳細は [item-edit-status.md](./item-edit-status.md) を参照
+
+| キー | 型 | 値 | TTL | 用途 |
+|------|----|----|-----|------|
+| `presence:item_editor:{itemId}` | Hash | `{ userId, userName, identityIconUrl, connectionId }` | なし | アイテム編集中ユーザー |
+| `presence:ws_editor:{workspaceId}` | Hash | `{ userId, userName, identityIconUrl, connectionId }` | なし | ワークスペース設定編集中ユーザー |
+| `presence:task_editor:{taskId}` | Hash | `{ userId, userName, identityIconUrl, connectionId }` | なし | タスク編集中ユーザー |
+
 ---
 
 ## イベント
 
-### プレゼンス系イベント（Hub から送信）
-
-| イベントタイプ | 説明 | ペイロード |
-|---------------|------|-----------|
-| `workspace:user_joined` | ユーザーがワークスペースに参加 | `{ workspaceId, userId, userName, identityIconUrl }` |
-| `workspace:user_left` | ユーザーがワークスペースから離脱 | `{ workspaceId, userId }` |
-| `organization:user_joined` | ユーザーが組織に接続 | `{ organizationId, userId, userName, identityIconUrl }` |
-| `organization:user_left` | ユーザーが組織から切断 | `{ organizationId, userId }` |
-| `item:user_joined` | ユーザーがアイテムを閲覧開始 | `{ itemId, userId, userName, identityIconUrl }` |
-| `item:user_left` | ユーザーがアイテム閲覧終了 | `{ itemId, userId }` |
+> イベント一覧は [signalr-implementation.md](./signalr-implementation.md#プレゼンス系hub-から送信) を参照
 
 ---
 
