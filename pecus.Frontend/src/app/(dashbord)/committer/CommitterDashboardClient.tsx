@@ -53,6 +53,8 @@ export default function CommitterDashboardClient({
     completedTaskCount: ws.completedTaskCount,
     overdueTaskCount: ws.overdueTaskCount,
     oldestDueDate: ws.oldestDueDate,
+    helpCommentCount: ws.helpCommentCount,
+    reminderCommentCount: ws.reminderCommentCount,
     itemCount: ws.itemCount,
   }));
 
@@ -67,6 +69,8 @@ export default function CommitterDashboardClient({
   const totalActive = workspaces.reduce((sum, ws) => sum + ws.activeTaskCount, 0);
   const totalCompleted = workspaces.reduce((sum, ws) => sum + ws.completedTaskCount, 0);
   const totalOverdue = workspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
+  const totalHelpComments = workspaces.reduce((sum, ws) => sum + (ws.helpCommentCount || 0), 0);
+  const totalReminderComments = workspaces.reduce((sum, ws) => sum + (ws.reminderCommentCount || 0), 0);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -116,6 +120,14 @@ export default function CommitterDashboardClient({
             <div className="stat bg-base-200 rounded-box p-4">
               <div className="stat-title">完了</div>
               <div className="stat-value text-2xl text-success">{totalCompleted}</div>
+            </div>
+            <div className="stat bg-base-200 rounded-box p-4">
+              <div className="stat-title">ヘルプコメント</div>
+              <div className="stat-value text-2xl text-warning">{totalHelpComments}</div>
+            </div>
+            <div className="stat bg-base-200 rounded-box p-4">
+              <div className="stat-title">督促コメント</div>
+              <div className="stat-value text-2xl text-warning">{totalReminderComments}</div>
             </div>
             <div className="stat bg-base-200 rounded-box p-4">
               <div className="stat-title">期限超過</div>

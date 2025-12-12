@@ -52,6 +52,16 @@ public class MyCommitterWorkspaceResponse
     public required int OverdueTaskCount { get; set; }
 
     /// <summary>
+    /// ヘルプコメント数
+    /// </summary>
+    public required int HelpCommentCount { get; set; }
+
+    /// <summary>
+    /// 督促コメント数
+    /// </summary>
+    public required int ReminderCommentCount { get; set; }
+
+    /// <summary>
     /// 最も古い期限日（ソート用、未完了タスクのみ対象）
     /// </summary>
     public DateTimeOffset? OldestDueDate { get; set; }

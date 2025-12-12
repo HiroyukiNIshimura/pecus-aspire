@@ -44,6 +44,14 @@ export type MyCommitterWorkspaceResponse = {
      */
     overdueTaskCount: number;
     /**
+     * ヘルプコメント数
+     */
+    helpCommentCount: number;
+    /**
+     * 督促コメント数
+     */
+    reminderCommentCount: number;
+    /**
      * 最も古い期限日（ソート用、未完了タスクのみ対象）
      */
     oldestDueDate?: string | null;

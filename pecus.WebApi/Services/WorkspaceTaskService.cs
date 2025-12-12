@@ -1015,6 +1015,8 @@ public class WorkspaceTaskService
                 ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
                 CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
                 OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
+                HelpCommentCount = g.Count(t => t.TaskComments.Any(c => c.CommentType == TaskCommentType.HelpWanted)),
+                ReminderCommentCount = g.Count(t => t.TaskComments.Any(c => c.CommentType == TaskCommentType.Reminder)),
                 OldestDueDate = g.Where(t => !t.IsCompleted && !t.IsDiscarded)
                                   .Min(t => (DateTimeOffset?)t.DueDate),
             })
@@ -1035,6 +1037,8 @@ public class WorkspaceTaskService
                 ActiveTaskCount = stats?.ActiveTaskCount ?? 0,
                 CompletedTaskCount = stats?.CompletedTaskCount ?? 0,
                 OverdueTaskCount = stats?.OverdueTaskCount ?? 0,
+                HelpCommentCount = stats?.HelpCommentCount ?? 0,
+                ReminderCommentCount = stats?.ReminderCommentCount ?? 0,
                 OldestDueDate = stats?.OldestDueDate,
             };
         })
@@ -1071,6 +1075,8 @@ public class WorkspaceTaskService
                 WorkspaceName = t.WorkspaceItem!.Workspace!.Name,
                 GenreIcon = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Icon : null,
                 GenreName = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Name : null,
+                HelpCommentCount = t.TaskComments.Count(c => c.CommentType == TaskCommentType.HelpWanted),
+                ReminderCommentCount = t.TaskComments.Count(c => c.CommentType == TaskCommentType.Reminder),
             })
             .Select(g => new MyTaskWorkspaceResponse
             {
@@ -1084,6 +1090,8 @@ public class WorkspaceTaskService
                 OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
                 OldestDueDate = g.Where(t => !t.IsCompleted && !t.IsDiscarded)
                                  .Min(t => (DateTimeOffset?)t.DueDate),
+                HelpCommentCount = g.Key.HelpCommentCount,
+                ReminderCommentCount = g.Key.ReminderCommentCount,
             })
             .ToListAsync();
 

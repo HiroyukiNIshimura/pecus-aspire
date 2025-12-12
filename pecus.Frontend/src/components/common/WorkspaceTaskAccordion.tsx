@@ -29,6 +29,8 @@ export interface WorkspaceInfo {
   completedTaskCount: number;
   overdueTaskCount: number;
   oldestDueDate?: string | null;
+  helpCommentCount: number;
+  reminderCommentCount: number;
   // コミッター用の追加項目（オプショナル）
   itemCount?: number;
 }

@@ -9440,8 +9440,10 @@
         "required": [
           "activeTaskCount",
           "completedTaskCount",
+          "helpCommentCount",
           "itemCount",
           "overdueTaskCount",
+          "reminderCommentCount",
           "workspaceCode",
           "workspaceId",
           "workspaceName"
@@ -9491,6 +9493,16 @@
           "overdueTaskCount": {
             "type": "integer",
             "description": "期限超過タスク数",
+            "format": "int32"
+          },
+          "helpCommentCount": {
+            "type": "integer",
+            "description": "ヘルプコメント数",
+            "format": "int32"
+          },
+          "reminderCommentCount": {
+            "type": "integer",
+            "description": "督促コメント数",
             "format": "int32"
           },
           "oldestDueDate": {
@@ -9805,7 +9817,9 @@
         "required": [
           "activeTaskCount",
           "completedTaskCount",
+          "helpCommentCount",
           "overdueTaskCount",
+          "reminderCommentCount",
           "workspaceCode",
           "workspaceId",
           "workspaceName"
@@ -9850,6 +9864,16 @@
           "overdueTaskCount": {
             "type": "integer",
             "description": "期限超過タスク数",
+            "format": "int32"
+          },
+          "helpCommentCount": {
+            "type": "integer",
+            "description": "ヘルプコメント数",
+            "format": "int32"
+          },
+          "reminderCommentCount": {
+            "type": "integer",
+            "description": "督促コメント数",
             "format": "int32"
           },
           "oldestDueDate": {
