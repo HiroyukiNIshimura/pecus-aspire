@@ -49,4 +49,9 @@ public class CreateWorkspaceTaskRequest
     /// </summary>
     [Range(0, 10000, ErrorMessage = "予定工数は0〜10000時間の範囲で指定してください。")]
     public decimal? EstimatedHours { get; set; }
+
+    /// <summary>
+    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// </summary>
+    public int? PredecessorTaskId { get; set; }
 }

@@ -166,8 +166,49 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public Dictionary<TaskCommentType, int> CommentTypeCounts { get; set; } = new();
 
     /// <summary>
+    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// </summary>
+    public int? PredecessorTaskId { get; set; }
+
+    /// <summary>
+    /// 先行タスク情報
+    /// </summary>
+    public PredecessorTaskInfo? PredecessorTask { get; set; }
+
+    /// <summary>
+    /// このタスクを待っている後続タスク数
+    /// </summary>
+    public int SuccessorTaskCount { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion
     /// </summary>
     [Required]
     public required uint RowVersion { get; set; }
+}
+
+/// <summary>
+/// 先行タスク情報
+/// </summary>
+public class PredecessorTaskInfo
+{
+    /// <summary>
+    /// タスクID
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// タスク内容
+    /// </summary>
+    public string Content { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 完了フラグ
+    /// </summary>
+    public bool IsCompleted { get; set; }
+
+    /// <summary>
+    /// ワークスペースアイテムコード（例: "PROJ-42"）
+    /// </summary>
+    public string? WorkspaceItemCode { get; set; }
 }

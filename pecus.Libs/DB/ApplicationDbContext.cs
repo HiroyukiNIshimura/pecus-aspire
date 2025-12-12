@@ -767,11 +767,25 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => wt.DueDate);
             entity.HasIndex(wt => wt.Priority);
             entity.HasIndex(wt => wt.TaskTypeId);
+            // 先行タスクで「このタスクを待っているタスク一覧」を高速検索
+            entity.HasIndex(wt => wt.PredecessorTaskId);
             // 複合インデックス（頻繁な検索パターン用）
             entity.HasIndex(wt => new { wt.AssignedUserId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.OrganizationId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceItemId, wt.IsCompleted });
+
+            // 先行タスクの自己参照外部キー
+            entity
+                .HasOne(wt => wt.PredecessorTask)
+                .WithMany(wt => wt.SuccessorTasks)
+                .HasForeignKey(wt => wt.PredecessorTaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 循環参照防止: PredecessorTaskId != Id
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_WorkspaceTask_NoSelfReference",
+                "\"PredecessorTaskId\" IS NULL OR \"PredecessorTaskId\" != \"Id\""));
         });
 
         // TaskCommentエンティティの設定

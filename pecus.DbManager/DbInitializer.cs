@@ -112,7 +112,7 @@ internal class DbInitializer(
         // WorkspaceItem テーブルに pgroonga インデックスを作成
         // Subject, RawBody, Code を検索対象とし、#123 形式のアイテムコード検索にも対応
         await dbContext.Database.ExecuteSqlRawAsync(
-            @"CREATE INDEX idx_workspaceitems_pgroonga
+            @"CREATE INDEX IF NOT EXISTS idx_workspaceitems_pgroonga
               ON ""WorkspaceItems""
               USING pgroonga ((ARRAY[""Subject"", ""RawBody"", ""Code""])) WITH (tokenizer=""TokenMecab"");",
             cancellationToken

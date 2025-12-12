@@ -76,6 +76,17 @@ public class UpdateWorkspaceTaskRequest
     public string? DiscardReason { get; set; }
 
     /// <summary>
+    /// 先行タスクID（このタスクが完了しないと着手できない）
+    /// nullを設定すると先行タスクを解除
+    /// </summary>
+    public int? PredecessorTaskId { get; set; }
+
+    /// <summary>
+    /// 先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）
+    /// </summary>
+    public bool ClearPredecessorTask { get; set; } = false;
+
+    /// <summary>
     /// 楽観的ロック用のRowVersion（必須）
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

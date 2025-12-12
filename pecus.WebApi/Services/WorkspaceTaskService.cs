@@ -8,6 +8,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
 using Pecus.Models.Requests.WorkspaceTask;
+using Pecus.Models.Responses.WorkspaceTask;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -79,6 +80,18 @@ public class WorkspaceTaskService
             );
         }
 
+        // 先行タスクのバリデーション
+        if (request.PredecessorTaskId.HasValue)
+        {
+            var predecessorTask = await _context.WorkspaceTasks
+                .FirstOrDefaultAsync(t => t.Id == request.PredecessorTaskId.Value && t.WorkspaceId == workspaceId);
+
+            if (predecessorTask == null)
+            {
+                throw new InvalidOperationException("指定された先行タスクが見つかりません。");
+            }
+        }
+
         var task = new WorkspaceTask
         {
             WorkspaceItemId = itemId,
@@ -92,6 +105,7 @@ public class WorkspaceTaskService
             StartDate = request.StartDate,
             DueDate = request.DueDate,
             EstimatedHours = request.EstimatedHours,
+            PredecessorTaskId = request.PredecessorTaskId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -483,6 +497,37 @@ public class WorkspaceTaskService
             task.DiscardReason = request.DiscardReason;
         }
 
+        // 先行タスクの更新
+        if (request.ClearPredecessorTask)
+        {
+            task.PredecessorTaskId = null;
+        }
+        else if (request.PredecessorTaskId.HasValue)
+        {
+            // 自己参照チェック
+            if (request.PredecessorTaskId.Value == task.Id)
+            {
+                throw new InvalidOperationException("タスクは自身を先行タスクに設定できません。");
+            }
+
+            // 先行タスクの存在確認
+            var predecessorTask = await _context.WorkspaceTasks
+                .FirstOrDefaultAsync(t => t.Id == request.PredecessorTaskId.Value && t.WorkspaceId == workspaceId);
+
+            if (predecessorTask == null)
+            {
+                throw new InvalidOperationException("指定された先行タスクが見つかりません。");
+            }
+
+            // 循環参照チェック
+            if (await HasCircularDependencyAsync(task.Id, request.PredecessorTaskId.Value))
+            {
+                throw new InvalidOperationException("先行タスクの設定により循環参照が発生します。");
+            }
+
+            task.PredecessorTaskId = request.PredecessorTaskId.Value;
+        }
+
         task.UpdatedAt = DateTime.UtcNow;
 
         // 楽観的ロック用のRowVersionを設定
@@ -699,11 +744,15 @@ public class WorkspaceTaskService
     /// <param name="listIndex">リスト内でのインデックス（Reactのkey用）</param>
     /// <param name="commentCount">コメント数</param>
     /// <param name="commentTypeCounts">コメントタイプ別件数</param>
+    /// <param name="predecessorInfo">先行タスク情報</param>
+    /// <param name="successorTaskCount">後続タスク数</param>
     private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
         WorkspaceTask task,
         int listIndex = 0,
         int commentCount = 0,
-        Dictionary<TaskCommentType, int>? commentTypeCounts = null
+        Dictionary<TaskCommentType, int>? commentTypeCounts = null,
+        PredecessorTaskInfo? predecessorInfo = null,
+        int successorTaskCount = 0
     )
     {
         return new WorkspaceTaskDetailResponse
@@ -755,6 +804,9 @@ public class WorkspaceTaskService
             UpdatedAt = task.UpdatedAt,
             CommentCount = commentCount,
             CommentTypeCounts = commentTypeCounts ?? new Dictionary<TaskCommentType, int>(),
+            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTask = predecessorInfo,
+            SuccessorTaskCount = successorTaskCount,
             RowVersion = task.RowVersion,
         };
     }
@@ -1445,5 +1497,33 @@ public class WorkspaceTaskService
     private static int SumCommentCounts(Dictionary<TaskCommentType, int>? typeCounts)
     {
         return typeCounts?.Values.Sum() ?? 0;
+    }
+
+    /// <summary>
+    /// 先行タスクの設定により循環参照が発生するかチェック
+    /// </summary>
+    /// <param name="taskId">設定対象のタスクID</param>
+    /// <param name="predecessorId">設定しようとしている先行タスクID</param>
+    /// <returns>循環参照が発生する場合はtrue</returns>
+    private async Task<bool> HasCircularDependencyAsync(int taskId, int predecessorId)
+    {
+        var currentId = (int?)predecessorId;
+        var visited = new HashSet<int> { taskId };
+
+        while (currentId.HasValue)
+        {
+            if (visited.Contains(currentId.Value))
+            {
+                return true; // 循環検出
+            }
+
+            visited.Add(currentId.Value);
+            var task = await _context.WorkspaceTasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == currentId.Value);
+            currentId = task?.PredecessorTaskId;
+        }
+
+        return false;
     }
 }
