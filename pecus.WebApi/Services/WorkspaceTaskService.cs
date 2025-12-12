@@ -1067,6 +1067,7 @@ public class WorkspaceTaskService
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Workspace!)
                     .ThenInclude(w => w.Genre)
+            .Include(t => t.TaskComments)
             .Where(t => t.AssignedUserId == userId)
             .Where(t => !t.WorkspaceItem!.IsArchived) // アーカイブされていないアイテムのみ
             .GroupBy(t => new
@@ -1076,8 +1077,6 @@ public class WorkspaceTaskService
                 WorkspaceName = t.WorkspaceItem!.Workspace!.Name,
                 GenreIcon = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Icon : null,
                 GenreName = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Name : null,
-                HelpCommentCount = t.TaskComments.Count(c => c.CommentType == TaskCommentType.HelpWanted),
-                ReminderCommentCount = t.TaskComments.Count(c => c.CommentType == TaskCommentType.Reminder),
             })
             .Select(g => new MyTaskWorkspaceResponse
             {
@@ -1091,8 +1090,8 @@ public class WorkspaceTaskService
                 OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),
                 OldestDueDate = g.Where(t => !t.IsCompleted && !t.IsDiscarded)
                                  .Min(t => (DateTimeOffset?)t.DueDate),
-                HelpCommentCount = g.Key.HelpCommentCount,
-                ReminderCommentCount = g.Key.ReminderCommentCount,
+                HelpCommentCount = g.Sum(t => t.TaskComments.Count(c => c.CommentType == TaskCommentType.HelpWanted)),
+                ReminderCommentCount = g.Sum(t => t.TaskComments.Count(c => c.CommentType == TaskCommentType.Urge)),
             })
             .ToListAsync();
 

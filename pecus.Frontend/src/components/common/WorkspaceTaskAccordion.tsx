@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import UserAvatar from '@/components/common/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
+import { uiConfig } from '@/config/ui';
 import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import TaskEditModal from './TaskEditModal';
@@ -187,10 +188,24 @@ export default function WorkspaceTaskAccordion({
     try {
       const result = await fetchTasksRef.current(workspaceId);
       if (result.success && result.data) {
+        const dueDateGroups = result.data || [];
+
         setTasksByWorkspace((prev) => ({
           ...prev,
-          [workspaceId]: { dueDateGroups: result.data || [], loading: false, loaded: true },
+          [workspaceId]: { dueDateGroups, loading: false, loaded: true },
         }));
+
+        // 上位N件の期限日グループを自動展開
+        if (uiConfig.autoExpandDueDateThreshold > 0) {
+          setExpandedDueDates((prev) => {
+            const next = new Set(prev);
+            for (const g of dueDateGroups.slice(0, uiConfig.autoExpandDueDateThreshold)) {
+              const key = `${workspaceId}__${g.dueDate || 'no-date'}`;
+              next.add(key);
+            }
+            return next;
+          });
+        }
       } else {
         notifyRef.current.error(result.message || 'タスクの取得に失敗しました');
         setTasksByWorkspace((prev) => ({
@@ -334,21 +349,26 @@ export default function WorkspaceTaskAccordion({
       {workspaces.map((workspace) => {
         const isExpanded = expandedWorkspaceIds.has(workspace.workspaceId);
         const wsData = tasksByWorkspace[workspace.workspaceId];
-        const displayedTaskCount = wsData?.dueDateGroups?.reduce((sum, group) => sum + (group.tasks?.length || 0), 0);
+        // ロード完了後のみ取得したタスク数を表示、それ以外はpropsの値を使用
+        const displayedTaskCount = wsData?.loaded
+          ? wsData.dueDateGroups.reduce((sum, group) => sum + (group.tasks?.length || 0), 0)
+          : (workspace.displayTaskCount ?? workspace.activeTaskCount);
         const allDueKeys =
           wsData?.dueDateGroups?.map((g) => `${workspace.workspaceId}__${g.dueDate || 'no-date'}`) || [];
         const allExpanded = allDueKeys.length > 0 && allDueKeys.every((k) => expandedDueDates.has(k));
 
         return (
           <div key={workspace.workspaceId} className="card bg-base-200">
-            {/* ワークスペースヘッダー（クリックで展開） */}
-            <button
-              type="button"
-              className="card-body p-3 sm:p-4 cursor-pointer hover:bg-base-300 transition-colors rounded-t-2xl w-full text-left"
-              onClick={() => handleWorkspaceToggle(workspace.workspaceId)}
-            >
+            {/* ワークスペースヘッダー */}
+            {workspace.workspaceId}
+            <div className="card-body p-3 sm:p-4 hover:bg-base-300 transition-colors rounded-t-2xl">
               <div className="flex items-start sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                {/* クリック可能なメイン部分 */}
+                <button
+                  type="button"
+                  className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 text-left cursor-pointer"
+                  onClick={() => handleWorkspaceToggle(workspace.workspaceId)}
+                >
                   {/* ジャンルアイコン */}
                   {workspace.genreIcon && (
                     <img
@@ -380,7 +400,12 @@ export default function WorkspaceTaskAccordion({
                       )}
                     </div>
                   </div>
-                </div>
+                  {/* 展開アイコン */}
+                  <span
+                    className={`icon-[mdi--chevron-down] w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
 
                 <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                   {/* 統計バッジ */}
@@ -391,7 +416,7 @@ export default function WorkspaceTaskAccordion({
                       </span>
                     )}
                     <span className="badge badge-primary badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
-                      {displayedTaskCount ?? workspace.displayTaskCount ?? workspace.activeTaskCount} タスク
+                      {displayedTaskCount} タスク
                     </span>
                     {workspace.overdueTaskCount > 0 && (
                       <span className="badge badge-error badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
@@ -403,24 +428,16 @@ export default function WorkspaceTaskAccordion({
                   {isExpanded && wsData?.dueDateGroups?.length ? (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDueDateExpandAll(workspace.workspaceId, wsData.dueDateGroups, !allExpanded);
-                      }}
+                      onClick={() => handleDueDateExpandAll(workspace.workspaceId, wsData.dueDateGroups, !allExpanded)}
                       className="btn btn-ghost btn-xs"
                       title={allExpanded ? 'すべて畳む' : 'すべて開く'}
                     >
                       {allExpanded ? '全部閉じる' : '全部開く'}
                     </button>
                   ) : null}
-                  {/* 展開アイコン */}
-                  <span
-                    className={`icon-[mdi--chevron-down] w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    aria-hidden="true"
-                  />
                 </div>
               </div>
-            </button>
+            </div>
 
             {/* タスク一覧（展開時のみ表示） */}
             {isExpanded && (
@@ -442,7 +459,7 @@ export default function WorkspaceTaskAccordion({
                         : { label: '期限未設定', isOverdue: false, isDueToday: false };
 
                       return (
-                        <div key={dueDateKey} className="card bg-base-100">
+                        <div key={compositeKey} className="card bg-base-100">
                           {/* 期限日ヘッダー */}
                           <button
                             type="button"
@@ -506,7 +523,7 @@ export default function WorkspaceTaskAccordion({
 
                                   return (
                                     <div
-                                      key={task.taskId}
+                                      key={`${workspace.workspaceId}-${dueDateKey}-${task.taskId}`}
                                       className={`relative p-3 rounded-xl border bg-base-100 shadow-sm hover:shadow-md transition-colors ${toneBorderClass} ${isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''}`}
                                     >
                                       <div
