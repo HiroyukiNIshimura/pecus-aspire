@@ -1244,11 +1244,12 @@ public class WorkspaceTaskService
             DashboardTaskFilter.Active => query.Where(t => !t.IsCompleted && !t.IsDiscarded),
             DashboardTaskFilter.Completed => query.Where(t => t.IsCompleted && !t.IsDiscarded),
             DashboardTaskFilter.Overdue => query.Where(t => !t.IsCompleted && !t.IsDiscarded && DateOnly.FromDateTime(t.DueDate.Date) < today),
+            // HelpWanted/Reminder: 完了・破棄されていないタスクのみ対象
             DashboardTaskFilter.HelpWanted => targetTaskIds != null
-                ? query.Where(t => targetTaskIds.Contains(t.Id))
+                ? query.Where(t => !t.IsCompleted && !t.IsDiscarded && targetTaskIds.Contains(t.Id))
                 : query.Where(t => false),
             DashboardTaskFilter.Reminder => targetTaskIds != null
-                ? query.Where(t => targetTaskIds.Contains(t.Id))
+                ? query.Where(t => !t.IsCompleted && !t.IsDiscarded && targetTaskIds.Contains(t.Id))
                 : query.Where(t => false),
             _ => query.Where(t => !t.IsCompleted && !t.IsDiscarded),
         };

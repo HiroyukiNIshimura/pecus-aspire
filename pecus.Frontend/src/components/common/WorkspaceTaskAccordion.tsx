@@ -33,6 +33,8 @@ export interface WorkspaceInfo {
   reminderCommentCount: number;
   // コミッター用の追加項目（オプショナル）
   itemCount?: number;
+  /** フィルタに応じた表示用タスク数（設定されていれば優先） */
+  displayTaskCount?: number;
 }
 
 interface WorkspaceTaskAccordionProps {
@@ -57,8 +59,6 @@ interface WorkspaceTaskAccordionProps {
   } | null;
   /** 表示モード: 'assigned' = 担当者のみ表示, 'committer' = コミッターのみ表示, 'both' = 両方表示（デフォルト） */
   displayMode?: 'assigned' | 'committer' | 'both';
-  /** フィルタキー（変更時にキャッシュをクリアして再取得） */
-  filterKey?: string;
 }
 
 /**
@@ -146,7 +146,6 @@ export default function WorkspaceTaskAccordion({
   taskTypes,
   currentUser,
   displayMode = 'both',
-  filterKey,
 }: WorkspaceTaskAccordionProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -167,92 +166,87 @@ export default function WorkspaceTaskAccordion({
   const [editingTask, setEditingTask] = useState<TaskWithItemResponse | null>(null);
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<number | null>(null);
 
-  // 前回のフィルタキーを保持
-  const prevFilterKeyRef = useRef(filterKey);
-
   useEffect(() => {
     notifyRef.current = notify;
   }, [notify]);
 
-  // フィルタキーが変更されたらキャッシュと展開状態をリセット
+  // fetchTasksをrefで保持して最新の関数を参照
+  const fetchTasksRef = useRef(fetchTasks);
   useEffect(() => {
-    if (prevFilterKeyRef.current !== filterKey) {
-      prevFilterKeyRef.current = filterKey;
+    fetchTasksRef.current = fetchTasks;
+  }, [fetchTasks]);
 
-      // キャッシュをクリア
-      setTasksByWorkspace({});
-      // 展開状態をリセット
-      setExpandedWorkspaceIds(new Set());
-      setExpandedDueDates(new Set());
-    }
-  }, [filterKey]);
+  // タスクを取得する関数
+  const loadTasks = useCallback(async (workspaceId: number) => {
+    // ローディング開始
+    setTasksByWorkspace((prev) => ({
+      ...prev,
+      [workspaceId]: { dueDateGroups: [], loading: true, loaded: false },
+    }));
 
-  // ワークスペース展開時にタスクを取得
-  const handleWorkspaceToggle = useCallback(
-    async (workspaceId: number) => {
-      const isCurrentlyExpanded = expandedWorkspaceIds.has(workspaceId);
-
-      if (isCurrentlyExpanded) {
-        // 閉じる（該当ワークスペースの期限展開状態だけクリア）
-        setExpandedWorkspaceIds((prev) => {
-          const next = new Set(prev);
-          next.delete(workspaceId);
-          return next;
-        });
-        setExpandedDueDates((prev) => {
-          const next = new Set(prev);
-          [...next].forEach((key) => {
-            if (key.startsWith(`${workspaceId}__`)) {
-              next.delete(key);
-            }
-          });
-          return next;
-        });
-        return;
-      }
-
-      // 開く（他の開いているワークスペースはそのままにしてスクロールジャンプを抑制）
-      setExpandedWorkspaceIds((prev) => {
-        const next = new Set(prev);
-        next.add(workspaceId);
-        return next;
-      });
-
-      // 既にデータがある場合はスキップ
-      if (tasksByWorkspace[workspaceId]?.loaded) {
-        return;
-      }
-
-      // ローディング開始
-      setTasksByWorkspace((prev) => ({
-        ...prev,
-        [workspaceId]: { dueDateGroups: [], loading: true, loaded: false },
-      }));
-
-      try {
-        const result = await fetchTasks(workspaceId);
-        if (result.success && result.data) {
-          setTasksByWorkspace((prev) => ({
-            ...prev,
-            [workspaceId]: { dueDateGroups: result.data || [], loading: false, loaded: true },
-          }));
-        } else {
-          notifyRef.current.error(result.message || 'タスクの取得に失敗しました');
-          setTasksByWorkspace((prev) => ({
-            ...prev,
-            [workspaceId]: { dueDateGroups: [], loading: false, loaded: true },
-          }));
-        }
-      } catch (err) {
-        console.error('Failed to fetch tasks:', err);
-        notifyRef.current.error('サーバーとの通信でエラーが発生しました', true);
+    try {
+      const result = await fetchTasksRef.current(workspaceId);
+      if (result.success && result.data) {
+        setTasksByWorkspace((prev) => ({
+          ...prev,
+          [workspaceId]: { dueDateGroups: result.data || [], loading: false, loaded: true },
+        }));
+      } else {
+        notifyRef.current.error(result.message || 'タスクの取得に失敗しました');
         setTasksByWorkspace((prev) => ({
           ...prev,
           [workspaceId]: { dueDateGroups: [], loading: false, loaded: true },
         }));
       }
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
+      notifyRef.current.error('サーバーとの通信でエラーが発生しました', true);
+      setTasksByWorkspace((prev) => ({
+        ...prev,
+        [workspaceId]: { dueDateGroups: [], loading: false, loaded: true },
+      }));
+    }
+  }, []);
+
+  // ワークスペース展開時にタスクを取得
+  const handleWorkspaceToggle = useCallback(
+    (workspaceId: number) => {
+      // 現在の展開状態を確認
+      const isCurrentlyExpanded = expandedWorkspaceIds.has(workspaceId);
+
+      if (isCurrentlyExpanded) {
+        // 閉じる
+        setExpandedWorkspaceIds((prev) => {
+          const next = new Set(prev);
+          next.delete(workspaceId);
+          return next;
+        });
+        // 期限日展開状態もクリア
+        setExpandedDueDates((prevDates) => {
+          const nextDates = new Set(prevDates);
+          [...nextDates].forEach((key) => {
+            if (key.startsWith(`${workspaceId}__`)) {
+              nextDates.delete(key);
+            }
+          });
+          return nextDates;
+        });
+      } else {
+        // 開く
+        setExpandedWorkspaceIds((prev) => {
+          const next = new Set(prev);
+          next.add(workspaceId);
+          return next;
+        });
+
+        // データがなければ取得
+        const wsData = tasksByWorkspace[workspaceId];
+        if (!wsData?.loaded && !wsData?.loading) {
+          loadTasks(workspaceId);
+        }
+      }
     },
-    [expandedWorkspaceIds, tasksByWorkspace, fetchTasks],
+    [expandedWorkspaceIds, tasksByWorkspace, loadTasks],
   );
 
   // 期限日グループの展開トグル
@@ -397,7 +391,7 @@ export default function WorkspaceTaskAccordion({
                       </span>
                     )}
                     <span className="badge badge-primary badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
-                      {displayedTaskCount ?? workspace.activeTaskCount} タスク
+                      {displayedTaskCount ?? workspace.displayTaskCount ?? workspace.activeTaskCount} タスク
                     </span>
                     {workspace.overdueTaskCount > 0 && (
                       <span className="badge badge-error badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">

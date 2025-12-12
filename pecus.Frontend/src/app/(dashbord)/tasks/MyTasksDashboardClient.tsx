@@ -59,23 +59,31 @@ export default function MyTasksDashboardClient({
     reminderCommentCount: ws.reminderCommentCount,
   }));
 
-  // フィルタに応じて該当タスクがあるワークスペースのみ表示
-  const filteredWorkspaces = allWorkspaces.filter((ws) => {
-    switch (currentFilter) {
+  // フィルタに応じたタスク数を取得するヘルパー関数
+  const getFilteredTaskCount = (ws: WorkspaceInfo, filter: DashboardTaskFilter): number => {
+    switch (filter) {
       case 'Active':
-        return ws.activeTaskCount > 0;
+        return ws.activeTaskCount;
       case 'Completed':
-        return ws.completedTaskCount > 0;
+        return ws.completedTaskCount;
       case 'Overdue':
-        return ws.overdueTaskCount > 0;
+        return ws.overdueTaskCount;
       case 'HelpWanted':
-        return (ws.helpCommentCount || 0) > 0;
+        return ws.helpCommentCount || 0;
       case 'Reminder':
-        return (ws.reminderCommentCount || 0) > 0;
+        return ws.reminderCommentCount || 0;
       default:
-        return ws.activeTaskCount > 0;
+        return ws.activeTaskCount;
     }
-  });
+  };
+
+  // フィルタに応じて該当タスクがあるワークスペースのみ表示し、displayTaskCountを設定
+  const filteredWorkspaces = allWorkspaces
+    .filter((ws) => getFilteredTaskCount(ws, currentFilter) > 0)
+    .map((ws) => ({
+      ...ws,
+      displayTaskCount: getFilteredTaskCount(ws, currentFilter),
+    }));
 
   // タスク取得関数（フィルタを適用）
   const handleFetchTasks = useCallback(
@@ -140,6 +148,7 @@ export default function MyTasksDashboardClient({
 
           {/* ワークスペース×タスク一覧（アコーディオン） */}
           <WorkspaceTaskAccordion
+            key={currentFilter}
             workspaces={filteredWorkspaces}
             fetchTasks={handleFetchTasks}
             emptyMessage="担当のタスクがありません"
@@ -147,7 +156,6 @@ export default function MyTasksDashboardClient({
             showItemCount={false}
             taskTypes={taskTypes}
             displayMode="committer"
-            filterKey={currentFilter}
             currentUser={
               userInfo
                 ? {

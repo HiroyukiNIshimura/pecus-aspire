@@ -91,13 +91,6 @@ export default function DashboardFilterBar({
       iconClass: 'icon-[mdi--clock-outline]',
     },
     {
-      filter: 'Completed',
-      label: '完了',
-      count: stats.completedCount,
-      colorClass: 'bg-success',
-      iconClass: 'icon-[mdi--check-circle-outline]',
-    },
-    {
       filter: 'Overdue',
       label: '期限超過',
       count: stats.overdueCount,
@@ -117,6 +110,13 @@ export default function DashboardFilterBar({
       count: stats.reminderCommentCount,
       colorClass: 'bg-warning',
       iconClass: 'icon-[mdi--bell-alert-outline]',
+    },
+    {
+      filter: 'Completed',
+      label: '完了',
+      count: stats.completedCount,
+      colorClass: 'bg-success',
+      iconClass: 'icon-[mdi--check-circle-outline]',
     },
   ];
 
