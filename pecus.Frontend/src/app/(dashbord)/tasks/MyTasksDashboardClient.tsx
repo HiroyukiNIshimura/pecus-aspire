@@ -46,6 +46,7 @@ export default function MyTasksDashboardClient({
 
   // ワークスペースデータをWorkspaceInfo型に変換
   const allWorkspaces: WorkspaceInfo[] = initialWorkspaces.map((ws) => ({
+    listIndex: ws.listIndex ?? 0,
     workspaceId: ws.workspaceId,
     workspaceCode: ws.workspaceCode,
     workspaceName: ws.workspaceName,

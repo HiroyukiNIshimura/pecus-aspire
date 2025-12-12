@@ -21,6 +21,8 @@ const getCommentTypeCounts = (task: TaskWithItemResponse): CommentTypeCounts => 
 
 // ワークスペース情報の共通型（タスク用とコミッター用で共通の項目）
 export interface WorkspaceInfo {
+  /** リスト内での一意なインデックス（React key用） */
+  listIndex: number;
   workspaceId: number;
   workspaceCode: string | null;
   workspaceName: string | null;
@@ -358,9 +360,8 @@ export default function WorkspaceTaskAccordion({
         const allExpanded = allDueKeys.length > 0 && allDueKeys.every((k) => expandedDueDates.has(k));
 
         return (
-          <div key={workspace.workspaceId} className="card bg-base-200">
+          <div key={workspace.listIndex} className="card bg-base-200">
             {/* ワークスペースヘッダー */}
-            {workspace.workspaceId}
             <div className="card-body p-3 sm:p-4 hover:bg-base-300 transition-colors rounded-t-2xl">
               <div className="flex items-start sm:items-center justify-between gap-2">
                 {/* クリック可能なメイン部分 */}
@@ -459,7 +460,7 @@ export default function WorkspaceTaskAccordion({
                         : { label: '期限未設定', isOverdue: false, isDueToday: false };
 
                       return (
-                        <div key={compositeKey} className="card bg-base-100">
+                        <div key={dueDateGroup.listIndex} className="card bg-base-100">
                           {/* 期限日ヘッダー */}
                           <button
                             type="button"
@@ -523,7 +524,7 @@ export default function WorkspaceTaskAccordion({
 
                                   return (
                                     <div
-                                      key={`${workspace.workspaceId}-${dueDateKey}-${task.taskId}`}
+                                      key={task.listIndex}
                                       className={`relative p-3 rounded-xl border bg-base-100 shadow-sm hover:shadow-md transition-colors ${toneBorderClass} ${isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : ''}`}
                                     >
                                       <div
