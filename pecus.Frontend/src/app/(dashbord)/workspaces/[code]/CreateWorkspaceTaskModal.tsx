@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
-import { checkAssigneeTaskLoad, createWorkspaceTask } from '@/actions/workspaceTask';
+import {
+  checkAssigneeTaskLoad,
+  createWorkspaceTask,
+  getPredecessorTaskOptions,
+  type PredecessorTaskOption,
+} from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import UserAvatar from '@/components/common/UserAvatar';
@@ -70,6 +75,11 @@ export default function CreateWorkspaceTaskModal({
   // タスクタイプ状態
   const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
 
+  // 先行タスク状態
+  const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
+  const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
+  const [isLoadingPredecessorTasks, setIsLoadingPredecessorTasks] = useState(false);
+
   // 担当者負荷チェック
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
   const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
@@ -81,6 +91,26 @@ export default function CreateWorkspaceTaskModal({
     if (Number.isNaN(date.getTime())) return null;
     return date.toISOString();
   }, []);
+
+  // 先行タスク候補を取得
+  const fetchPredecessorTasks = useCallback(async () => {
+    setIsLoadingPredecessorTasks(true);
+    try {
+      const result = await getPredecessorTaskOptions(workspaceId, itemId);
+      if (result.success) {
+        setPredecessorTaskOptions(result.data || []);
+      }
+    } finally {
+      setIsLoadingPredecessorTasks(false);
+    }
+  }, [workspaceId, itemId]);
+
+  // モーダルが開いたら先行タスク候補を取得
+  useEffect(() => {
+    if (isOpen) {
+      fetchPredecessorTasks();
+    }
+  }, [isOpen, fetchPredecessorTasks]);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -108,6 +138,7 @@ export default function CreateWorkspaceTaskModal({
           startDate: toISODateString(data.startDate),
           dueDate: dueDateISO,
           estimatedHours: data.estimatedHours || null,
+          predecessorTaskId: predecessorTaskId,
         };
 
         const result = await createWorkspaceTask(workspaceId, itemId, requestData);
@@ -190,6 +221,8 @@ export default function CreateWorkspaceTaskModal({
       setDueDate('');
       setEstimatedHours(0);
       setTaskTypeId(null);
+      setPredecessorTaskId(null);
+      setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
       setIsCheckingAssigneeLoad(false);
@@ -505,6 +538,36 @@ export default function CreateWorkspaceTaskModal({
                     disabled={isSubmitting}
                   />
                 </div>
+              </div>
+
+              {/* 先行タスク */}
+              <div className="form-control">
+                <label htmlFor="predecessorTaskId" className="label">
+                  <span className="label-text font-semibold">先行タスク</span>
+                  <span className="label-text-alt text-base-content/60">（このタスクが完了しないと着手できない）</span>
+                </label>
+                <select
+                  id="predecessorTaskId"
+                  className="select select-bordered"
+                  value={predecessorTaskId || ''}
+                  onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
+                  disabled={isSubmitting || isLoadingPredecessorTasks}
+                >
+                  <option value="">なし</option>
+                  {predecessorTaskOptions.map((task) => (
+                    <option key={task.id} value={task.id}>
+                      {task.content.length > 50 ? `${task.content.substring(0, 50)}...` : task.content}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingPredecessorTasks && (
+                  <div className="label">
+                    <span className="label-text-alt text-base-content/60">
+                      <span className="loading loading-spinner loading-xs mr-1" aria-hidden="true" />
+                      タスク一覧を読み込み中...
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 担当者負荷チェック結果 */}

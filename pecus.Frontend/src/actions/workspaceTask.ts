@@ -210,3 +210,46 @@ export async function checkAssigneeTaskLoad(
     return parseErrorResponse(error, '担当者のタスク負荷の確認に失敗しました');
   }
 }
+
+/** 先行タスク候補として使用するシンプルなタスク情報 */
+export interface PredecessorTaskOption {
+  id: number;
+  content: string;
+  isCompleted: boolean;
+}
+
+/**
+ * 先行タスク選択用のタスク一覧を取得（アクティブなタスクのみ）
+ * @param workspaceId ワークスペースID
+ * @param itemId ワークスペースアイテムID
+ * @param excludeTaskId 除外するタスクID（編集中の自タスク）
+ */
+export async function getPredecessorTaskOptions(
+  workspaceId: number,
+  itemId: number,
+  excludeTaskId?: number,
+): Promise<ApiResponse<PredecessorTaskOption[]>> {
+  try {
+    const api = await createPecusApiClients();
+    // アクティブなタスクを取得（完了・破棄されていないもの）
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasks(
+      workspaceId,
+      itemId,
+      1,
+      50, // 最大50件（APIの制限）
+      'Active',
+    );
+
+    const tasks: PredecessorTaskOption[] = (response.data || [])
+      .filter((t) => t.id !== excludeTaskId) // 自タスクを除外
+      .map((t) => ({
+        id: t.id,
+        content: t.content || '',
+        isCompleted: t.isCompleted || false,
+      }));
+
+    return { success: true, data: tasks };
+  } catch (error) {
+    return parseErrorResponse(error, '先行タスク一覧の取得に失敗しました');
+  }
+}

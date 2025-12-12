@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
-import { getWorkspaceTask, getWorkspaceTasks, updateWorkspaceTask } from '@/actions/workspaceTask';
+import {
+  getPredecessorTaskOptions,
+  getWorkspaceTask,
+  getWorkspaceTasks,
+  type PredecessorTaskOption,
+  updateWorkspaceTask,
+} from '@/actions/workspaceTask';
 import DatePicker from '@/components/common/DatePicker';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import UserAvatar from '@/components/common/UserAvatar';
@@ -135,6 +141,27 @@ export default function WorkspaceTaskEditModal({
   const [taskTypeId, setTaskTypeId] = useState<number | null>(null);
   const [priority, setPriority] = useState<TaskPriority>('Medium');
 
+  // 先行タスク状態
+  const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
+  const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
+  const [isLoadingPredecessorTasks, setIsLoadingPredecessorTasks] = useState(false);
+
+  // 先行タスク候補を取得
+  const fetchPredecessorTasks = useCallback(
+    async (excludeTaskId?: number) => {
+      setIsLoadingPredecessorTasks(true);
+      try {
+        const result = await getPredecessorTaskOptions(workspaceId, itemId, excludeTaskId);
+        if (result.success) {
+          setPredecessorTaskOptions(result.data || []);
+        }
+      } finally {
+        setIsLoadingPredecessorTasks(false);
+      }
+    },
+    [workspaceId, itemId],
+  );
+
   // タスクデータをフォーム状態に反映
   const syncTaskToForm = useCallback((taskData: WorkspaceTaskDetailResponse) => {
     // 担当者
@@ -173,6 +200,9 @@ export default function WorkspaceTaskEditModal({
     setContent(taskData.content || '');
     setTaskTypeId(taskData.taskTypeId || null);
     setPriority(taskData.priority || 'Medium');
+
+    // 先行タスク
+    setPredecessorTaskId(taskData.predecessorTaskId || null);
   }, []);
 
   // タスクを取得
@@ -180,6 +210,9 @@ export default function WorkspaceTaskEditModal({
     async (targetTaskId: number) => {
       setIsLoadingTask(true);
       setServerErrors([]);
+
+      // 先行タスク候補も取得（自タスクを除外）
+      fetchPredecessorTasks(targetTaskId);
 
       try {
         const result = await getWorkspaceTask(workspaceId, itemId, targetTaskId);
@@ -195,7 +228,7 @@ export default function WorkspaceTaskEditModal({
         setIsLoadingTask(false);
       }
     },
-    [workspaceId, itemId, syncTaskToForm],
+    [workspaceId, itemId, syncTaskToForm, fetchPredecessorTasks],
   );
 
   // 初期化
@@ -207,6 +240,8 @@ export default function WorkspaceTaskEditModal({
         if (currentTask) {
           setTask(currentTask);
           syncTaskToForm(currentTask);
+          // 先行タスク候補を取得（自タスクを除外）
+          fetchPredecessorTasks(currentTask.id);
           return;
         }
       }
@@ -216,8 +251,7 @@ export default function WorkspaceTaskEditModal({
         fetchTask(taskId);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, taskId, workspaceId, itemId]);
+  }, [isOpen, taskId, workspaceId, itemId, initialNavigation, syncTaskToForm, fetchPredecessorTasks, fetchTask]);
 
   // 次のタスクに移動
   const handleNextTask = useCallback(async () => {
@@ -367,6 +401,8 @@ export default function WorkspaceTaskEditModal({
           isCompleted: data.isCompleted || false,
           isDiscarded: data.isDiscarded || false,
           discardReason: data.isDiscarded ? data.discardReason : null,
+          predecessorTaskId: predecessorTaskId,
+          clearPredecessorTask: predecessorTaskId === null && task.predecessorTaskId !== null,
           rowVersion: task.rowVersion,
         };
 
@@ -467,6 +503,8 @@ export default function WorkspaceTaskEditModal({
       setContent('');
       setTaskTypeId(null);
       setPriority('Medium');
+      setPredecessorTaskId(null);
+      setPredecessorTaskOptions([]);
     }
   }, [isOpen, resetForm, initialNavigation]);
 
@@ -841,6 +879,38 @@ export default function WorkspaceTaskEditModal({
                           disabled={isSubmitting || isLoadingTask}
                         />
                       </div>
+                    </div>
+
+                    {/* 先行タスク */}
+                    <div className="form-control">
+                      <label htmlFor="predecessorTaskId" className="label">
+                        <span className="label-text font-semibold">先行タスク</span>
+                        <span className="label-text-alt text-base-content/60">
+                          （このタスクが完了しないと着手できない）
+                        </span>
+                      </label>
+                      <select
+                        id="predecessorTaskId"
+                        className="select select-bordered"
+                        value={predecessorTaskId || ''}
+                        onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
+                        disabled={isSubmitting || isLoadingTask || isLoadingPredecessorTasks}
+                      >
+                        <option value="">なし</option>
+                        {predecessorTaskOptions.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.content.length > 50 ? `${t.content.substring(0, 50)}...` : t.content}
+                          </option>
+                        ))}
+                      </select>
+                      {isLoadingPredecessorTasks && (
+                        <div className="label">
+                          <span className="label-text-alt text-base-content/60">
+                            <span className="loading loading-spinner loading-xs mr-1" aria-hidden="true" />
+                            タスク一覧を読み込み中...
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 工数（予定・実績）を横並び */}
