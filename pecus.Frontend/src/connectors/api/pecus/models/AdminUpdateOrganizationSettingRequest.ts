@@ -33,6 +33,14 @@ export type AdminUpdateOrganizationSettingRequest = {
     plan: OrganizationPlan;
     helpNotificationTarget?: HelpNotificationTarget;
     /**
+     * タスク作成時に見積もりを必須とするか
+     */
+    requireEstimateOnTaskCreation?: boolean;
+    /**
+     * 先行タスクが完了しないと次のタスクを操作できないようにするか
+     */
+    enforcePredecessorCompletion?: boolean;
+    /**
      * 楽観的ロック用RowVersion
      */
     rowVersion: number;

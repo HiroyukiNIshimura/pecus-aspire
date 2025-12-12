@@ -63,6 +63,16 @@ public class OrganizationSetting
     public HelpNotificationTarget? HelpNotificationTarget { get; set; }
 
     /// <summary>
+    /// タスク作成時に見積もりを必須とするか
+    /// </summary>
+    public bool RequireEstimateOnTaskCreation { get; set; } = false;
+
+    /// <summary>
+    /// 先行タスクが完了しないと次のタスクを操作できないようにするか
+    /// </summary>
+    public bool EnforcePredecessorCompletion { get; set; } = false;
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

@@ -58,6 +58,16 @@ public class AdminUpdateOrganizationSettingRequest
     public HelpNotificationTarget? HelpNotificationTarget { get; set; }
 
     /// <summary>
+    /// タスク作成時に見積もりを必須とするか
+    /// </summary>
+    public bool RequireEstimateOnTaskCreation { get; set; }
+
+    /// <summary>
+    /// 先行タスクが完了しないと次のタスクを操作できないようにするか
+    /// </summary>
+    public bool EnforcePredecessorCompletion { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

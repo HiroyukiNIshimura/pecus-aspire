@@ -290,6 +290,8 @@ public class OrganizationService
         setting.GenerativeApiKey = normalizedApiKey;
         setting.Plan = request.Plan;
         setting.HelpNotificationTarget = request.HelpNotificationTarget;
+        setting.RequireEstimateOnTaskCreation = request.RequireEstimateOnTaskCreation;
+        setting.EnforcePredecessorCompletion = request.EnforcePredecessorCompletion;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
 
@@ -312,6 +314,8 @@ public class OrganizationService
             GenerativeApiKey = setting.GenerativeApiKey,
             Plan = setting.Plan,
             HelpNotificationTarget = setting.HelpNotificationTarget,
+            RequireEstimateOnTaskCreation = setting.RequireEstimateOnTaskCreation,
+            EnforcePredecessorCompletion = setting.EnforcePredecessorCompletion,
             RowVersion = setting.RowVersion,
         };
     }
@@ -508,6 +512,8 @@ public class OrganizationService
                         GenerativeApiKey = latestOrganization.Setting.GenerativeApiKey,
                         Plan = latestOrganization.Setting.Plan,
                         HelpNotificationTarget = latestOrganization.Setting.HelpNotificationTarget,
+                        RequireEstimateOnTaskCreation = latestOrganization.Setting.RequireEstimateOnTaskCreation,
+                        EnforcePredecessorCompletion = latestOrganization.Setting.EnforcePredecessorCompletion,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
                     : new OrganizationSettingResponse
@@ -518,6 +524,8 @@ public class OrganizationService
                         GenerativeApiKey = null,
                         Plan = OrganizationPlan.Free,
                         HelpNotificationTarget = null,
+                        RequireEstimateOnTaskCreation = false,
+                        EnforcePredecessorCompletion = false,
                         RowVersion = 0,
                     },
             }

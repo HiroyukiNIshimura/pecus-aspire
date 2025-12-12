@@ -56,6 +56,18 @@ public class OrganizationSettingResponse : IConflictModel
     public HelpNotificationTarget? HelpNotificationTarget { get; set; }
 
     /// <summary>
+    /// タスク作成時に見積もりを必須とするか
+    /// </summary>
+    [Required]
+    public bool RequireEstimateOnTaskCreation { get; set; }
+
+    /// <summary>
+    /// 先行タスクが完了しないと次のタスクを操作できないようにするか
+    /// </summary>
+    [Required]
+    public bool EnforcePredecessorCompletion { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required]

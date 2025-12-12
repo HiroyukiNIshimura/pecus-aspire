@@ -79,6 +79,8 @@ public class AdminOrganizationController : BaseAdminController
                 GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
                 Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
                 HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
+                RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
+                EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
@@ -137,6 +139,8 @@ public class AdminOrganizationController : BaseAdminController
                 GenerativeApiVendor = organization.Setting?.GenerativeApiVendor ?? GenerativeApiVendor.None,
                 Plan = organization.Setting?.Plan ?? OrganizationPlan.Free,
                 HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
+                RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
+                EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
