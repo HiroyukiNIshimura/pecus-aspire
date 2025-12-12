@@ -8840,6 +8840,12 @@
             "description": "予定工数（時間）",
             "format": "double",
             "nullable": true
+          },
+          "predecessorTaskId": {
+            "type": "integer",
+            "description": "先行タスクID（このタスクが完了しないと着手できない）",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -10216,6 +10222,32 @@
         },
         "additionalProperties": false,
         "description": "未使用メールアドレス変更トークン情報レスポンス"
+      },
+      "PredecessorTaskInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "content": {
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ"
+          },
+          "workspaceItemCode": {
+            "type": "string",
+            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "先行タスク情報"
       },
       "ProblemDetails": {
         "type": "object",
@@ -12372,6 +12404,16 @@
             "description": "破棄理由",
             "nullable": true
           },
+          "predecessorTaskId": {
+            "type": "integer",
+            "description": "先行タスクID（このタスクが完了しないと着手できない）\r\nnullを設定すると先行タスクを解除",
+            "format": "int32",
+            "nullable": true
+          },
+          "clearPredecessorTask": {
+            "type": "boolean",
+            "description": "先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用のRowVersion（必須）",
@@ -13871,6 +13913,20 @@
             "additionalProperties": false,
             "description": "コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）",
             "nullable": true
+          },
+          "predecessorTaskId": {
+            "type": "integer",
+            "description": "先行タスクID（このタスクが完了しないと着手できない）",
+            "format": "int32",
+            "nullable": true
+          },
+          "predecessorTask": {
+            "$ref": "#/components/schemas/PredecessorTaskInfo"
+          },
+          "successorTaskCount": {
+            "type": "integer",
+            "description": "このタスクを待っている後続タスク数",
+            "format": "int32"
           },
           "rowVersion": {
             "type": "integer",

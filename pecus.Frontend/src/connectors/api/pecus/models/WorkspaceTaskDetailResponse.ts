@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { PredecessorTaskInfo } from './PredecessorTaskInfo';
 import type { TaskPriority } from './TaskPriority';
 /**
  * ワークスペースタスク詳細レスポンス
@@ -135,6 +136,15 @@ export type WorkspaceTaskDetailResponse = {
         Reminder?: number;
         Urge?: number;
     } | null;
+    /**
+     * 先行タスクID（このタスクが完了しないと着手できない）
+     */
+    predecessorTaskId?: number | null;
+    predecessorTask?: PredecessorTaskInfo;
+    /**
+     * このタスクを待っている後続タスク数
+     */
+    successorTaskCount?: number;
     /**
      * 楽観的ロック用のRowVersion
      */

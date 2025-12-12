@@ -32,5 +32,9 @@ export type CreateWorkspaceTaskRequest = {
      * 予定工数（時間）
      */
     estimatedHours?: number | null;
+    /**
+     * 先行タスクID（このタスクが完了しないと着手できない）
+     */
+    predecessorTaskId?: number | null;
 };
 

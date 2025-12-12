@@ -61,6 +61,7 @@ export type { OrganizationSettingResponseConcurrencyErrorResponse } from './mode
 export type { OrganizationWithAdminResponse } from './models/OrganizationWithAdminResponse';
 export type { OSPlatform } from './models/OSPlatform';
 export type { PendingEmailChangeResponse } from './models/PendingEmailChangeResponse';
+export type { PredecessorTaskInfo } from './models/PredecessorTaskInfo';
 export type { ProblemDetails } from './models/ProblemDetails';
 export type { RecipientRequest } from './models/RecipientRequest';
 export type { RefreshRequest } from './models/RefreshRequest';

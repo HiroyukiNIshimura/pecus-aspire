@@ -53,6 +53,15 @@ export type UpdateWorkspaceTaskRequest = {
      */
     discardReason?: string | null;
     /**
+     * 先行タスクID（このタスクが完了しないと着手できない）
+     * nullを設定すると先行タスクを解除
+     */
+    predecessorTaskId?: number | null;
+    /**
+     * 先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）
+     */
+    clearPredecessorTask?: boolean;
+    /**
      * 楽観的ロック用のRowVersion（必須）
      */
     rowVersion: number;
