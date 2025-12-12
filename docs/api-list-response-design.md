@@ -144,8 +144,7 @@ new TasksByDueDateResponse
 #### 無限スクロール（追加読み込み方式）
 
 ページをまたいでリストが連続的に追加されるため、ページ内で0からの連番だと重複します。
-
-**解決策: バックエンドでオフセット計算**
+オフセット計算で `ListIndex` の重複は防げます。
 
 ```csharp
 // サービス層でオフセットを考慮した連番を付与
@@ -157,9 +156,21 @@ var response = items.Select((item, index) => new SomeResponse
 }).ToList();
 ```
 
-- フロントエンドのロジックがシンプルになる
-- ページ番号とページサイズはバックエンドが把握している
-- APIレスポンスとして一貫性がある
+**⚠️ 注意: offset-based pagination の限界**
+
+`ListIndex` のオフセット計算で React key の重複は防げますが、リアルタイムコラボ環境では **データ自体の重複/スキップ** が発生する可能性があります。
+
+例: page=1 取得後に別ユーザーがアイテムを追加 → page=2 取得時にページ境界がずれ、同じデータが再度含まれる（または見えなくなるアイテムが発生）
+
+これは `ListIndex` では解決できない offset-based pagination 固有の問題です。現状、フロントエンドで ID ベースの重複チェックを暫定対応しています：
+
+```tsx
+setItems((prev) => {
+  const existingIds = new Set(prev.map((item) => item.id));
+  const uniqueNewItems = newItems.filter((item) => !existingIds.has(item.id));
+  return [...prev, ...uniqueNewItems];
+});
+```
 
 ## 6. 移行計画
 
