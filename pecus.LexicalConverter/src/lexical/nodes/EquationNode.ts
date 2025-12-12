@@ -3,7 +3,7 @@
  * 数式ノード（KaTeX変換なし、テキストとして出力）
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { $applyNodeReplacement, DecoratorNode } from 'lexical';
 
 export type SerializedEquationNode = Spread<
@@ -34,6 +34,10 @@ export class EquationNode extends DecoratorNode<null> {
 
   static importJSON(serializedNode: SerializedEquationNode): EquationNode {
     return $createEquationNode(serializedNode.equation, serializedNode.inline).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedEquationNode {

@@ -3,7 +3,7 @@
  * オートコンプリート用ノード。DOMにはエクスポートしない（セッション固有のため）
  */
 
-import type { DOMExportOutput, LexicalEditor, NodeKey, SerializedTextNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalEditor, NodeKey, SerializedTextNode, Spread } from 'lexical';
 import { TextNode } from 'lexical';
 
 export type SerializedAutocompleteNode = Spread<
@@ -26,6 +26,10 @@ export class AutocompleteNode extends TextNode {
 
   static importJSON(serializedNode: SerializedAutocompleteNode): AutocompleteNode {
     return $createAutocompleteNode(serializedNode.text, serializedNode.uuid).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   constructor(text: string, uuid: string, key?: NodeKey) {

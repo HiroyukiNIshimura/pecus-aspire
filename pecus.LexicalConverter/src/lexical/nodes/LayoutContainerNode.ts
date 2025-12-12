@@ -3,7 +3,7 @@
  * レイアウトコンテナノード
  */
 
-import type { DOMExportOutput, LexicalNode, LexicalUpdateJSON, NodeKey, SerializedElementNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, LexicalUpdateJSON, NodeKey, SerializedElementNode, Spread } from 'lexical';
 import { ElementNode } from 'lexical';
 
 export type SerializedLayoutContainerNode = Spread<
@@ -31,6 +31,10 @@ export class LayoutContainerNode extends ElementNode {
 
   static importJSON(json: SerializedLayoutContainerNode): LayoutContainerNode {
     return $createLayoutContainerNode().updateFromJSON(json);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   updateFromJSON(serializedNode: LexicalUpdateJSON<SerializedLayoutContainerNode>): this {

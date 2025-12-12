@@ -3,7 +3,7 @@
  * レイアウトアイテムノード
  */
 
-import type { DOMExportOutput, LexicalNode, SerializedElementNode } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, SerializedElementNode } from 'lexical';
 import { ElementNode } from 'lexical';
 
 export type SerializedLayoutItemNode = SerializedElementNode;
@@ -19,6 +19,10 @@ export class LayoutItemNode extends ElementNode {
 
   static importJSON(serializedNode: SerializedLayoutItemNode): LayoutItemNode {
     return $createLayoutItemNode().updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportDOM(): DOMExportOutput {

@@ -3,7 +3,7 @@
  * 絵文字ノード
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedTextNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedTextNode, Spread } from 'lexical';
 import { $applyNodeReplacement, TextNode } from 'lexical';
 
 export type SerializedEmojiNode = Spread<
@@ -31,6 +31,10 @@ export class EmojiNode extends TextNode {
 
   static importJSON(serializedNode: SerializedEmojiNode): EmojiNode {
     return $createEmojiNode(serializedNode.className, serializedNode.text).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedEmojiNode {

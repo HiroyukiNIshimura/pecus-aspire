@@ -3,7 +3,7 @@
  * 付箋ノード（captionは無視、テキストとして出力）
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 type StickyNoteColor = 'pink' | 'yellow';
@@ -39,6 +39,10 @@ export class StickyNode extends DecoratorNode<null> {
 
   static importJSON(serializedNode: SerializedStickyNode): StickyNode {
     return new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedStickyNode {

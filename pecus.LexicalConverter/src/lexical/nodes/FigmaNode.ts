@@ -3,7 +3,7 @@
  * Figma埋め込みノード（リンクとして出力）
  */
 
-import type { DOMExportOutput, ElementFormatType, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, ElementFormatType, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 export type SerializedFigmaNode = Spread<
@@ -34,6 +34,10 @@ export class FigmaNode extends DecoratorNode<null> {
 
   static importJSON(serializedNode: SerializedFigmaNode): FigmaNode {
     return $createFigmaNode(serializedNode.documentID).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedFigmaNode {

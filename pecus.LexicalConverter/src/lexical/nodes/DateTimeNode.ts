@@ -3,7 +3,7 @@
  * 日時ノード
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 export type SerializedDateTimeNode = Spread<
@@ -32,6 +32,10 @@ export class DateTimeNode extends DecoratorNode<null> {
   static importJSON(serializedNode: SerializedDateTimeNode): DateTimeNode {
     const dateTime = serializedNode.dateTime ? new Date(serializedNode.dateTime) : undefined;
     return $createDateTimeNode(dateTime);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedDateTimeNode {

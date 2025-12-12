@@ -3,7 +3,7 @@
  * 折りたたみコンテナノード
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedElementNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedElementNode, Spread } from 'lexical';
 import { ElementNode } from 'lexical';
 
 export type SerializedCollapsibleContainerNode = Spread<
@@ -31,6 +31,10 @@ export class CollapsibleContainerNode extends ElementNode {
 
   static importJSON(serializedNode: SerializedCollapsibleContainerNode): CollapsibleContainerNode {
     return $createCollapsibleContainerNode(serializedNode.open).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedCollapsibleContainerNode {

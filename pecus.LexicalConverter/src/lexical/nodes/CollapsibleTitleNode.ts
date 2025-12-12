@@ -3,7 +3,7 @@
  * 折りたたみタイトルノード
  */
 
-import type { DOMExportOutput, LexicalNode, SerializedElementNode } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, SerializedElementNode } from 'lexical';
 import { ElementNode } from 'lexical';
 
 export type SerializedCollapsibleTitleNode = SerializedElementNode;
@@ -19,6 +19,10 @@ export class CollapsibleTitleNode extends ElementNode {
 
   static importJSON(serializedNode: SerializedCollapsibleTitleNode): CollapsibleTitleNode {
     return $createCollapsibleTitleNode().updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportDOM(): DOMExportOutput {

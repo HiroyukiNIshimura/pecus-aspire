@@ -25,7 +25,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: 'pecus.lexical',
-      protoPath: join(__dirname, '../proto/lexical.proto'),
+      protoPath: join(__dirname, '../../pecus.Protos/lexical/lexical.proto'),
       url: `${host}:${port}`,
     },
   });

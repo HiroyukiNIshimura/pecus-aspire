@@ -3,7 +3,7 @@
  * メンションノード
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedTextNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedTextNode, Spread } from 'lexical';
 import { $applyNodeReplacement, TextNode } from 'lexical';
 
 export type SerializedMentionNode = Spread<
@@ -26,6 +26,10 @@ export class MentionNode extends TextNode {
 
   static importJSON(serializedNode: SerializedMentionNode): MentionNode {
     return $createMentionNode(serializedNode.mentionName).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   constructor(mentionName: string, text?: string, key?: NodeKey) {

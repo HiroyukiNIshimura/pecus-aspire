@@ -3,7 +3,7 @@
  * ページブレークノード
  */
 
-import type { DOMExportOutput, LexicalNode, SerializedLexicalNode } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, SerializedLexicalNode } from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 export type SerializedPageBreakNode = SerializedLexicalNode;
@@ -19,6 +19,10 @@ export class PageBreakNode extends DecoratorNode<null> {
 
   static importJSON(serializedNode: SerializedPageBreakNode): PageBreakNode {
     return $createPageBreakNode().updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportDOM(): DOMExportOutput {

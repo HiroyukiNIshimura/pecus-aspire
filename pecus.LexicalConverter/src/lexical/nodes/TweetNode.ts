@@ -3,7 +3,7 @@
  * Tweet埋め込みノード（リンクとして出力）
  */
 
-import type { DOMExportOutput, ElementFormatType, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, ElementFormatType, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { DecoratorNode } from 'lexical';
 
 export type SerializedTweetNode = Spread<
@@ -34,6 +34,10 @@ export class TweetNode extends DecoratorNode<null> {
 
   static importJSON(serializedNode: SerializedTweetNode): TweetNode {
     return $createTweetNode(serializedNode.id).updateFromJSON(serializedNode);
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedTweetNode {

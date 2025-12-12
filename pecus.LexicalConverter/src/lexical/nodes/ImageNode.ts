@@ -3,7 +3,7 @@
  * 画像ノード（captionは無視、リンクとして出力）
  */
 
-import type { DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
+import type { DOMConversionMap, DOMExportOutput, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical';
 import { $applyNodeReplacement, DecoratorNode } from 'lexical';
 
 export type SerializedImageNode = Spread<
@@ -70,6 +70,10 @@ export class ImageNode extends DecoratorNode<null> {
       src,
       width,
     });
+  }
+
+  static importDOM(): DOMConversionMap | null {
+    return null;
   }
 
   exportJSON(): SerializedImageNode {
