@@ -19,6 +19,21 @@ public class ActivityResponse
     public int WorkspaceId { get; set; }
 
     /// <summary>
+    /// ワークスペースコード
+    /// </summary>
+    public string WorkspaceCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// ワークスペース名
+    /// </summary>
+    public string WorkspaceName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// ワークスペースのジャンルアイコン
+    /// </summary>
+    public string? WorkspaceGenreIcon { get; set; }
+
+    /// <summary>
     /// アイテムID
     /// </summary>
     public int ItemId { get; set; }

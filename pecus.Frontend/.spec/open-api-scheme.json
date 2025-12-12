@@ -8216,6 +8216,21 @@
             "description": "ワークスペースID",
             "format": "int32"
           },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "workspaceGenreIcon": {
+            "type": "string",
+            "description": "ワークスペースのジャンルアイコン",
+            "nullable": true
+          },
           "itemId": {
             "type": "integer",
             "description": "アイテムID",

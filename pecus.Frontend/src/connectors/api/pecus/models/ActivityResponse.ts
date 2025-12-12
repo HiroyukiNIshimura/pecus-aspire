@@ -16,6 +16,18 @@ export type ActivityResponse = {
      */
     workspaceId?: number;
     /**
+     * ワークスペースコード
+     */
+    workspaceCode?: string | null;
+    /**
+     * ワークスペース名
+     */
+    workspaceName?: string | null;
+    /**
+     * ワークスペースのジャンルアイコン
+     */
+    workspaceGenreIcon?: string | null;
+    /**
      * アイテムID
      */
     itemId?: number;

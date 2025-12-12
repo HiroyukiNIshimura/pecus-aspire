@@ -97,20 +97,21 @@ public class ActivityService
             .Take(pageSize)
             .Include(a => a.Item)
             .Include(a => a.Workspace)
+                .ThenInclude(w => w!.Genre)
             .ToListAsync();
 
         return (activities, totalCount);
     }
 
     /// <summary>
-    /// 期間から日付範囲を計算
+    /// 期間から日付範囲を計算（UTC基準）
     /// </summary>
     private (DateTimeOffset Start, DateTimeOffset End) GetDateRange(ActivityPeriod period)
     {
         var now = _timeProvider.GetUtcNow();
         var today = now.Date;
 
-        return period switch
+        var (start, end) = period switch
         {
             ActivityPeriod.Today => (today, today.AddDays(1)),
             ActivityPeriod.Yesterday => (today.AddDays(-1), today),
@@ -120,6 +121,9 @@ public class ActivityService
             ActivityPeriod.LastMonth => (new DateTime(today.Year, today.Month, 1).AddMonths(-1), new DateTime(today.Year, today.Month, 1)),
             _ => throw new ArgumentOutOfRangeException(nameof(period))
         };
+
+        // PostgreSQLのtimestamp with time zoneにはUTC (Offset=0) でのみ書き込み可能
+        return (new DateTimeOffset(start, TimeSpan.Zero), new DateTimeOffset(end, TimeSpan.Zero));
     }
 
     /// <summary>
