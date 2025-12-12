@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { ActivityPeriod } from '../models/ActivityPeriod';
 import type { ActivityResponsePagedResponse } from '../models/ActivityResponsePagedResponse';
+import type { DashboardTaskFilter } from '../models/DashboardTaskFilter';
 import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasksResponsePagedResponse';
 import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
@@ -56,17 +57,22 @@ export class MyService {
      * 指定ワークスペース内のコミッタータスクを期限日グループで取得
      * ログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します
      * @param workspaceId ワークスペースID
+     * @param filter ダッシュボード用フィルター（省略時はActive）
      * @returns TasksByDueDateResponse OK
      * @throws ApiError
      */
     public static getApiMyCommitterWorkspacesTasks(
         workspaceId: number,
+        filter?: DashboardTaskFilter,
     ): CancelablePromise<Array<TasksByDueDateResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/committer-workspaces/{workspaceId}/tasks',
             path: {
                 'workspaceId': workspaceId,
+            },
+            query: {
+                'filter': filter,
             },
             errors: {
                 404: `Not Found`,
@@ -189,17 +195,22 @@ export class MyService {
      * 指定ワークスペース内のマイタスクを期限日グループで取得
      * ログインユーザーが担当のタスクを期限日でグループ化して返します
      * @param workspaceId ワークスペースID
+     * @param filter ダッシュボード用フィルター（省略時はActive）
      * @returns TasksByDueDateResponse OK
      * @throws ApiError
      */
     public static getApiMyTaskWorkspacesTasks(
         workspaceId: number,
+        filter?: DashboardTaskFilter,
     ): CancelablePromise<Array<TasksByDueDateResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/task-workspaces/{workspaceId}/tasks',
             path: {
                 'workspaceId': workspaceId,
+            },
+            query: {
+                'filter': filter,
             },
             errors: {
                 404: `Not Found`,

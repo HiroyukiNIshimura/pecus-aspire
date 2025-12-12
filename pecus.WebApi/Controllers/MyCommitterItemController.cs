@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Models.Config;
+using Pecus.Models.Requests.WorkspaceTask;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -54,12 +55,15 @@ public class MyCommitterItemController : BaseSecureController
     /// ログインユーザーがコミッターとして割り当てられたアイテムに紐づくタスクを期限日でグループ化して返します
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="filter">ダッシュボード用フィルター（省略時はActive）</param>
     /// <returns>期限日でグループ化されたタスク一覧</returns>
     [HttpGet("committer-workspaces/{workspaceId:int}/tasks")]
     [ProducesResponseType(typeof(List<TasksByDueDateResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<List<TasksByDueDateResponse>>> GetCommitterTasksByWorkspace(int workspaceId)
+    public async Task<Ok<List<TasksByDueDateResponse>>> GetCommitterTasksByWorkspace(
+        int workspaceId,
+        [FromQuery] DashboardTaskFilter? filter = null)
     {
         // アクセス権チェック
         var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
@@ -68,7 +72,7 @@ public class MyCommitterItemController : BaseSecureController
             throw new Exceptions.NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var results = await _workspaceTaskService.GetCommitterTasksByWorkspaceAsync(CurrentUserId, workspaceId);
+        var results = await _workspaceTaskService.GetCommitterTasksByWorkspaceAsync(CurrentUserId, workspaceId, filter);
         return TypedResults.Ok(results);
     }
 

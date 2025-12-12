@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
+using Pecus.Models.Requests.WorkspaceTask;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -1108,13 +1109,28 @@ public class WorkspaceTaskService
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="filter">ダッシュボード用フィルター（省略時はActive）</param>
     /// <returns>期限日でグループ化されたタスク一覧</returns>
     public async Task<List<TasksByDueDateResponse>> GetMyTasksByWorkspaceAsync(
         int userId,
-        int workspaceId
+        int workspaceId,
+        DashboardTaskFilter? filter = null
     )
     {
-        var tasks = await _context.WorkspaceTasks
+        var effectiveFilter = filter ?? DashboardTaskFilter.Active;
+
+        // HelpWanted/Reminderフィルタの場合、対象タスクIDを先に取得
+        HashSet<int>? targetTaskIds = null;
+        if (effectiveFilter == DashboardTaskFilter.HelpWanted)
+        {
+            targetTaskIds = await GetTaskIdsWithCommentTypeAsync(workspaceId, userId, null, TaskCommentType.HelpWanted);
+        }
+        else if (effectiveFilter == DashboardTaskFilter.Reminder)
+        {
+            targetTaskIds = await GetTaskIdsWithCommentTypeAsync(workspaceId, userId, null, TaskCommentType.Urge);
+        }
+
+        var query = _context.WorkspaceTasks
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Workspace)
             .Include(t => t.WorkspaceItem!)
@@ -1125,6 +1141,12 @@ public class WorkspaceTaskService
             .Include(t => t.AssignedUser)
             .Where(t => t.AssignedUserId == userId && t.WorkspaceId == workspaceId)
             .Where(t => !t.WorkspaceItem!.IsArchived)
+            .AsQueryable();
+
+        // フィルタ適用
+        query = ApplyDashboardFilter(query, effectiveFilter, targetTaskIds);
+
+        var tasks = await query
             .OrderBy(t => t.DueDate)                    // 期限日古い順
             .ThenBy(t => t.WorkspaceItemId)            // アイテムID順
             .ThenBy(t => t.Id)                         // タスクID順
@@ -1149,14 +1171,29 @@ public class WorkspaceTaskService
     /// </summary>
     /// <param name="userId">ユーザーID</param>
     /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="filter">ダッシュボード用フィルター（省略時はActive）</param>
     /// <returns>期限日でグループ化されたタスク一覧</returns>
     public async Task<List<TasksByDueDateResponse>> GetCommitterTasksByWorkspaceAsync(
         int userId,
-        int workspaceId
+        int workspaceId,
+        DashboardTaskFilter? filter = null
     )
     {
+        var effectiveFilter = filter ?? DashboardTaskFilter.Active;
+
+        // HelpWanted/Reminderフィルタの場合、対象タスクIDを先に取得
+        HashSet<int>? targetTaskIds = null;
+        if (effectiveFilter == DashboardTaskFilter.HelpWanted)
+        {
+            targetTaskIds = await GetTaskIdsWithCommentTypeAsync(workspaceId, null, userId, TaskCommentType.HelpWanted);
+        }
+        else if (effectiveFilter == DashboardTaskFilter.Reminder)
+        {
+            targetTaskIds = await GetTaskIdsWithCommentTypeAsync(workspaceId, null, userId, TaskCommentType.Urge);
+        }
+
         // ユーザーがコミッターのアイテムに紐づくタスクを取得
-        var tasks = await _context.WorkspaceTasks
+        var query = _context.WorkspaceTasks
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Workspace)
             .Include(t => t.WorkspaceItem!)
@@ -1168,6 +1205,12 @@ public class WorkspaceTaskService
             .Where(t => t.WorkspaceId == workspaceId)
             .Where(t => t.WorkspaceItem!.CommitterId == userId)
             .Where(t => !t.WorkspaceItem!.IsArchived)
+            .AsQueryable();
+
+        // フィルタ適用
+        query = ApplyDashboardFilter(query, effectiveFilter, targetTaskIds);
+
+        var tasks = await query
             .OrderBy(t => t.DueDate)
             .ThenBy(t => t.WorkspaceItemId)
             .ThenBy(t => t.Id)
@@ -1184,6 +1227,70 @@ public class WorkspaceTaskService
                 Tasks = g.Select(t => BuildTaskWithItemResponse(t, commentTypeCountsByTask)).ToList(),
             })
             .ToList();
+    }
+
+    /// <summary>
+    /// ダッシュボード用フィルタをクエリに適用
+    /// </summary>
+    private static IQueryable<WorkspaceTask> ApplyDashboardFilter(
+        IQueryable<WorkspaceTask> query,
+        DashboardTaskFilter filter,
+        HashSet<int>? targetTaskIds = null)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+        return filter switch
+        {
+            DashboardTaskFilter.Active => query.Where(t => !t.IsCompleted && !t.IsDiscarded),
+            DashboardTaskFilter.Completed => query.Where(t => t.IsCompleted && !t.IsDiscarded),
+            DashboardTaskFilter.Overdue => query.Where(t => !t.IsCompleted && !t.IsDiscarded && DateOnly.FromDateTime(t.DueDate.Date) < today),
+            DashboardTaskFilter.HelpWanted => targetTaskIds != null
+                ? query.Where(t => targetTaskIds.Contains(t.Id))
+                : query.Where(t => false),
+            DashboardTaskFilter.Reminder => targetTaskIds != null
+                ? query.Where(t => targetTaskIds.Contains(t.Id))
+                : query.Where(t => false),
+            _ => query.Where(t => !t.IsCompleted && !t.IsDiscarded),
+        };
+    }
+
+    /// <summary>
+    /// 特定のコメントタイプを持つタスクIDを取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="assignedUserId">担当ユーザーID（マイタスク用、nullの場合は無視）</param>
+    /// <param name="committerId">コミッターユーザーID（コミッター用、nullの場合は無視）</param>
+    /// <param name="commentType">コメントタイプ</param>
+    private async Task<HashSet<int>> GetTaskIdsWithCommentTypeAsync(
+        int workspaceId,
+        int? assignedUserId,
+        int? committerId,
+        TaskCommentType commentType)
+    {
+        var query = _context.TaskComments
+            .Include(c => c.WorkspaceTask)
+                .ThenInclude(t => t!.WorkspaceItem)
+            .Where(c => c.WorkspaceTask!.WorkspaceId == workspaceId)
+            .Where(c => c.CommentType == commentType)
+            .Where(c => !c.WorkspaceTask!.WorkspaceItem!.IsArchived)
+            .AsQueryable();
+
+        if (assignedUserId.HasValue)
+        {
+            query = query.Where(c => c.WorkspaceTask!.AssignedUserId == assignedUserId.Value);
+        }
+
+        if (committerId.HasValue)
+        {
+            query = query.Where(c => c.WorkspaceTask!.WorkspaceItem!.CommitterId == committerId.Value);
+        }
+
+        var taskIds = await query
+            .Select(c => c.WorkspaceTaskId)
+            .Distinct()
+            .ToListAsync();
+
+        return taskIds.ToHashSet();
     }
 
     /// <summary>

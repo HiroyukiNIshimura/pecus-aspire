@@ -57,6 +57,8 @@ interface WorkspaceTaskAccordionProps {
   } | null;
   /** 表示モード: 'assigned' = 担当者のみ表示, 'committer' = コミッターのみ表示, 'both' = 両方表示（デフォルト） */
   displayMode?: 'assigned' | 'committer' | 'both';
+  /** フィルタキー（変更時にキャッシュをクリアして再取得） */
+  filterKey?: string;
 }
 
 /**
@@ -144,6 +146,7 @@ export default function WorkspaceTaskAccordion({
   taskTypes,
   currentUser,
   displayMode = 'both',
+  filterKey,
 }: WorkspaceTaskAccordionProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -164,9 +167,25 @@ export default function WorkspaceTaskAccordion({
   const [editingTask, setEditingTask] = useState<TaskWithItemResponse | null>(null);
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<number | null>(null);
 
+  // 前回のフィルタキーを保持
+  const prevFilterKeyRef = useRef(filterKey);
+
   useEffect(() => {
     notifyRef.current = notify;
   }, [notify]);
+
+  // フィルタキーが変更されたらキャッシュと展開状態をリセット
+  useEffect(() => {
+    if (prevFilterKeyRef.current !== filterKey) {
+      prevFilterKeyRef.current = filterKey;
+
+      // キャッシュをクリア
+      setTasksByWorkspace({});
+      // 展開状態をリセット
+      setExpandedWorkspaceIds(new Set());
+      setExpandedDueDates(new Set());
+    }
+  }, [filterKey]);
 
   // ワークスペース展開時にタスクを取得
   const handleWorkspaceToggle = useCallback(

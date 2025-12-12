@@ -3257,6 +3257,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "ダッシュボード用フィルター（省略時はActive）",
+            "schema": {
+              "$ref": "#/components/schemas/DashboardTaskFilter"
+            }
           }
         ],
         "responses": {
@@ -3542,6 +3550,14 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "ダッシュボード用フィルター（省略時はActive）",
+            "schema": {
+              "$ref": "#/components/schemas/DashboardTaskFilter"
             }
           }
         ],
@@ -8828,6 +8844,17 @@
         },
         "additionalProperties": false,
         "description": "ワークスペースタスク作成リクエスト"
+      },
+      "DashboardTaskFilter": {
+        "enum": [
+          "Active",
+          "Completed",
+          "Overdue",
+          "HelpWanted",
+          "Reminder"
+        ],
+        "type": "string",
+        "description": "ダッシュボード用タスクフィルター\r\nマイタスク・コミッターダッシュボードで使用するフィルター種別"
       },
       "DeleteTaskCommentRequest": {
         "required": [

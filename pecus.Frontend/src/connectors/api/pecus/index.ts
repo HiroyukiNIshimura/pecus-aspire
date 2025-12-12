@@ -26,6 +26,7 @@ export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithou
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { CreateWorkspaceTaskRequest } from './models/CreateWorkspaceTaskRequest';
+export type { DashboardTaskFilter } from './models/DashboardTaskFilter';
 export type { DeleteTaskCommentRequest } from './models/DeleteTaskCommentRequest';
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';

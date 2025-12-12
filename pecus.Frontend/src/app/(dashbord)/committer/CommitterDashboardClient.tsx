@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchCommitterTasksByWorkspace } from '@/actions/myCommitter';
 import AppHeader from '@/components/common/AppHeader';
+import DashboardFilterBar from '@/components/common/DashboardFilterBar';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import type { MyCommitterWorkspaceResponse } from '@/connectors/api/pecus';
+import type { DashboardTaskFilter, MyCommitterWorkspaceResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -28,6 +29,7 @@ export default function CommitterDashboardClient({
 }: CommitterDashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
+  const [currentFilter, setCurrentFilter] = useState<DashboardTaskFilter>('Active');
   const notify = useNotify();
 
   const notifyRef = useRef(notify);
@@ -43,7 +45,7 @@ export default function CommitterDashboardClient({
   }, [fetchError, notify]);
 
   // ワークスペースデータをWorkspaceInfo型に変換
-  const workspaces: WorkspaceInfo[] = initialWorkspaces.map((ws) => ({
+  const allWorkspaces: WorkspaceInfo[] = initialWorkspaces.map((ws) => ({
     workspaceId: ws.workspaceId,
     workspaceCode: ws.workspaceCode,
     workspaceName: ws.workspaceName,
@@ -58,19 +60,40 @@ export default function CommitterDashboardClient({
     itemCount: ws.itemCount,
   }));
 
-  // タスク取得関数
-  const handleFetchTasks = useCallback(async (workspaceId: number) => {
-    const result = await fetchCommitterTasksByWorkspace(workspaceId);
-    return result;
-  }, []);
+  // フィルタに応じて該当タスクがあるワークスペースのみ表示
+  const filteredWorkspaces = allWorkspaces.filter((ws) => {
+    switch (currentFilter) {
+      case 'Active':
+        return ws.activeTaskCount > 0;
+      case 'Completed':
+        return ws.completedTaskCount > 0;
+      case 'Overdue':
+        return ws.overdueTaskCount > 0;
+      case 'HelpWanted':
+        return (ws.helpCommentCount || 0) > 0;
+      case 'Reminder':
+        return (ws.reminderCommentCount || 0) > 0;
+      default:
+        return ws.activeTaskCount > 0;
+    }
+  });
 
-  // 統計情報を計算
-  const totalItems = workspaces.reduce((sum, ws) => sum + (ws.itemCount || 0), 0);
-  const totalActive = workspaces.reduce((sum, ws) => sum + ws.activeTaskCount, 0);
-  const totalCompleted = workspaces.reduce((sum, ws) => sum + ws.completedTaskCount, 0);
-  const totalOverdue = workspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
-  const totalHelpComments = workspaces.reduce((sum, ws) => sum + (ws.helpCommentCount || 0), 0);
-  const totalReminderComments = workspaces.reduce((sum, ws) => sum + (ws.reminderCommentCount || 0), 0);
+  // タスク取得関数（フィルタを適用）
+  const handleFetchTasks = useCallback(
+    async (workspaceId: number) => {
+      const result = await fetchCommitterTasksByWorkspace(workspaceId, currentFilter);
+      return result;
+    },
+    [currentFilter],
+  );
+
+  // 統計情報を計算（全ワークスペースから集計）
+  const totalItems = allWorkspaces.reduce((sum, ws) => sum + (ws.itemCount || 0), 0);
+  const totalActive = allWorkspaces.reduce((sum, ws) => sum + ws.activeTaskCount, 0);
+  const totalCompleted = allWorkspaces.reduce((sum, ws) => sum + ws.completedTaskCount, 0);
+  const totalOverdue = allWorkspaces.reduce((sum, ws) => sum + ws.overdueTaskCount, 0);
+  const totalHelpComments = allWorkspaces.reduce((sum, ws) => sum + (ws.helpCommentCount || 0), 0);
+  const totalReminderComments = allWorkspaces.reduce((sum, ws) => sum + (ws.reminderCommentCount || 0), 0);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -103,47 +126,31 @@ export default function CommitterDashboardClient({
             </div>
           </div>
 
-          {/* 統計サマリー */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">ワークスペース</div>
-              <div className="stat-value text-2xl">{workspaces.length}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">アイテム</div>
-              <div className="stat-value text-2xl">{totalItems}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">アクティブ</div>
-              <div className="stat-value text-2xl text-primary">{totalActive}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">完了</div>
-              <div className="stat-value text-2xl text-success">{totalCompleted}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">ヘルプコメント</div>
-              <div className="stat-value text-2xl text-warning">{totalHelpComments}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">督促コメント</div>
-              <div className="stat-value text-2xl text-warning">{totalReminderComments}</div>
-            </div>
-            <div className="stat bg-base-200 rounded-box p-4">
-              <div className="stat-title">期限超過</div>
-              <div className="stat-value text-2xl text-error">{totalOverdue}</div>
-            </div>
-          </div>
+          {/* フィルターバー */}
+          <DashboardFilterBar
+            currentFilter={currentFilter}
+            onFilterChange={setCurrentFilter}
+            stats={{
+              activeCount: totalActive,
+              completedCount: totalCompleted,
+              overdueCount: totalOverdue,
+              helpCommentCount: totalHelpComments,
+              reminderCommentCount: totalReminderComments,
+            }}
+            workspaceCount={allWorkspaces.length}
+            itemCount={totalItems}
+          />
 
           {/* ワークスペース×タスク一覧（アコーディオン） */}
           <WorkspaceTaskAccordion
-            workspaces={workspaces}
+            workspaces={filteredWorkspaces}
             fetchTasks={handleFetchTasks}
             emptyMessage="コミッターを担当しているアイテムがありません"
             emptyIconClass="icon-[mdi--clipboard-text-off-outline]"
             showItemCount={true}
             taskTypes={taskTypes}
             displayMode="assigned"
+            filterKey={currentFilter}
             currentUser={
               userInfo
                 ? {

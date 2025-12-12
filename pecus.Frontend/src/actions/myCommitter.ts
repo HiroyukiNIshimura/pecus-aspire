@@ -2,6 +2,7 @@
 
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  DashboardTaskFilter,
   ItemWithTasksResponsePagedResponse,
   MyCommitterWorkspaceResponse,
   TasksByDueDateResponse,
@@ -46,10 +47,11 @@ export async function fetchMyCommitterItems(
  */
 export async function fetchCommitterTasksByWorkspace(
   workspaceId: number,
+  filter?: DashboardTaskFilter,
 ): Promise<ApiResponse<TasksByDueDateResponse[]>> {
   try {
     const api = await createPecusApiClients();
-    const response = await api.my.getApiMyCommitterWorkspacesTasks(workspaceId);
+    const response = await api.my.getApiMyCommitterWorkspacesTasks(workspaceId, filter);
 
     return { success: true, data: response };
   } catch (error: unknown) {
