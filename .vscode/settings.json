@@ -52,5 +52,6 @@
   "editor.defaultFormatter": "biomejs.biome",
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "chat.useClaudeSkills": false
 }
