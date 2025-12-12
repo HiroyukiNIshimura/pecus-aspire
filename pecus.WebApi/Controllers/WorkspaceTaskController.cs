@@ -258,7 +258,8 @@ public class WorkspaceTaskController : BaseSecureController
             workspaceId,
             itemId,
             taskId,
-            request
+            request,
+            CurrentUserId
         );
 
         var response = new WorkspaceTaskResponse

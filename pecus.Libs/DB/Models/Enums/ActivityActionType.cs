@@ -57,5 +57,17 @@ public enum ActivityActionType
     /// <summary>
     /// 期限変更
     /// </summary>
-    DueDateChanged
+    DueDateChanged,
+    /// <summary>
+    /// タスク追加
+    /// </summary>
+    TaskAdded,
+    /// <summary>
+    /// タスク完了
+    /// </summary>
+    TaskCompleted,
+    /// <summary>
+    /// タスク破棄
+    /// </summary>
+    TaskDiscarded
 }

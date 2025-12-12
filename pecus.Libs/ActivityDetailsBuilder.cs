@@ -151,6 +151,58 @@ public static class ActivityDetailsBuilder
     }
 
     /// <summary>
+    /// タスク追加用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="assigneeName">担当者名</param>
+    public static string BuildTaskAddedDetails(int taskId, string content, string? assigneeName)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            assignee = assigneeName
+        }, JsonOptions);
+    }
+
+    /// <summary>
+    /// タスク完了用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="assigneeName">担当者名</param>
+    /// <param name="completedByName">完了操作したユーザー名</param>
+    public static string BuildTaskCompletedDetails(int taskId, string content, string? assigneeName, string completedByName)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            assignee = assigneeName,
+            completedBy = completedByName
+        }, JsonOptions);
+    }
+
+    /// <summary>
+    /// タスク破棄用の Details を生成
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="content">タスク内容</param>
+    /// <param name="assigneeName">担当者名</param>
+    /// <param name="discardedByName">破棄操作したユーザー名</param>
+    public static string BuildTaskDiscardedDetails(int taskId, string content, string? assigneeName, string discardedByName)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            taskId,
+            content,
+            assignee = assigneeName,
+            discardedBy = discardedByName
+        }, JsonOptions);
+    }
+
+    /// <summary>
     /// 優先度の日本語ラベルを取得
     /// </summary>
     private static string? GetPriorityLabel(TaskPriority? priority)

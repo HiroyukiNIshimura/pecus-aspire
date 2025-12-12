@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,18 +21,21 @@ public class WorkspaceTaskService
     private readonly ILogger<WorkspaceTaskService> _logger;
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
     public WorkspaceTaskService(
         ApplicationDbContext context,
         ILogger<WorkspaceTaskService> logger,
         OrganizationAccessHelper accessHelper,
-        PecusConfig config
+        PecusConfig config,
+        IBackgroundJobClient backgroundJobClient
     )
     {
         _context = context;
         _logger = logger;
         _accessHelper = accessHelper;
         _config = config;
+        _backgroundJobClient = backgroundJobClient;
     }
 
     /// <summary>
@@ -110,6 +115,16 @@ public class WorkspaceTaskService
         await _context.Entry(task)
             .Reference(t => t.TaskType)
             .LoadAsync();
+
+        // アクティビティ記録: タスク追加
+        var taskAddedDetails = ActivityDetailsBuilder.BuildTaskAddedDetails(
+            task.Id,
+            task.Content,
+            task.AssignedUser?.Username
+        );
+        _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+            x.RecordActivityAsync(workspaceId, itemId, createdByUserId, ActivityActionType.TaskAdded, taskAddedDetails)
+        );
 
         return task;
     }
@@ -342,6 +357,7 @@ public class WorkspaceTaskService
     /// <param name="itemId">ワークスペースアイテムID</param>
     /// <param name="taskId">タスクID</param>
     /// <param name="request">更新リクエスト</param>
+    /// <param name="currentUserId">操作ユーザーID</param>
     /// <returns>更新されたタスクとコメント情報のタプル</returns>
     public async Task<(
         WorkspaceTask Task,
@@ -351,7 +367,8 @@ public class WorkspaceTaskService
         int workspaceId,
         int itemId,
         int taskId,
-        UpdateWorkspaceTaskRequest request
+        UpdateWorkspaceTaskRequest request,
+        int currentUserId
     )
     {
         var task = await _context.WorkspaceTasks
@@ -368,6 +385,15 @@ public class WorkspaceTaskService
         {
             throw new NotFoundException("タスクが見つかりません。");
         }
+
+        // アクティビティ記録用のスナップショット
+        var snapshot = new
+        {
+            IsCompleted = task.IsCompleted,
+            IsDiscarded = task.IsDiscarded,
+            Content = task.Content,
+            AssigneeName = task.AssignedUser?.Username
+        };
 
         // 担当者が変更される場合、新しい担当者がワークスペースのメンバーか確認
         if (request.AssignedUserId.HasValue && request.AssignedUserId.Value != task.AssignedUserId)
@@ -490,6 +516,42 @@ public class WorkspaceTaskService
             task.Id,
             itemId
         );
+
+        // アクティビティ記録: タスク完了（未完了→完了に変更された場合のみ）
+        if (!snapshot.IsCompleted && task.IsCompleted)
+        {
+            // 操作ユーザー名を取得
+            var currentUser = await _context.Users.FindAsync(currentUserId);
+            var completedByName = currentUser?.Username ?? "不明";
+
+            var taskCompletedDetails = ActivityDetailsBuilder.BuildTaskCompletedDetails(
+                task.Id,
+                snapshot.Content,
+                snapshot.AssigneeName,
+                completedByName
+            );
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskCompleted, taskCompletedDetails)
+            );
+        }
+
+        // アクティビティ記録: タスク破棄（未破棄→破棄に変更された場合のみ）
+        if (!snapshot.IsDiscarded && task.IsDiscarded)
+        {
+            // 操作ユーザー名を取得
+            var currentUser = await _context.Users.FindAsync(currentUserId);
+            var discardedByName = currentUser?.Username ?? "不明";
+
+            var taskDiscardedDetails = ActivityDetailsBuilder.BuildTaskDiscardedDetails(
+                task.Id,
+                snapshot.Content,
+                snapshot.AssigneeName,
+                discardedByName
+            );
+            _backgroundJobClient.Enqueue<ActivityTasks>(x =>
+                x.RecordActivityAsync(workspaceId, itemId, currentUserId, ActivityActionType.TaskDiscarded, taskDiscardedDetails)
+            );
+        }
 
         // ナビゲーションプロパティを再読み込み（担当者またはタスク種類が変更された場合）
         if (request.AssignedUserId.HasValue)
