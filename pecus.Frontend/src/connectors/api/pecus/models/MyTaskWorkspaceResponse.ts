@@ -8,6 +8,10 @@
  */
 export type MyTaskWorkspaceResponse = {
     /**
+     * リスト内での一意なインデックス（フロントエンドのReact key用）
+     */
+    listIndex?: number;
+    /**
      * ワークスペースID
      */
     workspaceId: number;

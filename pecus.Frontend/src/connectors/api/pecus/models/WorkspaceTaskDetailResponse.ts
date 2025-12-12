@@ -8,6 +8,10 @@ import type { TaskPriority } from './TaskPriority';
  */
 export type WorkspaceTaskDetailResponse = {
     /**
+     * リスト内でのインデックス（Reactのkey用）
+     */
+    listIndex?: number;
+    /**
      * タスクID
      */
     id: number;

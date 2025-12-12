@@ -4,65 +4,70 @@ namespace Pecus.Models.Responses.WorkspaceTask;
 /// マイコミッターワークスペースレスポンス
 /// ログインユーザーがコミッターになっているアイテムを持つワークスペースの情報
 /// </summary>
-public class MyCommitterWorkspaceResponse
+public record MyCommitterWorkspaceResponse
 {
+    /// <summary>
+    /// リスト内での一意なインデックス（フロントエンドのReact key用）
+    /// </summary>
+    public int ListIndex { get; init; }
+
     /// <summary>
     /// ワークスペースID
     /// </summary>
-    public required int WorkspaceId { get; set; }
+    public required int WorkspaceId { get; init; }
 
     /// <summary>
     /// ワークスペースコード
     /// </summary>
-    public required string WorkspaceCode { get; set; }
+    public required string WorkspaceCode { get; init; }
 
     /// <summary>
     /// ワークスペース名
     /// </summary>
-    public required string WorkspaceName { get; set; }
+    public required string WorkspaceName { get; init; }
 
     /// <summary>
     /// ジャンルアイコン
     /// </summary>
-    public string? GenreIcon { get; set; }
+    public string? GenreIcon { get; init; }
 
     /// <summary>
     /// ジャンル名
     /// </summary>
-    public string? GenreName { get; set; }
+    public string? GenreName { get; init; }
 
     /// <summary>
     /// コミッターになっているアイテム数
     /// </summary>
-    public required int ItemCount { get; set; }
+    public required int ItemCount { get; init; }
 
     /// <summary>
     /// 未完了タスク数
     /// </summary>
-    public required int ActiveTaskCount { get; set; }
+    public required int ActiveTaskCount { get; init; }
 
     /// <summary>
     /// 完了済みタスク数
     /// </summary>
-    public required int CompletedTaskCount { get; set; }
+    public required int CompletedTaskCount { get; init; }
 
     /// <summary>
     /// 期限超過タスク数
     /// </summary>
-    public required int OverdueTaskCount { get; set; }
+    public required int OverdueTaskCount { get; init; }
 
     /// <summary>
     /// ヘルプコメント数
     /// </summary>
-    public required int HelpCommentCount { get; set; }
+    public required int HelpCommentCount { get; init; }
 
     /// <summary>
     /// 督促コメント数
     /// </summary>
-    public required int ReminderCommentCount { get; set; }
+    public required int ReminderCommentCount { get; init; }
 
     /// <summary>
     /// 最も古い期限日（ソート用、未完了タスクのみ対象）
     /// </summary>
-    public DateTimeOffset? OldestDueDate { get; set; }
+    public DateTimeOffset? OldestDueDate { get; init; }
 }

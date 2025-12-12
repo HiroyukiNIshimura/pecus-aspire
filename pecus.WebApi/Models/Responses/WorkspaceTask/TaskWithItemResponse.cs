@@ -9,6 +9,11 @@ namespace Pecus.Models.Responses.WorkspaceTask;
 /// </summary>
 public class TaskWithItemResponse
 {
+    /// <summary>
+    /// リスト内での一意なインデックス（フロントエンドのReact key用）
+    /// </summary>
+    public int ListIndex { get; init; }
+
     // ===== タスク情報 =====
 
     /// <summary>

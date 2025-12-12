@@ -10,6 +10,11 @@ namespace Pecus.Models.Responses.WorkspaceTask;
 public class WorkspaceTaskDetailResponse : IConflictModel
 {
     /// <summary>
+    /// リスト内でのインデックス（Reactのkey用）
+    /// </summary>
+    public int ListIndex { get; set; }
+
+    /// <summary>
     /// タスクID
     /// </summary>
     [Required]

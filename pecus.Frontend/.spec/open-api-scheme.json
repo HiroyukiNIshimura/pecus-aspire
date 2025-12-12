@@ -9122,6 +9122,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "item": {
             "$ref": "#/components/schemas/TaskItemResponse"
           },
@@ -9477,6 +9482,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "workspaceId": {
             "type": "integer",
             "description": "ワークスペースID",
@@ -9853,6 +9863,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "workspaceId": {
             "type": "integer",
             "description": "ワークスペースID",
@@ -11668,6 +11683,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "taskId": {
             "type": "integer",
             "description": "タスクID",
@@ -11864,6 +11884,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
+            "format": "int32"
+          },
           "dueDate": {
             "type": "string",
             "description": "期限日（日付のみ）",
@@ -13664,6 +13689,11 @@
         ],
         "type": "object",
         "properties": {
+          "listIndex": {
+            "type": "integer",
+            "description": "リスト内でのインデックス（Reactのkey用）",
+            "format": "int32"
+          },
           "id": {
             "type": "integer",
             "description": "タスクID",

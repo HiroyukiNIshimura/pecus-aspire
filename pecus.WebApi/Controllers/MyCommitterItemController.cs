@@ -110,10 +110,14 @@ public class MyCommitterItemController : BaseSecureController
 
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-        var responseData = results.Select(r => new ItemWithTasksResponse
+        // ページネーション用のオフセット計算（無限スクロール対応）
+        var offset = (request.Page - 1) * pageSize;
+
+        var responseData = results.Select((r, index) => new ItemWithTasksResponse
         {
+            ListIndex = offset + index,
             Item = BuildTaskItemResponse(r.Item),
-            Tasks = r.Tasks.Select(t => BuildTaskDetailResponse(t)),
+            Tasks = r.Tasks.Select((t, taskIndex) => BuildTaskDetailResponse(t, taskIndex)),
         });
 
         var response = new PagedResponse<ItemWithTasksResponse>
@@ -191,11 +195,13 @@ public class MyCommitterItemController : BaseSecureController
     /// WorkspaceTaskエンティティからレスポンスを生成
     /// </summary>
     /// <param name="task">タスクエンティティ</param>
+    /// <param name="listIndex">リスト内でのインデックス（Reactのkey用）</param>
     /// <param name="commentCount">コメント数</param>
-    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int commentCount = 0)
+    private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(WorkspaceTask task, int listIndex = 0, int commentCount = 0)
     {
         return new WorkspaceTaskDetailResponse
         {
+            ListIndex = listIndex,
             Id = task.Id,
             WorkspaceItemId = task.WorkspaceItemId,
             WorkspaceId = task.WorkspaceId,

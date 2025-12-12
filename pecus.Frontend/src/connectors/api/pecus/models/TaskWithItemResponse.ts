@@ -9,6 +9,10 @@ import type { TaskPriority } from './TaskPriority';
  */
 export type TaskWithItemResponse = {
     /**
+     * リスト内での一意なインデックス（フロントエンドのReact key用）
+     */
+    listIndex?: number;
+    /**
      * タスクID
      */
     taskId: number;

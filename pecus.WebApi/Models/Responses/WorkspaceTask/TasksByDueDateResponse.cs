@@ -6,6 +6,11 @@ namespace Pecus.Models.Responses.WorkspaceTask;
 public class TasksByDueDateResponse
 {
     /// <summary>
+    /// リスト内での一意なインデックス（フロントエンドのReact key用）
+    /// </summary>
+    public int ListIndex { get; init; }
+
+    /// <summary>
     /// 期限日（日付のみ）
     /// </summary>
     public required DateOnly DueDate { get; set; }

@@ -507,7 +507,7 @@ public class WorkspaceTaskService
             throw new ConcurrencyException<WorkspaceTaskDetailResponse>(
                 "別のユーザーが同時に変更しました。ページをリロードして再度操作してください。",
                 latestTask != null
-                    ? BuildTaskDetailResponse(latestTask, latestCommentCount, latestTypeCounts)
+                    ? BuildTaskDetailResponse(latestTask, commentCount: latestCommentCount, commentTypeCounts: latestTypeCounts)
                     : null
             );
         }
@@ -696,16 +696,19 @@ public class WorkspaceTaskService
     /// WorkspaceTaskエンティティからレスポンスを生成（内部ヘルパー）
     /// </summary>
     /// <param name="task">タスクエンティティ</param>
+    /// <param name="listIndex">リスト内でのインデックス（Reactのkey用）</param>
     /// <param name="commentCount">コメント数</param>
     /// <param name="commentTypeCounts">コメントタイプ別件数</param>
     private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
         WorkspaceTask task,
+        int listIndex = 0,
         int commentCount = 0,
         Dictionary<TaskCommentType, int>? commentTypeCounts = null
     )
     {
         return new WorkspaceTaskDetailResponse
         {
+            ListIndex = listIndex,
             Id = task.Id,
             WorkspaceItemId = task.WorkspaceItemId,
             WorkspaceId = task.WorkspaceId,
@@ -1046,6 +1049,7 @@ public class WorkspaceTaskService
         .OrderBy(w => w.OldestDueDate == null ? 1 : 0) // 期限日がNULLのものは後ろ
         .ThenBy(w => w.OldestDueDate) // 期限日が古い順
         .ThenBy(w => w.WorkspaceName)
+        .Select((w, index) => w with { ListIndex = index })
         .ToList();
 
         return results;
@@ -1100,6 +1104,7 @@ public class WorkspaceTaskService
             .OrderBy(w => w.OldestDueDate == null ? 1 : 0)
             .ThenBy(w => w.OldestDueDate)
             .ThenBy(w => w.WorkspaceName)
+            .Select((w, index) => w with { ListIndex = index })
             .ToList();
     }
 
@@ -1154,13 +1159,14 @@ public class WorkspaceTaskService
 
         var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(tasks.Select(t => t.Id));
 
-        // 期限日でグループ化
+        // 期限日でグループ化し、ListIndexを付与
         return tasks
             .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
-            .Select(g => new TasksByDueDateResponse
+            .Select((g, groupIndex) => new TasksByDueDateResponse
             {
+                ListIndex = groupIndex,
                 DueDate = g.Key,
-                Tasks = g.Select(t => BuildTaskWithItemResponse(t, commentTypeCountsByTask)).ToList(),
+                Tasks = g.Select((t, taskIndex) => BuildTaskWithItemResponse(t, commentTypeCountsByTask, taskIndex)).ToList(),
             })
             .ToList();
     }
@@ -1220,10 +1226,11 @@ public class WorkspaceTaskService
 
         return tasks
             .GroupBy(t => DateOnly.FromDateTime(t.DueDate.Date))
-            .Select(g => new TasksByDueDateResponse
+            .Select((g, groupIndex) => new TasksByDueDateResponse
             {
+                ListIndex = groupIndex,
                 DueDate = g.Key,
-                Tasks = g.Select(t => BuildTaskWithItemResponse(t, commentTypeCountsByTask)).ToList(),
+                Tasks = g.Select((t, taskIndex) => BuildTaskWithItemResponse(t, commentTypeCountsByTask, taskIndex)).ToList(),
             })
             .ToList();
     }
@@ -1298,9 +1305,11 @@ public class WorkspaceTaskService
     /// </summary>
     /// <param name="task">タスクエンティティ（WorkspaceItem含む）</param>
     /// <param name="commentTypeCountsByTask">タスクIDをキーとしたコメントタイプ別件数</param>
+    /// <param name="listIndex">リスト内でのインデックス（React key用）</param>
     private static TaskWithItemResponse BuildTaskWithItemResponse(
         WorkspaceTask task,
-        Dictionary<int, Dictionary<TaskCommentType, int>>? commentTypeCountsByTask = null
+        Dictionary<int, Dictionary<TaskCommentType, int>>? commentTypeCountsByTask = null,
+        int listIndex = 0
     )
     {
         var item = task.WorkspaceItem;
@@ -1314,6 +1323,9 @@ public class WorkspaceTaskService
 
         return new TaskWithItemResponse
         {
+            // React key用インデックス
+            ListIndex = listIndex,
+
             // タスク情報
             TaskId = task.Id,
             TaskContent = task.Content,

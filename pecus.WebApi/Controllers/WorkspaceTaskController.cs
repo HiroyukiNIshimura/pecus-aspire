@@ -115,7 +115,7 @@ public class WorkspaceTaskController : BaseSecureController
             taskId
         );
 
-        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount, commentTypeCounts));
+        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount: commentCount, commentTypeCounts: commentTypeCounts));
     }
 
     /// <summary>
@@ -157,12 +157,16 @@ public class WorkspaceTaskController : BaseSecureController
         var pageSize = request.PageSize;
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
+        // ページネーション用のオフセット計算（無限スクロール対応）
+        var offset = (request.Page - 1) * pageSize;
+
         var response = new PagedResponse<WorkspaceTaskDetailResponse, WorkspaceTaskStatistics>
         {
-            Data = tasks.Select(t => BuildTaskDetailResponse(
+            Data = tasks.Select((t, index) => BuildTaskDetailResponse(
                 t,
-                commentCounts.GetValueOrDefault(t.Id, 0),
-                commentTypeCounts.GetValueOrDefault(t.Id, new Dictionary<TaskCommentType, int>())
+                listIndex: offset + index,
+                commentCount: commentCounts.GetValueOrDefault(t.Id, 0),
+                commentTypeCounts: commentTypeCounts.GetValueOrDefault(t.Id, new Dictionary<TaskCommentType, int>())
             )),
             CurrentPage = request.Page,
             PageSize = pageSize,
@@ -266,7 +270,7 @@ public class WorkspaceTaskController : BaseSecureController
         {
             Success = true,
             Message = "タスクを更新しました。",
-            WorkspaceTask = BuildTaskDetailResponse(task, commentCount, commentTypeCounts),
+            WorkspaceTask = BuildTaskDetailResponse(task, commentCount: commentCount, commentTypeCounts: commentTypeCounts),
         };
 
         return TypedResults.Ok(response);
@@ -382,16 +386,19 @@ public class WorkspaceTaskController : BaseSecureController
     /// WorkspaceTaskエンティティからレスポンスを生成
     /// </summary>
     /// <param name="task">タスクエンティティ</param>
+    /// <param name="listIndex">リスト内でのインデックス（Reactのkey用）</param>
     /// <param name="commentCount">コメント数</param>
     /// <param name="commentTypeCounts">コメントタイプ別件数</param>
     private static WorkspaceTaskDetailResponse BuildTaskDetailResponse(
         WorkspaceTask task,
+        int listIndex = 0,
         int commentCount = 0,
         Dictionary<TaskCommentType, int>? commentTypeCounts = null
     )
     {
         return new WorkspaceTaskDetailResponse
         {
+            ListIndex = listIndex,
             Id = task.Id,
             WorkspaceItemId = task.WorkspaceItemId,
             WorkspaceId = task.WorkspaceId,
