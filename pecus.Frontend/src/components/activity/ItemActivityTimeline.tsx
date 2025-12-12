@@ -138,14 +138,16 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
     setIsLoading(true);
     try {
       const result = await fetchItemActivities(workspaceId, itemId, page);
-      if (result.success && result.data) {
-        const newActivities = result.data.data || [];
-        setActivities((prev) => (page === 1 ? newActivities : [...prev, ...newActivities]));
-        setHasMore(page < (result.data.totalPages || 1));
-        setPage((prev) => prev + 1);
-      } else {
+
+      if (!result.success) {
         setError(result.message || 'アクティビティの取得に失敗しました。');
+        return;
       }
+
+      const newActivities = result.data.data || [];
+      setActivities((prev) => (page === 1 ? newActivities : [...prev, ...newActivities]));
+      setHasMore(page < (result.data.totalPages || 1));
+      setPage((prev) => prev + 1);
     } catch {
       setError('アクティビティの取得に失敗しました。');
     } finally {

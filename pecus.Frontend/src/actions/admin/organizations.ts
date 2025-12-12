@@ -75,6 +75,8 @@ export async function updateOrganizationSetting(request: {
   plan: OrganizationSettingResponse['plan'];
   helpNotificationTarget?: OrganizationSettingResponse['helpNotificationTarget'];
   generativeApiKey?: string | null;
+  requireEstimateOnTaskCreation?: boolean;
+  enforcePredecessorCompletion?: boolean;
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

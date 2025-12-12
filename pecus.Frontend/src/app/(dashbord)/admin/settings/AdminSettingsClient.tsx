@@ -129,6 +129,8 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     plan: 'Free' as OrganizationSettingResponse['plan'],
     helpNotificationTarget: undefined as OrganizationSettingResponse['helpNotificationTarget'],
     generativeApiKey: '',
+    requireEstimateOnTaskCreation: false,
+    enforcePredecessorCompletion: false,
     rowVersion: 0,
   };
 
@@ -142,6 +144,8 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     plan: normalizePlan(initialSetting.plan),
     helpNotificationTarget: initialSetting.helpNotificationTarget ?? null,
     generativeApiKey: initialSetting.generativeApiKey ?? '',
+    requireEstimateOnTaskCreation: initialSetting.requireEstimateOnTaskCreation ?? false,
+    enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
   });
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
@@ -158,6 +162,8 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             plan: data.plan,
             helpNotificationTarget: data.helpNotificationTarget ?? undefined,
             generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
+            requireEstimateOnTaskCreation: data.requireEstimateOnTaskCreation ?? false,
+            enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
             rowVersion,
           });
 
@@ -194,6 +200,8 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
       helpNotificationTarget: setting.helpNotificationTarget ?? null,
       generativeApiKey:
         (setting as OrganizationSettingResponse & { generativeApiKey?: string | null }).generativeApiKey ?? '',
+      requireEstimateOnTaskCreation: setting.requireEstimateOnTaskCreation ?? false,
+      enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
     });
   };
 
@@ -492,6 +500,46 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                     )}
                     <span className="label-text-alt text-xs text-base-content/60 mt-1">
                       担当者からのヘルプコメントを誰に通知するかを設定します。
+                    </span>
+                  </div>
+                </div>
+
+                <div className="divider">タスク制約設定</div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="form-control">
+                    <label className="label cursor-pointer justify-start gap-4" htmlFor="toggle-require-estimate">
+                      <input
+                        id="toggle-require-estimate"
+                        name="requireEstimateOnTaskCreation"
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={formData.requireEstimateOnTaskCreation ?? false}
+                        onChange={(e) => handleFieldChange('requireEstimateOnTaskCreation', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <span className="label-text font-semibold">タスク作成時に見積もりを必須とする</span>
+                    </label>
+                    <span className="label-text-alt text-xs text-base-content/60 ml-14">
+                      有効にすると、タスク作成時に見積もり時間の入力が必須になります。
+                    </span>
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label cursor-pointer justify-start gap-4" htmlFor="toggle-enforce-predecessor">
+                      <input
+                        id="toggle-enforce-predecessor"
+                        name="enforcePredecessorCompletion"
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={formData.enforcePredecessorCompletion ?? false}
+                        onChange={(e) => handleFieldChange('enforcePredecessorCompletion', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <span className="label-text font-semibold">先行タスク完了を強制する</span>
+                    </label>
+                    <span className="label-text-alt text-xs text-base-content/60 ml-14">
+                      有効にすると、先行タスクが完了するまで後続タスクを操作できなくなります。
                     </span>
                   </div>
                 </div>

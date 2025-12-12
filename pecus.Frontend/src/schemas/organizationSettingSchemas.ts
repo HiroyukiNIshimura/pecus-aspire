@@ -72,6 +72,8 @@ export const organizationSettingSchema = z.object({
     if (typeof val === 'string') return val.trim();
     return val;
   }, z.string().max(512, '生成APIキーは512文字以内で入力してください。').optional()),
+  requireEstimateOnTaskCreation: z.boolean().default(false),
+  enforcePredecessorCompletion: z.boolean().default(false),
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {

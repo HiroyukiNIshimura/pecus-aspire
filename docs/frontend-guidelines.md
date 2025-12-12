@@ -360,3 +360,43 @@ export type RouterErrorType = {
 | バリデーションエラー | `false` | 入力を修正すれば解決するため、すぐ消えて良い |
 | Server Actions のエラー | `false` | 一時的なエラーが多く、再試行で解決することが多い |
 | 重大なエラー（データ消失等） | `true` | ユーザーに確実に認識させたい場合 |
+
+### 条件付きユニオン型（Discriminated Union）の扱い方
+
+`ApiResponse<T>` のような条件付きユニオン型を扱う際は、**Early Return（ガード節）パターン**を使用してください。
+
+**✅ 推奨: Early Return パターン**
+```typescript
+const result = await fetchData();
+
+// エラーケースを先にチェックして早期リターン
+if (!result.success) {
+  setError(result.message);
+  return;
+}
+
+// ここで result.success === true が確定、result.data に安全にアクセス可能
+const data = result.data;
+doSomething(data);
+```
+
+**❌ 禁止: else if で終わる構文**
+```typescript
+// 可読性が低く、型のナローイングも不自然
+if (result.success) {
+  // 正常系
+} else if (!result.success) {
+  // エラー系（else if で終わるのは避ける）
+}
+```
+
+**❌ 禁止: 型アサーション**
+```typescript
+// 型安全性が失われる
+const data = (result as SuccessResponse).data;
+```
+
+**理由**:
+- Early Return により、正常系のコードがフラットに読める
+- TypeScript の型ナローイングが自然に機能する
+- `else if` で終わる構文は可読性が低く、意図が不明確になる
