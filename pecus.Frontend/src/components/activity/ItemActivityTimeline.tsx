@@ -27,6 +27,9 @@ const actionTypeConfig: Record<ActivityActionType, { icon: string; badgeClass: s
   CommitterChanged: { icon: 'icon-[mdi--account-check]', badgeClass: 'badge-info' },
   PriorityChanged: { icon: 'icon-[mdi--flag]', badgeClass: 'badge-warning' },
   DueDateChanged: { icon: 'icon-[mdi--calendar]', badgeClass: 'badge-info' },
+  TaskAdded: { icon: 'icon-[mdi--checkbox-marked-circle-plus-outline]', badgeClass: 'badge-success' },
+  TaskCompleted: { icon: 'icon-[mdi--checkbox-marked-circle]', badgeClass: 'badge-success' },
+  TaskDiscarded: { icon: 'icon-[mdi--checkbox-blank-off-outline]', badgeClass: 'badge-error' },
 };
 
 /** アクションタイプの日本語ラベル */
@@ -44,6 +47,9 @@ const actionTypeLabels: Record<ActivityActionType, string> = {
   CommitterChanged: 'コミッタを変更',
   PriorityChanged: '優先度を変更',
   DueDateChanged: '期限を変更',
+  TaskAdded: 'タスクを追加',
+  TaskCompleted: 'タスクを完了',
+  TaskDiscarded: 'タスクを破棄',
 };
 
 /** 日付をグループ化するためのキーを取得 */
@@ -105,6 +111,12 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
         const newDate = parsed.new ? new Date(parsed.new).toLocaleDateString('ja-JP') : 'なし';
         return `${oldDate} → ${newDate}`;
       }
+      case 'TaskAdded':
+        return `${parsed.content}${parsed.assignee ? ` (担当: ${parsed.assignee})` : ''}`;
+      case 'TaskCompleted':
+        return `${parsed.content}${parsed.completedBy ? ` (完了: ${parsed.completedBy})` : ''}`;
+      case 'TaskDiscarded':
+        return `${parsed.content}${parsed.discardedBy ? ` (破棄: ${parsed.discardedBy})` : ''}`;
       default:
         return null;
     }

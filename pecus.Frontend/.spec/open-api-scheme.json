@@ -8184,7 +8184,10 @@
           "DraftChanged",
           "CommitterChanged",
           "PriorityChanged",
-          "DueDateChanged"
+          "DueDateChanged",
+          "TaskAdded",
+          "TaskCompleted",
+          "TaskDiscarded"
         ],
         "type": "string"
       },

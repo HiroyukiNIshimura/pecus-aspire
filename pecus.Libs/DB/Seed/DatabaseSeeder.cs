@@ -1799,6 +1799,26 @@ public class DatabaseSeeder
                 old = _random.Next(2) == 0 ? null : DateTime.UtcNow.AddDays(-_random.Next(1, 30)).ToString("o"),
                 @new = DateTime.UtcNow.AddDays(_random.Next(1, 60)).ToString("o")
             }),
+            ActivityActionType.TaskAdded => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                taskId = _random.Next(1, 1000),
+                content = _faker.Lorem.Sentence(5),
+                assignee = _faker.Name.FullName()
+            }),
+            ActivityActionType.TaskCompleted => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                taskId = _random.Next(1, 1000),
+                content = _faker.Lorem.Sentence(5),
+                assignee = _faker.Name.FullName(),
+                completedBy = _faker.Name.FullName()
+            }),
+            ActivityActionType.TaskDiscarded => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                taskId = _random.Next(1, 1000),
+                content = _faker.Lorem.Sentence(5),
+                assignee = _faker.Name.FullName(),
+                discardedBy = _faker.Name.FullName()
+            }),
             _ => null
         };
     }
