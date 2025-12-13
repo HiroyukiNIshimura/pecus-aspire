@@ -91,6 +91,12 @@ const SESSION_DEFAULT_TTL_SECONDS = 30 * 24 * 60 * 60;
 /** 非アクティブセッションの TTL（7 日 = 604800 秒） */
 const SESSION_INACTIVE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
+/**
+ * リフレッシュ中の Promise をキャッシュする Map
+ * 同一セッションに対する並行リフレッシュを防止するために使用
+ */
+const refreshPromiseMap = new Map<string, Promise<ServerSessionData | null>>();
+
 // ========================================
 // ユーティリティ関数
 // ========================================
@@ -465,17 +471,64 @@ export class ServerSessionManager {
   }
 
   /**
-   * トークンをリフレッシュ
+   * トークンをリフレッシュ（並行制御付き）
+   *
+   * 同一セッションに対する並行リフレッシュを防止するため、
+   * 既にリフレッシュが進行中の場合はその Promise を再利用する。
+   * これにより、React 19.2 の並行レンダリングでの競合状態を防ぐ。
    *
    * @returns 更新されたセッション、または null（リフレッシュ失敗時）
    */
   static async refreshTokens(): Promise<ServerSessionData | null> {
     try {
-      const session = await ServerSessionManager.getSession();
-      if (!session) {
+      // まずセッション ID を取得（ロックキーとして使用）
+      const sessionId = await ServerSessionManager.getSessionId();
+      if (!sessionId) {
         console.error('[ServerSession] No session found for refresh');
         return null;
       }
+
+      // 既にこのセッションのリフレッシュが進行中か確認
+      const existingPromise = refreshPromiseMap.get(sessionId);
+      if (existingPromise) {
+        console.log('[ServerSession] Refresh already in progress, waiting...');
+        return existingPromise;
+      }
+
+      // 新しいリフレッシュ Promise を作成してキャッシュ
+      const refreshPromise = ServerSessionManager.doRefreshTokens(sessionId);
+      refreshPromiseMap.set(sessionId, refreshPromise);
+
+      try {
+        return await refreshPromise;
+      } finally {
+        // 完了後にキャッシュから削除
+        refreshPromiseMap.delete(sessionId);
+      }
+    } catch (error) {
+      console.error('[ServerSession] Refresh error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 実際のトークンリフレッシュ処理（内部用）
+   *
+   * @param sessionId セッション ID
+   * @returns 更新されたセッション、または null
+   */
+  private static async doRefreshTokens(sessionId: string): Promise<ServerSessionData | null> {
+    try {
+      const redis = getRedisClient();
+      const sessionKey = getSessionKey(sessionId);
+      const sessionJson = await redis.get(sessionKey);
+
+      if (!sessionJson) {
+        console.error('[ServerSession] Session not found in Redis for refresh');
+        return null;
+      }
+
+      const session: ServerSessionData = JSON.parse(sessionJson);
 
       const apiBaseUrl = process.env.API_BASE_URL || 'https://localhost:7265';
 
