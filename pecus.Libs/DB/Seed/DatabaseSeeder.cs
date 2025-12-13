@@ -878,6 +878,7 @@ public class DatabaseSeeder
                             Description = _faker.Lorem.Sentence(10),
                             OrganizationId = organization.Id,
                             GenreId = genre.Id,
+                            Mode = _random.Next(2) == 0 ? WorkspaceMode.Normal : WorkspaceMode.Document,
                             IsActive = _random.Next(4) != 0, // 1/4の確率で非アクティブ
                             OwnerId = ownerId,
                             CreatedByUserId = ownerId,
@@ -1172,7 +1173,7 @@ public class DatabaseSeeder
             var rawBody = string.Empty;
 
             int totalItemsAdded = 0;
-            const int maxTotalItems = 1000; // 全体で最大1000件
+            const int maxTotalItems = 20000; // 全体で最大20000件
             var itemsPerWorkspace = Math.Max(5, maxTotalItems / workspaces.Count); // ワークスペースあたりの件数
 
             foreach (var workspace in workspaces)
