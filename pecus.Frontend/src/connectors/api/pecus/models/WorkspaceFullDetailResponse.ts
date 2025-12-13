@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
+import type { WorkspaceMode } from './WorkspaceMode';
 import type { WorkspaceRole } from './WorkspaceRole';
 import type { WorkspaceSkillResponse } from './WorkspaceSkillResponse';
 /**
@@ -56,6 +57,7 @@ export type WorkspaceFullDetailResponse = {
      * アクティブフラグ
      */
     isActive?: boolean;
+    mode?: WorkspaceMode;
     currentUserRole?: WorkspaceRole;
     /**
      * ワークスペースに設定されているスキル一覧

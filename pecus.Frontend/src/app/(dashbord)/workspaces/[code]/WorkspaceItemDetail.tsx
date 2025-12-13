@@ -17,6 +17,7 @@ import type {
   RelatedItemInfo,
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
+  WorkspaceMode,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import EditWorkspaceItem from './EditWorkspaceItem';
@@ -34,6 +35,8 @@ interface WorkspaceItemDetailProps {
   onStartAddRelation?: () => void;
   /** 関連アイテム追加モードが有効かどうか */
   isAddingRelation?: boolean;
+  /** ワークスペースモード */
+  workspaceMode?: WorkspaceMode;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -44,10 +47,22 @@ export interface WorkspaceItemDetailHandle {
 
 const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemDetailProps>(
   function WorkspaceItemDetail(
-    { workspaceId, itemId, onItemSelect, members = [], currentUserId, taskTypes, onStartAddRelation, isAddingRelation },
+    {
+      workspaceId,
+      itemId,
+      onItemSelect,
+      members = [],
+      currentUserId,
+      taskTypes,
+      onStartAddRelation,
+      isAddingRelation,
+      workspaceMode,
+    },
     ref,
   ) {
     const notify = useNotify();
+    // ドキュメントモードかどうか
+    const isDocumentMode = workspaceMode === 'Document';
     const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -396,94 +411,98 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             </div>
           )}
 
-          {/* 関連アイテム */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold">関連アイテム</h3>
-              <button
-                type="button"
-                onClick={onStartAddRelation}
-                className={`btn btn-primary btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
-                title={isAddingRelation ? '関連アイテム追加を解除' : '関連アイテムを追加'}
-              >
-                <span className="icon-[mdi--link-plus] w-4 h-4" aria-hidden="true" />
-                <span>{isAddingRelation ? '解除' : '追加'}</span>
-              </button>
-            </div>
-            {item.relatedItems && item.relatedItems.length > 0 ? (
-              <div className="space-y-2">
-                {item.relatedItems.map((related) => (
-                  <div
-                    key={related.listIndex}
-                    className={`flex items-center gap-2 p-2 rounded ${related.isArchived ? 'bg-base-300 opacity-60' : 'bg-base-200'}`}
-                  >
-                    {/* アイテム情報 */}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs text-base-content/50 font-mono">#{related.code}</span>
+          {/* 関連アイテム（ドキュメントモードでは非表示） */}
+          {!isDocumentMode && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-bold">関連アイテム</h3>
+                <button
+                  type="button"
+                  onClick={onStartAddRelation}
+                  className={`btn btn-primary btn-sm gap-1 ${isAddingRelation ? 'btn-primary' : 'btn-outline'}`}
+                  title={isAddingRelation ? '関連アイテム追加を解除' : '関連アイテムを追加'}
+                >
+                  <span className="icon-[mdi--link-plus] w-4 h-4" aria-hidden="true" />
+                  <span>{isAddingRelation ? '解除' : '追加'}</span>
+                </button>
+              </div>
+              {item.relatedItems && item.relatedItems.length > 0 ? (
+                <div className="space-y-2">
+                  {item.relatedItems.map((related) => (
+                    <div
+                      key={related.listIndex}
+                      className={`flex items-center gap-2 p-2 rounded ${related.isArchived ? 'bg-base-300 opacity-60' : 'bg-base-200'}`}
+                    >
+                      {/* アイテム情報 */}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-base-content/50 font-mono">#{related.code}</span>
+                        <button
+                          type="button"
+                          onClick={() => related.id && related.code && onItemSelect(related.id, related.code)}
+                          className={`truncate hover:underline cursor-pointer text-left w-full ${related.isArchived ? 'line-through' : ''}`}
+                          disabled={!related.id || !related.code}
+                        >
+                          {related.subject || '（件名未設定）'}
+                        </button>
+                        {/* アーカイブ状態とオーナー情報 */}
+                        <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
+                          {related.isArchived && <span className="badge badge-xs badge-neutral">アーカイブ</span>}
+                          {related.ownerId && (
+                            <UserAvatar
+                              userName={related.ownerUsername}
+                              identityIconUrl={related.ownerAvatarUrl}
+                              size={16}
+                              nameClassName="truncate"
+                            />
+                          )}
+                        </div>
+                      </div>
+                      {/* 削除ボタン */}
                       <button
                         type="button"
-                        onClick={() => related.id && related.code && onItemSelect(related.id, related.code)}
-                        className={`truncate hover:underline cursor-pointer text-left w-full ${related.isArchived ? 'line-through' : ''}`}
-                        disabled={!related.id || !related.code}
+                        onClick={() => handleOpenDeleteRelationModal(related)}
+                        className="btn btn-secondary btn-xs text-error hover:bg-error/10"
+                        title="関連を削除"
                       >
-                        {related.subject || '（件名未設定）'}
+                        <span className="icon-[mdi--link-off] w-4 h-4" aria-hidden="true" />
                       </button>
-                      {/* アーカイブ状態とオーナー情報 */}
-                      <div className="flex items-center gap-1 mt-1 text-xs text-base-content/70">
-                        {related.isArchived && <span className="badge badge-xs badge-neutral">アーカイブ</span>}
-                        {related.ownerId && (
-                          <UserAvatar
-                            userName={related.ownerUsername}
-                            identityIconUrl={related.ownerAvatarUrl}
-                            size={16}
-                            nameClassName="truncate"
-                          />
-                        )}
-                      </div>
                     </div>
-                    {/* 削除ボタン */}
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDeleteRelationModal(related)}
-                      className="btn btn-secondary btn-xs text-error hover:bg-error/10"
-                      title="関連を削除"
-                    >
-                      <span className="icon-[mdi--link-off] w-4 h-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-base-content/50">関連アイテムはありません</p>
-            )}
-          </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-base-content/50">関連アイテムはありません</p>
+              )}
+            </div>
+          )}
 
-          {/* タスク */}
-          <WorkspaceTasks
-            workspaceId={workspaceId}
-            itemId={itemId}
-            itemOwnerId={item?.ownerId}
-            itemAssigneeId={item?.assigneeId}
-            itemCommitterId={item?.committerId}
-            itemCommitterName={item?.committerUsername}
-            itemCommitterAvatarUrl={item?.committerAvatarUrl}
-            taskTypes={taskTypes}
-            currentUser={
-              currentUserId && members.length > 0
-                ? (() => {
-                    const user = members.find((m) => m.id === currentUserId);
-                    return user
-                      ? {
-                          id: user.id || 0,
-                          username: user.userName || '',
-                          email: user.email || '',
-                          identityIconUrl: user.identityIconUrl || null,
-                        }
-                      : null;
-                  })()
-                : null
-            }
-          />
+          {/* タスク（ドキュメントモードでは非表示） */}
+          {!isDocumentMode && (
+            <WorkspaceTasks
+              workspaceId={workspaceId}
+              itemId={itemId}
+              itemOwnerId={item?.ownerId}
+              itemAssigneeId={item?.assigneeId}
+              itemCommitterId={item?.committerId}
+              itemCommitterName={item?.committerUsername}
+              itemCommitterAvatarUrl={item?.committerAvatarUrl}
+              taskTypes={taskTypes}
+              currentUser={
+                currentUserId && members.length > 0
+                  ? (() => {
+                      const user = members.find((m) => m.id === currentUserId);
+                      return user
+                        ? {
+                            id: user.id || 0,
+                            username: user.userName || '',
+                            email: user.email || '',
+                            identityIconUrl: user.identityIconUrl || null,
+                          }
+                        : null;
+                    })()
+                  : null
+              }
+            />
+          )}
         </div>
 
         {/* 編集モーダル */}

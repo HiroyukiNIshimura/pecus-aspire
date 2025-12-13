@@ -98,7 +98,7 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-base-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          className="bg-base-100 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}
@@ -225,6 +225,29 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
                       <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
                     </div>
                   )}
+                </div>
+
+                {/* モード（表示のみ） */}
+                <div className="form-control">
+                  <div className="label">
+                    <span className="label-text font-semibold">モード</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-base-200 rounded-lg">
+                    {workspaceDetail.mode === 'Document' ? (
+                      <>
+                        <span className="icon-[mdi--file-document-outline] w-5 h-5" aria-hidden="true" />
+                        <span>ドキュメント</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="icon-[mdi--clipboard-list-outline] w-5 h-5" aria-hidden="true" />
+                        <span>通常</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="label">
+                    <span className="label-text-alt text-base-content/70">モードは作成後に変更できません。</span>
+                  </div>
                 </div>
 
                 {/* ボタングループ */}

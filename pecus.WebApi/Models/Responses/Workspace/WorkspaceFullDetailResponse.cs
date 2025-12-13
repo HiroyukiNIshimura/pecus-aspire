@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Workspace;
 
@@ -80,6 +81,12 @@ public class WorkspaceFullDetailResponse : IConflictModel
     /// アクティブフラグ
     /// </summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// ワークスペースモード
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? Mode { get; set; }
 
     /// <summary>
     /// ログインユーザーのこのワークスペースに対するロール

@@ -1,3 +1,4 @@
+using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.Workspace;
@@ -17,6 +18,11 @@ public class CreateWorkspaceRequest
     [Required(ErrorMessage = "ジャンルは必須です。")]
     [Range(1, int.MaxValue, ErrorMessage = "有効なジャンルIDを指定してください。")]
     public required int GenreId { get; set; }
+
+    /// <summary>
+    /// ワークスペースモード
+    /// </summary>
+    public WorkspaceMode? Mode { get; set; }
 
     /// <summary>
     /// オーナーユーザーID（任意）

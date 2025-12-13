@@ -157,6 +157,7 @@ export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelat
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
 export type { WorkspaceListItemResponse } from './models/WorkspaceListItemResponse';
 export type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from './models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
+export type { WorkspaceMode } from './models/WorkspaceMode';
 export type { WorkspaceRole } from './models/WorkspaceRole';
 export type { WorkspaceSkillResponse } from './models/WorkspaceSkillResponse';
 export type { WorkspaceStatistics } from './models/WorkspaceStatistics';

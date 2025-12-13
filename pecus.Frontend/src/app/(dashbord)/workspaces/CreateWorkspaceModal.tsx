@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createWorkspace } from '@/actions/workspace';
 import GenreSelect from '@/components/workspaces/GenreSelect';
-import type { MasterGenreResponse } from '@/connectors/api/pecus';
+import type { MasterGenreResponse, WorkspaceMode } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { createWorkspaceSchema } from '@/schemas/workspaceSchemas';
 
@@ -16,6 +16,7 @@ interface CreateWorkspaceModalProps {
 
 export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genres }: CreateWorkspaceModalProps) {
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
+  const [selectedMode, setSelectedMode] = useState<WorkspaceMode>('Normal');
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
@@ -27,6 +28,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
         const requestData = {
           ...data,
           genreId: typeof data.genreId === 'string' ? parseInt(data.genreId, 10) : data.genreId,
+          mode: selectedMode,
         };
 
         const result = await createWorkspace(requestData);
@@ -46,6 +48,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
   useEffect(() => {
     if (!isOpen) {
       setServerErrors([]);
+      setSelectedMode('Normal');
       resetForm();
     }
   }, [isOpen, resetForm]);
@@ -60,7 +63,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
       {/* モーダルコンテンツ */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-base-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          className="bg-base-100 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* モーダルヘッダー */}
@@ -177,6 +180,56 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                     <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
                   </div>
                 )}
+              </div>
+
+              {/* モード選択 */}
+              <div className="form-control">
+                <div className="label">
+                  <span className="label-text font-semibold">モード</span>
+                </div>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mode"
+                      className="radio radio-primary"
+                      checked={selectedMode === 'Normal'}
+                      onChange={() => setSelectedMode('Normal')}
+                      disabled={isSubmitting}
+                    />
+                    <span className="flex items-center gap-1">
+                      <span className="icon-[mdi--clipboard-list-outline] w-5 h-5" aria-hidden="true" />
+                      通常
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="mode"
+                      className="radio radio-primary"
+                      checked={selectedMode === 'Document'}
+                      onChange={() => setSelectedMode('Document')}
+                      disabled={isSubmitting}
+                    />
+                    <span className="flex items-center gap-1">
+                      <span className="icon-[mdi--file-document-outline] w-5 h-5" aria-hidden="true" />
+                      ドキュメント
+                    </span>
+                  </label>
+                </div>
+                <div className="label pb-0">
+                  <span className="label-text-alt text-base-content/70">
+                    {selectedMode === 'Normal'
+                      ? 'タスク管理や関連アイテムなどすべての機能が利用できます。'
+                      : 'ドキュメント中心のシンプルなモードです。タスクや関連アイテムは非表示になります。'}
+                  </span>
+                </div>
+                <div className="label pt-0">
+                  <span className="label-text-alt text-warning flex items-center gap-1">
+                    <span className="icon-[mdi--alert-outline] w-4 h-4" aria-hidden="true" />
+                    モードは作成後に変更できません。
+                  </span>
+                </div>
               </div>
 
               {/* ボタングループ */}

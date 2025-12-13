@@ -20,8 +20,6 @@ import { getLandingPageUrl } from '@/utils/landingPage';
  * - エラー表示・成功時の処理
  */
 export default function LoginFormClient() {
-  const router = useRouter();
-
   // === デバイス情報管理 (Jotai) ===
   const [deviceInfo, setDeviceInfo] = useAtom(deviceInfoAtom);
 

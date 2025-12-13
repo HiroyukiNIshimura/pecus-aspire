@@ -924,6 +924,7 @@ export default function WorkspaceDetailClient({
               taskTypes={taskTypes}
               onStartAddRelation={handleStartAddRelation}
               isAddingRelation={isAddingRelation}
+              workspaceMode={currentWorkspaceDetail.mode}
             />
           )}
         </main>

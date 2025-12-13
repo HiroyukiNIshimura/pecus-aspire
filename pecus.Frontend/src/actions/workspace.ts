@@ -12,6 +12,7 @@ import type {
   WorkspaceDetailResponse,
   WorkspaceFullDetailResponse,
   WorkspaceListItemResponse,
+  WorkspaceMode,
   WorkspaceRole,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
@@ -41,6 +42,7 @@ export async function createWorkspace(request: {
   code?: string;
   description?: string;
   genreId: number;
+  mode?: WorkspaceMode;
 }): Promise<ApiResponse<WorkspaceFullDetailResponse>> {
   try {
     const api = createPecusApiClients();

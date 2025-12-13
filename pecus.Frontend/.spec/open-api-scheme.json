@@ -8957,6 +8957,9 @@
             "type": "integer",
             "format": "int32"
           },
+          "mode": {
+            "$ref": "#/components/schemas/WorkspaceMode"
+          },
           "ownerId": {
             "maximum": 2147483647,
             "minimum": 1,
@@ -13600,6 +13603,9 @@
             "type": "boolean",
             "description": "アクティブフラグ"
           },
+          "mode": {
+            "$ref": "#/components/schemas/WorkspaceMode"
+          },
           "currentUserRole": {
             "$ref": "#/components/schemas/WorkspaceRole"
           },
@@ -14168,6 +14174,14 @@
         },
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
+      "WorkspaceMode": {
+        "enum": [
+          "Unknown",
+          "Normal",
+          "Document"
+        ],
+        "type": "string"
       },
       "WorkspaceRole": {
         "enum": [
