@@ -425,6 +425,10 @@ await _context.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{tableName}\" ...");
 3. **EFCore.BulkExtensions**: サードパーティライブラリで開発効率向上
 4. **パーティショニング**: 超大規模データ向けにテーブルパーティション活用
 
+## データ移行時の参考ノウハウ
+
+この資料はシステムのバックアップ、リカバリ、データ移行などにとっても重要な資料となりノウハウとなります。
+
 ## 参考リソース
 
 - [EF Core Performance Best Practices](https://learn.microsoft.com/en-us/ef/core/performance/)

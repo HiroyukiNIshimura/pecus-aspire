@@ -12,6 +12,10 @@ namespace Pecus.Libs.DB.Seed;
 
 /// <summary>
 /// データベースのシードデータを管理するクラス
+/// 重要！
+/// このファイルを編集する前に、必ず docs/DatabaseSeedData.md を確認してください。
+/// 作業が済んだら、同ドキュメントも更新し、作業履歴を作成してください。
+///
 /// </summary>
 public class DatabaseSeeder
 {
