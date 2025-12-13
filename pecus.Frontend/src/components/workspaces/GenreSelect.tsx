@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import Select, { type SingleValue, type StylesConfig, components, type OptionProps } from 'react-select';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
+
+/** react-select 用のオプション型 */
+interface GenreOption {
+  value: number;
+  label: string;
+  icon: string | null;
+}
 
 export interface GenreSelectProps {
   id?: string;
@@ -17,11 +25,30 @@ export interface GenreSelectProps {
   onChange?: (value: number | null) => void;
 }
 
+/** オプションラベルのカスタムレンダリング（アイコン付き） */
+const formatOptionLabel = (option: GenreOption) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    {option.icon && (
+      <img src={`/icons/genres/${option.icon}.svg`} alt="" style={{ width: '20px', height: '20px' }} />
+    )}
+    <span>{option.label}</span>
+  </div>
+);
+
+/** カスタム Option コンポーネント */
+const CustomOption = (props: OptionProps<GenreOption, false>) => (
+  <components.Option {...props}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {props.data.icon && (
+        <img src={`/icons/genres/${props.data.icon}.svg`} alt="" style={{ width: '20px', height: '20px' }} />
+      )}
+      <span>{props.data.label}</span>
+    </div>
+  </components.Option>
+);
+
 /**
- * ジャンル選択セレクト（アイコン表示対応）
- * - option 内に SVG を表示
- * - 選択済み表示にも背景アイコンを表示
- * - value を指定すると制御コンポーネントとして動作
+ * ジャンル選択セレクト（react-select ベース・アイコン表示対応）
  */
 export default function GenreSelect({
   id = 'genreId',
@@ -34,79 +61,139 @@ export default function GenreSelect({
   className,
   onChange,
 }: GenreSelectProps) {
-  // value が指定されている場合は制御コンポーネントとして動作
   const isControlled = value !== undefined;
-  const currentValue = isControlled ? value : undefined;
 
-  const [selectedGenreIcon, setSelectedGenreIcon] = useState<string | null>(null);
+  const options: GenreOption[] = useMemo(
+    () => genres.map((g) => ({ value: g.id, label: g.name, icon: g.icon ?? null })),
+    [genres],
+  );
 
-  // 制御コンポーネントの場合は value から、非制御の場合は defaultValue からアイコンを取得
-  const iconValue = isControlled ? value : typeof defaultValue === 'number' ? defaultValue : null;
+  const selectedOption = useMemo(() => {
+    if (isControlled) {
+      return options.find((o) => o.value === value) ?? null;
+    }
+    return null;
+  }, [options, value, isControlled]);
 
-  const currentIcon = useMemo(() => {
-    return iconValue ? (genres.find((g) => g.id === iconValue)?.icon ?? null) : null;
-  }, [iconValue, genres]);
+  const defaultOption = useMemo(() => {
+    if (!isControlled && typeof defaultValue === 'number') {
+      return options.find((o) => o.value === defaultValue) ?? null;
+    }
+    return null;
+  }, [options, defaultValue, isControlled]);
 
-  useEffect(() => {
-    setSelectedGenreIcon(currentIcon);
-  }, [currentIcon]);
+  // スタイル定義（portal内でも動作するようインラインスタイルで完全制御）
+  // FlyonUI の CSS 変数を使用: var(--color-base-100), var(--color-base-content) 等
+  const customStyles: StylesConfig<GenreOption, false> = useMemo(
+    () => ({
+      control: (base, state) => ({
+        ...base,
+        minWidth: '220px',
+        minHeight: '38px',
+        borderRadius: '8px',
+        borderColor: error
+          ? 'var(--color-error)'
+          : state.isFocused
+            ? 'var(--color-primary)'
+            : 'color-mix(in oklch, var(--color-base-content) 30%, transparent)',
+        backgroundColor: 'var(--color-base-100)',
+        boxShadow: state.isFocused ? '0 0 0 1px var(--color-primary)' : 'none',
+        '&:hover': {
+          borderColor: state.isFocused
+            ? 'var(--color-primary)'
+            : 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        backgroundColor: 'var(--color-base-200)',
+        borderRadius: '8px',
+        border: '1px solid color-mix(in oklch, var(--color-base-content) 20%, transparent)',
+        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        zIndex: 9999,
+        overflow: 'hidden',
+      }),
+      menuList: (base) => ({
+        ...base,
+        padding: 0,
+        backgroundColor: 'var(--color-base-200)',
+      }),
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 9999,
+        color: 'var(--color-base-content)',
+      }),
+      option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused
+          ? 'color-mix(in oklch, var(--color-base-200) 85%, var(--color-base-content) 15%)'
+          : 'var(--color-base-200)',
+        color: 'inherit',
+        padding: '10px 12px',
+        cursor: 'pointer',
+        '&:active': {
+          backgroundColor: 'color-mix(in oklch, var(--color-base-200) 75%, var(--color-base-content) 25%)',
+        },
+      }),
+      singleValue: (base) => ({
+        ...base,
+        color: 'var(--color-base-content)',
+      }),
+      placeholder: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+      }),
+      input: (base) => ({
+        ...base,
+        color: 'var(--color-base-content)',
+      }),
+      indicatorSeparator: () => ({
+        display: 'none',
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        '&:hover': {
+          color: 'var(--color-base-content)',
+        },
+      }),
+      clearIndicator: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        '&:hover': {
+          color: 'var(--color-base-content)',
+        },
+      }),
+    }),
+    [error],
+  );
+
+  const filteredClassName = className
+    ?.split(' ')
+    .filter((c) => !c.startsWith('select'))
+    .join(' ');
 
   return (
-    <>
-      <style jsx>{`
-        .genre-select {
-          min-width: 220px;
-          height: 38px;
-          border-color: #a4a4a4;
-          border-radius: 8px;
-          align-items: center;
-          padding: 8px;
-        }
-        .genre-select :global(option) {
-          padding: 8px;
-          background-color: var(--color-base-200);
-        }
-        .genre-select :global(option:hover) {
-          background-color: var(--color-base-100);
-        }
-        .genre-select :global(option img) {
-          width: 20px;
-          height: 20px;
-          margin-right: 8px;
-          vertical-align: middle;
-        }
-      `}</style>
-
-      <select
-        id={id}
-        name={name}
-        value={isControlled ? (currentValue ?? '') : undefined}
-        defaultValue={isControlled ? undefined : (defaultValue ?? '')}
-        className={`select select-bordered genre-select ${error ? 'select-error' : ''} ${className ?? ''}`}
-        disabled={disabled || genres.length === 0}
-        onChange={(e) => {
-          const val = e.target.value;
-          const gid = val ? parseInt(val, 10) : null;
-          const icon = gid ? (genres.find((g) => g.id === gid)?.icon ?? null) : null;
-          setSelectedGenreIcon(icon);
-          onChange?.(gid);
-        }}
-        style={{
-          backgroundImage: selectedGenreIcon ? `url(/icons/genres/${selectedGenreIcon}.svg)` : 'none',
-          backgroundPosition: '12px center',
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '20px 20px',
-          paddingLeft: selectedGenreIcon ? '40px' : undefined,
-        }}
-      >
-        <option value="">選択してください</option>
-        {genres.map((genre) => (
-          <option key={genre.id} value={genre.id}>
-            <img src={`/icons/genres/${genre.icon}.svg`} alt="" className="w-4 h-4 inline-block mr-2" />
-            {genre.name}
-          </option>
-        ))}
-      </select>
-    </>
+    <Select<GenreOption, false>
+      inputId={id}
+      name={name}
+      options={options}
+      value={isControlled ? selectedOption : undefined}
+      defaultValue={defaultOption}
+      isDisabled={disabled || genres.length === 0}
+      className={filteredClassName}
+      styles={customStyles}
+      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+      menuPosition="fixed"
+      menuPlacement="auto"
+      formatOptionLabel={formatOptionLabel}
+      components={{ Option: CustomOption }}
+      placeholder="選択してください"
+      isClearable
+      isSearchable={false}
+      onChange={(selected: SingleValue<GenreOption>) => {
+        onChange?.(selected?.value ?? null);
+      }}
+    />
   );
 }

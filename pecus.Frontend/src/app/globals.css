@@ -90,3 +90,7 @@ https://daypicker.dev/docs/styling#css-variables */
   }
 }
 
+/* react-select の portal 用スタイル（body 直下にレンダリングされるため明示的に色を継承） */
+[class*="menuPortal"] {
+  color: var(--color-base-content);
+}

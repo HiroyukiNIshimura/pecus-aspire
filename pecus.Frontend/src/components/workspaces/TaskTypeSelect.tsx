@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import Select, { type SingleValue, type StylesConfig, components, type OptionProps } from 'react-select';
 
 /** タスク種類の選択肢 */
 export interface TaskTypeOption {
@@ -8,6 +9,13 @@ export interface TaskTypeOption {
   code: string;
   name: string;
   icon?: string | null;
+}
+
+/** react-select 用のオプション型 */
+interface SelectOption {
+  value: number;
+  label: string;
+  icon: string | null;
 }
 
 export interface TaskTypeSelectProps {
@@ -35,11 +43,30 @@ function getTaskTypeIconPath(icon: string | null | undefined): string | null {
   return `/icons/task/${iconName}.svg`;
 }
 
+/** オプションラベルのカスタムレンダリング（アイコン付き） */
+const formatOptionLabel = (option: SelectOption) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    {option.icon && (
+      <img src={option.icon} alt="" style={{ width: '20px', height: '20px' }} />
+    )}
+    <span>{option.label}</span>
+  </div>
+);
+
+/** カスタム Option コンポーネント */
+const CustomOption = (props: OptionProps<SelectOption, false>) => (
+  <components.Option {...props}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {props.data.icon && (
+        <img src={props.data.icon} alt="" style={{ width: '20px', height: '20px' }} />
+      )}
+      <span>{props.data.label}</span>
+    </div>
+  </components.Option>
+);
+
 /**
- * タスク種類選択セレクト（アイコン表示対応）
- * - option 内に SVG を表示
- * - 選択済み表示にも背景アイコンを表示
- * - value を指定すると制御コンポーネントとして動作
+ * タスク種類選択セレクト（react-select ベース・アイコン表示対応）
  */
 export default function TaskTypeSelect({
   id = 'taskTypeId',
@@ -52,88 +79,144 @@ export default function TaskTypeSelect({
   className,
   onChange,
 }: TaskTypeSelectProps) {
-  // value が指定されている場合は制御コンポーネントとして動作
   const isControlled = value !== undefined;
-  const currentValue = isControlled ? value : undefined;
 
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+  const options: SelectOption[] = useMemo(
+    () =>
+      taskTypes.map((t) => ({
+        value: t.id,
+        label: t.name,
+        icon: getTaskTypeIconPath(t.icon),
+      })),
+    [taskTypes],
+  );
 
-  // 選択されているタスク種類を取得
-  const selectedTaskType = useMemo(() => {
-    const targetId = isControlled ? value : defaultValue;
-    if (targetId === null || targetId === undefined || targetId === '') return null;
-    const numericId = typeof targetId === 'string' ? Number.parseInt(targetId, 10) : targetId;
-    if (Number.isNaN(numericId)) return null;
-    return taskTypes.find((t) => t.id === numericId) ?? null;
-  }, [isControlled, value, defaultValue, taskTypes]);
+  const selectedOption = useMemo(() => {
+    if (isControlled) {
+      return options.find((o) => o.value === value) ?? null;
+    }
+    return null;
+  }, [options, value, isControlled]);
 
-  const currentIcon = useMemo(() => {
-    return selectedTaskType ? getTaskTypeIconPath(selectedTaskType.icon) : null;
-  }, [selectedTaskType]);
+  const defaultOption = useMemo(() => {
+    if (!isControlled && typeof defaultValue === 'number') {
+      return options.find((o) => o.value === defaultValue) ?? null;
+    }
+    return null;
+  }, [options, defaultValue, isControlled]);
 
-  useEffect(() => {
-    setSelectedIcon(currentIcon);
-  }, [currentIcon]);
+  // スタイル定義（portal内でも動作するようインラインスタイルで完全制御）
+  // FlyonUI の CSS 変数を使用: var(--color-base-100), var(--color-base-content) 等
+  const customStyles: StylesConfig<SelectOption, false> = useMemo(
+    () => ({
+      control: (base, state) => ({
+        ...base,
+        minWidth: '180px',
+        minHeight: '38px',
+        borderRadius: '8px',
+        borderColor: error
+          ? 'var(--color-error)'
+          : state.isFocused
+            ? 'var(--color-primary)'
+            : 'color-mix(in oklch, var(--color-base-content) 30%, transparent)',
+        backgroundColor: 'var(--color-base-100)',
+        boxShadow: state.isFocused ? '0 0 0 1px var(--color-primary)' : 'none',
+        '&:hover': {
+          borderColor: state.isFocused
+            ? 'var(--color-primary)'
+            : 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        backgroundColor: 'var(--color-base-200)',
+        borderRadius: '8px',
+        border: '1px solid color-mix(in oklch, var(--color-base-content) 20%, transparent)',
+        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        zIndex: 9999,
+        overflow: 'hidden',
+      }),
+      menuList: (base) => ({
+        ...base,
+        padding: 0,
+        backgroundColor: 'var(--color-base-200)',
+      }),
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 9999,
+        color: 'var(--color-base-content)',
+      }),
+      option: (base, state) => ({
+        ...base,
+        backgroundColor: state.isFocused
+          ? 'color-mix(in oklch, var(--color-base-200) 85%, var(--color-base-content) 15%)'
+          : 'var(--color-base-200)',
+        color: 'inherit',
+        padding: '10px 12px',
+        cursor: 'pointer',
+        '&:active': {
+          backgroundColor: 'color-mix(in oklch, var(--color-base-200) 75%, var(--color-base-content) 25%)',
+        },
+      }),
+      singleValue: (base) => ({
+        ...base,
+        color: 'var(--color-base-content)',
+      }),
+      placeholder: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+      }),
+      input: (base) => ({
+        ...base,
+        color: 'var(--color-base-content)',
+      }),
+      indicatorSeparator: () => ({
+        display: 'none',
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        '&:hover': {
+          color: 'var(--color-base-content)',
+        },
+      }),
+      clearIndicator: (base) => ({
+        ...base,
+        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        '&:hover': {
+          color: 'var(--color-base-content)',
+        },
+      }),
+    }),
+    [error],
+  );
+
+  const filteredClassName = className
+    ?.split(' ')
+    .filter((c) => !c.startsWith('select'))
+    .join(' ');
 
   return (
-    <>
-      <style jsx>{`
-        .task-type-select {
-          min-width: 180px;
-          height: 38px;
-          border-color: #a4a4a4;
-          border-radius: 8px;
-          align-items: center;
-          padding: 8px;
-        }
-        .task-type-select :global(option) {
-          padding: 8px;
-          background-color: var(--color-base-200);
-        }
-        .task-type-select :global(option:hover) {
-          background-color: var(--color-base-100);
-        }
-        .task-type-select :global(option img) {
-          width: 20px;
-          height: 20px;
-          margin-right: 8px;
-          vertical-align: middle;
-        }
-      `}</style>
-
-      <select
-        id={id}
-        name={name}
-        value={isControlled ? (currentValue ?? '') : undefined}
-        defaultValue={isControlled ? undefined : (defaultValue ?? '')}
-        className={`select select-bordered task-type-select ${error ? 'select-error' : ''} ${className ?? ''}`}
-        disabled={disabled}
-        onChange={(e) => {
-          const val = e.target.value;
-          const taskTypeId = val ? Number.parseInt(val, 10) : null;
-          const taskType = taskTypeId ? taskTypes.find((t) => t.id === taskTypeId) : null;
-          const icon = taskType ? getTaskTypeIconPath(taskType.icon) : null;
-          setSelectedIcon(icon);
-          onChange?.(taskTypeId);
-        }}
-        style={{
-          backgroundImage: selectedIcon ? `url(${selectedIcon})` : 'none',
-          backgroundPosition: '12px center',
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '20px 20px',
-          paddingLeft: selectedIcon ? '40px' : undefined,
-        }}
-      >
-        <option value="">選択してください</option>
-        {taskTypes.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.icon && (
-              <img src={getTaskTypeIconPath(option.icon) || ''} alt="" className="w-4 h-4 inline-block mr-2" />
-            )}
-            {option.name}
-          </option>
-        ))}
-      </select>
-    </>
+    <Select<SelectOption, false>
+      inputId={id}
+      name={name}
+      options={options}
+      value={isControlled ? selectedOption : undefined}
+      defaultValue={defaultOption}
+      isDisabled={disabled}
+      className={filteredClassName}
+      styles={customStyles}
+      menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+      menuPosition="fixed"
+      menuPlacement="auto"
+      formatOptionLabel={formatOptionLabel}
+      components={{ Option: CustomOption }}
+      placeholder="選択してください"
+      isClearable
+      isSearchable={false}
+      onChange={(selected: SingleValue<SelectOption>) => {
+        onChange?.(selected?.value ?? null);
+      }}
+    />
   );
 }
