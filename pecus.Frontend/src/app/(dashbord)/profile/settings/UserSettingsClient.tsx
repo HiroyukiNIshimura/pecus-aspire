@@ -113,9 +113,7 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                       </option>
                     ))}
                   </select>
-                  <p className="text-sm text-base-content/70 mt-1">
-                    ログイン後に最初に表示されるページを選択できます
-                  </p>
+                  <p className="text-sm text-base-content/70 mt-1">ログイン後に最初に表示されるページを選択できます</p>
                 </div>
 
                 {/* 必要に応じて他の設定項目を追加 */}
