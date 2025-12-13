@@ -1205,7 +1205,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("FromItemId", "ToItemId", "RelationType")
                         .IsUnique();
 
-                    b.ToTable("workspace_item_relations", t =>
+                    b.ToTable("WorkspaceItemRelations", t =>
                         {
                             t.HasCheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
                         });

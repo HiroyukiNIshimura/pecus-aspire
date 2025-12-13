@@ -7,7 +7,6 @@ namespace Pecus.Libs.DB.Models;
 /// <summary>
 /// ワークスペースアイテム間の関連を表すエンティティ
 /// </summary>
-[Table("workspace_item_relations")]
 public class WorkspaceItemRelation
 {
     /// <summary>

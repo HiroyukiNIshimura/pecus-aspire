@@ -12,8 +12,8 @@ using Pecus.Libs.DB;
 namespace pecus.DbManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251212090337_AddPredecessorTaskToWorkspaceTask")]
-    partial class AddPredecessorTaskToWorkspaceTask
+    [Migration("20251213105134_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -845,6 +845,9 @@ namespace pecus.DbManager.Migrations
                     b.Property<bool>("CanReceiveRealtimeNotification")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("LandingPage")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Language")
                         .IsRequired()
                         .HasColumnType("text");
@@ -932,6 +935,11 @@ namespace pecus.DbManager.Migrations
                     b.Property<string>("ItemNumberSequenceName")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Mode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1200,7 +1208,7 @@ namespace pecus.DbManager.Migrations
                     b.HasIndex("FromItemId", "ToItemId", "RelationType")
                         .IsUnique();
 
-                    b.ToTable("workspace_item_relations", t =>
+                    b.ToTable("WorkspaceItemRelations", t =>
                         {
                             t.HasCheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
                         });
@@ -1367,11 +1375,17 @@ namespace pecus.DbManager.Migrations
 
                     b.HasIndex("AssignedUserId", "IsCompleted");
 
+                    b.HasIndex("OrganizationId", "CompletedAt");
+
+                    b.HasIndex("OrganizationId", "CreatedAt");
+
                     b.HasIndex("OrganizationId", "IsCompleted");
 
                     b.HasIndex("WorkspaceId", "IsCompleted");
 
                     b.HasIndex("WorkspaceItemId", "IsCompleted");
+
+                    b.HasIndex("OrganizationId", "IsCompleted", "IsDiscarded");
 
                     b.ToTable("WorkspaceTasks", t =>
                         {

@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using System;
 
 #nullable disable
 
 namespace pecus.DbManager.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialWithActivity : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -135,6 +135,8 @@ namespace pecus.DbManager.Migrations
                     GenerativeApiKey = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     Plan = table.Column<int>(type: "integer", nullable: false),
                     HelpNotificationTarget = table.Column<int>(type: "integer", nullable: true),
+                    RequireEstimateOnTaskCreation = table.Column<bool>(type: "boolean", nullable: false),
+                    EnforcePredecessorCompletion = table.Column<bool>(type: "boolean", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -377,6 +379,7 @@ namespace pecus.DbManager.Migrations
                     CanReceiveRealtimeNotification = table.Column<bool>(type: "boolean", nullable: false),
                     TimeZone = table.Column<string>(type: "text", nullable: false),
                     Language = table.Column<string>(type: "text", nullable: false),
+                    LandingPage = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -404,6 +407,7 @@ namespace pecus.DbManager.Migrations
                     OrganizationId = table.Column<int>(type: "integer", nullable: false),
                     OwnerId = table.Column<int>(type: "integer", nullable: true),
                     GenreId = table.Column<int>(type: "integer", nullable: true),
+                    Mode = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedByUserId = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -654,43 +658,6 @@ namespace pecus.DbManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "workspace_item_relations",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    from_item_id = table.Column<int>(type: "integer", nullable: false),
-                    to_item_id = table.Column<int>(type: "integer", nullable: false),
-                    relation_type = table.Column<int>(type: "integer", maxLength: 50, nullable: true),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    created_by_user_id = table.Column<int>(type: "integer", nullable: false),
-                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_workspace_item_relations", x => x.id);
-                    table.CheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
-                    table.ForeignKey(
-                        name: "FK_workspace_item_relations_Users_created_by_user_id",
-                        column: x => x.created_by_user_id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_workspace_item_relations_WorkspaceItems_from_item_id",
-                        column: x => x.from_item_id,
-                        principalTable: "WorkspaceItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_workspace_item_relations_WorkspaceItems_to_item_id",
-                        column: x => x.to_item_id,
-                        principalTable: "WorkspaceItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "WorkspaceItemAttachments",
                 columns: table => new
                 {
@@ -745,6 +712,43 @@ namespace pecus.DbManager.Migrations
                     table.ForeignKey(
                         name: "FK_WorkspaceItemPins_WorkspaceItems_WorkspaceItemId",
                         column: x => x.WorkspaceItemId,
+                        principalTable: "WorkspaceItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkspaceItemRelations",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    from_item_id = table.Column<int>(type: "integer", nullable: false),
+                    to_item_id = table.Column<int>(type: "integer", nullable: false),
+                    relation_type = table.Column<int>(type: "integer", maxLength: 50, nullable: true),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    created_by_user_id = table.Column<int>(type: "integer", nullable: false),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkspaceItemRelations", x => x.id);
+                    table.CheckConstraint("CK_WorkspaceItemRelation_DifferentItems", "from_item_id != to_item_id");
+                    table.ForeignKey(
+                        name: "FK_WorkspaceItemRelations_Users_created_by_user_id",
+                        column: x => x.created_by_user_id,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceItemRelations_WorkspaceItems_from_item_id",
+                        column: x => x.from_item_id,
+                        principalTable: "WorkspaceItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceItemRelations_WorkspaceItems_to_item_id",
+                        column: x => x.to_item_id,
                         principalTable: "WorkspaceItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -806,6 +810,7 @@ namespace pecus.DbManager.Migrations
                     IsDiscarded = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DiscardedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     DiscardReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    PredecessorTaskId = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
@@ -813,6 +818,7 @@ namespace pecus.DbManager.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WorkspaceTasks", x => x.Id);
+                    table.CheckConstraint("CK_WorkspaceTask_NoSelfReference", "\"PredecessorTaskId\" IS NULL OR \"PredecessorTaskId\" != \"Id\"");
                     table.ForeignKey(
                         name: "FK_WorkspaceTasks_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
@@ -843,6 +849,12 @@ namespace pecus.DbManager.Migrations
                         principalTable: "WorkspaceItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WorkspaceTasks_WorkspaceTasks_PredecessorTaskId",
+                        column: x => x.PredecessorTaskId,
+                        principalTable: "WorkspaceTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_WorkspaceTasks_Workspaces_WorkspaceId",
                         column: x => x.WorkspaceId,
@@ -1149,32 +1161,6 @@ namespace pecus.DbManager.Migrations
                 column: "SkillId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_workspace_item_relations_created_by_user_id",
-                table: "workspace_item_relations",
-                column: "created_by_user_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_workspace_item_relations_from_item_id",
-                table: "workspace_item_relations",
-                column: "from_item_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_workspace_item_relations_from_item_id_to_item_id_relation_t~",
-                table: "workspace_item_relations",
-                columns: new[] { "from_item_id", "to_item_id", "relation_type" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_workspace_item_relations_relation_type",
-                table: "workspace_item_relations",
-                column: "relation_type");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_workspace_item_relations_to_item_id",
-                table: "workspace_item_relations",
-                column: "to_item_id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceItemAttachments_UploadedAt",
                 table: "WorkspaceItemAttachments",
                 column: "UploadedAt");
@@ -1198,6 +1184,32 @@ namespace pecus.DbManager.Migrations
                 name: "IX_WorkspaceItemPins_UserId",
                 table: "WorkspaceItemPins",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItemRelations_created_by_user_id",
+                table: "WorkspaceItemRelations",
+                column: "created_by_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItemRelations_from_item_id",
+                table: "WorkspaceItemRelations",
+                column: "from_item_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItemRelations_from_item_id_to_item_id_relation_type",
+                table: "WorkspaceItemRelations",
+                columns: new[] { "from_item_id", "to_item_id", "relation_type" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItemRelations_relation_type",
+                table: "WorkspaceItemRelations",
+                column: "relation_type");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceItemRelations_to_item_id",
+                table: "WorkspaceItemRelations",
+                column: "to_item_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceItems_AssigneeId",
@@ -1327,9 +1339,29 @@ namespace pecus.DbManager.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceTasks_OrganizationId_CompletedAt",
+                table: "WorkspaceTasks",
+                columns: new[] { "OrganizationId", "CompletedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceTasks_OrganizationId_CreatedAt",
+                table: "WorkspaceTasks",
+                columns: new[] { "OrganizationId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceTasks_OrganizationId_IsCompleted",
                 table: "WorkspaceTasks",
                 columns: new[] { "OrganizationId", "IsCompleted" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceTasks_OrganizationId_IsCompleted_IsDiscarded",
+                table: "WorkspaceTasks",
+                columns: new[] { "OrganizationId", "IsCompleted", "IsDiscarded" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkspaceTasks_PredecessorTaskId",
+                table: "WorkspaceTasks",
+                column: "PredecessorTaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkspaceTasks_Priority",
@@ -1403,13 +1435,13 @@ namespace pecus.DbManager.Migrations
                 name: "UserSkills");
 
             migrationBuilder.DropTable(
-                name: "workspace_item_relations");
-
-            migrationBuilder.DropTable(
                 name: "WorkspaceItemAttachments");
 
             migrationBuilder.DropTable(
                 name: "WorkspaceItemPins");
+
+            migrationBuilder.DropTable(
+                name: "WorkspaceItemRelations");
 
             migrationBuilder.DropTable(
                 name: "WorkspaceItemTags");

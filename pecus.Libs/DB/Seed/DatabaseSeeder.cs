@@ -43,26 +43,129 @@ public class DatabaseSeeder
             isDevelopment ? "Development" : "Production"
         );
 
-        // 本番・開発共通のマスターデータ
-        await SeedPermissionsAsync();
-        await SeedRolesAsync();
-        await SeedGenresAsync();
-        await SeedTaskTypesAsync();
-        await SeedUserSettingsAsync();
-
-        // 組織が既に存在する場合でも設定が欠けていれば補完する
-        await SeedOrganizationSettingsAsync();
-
-        // 開発環境のみモックデータを投入
+        // 開発環境の場合、制約とインデックスを一時的に無効化して高速化
         if (isDevelopment)
         {
-            await SeedDevelopmentDataAsync();
+            await DisableConstraintsAndIndexesAsync();
+        }
+
+        try
+        {
+            // 本番・開発共通のマスターデータ
+            await SeedPermissionsAsync();
+            await SeedRolesAsync();
+            await SeedGenresAsync();
+            await SeedTaskTypesAsync();
+            await SeedUserSettingsAsync();
+
+            // 組織が既に存在する場合でも設定が欠けていれば補完する
+            await SeedOrganizationSettingsAsync();
+
+            // 開発環境のみモックデータを投入
+            if (isDevelopment)
+            {
+                await SeedDevelopmentDataAsync();
+            }
+        }
+        finally
+        {
+            // 制約とインデックスを再有効化
+            if (isDevelopment)
+            {
+                await EnableConstraintsAndIndexesAsync();
+            }
         }
 
         // pgroonga インデックスを再構築（シードデータ投入後に必須）
         await ReindexPgroongaAsync();
 
         _logger.LogInformation("Database seeding completed successfully");
+    }
+
+    /// <summary>
+    /// 制約とインデックスを一時的に無効化（大量データ投入の高速化）
+    /// </summary>
+    private async Task DisableConstraintsAndIndexesAsync()
+    {
+        _logger.LogInformation("Disabling constraints and indexes for bulk insert...");
+
+        try
+        {
+            // 存在するテーブルのみトリガー無効化（存在チェック付き）
+            // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
+            var tableNames = new[]
+            {
+                "Users", "WorkspaceItems", "WorkspaceTasks", "TaskComments", "Activities",
+                "Workspaces", "WorkspaceUsers", "Skills", "Tags", "UserSkills",
+                "WorkspaceSkills", "WorkspaceItemRelations"
+            };
+
+            foreach (var tableName in tableNames)
+            {
+                // テーブルが存在するかチェック
+#pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
+                await _context.Database.ExecuteSqlRawAsync(
+                    $@"DO $$
+                       BEGIN
+                           IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
+                               EXECUTE 'ALTER TABLE ""{tableName}"" DISABLE TRIGGER ALL';
+                           END IF;
+                       END $$;"
+                );
+#pragma warning restore EF1002
+            }
+
+            _logger.LogInformation("Constraints and triggers disabled successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to disable some constraints/triggers");
+        }
+    }
+
+    /// <summary>
+    /// 制約とインデックスを再有効化
+    /// </summary>
+    private async Task EnableConstraintsAndIndexesAsync()
+    {
+        _logger.LogInformation("Re-enabling constraints and indexes...");
+
+        try
+        {
+            // 存在するテーブルのみトリガー再有効化（存在チェック付き）
+            // EF Core 規則: パスカルケース複数形（例: WorkspaceItemRelations）
+            var tableNames = new[]
+            {
+                "Users", "WorkspaceItems", "WorkspaceTasks", "TaskComments", "Activities",
+                "Workspaces", "WorkspaceUsers", "Skills", "Tags", "UserSkills",
+                "WorkspaceSkills", "WorkspaceItemRelations"
+            };
+
+            foreach (var tableName in tableNames)
+            {
+                // テーブルが存在するかチェック
+#pragma warning disable EF1002 // テーブル名は定数配列から取得されており安全
+                await _context.Database.ExecuteSqlRawAsync(
+                    $@"DO $$
+                       BEGIN
+                           IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{tableName}') THEN
+                               EXECUTE 'ALTER TABLE ""{tableName}"" ENABLE TRIGGER ALL';
+                           END IF;
+                       END $$;"
+                );
+#pragma warning restore EF1002
+            }
+
+            // VACUUMとANALYZEで統計情報を更新（クエリプランナーの最適化）
+            await _context.Database.ExecuteSqlRawAsync("VACUUM ANALYZE;");
+
+            _logger.LogInformation("Constraints and triggers re-enabled, statistics updated");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to re-enable constraints/triggers");
+            throw;
+        }
     }
 
     /// <summary>
@@ -220,16 +323,20 @@ public class DatabaseSeeder
             },
         };
 
-        foreach (var permission in permissions)
-        {
-            if (!await _context.Permissions.AnyAsync(p => p.Name == permission.Name))
-            {
-                _context.Permissions.Add(permission);
-                _logger.LogInformation("Added permission: {Name}", permission.Name);
-            }
-        }
+        var existingPermissionNames = await _context.Permissions
+            .Select(p => p.Name)
+            .ToHashSetAsync();
 
-        await _context.SaveChangesAsync();
+        var newPermissions = permissions
+            .Where(p => !existingPermissionNames.Contains(p.Name))
+            .ToList();
+
+        if (newPermissions.Any())
+        {
+            _context.Permissions.AddRange(newPermissions);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} permissions", newPermissions.Count);
+        }
     }
 
     /// <summary>
@@ -354,16 +461,20 @@ public class DatabaseSeeder
             },
         };
 
-        foreach (var genre in genres)
-        {
-            if (!await _context.Genres.AnyAsync(g => g.Name == genre.Name))
-            {
-                _context.Genres.Add(genre);
-                _logger.LogInformation("Added genre: {Name}", genre.Name);
-            }
-        }
+        var existingGenreNames = await _context.Genres
+            .Select(g => g.Name)
+            .ToHashSetAsync();
 
-        await _context.SaveChangesAsync();
+        var newGenres = genres
+            .Where(g => !existingGenreNames.Contains(g.Name))
+            .ToList();
+
+        if (newGenres.Any())
+        {
+            _context.Genres.AddRange(newGenres);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} genres", newGenres.Count);
+        }
     }
 
     /// <summary>
@@ -463,16 +574,20 @@ public class DatabaseSeeder
             },
         };
 
-        foreach (var taskType in taskTypes)
-        {
-            if (!await _context.TaskTypes.AnyAsync(t => t.Code == taskType.Code))
-            {
-                _context.TaskTypes.Add(taskType);
-                _logger.LogInformation("Added task type: {Code} ({Name})", taskType.Code, taskType.Name);
-            }
-        }
+        var existingTaskTypeCodes = await _context.TaskTypes
+            .Select(t => t.Code)
+            .ToHashSetAsync();
 
-        await _context.SaveChangesAsync();
+        var newTaskTypes = taskTypes
+            .Where(t => !existingTaskTypeCodes.Contains(t.Code))
+            .ToList();
+
+        if (newTaskTypes.Any())
+        {
+            _context.TaskTypes.AddRange(newTaskTypes);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} task types", newTaskTypes.Count);
+        }
     }
 
     /// <summary>
@@ -501,39 +616,36 @@ public class DatabaseSeeder
             "デザイン", "UI/UX", "Figma", "Adobe XD", "ライティング",
         };
 
-        int skillsAdded = 0;
+        // 既存のスキルを取得（組織ID + 名前の組み合わせ）
+        var existingSkills = await _context.Skills
+            .Select(s => new { s.OrganizationId, s.Name })
+            .ToHashSetAsync();
 
-        // 各組織にスキルを割り当て
+        var newSkills = new List<Skill>();
         foreach (var organization in organizations)
         {
             foreach (var skillName in skillNames)
             {
-                // スキルが既に存在するかチェック
-                var existingSkill = await _context.Skills.FirstOrDefaultAsync(s =>
-                    s.Name == skillName && s.OrganizationId == organization.Id
-                );
-
-                if (existingSkill == null)
+                if (!existingSkills.Contains(new { OrganizationId = organization.Id, Name = skillName }))
                 {
-                    var skill = new Skill
+                    newSkills.Add(new Skill
                     {
                         Name = skillName,
                         Description = $"{skillName}スキル",
                         OrganizationId = organization.Id,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow,
-                    };
-
-                    _context.Skills.Add(skill);
-                    skillsAdded++;
+                    });
                 }
             }
-
-            // 組織ごとに保存
-            await _context.SaveChangesAsync();
         }
 
-        _logger.LogInformation("Added {Count} skills for {OrgCount} organizations", skillsAdded, organizations.Count);
+        if (newSkills.Any())
+        {
+            _context.Skills.AddRange(newSkills);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} skills for {OrgCount} organizations", newSkills.Count, organizations.Count);
+        }
     }
 
     /// <summary>
@@ -563,51 +675,49 @@ public class DatabaseSeeder
             "定期メンテナンス",
         };
 
-        int tagsAdded = 0;
+        // 各組織の最初のユーザーを一括取得
+        var usersByOrg = await _context.Users
+            .Where(u => u.OrganizationId != null)
+            .GroupBy(u => u.OrganizationId!.Value)
+            .Select(g => new { OrganizationId = g.Key, UserId = g.First().Id })
+            .ToDictionaryAsync(x => x.OrganizationId, x => x.UserId);
 
-        // 各組織にタグを割り当て
+        // 既存のタグを取得（組織ID + 名前の組み合わせ）
+        var existingTags = await _context.Tags
+            .Select(t => new { t.OrganizationId, t.Name })
+            .ToHashSetAsync();
+
+        var newTags = new List<Tag>();
         foreach (var organization in organizations)
         {
-            // 各組織の最初の Admin ユーザーを取得（または最初のユーザー）
-            var adminUser = await _context.Users.FirstOrDefaultAsync(u =>
-                u.OrganizationId == organization.Id
-            );
-
-            if (adminUser == null)
+            if (!usersByOrg.TryGetValue(organization.Id, out var userId))
             {
-                _logger.LogWarning("No users found for organization {OrgId}, skipping tag seeding", organization.Id);
                 continue;
             }
 
             foreach (var tagName in tagNames)
             {
-                // タグが既に存在するかチェック
-                var existingTag = await _context.Tags.FirstOrDefaultAsync(t =>
-                    t.Name == tagName && t.OrganizationId == organization.Id
-                );
-
-                if (existingTag == null)
+                if (!existingTags.Contains(new { OrganizationId = organization.Id, Name = tagName }))
                 {
-                    var tag = new Tag
+                    newTags.Add(new Tag
                     {
                         Name = tagName,
                         OrganizationId = organization.Id,
-                        CreatedByUserId = adminUser.Id,
+                        CreatedByUserId = userId,
                         IsActive = true,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                    };
-
-                    _context.Tags.Add(tag);
-                    tagsAdded++;
+                    });
                 }
             }
-
-            // 組織ごとに保存
-            await _context.SaveChangesAsync();
         }
 
-        _logger.LogInformation("Added {Count} tags for {OrgCount} organizations", tagsAdded, organizations.Count);
+        if (newTags.Any())
+        {
+            _context.Tags.AddRange(newTags);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} tags for {OrgCount} organizations", newTags.Count, organizations.Count);
+        }
     }
 
     /// <summary>
@@ -633,15 +743,11 @@ public class DatabaseSeeder
                 };
 
                 organizations.Add(organization);
-                _context.Organizations.Add(organization);
-                _logger.LogInformation(
-                    "Added organization: {Name} (Code: {Code})",
-                    organization.Name,
-                    organization.Code
-                );
             }
 
+            _context.Organizations.AddRange(organizations);
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} organizations", organizations.Count);
         }
     }
 
@@ -740,38 +846,57 @@ public class DatabaseSeeder
             if (organizations.Any())
             {
                 int usersAdded = 0;
+                var userBatch = new List<User>();
+                const int batchSize = 500;
 
-                for (int i = 0; i < usersToCreate; i++)
+                // AutoDetectChanges を無効化してパフォーマンス向上
+                var autoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
+                try
                 {
-                    var loginId = CodeGenerator.GenerateLoginId();
-                    // 一意なEmailを生成（連番 + GUID の一部を使用）
-                    var email = $"user{existingUserCount + i + 1}_{Guid.NewGuid():N}"[..30] + "@sample.com";
+                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
-                    // ランダムな組織を選択
-                    var organization = organizations[_random.Next(organizations.Count)];
-
-                    var normalUser = new User
+                    for (int i = 0; i < usersToCreate; i++)
                     {
-                        LoginId = loginId,
-                        Username = _faker.Name.LastName().ClampLength(max: 40) + " " + _faker.Name.FirstName().ClampLength(max: 40),
-                        Email = email,
-                        PasswordHash = PasswordHasher.HashPassword("P@ssw0rd"),
-                        OrganizationId = organization.Id,
-                        IsActive = _random.Next(4) != 0, // 1/4の確率で非アクティブ
-                        AvatarType = AvatarType.AutoGenerated,
-                    };
+                        var loginId = CodeGenerator.GenerateLoginId();
+                        // 一意なEmailを生成（連番 + GUID の一部を使用）
+                        var email = $"user{existingUserCount + i + 1}_{Guid.NewGuid():N}"[..30] + "@sample.com";
 
-                    _context.Users.Add(normalUser);
-                    usersAdded++;
+                        // ランダムな組織を選択
+                        var organization = organizations[_random.Next(organizations.Count)];
 
-                    if (usersAdded % 50 == 0)
+                        var normalUser = new User
+                        {
+                            LoginId = loginId,
+                            Username = _faker.Name.LastName().ClampLength(max: 40) + " " + _faker.Name.FirstName().ClampLength(max: 40),
+                            Email = email,
+                            PasswordHash = PasswordHasher.HashPassword("P@ssw0rd"),
+                            OrganizationId = organization.Id,
+                            IsActive = _random.Next(4) != 0, // 1/4の確率で非アクティブ
+                            AvatarType = AvatarType.AutoGenerated,
+                        };
+
+                        userBatch.Add(normalUser);
+                        usersAdded++;
+
+                        if (userBatch.Count >= batchSize)
+                        {
+                            _context.Users.AddRange(userBatch);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation("Added {Count} users", usersAdded);
+                            userBatch.Clear();
+                        }
+                    }
+
+                    if (userBatch.Any())
                     {
+                        _context.Users.AddRange(userBatch);
                         await _context.SaveChangesAsync();
-                        _logger.LogInformation("Added {Count} users", usersAdded);
                     }
                 }
-
-                await _context.SaveChangesAsync();
+                finally
+                {
+                    _context.ChangeTracker.AutoDetectChangesEnabled = autoDetectChanges;
+                }
 
                 // ロールを割り当て
                 if (userRole != null)
@@ -858,6 +983,9 @@ public class DatabaseSeeder
                 int totalWorkspacesAdded = 0;
 
                 // 各組織に70件のワークスペースを作成
+                var workspaceBatch = new List<Workspace>();
+                const int batchSize = 500;
+
                 foreach (var organization in organizations)
                 {
                     for (int i = 0; i < 70; i++)
@@ -884,18 +1012,24 @@ public class DatabaseSeeder
                             CreatedByUserId = ownerId,
                         };
 
-                        _context.Workspaces.Add(workspace);
+                        workspaceBatch.Add(workspace);
                         totalWorkspacesAdded++;
 
-                        if (totalWorkspacesAdded % 50 == 0)
+                        if (workspaceBatch.Count >= batchSize)
                         {
+                            _context.Workspaces.AddRange(workspaceBatch);
                             await _context.SaveChangesAsync();
                             _logger.LogInformation("Added {Count} workspaces", totalWorkspacesAdded);
+                            workspaceBatch.Clear();
                         }
                     }
                 }
 
-                await _context.SaveChangesAsync();
+                if (workspaceBatch.Any())
+                {
+                    _context.Workspaces.AddRange(workspaceBatch);
+                    await _context.SaveChangesAsync();
+                }
                 _logger.LogInformation("Added {Count} workspaces completed ({WorkspacesPerOrg} per organization)", totalWorkspacesAdded, 70);
 
                 // 各ワークスペースにアイテム連番シーケンスを作成
@@ -938,26 +1072,32 @@ public class DatabaseSeeder
             return;
         }
 
+        // 組織ごとのユーザーを事前取得
+        var usersByOrganization = await _context.Users
+            .Where(u => u.OrganizationId != null)
+            .GroupBy(u => u.OrganizationId!.Value)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.ToList()
+            );
+
+        // 既存のワークスペースメンバーを取得
+        var existingWorkspaceIds = await _context.WorkspaceUsers
+            .Select(wu => wu.WorkspaceId)
+            .Distinct()
+            .ToHashSetAsync();
+
         int totalMembersAdded = 0;
+        var allWorkspaceUsers = new List<WorkspaceUser>();
 
         foreach (var workspace in workspaces)
         {
-            // このワークスペースの組織に属するユーザーを取得
-            var organizationUsers = await _context.Users
-                .Where(u => u.OrganizationId == workspace.OrganizationId)
-                .ToListAsync();
-
-            if (!organizationUsers.Any())
+            if (existingWorkspaceIds.Contains(workspace.Id))
             {
                 continue;
             }
 
-            // すでに存在するメンバーをチェック
-            var existingCount = await _context.WorkspaceUsers
-                .Where(wu => wu.WorkspaceId == workspace.Id)
-                .CountAsync();
-
-            if (existingCount > 0)
+            if (!usersByOrganization.TryGetValue(workspace.OrganizationId, out var organizationUsers) || !organizationUsers.Any())
             {
                 continue;
             }
@@ -977,20 +1117,27 @@ public class DatabaseSeeder
                     role = _random.Next(2) == 0 ? WorkspaceRole.Member : WorkspaceRole.Viewer;
                 }
 
-                var workspaceUser = new WorkspaceUser
+                allWorkspaceUsers.Add(new WorkspaceUser
                 {
                     WorkspaceId = workspace.Id,
                     UserId = user.Id,
                     JoinedAt = DateTime.UtcNow,
                     WorkspaceRole = role,
-                };
-
-                _context.WorkspaceUsers.Add(workspaceUser);
+                });
                 totalMembersAdded++;
             }
+        }
 
-            // ワークスペースごとに保存
-            await _context.SaveChangesAsync();
+        // 全ワークスペースメンバーを一括保存
+        if (allWorkspaceUsers.Any())
+        {
+            const int batchSize = 1000;
+            for (int i = 0; i < allWorkspaceUsers.Count; i += batchSize)
+            {
+                var batch = allWorkspaceUsers.Skip(i).Take(batchSize).ToList();
+                _context.WorkspaceUsers.AddRange(batch);
+                await _context.SaveChangesAsync();
+            }
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
@@ -1020,26 +1167,33 @@ public class DatabaseSeeder
             return;
         }
 
+        // 既存のワークスペーススキルを取得
+        var existingWorkspaceIds = await _context.WorkspaceSkills
+            .Select(ws => ws.WorkspaceId)
+            .Distinct()
+            .ToHashSetAsync();
+
+        // 組織ごとのスキルを事前に取得
+        var skillsByOrg = await _context.Skills
+            .Where(s => s.IsActive)
+            .GroupBy(s => s.OrganizationId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.ToList()
+            );
+
+        var workspaceSkillBatch = new List<WorkspaceSkill>();
+        const int batchSize = 500;
         int totalWorkspaceSkillsAdded = 0;
 
         foreach (var workspace in workspaces)
         {
-            // このワークスペースの組織に属するスキルを取得
-            var organizationSkills = await _context.Skills
-                .Where(s => s.OrganizationId == workspace.OrganizationId && s.IsActive)
-                .ToListAsync();
-
-            if (!organizationSkills.Any())
+            if (existingWorkspaceIds.Contains(workspace.Id))
             {
                 continue;
             }
 
-            // すでにスキルが割り当てられているかチェック
-            var existingSkillCount = await _context.WorkspaceSkills
-                .Where(ws => ws.WorkspaceId == workspace.Id)
-                .CountAsync();
-
-            if (existingSkillCount > 0)
+            if (!skillsByOrg.TryGetValue(workspace.OrganizationId, out var organizationSkills) || !organizationSkills.Any())
             {
                 continue;
             }
@@ -1050,27 +1204,31 @@ public class DatabaseSeeder
 
             foreach (var skill in selectedSkills)
             {
-                var workspaceSkill = new WorkspaceSkill
+                workspaceSkillBatch.Add(new WorkspaceSkill
                 {
                     WorkspaceId = workspace.Id,
                     SkillId = skill.Id,
                     AddedAt = DateTime.UtcNow,
                     AddedByUserId = adminUser.Id,
-                };
-
-                _context.WorkspaceSkills.Add(workspaceSkill);
+                });
                 totalWorkspaceSkillsAdded++;
             }
 
-            // ワークスペースごとに保存
-            if (totalWorkspaceSkillsAdded % 50 == 0)
+            // バッチサイズに達したら保存
+            if (workspaceSkillBatch.Count >= batchSize)
             {
+                _context.WorkspaceSkills.AddRange(workspaceSkillBatch);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Added {Count} workspace skills", totalWorkspaceSkillsAdded);
+                workspaceSkillBatch.Clear();
             }
         }
 
-        await _context.SaveChangesAsync();
+        if (workspaceSkillBatch.Any())
+        {
+            _context.WorkspaceSkills.AddRange(workspaceSkillBatch);
+            await _context.SaveChangesAsync();
+        }
         _logger.LogInformation("Added {Count} workspace skills in total", totalWorkspaceSkillsAdded);
     }
 
@@ -1098,26 +1256,33 @@ public class DatabaseSeeder
             return;
         }
 
+        // 既存のユーザースキルを取得
+        var existingUserIds = await _context.UserSkills
+            .Select(us => us.UserId)
+            .Distinct()
+            .ToHashSetAsync();
+
+        // 組織ごとのスキルを事前に取得
+        var skillsByOrg = await _context.Skills
+            .Where(s => s.IsActive)
+            .GroupBy(s => s.OrganizationId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.ToList()
+            );
+
+        var userSkillBatch = new List<UserSkill>();
+        const int batchSize = 500;
         int totalUserSkillsAdded = 0;
 
         foreach (var user in users)
         {
-            // このユーザーの組織に属するスキルを取得
-            var organizationSkills = await _context.Skills
-                .Where(s => s.OrganizationId == user.OrganizationId && s.IsActive)
-                .ToListAsync();
-
-            if (!organizationSkills.Any())
+            if (existingUserIds.Contains(user.Id))
             {
                 continue;
             }
 
-            // すでにスキルが割り当てられているかチェック
-            var existingSkillCount = await _context.UserSkills
-                .Where(us => us.UserId == user.Id)
-                .CountAsync();
-
-            if (existingSkillCount > 0)
+            if (user.OrganizationId == null || !skillsByOrg.TryGetValue(user.OrganizationId.Value, out var organizationSkills) || !organizationSkills.Any())
             {
                 continue;
             }
@@ -1128,27 +1293,31 @@ public class DatabaseSeeder
 
             foreach (var skill in selectedSkills)
             {
-                var userSkill = new UserSkill
+                userSkillBatch.Add(new UserSkill
                 {
                     UserId = user.Id,
                     SkillId = skill.Id,
                     AddedAt = DateTime.UtcNow,
-                    AddedByUserId = adminUser.Id, // admin ユーザーの実際の ID を使用
-                };
-
-                _context.UserSkills.Add(userSkill);
+                    AddedByUserId = adminUser.Id,
+                });
                 totalUserSkillsAdded++;
             }
 
-            // ユーザーごとに保存
-            if (totalUserSkillsAdded % 50 == 0)
+            // バッチサイズに達したら保存
+            if (userSkillBatch.Count >= batchSize)
             {
+                _context.UserSkills.AddRange(userSkillBatch);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Added {Count} user skills", totalUserSkillsAdded);
+                userSkillBatch.Clear();
             }
         }
 
-        await _context.SaveChangesAsync();
+        if (userSkillBatch.Any())
+        {
+            _context.UserSkills.AddRange(userSkillBatch);
+            await _context.SaveChangesAsync();
+        }
         _logger.LogInformation("Added {Count} user skills in total", totalUserSkillsAdded);
     }
 
@@ -1175,77 +1344,100 @@ public class DatabaseSeeder
             int totalItemsAdded = 0;
             const int maxTotalItems = 20000; // 全体で最大20000件
             var itemsPerWorkspace = Math.Max(5, maxTotalItems / workspaces.Count); // ワークスペースあたりの件数
+            const int batchSize = 1000; // バッチサイズを大幅に増加
 
-            foreach (var workspace in workspaces)
+            // ワークスペースメンバーを事前に取得
+            var workspaceMembersDict = await _context.WorkspaceUsers
+                .GroupBy(wu => wu.WorkspaceId)
+                .ToDictionaryAsync(
+                    g => g.Key,
+                    g => g.Select(wu => wu.UserId).ToList()
+                );
+
+            var itemBatch = new List<WorkspaceItem>();
+
+            // AutoDetectChangesを無効化してパフォーマンス向上
+            var autoDetectChanges = _context.ChangeTracker.AutoDetectChangesEnabled;
+            try
             {
-                // 上限チェック
-                if (totalItemsAdded >= maxTotalItems)
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                foreach (var workspace in workspaces)
                 {
-                    break;
-                }
-
-                // このワークスペースのメンバーを取得
-                var workspaceMembers = await _context.WorkspaceUsers
-                    .Where(wu => wu.WorkspaceId == workspace.Id)
-                    .Select(wu => wu.UserId)
-                    .ToListAsync();
-
-                if (!workspaceMembers.Any())
-                {
-                    _logger.LogWarning("No members found for workspace {WorkspaceId}, skipping item seeding", workspace.Id);
-                    continue;
-                }
-
-                // ワークスペース内の連番カウンター
-                int itemNumber = 0;
-
-                // ワークスペースあたりのアイテム数を作成（全体上限あり）
-                var itemsToCreate = Math.Min(itemsPerWorkspace, maxTotalItems - totalItemsAdded);
-                for (int i = 0; i < itemsToCreate; i++)
-                {
-                    itemNumber++;
-                    var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
-
-                    var workspaceItem = new WorkspaceItem
+                    // 上限チェック
+                    if (totalItemsAdded >= maxTotalItems)
                     {
-                        WorkspaceId = workspace.Id,
-                        ItemNumber = itemNumber,
-                        Code = itemNumber.ToString(),
-                        Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
-                        Body = playgroundJson, // playground.json の内容
-                        RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
-                        OwnerId = ownerId,
-                        AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
-                        Priority = _random.Next(4) switch
+                        break;
+                    }
+
+                    if (!workspaceMembersDict.TryGetValue(workspace.Id, out var workspaceMembers) || !workspaceMembers.Any())
+                    {
+                        _logger.LogWarning("No members found for workspace {WorkspaceId}, skipping item seeding", workspace.Id);
+                        continue;
+                    }
+
+                    // ワークスペース内の連番カウンター
+                    int itemNumber = 0;
+
+                    // ワークスペースあたりのアイテム数を作成（全体上限あり）
+                    var itemsToCreate = Math.Min(itemsPerWorkspace, maxTotalItems - totalItemsAdded);
+                    for (int i = 0; i < itemsToCreate; i++)
+                    {
+                        itemNumber++;
+                        var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
+
+                        var workspaceItem = new WorkspaceItem
                         {
-                            0 => TaskPriority.Low,
-                            1 => TaskPriority.Medium,
-                            2 => TaskPriority.High,
-                            3 => TaskPriority.Critical,
-                            _ => null
-                        },
-                        DueDate = _random.Next(2) == 1 ? DateTime.UtcNow.AddDays(_random.Next(1, 365)) : null, // 50%の確率でNULL、それ以外は1-365日後
-                        IsArchived = false,
-                        IsDraft = _random.Next(2) == 1,
-                        CommitterId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)), // 過去365日以内のランダムな作成日
-                        UpdatedAt = DateTime.UtcNow,
-                    };
+                            WorkspaceId = workspace.Id,
+                            ItemNumber = itemNumber,
+                            Code = itemNumber.ToString(),
+                            Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
+                            Body = playgroundJson, // playground.json の内容
+                            RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
+                            OwnerId = ownerId,
+                            AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
+                            Priority = _random.Next(4) switch
+                            {
+                                0 => TaskPriority.Low,
+                                1 => TaskPriority.Medium,
+                                2 => TaskPriority.High,
+                                3 => TaskPriority.Critical,
+                                _ => null
+                            },
+                            DueDate = _random.Next(2) == 1 ? DateTime.UtcNow.AddDays(_random.Next(1, 365)) : null, // 50%の確率でNULL、それ以外は1-365日後
+                            IsArchived = false,
+                            IsDraft = _random.Next(2) == 1,
+                            CommitterId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)), // 過去365日以内のランダムな作成日
+                            UpdatedAt = DateTime.UtcNow,
+                        };
 
-                    _context.WorkspaceItems.Add(workspaceItem);
-                    totalItemsAdded++;
+                        itemBatch.Add(workspaceItem);
+                        totalItemsAdded++;
 
-                    // 100件ごとに保存してメモリを節約
-                    if (totalItemsAdded % 100 == 0)
-                    {
-                        await _context.SaveChangesAsync();
-                        _logger.LogInformation("Added {Count} workspace items", totalItemsAdded);
+                        // バッチサイズに達したら一括保存
+                        if (itemBatch.Count >= batchSize)
+                        {
+                            _context.WorkspaceItems.AddRange(itemBatch);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation("Added {Count} workspace items", totalItemsAdded);
+                            itemBatch.Clear();
+                        }
                     }
                 }
-            }
 
-            await _context.SaveChangesAsync();
+                // 残りのアイテムを保存
+                if (itemBatch.Any())
+                {
+                    _context.WorkspaceItems.AddRange(itemBatch);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            finally
+            {
+                _context.ChangeTracker.AutoDetectChangesEnabled = autoDetectChanges;
+            }
             _logger.LogInformation("Added {Count} workspace items in total", totalItemsAdded);
 
             // シーケンスを各ワークスペースの最大ItemNumber+1に更新
@@ -1329,15 +1521,20 @@ public class DatabaseSeeder
             // メモリ内で追加予定のリレーションを追跡（重複防止用）
             var addedRelations = new HashSet<(int fromItemId, int toItemId, RelationType? relationType)>();
 
+            // ワークスペースごとのアイテムIDを事前に取得
+            var itemsByWorkspace = await _context.WorkspaceItems
+                .GroupBy(wi => wi.WorkspaceId)
+                .ToDictionaryAsync(
+                    g => g.Key,
+                    g => g.Select(wi => wi.Id).ToList()
+                );
+
+            var relationBatch = new List<WorkspaceItemRelation>();
+            const int batchSize = 500;
+
             foreach (var workspace in workspaces)
             {
-                // このワークスペースのアイテムを取得
-                var workspaceItems = await _context.WorkspaceItems
-                    .Where(wi => wi.WorkspaceId == workspace.Id)
-                    .Select(wi => wi.Id)
-                    .ToListAsync();
-
-                if (workspaceItems.Count < 2)
+                if (!itemsByWorkspace.TryGetValue(workspace.Id, out var workspaceItems) || workspaceItems.Count < 2)
                 {
                     _logger.LogWarning("Not enough items in workspace {WorkspaceId} for creating relations", workspace.Id);
                     continue;
@@ -1345,10 +1542,11 @@ public class DatabaseSeeder
 
                 // 各ワークスペースに10-20件のリレーションを作成
                 int relationCount = _random.Next(10, 21);
+                int created = 0;
                 int attempts = 0;
                 int maxAttempts = relationCount * 3; // 重複を考慮して試行回数を増やす
 
-                while (totalRelationsAdded < relationCount && attempts < maxAttempts)
+                while (created < relationCount && attempts < maxAttempts)
                 {
                     attempts++;
 
@@ -1370,41 +1568,34 @@ public class DatabaseSeeder
                         continue;
                     }
 
-                    // データベース内の既存データをチェック
-                    var existingRelation = await _context.WorkspaceItemRelations
-                        .AnyAsync(r =>
-                            r.FromItemId == fromItemId &&
-                            r.ToItemId == toItemId &&
-                            r.RelationType == RelationType.Related);
-
-                    if (existingRelation)
-                    {
-                        continue; // 既に存在する場合はスキップ
-                    }
-
-                    var relation = new WorkspaceItemRelation
+                    relationBatch.Add(new WorkspaceItemRelation
                     {
                         FromItemId = fromItemId,
                         ToItemId = toItemId,
                         RelationType = RelationType.Related,
                         CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
                         CreatedByUserId = allCreatedByUsers[_random.Next(allCreatedByUsers.Count)],
-                    };
-
-                    _context.WorkspaceItemRelations.Add(relation);
+                    });
                     addedRelations.Add(relationKey);
                     totalRelationsAdded++;
+                    created++;
 
-                    // 50件ごとに保存してメモリを節約
-                    if (totalRelationsAdded % 50 == 0)
+                    // バッチサイズに達したら保存
+                    if (relationBatch.Count >= batchSize)
                     {
+                        _context.WorkspaceItemRelations.AddRange(relationBatch);
                         await _context.SaveChangesAsync();
                         _logger.LogInformation("Added {Count} workspace item relations", totalRelationsAdded);
+                        relationBatch.Clear();
                     }
                 }
             }
 
-            await _context.SaveChangesAsync();
+            if (relationBatch.Any())
+            {
+                _context.WorkspaceItemRelations.AddRange(relationBatch);
+                await _context.SaveChangesAsync();
+            }
             _logger.LogInformation("Added {Count} workspace item relations in total", totalRelationsAdded);
         }
     }
@@ -1420,8 +1611,9 @@ public class DatabaseSeeder
             return;
         }
 
+        // WorkspaceItemsとWorkspace情報を別々に取得（Includeより高速）
         var workspaceItems = await _context.WorkspaceItems
-            .Include(wi => wi.Workspace)
+            .Select(wi => new { wi.Id, wi.WorkspaceId })
             .ToListAsync();
 
         if (!workspaceItems.Any())
@@ -1429,6 +1621,11 @@ public class DatabaseSeeder
             _logger.LogWarning("No workspace items found for seeding tasks");
             return;
         }
+
+        // WorkspaceIdからOrganizationIdへのマッピングを事前取得
+        var workspaceToOrg = await _context.Workspaces
+            .Select(w => new { w.Id, w.OrganizationId })
+            .ToDictionaryAsync(w => w.Id, w => w.OrganizationId);
 
         // タスク種類を取得
         var taskTypes = await _context.TaskTypes.Where(t => t.IsActive).ToListAsync();
@@ -1460,17 +1657,21 @@ public class DatabaseSeeder
 
         var priorities = new TaskPriority?[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High, TaskPriority.Critical, null };
 
+        // ワークスペースメンバーを事前に取得
+        var membersByWorkspace = await _context.WorkspaceUsers
+            .GroupBy(wu => wu.WorkspaceId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.Select(wu => wu.UserId).ToList()
+            );
+
         int totalTasksAdded = 0;
+        var valuesList = new List<string>();
+        const int batchSize = 5000; // 生SQLなので大きくできる
 
         foreach (var workspaceItem in workspaceItems)
         {
-            // このワークスペースのメンバーを取得
-            var workspaceMembers = await _context.WorkspaceUsers
-                .Where(wu => wu.WorkspaceId == workspaceItem.WorkspaceId)
-                .Select(wu => wu.UserId)
-                .ToListAsync();
-
-            if (!workspaceMembers.Any())
+            if (!membersByWorkspace.TryGetValue(workspaceItem.WorkspaceId, out var workspaceMembers) || !workspaceMembers.Any())
             {
                 continue;
             }
@@ -1484,7 +1685,7 @@ public class DatabaseSeeder
                 var createdByUserId = workspaceMembers[_random.Next(workspaceMembers.Count)];
                 var taskType = taskTypes[_random.Next(taskTypes.Count)];
                 var priority = priorities[_random.Next(priorities.Length)];
-                var content = taskContents[_random.Next(taskContents.Length)];
+                var content = taskContents[_random.Next(taskContents.Length)].Replace("'", "''");
 
                 // 開始日と期限日を設定（期限日は必須）
                 DateTime? startDate = null;
@@ -1496,79 +1697,78 @@ public class DatabaseSeeder
                 }
                 else
                 {
-                    // 開始日なしでも期限日は必須
                     dueDate = new DateTimeOffset(DateTime.UtcNow.AddDays(_random.Next(1, 60)), TimeSpan.Zero);
                 }
 
-                // 予定工数と実績工数
                 decimal? estimatedHours = _random.Next(2) == 1 ? _random.Next(1, 40) : null;
                 decimal? actualHours = estimatedHours.HasValue && _random.Next(2) == 1
                     ? Math.Round((decimal)(_random.NextDouble() * (double)estimatedHours.Value * 1.5), 1)
                     : null;
 
-                // 進捗と完了状態
                 int progressPercentage = _random.Next(0, 101);
                 bool isCompleted = progressPercentage == 100 || _random.Next(10) == 0;
                 DateTime? completedAt = isCompleted ? DateTime.UtcNow.AddDays(-_random.Next(0, 30)) : null;
 
-                // 破棄状態（5%の確率）
                 bool isDiscarded = !isCompleted && _random.Next(20) == 0;
                 DateTime? discardedAt = isDiscarded ? DateTime.UtcNow.AddDays(-_random.Next(0, 30)) : null;
                 string? discardReason = isDiscarded ? "優先度変更のためキャンセル" : null;
 
-                var workspaceTask = new WorkspaceTask
-                {
-                    WorkspaceItemId = workspaceItem.Id,
-                    WorkspaceId = workspaceItem.WorkspaceId,
-                    OrganizationId = workspaceItem.Workspace!.OrganizationId,
-                    AssignedUserId = assignedUserId,
-                    CreatedByUserId = createdByUserId,
-                    Content = content,
-                    TaskTypeId = taskType.Id,
-                    Priority = priority,
-                    StartDate = startDate,
-                    DueDate = dueDate,
-                    EstimatedHours = estimatedHours,
-                    ActualHours = actualHours,
-                    ProgressPercentage = isCompleted ? 100 : progressPercentage,
-                    IsCompleted = isCompleted,
-                    CompletedAt = completedAt,
-                    IsDiscarded = isDiscarded,
-                    DiscardedAt = discardedAt,
-                    DiscardReason = discardReason,
-                    CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
-                    UpdatedAt = DateTime.UtcNow,
-                };
+                var createdAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365));
+                var updatedAt = DateTime.UtcNow;
 
-                _context.WorkspaceTasks.Add(workspaceTask);
+                // VALUES句を生成（NULL値の扱いに注意）
+                var startDateStr = startDate.HasValue ? "'" + startDate.Value.ToString("yyyy-MM-dd HH:mm:ss") + "'" : "NULL";
+                var estimatedHoursStr = estimatedHours.HasValue ? estimatedHours.Value.ToString() : "NULL";
+                var actualHoursStr = actualHours.HasValue ? actualHours.Value.ToString() : "NULL";
+                var completedAtStr = completedAt.HasValue ? "'" + completedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + "'" : "NULL";
+                var discardedAtStr = discardedAt.HasValue ? "'" + discardedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + "'" : "NULL";
+                var discardReasonStr = discardReason != null ? "'" + discardReason.Replace("'", "''") + "'" : "NULL";
+                var priorityStr = priority.HasValue ? ((int)priority.Value).ToString() : "NULL";
+
+                valuesList.Add("(" + workspaceItem.Id + ", " + workspaceItem.WorkspaceId + ", " + workspaceToOrg[workspaceItem.WorkspaceId] + ", " + assignedUserId + ", " + createdByUserId + ", '" + content + "', " + taskType.Id + ", " + priorityStr + ", " + startDateStr + ", '" + dueDate.ToString("yyyy-MM-dd HH:mm:ss+00") + "', " + estimatedHoursStr + ", " + actualHoursStr + ", " + (isCompleted ? 100 : progressPercentage) + ", " + isCompleted.ToString().ToLower() + ", " + completedAtStr + ", " + isDiscarded.ToString().ToLower() + ", " + discardedAtStr + ", " + discardReasonStr + ", '" + createdAt.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + updatedAt.ToString("yyyy-MM-dd HH:mm:ss") + "')");
                 totalTasksAdded++;
 
-                // 500件ごとに保存してメモリを節約
-                if (totalTasksAdded % 500 == 0)
+                if (valuesList.Count >= batchSize)
                 {
-                    await _context.SaveChangesAsync();
+                    await ExecuteBulkInsertWorkspaceTasksAsync(valuesList);
                     _logger.LogInformation("Added {Count} workspace tasks", totalTasksAdded);
+                    valuesList.Clear();
                 }
             }
         }
 
-        await _context.SaveChangesAsync();
+        if (valuesList.Any())
+        {
+            await ExecuteBulkInsertWorkspaceTasksAsync(valuesList);
+        }
         _logger.LogInformation("Added {Count} workspace tasks in total", totalTasksAdded);
     }
 
     /// <summary>
-    /// タスクコメントのシードデータを投入
+    /// ワークスペースタスクを生SQLで一括INSERT
+    /// </summary>
+    private async Task ExecuteBulkInsertWorkspaceTasksAsync(List<string> valuesList)
+    {
+        var valuesClause = string.Join(", ", valuesList);
+        var sql = "INSERT INTO \"WorkspaceTasks\" (\"WorkspaceItemId\", \"WorkspaceId\", \"OrganizationId\", \"AssignedUserId\", \"CreatedByUserId\", \"Content\", \"TaskTypeId\", \"Priority\", \"StartDate\", \"DueDate\", \"EstimatedHours\", \"ActualHours\", \"ProgressPercentage\", \"IsCompleted\", \"CompletedAt\", \"IsDiscarded\", \"DiscardedAt\", \"DiscardReason\", \"CreatedAt\", \"UpdatedAt\") VALUES " + valuesClause;
+
+        await _context.Database.ExecuteSqlRawAsync(sql);
+    }
+
+    /// <summary>
+    /// タスクコメントのシードデータを投入（生SQL使用で高速化）
     /// </summary>
     public async Task SeedTaskCommentsAsync()
     {
+        // TaskCommentsが既に存在する場合はスキップ
         if (await _context.TaskComments.AnyAsync())
         {
-            _logger.LogInformation("Task comments already exist, skipping seeding");
+            _logger.LogInformation("Task comments already seeded, skipping");
             return;
         }
 
         var workspaceTasks = await _context.WorkspaceTasks
-            .Include(t => t.Workspace)
+            .Select(wt => new { wt.Id, wt.WorkspaceId })
             .ToListAsync();
 
         if (!workspaceTasks.Any())
@@ -1599,17 +1799,21 @@ public class DatabaseSeeder
 
         var commentTypes = System.Enum.GetValues<TaskCommentType>();
 
+        // ワークスペースメンバーを事前に取得
+        var membersByWorkspace = await _context.WorkspaceUsers
+            .GroupBy(wu => wu.WorkspaceId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.Select(wu => wu.UserId).ToList()
+            );
+
         int totalCommentsAdded = 0;
+        var valuesList = new List<string>();
+        const int batchSize = 5000; // 生SQLなので大きくできる
 
         foreach (var task in workspaceTasks)
         {
-            // このワークスペースのメンバーを取得
-            var workspaceMembers = await _context.WorkspaceUsers
-                .Where(wu => wu.WorkspaceId == task.WorkspaceId)
-                .Select(wu => wu.UserId)
-                .ToListAsync();
-
-            if (!workspaceMembers.Any())
+            if (!membersByWorkspace.TryGetValue(task.WorkspaceId, out var workspaceMembers) || !workspaceMembers.Any())
             {
                 continue;
             }
@@ -1632,31 +1836,41 @@ public class DatabaseSeeder
                     _ => normalComments[_random.Next(normalComments.Length)],
                 };
 
-                var taskComment = new TaskComment
-                {
-                    WorkspaceTaskId = task.Id,
-                    UserId = userId,
-                    Content = content,
-                    CommentType = commentType,
-                    CreatedAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365)),
-                    UpdatedAt = DateTime.UtcNow,
-                    IsDeleted = false,
-                };
+                var createdAt = DateTime.UtcNow.AddDays(-_random.Next(0, 365));
+                var updatedAt = DateTime.UtcNow;
 
-                _context.TaskComments.Add(taskComment);
+                // エスケープして VALUES 句を生成
+                var escapedContent = content.Replace("'", "''");
+                valuesList.Add("(" + task.Id + ", " + userId + ", '" + escapedContent + "', " + (int)commentType + ", '" + createdAt.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + updatedAt.ToString("yyyy-MM-dd HH:mm:ss") + "', false)");
                 totalCommentsAdded++;
 
-                // 500件ごとに保存してメモリを節約
-                if (totalCommentsAdded % 500 == 0)
+                // バッチサイズに達したら一括INSERT
+                if (valuesList.Count >= batchSize)
                 {
-                    await _context.SaveChangesAsync();
+                    await ExecuteBulkInsertTaskCommentsAsync(valuesList);
                     _logger.LogInformation("Added {Count} task comments", totalCommentsAdded);
+                    valuesList.Clear();
                 }
             }
         }
 
-        await _context.SaveChangesAsync();
+        // 残りを一括INSERT
+        if (valuesList.Any())
+        {
+            await ExecuteBulkInsertTaskCommentsAsync(valuesList);
+        }
         _logger.LogInformation("Added {Count} task comments in total", totalCommentsAdded);
+    }
+
+    /// <summary>
+    /// タスクコメントを生SQLで一括INSERT
+    /// </summary>
+    private async Task ExecuteBulkInsertTaskCommentsAsync(List<string> valuesList)
+    {
+        var valuesClause = string.Join(", ", valuesList);
+        var sql = "INSERT INTO \"TaskComments\" (\"WorkspaceTaskId\", \"UserId\", \"Content\", \"CommentType\", \"CreatedAt\", \"UpdatedAt\", \"IsDeleted\") VALUES " + valuesClause;
+
+        await _context.Database.ExecuteSqlRawAsync(sql);
     }
 
     /// <summary>
@@ -1671,8 +1885,7 @@ public class DatabaseSeeder
         }
 
         var items = await _context.WorkspaceItems
-            .Include(wi => wi.Workspace)
-            .ThenInclude(w => w!.WorkspaceUsers)
+            .Select(wi => new { wi.Id, wi.WorkspaceId, wi.CreatedAt })
             .ToListAsync();
 
         if (!items.Any())
@@ -1681,30 +1894,36 @@ public class DatabaseSeeder
             return;
         }
 
+        // ワークスペースメンバーを事前取得
+        var membersByWorkspace = await _context.WorkspaceUsers
+            .GroupBy(wu => wu.WorkspaceId)
+            .ToDictionaryAsync(
+                g => g.Key,
+                g => g.Select(wu => wu.UserId).ToList()
+            );
+
         var actionTypes = Enum.GetValues<ActivityActionType>();
         int totalActivitiesAdded = 0;
+        var valuesList = new List<string>();
+        const int batchSize = 5000; // 生SQLなので大きくできる
 
         foreach (var item in items)
         {
-            // 各アイテムに30〜50件のアクティビティを作成
             var activityCount = _random.Next(30, 51);
-            var memberIds = item.Workspace?.WorkspaceUsers?.Select(wu => wu.UserId).ToList() ?? [];
 
-            if (memberIds.Count == 0)
+            if (!membersByWorkspace.TryGetValue(item.WorkspaceId, out var memberIds) || memberIds.Count == 0)
             {
                 continue;
             }
 
-            // 作成日時を基準に時系列でアクティビティを生成
             var baseDate = item.CreatedAt;
 
             for (int i = 0; i < activityCount; i++)
             {
                 var actionType = i == 0
-                    ? ActivityActionType.Created  // 最初は必ず作成
+                    ? ActivityActionType.Created
                     : actionTypes[_random.Next(actionTypes.Length)];
 
-                // Created は最初だけなので、それ以外の場合はスキップ
                 if (i > 0 && actionType == ActivityActionType.Created)
                 {
                     actionType = ActivityActionType.BodyUpdated;
@@ -1712,115 +1931,85 @@ public class DatabaseSeeder
 
                 var userId = memberIds[_random.Next(memberIds.Count)];
                 var createdAt = baseDate.AddMinutes(_random.Next(1, 60) * i);
+                var detailsPostgresFunc = GenerateActivityDetailsAsPostgresJsonb(actionType);
 
-                var activity = new Activity
-                {
-                    WorkspaceId = item.WorkspaceId,
-                    ItemId = item.Id,
-                    UserId = userId,
-                    ActionType = actionType,
-                    Details = GenerateActivityDetails(actionType),
-                    CreatedAt = createdAt,
-                };
-
-                _context.Activities.Add(activity);
+                valuesList.Add("(" + item.WorkspaceId + ", " + item.Id + ", " + userId + ", " + (int)actionType + ", " + detailsPostgresFunc + ", '" + createdAt.ToString("yyyy-MM-dd HH:mm:ss") + "')");
                 totalActivitiesAdded++;
 
-                // 1000件ごとに保存してメモリを節約
-                if (totalActivitiesAdded % 1000 == 0)
+                if (valuesList.Count >= batchSize)
                 {
-                    await _context.SaveChangesAsync();
+                    await ExecuteBulkInsertActivitiesAsync(valuesList);
                     _logger.LogInformation("Added {Count} activities", totalActivitiesAdded);
+                    valuesList.Clear();
                 }
             }
         }
 
-        await _context.SaveChangesAsync();
+        if (valuesList.Any())
+        {
+            await ExecuteBulkInsertActivitiesAsync(valuesList);
+        }
+
         _logger.LogInformation("Added {Count} activities in total", totalActivitiesAdded);
     }
 
     /// <summary>
-    /// アクティビティのDetailsを生成
+    /// アクティビティのDetailsをPostgreSQLのjsonb_build_object関数呼び出しとして生成
     /// </summary>
-    private string? GenerateActivityDetails(ActivityActionType actionType)
+    private string GenerateActivityDetailsAsPostgresJsonb(ActivityActionType actionType)
     {
+        string EscapeSql(string value) => value.Replace("'", "''");
+
         return actionType switch
         {
-            ActivityActionType.Created => null,
-            ActivityActionType.SubjectUpdated => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = _faker.Lorem.Sentence(3),
-                @new = _faker.Lorem.Sentence(3)
-            }),
-            ActivityActionType.BodyUpdated => null, // 本文更新は詳細なし
-            ActivityActionType.FileAdded => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                fileName = _faker.System.FileName(),
-                fileSize = _random.Next(1024, 10485760)
-            }),
-            ActivityActionType.FileRemoved => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                fileName = _faker.System.FileName()
-            }),
-            ActivityActionType.AssigneeChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = _random.Next(2) == 0 ? null : _faker.Name.FullName(),
-                @new = _faker.Name.FullName()
-            }),
-            ActivityActionType.RelationAdded => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                relatedItemCode = _random.Next(1, 100).ToString(),
-                relationType = "Related"
-            }),
-            ActivityActionType.RelationRemoved => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                relatedItemCode = _random.Next(1, 100).ToString(),
-                relationType = "Related"
-            }),
-            ActivityActionType.ArchivedChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                @new = _random.Next(2) == 1
-            }),
-            ActivityActionType.DraftChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                @new = _random.Next(2) == 1
-            }),
-            ActivityActionType.CommitterChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = _random.Next(2) == 0 ? null : _faker.Name.FullName(),
-                @new = _faker.Name.FullName()
-            }),
-            ActivityActionType.PriorityChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = "中",
-                @new = _random.Next(4) switch { 0 => "低", 1 => "中", 2 => "高", _ => "緊急" }
-            }),
-            ActivityActionType.DueDateChanged => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                old = _random.Next(2) == 0 ? null : DateTime.UtcNow.AddDays(-_random.Next(1, 30)).ToString("o"),
-                @new = DateTime.UtcNow.AddDays(_random.Next(1, 60)).ToString("o")
-            }),
-            ActivityActionType.TaskAdded => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                taskId = _random.Next(1, 1000),
-                content = _faker.Lorem.Sentence(5),
-                assignee = _faker.Name.FullName()
-            }),
-            ActivityActionType.TaskCompleted => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                taskId = _random.Next(1, 1000),
-                content = _faker.Lorem.Sentence(5),
-                assignee = _faker.Name.FullName(),
-                completedBy = _faker.Name.FullName()
-            }),
-            ActivityActionType.TaskDiscarded => System.Text.Json.JsonSerializer.Serialize(new
-            {
-                taskId = _random.Next(1, 1000),
-                content = _faker.Lorem.Sentence(5),
-                assignee = _faker.Name.FullName(),
-                discardedBy = _faker.Name.FullName()
-            }),
-            _ => null
+            ActivityActionType.Created => "NULL",
+            ActivityActionType.SubjectUpdated =>
+                $"jsonb_build_object('old', '{EscapeSql(_faker.Lorem.Sentence(3))}', 'new', '{EscapeSql(_faker.Lorem.Sentence(3))}')",
+            ActivityActionType.BodyUpdated => "NULL",
+            ActivityActionType.FileAdded =>
+                $"jsonb_build_object('fileName', '{EscapeSql(_faker.System.FileName())}', 'fileSize', {_random.Next(1024, 10485760)})",
+            ActivityActionType.FileRemoved =>
+                $"jsonb_build_object('fileName', '{EscapeSql(_faker.System.FileName())}')",
+            ActivityActionType.AssigneeChanged =>
+                _random.Next(2) == 0
+                    ? $"jsonb_build_object('old', NULL, 'new', '{EscapeSql(_faker.Name.FullName())}')"
+                    : $"jsonb_build_object('old', '{EscapeSql(_faker.Name.FullName())}', 'new', '{EscapeSql(_faker.Name.FullName())}')",
+            ActivityActionType.RelationAdded =>
+                $"jsonb_build_object('relatedItemCode', '{_random.Next(1, 100)}', 'relationType', 'Related')",
+            ActivityActionType.RelationRemoved =>
+                $"jsonb_build_object('relatedItemCode', '{_random.Next(1, 100)}', 'relationType', 'Related')",
+            ActivityActionType.ArchivedChanged =>
+                $"jsonb_build_object('new', {(_random.Next(2) == 1).ToString().ToLower()})",
+            ActivityActionType.DraftChanged =>
+                $"jsonb_build_object('new', {(_random.Next(2) == 1).ToString().ToLower()})",
+            ActivityActionType.CommitterChanged =>
+                _random.Next(2) == 0
+                    ? $"jsonb_build_object('old', NULL, 'new', '{EscapeSql(_faker.Name.FullName())}')"
+                    : $"jsonb_build_object('old', '{EscapeSql(_faker.Name.FullName())}', 'new', '{EscapeSql(_faker.Name.FullName())}')",
+            ActivityActionType.PriorityChanged =>
+                $"jsonb_build_object('old', '中', 'new', '{(_random.Next(4) switch { 0 => "低", 1 => "中", 2 => "高", _ => "緊急" })}')",
+            ActivityActionType.DueDateChanged =>
+                _random.Next(2) == 0
+                    ? $"jsonb_build_object('old', NULL, 'new', '{DateTime.UtcNow.AddDays(_random.Next(1, 60)):o}')"
+                    : $"jsonb_build_object('old', '{DateTime.UtcNow.AddDays(-_random.Next(1, 30)):o}', 'new', '{DateTime.UtcNow.AddDays(_random.Next(1, 60)):o}')",
+            ActivityActionType.TaskAdded =>
+                $"jsonb_build_object('taskId', {_random.Next(1, 1000)}, 'content', '{EscapeSql(_faker.Lorem.Sentence(5))}', 'assignee', '{EscapeSql(_faker.Name.FullName())}')",
+            ActivityActionType.TaskCompleted =>
+                $"jsonb_build_object('taskId', {_random.Next(1, 1000)}, 'content', '{EscapeSql(_faker.Lorem.Sentence(5))}', 'assignee', '{EscapeSql(_faker.Name.FullName())}', 'completedBy', '{EscapeSql(_faker.Name.FullName())}')",
+            ActivityActionType.TaskDiscarded =>
+                $"jsonb_build_object('taskId', {_random.Next(1, 1000)}, 'content', '{EscapeSql(_faker.Lorem.Sentence(5))}', 'assignee', '{EscapeSql(_faker.Name.FullName())}', 'discardedBy', '{EscapeSql(_faker.Name.FullName())}')",
+            _ => "NULL"
         };
+    }
+
+    /// <summary>
+    /// アクティビティを生SQLで一括INSERT
+    /// </summary>
+    private async Task ExecuteBulkInsertActivitiesAsync(List<string> valuesList)
+    {
+        var valuesClause = string.Join(", ", valuesList);
+        var sql = "INSERT INTO \"Activities\" (\"WorkspaceId\", \"ItemId\", \"UserId\", \"ActionType\", \"Details\", \"CreatedAt\") VALUES " + valuesClause;
+
+        await _context.Database.ExecuteSqlRawAsync(sql);
     }
 }
