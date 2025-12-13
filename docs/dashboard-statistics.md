@@ -193,7 +193,32 @@ GROUP BY Priority
 | 統計項目 | 説明 | 計算方法 |
 |---------|------|---------|
 | **ホットアイテム** | 直近（24h/1週間）でアクティビティが多いアイテム | Activity `GROUP BY ItemId` (直近N日) |
-| **タスク集中エリア** | タスクの作成・完了が集中しているワークスペース | Activity `WHERE ActionType IN (TaskCreated, TaskCompleted) GROUP BY WorkspaceId` |
+| **タスク集中エリア** | タスクの作成・完了が集中しているワークスペース | Activity `WHERE ActionType IN (TaskAdded, TaskCompleted) GROUP BY WorkspaceId` |
+
+#### ホットアイテム API レスポンス詳細
+
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| `itemId` | int | アイテムID |
+| `itemCode` | string | アイテムコード（URL用） |
+| `itemSubject` | string | アイテム件名 |
+| `workspaceId` | int | ワークスペースID |
+| `workspaceCode` | string | ワークスペースコード |
+| `workspaceName` | string | ワークスペース名 |
+| `genreIcon` | string? | ジャンルアイコン |
+| `activityCount` | int | 直近のアクティビティ数 |
+| `lastActivityAt` | DateTimeOffset | 最終アクティビティ日時 |
+| `lastActorId` | int? | 最終操作者のユーザーID |
+| `lastActorName` | string? | 最終操作者の表示名 |
+| `lastActorAvatar` | string? | 最終操作者のアバターURL |
+| `lastActionLabel` | string? | 最終操作の種類（例: "本文を編集", "ファイル追加"） |
+| `canAccess` | bool | 現在のユーザーがこのアイテムにアクセス可能か |
+
+#### UI 表示仕様
+
+- **アクセス可能なアイテム**: リンクとして表示、ホバー時にハイライト
+- **アクセス不可のアイテム**: 薄く表示（`opacity-50`）、リンク無効、🔒アイコン表示
+- **最終アクター情報**: 「{ユーザー名}が{相対時間}に{操作種類}」形式で表示（例: "田中さんが2分前に本文を編集"）
 
 ---
 
