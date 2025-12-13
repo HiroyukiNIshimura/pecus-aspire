@@ -1,4 +1,6 @@
-﻿namespace Pecus.Libs.DB.Models;
+﻿using Pecus.Libs.DB.Models.Enums;
+
+namespace Pecus.Libs.DB.Models;
 
 /// <summary>
 /// ワークスペースエンティティ
@@ -54,6 +56,11 @@ public class Workspace
     /// ジャンル
     /// </summary>
     public Genre? Genre { get; set; }
+
+    /// <summary>
+    /// ワークスペースモード
+    /// </summary>
+    public WorkspaceMode Mode { get; set; } = WorkspaceMode.Normal;
 
     /// <summary>
     /// 作成日時

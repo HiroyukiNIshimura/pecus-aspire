@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.DB;
 
@@ -268,6 +269,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.ItemNumberSequenceName).HasMaxLength(128);
             entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Mode).IsRequired().HasDefaultValue(WorkspaceMode.Unknown);
 
             // Workspace と Organization の多対一リレーションシップ
             entity
