@@ -1,13 +1,13 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import WorkspaceItemFilterDrawer, {
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
 import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 
 /** 優先度に応じた左ボーダー色のクラスを取得 */
@@ -50,7 +50,6 @@ interface WorkspaceItemsSidebarProps {
   workspaceId: number;
   currentWorkspaceCode: string;
   workspaces: WorkspaceListItemResponse[];
-  scrollContainerId?: string;
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number, itemCode: string) => void;
   onCreateNew?: () => void;
@@ -83,7 +82,6 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       workspaceId,
       currentWorkspaceCode,
       workspaces,
-      scrollContainerId = 'itemsScrollableDiv',
       onHomeSelect,
       onItemSelect,
       onCreateNew,
@@ -115,6 +113,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [selectionModeCurrentItemId, setSelectionModeCurrentItemId] = useState<number | null>(null);
     const [excludeItemIds, setExcludeItemIds] = useState<number[]>([]);
     const [selectedForRelation, setSelectedForRelation] = useState<Set<number>>(new Set());
+
+    // スクロールコンテナの ref
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const notify = useNotify();
     const notifyRef = useRef(notify);
@@ -317,11 +318,27 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       }
     }, [workspaceId, buildFilterParams]);
 
+    // 無限スクロール
+    const {
+      sentinelRef,
+      isLoading: isLoadingMore,
+      reset: resetInfiniteScroll,
+    } = useInfiniteScroll({
+      onLoadMore: loadMoreItems,
+      hasMore: currentPage < totalPages,
+      rootMargin: '100px',
+      scrollContainerRef,
+    });
+
     // 検索クエリ変更時のハンドラー
-    const handleSearch = useCallback((query: string) => {
-      setSearchQuery(query);
-      refreshItemsRef.current(undefined, query);
-    }, []);
+    const handleSearch = useCallback(
+      (query: string) => {
+        setSearchQuery(query);
+        resetInfiniteScroll();
+        refreshItemsRef.current(undefined, query);
+      },
+      [resetInfiniteScroll],
+    );
 
     // フィルタードローワーを閉じるハンドラー
     const handleCloseFilterDrawer = useCallback(() => {
@@ -333,11 +350,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     }, []);
 
     // フィルター適用ハンドラー
-    const handleApplyFilters = useCallback((newFilters: WorkspaceItemFilters) => {
-      setFilters(newFilters);
-      // フィルターを適用してアイテムを再取得する
-      refreshItemsRef.current(undefined, undefined, newFilters);
-    }, []);
+    const handleApplyFilters = useCallback(
+      (newFilters: WorkspaceItemFilters) => {
+        setFilters(newFilters);
+        resetInfiniteScroll();
+        // フィルターを適用してアイテムを再取得する
+        refreshItemsRef.current(undefined, undefined, newFilters);
+      },
+      [resetInfiniteScroll],
+    );
 
     return (
       <aside className="w-full bg-base-200 border-r border-base-300 flex flex-col h-full">
@@ -456,126 +477,126 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
           </div>
         ) : (
-          <div id={scrollContainerId} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
-            <InfiniteScroll
-              dataLength={items.length}
-              next={loadMoreItems}
-              hasMore={currentPage < totalPages}
-              loader={
-                <div className="text-center py-4">
-                  <span className="loading loading-spinner loading-sm"></span>
-                </div>
-              }
-              endMessage={
-                <div className="text-center py-2 text-xs text-base-content/70">
-                  <p>すべて表示</p>
-                </div>
-              }
-              scrollableTarget={scrollContainerId}
-            >
-              <ul className="space-y-1 p-2">
-                {items.map((item) => {
-                  const shortDate = formatShortDate(item.dueDate);
-                  const isPast = isDueDatePast(item.dueDate);
-                  const itemId = item.id;
+          <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
+            <ul className="space-y-1 p-2">
+              {items.map((item) => {
+                const shortDate = formatShortDate(item.dueDate);
+                const isPast = isDueDatePast(item.dueDate);
+                const itemId = item.id;
 
-                  // 選択モード時: 自分自身や既存関連は除外
-                  const isExcluded =
-                    isSelectionMode &&
-                    itemId !== undefined &&
-                    (itemId === selectionModeCurrentItemId || excludeItemIds.includes(itemId));
-                  const isSelected = itemId !== undefined && selectedForRelation.has(itemId);
+                // 選択モード時: 自分自身や既存関連は除外
+                const isExcluded =
+                  isSelectionMode &&
+                  itemId !== undefined &&
+                  (itemId === selectionModeCurrentItemId || excludeItemIds.includes(itemId));
+                const isSelected = itemId !== undefined && selectedForRelation.has(itemId);
 
-                  // 選択モード時のクリックハンドラー
-                  const handleItemClick = () => {
-                    if (!itemId) return;
+                // 選択モード時のクリックハンドラー
+                const handleItemClick = () => {
+                  if (!itemId) return;
 
-                    if (isSelectionMode) {
-                      if (!isExcluded) {
-                        toggleItemSelection(itemId);
-                      }
-                    } else {
-                      setSelectedItemId(itemId);
-                      onItemSelect?.(itemId, item.code ?? '');
+                  if (isSelectionMode) {
+                    if (!isExcluded) {
+                      toggleItemSelection(itemId);
                     }
-                  };
+                  } else {
+                    setSelectedItemId(itemId);
+                    onItemSelect?.(itemId, item.code ?? '');
+                  }
+                };
 
-                  return (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        onClick={handleItemClick}
-                        disabled={isExcluded}
-                        className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${getPriorityBorderClass(
-                          item.priority,
-                        )} ${
-                          isSelectionMode
-                            ? isExcluded
-                              ? 'opacity-40 cursor-not-allowed bg-base-300'
-                              : isSelected
-                                ? 'bg-primary/20 ring-2 ring-primary'
-                                : 'hover:bg-base-100 text-base-content'
-                            : selectedItemId === item.id
-                              ? 'bg-primary text-primary-content font-semibold'
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={handleItemClick}
+                      disabled={isExcluded}
+                      className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${getPriorityBorderClass(
+                        item.priority,
+                      )} ${
+                        isSelectionMode
+                          ? isExcluded
+                            ? 'opacity-40 cursor-not-allowed bg-base-300'
+                            : isSelected
+                              ? 'bg-primary/20 ring-2 ring-primary'
                               : 'hover:bg-base-100 text-base-content'
-                        }`}
-                        title={isExcluded ? '選択できません' : item.subject || '（未設定）'}
-                      >
-                        <div className="flex items-start gap-2">
-                          {/* 選択モード時: チェックボックス */}
-                          {isSelectionMode && (
-                            <div className="flex-shrink-0 mt-0.5">
-                              {isExcluded ? (
-                                <span
-                                  className="icon-[mdi--checkbox-blank-outline] w-4 h-4 opacity-30"
-                                  aria-hidden="true"
-                                />
-                              ) : isSelected ? (
-                                <span
-                                  className="icon-[mdi--checkbox-marked-outline] w-4 h-4 text-primary"
-                                  aria-hidden="true"
-                                />
-                              ) : (
-                                <span className="icon-[mdi--checkbox-blank-outline] w-4 h-4" aria-hidden="true" />
-                              )}
-                            </div>
-                          )}
+                          : selectedItemId === item.id
+                            ? 'bg-primary text-primary-content font-semibold'
+                            : 'hover:bg-base-100 text-base-content'
+                      }`}
+                      title={isExcluded ? '選択できません' : item.subject || '（未設定）'}
+                    >
+                      <div className="flex items-start gap-2">
+                        {/* 選択モード時: チェックボックス */}
+                        {isSelectionMode && (
+                          <div className="flex-shrink-0 mt-0.5">
+                            {isExcluded ? (
+                              <span
+                                className="icon-[mdi--checkbox-blank-outline] w-4 h-4 opacity-30"
+                                aria-hidden="true"
+                              />
+                            ) : isSelected ? (
+                              <span
+                                className="icon-[mdi--checkbox-marked-outline] w-4 h-4 text-primary"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <span className="icon-[mdi--checkbox-blank-outline] w-4 h-4" aria-hidden="true" />
+                            )}
+                          </div>
+                        )}
 
-                          <div className="flex-1 min-w-0">
-                            {/* 1行目: コード */}
-                            <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>
-                            {/* 2行目: 件名 */}
-                            <div className="truncate">{item.subject || '（未設定）'}</div>
+                        <div className="flex-1 min-w-0">
+                          {/* 1行目: コード */}
+                          <span className="text-xs text-base-content/50 font-mono">#{item.code}</span>
+                          {/* 2行目: 件名 */}
+                          <div className="truncate">{item.subject || '（未設定）'}</div>
 
-                            {/* 3行目: ステータスアイコン群（常に表示） */}
-                            <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
-                              {/* 下書き */}
-                              {item.isDraft && (
-                                <span className="flex items-center gap-0.5" title="下書き">
-                                  <span className="icon-[mdi--file-document-edit-outline] w-3 h-3" aria-hidden="true" />
-                                  <span>下書き</span>
-                                </span>
-                              )}
+                          {/* 3行目: ステータスアイコン群（常に表示） */}
+                          <div className="flex items-center gap-2 mt-1.5 text-xs opacity-70 h-4">
+                            {/* 下書き */}
+                            {item.isDraft && (
+                              <span className="flex items-center gap-0.5" title="下書き">
+                                <span className="icon-[mdi--file-document-edit-outline] w-3 h-3" aria-hidden="true" />
+                                <span>下書き</span>
+                              </span>
+                            )}
 
-                              {/* 期限日 */}
-                              {shortDate && (
-                                <span
-                                  className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
-                                  title={`期限: ${item.dueDate}`}
-                                >
-                                  <span className="icon-[mdi--calendar-outline] w-3 h-3" aria-hidden="true" />
-                                  <span>{shortDate}</span>
-                                </span>
-                              )}
-                            </div>
+                            {/* 期限日 */}
+                            {shortDate && (
+                              <span
+                                className={`flex items-center gap-0.5 ${isPast ? 'text-error font-semibold' : ''}`}
+                                title={`期限: ${item.dueDate}`}
+                              >
+                                <span className="icon-[mdi--calendar-outline] w-3 h-3" aria-hidden="true" />
+                                <span>{shortDate}</span>
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </InfiniteScroll>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* センチネル要素 - IntersectionObserver が監視 */}
+            <div ref={sentinelRef} aria-hidden="true" />
+
+            {/* ローディングインジケーター */}
+            {isLoadingMore && (
+              <div className="text-center py-4">
+                <span className="loading loading-spinner loading-sm"></span>
+              </div>
+            )}
+
+            {/* 終了メッセージ */}
+            {!isLoadingMore && currentPage >= totalPages && items.length > 0 && (
+              <div className="text-center py-2 text-xs text-base-content/70">
+                <p>すべて表示</p>
+              </div>
+            )}
           </div>
         )}
 

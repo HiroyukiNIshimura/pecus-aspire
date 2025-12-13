@@ -20,14 +20,32 @@ import type { ApiResponse } from './types';
 import { validationError } from './types';
 
 /**
- * Server Action: ワークスペースリストを取得（一般ユーザー用）
- * WorkspaceSwitcher などで使用
+ * Server Action: ワークスペースリストを全件取得（一般ユーザー用）
+ * WorkspaceSwitcher などワークスペース切り替え用で使用
+ * ページネーションで全件取得する
  */
 export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
-    return { success: true, data: response.data || [] };
+    const allWorkspaces: WorkspaceListItemResponse[] = [];
+    let page = 1;
+    let hasMore = true;
+    const pageSize = 100; // 最大件数で取得
+
+    // 全ページを取得
+    while (hasMore) {
+      const response = await api.workspace.getApiWorkspaces(page, true, undefined, undefined);
+
+      if (response.data && response.data.length > 0) {
+        allWorkspaces.push(...response.data);
+        page++;
+        hasMore = page <= (response.totalPages || 1);
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return { success: true, data: allWorkspaces };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
     return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');

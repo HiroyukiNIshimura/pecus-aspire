@@ -13,6 +13,7 @@ import type {
   MasterSkillResponse,
   UserDetailResponse,
   WorkspaceFullDetailResponse,
+  WorkspaceListItemResponse,
   WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
 } from '@/connectors/api/pecus';
 import type { UserInfo } from '@/types/userInfo';
@@ -59,9 +60,26 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       // アイテムが見つからない場合は無視（ワークスペース詳細を表示）
     }
 
-    // ワークスペース一覧取得（切り替え用）
+    // ワークスペース一覧取得（切り替え用）- 全件取得
     try {
-      workspacesList = await api.workspace.getApiWorkspaces(1, true, undefined, undefined);
+      const allWorkspaces: WorkspaceListItemResponse[] = [];
+      let page = 1;
+      let hasMore = true;
+
+      // 全ページを取得
+      while (hasMore) {
+        const response = await api.workspace.getApiWorkspaces(page, true, undefined, undefined);
+
+        if (response.data && response.data.length > 0) {
+          allWorkspaces.push(...response.data);
+          page++;
+          hasMore = page <= (response.totalPages || 1);
+        } else {
+          hasMore = false;
+        }
+      }
+
+      workspacesList = { data: allWorkspaces };
     } catch (err) {
       console.warn('Failed to fetch workspaces list:', err);
       // ワークスペース一覧取得失敗時は空配列を渡す

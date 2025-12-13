@@ -756,7 +756,6 @@ export default function WorkspaceDetailClient({
               onHomeSelect={handleHomeSelect}
               onItemSelect={handleItemSelect}
               onCreateNew={handleCreateNew}
-              scrollContainerId="itemsScrollableDiv-desktop"
               initialSelectedItemId={initialItemId}
               currentUser={
                 userInfo
@@ -1069,7 +1068,6 @@ export default function WorkspaceDetailClient({
                 setMobileDrawerOpen(false); // アイテム選択時にドロワーを閉じる
               }}
               onCreateNew={handleCreateNew}
-              scrollContainerId="itemsScrollableDiv-mobile"
               initialSelectedItemId={initialItemId}
               currentUser={
                 userInfo

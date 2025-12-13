@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
@@ -15,6 +14,7 @@ import type {
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
@@ -45,6 +45,19 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const notify = useNotify();
+
+  // 無限スクロール
+  const {
+    sentinelRef,
+    isLoading: isLoadingMore,
+    reset: resetInfiniteScroll,
+  } = useInfiniteScroll({
+    onLoadMore: async () => {
+      await loadMoreWorkspaces();
+    },
+    hasMore: totalPages > 1 && currentPage < totalPages,
+    rootMargin: '200px',
+  });
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -101,6 +114,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   };
 
   const handleFilterChange = withDelayedLoading(async () => {
+    resetInfiniteScroll();
     try {
       const params = new URLSearchParams();
       params.append('page', '1');
@@ -146,6 +160,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
     setFilterIsActive(true);
     setFilterGenreId(null);
     nameValidation.clearErrors();
+    resetInfiniteScroll();
 
     // リセット後の値で直接検索を実行（stateの非同期更新を待たない）
     await withDelayedLoading(async () => {
@@ -172,6 +187,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
 
   const handleCreateSuccess = () => {
     // ワークスペース作成成功時、一覧を再取得
+    resetInfiniteScroll();
     handleFilterChange();
   };
 
@@ -327,22 +343,7 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                   <p className="text-base-content/70">ワークスペースが見つかりません</p>
                 </div>
               ) : (
-                <InfiniteScroll
-                  dataLength={workspaces.length}
-                  next={loadMoreWorkspaces}
-                  hasMore={totalPages > 1 && currentPage < totalPages}
-                  loader={
-                    <div className="text-center py-4">
-                      <span className="loading loading-spinner loading-md"></span>
-                    </div>
-                  }
-                  endMessage={
-                    <div className="text-center py-4">
-                      <p className="text-base-content/70">すべてのワークスペースを表示しました</p>
-                    </div>
-                  }
-                  scrollableTarget="scrollableDiv"
-                >
+                <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {workspaces.map((workspace) => (
                       <div
@@ -422,7 +423,24 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
                       </div>
                     ))}
                   </div>
-                </InfiniteScroll>
+
+                  {/* センチネル要素 - IntersectionObserver が監視 */}
+                  <div ref={sentinelRef} aria-hidden="true" />
+
+                  {/* ローディングインジケーター */}
+                  {isLoadingMore && (
+                    <div className="text-center py-4">
+                      <span className="loading loading-spinner loading-md"></span>
+                    </div>
+                  )}
+
+                  {/* 終了メッセージ */}
+                  {!isLoadingMore && currentPage >= totalPages && workspaces.length > 0 && (
+                    <div className="text-center py-4">
+                      <p className="text-base-content/70">すべてのワークスペースを表示しました</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

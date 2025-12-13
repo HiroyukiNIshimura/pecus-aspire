@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
@@ -12,6 +11,7 @@ import type {
   WorkspaceItemDetailResponse,
   WorkspaceItemDetailResponsePagedResponse,
 } from '@/connectors/api/pecus';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -82,10 +82,22 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
     }
   }, [currentPage, activeFilter, showArchived]);
 
+  // 無限スクロール（Body スクロール）
+  const {
+    sentinelRef,
+    isLoading: isLoadingMore,
+    reset: resetInfiniteScroll,
+  } = useInfiniteScroll({
+    onLoadMore: loadMoreItems,
+    hasMore: totalPages > 1 && currentPage < totalPages,
+    rootMargin: '200px',
+  });
+
   // フィルター変更ハンドラー（リストをリセットして1ページ目から取得）
   const handleFilterChange = useCallback(
     async (filter: MyItemRelationType | 'All') => {
       setActiveFilter(filter);
+      resetInfiniteScroll();
       try {
         const relationParam = filter === 'All' ? undefined : filter;
         const includeArchivedParam = showArchived ? true : undefined;
@@ -104,13 +116,14 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
         notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
       }
     },
-    [showArchived],
+    [showArchived, resetInfiniteScroll],
   );
 
   // アーカイブトグルハンドラー
   const handleArchiveToggle = useCallback(async () => {
     const newShowArchived = !showArchived;
     setShowArchived(newShowArchived);
+    resetInfiniteScroll();
     try {
       const relationParam = activeFilter === 'All' ? undefined : activeFilter;
       const includeArchivedParam = newShowArchived ? true : undefined;
@@ -128,7 +141,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
       console.error('Failed to fetch my items:', err);
       notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
     }
-  }, [showArchived, activeFilter]);
+  }, [showArchived, activeFilter, resetInfiniteScroll]);
 
   // 初期エラー表示
   useEffect(() => {
@@ -226,22 +239,7 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                   <p className="text-base-content/70">該当するアイテムがありません</p>
                 </div>
               ) : (
-                <InfiniteScroll
-                  dataLength={items.length}
-                  next={loadMoreItems}
-                  hasMore={totalPages > 1 && currentPage < totalPages}
-                  loader={
-                    <div className="text-center py-4">
-                      <span className="loading loading-spinner loading-md"></span>
-                    </div>
-                  }
-                  endMessage={
-                    <div className="text-center py-4">
-                      <p className="text-base-content/70">すべてのアイテムを表示しました</p>
-                    </div>
-                  }
-                  scrollableTarget="scrollableDiv"
-                >
+                <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {items.map((item) => (
                       <div
@@ -334,7 +332,24 @@ export default function MyItemsClient({ initialUser, initialItems, fetchError }:
                       </div>
                     ))}
                   </div>
-                </InfiniteScroll>
+
+                  {/* センチネル要素 - IntersectionObserver が監視 */}
+                  <div ref={sentinelRef} aria-hidden="true" />
+
+                  {/* ローディングインジケーター */}
+                  {isLoadingMore && (
+                    <div className="text-center py-4">
+                      <span className="loading loading-spinner loading-md"></span>
+                    </div>
+                  )}
+
+                  {/* 終了メッセージ */}
+                  {!isLoadingMore && currentPage >= totalPages && items.length > 0 && (
+                    <div className="text-center py-4">
+                      <p className="text-base-content/70">すべてのアイテムを表示しました</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
