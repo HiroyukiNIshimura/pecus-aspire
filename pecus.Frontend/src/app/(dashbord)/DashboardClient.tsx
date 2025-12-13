@@ -96,13 +96,21 @@ export default function DashboardClient({
             {/* 組織サマリセクション */}
             {summary && <TaskSummarySection taskSummary={summary.taskSummary} itemSummary={summary.itemSummary} />}
 
-            {/* 2カラムレイアウト: 優先度別 + ワークスペース別 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 2カラムレイアウト: 優先度別（狭め） + ワークスペース別（広め） */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* 優先度別タスク */}
-              {tasksByPriority && <PriorityBreakdownCard data={tasksByPriority} />}
+              {tasksByPriority && (
+                <div className="lg:col-span-1">
+                  <PriorityBreakdownCard data={tasksByPriority} />
+                </div>
+              )}
 
               {/* ワークスペース別統計 */}
-              {workspaceBreakdown && <WorkspaceBreakdownTable data={workspaceBreakdown} />}
+              {workspaceBreakdown && (
+                <div className="lg:col-span-2">
+                  <WorkspaceBreakdownTable data={workspaceBreakdown} />
+                </div>
+              )}
             </div>
 
             {/* 週次タスクトレンドチャート */}

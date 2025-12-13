@@ -49,9 +49,9 @@ export default function PriorityBreakdownCard({ data }: PriorityBreakdownCardPro
             const percentage = totalCount > 0 ? (item.count / totalCount) * 100 : 0;
 
             return (
-              <div key={key} className="flex items-center gap-3">
-                <div className={`w-16 text-sm font-medium ${config.color}`}>{config.label}</div>
-                <div className="flex-1 h-6 bg-base-200 rounded-full overflow-hidden">
+              <div key={key} className="flex items-center gap-2">
+                <div className={`w-12 text-xs font-medium ${config.color}`}>{config.label}</div>
+                <div className="flex-1 h-2 bg-base-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${config.bgColor} transition-all duration-500 ease-out`}
                     style={{ width: `${percentage}%` }}
@@ -62,7 +62,7 @@ export default function PriorityBreakdownCard({ data }: PriorityBreakdownCardPro
                     aria-label={`${config.label}: ${item.count}件`}
                   />
                 </div>
-                <div className="w-16 text-sm text-right font-medium">{item.count.toLocaleString()}</div>
+                <div className="w-12 text-xs text-right font-medium">{item.count.toLocaleString()}</div>
               </div>
             );
           })}
