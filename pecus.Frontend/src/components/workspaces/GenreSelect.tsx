@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import Select, { type SingleValue, type StylesConfig, components, type OptionProps } from 'react-select';
+import Select, { components, type OptionProps, type SingleValue, type StylesConfig } from 'react-select';
 import type { MasterGenreResponse } from '@/connectors/api/pecus';
 
 /** react-select 用のオプション型 */
@@ -28,9 +28,7 @@ export interface GenreSelectProps {
 /** オプションラベルのカスタムレンダリング（アイコン付き） */
 const formatOptionLabel = (option: GenreOption) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    {option.icon && (
-      <img src={`/icons/genres/${option.icon}.svg`} alt="" style={{ width: '20px', height: '20px' }} />
-    )}
+    {option.icon && <img src={`/icons/genres/${option.icon}.svg`} alt="" style={{ width: '20px', height: '20px' }} />}
     <span>{option.label}</span>
   </div>
 );

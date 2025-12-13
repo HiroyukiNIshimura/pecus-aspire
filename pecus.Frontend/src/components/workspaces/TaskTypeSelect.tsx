@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import Select, { type SingleValue, type StylesConfig, components, type OptionProps } from 'react-select';
+import Select, { components, type OptionProps, type SingleValue, type StylesConfig } from 'react-select';
 
 /** タスク種類の選択肢 */
 export interface TaskTypeOption {
@@ -46,9 +46,7 @@ function getTaskTypeIconPath(icon: string | null | undefined): string | null {
 /** オプションラベルのカスタムレンダリング（アイコン付き） */
 const formatOptionLabel = (option: SelectOption) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    {option.icon && (
-      <img src={option.icon} alt="" style={{ width: '20px', height: '20px' }} />
-    )}
+    {option.icon && <img src={option.icon} alt="" style={{ width: '20px', height: '20px' }} />}
     <span>{option.label}</span>
   </div>
 );
@@ -57,9 +55,7 @@ const formatOptionLabel = (option: SelectOption) => (
 const CustomOption = (props: OptionProps<SelectOption, false>) => (
   <components.Option {...props}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      {props.data.icon && (
-        <img src={props.data.icon} alt="" style={{ width: '20px', height: '20px' }} />
-      )}
+      {props.data.icon && <img src={props.data.icon} alt="" style={{ width: '20px', height: '20px' }} />}
       <span>{props.data.label}</span>
     </div>
   </components.Option>
