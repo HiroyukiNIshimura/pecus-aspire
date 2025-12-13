@@ -125,6 +125,7 @@ builder.Services.AddScoped<SkillService>();
 builder.Services.AddScoped<MasterDataService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<DashboardStatisticsService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();

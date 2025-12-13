@@ -3,14 +3,46 @@
 import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
+import {
+  PersonalSummarySection,
+  PriorityBreakdownCard,
+  TaskSummarySection,
+  TaskTrendChart,
+  WorkspaceBreakdownTable,
+} from '@/components/dashboard';
+import type {
+  DashboardPersonalSummaryResponse,
+  DashboardSummaryResponse,
+  DashboardTasksByPriorityResponse,
+  DashboardTaskTrendResponse,
+  DashboardWorkspaceBreakdownResponse,
+} from '@/connectors/api/pecus';
 import type { UserInfo } from '@/types/userInfo';
 
 interface DashboardClientProps {
   initialUser?: UserInfo | null;
   fetchError?: string | null;
+  /** 組織サマリ */
+  summary?: DashboardSummaryResponse | null;
+  /** 優先度別タスク数 */
+  tasksByPriority?: DashboardTasksByPriorityResponse | null;
+  /** 個人サマリ */
+  personalSummary?: DashboardPersonalSummaryResponse | null;
+  /** ワークスペース別統計 */
+  workspaceBreakdown?: DashboardWorkspaceBreakdownResponse | null;
+  /** 週次タスクトレンド */
+  taskTrend?: DashboardTaskTrendResponse | null;
 }
 
-export default function DashboardClient({ initialUser }: DashboardClientProps) {
+export default function DashboardClient({
+  initialUser,
+  fetchError,
+  summary,
+  tasksByPriority,
+  personalSummary,
+  workspaceBreakdown,
+  taskTrend,
+}: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
 
@@ -27,14 +59,20 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
             onClick={() => setSidebarOpen(false)}
-          ></div>
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setSidebarOpen(false);
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="サイドバーを閉じる"
+          />
         )}
 
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto space-y-6">
             {/* ページヘッダー */}
-            <div className="mb-6">
+            <header className="mb-2">
               <div className="flex items-center gap-3">
                 <span className="icon-[mdi--view-dashboard-outline] text-primary w-8 h-8" aria-hidden="true" />
                 <div>
@@ -42,42 +80,41 @@ export default function DashboardClient({ initialUser }: DashboardClientProps) {
                   <p className="text-base-content/70 mt-1">プロジェクトの概要と統計情報</p>
                 </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Dashboard Cards */}
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">ワークスペース</h2>
-                  <p>現在のワークスペース状況</p>
-                  <div className="stat">
-                    <div className="stat-value">12</div>
-                    <div className="stat-desc">アクティブ</div>
-                  </div>
-                </div>
-              </div>
+            </header>
 
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">タスク</h2>
-                  <p>進行中のタスク</p>
-                  <div className="stat">
-                    <div className="stat-value">24</div>
-                    <div className="stat-desc">未完了</div>
-                  </div>
-                </div>
+            {/* エラー表示 */}
+            {fetchError && (
+              <div className="alert alert-error" role="alert">
+                <span className="icon-[mdi--alert-circle-outline] w-5 h-5" aria-hidden="true" />
+                <span>{fetchError}</span>
               </div>
+            )}
 
-              <div className="card">
-                <div className="card-body">
-                  <h2 className="card-title">チーム</h2>
-                  <p>チームメンバー</p>
-                  <div className="stat">
-                    <div className="stat-value">8</div>
-                    <div className="stat-desc">メンバー</div>
-                  </div>
-                </div>
-              </div>
+            {/* 個人サマリセクション */}
+            {personalSummary && <PersonalSummarySection data={personalSummary} />}
+
+            {/* 組織サマリセクション */}
+            {summary && <TaskSummarySection taskSummary={summary.taskSummary} itemSummary={summary.itemSummary} />}
+
+            {/* 2カラムレイアウト: 優先度別 + ワークスペース別 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 優先度別タスク */}
+              {tasksByPriority && <PriorityBreakdownCard data={tasksByPriority} />}
+
+              {/* ワークスペース別統計 */}
+              {workspaceBreakdown && <WorkspaceBreakdownTable data={workspaceBreakdown} />}
             </div>
+
+            {/* 週次タスクトレンドチャート */}
+            {taskTrend && <TaskTrendChart data={taskTrend} />}
+
+            {/* データがない場合のフォールバック */}
+            {!summary && !tasksByPriority && !personalSummary && !workspaceBreakdown && !taskTrend && !fetchError && (
+              <div className="text-center py-12 text-base-content/60">
+                <span className="icon-[mdi--chart-box-outline] w-16 h-16 mb-4" aria-hidden="true" />
+                <p className="text-lg">統計データを読み込み中...</p>
+              </div>
+            )}
           </div>
         </main>
       </div>

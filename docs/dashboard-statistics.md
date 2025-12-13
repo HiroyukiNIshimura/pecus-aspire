@@ -191,11 +191,11 @@ GROUP BY Priority
 
 | 統計項目 | 理由 | 対応案 |
 |---------|------|-------|
-| **ステータス別アイテム数** | WorkspaceItem に `Status` カラムがない | Activity の `StatusChanged` から最新ステータスを逆算するか、WorkspaceItem に Status を追加 |
-| **作業時間** | 開始/終了時刻を記録していない | 設計理念により対象外 |
-| **コメント数** | コメント機能が Activity に含まれていない | 必要なら `CommentAdded` ActionType を追加 |
-| **タスク完了までの平均時間** | WorkspaceTask の CreatedAt 〜 CompletedAt で計算可能 | 直接クエリ可能 |
-| **アイテムごとのタスク進捗** | WorkspaceTask.WorkspaceItemId で紐付け | 集計クエリで対応可能 |
+| **ステータス別アイテム数** | WorkspaceItem に `Status` カラムがない | 不要 |
+| **作業時間** | 開始/終了時刻を記録していない | 設計理念により不要 |
+| **コメント数** | コメント機能が Activity に含まれていない | 不要 |
+| **タスク完了までの平均時間** | WorkspaceTask の CreatedAt 〜 CompletedAt で計算可能 | 不要 |
+| **アイテムごとのタスク進捗** | WorkspaceTask.WorkspaceItemId で紐付け | 集計クエリで対応可能（欲しい） |
 
 ---
 
