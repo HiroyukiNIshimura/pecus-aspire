@@ -86,14 +86,14 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                     </Link>
                   </td>
                   <td className="text-right">
-                    <span className="badge badge-info badge-sm">{ws.inProgressCount}</span>
+                    <span className="badge badge-info badge-sm min-w-12 tabular-nums">{ws.inProgressCount}</span>
                   </td>
                   <td className="text-right">
-                    <span className="badge badge-success badge-sm">{ws.completedCount}</span>
+                    <span className="badge badge-success badge-sm min-w-12 tabular-nums">{ws.completedCount}</span>
                   </td>
                   <td className="text-right">
                     {ws.overdueCount > 0 ? (
-                      <span className="badge badge-error badge-sm">{ws.overdueCount}</span>
+                      <span className="badge badge-error badge-sm min-w-12 tabular-nums">{ws.overdueCount}</span>
                     ) : (
                       <span className="text-base-content/40">0</span>
                     )}

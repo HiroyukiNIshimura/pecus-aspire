@@ -64,13 +64,13 @@ export default function HotWorkspacesCard({ data }: HotWorkspacesCardProps) {
 
                 {/* タスク統計 */}
                 <div className="flex items-center gap-3 flex-shrink-0 text-xs">
-                  <div className="flex items-center gap-1" title="タスク追加">
+                  <div className="flex items-center gap-1 min-w-10" title="タスク追加">
                     <span className="icon-[mdi--plus-circle-outline] w-4 h-4 text-info" aria-hidden="true" />
-                    <span className="font-medium">{ws.taskAddedCount}</span>
+                    <span className="font-medium tabular-nums">{ws.taskAddedCount}</span>
                   </div>
-                  <div className="flex items-center gap-1" title="タスク完了">
+                  <div className="flex items-center gap-1 min-w-10" title="タスク完了">
                     <span className="icon-[mdi--check-circle-outline] w-4 h-4 text-success" aria-hidden="true" />
-                    <span className="font-medium">{ws.taskCompletedCount}</span>
+                    <span className="font-medium tabular-nums">{ws.taskCompletedCount}</span>
                   </div>
                 </div>
               </Link>
