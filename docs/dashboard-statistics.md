@@ -280,56 +280,40 @@ GROUP BY Priority
 
 ---
 
-## API エンドポイント案
+## API エンドポイント
 
-### 組織統計
+### 実装済み（Phase 1 & 2）
 
 ```
-GET /api/statistics/organizations/{orgId}/summary
-  → 組織サマリ（タスク数、期限切れ数など）
+GET /api/dashboard/summary
+  → 組織サマリ（タスク数、アイテム数など）
 
-GET /api/statistics/organizations/{orgId}/tasks/by-priority
+GET /api/dashboard/tasks/by-priority
   → 優先度別タスク数
 
-GET /api/statistics/organizations/{orgId}/tasks/trend
-  ?period=weekly|monthly
-  ?weeks=8
-  → タスク作成/完了の推移
-
-GET /api/statistics/organizations/{orgId}/activities/by-type
-  ?startDate=2025-12-01&endDate=2025-12-31
-  → アクションタイプ別件数
-
-GET /api/statistics/organizations/{orgId}/workspaces
-  → ワークスペース別統計
-```
-
-### 個人統計
-
-```
-GET /api/statistics/users/{userId}/summary
+GET /api/dashboard/personal/summary
   → 個人サマリ（担当タスク数、完了数など）
 
-GET /api/statistics/users/{userId}/activities
-  ?period=weekly|monthly
-  → 個人アクティビティサマリ
+GET /api/dashboard/workspaces
+  → ワークスペース別統計
+
+GET /api/dashboard/tasks/trend?weeks=8
+  → タスク作成/完了の週次推移（1-12週）
 ```
 
-### ワークスペース統計
+### 未実装（Phase 3 以降）
 
 ```
-GET /api/statistics/workspaces/{workspaceId}/summary
-  → ワークスペースサマリ
-
-GET /api/statistics/workspaces/{workspaceId}/members
-  → メンバー別タスク状況
+GET /api/dashboard/activities/by-type
+  ?startDate=2025-12-01&endDate=2025-12-31
+  → アクションタイプ別件数
 ```
 
 ---
 
 ## パフォーマンス考慮
 
-### キャッシュ戦略
+### キャッシュ戦略（大規模データになってからのfeat）
 
 | 統計種別 | キャッシュ TTL | 理由 |
 |---------|--------------|------|
@@ -337,21 +321,23 @@ GET /api/statistics/workspaces/{workspaceId}/members
 | 週次/月次トレンド | 1時間 | 過去データは変わらない |
 | 優先度別・ワークスペース別 | 5分 | 頻繁には変わらない |
 
-### インデックス追加案
+### インデックス
 
-現在の Activity インデックスに加え、統計クエリ用:
+統計クエリ用のインデックスを追加済み（マイグレーション: `20251213050503_AddDashboardStatisticsIndexes2`）:
 
 ```sql
--- 組織単位での集計用（Workspace経由でOrganizationに紐づく）
-CREATE INDEX IX_Activities_WorkspaceId_ActionType_CreatedAt
-ON Activities (WorkspaceId, ActionType, CreatedAt);
+-- ダッシュボード統計用インデックス（WorkspaceTasks テーブル）
+CREATE INDEX IX_WorkspaceTasks_OrganizationId_IsCompleted_IsDiscarded
+ON WorkspaceTasks (OrganizationId, IsCompleted, IsDiscarded);
 
--- 完了タスク集計用（ArchivedChanged の new=true を高速に取得）
--- ※ Details が jsonb なので GIN インデックスも検討
-CREATE INDEX IX_Activities_Details ON Activities USING GIN (Details);
+CREATE INDEX IX_WorkspaceTasks_OrganizationId_CreatedAt
+ON WorkspaceTasks (OrganizationId, CreatedAt);
+
+CREATE INDEX IX_WorkspaceTasks_OrganizationId_CompletedAt
+ON WorkspaceTasks (OrganizationId, CompletedAt);
 ```
 
-### マテリアライズドビュー案
+### マテリアライズドビュー案（将来検討）
 
 リアルタイム性が不要な統計は定期更新のマテリアライズドビューで対応:
 
@@ -381,7 +367,7 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 
 1. 週次タスク作成/完了推移グラフ
 2. ワークスペース別統計
-3. 期間比較（今週 vs 先週）
+3. ~~期間比較（今週 vs 先週）~~（不要）
 
 ### Phase 3: 詳細分析
 
@@ -394,9 +380,9 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 ## 未決事項
 
 - [ ] ステータス管理の方針決定（WorkspaceItem に Status カラムを追加するか）
-- [ ] キャッシュ実装方式（Redis / In-Memory / マテリアライズドビュー）
-- [ ] 統計 API の認可ルール（組織管理者のみ / 全メンバー閲覧可）
-- [ ] グラフ表示ライブラリの選定（フロントエンド）
+- [x] ~~キャッシュ実装方式~~ → 大規模データになってから検討
+- [x] ~~統計 API の認可ルール~~ → 全メンバー閲覧可（組織内データのみ）
+- [x] ~~グラフ表示ライブラリの選定~~ → **recharts** を採用
 - [ ] 統計データのエクスポート機能の要否
 
 ---

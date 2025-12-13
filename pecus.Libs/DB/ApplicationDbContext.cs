@@ -775,6 +775,11 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wt => new { wt.OrganizationId, wt.IsCompleted });
             entity.HasIndex(wt => new { wt.WorkspaceItemId, wt.IsCompleted });
 
+            // ダッシュボード統計用インデックス
+            entity.HasIndex(wt => new { wt.OrganizationId, wt.IsCompleted, wt.IsDiscarded });
+            entity.HasIndex(wt => new { wt.OrganizationId, wt.CreatedAt });
+            entity.HasIndex(wt => new { wt.OrganizationId, wt.CompletedAt });
+
             // 先行タスクの自己参照外部キー
             entity
                 .HasOne(wt => wt.PredecessorTask)
