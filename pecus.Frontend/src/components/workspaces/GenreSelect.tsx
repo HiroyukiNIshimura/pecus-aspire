@@ -54,8 +54,7 @@ export default function GenreSelect({
   return (
     <>
       <style jsx>{`
-        :global(.genre-select) {
-          appearance: base-select;
+        .genre-select {
           min-width: 220px;
           height: 38px;
           border-color: #a4a4a4;
@@ -63,31 +62,18 @@ export default function GenreSelect({
           align-items: center;
           padding: 8px;
         }
-        :global(.genre-select option) {
+        .genre-select :global(option) {
           padding: 8px;
           background-color: var(--color-base-200);
         }
-        :global(.genre-select option:hover) {
+        .genre-select :global(option:hover) {
           background-color: var(--color-base-100);
         }
-        :global(.genre-select option img) {
+        .genre-select :global(option img) {
           width: 20px;
           height: 20px;
           margin-right: 8px;
           vertical-align: middle;
-        }
-        :global(::picker(select)) {
-          appearance: base-select;
-          border-color: #a4a4a4;
-          border-radius: 8px;
-        }
-        :global(::picker(select) option) {
-          display: flex;
-          align-items: center;
-          padding: 8px 12px;
-        }
-        :global(::picker(select) option:hover) {
-          background-color: var(--color-base-100);
         }
       `}</style>
 

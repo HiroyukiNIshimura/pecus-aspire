@@ -78,8 +78,7 @@ export default function TaskTypeSelect({
   return (
     <>
       <style jsx>{`
-        :global(.task-type-select) {
-          appearance: base-select;
+        .task-type-select {
           min-width: 180px;
           height: 38px;
           border-color: #a4a4a4;
@@ -87,31 +86,18 @@ export default function TaskTypeSelect({
           align-items: center;
           padding: 8px;
         }
-        :global(.task-type-select option) {
+        .task-type-select :global(option) {
           padding: 8px;
           background-color: var(--color-base-200);
         }
-        :global(.task-type-select option:hover) {
+        .task-type-select :global(option:hover) {
           background-color: var(--color-base-100);
         }
-        :global(.task-type-select option img) {
+        .task-type-select :global(option img) {
           width: 20px;
           height: 20px;
           margin-right: 8px;
           vertical-align: middle;
-        }
-        :global(::picker(select)) {
-          appearance: base-select;
-          border-color: #a4a4a4;
-          border-radius: 8px;
-        }
-        :global(::picker(select) option) {
-          display: flex;
-          align-items: center;
-          padding: 8px 12px;
-        }
-        :global(::picker(select) option:hover) {
-          background-color: var(--color-base-100);
         }
       `}</style>
 

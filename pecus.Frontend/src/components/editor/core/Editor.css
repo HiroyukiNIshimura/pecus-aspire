@@ -1198,11 +1198,6 @@ i.bold {
   background-color: var(--color-base-300);
 }
 
-.notion-like-editor .emoji-inner::moz-selection {
-  color: transparent;
-  background-color: var(--color-base-300);
-}
-
 .notion-like-editor .emoji.happysmile {
   background-image: url(../images/emoji/1F642.png);
 }
