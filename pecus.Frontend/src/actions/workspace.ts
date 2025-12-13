@@ -30,7 +30,6 @@ export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemRe
     const allWorkspaces: WorkspaceListItemResponse[] = [];
     let page = 1;
     let hasMore = true;
-    const pageSize = 100; // 最大件数で取得
 
     // 全ページを取得
     while (hasMore) {
