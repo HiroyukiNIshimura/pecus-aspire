@@ -392,3 +392,17 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 - [ワークスペース・アイテム・タスクの関係](workspace-item-task-relationship.md) - エンティティの基本構造
 - [アクティビティ要件定義](activity-requirements.md) - データソースの詳細
 - [タスクフォーカス推奨機能](task-focus-recommendation.md) - 同じデータを使った「次にやるべきタスク」推奨機能
+
+---
+
+## 拡張の余地（オンプレ導入時など）
+
+現在の実装は「自分のタスク状況」と「組織全体の統計」のみを提供しているが、オンプレ導入など企業固有の要件に応じて以下の拡張が可能：
+
+| 要望例 | 対応方針 |
+|-------|---------|
+| 管理者が特定メンバーの状況を確認 | 各APIに `userId` パラメータを追加、管理者権限チェック |
+| チームメンバー一覧+各自のタスク数 | `GET /api/dashboard/members` 新規追加 |
+| メンバー間の比較・ランキング | 設計理念（監視目的を避ける）と要相談 |
+
+現在のクエリロジック（`DashboardStatisticsService`）に `userId` フィルタを追加するだけで、ほぼ対応可能な設計になっている。
