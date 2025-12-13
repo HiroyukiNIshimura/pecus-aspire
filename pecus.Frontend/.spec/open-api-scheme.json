@@ -9729,6 +9729,7 @@
       "HotItemEntry": {
         "required": [
           "activityCount",
+          "canAccess",
           "itemCode",
           "itemId",
           "itemSubject",
@@ -9783,6 +9784,31 @@
             "type": "string",
             "description": "最終アクティビティ日時（UTC）",
             "format": "date-time"
+          },
+          "lastActorId": {
+            "type": "integer",
+            "description": "最終操作者のユーザーID（システム操作の場合はnull）",
+            "format": "int32",
+            "nullable": true
+          },
+          "lastActorName": {
+            "type": "string",
+            "description": "最終操作者の表示名",
+            "nullable": true
+          },
+          "lastActorAvatar": {
+            "type": "string",
+            "description": "最終操作者のアバターURL",
+            "nullable": true
+          },
+          "lastActionLabel": {
+            "type": "string",
+            "description": "最終操作の種類（例: \"編集\", \"コメント\", \"ファイル追加\"）",
+            "nullable": true
+          },
+          "canAccess": {
+            "type": "boolean",
+            "description": "現在のユーザーがこのアイテムにアクセス可能か"
           }
         },
         "additionalProperties": false,

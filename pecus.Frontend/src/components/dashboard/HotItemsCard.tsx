@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { DashboardHotItemsResponse } from '@/connectors/api/pecus';
+import { getDisplayIconUrl } from '@/utils/imageUrl';
 
 /**
  * 相対時間をフォーマット（例: "3時間前", "2日前"）
@@ -60,12 +61,9 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
         </h2>
         <p className="text-xs text-base-content/50">編集・更新などの操作が多いアイテム</p>
         <ul className="space-y-1" aria-label="アクティビティが多いアイテム">
-          {items.map((item) => (
-            <li key={item.itemId}>
-              <Link
-                href={`/workspaces/${item.workspaceCode}?itemCode=${item.itemCode}`}
-                className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200 transition-colors group"
-              >
+          {items.map((item) => {
+            const content = (
+              <>
                 {/* アイテム情報 */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -76,25 +74,69 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
                         className="w-4 h-4 flex-shrink-0 opacity-70"
                       />
                     )}
-                    <span className="font-medium truncate group-hover:text-primary transition-colors">
+                    <span
+                      className={`font-medium truncate transition-colors ${
+                        item.canAccess ? 'group-hover:text-primary' : ''
+                      }`}
+                    >
                       {item.itemSubject || '(無題)'}
                     </span>
+                    {!item.canAccess && (
+                      <span
+                        className="icon-[mdi--lock-outline] w-3.5 h-3.5 text-base-content/40 flex-shrink-0"
+                        aria-label="アクセス権がありません"
+                      />
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5 text-xs text-base-content/60">
-                    <span className="truncate">{item.workspaceName}</span>
-                    <span>•</span>
-                    <span className="whitespace-nowrap">{formatRelativeTime(item.lastActivityAt)}</span>
+                  {/* ワークスペース名 */}
+                  <div className="ml-6 mt-1 text-xs text-base-content/50 truncate">{item.workspaceName}</div>
+                  {/* 最終アクター情報 */}
+                  <div className="flex items-center gap-1.5 mt-1.5 ml-6 text-xs text-base-content/60">
+                    {item.lastActorAvatar ? (
+                      <img
+                        src={getDisplayIconUrl(item.lastActorAvatar)}
+                        alt=""
+                        className="w-4 h-4 rounded-full flex-shrink-0"
+                      />
+                    ) : (
+                      <span
+                        className="icon-[mdi--account-circle] w-4 h-4 flex-shrink-0 opacity-60"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="truncate">
+                      {item.lastActorName || 'システム'}が{formatRelativeTime(item.lastActivityAt)}に
+                      {item.lastActionLabel || '更新'}
+                    </span>
                   </div>
                 </div>
 
-                {/* アクティビティ数 */}
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="icon-[mdi--pencil-outline] w-4 h-4 text-base-content/50" aria-hidden="true" />
-                  <span className="text-sm font-medium text-primary">{item.activityCount}</span>
+                {/* アクティビティ数バッジ */}
+                <div
+                  className={`flex items-center gap-1 flex-shrink-0 px-2 py-0.5 rounded-full ${
+                    item.canAccess ? 'bg-primary/10 text-primary' : 'bg-base-300 text-base-content/50'
+                  }`}
+                >
+                  <span className="text-xs font-medium">{item.activityCount}回</span>
                 </div>
-              </Link>
-            </li>
-          ))}
+              </>
+            );
+
+            return (
+              <li key={item.itemId}>
+                {item.canAccess ? (
+                  <Link
+                    href={`/workspaces/${item.workspaceCode}?itemCode=${item.itemCode}`}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200 transition-colors group"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="flex items-start gap-3 p-2 rounded-lg opacity-50 cursor-not-allowed">{content}</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

@@ -78,4 +78,30 @@ public class HotItemEntry
     /// </summary>
     [Required]
     public required DateTimeOffset LastActivityAt { get; set; }
+
+    /// <summary>
+    /// 最終操作者のユーザーID（システム操作の場合はnull）
+    /// </summary>
+    public int? LastActorId { get; set; }
+
+    /// <summary>
+    /// 最終操作者の表示名
+    /// </summary>
+    public string? LastActorName { get; set; }
+
+    /// <summary>
+    /// 最終操作者のアバターURL
+    /// </summary>
+    public string? LastActorAvatar { get; set; }
+
+    /// <summary>
+    /// 最終操作の種類（例: "編集", "コメント", "ファイル追加"）
+    /// </summary>
+    public string? LastActionLabel { get; set; }
+
+    /// <summary>
+    /// 現在のユーザーがこのアイテムにアクセス可能か
+    /// </summary>
+    [Required]
+    public required bool CanAccess { get; set; }
 }

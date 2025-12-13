@@ -42,5 +42,25 @@ export type HotItemEntry = {
      * 最終アクティビティ日時（UTC）
      */
     lastActivityAt: string;
+    /**
+     * 最終操作者のユーザーID（システム操作の場合はnull）
+     */
+    lastActorId?: number | null;
+    /**
+     * 最終操作者の表示名
+     */
+    lastActorName?: string | null;
+    /**
+     * 最終操作者のアバターURL
+     */
+    lastActorAvatar?: string | null;
+    /**
+     * 最終操作の種類（例: "編集", "コメント", "ファイル追加"）
+     */
+    lastActionLabel?: string | null;
+    /**
+     * 現在のユーザーがこのアイテムにアクセス可能か
+     */
+    canAccess: boolean;
 };
 

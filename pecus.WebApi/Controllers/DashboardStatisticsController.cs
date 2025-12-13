@@ -127,7 +127,7 @@ public class DashboardStatisticsController : BaseSecureController
         };
         limit = Math.Clamp(limit, 1, 20);
 
-        var response = await _dashboardService.GetHotItemsAsync(CurrentOrganizationId!.Value, hotPeriod, limit);
+        var response = await _dashboardService.GetHotItemsAsync(CurrentOrganizationId!.Value, CurrentUserId, hotPeriod, limit);
         return TypedResults.Ok(response);
     }
 

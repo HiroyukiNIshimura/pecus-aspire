@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Responses.Dashboard;
@@ -379,10 +380,11 @@ public class DashboardStatisticsService
     /// ホットアイテム（直近でアクティビティが多いアイテム）を取得
     /// </summary>
     /// <param name="organizationId">組織ID</param>
+    /// <param name="userId">現在のユーザーID（アクセス権チェック用）</param>
     /// <param name="period">集計期間</param>
     /// <param name="limit">取得件数（デフォルト10件）</param>
     /// <returns>ホットアイテムランキング</returns>
-    public async Task<DashboardHotItemsResponse> GetHotItemsAsync(int organizationId, HotPeriod period, int limit = 10)
+    public async Task<DashboardHotItemsResponse> GetHotItemsAsync(int organizationId, int userId, HotPeriod period, int limit = 10)
     {
         var since = GetPeriodStartDate(period);
         var periodString = period == HotPeriod.Last24Hours ? "24h" : "1week";
@@ -391,6 +393,12 @@ public class DashboardStatisticsService
         var workspaceIds = await _context.Workspaces
             .Where(w => w.OrganizationId == organizationId && w.IsActive)
             .Select(w => w.Id)
+            .ToListAsync();
+
+        // ユーザーがアクセス可能なワークスペースID一覧を取得
+        var accessibleWorkspaceIds = await _context.WorkspaceUsers
+            .Where(wu => wu.UserId == userId && workspaceIds.Contains(wu.WorkspaceId))
+            .Select(wu => wu.WorkspaceId)
             .ToListAsync();
 
         // Activity を ItemId で GROUP BY し、上位N件を取得
@@ -424,12 +432,22 @@ public class DashboardStatisticsService
             .Where(i => itemIds.Contains(i.Id))
             .ToListAsync();
 
+        // 各アイテムの最終アクティビティを取得（ユーザー情報付き）
+        var lastActivities = await _context.Activities
+            .Include(a => a.User)
+            .Where(a => itemIds.Contains(a.ItemId) && a.CreatedAt >= since)
+            .GroupBy(a => a.ItemId)
+            .Select(g => g.OrderByDescending(a => a.CreatedAt).First())
+            .ToListAsync();
+
         // 結合してレスポンス作成
         var hotItems = hotItemStats
             .Select(stat =>
             {
                 var item = items.FirstOrDefault(i => i.Id == stat.ItemId);
                 if (item == null) return null;
+
+                var lastActivity = lastActivities.FirstOrDefault(a => a.ItemId == stat.ItemId);
 
                 return new HotItemEntry
                 {
@@ -442,6 +460,18 @@ public class DashboardStatisticsService
                     GenreIcon = item.Workspace?.Genre?.Icon,
                     ActivityCount = stat.ActivityCount,
                     LastActivityAt = stat.LastActivityAt,
+                    LastActorId = lastActivity?.UserId,
+                    LastActorName = lastActivity?.User?.Username,
+                    LastActorAvatar = lastActivity?.User != null
+                        ? IdentityIconHelper.GetIdentityIconUrl(
+                            lastActivity.User.AvatarType,
+                            lastActivity.User.Id,
+                            lastActivity.User.Username,
+                            lastActivity.User.Email,
+                            lastActivity.User.UserAvatarPath)
+                        : null,
+                    LastActionLabel = lastActivity != null ? GetActionLabel(lastActivity.ActionType) : null,
+                    CanAccess = accessibleWorkspaceIds.Contains(item.WorkspaceId),
                 };
             })
             .Where(x => x != null)
@@ -452,6 +482,33 @@ public class DashboardStatisticsService
         {
             Period = periodString,
             Items = hotItems,
+        };
+    }
+
+    /// <summary>
+    /// アクションタイプを日本語ラベルに変換
+    /// </summary>
+    private static string GetActionLabel(ActivityActionType actionType)
+    {
+        return actionType switch
+        {
+            ActivityActionType.Created => "作成",
+            ActivityActionType.SubjectUpdated => "件名を編集",
+            ActivityActionType.BodyUpdated => "本文を編集",
+            ActivityActionType.FileAdded => "ファイル追加",
+            ActivityActionType.FileRemoved => "ファイル削除",
+            ActivityActionType.AssigneeChanged => "担当者変更",
+            ActivityActionType.RelationAdded => "関連追加",
+            ActivityActionType.RelationRemoved => "関連削除",
+            ActivityActionType.ArchivedChanged => "アーカイブ変更",
+            ActivityActionType.DraftChanged => "下書き変更",
+            ActivityActionType.CommitterChanged => "コミッター変更",
+            ActivityActionType.PriorityChanged => "優先度変更",
+            ActivityActionType.DueDateChanged => "期限変更",
+            ActivityActionType.TaskAdded => "タスク追加",
+            ActivityActionType.TaskCompleted => "タスク完了",
+            ActivityActionType.TaskDiscarded => "タスク破棄",
+            _ => "更新",
         };
     }
 
