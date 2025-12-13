@@ -23,6 +23,7 @@
 - [skill-matching.md](./skill-matching.md) — スキルマッチング機能のアルゴリズム設計。
 - [task-focus-recommendation.md](./task-focus-recommendation.md) — タスク集中推薦機能の設計。
 - [ui-writing-guidelines.md](./ui-writing-guidelines.md) — UI 文言・コピーの作法と例。
+- [user-onboarding.md](./user-onboarding.md) — ユーザーオンボーディング（初回ガイド/チュートリアル）の設計。
 - [workspace-access-control.md](./workspace-access-control.md) — ワークスペースのアクセス制御方針。
 - [workspace-item-edit-permission.md](./workspace-item-edit-permission.md) — アイテム編集権限の詳細。
 - [workspace-item-task-relationship.md](./workspace-item-task-relationship.md) — アイテムとタスクの関係性設計。
