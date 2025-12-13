@@ -1,5 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import type { DashboardWorkspaceBreakdownResponse } from '@/connectors/api/pecus';
+
+/** 初期表示件数 */
+const INITIAL_DISPLAY_COUNT = 5;
+/** もっと見るで追加する件数 */
+const LOAD_MORE_COUNT = 10;
 
 interface WorkspaceBreakdownTableProps {
   /** ワークスペース別統計データ */
@@ -12,6 +20,11 @@ interface WorkspaceBreakdownTableProps {
  */
 export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTableProps) {
   const { workspaces } = data;
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+
+  const displayedWorkspaces = workspaces.slice(0, displayCount);
+  const hasMore = workspaces.length > displayCount;
+  const remainingCount = workspaces.length - displayCount;
 
   if (workspaces.length === 0) {
     return (
@@ -58,7 +71,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
               </tr>
             </thead>
             <tbody>
-              {workspaces.map((ws) => (
+              {displayedWorkspaces.map((ws) => (
                 <tr key={ws.workspaceId} className="hover">
                   <td>
                     <Link
@@ -92,6 +105,32 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
             </tbody>
           </table>
         </div>
+
+        {/* もっと見る / 折りたたむボタン */}
+        {workspaces.length > INITIAL_DISPLAY_COUNT && (
+          <div className="mt-3 flex justify-center">
+            {hasMore ? (
+              <button
+                type="button"
+                onClick={() => setDisplayCount((prev) => prev + LOAD_MORE_COUNT)}
+                className="btn btn-outline btn-sm gap-1 text-primary"
+              >
+                <span className="icon-[mdi--chevron-down] w-4 h-4" aria-hidden="true" />
+                もっと見る
+                <span className="text-base-content/60">（残り {remainingCount} 件）</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setDisplayCount(INITIAL_DISPLAY_COUNT)}
+                className="btn btn-ghost btn-sm gap-1 text-base-content/60"
+              >
+                <span className="icon-[mdi--chevron-up] w-4 h-4" aria-hidden="true" />
+                折りたたむ
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
