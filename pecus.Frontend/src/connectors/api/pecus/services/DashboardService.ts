@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { DashboardHotItemsResponse } from '../models/DashboardHotItemsResponse';
+import type { DashboardHotWorkspacesResponse } from '../models/DashboardHotWorkspacesResponse';
 import type { DashboardPersonalSummaryResponse } from '../models/DashboardPersonalSummaryResponse';
 import type { DashboardSummaryResponse } from '../models/DashboardSummaryResponse';
 import type { DashboardTasksByPriorityResponse } from '../models/DashboardTasksByPriorityResponse';
@@ -90,6 +92,56 @@ export class DashboardService {
             url: '/api/dashboard/tasks/trend',
             query: {
                 'weeks': weeks,
+            },
+            errors: {
+                401: `Unauthorized`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ホットアイテムを取得
+     * 直近でアクティビティが多いアイテムのランキング
+     * @param period 集計期間（"24h" または "1week"、デフォルト "24h"）
+     * @param limit 取得件数（1-20、デフォルト10）
+     * @returns DashboardHotItemsResponse OK
+     * @throws ApiError
+     */
+    public static getApiDashboardHotItems(
+        period: string = '24h',
+        limit: number = 10,
+    ): CancelablePromise<DashboardHotItemsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/dashboard/hot-items',
+            query: {
+                'period': period,
+                'limit': limit,
+            },
+            errors: {
+                401: `Unauthorized`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ホットワークスペースを取得
+     * タスク関連アクティビティが活発なワークスペースのランキング
+     * @param period 集計期間（"24h" または "1week"、デフォルト "24h"）
+     * @param limit 取得件数（1-20、デフォルト10）
+     * @returns DashboardHotWorkspacesResponse OK
+     * @throws ApiError
+     */
+    public static getApiDashboardHotWorkspaces(
+        period: string = '24h',
+        limit: number = 10,
+    ): CancelablePromise<DashboardHotWorkspacesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/dashboard/hot-workspaces',
+            query: {
+                'period': period,
+                'limit': limit,
             },
             errors: {
                 401: `Unauthorized`,

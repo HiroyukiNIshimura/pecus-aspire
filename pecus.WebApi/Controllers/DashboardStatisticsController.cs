@@ -104,4 +104,56 @@ public class DashboardStatisticsController : BaseSecureController
         var response = await _dashboardService.GetTaskTrendAsync(CurrentOrganizationId!.Value, weeks);
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// ホットアイテムを取得
+    /// 直近でアクティビティが多いアイテムのランキング
+    /// </summary>
+    /// <param name="period">集計期間（"24h" または "1week"、デフォルト "24h"）</param>
+    /// <param name="limit">取得件数（1-20、デフォルト10）</param>
+    /// <returns>ホットアイテムランキング</returns>
+    [HttpGet("hot-items")]
+    [ProducesResponseType(typeof(DashboardHotItemsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<DashboardHotItemsResponse>> GetHotItems(
+        [FromQuery] string period = "24h",
+        [FromQuery] int limit = 10)
+    {
+        var hotPeriod = period.ToLowerInvariant() switch
+        {
+            "1week" or "week" or "7d" => HotPeriod.Last1Week,
+            _ => HotPeriod.Last24Hours,
+        };
+        limit = Math.Clamp(limit, 1, 20);
+
+        var response = await _dashboardService.GetHotItemsAsync(CurrentOrganizationId!.Value, hotPeriod, limit);
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// ホットワークスペースを取得
+    /// タスク関連アクティビティが活発なワークスペースのランキング
+    /// </summary>
+    /// <param name="period">集計期間（"24h" または "1week"、デフォルト "24h"）</param>
+    /// <param name="limit">取得件数（1-20、デフォルト10）</param>
+    /// <returns>ホットワークスペースランキング</returns>
+    [HttpGet("hot-workspaces")]
+    [ProducesResponseType(typeof(DashboardHotWorkspacesResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<DashboardHotWorkspacesResponse>> GetHotWorkspaces(
+        [FromQuery] string period = "24h",
+        [FromQuery] int limit = 10)
+    {
+        var hotPeriod = period.ToLowerInvariant() switch
+        {
+            "1week" or "week" or "7d" => HotPeriod.Last1Week,
+            _ => HotPeriod.Last24Hours,
+        };
+        limit = Math.Clamp(limit, 1, 20);
+
+        var response = await _dashboardService.GetHotWorkspacesAsync(CurrentOrganizationId!.Value, hotPeriod, limit);
+        return TypedResults.Ok(response);
+    }
 }

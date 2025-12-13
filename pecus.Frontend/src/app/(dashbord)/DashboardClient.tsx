@@ -4,6 +4,8 @@ import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
 import {
+  HotItemsCard,
+  HotWorkspacesCard,
   PersonalSummarySection,
   PriorityBreakdownCard,
   TaskSummarySection,
@@ -11,6 +13,8 @@ import {
   WorkspaceBreakdownTable,
 } from '@/components/dashboard';
 import type {
+  DashboardHotItemsResponse,
+  DashboardHotWorkspacesResponse,
   DashboardPersonalSummaryResponse,
   DashboardSummaryResponse,
   DashboardTasksByPriorityResponse,
@@ -32,6 +36,10 @@ interface DashboardClientProps {
   workspaceBreakdown?: DashboardWorkspaceBreakdownResponse | null;
   /** 週次タスクトレンド */
   taskTrend?: DashboardTaskTrendResponse | null;
+  /** ホットアイテム */
+  hotItems?: DashboardHotItemsResponse | null;
+  /** ホットワークスペース */
+  hotWorkspaces?: DashboardHotWorkspacesResponse | null;
 }
 
 export default function DashboardClient({
@@ -42,6 +50,8 @@ export default function DashboardClient({
   personalSummary,
   workspaceBreakdown,
   taskTrend,
+  hotItems,
+  hotWorkspaces,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
@@ -116,13 +126,28 @@ export default function DashboardClient({
             {/* 週次タスクトレンドチャート */}
             {taskTrend && <TaskTrendChart data={taskTrend} />}
 
-            {/* データがない場合のフォールバック */}
-            {!summary && !tasksByPriority && !personalSummary && !workspaceBreakdown && !taskTrend && !fetchError && (
-              <div className="text-center py-12 text-base-content/60">
-                <span className="icon-[mdi--chart-box-outline] w-16 h-16 mb-4" aria-hidden="true" />
-                <p className="text-lg">統計データを読み込み中...</p>
+            {/* 2カラムレイアウト: ホットアイテム + ホットワークスペース */}
+            {(hotItems || hotWorkspaces) && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {hotItems && <HotItemsCard data={hotItems} />}
+                {hotWorkspaces && <HotWorkspacesCard data={hotWorkspaces} />}
               </div>
             )}
+
+            {/* データがない場合のフォールバック */}
+            {!summary &&
+              !tasksByPriority &&
+              !personalSummary &&
+              !workspaceBreakdown &&
+              !taskTrend &&
+              !hotItems &&
+              !hotWorkspaces &&
+              !fetchError && (
+                <div className="text-center py-12 text-base-content/60">
+                  <span className="icon-[mdi--chart-box-outline] w-16 h-16 mb-4" aria-hidden="true" />
+                  <p className="text-lg">統計データを読み込み中...</p>
+                </div>
+              )}
           </div>
         </main>
       </div>

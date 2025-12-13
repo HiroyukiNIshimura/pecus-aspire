@@ -185,6 +185,16 @@ GROUP BY Priority
 | **ワークスペース別アクティビティ** | 活発なワークスペース |
 | **ワークスペース別メンバー数** | チーム規模 |
 
+### 7. ホットアイテム・作業集中箇所（Activity ベース）
+
+「どこで作業が活発に行われているか」を可視化し、チームの関心事を把握する。
+閲覧数（PV）ではなく、実際に手が動いている「作業の実態」を可視化する方針。
+
+| 統計項目 | 説明 | 計算方法 |
+|---------|------|---------|
+| **ホットアイテム** | 直近（24h/1週間）でアクティビティが多いアイテム | Activity `GROUP BY ItemId` (直近N日) |
+| **タスク集中エリア** | タスクの作成・完了が集中しているワークスペース | Activity `WHERE ActionType IN (TaskCreated, TaskCompleted) GROUP BY WorkspaceId` |
+
 ---
 
 ## 現在のデータモデルで取れない統計
@@ -196,6 +206,7 @@ GROUP BY Priority
 | **コメント数** | コメント機能が Activity に含まれていない | 不要 |
 | **タスク完了までの平均時間** | WorkspaceTask の CreatedAt 〜 CompletedAt で計算可能 | 不要 |
 | **アイテムごとのタスク進捗** | WorkspaceTask.WorkspaceItemId で紐付け | 集計クエリで対応可能（欲しい） |
+| **タスク閲覧数（流入）** | 閲覧ログを保存していない（DB負荷大） | **ホットアイテム統計**で代替（閲覧ではなく操作密度を見る）＝不要 |
 
 ---
 
@@ -299,6 +310,16 @@ GET /api/dashboard/workspaces
 
 GET /api/dashboard/tasks/trend?weeks=8
   → タスク作成/完了の週次推移（1-12週）
+
+GET /api/dashboard/hot-items?period=24h&limit=10
+  → ホットアイテム（直近でアクティビティが多いアイテム）
+  - period: "24h"（デフォルト）または "1week"
+  - limit: 1-20（デフォルト10）
+
+GET /api/dashboard/hot-workspaces?period=24h&limit=10
+  → ホットワークスペース（タスク関連アクティビティが多いワークスペース）
+  - period: "24h"（デフォルト）または "1week"
+  - limit: 1-20（デフォルト10）
 ```
 
 ### 未実装（Phase 3 以降）

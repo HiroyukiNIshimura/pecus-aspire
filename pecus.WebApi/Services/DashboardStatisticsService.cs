@@ -6,6 +6,22 @@ using Pecus.Models.Responses.Dashboard;
 namespace Pecus.Services;
 
 /// <summary>
+/// ホットアイテム・ホットワークスペースの集計期間
+/// </summary>
+public enum HotPeriod
+{
+    /// <summary>
+    /// 直近24時間
+    /// </summary>
+    Last24Hours,
+
+    /// <summary>
+    /// 直近1週間
+    /// </summary>
+    Last1Week,
+}
+
+/// <summary>
 /// ダッシュボード統計サービス
 /// 組織・ワークスペース・個人レベルの統計情報を提供
 /// </summary>
@@ -352,6 +368,204 @@ public class DashboardStatisticsService
             WeeklyTrends = weeklyTrends,
             StartDate = startDate,
             EndDate = currentWeekStart.AddDays(7).AddTicks(-1),
+        };
+    }
+
+    #endregion
+
+    #region Hot Items / Hot Workspaces Methods
+
+    /// <summary>
+    /// ホットアイテム（直近でアクティビティが多いアイテム）を取得
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="period">集計期間</param>
+    /// <param name="limit">取得件数（デフォルト10件）</param>
+    /// <returns>ホットアイテムランキング</returns>
+    public async Task<DashboardHotItemsResponse> GetHotItemsAsync(int organizationId, HotPeriod period, int limit = 10)
+    {
+        var since = GetPeriodStartDate(period);
+        var periodString = period == HotPeriod.Last24Hours ? "24h" : "1week";
+
+        // 組織内のワークスペースID一覧を取得
+        var workspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
+        // Activity を ItemId で GROUP BY し、上位N件を取得
+        var hotItemStats = await _context.Activities
+            .Where(a => workspaceIds.Contains(a.WorkspaceId) && a.CreatedAt >= since)
+            .GroupBy(a => a.ItemId)
+            .Select(g => new
+            {
+                ItemId = g.Key,
+                ActivityCount = g.Count(),
+                LastActivityAt = g.Max(a => a.CreatedAt),
+            })
+            .OrderByDescending(x => x.ActivityCount)
+            .Take(limit)
+            .ToListAsync();
+
+        if (hotItemStats.Count == 0)
+        {
+            return new DashboardHotItemsResponse
+            {
+                Period = periodString,
+                Items = [],
+            };
+        }
+
+        // アイテム詳細とワークスペース情報を取得
+        var itemIds = hotItemStats.Select(x => x.ItemId).ToList();
+        var items = await _context.WorkspaceItems
+            .Include(i => i.Workspace)
+                .ThenInclude(w => w!.Genre)
+            .Where(i => itemIds.Contains(i.Id))
+            .ToListAsync();
+
+        // 結合してレスポンス作成
+        var hotItems = hotItemStats
+            .Select(stat =>
+            {
+                var item = items.FirstOrDefault(i => i.Id == stat.ItemId);
+                if (item == null) return null;
+
+                return new HotItemEntry
+                {
+                    ItemId = item.Id,
+                    ItemCode = item.Code ?? string.Empty,
+                    ItemSubject = item.Subject ?? "(無題)",
+                    WorkspaceId = item.WorkspaceId,
+                    WorkspaceCode = item.Workspace?.Code ?? string.Empty,
+                    WorkspaceName = item.Workspace?.Name ?? string.Empty,
+                    GenreIcon = item.Workspace?.Genre?.Icon,
+                    ActivityCount = stat.ActivityCount,
+                    LastActivityAt = stat.LastActivityAt,
+                };
+            })
+            .Where(x => x != null)
+            .Cast<HotItemEntry>()
+            .ToList();
+
+        return new DashboardHotItemsResponse
+        {
+            Period = periodString,
+            Items = hotItems,
+        };
+    }
+
+    /// <summary>
+    /// ホットワークスペース（タスク関連アクティビティが多いワークスペース）を取得
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="period">集計期間</param>
+    /// <param name="limit">取得件数（デフォルト10件）</param>
+    /// <returns>ホットワークスペースランキング</returns>
+    public async Task<DashboardHotWorkspacesResponse> GetHotWorkspacesAsync(int organizationId, HotPeriod period, int limit = 10)
+    {
+        var since = GetPeriodStartDate(period);
+        var periodString = period == HotPeriod.Last24Hours ? "24h" : "1week";
+
+        // タスク関連の ActionType
+        var taskActionTypes = new[] { ActivityActionType.TaskAdded, ActivityActionType.TaskCompleted };
+
+        // 組織内のワークスペースID一覧を取得
+        var workspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
+        // Activity を WorkspaceId + ActionType で GROUP BY
+        var hotWorkspaceStats = await _context.Activities
+            .Where(a => workspaceIds.Contains(a.WorkspaceId)
+                && a.CreatedAt >= since
+                && taskActionTypes.Contains(a.ActionType))
+            .GroupBy(a => new { a.WorkspaceId, a.ActionType })
+            .Select(g => new
+            {
+                g.Key.WorkspaceId,
+                g.Key.ActionType,
+                Count = g.Count(),
+            })
+            .ToListAsync();
+
+        // ワークスペース単位で集計
+        var aggregated = hotWorkspaceStats
+            .GroupBy(x => x.WorkspaceId)
+            .Select(g => new
+            {
+                WorkspaceId = g.Key,
+                TaskAddedCount = g.Where(x => x.ActionType == ActivityActionType.TaskAdded).Sum(x => x.Count),
+                TaskCompletedCount = g.Where(x => x.ActionType == ActivityActionType.TaskCompleted).Sum(x => x.Count),
+            })
+            .Select(x => new
+            {
+                x.WorkspaceId,
+                x.TaskAddedCount,
+                x.TaskCompletedCount,
+                TotalTaskActivityCount = x.TaskAddedCount + x.TaskCompletedCount,
+            })
+            .OrderByDescending(x => x.TotalTaskActivityCount)
+            .Take(limit)
+            .ToList();
+
+        if (aggregated.Count == 0)
+        {
+            return new DashboardHotWorkspacesResponse
+            {
+                Period = periodString,
+                Workspaces = [],
+            };
+        }
+
+        // ワークスペース情報を取得
+        var wsIds = aggregated.Select(x => x.WorkspaceId).ToList();
+        var workspaces = await _context.Workspaces
+            .Include(w => w.Genre)
+            .Where(w => wsIds.Contains(w.Id))
+            .ToListAsync();
+
+        // 結合してレスポンス作成
+        var hotWorkspaces = aggregated
+            .Select(stat =>
+            {
+                var ws = workspaces.FirstOrDefault(w => w.Id == stat.WorkspaceId);
+                if (ws == null) return null;
+
+                return new HotWorkspaceEntry
+                {
+                    WorkspaceId = ws.Id,
+                    WorkspaceCode = ws.Code ?? string.Empty,
+                    WorkspaceName = ws.Name,
+                    GenreIcon = ws.Genre?.Icon,
+                    TaskAddedCount = stat.TaskAddedCount,
+                    TaskCompletedCount = stat.TaskCompletedCount,
+                    TotalTaskActivityCount = stat.TotalTaskActivityCount,
+                };
+            })
+            .Where(x => x != null)
+            .Cast<HotWorkspaceEntry>()
+            .ToList();
+
+        return new DashboardHotWorkspacesResponse
+        {
+            Period = periodString,
+            Workspaces = hotWorkspaces,
+        };
+    }
+
+    /// <summary>
+    /// 集計期間の開始日時を取得
+    /// </summary>
+    private static DateTimeOffset GetPeriodStartDate(HotPeriod period)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return period switch
+        {
+            HotPeriod.Last24Hours => now.AddHours(-24),
+            HotPeriod.Last1Week => now.AddDays(-7),
+            _ => now.AddHours(-24),
         };
     }
 

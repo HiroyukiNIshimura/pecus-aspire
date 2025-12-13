@@ -2674,6 +2674,114 @@
         }
       }
     },
+    "/api/dashboard/hot-items": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "ホットアイテムを取得\n直近でアクティビティが多いアイテムのランキング",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "description": "集計期間（\"24h\" または \"1week\"、デフォルト \"24h\"）",
+            "schema": {
+              "type": "string",
+              "default": "24h"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "取得件数（1-20、デフォルト10）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardHotItemsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/hot-workspaces": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "ホットワークスペースを取得\nタスク関連アクティビティが活発なワークスペースのランキング",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "description": "集計期間（\"24h\" または \"1week\"、デフォルト \"24h\"）",
+            "schema": {
+              "type": "string",
+              "default": "24h"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "取得件数（1-20、デフォルト10）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardHotWorkspacesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -9031,6 +9139,52 @@
         "additionalProperties": false,
         "description": "ワークスペースタスク作成リクエスト"
       },
+      "DashboardHotItemsResponse": {
+        "required": [
+          "items",
+          "period"
+        ],
+        "type": "object",
+        "properties": {
+          "period": {
+            "minLength": 1,
+            "type": "string",
+            "description": "集計期間（\"24h\" または \"1week\"）"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HotItemEntry"
+            },
+            "description": "ホットアイテムリスト（アクティビティ数の多い順）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ホットアイテム統計レスポンス\n直近で作業が活発なアイテムのランキング"
+      },
+      "DashboardHotWorkspacesResponse": {
+        "required": [
+          "period",
+          "workspaces"
+        ],
+        "type": "object",
+        "properties": {
+          "period": {
+            "minLength": 1,
+            "type": "string",
+            "description": "集計期間（\"24h\" または \"1week\"）"
+          },
+          "workspaces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HotWorkspaceEntry"
+            },
+            "description": "ホットワークスペースリスト（タスク関連アクティビティ数の多い順）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ホットワークスペース統計レスポンス\nタスク関連アクティビティが活発なワークスペースのランキング"
+      },
       "DashboardItemSummary": {
         "required": [
           "archivedCount",
@@ -9571,6 +9725,118 @@
           "WorkspaceUsers"
         ],
         "type": "string"
+      },
+      "HotItemEntry": {
+        "required": [
+          "activityCount",
+          "itemCode",
+          "itemId",
+          "itemSubject",
+          "lastActivityAt",
+          "workspaceCode",
+          "workspaceId",
+          "workspaceName"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "itemCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイテムコード（URL用）"
+          },
+          "itemSubject": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイテム件名"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペースコード"
+          },
+          "workspaceName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペース名"
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "activityCount": {
+            "type": "integer",
+            "description": "直近のアクティビティ数",
+            "format": "int32"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "description": "最終アクティビティ日時（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ホットアイテムのエントリ"
+      },
+      "HotWorkspaceEntry": {
+        "required": [
+          "taskAddedCount",
+          "taskCompletedCount",
+          "totalTaskActivityCount",
+          "workspaceCode",
+          "workspaceId",
+          "workspaceName"
+        ],
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペースコード"
+          },
+          "workspaceName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペース名"
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
+          },
+          "taskAddedCount": {
+            "type": "integer",
+            "description": "タスク追加数（直近）",
+            "format": "int32"
+          },
+          "taskCompletedCount": {
+            "type": "integer",
+            "description": "タスク完了数（直近）",
+            "format": "int32"
+          },
+          "totalTaskActivityCount": {
+            "type": "integer",
+            "description": "タスク関連アクティビティの合計",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ホットワークスペースのエントリ"
       },
       "ItemWithTasksResponse": {
         "required": [

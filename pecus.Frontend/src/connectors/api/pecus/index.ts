@@ -26,6 +26,8 @@ export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithou
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { CreateWorkspaceTaskRequest } from './models/CreateWorkspaceTaskRequest';
+export type { DashboardHotItemsResponse } from './models/DashboardHotItemsResponse';
+export type { DashboardHotWorkspacesResponse } from './models/DashboardHotWorkspacesResponse';
 export type { DashboardItemSummary } from './models/DashboardItemSummary';
 export type { DashboardPersonalSummaryResponse } from './models/DashboardPersonalSummaryResponse';
 export type { DashboardSummaryResponse } from './models/DashboardSummaryResponse';
@@ -46,6 +48,8 @@ export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
 export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
+export type { HotItemEntry } from './models/HotItemEntry';
+export type { HotWorkspaceEntry } from './models/HotWorkspaceEntry';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { ItemWithTasksResponsePagedResponse } from './models/ItemWithTasksResponsePagedResponse';
 export type { LandingPage } from './models/LandingPage';

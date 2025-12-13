@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  DashboardHotItemsResponse,
+  DashboardHotWorkspacesResponse,
   DashboardPersonalSummaryResponse,
   DashboardSummaryResponse,
   DashboardTasksByPriorityResponse,
@@ -21,6 +23,8 @@ export default async function Dashboard() {
   let personalSummary: DashboardPersonalSummaryResponse | null = null;
   let workspaceBreakdown: DashboardWorkspaceBreakdownResponse | null = null;
   let taskTrend: DashboardTaskTrendResponse | null = null;
+  let hotItems: DashboardHotItemsResponse | null = null;
+  let hotWorkspaces: DashboardHotWorkspacesResponse | null = null;
   let fetchError: string | null = null;
 
   try {
@@ -30,13 +34,16 @@ export default async function Dashboard() {
     userResponse = await api.profile.getApiProfile();
 
     // ダッシュボード統計を並列取得
-    const [summaryRes, priorityRes, personalRes, workspaceRes, trendRes] = await Promise.allSettled([
-      api.dashboard.getApiDashboardSummary(),
-      api.dashboard.getApiDashboardTasksByPriority(),
-      api.dashboard.getApiDashboardPersonalSummary(),
-      api.dashboard.getApiDashboardWorkspaces(),
-      api.dashboard.getApiDashboardTasksTrend(8),
-    ]);
+    const [summaryRes, priorityRes, personalRes, workspaceRes, trendRes, hotItemsRes, hotWorkspacesRes] =
+      await Promise.allSettled([
+        api.dashboard.getApiDashboardSummary(),
+        api.dashboard.getApiDashboardTasksByPriority(),
+        api.dashboard.getApiDashboardPersonalSummary(),
+        api.dashboard.getApiDashboardWorkspaces(),
+        api.dashboard.getApiDashboardTasksTrend(8),
+        api.dashboard.getApiDashboardHotItems('1week', 5),
+        api.dashboard.getApiDashboardHotWorkspaces('1week', 5),
+      ]);
 
     // 結果を取得（エラーの場合はnull）
     summary = summaryRes.status === 'fulfilled' ? summaryRes.value : null;
@@ -44,6 +51,8 @@ export default async function Dashboard() {
     personalSummary = personalRes.status === 'fulfilled' ? personalRes.value : null;
     workspaceBreakdown = workspaceRes.status === 'fulfilled' ? workspaceRes.value : null;
     taskTrend = trendRes.status === 'fulfilled' ? trendRes.value : null;
+    hotItems = hotItemsRes.status === 'fulfilled' ? hotItemsRes.value : null;
+    hotWorkspaces = hotWorkspacesRes.status === 'fulfilled' ? hotWorkspacesRes.value : null;
 
     // いずれかの取得に失敗した場合はログに残す
     if (summaryRes.status === 'rejected') {
@@ -60,6 +69,12 @@ export default async function Dashboard() {
     }
     if (trendRes.status === 'rejected') {
       console.error('Dashboard: failed to fetch task trend', trendRes.reason);
+    }
+    if (hotItemsRes.status === 'rejected') {
+      console.error('Dashboard: failed to fetch hot items', hotItemsRes.reason);
+    }
+    if (hotWorkspacesRes.status === 'rejected') {
+      console.error('Dashboard: failed to fetch hot workspaces', hotWorkspacesRes.reason);
     }
   } catch (error) {
     console.error('Dashboard: failed to fetch user', error);
@@ -90,6 +105,8 @@ export default async function Dashboard() {
       personalSummary={personalSummary}
       workspaceBreakdown={workspaceBreakdown}
       taskTrend={taskTrend}
+      hotItems={hotItems}
+      hotWorkspaces={hotWorkspaces}
     />
   );
 }
