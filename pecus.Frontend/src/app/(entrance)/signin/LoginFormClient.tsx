@@ -1,7 +1,6 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { login } from '@/actions/auth';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
