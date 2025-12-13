@@ -52,35 +52,20 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
 
   return (
     <section aria-labelledby="hot-items-heading" className="card bg-base-100 shadow-sm border border-base-300">
-      <div className="card-body p-4">
-        <h2 id="hot-items-heading" className="text-lg font-semibold flex items-center gap-2 mb-3">
+      <div className="card-body p-4 gap-1">
+        <h2 id="hot-items-heading" className="text-lg font-semibold flex items-center gap-2">
           <span className="icon-[mdi--fire] w-5 h-5 text-orange-500" aria-hidden="true" />
           ホットアイテム
           <span className="text-sm font-normal text-base-content/60 ml-auto">{periodLabel}</span>
         </h2>
-
-        <ul className="space-y-2" aria-label="アクティビティが多いアイテム">
-          {items.map((item, index) => (
+        <p className="text-xs text-base-content/50">編集・更新などの操作が多いアイテム</p>
+        <ul className="space-y-1" aria-label="アクティビティが多いアイテム">
+          {items.map((item) => (
             <li key={item.itemId}>
               <Link
                 href={`/workspaces/${item.workspaceCode}?itemCode=${item.itemCode}`}
                 className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200 transition-colors group"
               >
-                {/* ランキング番号 */}
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    index === 0
-                      ? 'bg-yellow-500 text-white'
-                      : index === 1
-                        ? 'bg-gray-400 text-white'
-                        : index === 2
-                          ? 'bg-amber-700 text-white'
-                          : 'bg-base-300 text-base-content/70'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-
                 {/* アイテム情報 */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

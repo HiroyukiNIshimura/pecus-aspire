@@ -34,35 +34,20 @@ export default function HotWorkspacesCard({ data }: HotWorkspacesCardProps) {
 
   return (
     <section aria-labelledby="hot-workspaces-heading" className="card bg-base-100 shadow-sm border border-base-300">
-      <div className="card-body p-4">
-        <h2 id="hot-workspaces-heading" className="text-lg font-semibold flex items-center gap-2 mb-3">
+      <div className="flex flex-col p-4 gap-1">
+        <h2 id="hot-workspaces-heading" className="text-lg font-semibold flex items-center gap-2">
           <span className="icon-[mdi--target] w-5 h-5 text-primary" aria-hidden="true" />
           タスク集中エリア
           <span className="text-sm font-normal text-base-content/60 ml-auto">{periodLabel}</span>
         </h2>
-
-        <ul className="space-y-2" aria-label="タスク活動が多いワークスペース">
-          {workspaces.map((ws, index) => (
+        <p className="text-xs text-base-content/50">タスクの追加・完了が多いワークスペース</p>
+        <ul className="space-y-1" aria-label="タスク活動が多いワークスペース">
+          {workspaces.map((ws) => (
             <li key={ws.workspaceId}>
               <Link
                 href={`/workspaces/${ws.workspaceCode}`}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 transition-colors group"
               >
-                {/* ランキング番号 */}
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    index === 0
-                      ? 'bg-yellow-500 text-white'
-                      : index === 1
-                        ? 'bg-gray-400 text-white'
-                        : index === 2
-                          ? 'bg-amber-700 text-white'
-                          : 'bg-base-300 text-base-content/70'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-
                 {/* ワークスペース情報 */}
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {ws.genreIcon && (
