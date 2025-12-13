@@ -66,11 +66,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                       className="flex items-center gap-2 hover:text-primary transition-colors"
                     >
                       {ws.genreIcon && (
-                        <img
-                          src={`/icons/genres/${ws.genreIcon}.svg`}
-                          alt=""
-                          className="w-4 h-4 flex-shrink-0"
-                        />
+                        <img src={`/icons/genres/${ws.genreIcon}.svg`} alt="" className="w-4 h-4 flex-shrink-0" />
                       )}
                       <span className="font-medium">{ws.workspaceName}</span>
                       <span className="text-xs text-base-content/50 hidden sm:inline">({ws.workspaceCode})</span>
