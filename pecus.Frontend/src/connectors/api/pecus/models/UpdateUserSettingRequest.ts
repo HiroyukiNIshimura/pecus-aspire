@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { LandingPage } from './LandingPage';
 /**
  * 自ユーザー設定の更新リクエスト
  */
@@ -23,6 +24,7 @@ export type UpdateUserSettingRequest = {
      * 言語設定（TODO：未使用）
      */
     language: string;
+    landingPage?: LandingPage;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */

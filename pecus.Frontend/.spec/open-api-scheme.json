@@ -9641,6 +9641,16 @@
         "additionalProperties": false,
         "description": "ページネーション付きレスポンス"
       },
+      "LandingPage": {
+        "enum": [
+          "Dashboard",
+          "Workspace",
+          "MyItems",
+          "Tasks",
+          "Committer"
+        ],
+        "type": "string"
+      },
       "LoginDeviceInfo": {
         "type": "object",
         "properties": {
@@ -9798,6 +9808,9 @@
           },
           "device": {
             "$ref": "#/components/schemas/LoginDeviceInfo"
+          },
+          "landingPage": {
+            "$ref": "#/components/schemas/LandingPage"
           }
         },
         "additionalProperties": false,
@@ -12618,6 +12631,9 @@
             "type": "string",
             "description": "言語設定（TODO：未使用）"
           },
+          "landingPage": {
+            "$ref": "#/components/schemas/LandingPage"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "ユーザー設定の楽観的ロック用 RowVersion",
@@ -13191,6 +13207,9 @@
             "minLength": 1,
             "type": "string",
             "description": "言語設定（TODO：未使用）"
+          },
+          "landingPage": {
+            "$ref": "#/components/schemas/LandingPage"
           },
           "rowVersion": {
             "type": "integer",

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Models.Responses.User;
 
@@ -32,6 +33,11 @@ public class UserSettingResponse : IConflictModel
     /// </summary>
     [Required]
     public string Language { get; set; } = "ja-JP";
+
+    /// <summary>
+    /// ログイン後のランディングページ
+    /// </summary>
+    public LandingPage? LandingPage { get; set; }
 
     /// <summary>
     /// ユーザー設定の楽観的ロック用 RowVersion

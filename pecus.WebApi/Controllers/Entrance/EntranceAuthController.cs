@@ -129,7 +129,8 @@ public class EntranceAuthController : ControllerBase
                 Id = refreshToken.DeviceId,
                 PublicId = refreshToken.DevicePublicId,
                 IsNewDevice = refreshToken.ChangeDevice
-            }
+            },
+            LandingPage = user.Setting?.LandingPage
         };
 
         if (refreshToken.ChangeDevice)

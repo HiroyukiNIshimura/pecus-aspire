@@ -10,6 +10,7 @@ import type {
   AvatarType,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
+  LandingPage,
   MessageResponse,
   SuccessResponse,
   UserDetailResponse,
@@ -319,15 +320,17 @@ export async function updateUserSetting(request: {
   canReceiveRealtimeNotification: boolean;
   timeZone: string;
   language: string;
+  landingPage?: LandingPage;
   rowVersion: number;
 }): Promise<ApiResponse<UserSettingResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.profile.putApiProfileSetting({
       canReceiveEmail: request.canReceiveEmail,
-      canReceiveRealtimeNotification: request.canReceiveRealtimeNotification, // 現状変更不可のため undefined を送信
-      timeZone: request.timeZone, // 現状変更不可のため undefined を送信
-      language: request.language, // 現状変更不可のため undefined を送信
+      canReceiveRealtimeNotification: request.canReceiveRealtimeNotification,
+      timeZone: request.timeZone,
+      language: request.language,
+      landingPage: request.landingPage,
       rowVersion: request.rowVersion,
     });
     return { success: true, data: response };

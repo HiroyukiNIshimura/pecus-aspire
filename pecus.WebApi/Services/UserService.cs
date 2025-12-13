@@ -69,6 +69,7 @@ public class UserService
         // EmailまたはLoginIdで検索
         var user = await _context
             .Users.Include(u => u.Roles)
+            .Include(u => u.Setting)
             .FirstOrDefaultAsync(u =>
                 (u.Email == request.LoginIdentifier || u.LoginId == request.LoginIdentifier)
                 && u.IsActive
@@ -817,6 +818,10 @@ public class UserService
                     ? new UserSettingResponse
                     {
                         CanReceiveEmail = latestUser.Setting.CanReceiveEmail,
+                        CanReceiveRealtimeNotification = latestUser.Setting.CanReceiveRealtimeNotification,
+                        TimeZone = latestUser.Setting.TimeZone,
+                        Language = latestUser.Setting.Language,
+                        LandingPage = latestUser.Setting.LandingPage,
                         RowVersion = latestUser.Setting.RowVersion,
                     }
                     : new UserSettingResponse(),

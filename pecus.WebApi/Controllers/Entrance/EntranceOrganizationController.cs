@@ -153,6 +153,10 @@ public class EntranceOrganizationController : ControllerBase
                 Setting = new UserSettingResponse
                 {
                     CanReceiveEmail = adminUser.Setting?.CanReceiveEmail ?? true,
+                    CanReceiveRealtimeNotification = adminUser.Setting?.CanReceiveRealtimeNotification ?? true,
+                    TimeZone = adminUser.Setting?.TimeZone ?? "Asia/Tokyo",
+                    Language = adminUser.Setting?.Language ?? "ja-JP",
+                    LandingPage = adminUser.Setting?.LandingPage,
                     RowVersion = adminUser.Setting?.RowVersion ?? 0,
                 },
             },

@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AvatarType } from './AvatarType';
+import type { LandingPage } from './LandingPage';
 import type { LoginDeviceInfo } from './LoginDeviceInfo';
 import type { RoleInfoResponse } from './RoleInfoResponse';
 /**
@@ -59,5 +60,6 @@ export type LoginResponse = {
      */
     refreshExpiresAt?: string | null;
     device?: LoginDeviceInfo;
+    landingPage?: LandingPage;
 };
 

@@ -48,6 +48,7 @@ export type { GenreCount } from './models/GenreCount';
 export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
 export type { ItemWithTasksResponse } from './models/ItemWithTasksResponse';
 export type { ItemWithTasksResponsePagedResponse } from './models/ItemWithTasksResponsePagedResponse';
+export type { LandingPage } from './models/LandingPage';
 export type { LoginDeviceInfo } from './models/LoginDeviceInfo';
 export type { LoginRequest } from './models/LoginRequest';
 export type { LoginResponse } from './models/LoginResponse';

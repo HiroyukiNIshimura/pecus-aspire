@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { updateUserSetting } from '@/actions/profile';
 import AppHeader from '@/components/common/AppHeader';
-import type { UserSettingResponse } from '@/connectors/api/pecus';
+import type { LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { UserInfo } from '@/types/userInfo';
+import { LANDING_PAGE_OPTIONS } from '@/utils/landingPage';
 
 interface UserSettingsClientProps {
   initialUser: UserInfo;
@@ -19,11 +20,12 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
   const [settings, setSettings] = useState<UserSettingResponse>(initialSettings);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, type } = e.target;
+    const value = type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
     setSettings({
       ...settings,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value === '' ? undefined : value,
     });
   };
 
@@ -36,6 +38,7 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
         canReceiveRealtimeNotification: settings.canReceiveRealtimeNotification,
         timeZone: settings.timeZone,
         language: settings.language,
+        landingPage: settings.landingPage as LandingPage | undefined,
         rowVersion: settings.rowVersion ?? 0,
       });
 
@@ -90,6 +93,29 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                       <p className="text-sm text-base-content/70 mt-1">システムからの通知メールを受信します</p>
                     </div>
                   </label>
+                </div>
+
+                <div className="form-control">
+                  <label htmlFor="landingPage" className="label">
+                    <span className="label-text font-semibold">ログイン後の表示ページ</span>
+                  </label>
+                  <select
+                    id="landingPage"
+                    name="landingPage"
+                    className="select select-bordered w-full"
+                    value={settings.landingPage ?? 'Dashboard'}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                  >
+                    {LANDING_PAGE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-base-content/70 mt-1">
+                    ログイン後に最初に表示されるページを選択できます
+                  </p>
                 </div>
 
                 {/* 必要に応じて他の設定項目を追加 */}

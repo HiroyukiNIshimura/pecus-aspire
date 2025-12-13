@@ -81,6 +81,11 @@ public class LoginResponse
     /// ログインに使用したデバイス情報
     /// </summary>
     public LoginDeviceInfo? Device { get; set; }
+
+    /// <summary>
+    /// ログイン後のランディングページ
+    /// </summary>
+    public LandingPage? LandingPage { get; set; }
 }
 
 /// <summary>

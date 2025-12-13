@@ -1,3 +1,5 @@
+using Pecus.Libs.DB.Models.Enums;
+
 namespace Pecus.Libs.DB.Models;
 
 /// <summary>
@@ -41,6 +43,11 @@ public class UserSetting
     /// 言語設定（TODO：未使用）
     /// </summary>
     public string Language { get; set; } = "ja-JP";
+
+    /// <summary>
+    /// ログイン後のランディングページ
+    /// </summary>
+    public LandingPage? LandingPage { get; set; }
 
 
     /// <summary>

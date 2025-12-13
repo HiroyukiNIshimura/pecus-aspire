@@ -120,6 +120,10 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = targetUser.Setting?.CanReceiveEmail ?? true,
+                CanReceiveRealtimeNotification = targetUser.Setting?.CanReceiveRealtimeNotification ?? true,
+                TimeZone = targetUser.Setting?.TimeZone ?? "Asia/Tokyo",
+                Language = targetUser.Setting?.Language ?? "ja-JP",
+                LandingPage = targetUser.Setting?.LandingPage,
                 RowVersion = targetUser.Setting?.RowVersion ?? 0,
             },
         };
@@ -201,6 +205,10 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = u.Setting?.CanReceiveEmail ?? true,
+                CanReceiveRealtimeNotification = u.Setting?.CanReceiveRealtimeNotification ?? true,
+                TimeZone = u.Setting?.TimeZone ?? "Asia/Tokyo",
+                Language = u.Setting?.Language ?? "ja-JP",
+                LandingPage = u.Setting?.LandingPage,
                 RowVersion = u.Setting?.RowVersion ?? 0,
             },
         });
@@ -477,6 +485,10 @@ public class AdminUserController : BaseAdminController
             Setting = new UserSettingResponse
             {
                 CanReceiveEmail = user.Setting?.CanReceiveEmail ?? true,
+                CanReceiveRealtimeNotification = user.Setting?.CanReceiveRealtimeNotification ?? true,
+                TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
+                Language = user.Setting?.Language ?? "ja-JP",
+                LandingPage = user.Setting?.LandingPage,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };

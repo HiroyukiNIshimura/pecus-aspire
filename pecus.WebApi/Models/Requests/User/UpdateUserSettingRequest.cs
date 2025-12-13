@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Models.Requests.User;
 
@@ -32,6 +33,11 @@ public class UpdateUserSettingRequest
     /// </summary>
     [Required(ErrorMessage = "言語設定は必須です。")]
     public required string Language { get; set; } = "ja-JP";
+
+    /// <summary>
+    /// ログイン後のランディングページ
+    /// </summary>
+    public LandingPage? LandingPage { get; set; }
 
     /// <summary>
     /// ユーザー設定の楽観的ロック用 RowVersion

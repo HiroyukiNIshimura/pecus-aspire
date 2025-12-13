@@ -9,6 +9,7 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
 import { loginSchema } from '@/schemas/signInSchemas';
 import { getDeviceInfo } from '@/utils/deviceInfo';
+import { getLandingPageUrl } from '@/utils/landingPage';
 
 /**
  * ログインフォーム (Client Component)
@@ -70,7 +71,9 @@ export default function LoginFormClient() {
         });
 
         if (result.success) {
-          router.push('/');
+          const redirectUrl = getLandingPageUrl(result.data?.landingPage);
+          // ハードナビゲーションでCookieを確実に反映
+          window.location.href = redirectUrl;
           return;
         }
 
