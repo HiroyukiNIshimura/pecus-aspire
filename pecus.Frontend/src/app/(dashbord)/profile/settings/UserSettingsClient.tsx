@@ -18,7 +18,11 @@ interface UserSettingsClientProps {
 const FOCUS_SCORE_PRIORITY_OPTIONS: { value: FocusScorePriority; label: string; description: string }[] = [
   { value: 'Priority', label: '優先度重視', description: 'タスクの優先度を最も重視してスコアリングします' },
   { value: 'Deadline', label: '期限重視', description: 'タスクの期限を最も重視してスコアリングします' },
-  { value: 'SuccessorImpact', label: '後続タスク影響重視', description: '後続タスクへの影響を最も重視してスコアリングします' },
+  {
+    value: 'SuccessorImpact',
+    label: '後続タスク影響重視',
+    description: '後続タスクへの影響を最も重視してスコアリングします',
+  },
 ];
 
 export default function UserSettingsClient({ initialUser, initialSettings, fetchError }: UserSettingsClientProps) {
@@ -154,8 +158,11 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     ))}
                   </select>
                   <p className="text-sm text-base-content/70 mt-1">
-                    {FOCUS_SCORE_PRIORITY_OPTIONS.find((opt) => opt.value === (settings.focusScorePriority ?? 'Deadline'))
-                      ?.description}
+                    {
+                      FOCUS_SCORE_PRIORITY_OPTIONS.find(
+                        (opt) => opt.value === (settings.focusScorePriority ?? 'Deadline'),
+                      )?.description
+                    }
                   </p>
                 </div>
 
@@ -173,7 +180,9 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     disabled={isLoading}
                     ariaLabel="フォーカス推奨タスクの表示件数"
                   />
-                  <p className="text-sm text-base-content/70 mt-1">着手可能なタスクのうち、上位何件を表示するか設定します</p>
+                  <p className="text-sm text-base-content/70 mt-1">
+                    着手可能なタスクのうち、上位何件を表示するか設定します
+                  </p>
                 </div>
 
                 <div className="form-control">
@@ -190,7 +199,9 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     disabled={isLoading}
                     ariaLabel="待機中タスクの表示件数"
                   />
-                  <p className="text-sm text-base-content/70 mt-1">先行タスクが未完了で待機中のタスクのうち、上位何件を表示するか設定します</p>
+                  <p className="text-sm text-base-content/70 mt-1">
+                    先行タスクが未完了で待機中のタスクのうち、上位何件を表示するか設定します
+                  </p>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
