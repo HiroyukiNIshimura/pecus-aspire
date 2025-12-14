@@ -496,30 +496,30 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           {!isDocumentMode && (
             <div id="tasks">
               <WorkspaceTasks
-              workspaceId={workspaceId}
-              itemId={itemId}
-              itemOwnerId={item?.ownerId}
-              itemAssigneeId={item?.assigneeId}
-              itemCommitterId={item?.committerId}
-              itemCommitterName={item?.committerUsername}
-              itemCommitterAvatarUrl={item?.committerAvatarUrl}
-              taskTypes={taskTypes}
-              currentUser={
-                currentUserId && members.length > 0
-                  ? (() => {
-                      const user = members.find((m) => m.id === currentUserId);
-                      return user
-                        ? {
-                            id: user.id || 0,
-                            username: user.userName || '',
-                            email: user.email || '',
-                            identityIconUrl: user.identityIconUrl || null,
-                          }
-                        : null;
-                    })()
-                  : null
-              }
-            />
+                workspaceId={workspaceId}
+                itemId={itemId}
+                itemOwnerId={item?.ownerId}
+                itemAssigneeId={item?.assigneeId}
+                itemCommitterId={item?.committerId}
+                itemCommitterName={item?.committerUsername}
+                itemCommitterAvatarUrl={item?.committerAvatarUrl}
+                taskTypes={taskTypes}
+                currentUser={
+                  currentUserId && members.length > 0
+                    ? (() => {
+                        const user = members.find((m) => m.id === currentUserId);
+                        return user
+                          ? {
+                              id: user.id || 0,
+                              username: user.userName || '',
+                              email: user.email || '',
+                              identityIconUrl: user.identityIconUrl || null,
+                            }
+                          : null;
+                      })()
+                    : null
+                }
+              />
             </div>
           )}
         </div>
