@@ -26,6 +26,7 @@ export type { CreateUserWithoutPasswordRequest } from './models/CreateUserWithou
 export type { CreateWorkspaceItemRequest } from './models/CreateWorkspaceItemRequest';
 export type { CreateWorkspaceRequest } from './models/CreateWorkspaceRequest';
 export type { CreateWorkspaceTaskRequest } from './models/CreateWorkspaceTaskRequest';
+export type { DashboardHelpCommentsResponse } from './models/DashboardHelpCommentsResponse';
 export type { DashboardHotItemsResponse } from './models/DashboardHotItemsResponse';
 export type { DashboardHotWorkspacesResponse } from './models/DashboardHotWorkspacesResponse';
 export type { DashboardItemSummary } from './models/DashboardItemSummary';
@@ -50,6 +51,7 @@ export type { FocusScorePriority } from './models/FocusScorePriority';
 export type { FocusTaskResponse } from './models/FocusTaskResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';
+export type { HelpCommentItem } from './models/HelpCommentItem';
 export type { HelpNotificationTarget } from './models/HelpNotificationTarget';
 export type { HotItemEntry } from './models/HotItemEntry';
 export type { HotWorkspaceEntry } from './models/HotWorkspaceEntry';

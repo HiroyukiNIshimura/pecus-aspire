@@ -77,6 +77,7 @@ export async function updateOrganizationSetting(request: {
   generativeApiKey?: string | null;
   requireEstimateOnTaskCreation?: boolean;
   enforcePredecessorCompletion?: boolean;
+  dashboardHelpCommentMaxCount?: number;
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

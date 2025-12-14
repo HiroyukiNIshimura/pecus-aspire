@@ -68,6 +68,12 @@ public class AdminUpdateOrganizationSettingRequest
     public bool EnforcePredecessorCompletion { get; set; }
 
     /// <summary>
+    /// ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
+    /// </summary>
+    [Range(5, 20, ErrorMessage = "ダッシュボードのヘルプコメント最大件数は5〜20の範囲で指定してください。")]
+    public int DashboardHelpCommentMaxCount { get; set; } = 6;
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

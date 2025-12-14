@@ -4,6 +4,7 @@ import { useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
 import {
+  HelpCommentsCard,
   HotItemsCard,
   HotWorkspacesCard,
   PersonalSummarySection,
@@ -13,6 +14,7 @@ import {
   WorkspaceBreakdownTable,
 } from '@/components/dashboard';
 import type {
+  DashboardHelpCommentsResponse,
   DashboardHotItemsResponse,
   DashboardHotWorkspacesResponse,
   DashboardPersonalSummaryResponse,
@@ -40,6 +42,8 @@ interface DashboardClientProps {
   hotItems?: DashboardHotItemsResponse | null;
   /** ホットワークスペース */
   hotWorkspaces?: DashboardHotWorkspacesResponse | null;
+  /** ヘルプコメント */
+  helpComments?: DashboardHelpCommentsResponse | null;
 }
 
 export default function DashboardClient({
@@ -52,6 +56,7 @@ export default function DashboardClient({
   taskTrend,
   hotItems,
   hotWorkspaces,
+  helpComments,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
@@ -134,6 +139,9 @@ export default function DashboardClient({
               </div>
             )}
 
+            {/* ヘルプリクエスト */}
+            {helpComments && <HelpCommentsCard data={helpComments} />}
+
             {/* データがない場合のフォールバック */}
             {!summary &&
               !tasksByPriority &&
@@ -142,6 +150,7 @@ export default function DashboardClient({
               !taskTrend &&
               !hotItems &&
               !hotWorkspaces &&
+              !helpComments &&
               !fetchError && (
                 <div className="text-center py-12 text-base-content/60">
                   <span className="icon-[mdi--chart-box-outline] w-16 h-16 mb-4" aria-hidden="true" />

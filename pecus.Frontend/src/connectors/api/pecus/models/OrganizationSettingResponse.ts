@@ -41,6 +41,10 @@ export type OrganizationSettingResponse = {
      */
     enforcePredecessorCompletion: boolean;
     /**
+     * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
+     */
+    dashboardHelpCommentMaxCount: number;
+    /**
      * 楽観的ロック用RowVersion
      */
     rowVersion: number;

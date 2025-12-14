@@ -73,6 +73,11 @@ public class OrganizationSetting
     public bool EnforcePredecessorCompletion { get; set; } = false;
 
     /// <summary>
+    /// ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
+    /// </summary>
+    public int DashboardHelpCommentMaxCount { get; set; } = 6;
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

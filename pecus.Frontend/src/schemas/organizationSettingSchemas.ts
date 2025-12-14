@@ -74,6 +74,14 @@ export const organizationSettingSchema = z.object({
   }, z.string().max(512, '生成APIキーは512文字以内で入力してください。').optional()),
   requireEstimateOnTaskCreation: z.boolean().default(false),
   enforcePredecessorCompletion: z.boolean().default(false),
+  dashboardHelpCommentMaxCount: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? 6 : Number(val)),
+    z
+      .number({ message: 'ヘルプコメント表示件数は必須です。' })
+      .int('ヘルプコメント表示件数は整数で入力してください。')
+      .min(5, 'ヘルプコメント表示件数は5以上で入力してください。')
+      .max(20, 'ヘルプコメント表示件数は20以下で入力してください。'),
+  ),
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {

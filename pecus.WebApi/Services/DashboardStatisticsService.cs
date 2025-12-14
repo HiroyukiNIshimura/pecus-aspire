@@ -627,4 +627,88 @@ public class DashboardStatisticsService
     }
 
     #endregion
+
+    #region ヘルプコメント
+
+    /// <summary>
+    /// ヘルプコメント一覧を取得
+    /// 組織設定の最大件数を使用
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>ヘルプコメント一覧</returns>
+    public async Task<DashboardHelpCommentsResponse> GetHelpCommentsAsync(int organizationId)
+    {
+        // 組織設定から表示件数を取得
+        var orgSetting = await _context.OrganizationSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+        var limit = orgSetting?.DashboardHelpCommentMaxCount ?? 6;
+
+        // 組織内のワークスペースID一覧を取得
+        var workspaceIds = await _context.Workspaces
+            .Where(w => w.OrganizationId == organizationId && w.IsActive)
+            .Select(w => w.Id)
+            .ToListAsync();
+
+        // HelpWanted タイプのコメントを取得（未完了・未破棄タスクのみ）
+        var query = _context.TaskComments
+            .AsNoTracking()
+            .Include(c => c.User)
+            .Include(c => c.WorkspaceTask)
+                .ThenInclude(t => t.WorkspaceItem)
+                    .ThenInclude(i => i!.Workspace)
+            .Include(c => c.WorkspaceTask)
+                .ThenInclude(t => t.AssignedUser)
+            .Where(c =>
+                c.CommentType == TaskCommentType.HelpWanted &&
+                !c.IsDeleted &&
+                c.WorkspaceTask != null &&
+                !c.WorkspaceTask.IsCompleted &&
+                !c.WorkspaceTask.IsDiscarded &&
+                c.WorkspaceTask.WorkspaceItem != null &&
+                workspaceIds.Contains(c.WorkspaceTask.WorkspaceItem.WorkspaceId)
+            )
+            .OrderByDescending(c => c.CreatedAt);
+
+        // 総件数を取得
+        var totalCount = await query.CountAsync();
+
+        // 件数制限して取得
+        var comments = await query
+            .Take(limit)
+            .Select(c => new HelpCommentItem
+            {
+                CommentId = c.Id,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                CommentUserId = c.UserId,
+                CommentUsername = c.User.Username,
+                CommentUserAvatarUrl = IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: c.User.AvatarType,
+                    userId: c.User.Id,
+                    username: c.User.Username,
+                    email: c.User.Email,
+                    avatarPath: c.User.UserAvatarPath
+                ),
+                TaskId = c.WorkspaceTaskId,
+                TaskContent = c.WorkspaceTask!.Content,
+                TaskAssigneeId = c.WorkspaceTask.AssignedUserId,
+                TaskAssigneeName = c.WorkspaceTask.AssignedUser != null ? c.WorkspaceTask.AssignedUser.Username : null,
+                WorkspaceId = c.WorkspaceTask.WorkspaceItem!.WorkspaceId,
+                WorkspaceCode = c.WorkspaceTask.WorkspaceItem.Workspace!.Code ?? string.Empty,
+                WorkspaceName = c.WorkspaceTask.WorkspaceItem.Workspace.Name ?? string.Empty,
+                ItemId = c.WorkspaceTask.WorkspaceItemId,
+                ItemCode = c.WorkspaceTask.WorkspaceItem.Code,
+                ItemSubject = c.WorkspaceTask.WorkspaceItem.Subject,
+            })
+            .ToListAsync();
+
+        return new DashboardHelpCommentsResponse
+        {
+            Comments = comments,
+            TotalCount = totalCount,
+        };
+    }
+
+    #endregion
 }

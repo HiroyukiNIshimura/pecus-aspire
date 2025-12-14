@@ -68,6 +68,12 @@ public class OrganizationSettingResponse : IConflictModel
     public bool EnforcePredecessorCompletion { get; set; }
 
     /// <summary>
+    /// ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
+    /// </summary>
+    [Required]
+    public int DashboardHelpCommentMaxCount { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required]

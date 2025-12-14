@@ -5,6 +5,7 @@ import { updateOrganizationSetting } from '@/actions/admin/organizations';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
+import { Slider } from '@/components/common/Slider';
 import type { HelpNotificationTarget, OrganizationResponse, OrganizationSettingResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
@@ -131,6 +132,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     generativeApiKey: '',
     requireEstimateOnTaskCreation: false,
     enforcePredecessorCompletion: false,
+    dashboardHelpCommentMaxCount: 6,
     rowVersion: 0,
   };
 
@@ -146,6 +148,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     generativeApiKey: initialSetting.generativeApiKey ?? '',
     requireEstimateOnTaskCreation: initialSetting.requireEstimateOnTaskCreation ?? false,
     enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
+    dashboardHelpCommentMaxCount: initialSetting.dashboardHelpCommentMaxCount ?? 6,
   });
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
@@ -164,6 +167,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             generativeApiKey: data.generativeApiVendor === 'None' ? null : (data.generativeApiKey ?? null),
             requireEstimateOnTaskCreation: data.requireEstimateOnTaskCreation ?? false,
             enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
+            dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
             rowVersion,
           });
 
@@ -202,6 +206,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
         (setting as OrganizationSettingResponse & { generativeApiKey?: string | null }).generativeApiKey ?? '',
       requireEstimateOnTaskCreation: setting.requireEstimateOnTaskCreation ?? false,
       enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
+      dashboardHelpCommentMaxCount: setting.dashboardHelpCommentMaxCount ?? 6,
     });
   };
 
@@ -548,6 +553,37 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       <p className="text-sm text-base-content/60 pl-12">
                         有効にすると、先行タスクが完了するまで後続タスクを操作できなくなります。
                       </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ダッシュボード設定 */}
+                <div className="card bg-base-100 shadow-sm">
+                  <div className="card-body">
+                    <h2 className="card-title text-lg mb-4">
+                      <span className="icon-[mdi--view-dashboard-outline] size-5" aria-hidden="true" />
+                      ダッシュボード設定
+                    </h2>
+
+                    <div className="space-y-4">
+                      <Slider
+                        min={5}
+                        max={20}
+                        step={1}
+                        value={formData.dashboardHelpCommentMaxCount ?? 6}
+                        onChange={(value) => handleFieldChange('dashboardHelpCommentMaxCount', value)}
+                        label="ヘルプコメント表示件数"
+                        showValue
+                        valueFormatter={(v) => `${v}件`}
+                        disabled={isSubmitting}
+                        ariaLabel="ダッシュボードに表示するヘルプコメントの最大件数"
+                      />
+                      <p className="text-sm text-base-content/60">
+                        ダッシュボードに表示する「ヘルプを求めているタスク」の最大件数を設定します。
+                      </p>
+                      {shouldShowError('dashboardHelpCommentMaxCount') && (
+                        <p className="text-sm text-error">{getFieldError('dashboardHelpCommentMaxCount')}</p>
+                      )}
                     </div>
                   </div>
                 </div>

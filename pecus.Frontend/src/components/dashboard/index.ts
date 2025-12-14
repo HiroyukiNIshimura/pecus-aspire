@@ -1,3 +1,4 @@
+export { default as HelpCommentsCard } from './HelpCommentsCard';
 export { default as HotItemsCard } from './HotItemsCard';
 export { default as HotWorkspacesCard } from './HotWorkspacesCard';
 export { default as PersonalSummarySection } from './PersonalSummarySection';

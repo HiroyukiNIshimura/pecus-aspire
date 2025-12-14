@@ -156,4 +156,19 @@ public class DashboardStatisticsController : BaseSecureController
         var response = await _dashboardService.GetHotWorkspacesAsync(CurrentOrganizationId!.Value, hotPeriod, limit);
         return TypedResults.Ok(response);
     }
+
+    /// <summary>
+    /// ヘルプコメント一覧を取得
+    /// HelpWanted タイプのコメントで、未完了・未破棄のタスクに紐づくもの
+    /// </summary>
+    /// <returns>ヘルプコメント一覧</returns>
+    [HttpGet("help-comments")]
+    [ProducesResponseType(typeof(DashboardHelpCommentsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<DashboardHelpCommentsResponse>> GetHelpComments()
+    {
+        var response = await _dashboardService.GetHelpCommentsAsync(CurrentOrganizationId!.Value);
+        return TypedResults.Ok(response);
+    }
 }

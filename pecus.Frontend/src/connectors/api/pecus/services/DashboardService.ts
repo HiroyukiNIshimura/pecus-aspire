@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { DashboardHelpCommentsResponse } from '../models/DashboardHelpCommentsResponse';
 import type { DashboardHotItemsResponse } from '../models/DashboardHotItemsResponse';
 import type { DashboardHotWorkspacesResponse } from '../models/DashboardHotWorkspacesResponse';
 import type { DashboardPersonalSummaryResponse } from '../models/DashboardPersonalSummaryResponse';
@@ -143,6 +144,22 @@ export class DashboardService {
                 'period': period,
                 'limit': limit,
             },
+            errors: {
+                401: `Unauthorized`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ヘルプコメント一覧を取得
+     * HelpWanted タイプのコメントで、未完了・未破棄のタスクに紐づくもの
+     * @returns DashboardHelpCommentsResponse OK
+     * @throws ApiError
+     */
+    public static getApiDashboardHelpComments(): CancelablePromise<DashboardHelpCommentsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/dashboard/help-comments',
             errors: {
                 401: `Unauthorized`,
                 500: `Internal Server Error`,

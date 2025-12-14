@@ -292,6 +292,7 @@ public class OrganizationService
         setting.HelpNotificationTarget = request.HelpNotificationTarget;
         setting.RequireEstimateOnTaskCreation = request.RequireEstimateOnTaskCreation;
         setting.EnforcePredecessorCompletion = request.EnforcePredecessorCompletion;
+        setting.DashboardHelpCommentMaxCount = request.DashboardHelpCommentMaxCount;
         setting.UpdatedAt = DateTimeOffset.UtcNow;
         setting.UpdatedByUserId = updatedByUserId;
 
@@ -316,6 +317,7 @@ public class OrganizationService
             HelpNotificationTarget = setting.HelpNotificationTarget,
             RequireEstimateOnTaskCreation = setting.RequireEstimateOnTaskCreation,
             EnforcePredecessorCompletion = setting.EnforcePredecessorCompletion,
+            DashboardHelpCommentMaxCount = setting.DashboardHelpCommentMaxCount,
             RowVersion = setting.RowVersion,
         };
     }
@@ -514,6 +516,7 @@ public class OrganizationService
                         HelpNotificationTarget = latestOrganization.Setting.HelpNotificationTarget,
                         RequireEstimateOnTaskCreation = latestOrganization.Setting.RequireEstimateOnTaskCreation,
                         EnforcePredecessorCompletion = latestOrganization.Setting.EnforcePredecessorCompletion,
+                        DashboardHelpCommentMaxCount = latestOrganization.Setting.DashboardHelpCommentMaxCount,
                         RowVersion = latestOrganization.Setting.RowVersion,
                     }
                     : new OrganizationSettingResponse
@@ -526,6 +529,7 @@ public class OrganizationService
                         HelpNotificationTarget = null,
                         RequireEstimateOnTaskCreation = false,
                         EnforcePredecessorCompletion = false,
+                        DashboardHelpCommentMaxCount = 6,
                         RowVersion = 0,
                     },
             }

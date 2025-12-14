@@ -79,6 +79,7 @@ public class MyOrganizationController : BaseSecureController
                 HelpNotificationTarget = organization.Setting?.HelpNotificationTarget,
                 RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
                 EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
+                DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };

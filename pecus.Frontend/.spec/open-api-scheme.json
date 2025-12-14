@@ -2782,6 +2782,39 @@
         }
       }
     },
+    "/api/dashboard/help-comments": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "ヘルプコメント一覧を取得\nHelpWanted タイプのコメントで、未完了・未破棄のタスクに紐づくもの",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardHelpCommentsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/entrance/auth/login": {
       "post": {
         "tags": [
@@ -8868,6 +8901,13 @@
             "type": "boolean",
             "description": "先行タスクが完了しないと次のタスクを操作できないようにするか"
           },
+          "dashboardHelpCommentMaxCount": {
+            "maximum": 20,
+            "minimum": 5,
+            "type": "integer",
+            "description": "ダッシュボードに表示するヘルプコメントの最大件数（5〜20）",
+            "format": "int32"
+          },
           "rowVersion": {
             "type": "integer",
             "description": "楽観的ロック用RowVersion",
@@ -9226,6 +9266,29 @@
         },
         "additionalProperties": false,
         "description": "ワークスペースタスク作成リクエスト"
+      },
+      "DashboardHelpCommentsResponse": {
+        "required": [
+          "comments",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HelpCommentItem"
+            },
+            "description": "ヘルプコメント一覧"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総件数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "ダッシュボード ヘルプコメント一覧レスポンス"
       },
       "DashboardHotItemsResponse": {
         "required": [
@@ -9967,6 +10030,108 @@
         },
         "additionalProperties": false,
         "description": "ジャンルごとのワークスペース数"
+      },
+      "HelpCommentItem": {
+        "required": [
+          "commentId",
+          "commentUserId",
+          "commentUsername",
+          "content",
+          "createdAt",
+          "itemCode",
+          "itemId",
+          "taskContent",
+          "taskId",
+          "workspaceCode",
+          "workspaceId",
+          "workspaceName"
+        ],
+        "type": "object",
+        "properties": {
+          "commentId": {
+            "type": "integer",
+            "description": "コメントID",
+            "format": "int32"
+          },
+          "content": {
+            "minLength": 1,
+            "type": "string",
+            "description": "コメント内容"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "コメント投稿日時",
+            "format": "date-time"
+          },
+          "commentUserId": {
+            "type": "integer",
+            "description": "コメント投稿者ID",
+            "format": "int32"
+          },
+          "commentUsername": {
+            "minLength": 1,
+            "type": "string",
+            "description": "コメント投稿者名"
+          },
+          "commentUserAvatarUrl": {
+            "type": "string",
+            "description": "コメント投稿者アバターURL",
+            "nullable": true
+          },
+          "taskId": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "taskContent": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タスク内容"
+          },
+          "taskAssigneeId": {
+            "type": "integer",
+            "description": "タスク担当者ID",
+            "format": "int32",
+            "nullable": true
+          },
+          "taskAssigneeName": {
+            "type": "string",
+            "description": "タスク担当者名",
+            "nullable": true
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペースコード"
+          },
+          "workspaceName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "ワークスペース名"
+          },
+          "itemId": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "itemCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイテムコード（PROJ-42形式）"
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "ヘルプコメント項目"
       },
       "HelpNotificationTarget": {
         "enum": [
@@ -11092,6 +11257,7 @@
       },
       "OrganizationSettingResponse": {
         "required": [
+          "dashboardHelpCommentMaxCount",
           "enforcePredecessorCompletion",
           "generativeApiVendor",
           "plan",
@@ -11146,6 +11312,11 @@
           "enforcePredecessorCompletion": {
             "type": "boolean",
             "description": "先行タスクが完了しないと次のタスクを操作できないようにするか"
+          },
+          "dashboardHelpCommentMaxCount": {
+            "type": "integer",
+            "description": "ダッシュボードに表示するヘルプコメントの最大件数（5〜20）",
+            "format": "int32"
           },
           "rowVersion": {
             "type": "integer",

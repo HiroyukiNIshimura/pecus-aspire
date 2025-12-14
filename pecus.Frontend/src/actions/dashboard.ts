@@ -2,6 +2,7 @@
 
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  DashboardHelpCommentsResponse,
   DashboardPersonalSummaryResponse,
   DashboardSummaryResponse,
   DashboardTasksByPriorityResponse,
@@ -88,5 +89,21 @@ export async function fetchTaskTrend(weeks: number = 8): Promise<ApiResponse<Das
   } catch (error: unknown) {
     console.error('Failed to fetch task trend:', error);
     return parseErrorResponse(error, 'タスクトレンドの取得に失敗しました');
+  }
+}
+
+/**
+ * ダッシュボード用ヘルプコメントを取得
+ * HelpWantedタイプのコメント一覧（組織設定の上限件数まで）
+ */
+export async function fetchHelpComments(): Promise<ApiResponse<DashboardHelpCommentsResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.dashboard.getApiDashboardHelpComments();
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    console.error('Failed to fetch help comments:', error);
+    return parseErrorResponse(error, 'ヘルプコメントの取得に失敗しました');
   }
 }
