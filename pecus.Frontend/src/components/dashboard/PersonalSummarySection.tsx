@@ -33,10 +33,10 @@ export default function PersonalSummarySection({ data }: PersonalSummarySectionP
               type="button"
               className="btn btn-sm btn-primary gap-2"
               onClick={() => setIsFocusModalOpen(true)}
-              aria-label="フォーカス推奨を表示"
+              aria-label="やることピックアップを表示"
             >
               <span className="icon-[mdi--target] w-4 h-4" aria-hidden="true" />
-              フォーカス推奨
+              やることピックアップ
             </button>
           </div>
 
