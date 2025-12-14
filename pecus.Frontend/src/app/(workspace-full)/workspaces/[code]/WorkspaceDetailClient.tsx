@@ -786,7 +786,7 @@ export default function WorkspaceDetailClient({
         )}
 
         {/* メインコンテンツ */}
-        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-none">
+        <main className="flex-1 overflow-y-auto bg-base-100 p-4 md:p-6 order-first lg:order-0">
           {/* ワークスペース詳細情報 */}
           {showWorkspaceDetail && (
             <div className="card mb-6">
@@ -798,7 +798,7 @@ export default function WorkspaceDetailClient({
 
                 {/* 説明 */}
                 {currentWorkspaceDetail.description && (
-                  <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap break-words">
+                  <p className="text-base text-base-content/70 mb-4 whitespace-pre-wrap wrap-break-word">
                     {currentWorkspaceDetail.description}
                   </p>
                 )}

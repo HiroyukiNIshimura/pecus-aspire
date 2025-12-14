@@ -345,7 +345,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                         {/* ワークスペース名 */}
                         <div>
                           <Link href={`/workspaces/${workspace.code}`}>
-                            <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words flex items-center gap-2">
+                            <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer wrap-break-word flex items-center gap-2">
                               {workspace.genreIcon && (
                                 <img
                                   src={`/icons/genres/${workspace.genreIcon}.svg`}
@@ -362,7 +362,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
                       {/* 説明 */}
                       {workspace.description && (
-                        <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
+                        <p className="text-sm text-base-content/70 line-clamp-2 mb-3 wrap-break-word">
                           {workspace.description}
                         </p>
                       )}
