@@ -42,13 +42,15 @@ public class FocusRecommendationService
         var focusTasksLimit = userSetting?.FocusTasksLimit ?? 5;
         var waitingTasksLimit = userSetting?.WaitingTasksLimit ?? 5;
 
-        // 優先要素に応じた重み設定（選択したものは5、それ以外は3）
+        // 優先要素に応じた重み設定
+        // 設計書基準: 優先度=2, 期限=3, 後続タスク影響=5
+        // 選択した要素は+2して強調
         var (priorityWeight, deadlineWeight, successorImpactWeight) = focusScorePriority switch
         {
-            FocusScorePriority.Priority => (5m, 3m, 3m),
-            FocusScorePriority.Deadline => (3m, 5m, 3m),
-            FocusScorePriority.SuccessorImpact => (3m, 3m, 5m),
-            _ => (3m, 3m, 5m) // デフォルトはDeadline
+            FocusScorePriority.Priority => (4m, 3m, 5m),     // 優先度を強調
+            FocusScorePriority.Deadline => (2m, 5m, 5m),     // 期限を強調
+            FocusScorePriority.SuccessorImpact => (2m, 3m, 7m), // 後続タスク影響を強調
+            _ => (2m, 3m, 5m) // デフォルト（設計書基準）
         };
 
         _logger.LogDebug(
@@ -192,7 +194,7 @@ public class FocusRecommendationService
     /// <summary>
     /// 優先度スコアを計算
     /// </summary>
-    /// <param name="priority">優先度（NULLの場合はMediumとして扱う）</param>
+    /// <param name="priority">優先度（NULLの場合はLowとして扱う）</param>
     /// <returns>優先度スコア（1-4）</returns>
     private decimal CalculatePriorityScore(TaskPriority? priority)
     {
@@ -202,8 +204,8 @@ public class FocusRecommendationService
             TaskPriority.High => 3m,
             TaskPriority.Medium => 2m,
             TaskPriority.Low => 1m,
-            null => 2m, // NULLの場合はMediumとして扱う
-            _ => 2m
+            null => 1m, // NULLの場合はLowとして扱う（設計書準拠）
+            _ => 1m
         };
     }
 
