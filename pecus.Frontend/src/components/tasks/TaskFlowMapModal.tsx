@@ -16,8 +16,8 @@ interface TaskFlowMapModalProps {
   itemId: number;
   /** タスクカードクリック時のコールバック（モーダルを閉じてから呼ばれる） */
   onTaskClick?: (task: TaskFlowNode) => void;
-  /** カードをクリック可能にするか */
-  clickable?: boolean;
+  /** タスクごとにクリック可能かどうかを判断する関数 */
+  canEditTask?: (task: TaskFlowNode) => boolean;
 }
 
 /**
@@ -30,7 +30,7 @@ export default function TaskFlowMapModal({
   workspaceId,
   itemId,
   onTaskClick,
-  clickable = false,
+  canEditTask,
 }: TaskFlowMapModalProps) {
   const [data, setData] = useState<TaskFlowMapResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -132,7 +132,7 @@ export default function TaskFlowMapModal({
                 </div>
               </div>
             ) : data ? (
-              <TaskFlowMap data={data} onTaskClick={handleTaskClick} clickable={clickable} />
+              <TaskFlowMap data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
             ) : null}
           </div>
 

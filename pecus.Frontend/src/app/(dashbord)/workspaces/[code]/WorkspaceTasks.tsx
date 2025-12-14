@@ -281,55 +281,59 @@ const WorkspaceTasks = ({
     [handleTaskClick],
   );
 
+  // タスク編集権限チェック関数（フローマップで各タスクのクリック可否を判断）
+  const canEditTask = useCallback(
+    (task: TaskFlowNode): boolean => {
+      if (!currentUser) return false;
+      return (
+        task.assignedUserId === currentUser.id ||
+        itemCommitterId === currentUser.id ||
+        itemAssigneeId === currentUser.id ||
+        itemOwnerId === currentUser.id
+      );
+    },
+    [currentUser, itemCommitterId, itemAssigneeId, itemOwnerId],
+  );
+
   // フローマップからのタスククリック時のハンドラ
   const handleFlowMapTaskClick = useCallback(
     (task: TaskFlowNode) => {
-      // タスク編集権限チェック: タスク担当者、アイテムのコミッター、担当者、オーナーなら編集可能
-      const canEdit =
-        currentUser &&
-        (task.assignedUserId === currentUser.id ||
-          itemCommitterId === currentUser.id ||
-          itemAssigneeId === currentUser.id ||
-          itemOwnerId === currentUser.id);
-
-      if (canEdit) {
-        // タスクリストからインデックスを探す（同じタスクがあれば）
-        const taskIndex = tasks.findIndex((t) => t.id === task.id);
-        if (taskIndex >= 0) {
-          handleTaskClick(taskIndex);
-        } else {
-          // リストにない場合は単体で編集モーダルを開く（ナビゲーションなし）
-          setEditTaskNavigation({
-            tasks: [
-              {
-                id: task.id,
-                content: task.content,
-                taskTypeId: task.taskTypeId ?? 0,
-                taskTypeName: task.taskTypeName ?? undefined,
-                taskTypeIcon: task.taskTypeIcon ?? undefined,
-                priority: task.priority,
-                dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : new Date().toISOString(),
-                progressPercentage: task.progressPercentage,
-                isCompleted: task.isCompleted,
-                isDiscarded: task.isDiscarded,
-                assignedUserId: task.assignedUserId ?? 0,
-                assignedUsername: task.assignedUsername ?? undefined,
-                assignedAvatarUrl: task.assignedAvatarUrl ?? undefined,
-                predecessorTaskId: task.predecessorTaskId,
-                successorTaskCount: task.successorCount,
-              } as WorkspaceTaskDetailResponse,
-            ],
-            currentIndex: 0,
-            currentPage: 1,
-            totalPages: 1,
-            totalCount: 1,
-            statusFilter: 'All',
-          });
-          setIsEditModalOpen(true);
-        }
+      // タスクリストからインデックスを探す（同じタスクがあれば）
+      const taskIndex = tasks.findIndex((t) => t.id === task.id);
+      if (taskIndex >= 0) {
+        handleTaskClick(taskIndex);
+      } else {
+        // リストにない場合は単体で編集モーダルを開く（ナビゲーションなし）
+        setEditTaskNavigation({
+          tasks: [
+            {
+              id: task.id,
+              content: task.content,
+              taskTypeId: task.taskTypeId ?? 0,
+              taskTypeName: task.taskTypeName ?? undefined,
+              taskTypeIcon: task.taskTypeIcon ?? undefined,
+              priority: task.priority,
+              dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : new Date().toISOString(),
+              progressPercentage: task.progressPercentage,
+              isCompleted: task.isCompleted,
+              isDiscarded: task.isDiscarded,
+              assignedUserId: task.assignedUserId ?? 0,
+              assignedUsername: task.assignedUsername ?? undefined,
+              assignedAvatarUrl: task.assignedAvatarUrl ?? undefined,
+              predecessorTaskId: task.predecessorTaskId,
+              successorTaskCount: task.successorCount,
+            } as WorkspaceTaskDetailResponse,
+          ],
+          currentIndex: 0,
+          currentPage: 1,
+          totalPages: 1,
+          totalCount: 1,
+          statusFilter: 'All',
+        });
+        setIsEditModalOpen(true);
       }
     },
-    [currentUser, itemCommitterId, itemAssigneeId, itemOwnerId, tasks, handleTaskClick],
+    [tasks, handleTaskClick],
   );
 
   // タスクタイプのアイコンパスを取得（API レスポンスから）
@@ -438,7 +442,7 @@ const WorkspaceTasks = ({
           workspaceId={workspaceId}
           itemId={itemId}
           onTaskClick={handleFlowMapTaskClick}
-          clickable={true}
+          canEditTask={canEditTask}
         />
       </div>
     );
@@ -1007,7 +1011,7 @@ const WorkspaceTasks = ({
         workspaceId={workspaceId}
         itemId={itemId}
         onTaskClick={handleFlowMapTaskClick}
-        clickable={true}
+        canEditTask={canEditTask}
       />
     </div>
   );

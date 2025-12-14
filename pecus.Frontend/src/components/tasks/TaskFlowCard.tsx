@@ -127,7 +127,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
         isInactive ? 'opacity-60' : ''
       } ${!task.canStart && !isInactive ? 'border-l-4 border-l-warning' : ''} ${
         task.successorCount > 0 && task.canStart && !isInactive ? 'border-l-4 border-l-error' : ''
-      } ${clickable ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''}`}
+      } ${clickable ? 'cursor-pointer hover:border-primary hover:shadow-md' : 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100'}`}
       onClick={clickable ? onClick : undefined}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}

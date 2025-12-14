@@ -48,7 +48,7 @@ function getTaskTypeIconPath(task: FocusTaskResponse) {
 export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
   const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}#tasks`;
   const predecessorUrl = task.predecessorTask
-    ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}`
+    ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}#tasks`
     : null;
 
   return (

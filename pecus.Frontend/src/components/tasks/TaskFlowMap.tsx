@@ -9,15 +9,15 @@ interface TaskFlowMapProps {
   data: TaskFlowMapResponse;
   /** タスクカードクリック時のコールバック */
   onTaskClick?: (task: TaskFlowNode) => void;
-  /** カードをクリック可能にするか */
-  clickable?: boolean;
+  /** タスクごとにクリック可能かどうかを判断する関数 */
+  canEditTask?: (task: TaskFlowNode) => boolean;
 }
 
 /**
  * タスクフローマップ
  * アイテム内のタスク依存関係を可視化するコンポーネント
  */
-export default function TaskFlowMap({ data, onTaskClick, clickable = false }: TaskFlowMapProps) {
+export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlowMapProps) {
   const { criticalPath, otherChains, independentTasks, summary } = data;
 
   const hasAnyTasks = summary.totalCount > 0;
@@ -76,7 +76,7 @@ export default function TaskFlowMap({ data, onTaskClick, clickable = false }: Ta
                 <span className="badge badge-error badge-sm">{criticalPath.length}ステップ</span>
               </h3>
               <div className="bg-error/5 border border-error/20 rounded-box p-4">
-                <TaskFlowChain tasks={criticalPath} onTaskClick={onTaskClick} clickable={clickable} />
+                <TaskFlowChain tasks={criticalPath} onTaskClick={onTaskClick} canEditTask={canEditTask} />
               </div>
             </div>
           )}
@@ -95,7 +95,7 @@ export default function TaskFlowMap({ data, onTaskClick, clickable = false }: Ta
                     key={`chain-${chain[0]?.id ?? 'empty'}`}
                     className="bg-base-200/50 border border-base-300 rounded-box p-4"
                   >
-                    <TaskFlowChain tasks={chain} onTaskClick={onTaskClick} clickable={clickable} />
+                    <TaskFlowChain tasks={chain} onTaskClick={onTaskClick} canEditTask={canEditTask} />
                   </div>
                 ))}
               </div>
@@ -114,9 +114,17 @@ export default function TaskFlowMap({ data, onTaskClick, clickable = false }: Ta
                 <span className="badge badge-secondary badge-sm">{independentTasks.length}件</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {independentTasks.map((task) => (
-                  <TaskFlowCard key={task.id} task={task} clickable={clickable} onClick={() => onTaskClick?.(task)} />
-                ))}
+                {independentTasks.map((task) => {
+                  const clickable = canEditTask?.(task) ?? false;
+                  return (
+                    <TaskFlowCard
+                      key={task.id}
+                      task={task}
+                      clickable={clickable}
+                      onClick={clickable ? () => onTaskClick?.(task) : undefined}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
