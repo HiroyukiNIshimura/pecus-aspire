@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { updateUserPassword } from '@/actions/profile';
-import PasswordRequirementIndicator, { isPasswordValid } from '@/components/common/PasswordRequirementIndicator';
+import PasswordRequirementIndicator, { isPasswordValid } from '@/components/common/PasswordRequirementIndicator.server';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { updatePasswordFormSchema } from '@/schemas/profileSchemas';
 

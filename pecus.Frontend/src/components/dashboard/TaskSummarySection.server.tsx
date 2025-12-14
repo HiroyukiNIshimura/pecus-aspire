@@ -1,5 +1,5 @@
 import type { DashboardItemSummary, DashboardTaskSummary } from '@/connectors/api/pecus';
-import StatCard from './StatCard';
+import StatCard from './StatCard.server';
 
 interface TaskSummarySectionProps {
   /** タスクサマリデータ */

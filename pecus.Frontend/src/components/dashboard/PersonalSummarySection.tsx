@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import FocusRecommendationModal from '@/components/focus/FocusRecommendationModal';
 import type { DashboardPersonalSummaryResponse } from '@/connectors/api/pecus';
-import StatCard from './StatCard';
+import StatCard from './StatCard.server';
 
 interface PersonalSummarySectionProps {
   /** 個人サマリデータ */

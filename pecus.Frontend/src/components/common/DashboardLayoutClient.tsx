@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState } from 'react';
 import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/common/DashboardSidebar';
+import DashboardSidebar from '@/components/common/DashboardSidebar.server';
 import type { UserInfo } from '@/types/userInfo';
 
 interface DashboardLayoutClientProps {

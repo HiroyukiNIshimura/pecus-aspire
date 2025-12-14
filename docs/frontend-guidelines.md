@@ -140,7 +140,52 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 | `src/connectors/api/PecusApiClient.ts` | API クライアント設定（手動編集可能） |
 | `src/connectors/api/PecusApiClient.generated.ts` | API クライアント生成部分（自動生成） |
 
-## 5. Next.js 実装ガイド
+## 5. コンポーネントの命名規則
+
+### Server Component と Client Component の区別
+
+コンポーネントファイルの種類を明確にするため、以下の命名規則を採用しています：
+
+| 種類 | ファイル名 | 例 |
+|------|-----------|-----|
+| Server Component | `*.server.tsx` | `DashboardSidebar.server.tsx`, `StatCard.server.tsx` |
+| Client Component | `*.tsx`（サフィックスなし） | `AppHeader.tsx`, `UserMenu.tsx` |
+
+### Server Component の一覧（`src/components/`）
+
+**common/**
+- `AppFooter.server.tsx` - フッター
+- `DashboardSidebar.server.tsx` - ダッシュボードサイドバー
+- `PasswordRequirementIndicator.server.tsx` - パスワード要件表示
+
+**dashboard/**
+- `HelpCommentsCard.server.tsx` - ヘルプコメントカード
+- `HotItemsCard.server.tsx` - 注目アイテムカード
+- `HotWorkspacesCard.server.tsx` - 注目ワークスペースカード
+- `PriorityBreakdownCard.server.tsx` - 優先度内訳カード
+- `StatCard.server.tsx` - 統計カード
+- `TaskSummarySection.server.tsx` - タスクサマリーセクション
+
+### 判断基準
+
+**Server Component（`*.server.tsx`）にすべき場合**:
+- `'use client'` ディレクティブがない
+- ブラウザ API（`useState`, `useEffect`, `useRouter` など）を使用しない
+- 静的なUI、データ表示のみ
+- 子コンポーネントに Client Component を含んでも良い
+
+**Client Component（`*.tsx`）にすべき場合**:
+- `'use client'` ディレクティブがある
+- React Hooks（`useState`, `useEffect`, `useCallback` など）を使用
+- イベントハンドラー（`onClick`, `onChange` など）を使用
+- ブラウザ専用 API を使用
+
+### 注意事項
+
+- `editor/` ディレクトリ配下は Lexical エディタの構造を維持するため、この命名規則を適用しません
+- バレルエクスポート（`index.ts`）を使用している場合は、エクスポート先も更新してください
+
+## 6. Next.js 実装ガイド
 
 ### Next.js 固有の注意事項
 - **動的レンダリング**: キャッシュ戦略に応じて必要な場合のみ `export const dynamic = 'force-dynamic'` を設定（常時必須ではない）
@@ -231,7 +276,7 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
 - **Next.js Image**: 外部画像を使用する場合は `next/image` の `Image` コンポーネントを使用し、`next.config.ts` で `remotePatterns` を設定
 - **className**: Tailwind CSS + FlyonUI のクラスを使用し、カスタムCSSは最小限に抑える
 
-## 6. クライアントサイドバリデーション（Zod）
+## 7. クライアントサイドバリデーション（Zod）
 
 フロントエンドでの入力検証には **Zod** を使用してください。型安全で宣言的なバリデーションを実現します。
 
@@ -290,7 +335,7 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
 - ❌ サーバーエラーメッセージをそのまま表示（ユーザーフレンドリーなメッセージに変換）
 - ❌ 複数フォーム送信を許可（isLoading で防止）
 
-## 7. エラーハンドリング統一方針
+## 8. エラーハンドリング統一方針
 
 ### Server Actions と WebAPI のレスポンス型
 
