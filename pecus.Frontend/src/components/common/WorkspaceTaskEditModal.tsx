@@ -402,7 +402,9 @@ export default function WorkspaceTaskEditModal({
             await fetchTask(task.id);
             return;
           }
-          setServerErrors([{ key: 0, message: result.message }]);
+          const errorMessage = result.message || 'タスクの更新に失敗しました';
+          setServerErrors([{ key: 0, message: errorMessage }]);
+          notifyRef.current.error(errorMessage);
           return;
         }
 
@@ -635,33 +637,6 @@ export default function WorkspaceTaskEditModal({
                 <p className="text-center text-base-content/50 py-8">タスクが見つかりません</p>
               ) : (
                 <>
-                  {/* サーバーエラー表示 */}
-                  {serverErrors.length > 0 && (
-                    <div className="alert alert-soft alert-error mb-4">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 shrink-0 stroke-current"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <div>
-                        <h3 className="font-bold">エラーが発生しました</h3>
-                        <ul className="list-disc list-inside mt-2">
-                          {serverErrors.map((error) => (
-                            <li key={error.key}>{error.message}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-
                   {/* ローディングオーバーレイ */}
                   {isLoadingTask && (
                     <div className="absolute inset-0 bg-base-100/50 flex items-center justify-center z-10">
@@ -1130,6 +1105,21 @@ export default function WorkspaceTaskEditModal({
                         {task.updatedAt && <div>更新日時: {new Date(task.updatedAt).toLocaleString('ja-JP')}</div>}
                       </div>
                     </div>
+
+                    {/* サーバーエラー表示 */}
+                    {serverErrors.length > 0 && (
+                      <div className="alert alert-soft alert-error">
+                        <span className="icon-[mdi--alert-circle] size-6 shrink-0" aria-hidden="true" />
+                        <div>
+                          <h3 className="font-bold">エラーが発生しました</h3>
+                          <ul className="list-disc list-inside mt-1">
+                            {serverErrors.map((error) => (
+                              <li key={error.key}>{error.message}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
 
                     {/* ボタングループ */}
                     <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
