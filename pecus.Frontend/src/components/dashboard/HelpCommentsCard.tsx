@@ -117,14 +117,6 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
                     <span className="mx-1">•</span>
                     <time dateTime={comment.createdAt}>{formatRelativeTime(comment.createdAt)}</time>
                   </div>
-
-                  {/* 担当者表示 */}
-                  {comment.taskAssigneeName && (
-                    <div className="flex items-center gap-1 text-xs text-base-content/50">
-                      <span className="icon-[mdi--account-outline] w-3.5 h-3.5" aria-hidden="true" />
-                      <span>担当: {comment.taskAssigneeName}</span>
-                    </div>
-                  )}
                 </div>
               </Link>
             </li>

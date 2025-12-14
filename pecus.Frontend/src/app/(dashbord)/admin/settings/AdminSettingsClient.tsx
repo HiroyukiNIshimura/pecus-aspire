@@ -570,6 +570,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                         min={5}
                         max={20}
                         step={1}
+                        name="dashboardHelpCommentMaxCount"
                         value={formData.dashboardHelpCommentMaxCount ?? 6}
                         onChange={(value) => handleFieldChange('dashboardHelpCommentMaxCount', value)}
                         label="ヘルプコメント表示件数"

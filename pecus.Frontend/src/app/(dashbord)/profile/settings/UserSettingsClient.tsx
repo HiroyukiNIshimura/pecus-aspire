@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import { updateUserSetting } from '@/actions/profile';
 import AppHeader from '@/components/common/AppHeader';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Slider } from '@/components/common/Slider';
 import type { FocusScorePriority, LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
+import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { type UserSettingInput, userSettingSchema } from '@/schemas/userSettingSchemas';
 import type { UserInfo } from '@/types/userInfo';
 import { LANDING_PAGE_OPTIONS } from '@/utils/landingPage';
 
@@ -28,58 +31,81 @@ const FOCUS_SCORE_PRIORITY_OPTIONS: { value: FocusScorePriority; label: string; 
 export default function UserSettingsClient({ initialUser, initialSettings, fetchError }: UserSettingsClientProps) {
   const notify = useNotify();
   const [user] = useState<UserInfo>(initialUser);
-  const [settings, setSettings] = useState<UserSettingResponse>(initialSettings);
-  const [isLoading, setIsLoading] = useState(false);
+  const [rowVersion, setRowVersion] = useState<number>(initialSettings.rowVersion ?? 0);
+  const [formData, setFormData] = useState<UserSettingInput>({
+    canReceiveEmail: initialSettings.canReceiveEmail ?? true,
+    canReceiveRealtimeNotification: initialSettings.canReceiveRealtimeNotification ?? true,
+    timeZone: initialSettings.timeZone,
+    language: initialSettings.language,
+    landingPage: initialSettings.landingPage,
+    focusScorePriority: initialSettings.focusScorePriority,
+    focusTasksLimit: initialSettings.focusTasksLimit ?? 10,
+    waitingTasksLimit: initialSettings.waitingTasksLimit ?? 10,
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, type } = e.target;
-    const value = type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
-    setSettings({
-      ...settings,
-      [name]: value === '' ? undefined : value,
+  const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
+    useFormValidation({
+      schema: userSettingSchema,
+      onSubmit: async (data) => {
+        try {
+          const result = await updateUserSetting({
+            canReceiveEmail: data.canReceiveEmail,
+            canReceiveRealtimeNotification: data.canReceiveRealtimeNotification,
+            timeZone: data.timeZone,
+            language: data.language,
+            landingPage: data.landingPage as LandingPage | undefined,
+            focusScorePriority: data.focusScorePriority as FocusScorePriority | undefined,
+            focusTasksLimit: data.focusTasksLimit,
+            waitingTasksLimit: data.waitingTasksLimit,
+            rowVersion,
+          });
+
+          if (result.success) {
+            syncWithResponse(result.data);
+            notify.success('設定を保存しました');
+            return;
+          }
+
+          if (!result.success && result.error === 'conflict' && 'latest' in result && result.latest) {
+            const latest = result.latest.data as UserSettingResponse;
+            syncWithResponse(latest);
+            notify.error(result.message || '他のユーザーが同時に更新しました。最新の設定を反映しました。');
+            return;
+          }
+
+          notify.error(result.message || '保存に失敗しました');
+        } catch (error) {
+          console.error('Settings update error:', error);
+          notify.error('予期しないエラーが発生しました');
+        }
+      },
+    });
+
+  const syncWithResponse = (setting: UserSettingResponse) => {
+    setRowVersion(setting.rowVersion ?? 0);
+    setFormData({
+      canReceiveEmail: setting.canReceiveEmail ?? true,
+      canReceiveRealtimeNotification: setting.canReceiveRealtimeNotification ?? true,
+      timeZone: setting.timeZone,
+      language: setting.language,
+      landingPage: setting.landingPage,
+      focusScorePriority: setting.focusScorePriority,
+      focusTasksLimit: setting.focusTasksLimit ?? 10,
+      waitingTasksLimit: setting.waitingTasksLimit ?? 10,
     });
   };
 
-  const handleSliderChange = (name: 'focusTasksLimit' | 'waitingTasksLimit', value: number) => {
-    setSettings({
-      ...settings,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const result = await updateUserSetting({
-        canReceiveEmail: settings.canReceiveEmail,
-        canReceiveRealtimeNotification: settings.canReceiveRealtimeNotification,
-        timeZone: settings.timeZone,
-        language: settings.language,
-        landingPage: settings.landingPage as LandingPage | undefined,
-        focusScorePriority: settings.focusScorePriority as FocusScorePriority | undefined,
-        focusTasksLimit: settings.focusTasksLimit,
-        waitingTasksLimit: settings.waitingTasksLimit,
-        rowVersion: settings.rowVersion ?? 0,
-      });
-
-      if (result.success) {
-        notify.success('設定を保存しました');
-        // 最新のRowVersionで更新
-        setSettings(result.data);
-      } else {
-        notify.error(result.message || '保存に失敗しました');
-      }
-    } catch (error) {
-      console.error('Settings update error:', error);
-      notify.error('予期しないエラーが発生しました');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleFieldChange = async (fieldName: keyof UserSettingInput, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value as never,
+    }));
+    await validateField(fieldName, value);
   };
 
   return (
     <div className="flex flex-1 flex-col">
+      <LoadingOverlay isLoading={isSubmitting} message="保存中..." />
       <AppHeader userInfo={user} hideSettingsMenu={true} />
       <main className="flex-1 p-6 bg-base-100">
         <div className="max-w-xl mx-auto">
@@ -97,7 +123,7 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
 
           <div className="card bg-base-200">
             <div className="card-body">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div className="form-control">
                   <label htmlFor="canReceiveEmail" className="label cursor-pointer justify-start gap-4">
                     <input
@@ -105,9 +131,9 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                       name="canReceiveEmail"
                       type="checkbox"
                       className="checkbox checkbox-primary"
-                      checked={!!settings.canReceiveEmail}
-                      onChange={handleChange}
-                      disabled={isLoading}
+                      checked={!!formData.canReceiveEmail}
+                      onChange={(e) => handleFieldChange('canReceiveEmail', e.target.checked)}
+                      disabled={isSubmitting}
                     />
                     <div>
                       <span className="label-text font-semibold">メール通知を受信する</span>
@@ -123,10 +149,10 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                   <select
                     id="landingPage"
                     name="landingPage"
-                    className="select select-bordered w-full"
-                    value={settings.landingPage ?? 'Dashboard'}
-                    onChange={handleChange}
-                    disabled={isLoading}
+                    className={`select select-bordered w-full ${shouldShowError('landingPage') ? 'select-error' : ''}`}
+                    value={formData.landingPage ?? 'Dashboard'}
+                    onChange={(e) => handleFieldChange('landingPage', e.target.value)}
+                    disabled={isSubmitting}
                   >
                     {LANDING_PAGE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -134,6 +160,9 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                       </option>
                     ))}
                   </select>
+                  {shouldShowError('landingPage') && (
+                    <span className="label-text-alt text-error">{getFieldError('landingPage')}</span>
+                  )}
                   <p className="text-sm text-base-content/70 mt-1">ログイン後に最初に表示されるページを選択できます</p>
                 </div>
 
@@ -146,10 +175,10 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                   <select
                     id="focusScorePriority"
                     name="focusScorePriority"
-                    className="select select-bordered w-full"
-                    value={settings.focusScorePriority ?? 'Deadline'}
-                    onChange={handleChange}
-                    disabled={isLoading}
+                    className={`select select-bordered w-full ${shouldShowError('focusScorePriority') ? 'select-error' : ''}`}
+                    value={formData.focusScorePriority ?? 'Deadline'}
+                    onChange={(e) => handleFieldChange('focusScorePriority', e.target.value)}
+                    disabled={isSubmitting}
                   >
                     {FOCUS_SCORE_PRIORITY_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -157,10 +186,13 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                       </option>
                     ))}
                   </select>
+                  {shouldShowError('focusScorePriority') && (
+                    <span className="label-text-alt text-error">{getFieldError('focusScorePriority')}</span>
+                  )}
                   <p className="text-sm text-base-content/70 mt-1">
                     {
                       FOCUS_SCORE_PRIORITY_OPTIONS.find(
-                        (opt) => opt.value === (settings.focusScorePriority ?? 'Deadline'),
+                        (opt) => opt.value === (formData.focusScorePriority ?? 'Deadline'),
                       )?.description
                     }
                   </p>
@@ -171,14 +203,18 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     min={5}
                     max={20}
                     step={1}
-                    value={settings.focusTasksLimit}
-                    onChange={(value) => handleSliderChange('focusTasksLimit', value)}
+                    name="focusTasksLimit"
+                    value={formData.focusTasksLimit}
+                    onChange={(value) => handleFieldChange('focusTasksLimit', value)}
                     label="フォーカス推奨タスクの表示件数"
                     showValue
                     valueFormatter={(value) => `${value}件`}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                     ariaLabel="フォーカス推奨タスクの表示件数"
                   />
+                  {shouldShowError('focusTasksLimit') && (
+                    <span className="label-text-alt text-error">{getFieldError('focusTasksLimit')}</span>
+                  )}
                   <p className="text-sm text-base-content/70 mt-1">
                     着手可能なタスクのうち、上位何件を表示するか設定します
                   </p>
@@ -189,29 +225,37 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     min={5}
                     max={20}
                     step={1}
-                    value={settings.waitingTasksLimit}
-                    onChange={(value) => handleSliderChange('waitingTasksLimit', value)}
+                    name="waitingTasksLimit"
+                    value={formData.waitingTasksLimit}
+                    onChange={(value) => handleFieldChange('waitingTasksLimit', value)}
                     label="待機中タスクの表示件数"
                     showValue
                     valueFormatter={(value) => `${value}件`}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                     ariaLabel="待機中タスクの表示件数"
                   />
+                  {shouldShowError('waitingTasksLimit') && (
+                    <span className="label-text-alt text-error">{getFieldError('waitingTasksLimit')}</span>
+                  )}
                   <p className="text-sm text-base-content/70 mt-1">
                     先行タスクが未完了で待機中のタスクのうち、上位何件を表示するか設定します
                   </p>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
-                  <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <span className="loading loading-spinner loading-sm" />
-                        保存中...
-                      </>
-                    ) : (
-                      '保存'
-                    )}
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => {
+                      resetForm();
+                      syncWithResponse(initialSettings);
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    リセット
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? '保存中...' : '保存'}
                   </button>
                 </div>
               </form>

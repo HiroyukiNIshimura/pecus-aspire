@@ -20,6 +20,8 @@ interface SliderProps {
   onChange?: (value: number) => void;
   /** ラベルテキスト */
   label?: string;
+  /** フォーム送信用のname属性（FormDataで値を取得する場合に必須） */
+  name?: string;
   /** 無効状態 */
   disabled?: boolean;
   /** スライダーのクラス名（カスタマイズ用） */
@@ -37,7 +39,7 @@ interface SliderProps {
  *
  * FlyonUIのデザインに準拠したスライダー。
  * 制御コンポーネントと非制御コンポーネントの両方に対応。
- *
+ * SliderコンポーネントをuseFormValidationと併用する場合は、必ずnameプロパティを指定してください
  * @example
  * ```tsx
  * // 非制御コンポーネントとして使用
@@ -71,6 +73,7 @@ export function Slider({
   value,
   onChange,
   label,
+  name,
   disabled = false,
   className = '',
   showValue = false,
@@ -122,6 +125,9 @@ export function Slider({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
+      {/* FormData用のhidden input（nameが指定されている場合のみ） */}
+      {name && <input type="hidden" name={name} value={currentValue} />}
+
       {/* ラベルと値の表示 */}
       {(label || showValue) && (
         <div className="flex items-center justify-between">
