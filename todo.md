@@ -1,5 +1,8 @@
 ## Coati
 
+docs/ssr-improvement-plan.md
+Phase 3: 個別ページの改善（優先度: 中） TODO
+
 * 各種メール通知機能 テンプレート[]
   * 組織作成→代表者 [x]
   * Email変更→ユーザー [x]

@@ -136,7 +136,7 @@ export default async function DashboardLayout({ children }) {
 
 ---
 
-### Phase 3: 個別ページの改善（優先度: 中）
+### Phase 3: 個別ページの改善（優先度: 中） TODO
 
 #### 優先順位
 
