@@ -1370,12 +1370,31 @@ i.bold {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   vertical-align: middle;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   height: 36px;
   position: sticky;
   top: 0;
   z-index: 2000;
-  overflow-y: hidden; /* disable vertical scroll*/
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* ツールバーのスクロールバーをスタイリング */
+.notion-like-editor .toolbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.notion-like-editor .toolbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notion-like-editor .toolbar::-webkit-scrollbar-thumb {
+  background: var(--color-gray-500);
+  border-radius: 2px;
+}
+
+.notion-like-editor .toolbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-600);
 }
 
 /* 全画面モード時はツールバーの角丸を外す */
