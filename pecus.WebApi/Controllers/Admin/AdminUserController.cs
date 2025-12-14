@@ -124,6 +124,9 @@ public class AdminUserController : BaseAdminController
                 TimeZone = targetUser.Setting?.TimeZone ?? "Asia/Tokyo",
                 Language = targetUser.Setting?.Language ?? "ja-JP",
                 LandingPage = targetUser.Setting?.LandingPage,
+                FocusScorePriority = targetUser.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
+                FocusTasksLimit = targetUser.Setting?.FocusTasksLimit ?? 5,
+                WaitingTasksLimit = targetUser.Setting?.WaitingTasksLimit ?? 5,
                 RowVersion = targetUser.Setting?.RowVersion ?? 0,
             },
         };
@@ -209,6 +212,9 @@ public class AdminUserController : BaseAdminController
                 TimeZone = u.Setting?.TimeZone ?? "Asia/Tokyo",
                 Language = u.Setting?.Language ?? "ja-JP",
                 LandingPage = u.Setting?.LandingPage,
+                FocusScorePriority = u.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
+                FocusTasksLimit = u.Setting?.FocusTasksLimit ?? 5,
+                WaitingTasksLimit = u.Setting?.WaitingTasksLimit ?? 5,
                 RowVersion = u.Setting?.RowVersion ?? 0,
             },
         });
@@ -489,6 +495,9 @@ public class AdminUserController : BaseAdminController
                 TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
                 Language = user.Setting?.Language ?? "ja-JP",
                 LandingPage = user.Setting?.LandingPage,
+                FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
+                FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
+                WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };

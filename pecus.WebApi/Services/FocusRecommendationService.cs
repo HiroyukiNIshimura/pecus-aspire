@@ -3,7 +3,6 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Responses.Focus;
-using Pecus.Models.Responses.WorkspaceTask;
 
 namespace Pecus.Services;
 
@@ -15,14 +14,6 @@ public class FocusRecommendationService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<FocusRecommendationService> _logger;
-
-    // スコアリングの重み定数
-    private const decimal PriorityWeight = 2m;
-    private const decimal DeadlineWeight = 3m;
-    private const decimal SuccessorImpactWeight = 5m;
-
-    // フォーカスタスク表示件数
-    private const int FocusTaskLimit = 5;
 
     public FocusRecommendationService(
         ApplicationDbContext context,
@@ -41,6 +32,34 @@ public class FocusRecommendationService
     public async Task<FocusRecommendationResponse> GetFocusRecommendationAsync(int userId)
     {
         _logger.LogInformation("フォーカス推奨タスク取得開始: UserId={UserId}", userId);
+
+        // ユーザー設定を取得（デフォルト値使用）
+        var userSetting = await _context.UserSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
+        var focusScorePriority = userSetting?.FocusScorePriority ?? FocusScorePriority.Deadline;
+        var focusTasksLimit = userSetting?.FocusTasksLimit ?? 5;
+        var waitingTasksLimit = userSetting?.WaitingTasksLimit ?? 5;
+
+        // 優先要素に応じた重み設定（選択したものは5、それ以外は3）
+        var (priorityWeight, deadlineWeight, successorImpactWeight) = focusScorePriority switch
+        {
+            FocusScorePriority.Priority => (5m, 3m, 3m),
+            FocusScorePriority.Deadline => (3m, 5m, 3m),
+            FocusScorePriority.SuccessorImpact => (3m, 3m, 5m),
+            _ => (3m, 3m, 5m) // デフォルトはDeadline
+        };
+
+        _logger.LogDebug(
+            "スコアリング設定: Priority={FocusScorePriority}, Weights=({PriorityWeight}, {DeadlineWeight}, {SuccessorImpactWeight}), Limits=({FocusLimit}, {WaitingLimit})",
+            focusScorePriority,
+            priorityWeight,
+            deadlineWeight,
+            successorImpactWeight,
+            focusTasksLimit,
+            waitingTasksLimit
+        );
 
         // ユーザーの未完了タスクを取得（破棄済みは除外）
         var tasks = await _context.WorkspaceTasks
@@ -82,7 +101,13 @@ public class FocusRecommendationService
         var scoredTasks = tasks.Select(task =>
         {
             var successorCount = successorCounts.GetValueOrDefault(task.Id, 0);
-            var (totalScore, scoreDetail) = CalculateTaskScore(task, successorCount);
+            var (totalScore, scoreDetail) = CalculateTaskScore(
+                task,
+                successorCount,
+                priorityWeight,
+                deadlineWeight,
+                successorImpactWeight
+            );
 
             return new
             {
@@ -98,7 +123,7 @@ public class FocusRecommendationService
         var focusTasks = scoredTasks
             .Where(x => x.CanStart)
             .OrderByDescending(x => x.TotalScore)
-            .Take(FocusTaskLimit)
+            .Take(focusTasksLimit)
             .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.ScoreDetail))
             .ToList();
 
@@ -106,10 +131,11 @@ public class FocusRecommendationService
         var waitingTasks = scoredTasks
             .Where(x => !x.CanStart)
             .OrderByDescending(x => x.TotalScore)
+            .Take(waitingTasksLimit)
             .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.ScoreDetail))
             .ToList();
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "フォーカス推奨タスク取得完了: FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
             focusTasks.Count,
             waitingTasks.Count
@@ -129,29 +155,35 @@ public class FocusRecommendationService
     /// </summary>
     /// <param name="task">タスク</param>
     /// <param name="successorCount">後続タスク数</param>
+    /// <param name="priorityWeight">優先度の重み</param>
+    /// <param name="deadlineWeight">期限の重み</param>
+    /// <param name="successorImpactWeight">後続タスク影響の重み</param>
     /// <returns>総合スコアとスコア詳細</returns>
     private (decimal TotalScore, TaskScoreDetail ScoreDetail) CalculateTaskScore(
         WorkspaceTask task,
-        int successorCount
+        int successorCount,
+        decimal priorityWeight,
+        decimal deadlineWeight,
+        decimal successorImpactWeight
     )
     {
         var priorityScore = CalculatePriorityScore(task.Priority);
         var deadlineScore = CalculateDeadlineScore(task.DueDate);
         var successorImpactScore = CalculateSuccessorImpactScore(successorCount);
 
-        var totalScore = (priorityScore * PriorityWeight)
-                       + (deadlineScore * DeadlineWeight)
-                       + (successorImpactScore * SuccessorImpactWeight);
+        var totalScore = (priorityScore * priorityWeight)
+                       + (deadlineScore * deadlineWeight)
+                       + (successorImpactScore * successorImpactWeight);
 
         var scoreDetail = new TaskScoreDetail
         {
             PriorityScore = priorityScore,
             DeadlineScore = deadlineScore,
             SuccessorImpactScore = successorImpactScore,
-            PriorityWeight = PriorityWeight,
-            DeadlineWeight = DeadlineWeight,
-            SuccessorImpactWeight = SuccessorImpactWeight,
-            Explanation = $"({priorityScore} × {PriorityWeight}) + ({deadlineScore} × {DeadlineWeight}) + ({successorImpactScore} × {SuccessorImpactWeight}) = {totalScore}"
+            PriorityWeight = priorityWeight,
+            DeadlineWeight = deadlineWeight,
+            SuccessorImpactWeight = successorImpactWeight,
+            Explanation = $"({priorityScore} × {priorityWeight}) + ({deadlineScore} × {deadlineWeight}) + ({successorImpactScore} × {successorImpactWeight}) = {totalScore}"
         };
 
         return (totalScore, scoreDetail);

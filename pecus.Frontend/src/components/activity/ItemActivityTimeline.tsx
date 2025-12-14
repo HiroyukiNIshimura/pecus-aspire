@@ -212,10 +212,10 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
   return (
     <>
       {/* 背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-[60]" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50 z-60" onClick={onClose} aria-hidden="true" />
 
       {/* モーダル */}
-      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
         <div
           className="bg-base-100 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
@@ -251,7 +251,7 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
                       {/* アクティビティリスト */}
                       <div className="relative pl-6">
                         {/* 縦線 */}
-                        <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-base-300" />
+                        <div className="absolute left-2.25 top-2 bottom-2 w-0.5 bg-base-300" />
 
                         {group.items.map((activity) => {
                           const config =

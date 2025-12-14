@@ -132,7 +132,7 @@ export default function MultiSelectDropdown({
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
           </svg>
         </summary>
-        <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
+        <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-1">
           {items.length === 0 ? (
             <li className="text-center text-base-content/60 py-4">{emptyMessage}</li>
           ) : (

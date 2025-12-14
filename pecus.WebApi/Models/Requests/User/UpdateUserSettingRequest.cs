@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.User;
 
@@ -38,6 +39,27 @@ public class UpdateUserSettingRequest
     /// ログイン後のランディングページ
     /// </summary>
     public LandingPage? LandingPage { get; set; }
+
+    /// <summary>
+    /// フォーカス推奨のスコアリング優先要素
+    /// Priority: 優先度重視、Deadline: 期限重視、SuccessorImpact: 後続タスク影響重視
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<FocusScorePriority>))]
+    public FocusScorePriority? FocusScorePriority { get; set; }
+
+    /// <summary>
+    /// フォーカス推奨タスクの表示件数（5-20）
+    /// </summary>
+    [Required(ErrorMessage = "フォーカスタスク表示件数は必須です。")]
+    [Range(5, 20, ErrorMessage = "フォーカスタスク表示件数は5〜20の範囲で指定してください。")]
+    public required int FocusTasksLimit { get; set; }
+
+    /// <summary>
+    /// 待機中タスクの表示件数（5-20）
+    /// </summary>
+    [Required(ErrorMessage = "待機中タスク表示件数は必須です。")]
+    [Range(5, 20, ErrorMessage = "待機中タスク表示件数は5〜20の範囲で指定してください。")]
+    public required int WaitingTasksLimit { get; set; }
 
     /// <summary>
     /// ユーザー設定の楽観的ロック用 RowVersion

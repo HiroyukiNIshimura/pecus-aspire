@@ -46,6 +46,7 @@ export type { ErrorResponse } from './models/ErrorResponse';
 export type { FileType } from './models/FileType';
 export type { FileUploadResponse } from './models/FileUploadResponse';
 export type { FocusRecommendationResponse } from './models/FocusRecommendationResponse';
+export type { FocusScorePriority } from './models/FocusScorePriority';
 export type { FocusTaskResponse } from './models/FocusTaskResponse';
 export type { GenerativeApiVendor } from './models/GenerativeApiVendor';
 export type { GenreCount } from './models/GenreCount';

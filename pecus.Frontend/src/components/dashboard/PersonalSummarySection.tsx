@@ -21,7 +21,7 @@ export default function PersonalSummarySection({ data }: PersonalSummarySectionP
     <>
       <section
         aria-labelledby="personal-summary-heading"
-        className="card bg-gradient-to-br from-primary/10 via-base-100 to-accent/10 border border-primary/20 shadow-md"
+        className="card from-primary/10 via-base-100 to-accent/10 border border-primary/20 shadow-md"
       >
         <div className="card-body p-4">
           <div className="flex items-center justify-between mb-4">

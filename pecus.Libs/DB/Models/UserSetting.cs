@@ -49,6 +49,21 @@ public class UserSetting
     /// </summary>
     public LandingPage? LandingPage { get; set; }
 
+    /// <summary>
+    /// フォーカス推奨のスコアリング優先要素（デフォルト: Deadline）
+    /// Priority: 優先度重視、Deadline: 期限重視、SuccessorImpact: 後続タスク影響重視
+    /// </summary>
+    public FocusScorePriority? FocusScorePriority { get; set; } = Enums.FocusScorePriority.Deadline;
+
+    /// <summary>
+    /// フォーカス推奨タスクの表示件数（5-20、デフォルト: 5）
+    /// </summary>
+    public int FocusTasksLimit { get; set; } = 5;
+
+    /// <summary>
+    /// 待機中タスクの表示件数（5-20、デフォルト: 5）
+    /// </summary>
+    public int WaitingTasksLimit { get; set; } = 5;
 
     /// <summary>
     /// 更新日時

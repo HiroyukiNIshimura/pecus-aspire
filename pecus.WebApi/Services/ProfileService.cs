@@ -172,6 +172,9 @@ public class ProfileService
                     TimeZone = request.TimeZone,
                     Language = request.Language,
                     LandingPage = request.LandingPage,
+                    FocusScorePriority = request.FocusScorePriority,
+                    FocusTasksLimit = request.FocusTasksLimit,
+                    WaitingTasksLimit = request.WaitingTasksLimit,
                     UpdatedAt = DateTimeOffset.UtcNow,
                     UpdatedByUserId = userId,
                 };
@@ -187,6 +190,9 @@ public class ProfileService
                     TimeZone = setting.TimeZone,
                     Language = setting.Language,
                     LandingPage = setting.LandingPage,
+                    FocusScorePriority = setting.FocusScorePriority,
+                    FocusTasksLimit = setting.FocusTasksLimit,
+                    WaitingTasksLimit = setting.WaitingTasksLimit,
                     RowVersion = setting.RowVersion,
                 };
             }
@@ -202,6 +208,9 @@ public class ProfileService
             setting.TimeZone = request.TimeZone;
             setting.Language = request.Language;
             setting.LandingPage = request.LandingPage;
+            setting.FocusScorePriority = request.FocusScorePriority;
+            setting.FocusTasksLimit = request.FocusTasksLimit;
+            setting.WaitingTasksLimit = request.WaitingTasksLimit;
             setting.UpdatedAt = DateTimeOffset.UtcNow;
             setting.UpdatedByUserId = userId;
 
@@ -221,6 +230,9 @@ public class ProfileService
                 TimeZone = setting.TimeZone,
                 Language = setting.Language,
                 LandingPage = setting.LandingPage,
+                FocusScorePriority = setting.FocusScorePriority,
+                FocusTasksLimit = setting.FocusTasksLimit,
+                WaitingTasksLimit = setting.WaitingTasksLimit,
                 RowVersion = setting.RowVersion,
             };
         }

@@ -384,7 +384,7 @@ export default function WorkspaceTaskAccordion({
                     </h2>
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-base-content/70">
                       {workspace.genreName && (
-                        <span className="truncate max-w-[80px] sm:max-w-none">{workspace.genreName}</span>
+                        <span className="truncate max-w-20 sm:max-w-none">{workspace.genreName}</span>
                       )}
                       {workspace.oldestDueDate && (
                         <>
@@ -412,15 +412,15 @@ export default function WorkspaceTaskAccordion({
                   {/* 統計バッジ */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-2">
                     {showItemCount && workspace.itemCount !== undefined && (
-                      <span className="badge badge-ghost badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
+                      <span className="badge badge-ghost badge-sm sm:badge-md whitespace-nowrap text-center min-w-18 sm:min-w-0">
                         {workspace.itemCount} アイテム
                       </span>
                     )}
-                    <span className="badge badge-primary badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
+                    <span className="badge badge-primary badge-sm sm:badge-md whitespace-nowrap text-center min-w-18 sm:min-w-0">
                       {displayedTaskCount} タスク
                     </span>
                     {workspace.overdueTaskCount > 0 && (
-                      <span className="badge badge-error badge-sm sm:badge-md whitespace-nowrap text-center min-w-[4.5rem] sm:min-w-0">
+                      <span className="badge badge-error badge-sm sm:badge-md whitespace-nowrap text-center min-w-18 sm:min-w-0">
                         {workspace.overdueTaskCount} 超過
                       </span>
                     )}

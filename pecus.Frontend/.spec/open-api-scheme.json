@@ -9752,6 +9752,14 @@
         "additionalProperties": false,
         "description": "フォーカス推奨レスポンス"
       },
+      "FocusScorePriority": {
+        "enum": [
+          "Priority",
+          "Deadline",
+          "SuccessorImpact"
+        ],
+        "type": "string"
+      },
       "FocusTaskResponse": {
         "required": [
           "content",
@@ -13115,9 +13123,11 @@
         "required": [
           "canReceiveEmail",
           "canReceiveRealtimeNotification",
+          "focusTasksLimit",
           "language",
           "rowVersion",
-          "timeZone"
+          "timeZone",
+          "waitingTasksLimit"
         ],
         "type": "object",
         "properties": {
@@ -13141,6 +13151,23 @@
           },
           "landingPage": {
             "$ref": "#/components/schemas/LandingPage"
+          },
+          "focusScorePriority": {
+            "$ref": "#/components/schemas/FocusScorePriority"
+          },
+          "focusTasksLimit": {
+            "maximum": 20,
+            "minimum": 5,
+            "type": "integer",
+            "description": "フォーカス推奨タスクの表示件数（5-20）",
+            "format": "int32"
+          },
+          "waitingTasksLimit": {
+            "maximum": 20,
+            "minimum": 5,
+            "type": "integer",
+            "description": "待機中タスクの表示件数（5-20）",
+            "format": "int32"
           },
           "rowVersion": {
             "type": "integer",
@@ -13693,8 +13720,10 @@
         "required": [
           "canReceiveEmail",
           "canReceiveRealtimeNotification",
+          "focusTasksLimit",
           "language",
-          "timeZone"
+          "timeZone",
+          "waitingTasksLimit"
         ],
         "type": "object",
         "properties": {
@@ -13718,6 +13747,23 @@
           },
           "landingPage": {
             "$ref": "#/components/schemas/LandingPage"
+          },
+          "focusScorePriority": {
+            "$ref": "#/components/schemas/FocusScorePriority"
+          },
+          "focusTasksLimit": {
+            "maximum": 20,
+            "minimum": 5,
+            "type": "integer",
+            "description": "フォーカス推奨タスクの表示件数（5-20）",
+            "format": "int32"
+          },
+          "waitingTasksLimit": {
+            "maximum": 20,
+            "minimum": 5,
+            "type": "integer",
+            "description": "待機中タスクの表示件数（5-20）",
+            "format": "int32"
           },
           "rowVersion": {
             "type": "integer",

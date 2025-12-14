@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FocusScorePriority } from './FocusScorePriority';
 import type { LandingPage } from './LandingPage';
 /**
  * ユーザー設定レスポンス
@@ -25,6 +26,15 @@ export type UserSettingResponse = {
      */
     language: string;
     landingPage?: LandingPage;
+    focusScorePriority?: FocusScorePriority;
+    /**
+     * フォーカス推奨タスクの表示件数（5-20）
+     */
+    focusTasksLimit: number;
+    /**
+     * 待機中タスクの表示件数（5-20）
+     */
+    waitingTasksLimit: number;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */
