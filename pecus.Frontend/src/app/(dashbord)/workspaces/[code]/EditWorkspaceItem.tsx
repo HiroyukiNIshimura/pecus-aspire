@@ -207,162 +207,165 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
 
   return (
     <>
-      {/* フルスクリーンモーダル */}
-      <div className="fixed inset-0 z-50 flex flex-col bg-base-100">
-        {/* モーダルヘッダー */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
-          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-            <span className="icon-[mdi--pencil-outline] size-5 sm:size-6" aria-hidden="true" />
-            アイテム編集
-          </h2>
-          <button
-            type="button"
-            className="btn btn-sm btn-circle"
-            onClick={handleClose}
-            disabled={isSubmitting || isLoadingItem}
-            aria-label="閉じる"
-          >
-            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
-          </button>
-        </div>
+      {/* モーダルオーバーレイ */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        {/* モーダルコンテナ */}
+        <div className="bg-base-100 rounded-box shadow-xl w-full max-w-4xl sm:max-w-6xl xl:max-w-7xl max-h-[90vh] flex flex-col">
+          {/* モーダルヘッダー */}
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+              <span className="icon-[mdi--pencil-outline] size-5 sm:size-6" aria-hidden="true" />
+              アイテム編集
+            </h2>
+            <button
+              type="button"
+              className="btn btn-sm btn-circle"
+              onClick={handleClose}
+              disabled={isSubmitting || isLoadingItem}
+              aria-label="閉じる"
+            >
+              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+            </button>
+          </div>
 
-        {/* モーダルボディ */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="max-w-6xl mx-auto">
-            {/* アイテム読み込みエラー表示 */}
-            {itemLoadError && (
-              <div className="alert alert-soft alert-error mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 shrink-0 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>{itemLoadError}</span>
-              </div>
-            )}
+          {/* モーダルボディ */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="max-w-6xl mx-auto">
+              {/* アイテム読み込みエラー表示 */}
+              {itemLoadError && (
+                <div className="alert alert-soft alert-error mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 shrink-0 stroke-current"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>{itemLoadError}</span>
+                </div>
+              )}
 
-            {/* ローディング中 */}
-            {isLoadingItem && (
-              <div className="flex justify-center py-8">
-                <span className="loading loading-spinner loading-lg"></span>
-              </div>
-            )}
+              {/* ローディング中 */}
+              {isLoadingItem && (
+                <div className="flex justify-center py-8">
+                  <span className="loading loading-spinner loading-lg"></span>
+                </div>
+              )}
 
-            {/* フォーム */}
-            {!isLoadingItem && !itemLoadError && (
-              <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
-                {/* 件名 */}
-                <div className="form-control">
-                  <label htmlFor="subject" className="label">
-                    <span className="label-text font-semibold">
-                      件名 <span className="text-error">*</span>
-                    </span>
-                  </label>
-                  <input
-                    id="subject"
-                    name="subject"
-                    type="text"
-                    placeholder="例：アイテムの件名"
-                    className={`input input-bordered w-full ${shouldShowError('subject') ? 'input-error' : ''}`}
-                    value={formData.subject}
-                    onChange={(e) => handleFieldChange('subject', e.target.value)}
-                    disabled={isSubmitting}
-                    maxLength={200}
-                  />
-                  {shouldShowError('subject') && (
+              {/* フォーム */}
+              {!isLoadingItem && !itemLoadError && (
+                <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
+                  {/* 件名 */}
+                  <div className="form-control">
+                    <label htmlFor="subject" className="label">
+                      <span className="label-text font-semibold">
+                        件名 <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <input
+                      id="subject"
+                      name="subject"
+                      type="text"
+                      placeholder="例：アイテムの件名"
+                      className={`input input-bordered w-full ${shouldShowError('subject') ? 'input-error' : ''}`}
+                      value={formData.subject}
+                      onChange={(e) => handleFieldChange('subject', e.target.value)}
+                      disabled={isSubmitting}
+                      maxLength={200}
+                    />
+                    {shouldShowError('subject') && (
+                      <div className="label">
+                        <span className="label-text-alt text-error">{getFieldError('subject')}</span>
+                      </div>
+                    )}
                     <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('subject')}</span>
+                      <span className="label-text-alt text-xs">{formData.subject.length}/200 文字</span>
+                    </div>
+                  </div>
+
+                  {/* 本文（WYSIWYGエディタ） */}
+                  <div className="form-control">
+                    <div className="label">
+                      <span className="label-text font-semibold">本文</span>
+                    </div>
+                    <div className="overflow-auto max-h-[50vh]">
+                      {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
+                      <EditWorkspaceItemEditor
+                        key={editorInitKey}
+                        initialEditorState={initialEditorState}
+                        onChange={handleEditorChange}
+                        workspaceId={latestItem.workspaceId!}
+                        itemId={latestItem.id}
+                      />
+                    </div>
+                  </div>
+
+                  {/* タグ */}
+                  <div className="form-control">
+                    <label htmlFor="tagNames" className="label">
+                      <span className="label-text font-semibold">タグ</span>
+                    </label>
+                    <TagInput
+                      tags={tagNames}
+                      onChange={setTagNames}
+                      disabled={isSubmitting}
+                      placeholder="タグを入力..."
+                    />
+                    <div className="label">
+                      <span className="label-text-alt text-xs">
+                        タグを入力してEnterで追加。タグは50文字以内で入力してください。
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ステータス（オーナーのみ表示） */}
+                  {currentUserId !== undefined && latestItem.ownerId === currentUserId && (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isDraft"
+                        name="isDraft"
+                        className="switch switch-outline switch-warning"
+                        checked={formData.isDraft || false}
+                        onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
+                        disabled={isSubmitting}
+                      />
+                      <label htmlFor="isDraft" className="label-text cursor-pointer">
+                        下書き
+                      </label>
                     </div>
                   )}
-                  <div className="label">
-                    <span className="label-text-alt text-xs">{formData.subject.length}/200 文字</span>
+
+                  {/* 注: 期限日、優先度、アーカイブはドロワー側で個別の属性更新APIを使用するため、このフォームでは編集しない */}
+
+                  {/* rowVersion（隠しフィールド） */}
+                  <input type="hidden" name="rowVersion" value={formData.rowVersion} />
+
+                  {/* ボタングループ */}
+                  <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                    <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
+                      キャンセル
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <span className="loading loading-spinner loading-sm"></span>
+                          保存中...
+                        </>
+                      ) : (
+                        '保存'
+                      )}
+                    </button>
                   </div>
-                </div>
-
-                {/* 本文（WYSIWYGエディタ） */}
-                <div className="form-control">
-                  <div className="label">
-                    <span className="label-text font-semibold">本文</span>
-                  </div>
-                  <div className="overflow-auto max-h-[50vh]">
-                    {/* モーダルオープン時のみ初期化。以降はonChangeのみで管理 */}
-                    <EditWorkspaceItemEditor
-                      key={editorInitKey}
-                      initialEditorState={initialEditorState}
-                      onChange={handleEditorChange}
-                      workspaceId={latestItem.workspaceId!}
-                      itemId={latestItem.id}
-                    />
-                  </div>
-                </div>
-
-                {/* タグ */}
-                <div className="form-control">
-                  <label htmlFor="tagNames" className="label">
-                    <span className="label-text font-semibold">タグ</span>
-                  </label>
-                  <TagInput
-                    tags={tagNames}
-                    onChange={setTagNames}
-                    disabled={isSubmitting}
-                    placeholder="タグを入力..."
-                  />
-                  <div className="label">
-                    <span className="label-text-alt text-xs">
-                      タグを入力してEnterで追加。タグは50文字以内で入力してください。
-                    </span>
-                  </div>
-                </div>
-
-                {/* ステータス（オーナーのみ表示） */}
-                {currentUserId !== undefined && latestItem.ownerId === currentUserId && (
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="isDraft"
-                      name="isDraft"
-                      className="switch switch-outline switch-warning"
-                      checked={formData.isDraft || false}
-                      onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
-                      disabled={isSubmitting}
-                    />
-                    <label htmlFor="isDraft" className="label-text cursor-pointer">
-                      下書き
-                    </label>
-                  </div>
-                )}
-
-                {/* 注: 期限日、優先度、アーカイブはドロワー側で個別の属性更新APIを使用するため、このフォームでは編集しない */}
-
-                {/* rowVersion（隠しフィールド） */}
-                <input type="hidden" name="rowVersion" value={formData.rowVersion} />
-
-                {/* ボタングループ */}
-                <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
-                    キャンセル
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <span className="loading loading-spinner loading-sm"></span>
-                        保存中...
-                      </>
-                    ) : (
-                      '保存'
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>
