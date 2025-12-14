@@ -70,6 +70,9 @@ export default function TaskCommentSection({
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // IME入力中かどうか（日本語変換中のEnterでサブミットされるのを防止）
+  const isComposingRef = useRef(false);
+
   // コメント一覧を取得（削除済み含む）
   const fetchComments = useCallback(
     async (pageNum: number = 1, append: boolean = false) => {
@@ -272,9 +275,11 @@ export default function TaskCommentSection({
     }
   }, [deleteTargetComment, workspaceId, itemId, taskId, fetchComments, notify, handleDeleteModalClose]);
 
-  // Enter キーでコメント投稿
+  // Enter キーでコメント投稿（IME入力中は無視）
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // IME入力中（日本語変換中など）は無視
+      if (isComposingRef.current) return;
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSubmitComment();
@@ -282,6 +287,16 @@ export default function TaskCommentSection({
     },
     [handleSubmitComment],
   );
+
+  // IME入力開始
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
+  }, []);
+
+  // IME入力終了
+  const handleCompositionEnd = useCallback(() => {
+    isComposingRef.current = false;
+  }, []);
 
   return (
     <div className="flex flex-col h-full flex-1 min-h-0">
@@ -465,11 +480,13 @@ export default function TaskCommentSection({
           <div className="flex-1 flex flex-col">
             <textarea
               ref={textareaRef}
-              className={`textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
+              className={`textarea textarea-bordered textarea-sm w-full min-h-10 max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
               placeholder="コメント... (Shift+Enterで改行)"
               value={newComment}
               onChange={(e) => handleNewCommentChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               disabled={isSubmitting}
               rows={1}
               maxLength={MAX_COMMENT_LENGTH + 50}
