@@ -42,6 +42,8 @@
 
 - **フロントエンド詳細**: `docs/frontend-guidelines.md`
   - アーキテクチャ、APIアクセスルール、SSR、バリデーション、エラーハンドリング等
+- **SSR設計ガイドライン**: `docs/ssr-design-guidelines.md`
+  - Server/Client Component の使い分け、初期データ取得パターン、アンチパターン回避
 - **バックエンド詳細**: `docs/backend-guidelines.md`
   - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
 - **例外処理**: `docs/global-exception-handling.md`
