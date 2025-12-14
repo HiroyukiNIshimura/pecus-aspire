@@ -27,6 +27,21 @@ function getPriorityBadge(priority?: string | null) {
 }
 
 /**
+ * タスク種類アイコンのパスを取得
+ */
+function getTaskTypeIconPath(task: FocusTaskResponse) {
+  if (task.taskTypeIcon) {
+    const iconName = task.taskTypeIcon.replace(/-/g, '').toLowerCase();
+    return `/icons/task/${iconName}.svg`;
+  }
+  if (task.taskTypeCode) {
+    const iconName = task.taskTypeCode.replace(/-/g, '').toLowerCase();
+    return `/icons/task/${iconName}.svg`;
+  }
+  return null;
+}
+
+/**
  * 期限までの残り時間を計算してバッジを返す
  */
 function getDueDateBadge(dueDate: string) {
@@ -63,12 +78,9 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
   return (
     <div className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
       <div className="card-body p-4">
-        {/* ヘッダー: スコアとコード */}
+        {/* ヘッダー: スコアとバッジ */}
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link href={taskUrl} className="text-sm font-medium text-primary hover:underline">
-              {task.itemCode}
-            </Link>
             {getPriorityBadge(task.priority)}
             {getDueDateBadge(task.dueDate)}
           </div>
@@ -80,8 +92,22 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
 
         {/* タスク内容 */}
         <Link href={taskUrl} className="hover:text-primary transition-colors">
-          <h3 className="text-base font-semibold mb-1 line-clamp-2">{task.content}</h3>
-          {task.itemSubject && <p className="text-sm text-base-content/70 line-clamp-1 mb-2">{task.itemSubject}</p>}
+          <div className="flex items-start gap-2 mb-1">
+            {task.taskTypeId && getTaskTypeIconPath(task) && (
+              <img
+                src={getTaskTypeIconPath(task) || undefined}
+                alt={task.taskTypeName || ''}
+                className="w-5 h-5 rounded flex-shrink-0 mt-0.5"
+                title={task.taskTypeName || ''}
+              />
+            )}
+            <h3 className="text-base font-semibold line-clamp-2">{task.content}</h3>
+          </div>
+          {task.itemSubject && (
+            <p className="text-sm text-base-content/70 line-clamp-1 mb-2">
+              <span className="text-primary font-medium">#{task.itemCode}</span> {task.itemSubject}
+            </p>
+          )}
         </Link>
 
         {/* メタ情報 */}
@@ -109,11 +135,22 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
           <div className="mt-3 p-2 bg-info/10 border border-info/30 rounded-lg">
             <div className="flex items-start gap-2">
               <span className="icon-[mdi--link-variant] w-5 h-5 text-info flex-shrink-0 mt-0.5" aria-hidden="true" />
-              <div className="text-xs">
-                <p className="font-semibold text-info mb-1">{task.successorCount}件のタスクがこれを待機中</p>
-                <p className="text-base-content/70">
-                  💡 このタスクを完了すると、{task.successorCount}件のタスクが着手可能になります
+              <div className="text-xs flex-1">
+                <p className="font-semibold text-info mb-1">
+                  {task.successorCount}件のタスクがこのタスクの完了を待機しています
                 </p>
+                <div className="flex items-center gap-2 text-base-content/70">
+                  {task.successorTask && (
+                    <>
+                      <span className="icon-[mdi--arrow-right] w-3 h-3" aria-hidden="true" />
+                      <span className="font-medium">{task.successorTask.workspaceItemCode}</span>
+                      <span className="line-clamp-1">「{task.successorTask.content}」</span>
+                      {task.successorCount > 1 && (
+                        <span className="text-base-content/50">他{task.successorCount - 1}件</span>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>

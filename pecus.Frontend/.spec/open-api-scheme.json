@@ -9814,6 +9814,26 @@
             "description": "アイテム件名",
             "nullable": true
           },
+          "taskTypeId": {
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32"
+          },
+          "taskTypeCode": {
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
+          },
+          "taskTypeName": {
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
+          },
+          "taskTypeIcon": {
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
+          },
           "priority": {
             "$ref": "#/components/schemas/TaskPriority"
           },
@@ -9842,6 +9862,9 @@
             "type": "integer",
             "description": "後続タスク数（このタスクを待っているタスクの数）",
             "format": "int32"
+          },
+          "successorTask": {
+            "$ref": "#/components/schemas/SuccessorTaskInfo"
           },
           "predecessorTask": {
             "$ref": "#/components/schemas/PredecessorTaskInfo"
@@ -12066,6 +12089,28 @@
         },
         "additionalProperties": false,
         "description": "成功メッセージレスポンス"
+      },
+      "SuccessorTaskInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "content": {
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
+          },
+          "workspaceItemCode": {
+            "type": "string",
+            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "後続タスク情報（先頭1件）"
       },
       "TagDetailResponse": {
         "required": [

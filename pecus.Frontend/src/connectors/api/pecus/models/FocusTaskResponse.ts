@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { PredecessorTaskInfo } from './PredecessorTaskInfo';
+import type { SuccessorTaskInfo } from './SuccessorTaskInfo';
 import type { TaskPriority } from './TaskPriority';
 import type { TaskScoreDetail } from './TaskScoreDetail';
 /**
@@ -41,6 +42,22 @@ export type FocusTaskResponse = {
      * アイテム件名
      */
     itemSubject?: string | null;
+    /**
+     * タスク種類ID
+     */
+    taskTypeId?: number;
+    /**
+     * タスク種類コード（例: "Bug", "Feature"）
+     */
+    taskTypeCode?: string | null;
+    /**
+     * タスク種類名（日本語表示名）
+     */
+    taskTypeName?: string | null;
+    /**
+     * タスク種類アイコン（拡張子なしのファイル名）
+     */
+    taskTypeIcon?: string | null;
     priority?: TaskPriority;
     /**
      * 期限日時
@@ -62,6 +79,7 @@ export type FocusTaskResponse = {
      * 後続タスク数（このタスクを待っているタスクの数）
      */
     successorCount: number;
+    successorTask?: SuccessorTaskInfo;
     predecessorTask?: PredecessorTaskInfo;
     scoreDetail?: TaskScoreDetail;
 };

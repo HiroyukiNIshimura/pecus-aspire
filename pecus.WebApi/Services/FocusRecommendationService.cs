@@ -68,6 +68,7 @@ public class FocusRecommendationService
             .Include(t => t.WorkspaceItem)
                 .ThenInclude(i => i.Workspace)
                     .ThenInclude(w => w!.Genre)
+            .Include(t => t.TaskType)
             .Include(t => t.PredecessorTask!)
                 .ThenInclude(p => p.WorkspaceItem)
             .Where(t => t.AssignedUserId == userId
@@ -99,10 +100,26 @@ public class FocusRecommendationService
             .Select(g => new { TaskId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.TaskId, x => x.Count);
 
+        // 後続タスクの先頭1件を取得（各タスクごとに最初の後続タスク）
+        var firstSuccessors = await _context.WorkspaceTasks
+            .Include(t => t.WorkspaceItem)
+            .Where(t => t.PredecessorTaskId != null
+                && taskIds.Contains(t.PredecessorTaskId.Value)
+                && !t.IsCompleted
+                && !t.IsDiscarded)
+            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .Select(g => new
+            {
+                PredecessorTaskId = g.Key,
+                FirstSuccessor = g.OrderBy(t => t.Id).First()
+            })
+            .ToDictionaryAsync(x => x.PredecessorTaskId, x => x.FirstSuccessor);
+
         // タスクをスコアリング
         var scoredTasks = tasks.Select(task =>
         {
             var successorCount = successorCounts.GetValueOrDefault(task.Id, 0);
+            var firstSuccessor = firstSuccessors.GetValueOrDefault(task.Id);
             var (totalScore, scoreDetail) = CalculateTaskScore(
                 task,
                 successorCount,
@@ -116,6 +133,7 @@ public class FocusRecommendationService
                 Task = task,
                 TotalScore = totalScore,
                 SuccessorCount = successorCount,
+                FirstSuccessor = firstSuccessor,
                 ScoreDetail = scoreDetail,
                 CanStart = task.PredecessorTask == null || task.PredecessorTask.IsCompleted
             };
@@ -126,7 +144,7 @@ public class FocusRecommendationService
             .Where(x => x.CanStart)
             .OrderByDescending(x => x.TotalScore)
             .Take(focusTasksLimit)
-            .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.ScoreDetail))
+            .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.FirstSuccessor, x.ScoreDetail))
             .ToList();
 
         // 待機中タスク（先行タスク未完了、スコア順）
@@ -134,7 +152,7 @@ public class FocusRecommendationService
             .Where(x => !x.CanStart)
             .OrderByDescending(x => x.TotalScore)
             .Take(waitingTasksLimit)
-            .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.ScoreDetail))
+            .Select(x => MapToFocusTaskResponse(x.Task, x.TotalScore, x.SuccessorCount, x.FirstSuccessor, x.ScoreDetail))
             .ToList();
 
         _logger.LogDebug(
@@ -282,6 +300,7 @@ public class FocusRecommendationService
         WorkspaceTask task,
         decimal totalScore,
         int successorCount,
+        WorkspaceTask? firstSuccessor,
         TaskScoreDetail scoreDetail
     )
     {
@@ -295,12 +314,24 @@ public class FocusRecommendationService
             ItemCode = task.WorkspaceItem.Code,
             Content = task.Content,
             ItemSubject = task.WorkspaceItem.Subject,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeCode = task.TaskType?.Code,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
             Priority = task.Priority,
             DueDate = task.DueDate,
             EstimatedHours = task.EstimatedHours,
             ProgressPercentage = task.ProgressPercentage,
             TotalScore = totalScore,
             SuccessorCount = successorCount,
+            SuccessorTask = firstSuccessor != null
+                ? new SuccessorTaskInfo
+                {
+                    Id = firstSuccessor.Id,
+                    WorkspaceItemCode = firstSuccessor.WorkspaceItem.Code,
+                    Content = firstSuccessor.Content
+                }
+                : null,
             PredecessorTask = task.PredecessorTask != null
                 ? new PredecessorTaskInfo
                 {

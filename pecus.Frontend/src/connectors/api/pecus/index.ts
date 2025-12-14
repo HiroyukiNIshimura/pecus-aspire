@@ -107,6 +107,7 @@ export type { SkillResponse } from './models/SkillResponse';
 export type { SkillStatistics } from './models/SkillStatistics';
 export type { SkillUsageItem } from './models/SkillUsageItem';
 export type { SkillUserCountResponse } from './models/SkillUserCountResponse';
+export type { SuccessorTaskInfo } from './models/SuccessorTaskInfo';
 export type { SuccessResponse } from './models/SuccessResponse';
 export type { TagDetailResponse } from './models/TagDetailResponse';
 export type { TagDetailResponseConcurrencyErrorResponse } from './models/TagDetailResponseConcurrencyErrorResponse';

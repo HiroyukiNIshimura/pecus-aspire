@@ -55,6 +55,26 @@ public class FocusTaskResponse
     public string? ItemSubject { get; set; }
 
     /// <summary>
+    /// タスク種類ID
+    /// </summary>
+    public int TaskTypeId { get; set; }
+
+    /// <summary>
+    /// タスク種類コード（例: "Bug", "Feature"）
+    /// </summary>
+    public string? TaskTypeCode { get; set; }
+
+    /// <summary>
+    /// タスク種類名（日本語表示名）
+    /// </summary>
+    public string? TaskTypeName { get; set; }
+
+    /// <summary>
+    /// タスク種類アイコン（拡張子なしのファイル名）
+    /// </summary>
+    public string? TaskTypeIcon { get; set; }
+
+    /// <summary>
     /// 優先度
     /// </summary>
     public TaskPriority? Priority { get; set; }
@@ -87,6 +107,11 @@ public class FocusTaskResponse
     /// </summary>
     [Required]
     public required int SuccessorCount { get; set; }
+
+    /// <summary>
+    /// 後続タスク情報（先頭1件、存在する場合）
+    /// </summary>
+    public SuccessorTaskInfo? SuccessorTask { get; set; }
 
     /// <summary>
     /// 先行タスク情報（存在する場合）
