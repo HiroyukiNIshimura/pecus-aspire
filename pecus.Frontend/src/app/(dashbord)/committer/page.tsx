@@ -5,7 +5,6 @@ import { fetchMyCommitterWorkspaces } from '@/actions/myCommitter';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MyCommitterWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import CommitterDashboardClient from './CommitterDashboardClient';
 
 export default async function CommitterDashboardPage() {
@@ -17,7 +16,7 @@ export default async function CommitterDashboardPage() {
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
+    // ユーザー情報を取得（認証確認のため）
     userResponse = await api.profile.getApiProfile();
 
     // コミッターワークスペース一覧を取得
@@ -62,14 +61,7 @@ export default async function CommitterDashboardPage() {
     redirect('/signin');
   }
 
-  const user = mapUserResponseToUserInfo(userResponse);
-
   return (
-    <CommitterDashboardClient
-      initialUser={user}
-      initialWorkspaces={initialWorkspaces}
-      taskTypes={taskTypes}
-      fetchError={fetchError}
-    />
+    <CommitterDashboardClient initialWorkspaces={initialWorkspaces} taskTypes={taskTypes} fetchError={fetchError} />
   );
 }

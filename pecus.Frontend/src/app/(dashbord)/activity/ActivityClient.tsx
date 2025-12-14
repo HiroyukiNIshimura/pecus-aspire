@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { fetchMyActivities } from '@/actions/activity';
-import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/common/DashboardSidebar';
 import UserAvatar from '@/components/common/UserAvatar';
 import type {
   ActivityActionType,
@@ -13,10 +11,10 @@ import type {
   ActivityResponsePagedResponse,
 } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import type { UserInfo } from '@/types/userInfo';
 
 interface ActivityClientProps {
-  initialUser: UserInfo;
+  initialUserName: string;
+  initialUserIconUrl?: string | null;
   initialActivities: ActivityResponsePagedResponse | null;
   fetchError: string | null;
 }
@@ -141,8 +139,12 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
   }
 }
 
-export default function ActivityClient({ initialUser, initialActivities, fetchError }: ActivityClientProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function ActivityClient({
+  initialUserName,
+  initialUserIconUrl,
+  initialActivities,
+  fetchError,
+}: ActivityClientProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<ActivityPeriod>('Today');
   const [activities, setActivities] = useState<ActivityResponse[]>(initialActivities?.data || []);
   const [hasMore, setHasMore] = useState((initialActivities?.currentPage ?? 1) < (initialActivities?.totalPages ?? 1));
@@ -217,186 +219,155 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
   const defaultConfig = { icon: 'icon-[mdi--circle]', badgeClass: 'badge-neutral' };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <AppHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Menu */}
-        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={initialUser?.isAdmin ?? false} />
-
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <button
-            type="button"
-            className="fixed inset-0 bg-black/50 z-10 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="サイドバーを閉じる"
-          />
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="max-w-4xl mx-auto">
-            {/* ヘッダー */}
-            <div className="flex items-center gap-3 mb-6">
-              <UserAvatar
-                userName={initialUser.username}
-                identityIconUrl={initialUser.identityIconUrl}
-                size={48}
-                showName={false}
-              />
-              <div>
-                <h1 className="text-2xl font-bold">アクティビティ</h1>
-                <p className="text-sm text-base-content/70">{initialUser.username} さんの活動履歴</p>
-              </div>
-            </div>
-
-            {/* 期間タブ */}
-            <div className="tabs tabs-box mb-6 overflow-x-auto">
-              {periodTabs.map((tab) => (
-                <button
-                  key={tab.period}
-                  type="button"
-                  className={`tab whitespace-nowrap ${selectedPeriod === tab.period ? 'tab-active' : ''}`}
-                  onClick={() => handlePeriodChange(tab.period)}
-                  disabled={isLoading}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* エラー表示 */}
-            {error && (
-              <div className="alert alert-soft alert-error mb-6">
-                <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* コンテンツ */}
-            {activities.length === 0 && !isLoading && !error ? (
-              <div className="text-center text-base-content/50 py-16">
-                <span className="icon-[mdi--history] size-16 mb-4 opacity-50" aria-hidden="true" />
-                <p className="text-lg">この期間のアクティビティはありません</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {groupedActivities.map((group, groupIndex) => (
-                  <div key={group.date}>
-                    {/* 日付ヘッダー */}
-                    <div
-                      className={`flex items-center gap-2 text-sm text-base-content/70 mb-4 ${groupIndex > 0 ? 'mt-8' : ''}`}
-                    >
-                      <span className="icon-[mdi--calendar] size-4" aria-hidden="true" />
-                      <span className="font-medium">{group.date}</span>
-                      <span className="text-base-content/50">({group.items.length}件)</span>
-                    </div>
-
-                    {/* アクティビティカードリスト */}
-                    <div className="space-y-3">
-                      {group.items.map((activity) => {
-                        const config =
-                          activity.actionType && actionTypeConfig[activity.actionType]
-                            ? actionTypeConfig[activity.actionType]
-                            : defaultConfig;
-                        const label =
-                          activity.actionType && actionTypeLabels[activity.actionType]
-                            ? actionTypeLabels[activity.actionType]
-                            : '不明な操作';
-                        const details = activity.actionType
-                          ? formatDetails(activity.actionType, activity.details)
-                          : null;
-                        const time = activity.createdAt
-                          ? new Date(activity.createdAt).toLocaleTimeString('ja-JP', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '';
-
-                        // アイテムへの遷移URL
-                        const itemUrl = activity.workspaceCode
-                          ? `/workspaces/${activity.workspaceCode}?itemCode=${activity.itemCode}`
-                          : null;
-
-                        return (
-                          <div key={activity.id} className="card bg-base-100 shadow-sm border border-base-300">
-                            <div className="card-body p-4">
-                              {/* 1行目: アクションアイコン + ラベル + 時刻 */}
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`badge ${config.badgeClass} size-8 rounded-full p-0 flex items-center justify-center shrink-0`}
-                                >
-                                  <span className={`${config.icon} size-4`} aria-hidden="true" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <span className="font-medium">{label}</span>
-                                </div>
-                                <span className="text-xs text-base-content/50 whitespace-nowrap">{time}</span>
-                              </div>
-
-                              {/* 2行目: ワークスペース情報 */}
-                              <div className="flex items-center gap-2 mt-2 ml-11">
-                                {/* ワークスペースジャンルアイコン */}
-                                {activity.workspaceGenreIcon && (
-                                  <img
-                                    src={`/icons/genres/${activity.workspaceGenreIcon}.svg`}
-                                    alt={activity.workspaceName || 'ジャンルアイコン'}
-                                    title={activity.workspaceName || 'ジャンル'}
-                                    className="w-4 h-4 flex-shrink-0"
-                                  />
-                                )}
-                                <span className="text-sm text-base-content/70">
-                                  {activity.workspaceName || 'Unknown'}
-                                </span>
-                              </div>
-
-                              {/* 3行目: アイテム情報 */}
-                              <div className="flex items-center gap-2 mt-1 ml-11">
-                                <span className="text-xs text-base-content/50 shrink-0">アイテム:</span>
-                                {itemUrl ? (
-                                  <Link
-                                    href={itemUrl}
-                                    className="text-sm text-primary hover:underline truncate inline-flex items-center gap-1"
-                                  >
-                                    <span className="font-mono">#{activity.itemCode}</span>
-                                    <span className="truncate">{activity.itemSubject}</span>
-                                  </Link>
-                                ) : (
-                                  <span className="text-sm truncate">
-                                    <span className="font-mono">#{activity.itemCode}</span> {activity.itemSubject}
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* 4行目: 詳細情報 */}
-                              {details && (
-                                <div className="mt-2 ml-11">
-                                  <p className="text-sm text-base-content/70 bg-base-200 rounded px-2 py-1 inline-block">
-                                    {details}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ローディング & 無限スクロールトリガー */}
-            <div ref={sentinelRef} aria-hidden="true" />
-            {isLoading && (
-              <div className="py-8 flex justify-center">
-                <span className="loading loading-spinner loading-lg" />
-              </div>
-            )}
-          </div>
-        </main>
+    <div className="max-w-4xl mx-auto">
+      {/* ヘッダー */}
+      <div className="flex items-center gap-3 mb-6">
+        <UserAvatar userName={initialUserName} identityIconUrl={initialUserIconUrl} size={48} showName={false} />
+        <div>
+          <h1 className="text-2xl font-bold">アクティビティ</h1>
+          <p className="text-sm text-base-content/70">{initialUserName} さんの活動履歴</p>
+        </div>
       </div>
+
+      {/* 期間タブ */}
+      <div className="tabs tabs-box mb-6 overflow-x-auto">
+        {periodTabs.map((tab) => (
+          <button
+            key={tab.period}
+            type="button"
+            className={`tab whitespace-nowrap ${selectedPeriod === tab.period ? 'tab-active' : ''}`}
+            onClick={() => handlePeriodChange(tab.period)}
+            disabled={isLoading}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* エラー表示 */}
+      {error && (
+        <div className="alert alert-soft alert-error mb-6">
+          <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* コンテンツ */}
+      {activities.length === 0 && !isLoading && !error ? (
+        <div className="text-center text-base-content/50 py-16">
+          <span className="icon-[mdi--history] size-16 mb-4 opacity-50" aria-hidden="true" />
+          <p className="text-lg">この期間のアクティビティはありません</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {groupedActivities.map((group, groupIndex) => (
+            <div key={group.date}>
+              {/* 日付ヘッダー */}
+              <div
+                className={`flex items-center gap-2 text-sm text-base-content/70 mb-4 ${groupIndex > 0 ? 'mt-8' : ''}`}
+              >
+                <span className="icon-[mdi--calendar] size-4" aria-hidden="true" />
+                <span className="font-medium">{group.date}</span>
+                <span className="text-base-content/50">({group.items.length}件)</span>
+              </div>
+
+              {/* アクティビティカードリスト */}
+              <div className="space-y-3">
+                {group.items.map((activity) => {
+                  const config =
+                    activity.actionType && actionTypeConfig[activity.actionType]
+                      ? actionTypeConfig[activity.actionType]
+                      : defaultConfig;
+                  const label =
+                    activity.actionType && actionTypeLabels[activity.actionType]
+                      ? actionTypeLabels[activity.actionType]
+                      : '不明な操作';
+                  const details = activity.actionType ? formatDetails(activity.actionType, activity.details) : null;
+                  const time = activity.createdAt
+                    ? new Date(activity.createdAt).toLocaleTimeString('ja-JP', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '';
+
+                  // アイテムへの遷移URL
+                  const itemUrl = activity.workspaceCode
+                    ? `/workspaces/${activity.workspaceCode}?itemCode=${activity.itemCode}`
+                    : null;
+
+                  return (
+                    <div key={activity.id} className="card bg-base-100 shadow-sm border border-base-300">
+                      <div className="card-body p-4">
+                        {/* 1行目: アクションアイコン + ラベル + 時刻 */}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`badge ${config.badgeClass} size-8 rounded-full p-0 flex items-center justify-center shrink-0`}
+                          >
+                            <span className={`${config.icon} size-4`} aria-hidden="true" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium">{label}</span>
+                          </div>
+                          <span className="text-xs text-base-content/50 whitespace-nowrap">{time}</span>
+                        </div>
+
+                        {/* 2行目: ワークスペース情報 */}
+                        <div className="flex items-center gap-2 mt-2 ml-11">
+                          {/* ワークスペースジャンルアイコン */}
+                          {activity.workspaceGenreIcon && (
+                            <img
+                              src={`/icons/genres/${activity.workspaceGenreIcon}.svg`}
+                              alt={activity.workspaceName || 'ジャンルアイコン'}
+                              title={activity.workspaceName || 'ジャンル'}
+                              className="w-4 h-4 flex-shrink-0"
+                            />
+                          )}
+                          <span className="text-sm text-base-content/70">{activity.workspaceName || 'Unknown'}</span>
+                        </div>
+
+                        {/* 3行目: アイテム情報 */}
+                        <div className="flex items-center gap-2 mt-1 ml-11">
+                          <span className="text-xs text-base-content/50 shrink-0">アイテム:</span>
+                          {itemUrl ? (
+                            <Link
+                              href={itemUrl}
+                              className="text-sm text-primary hover:underline truncate inline-flex items-center gap-1"
+                            >
+                              <span className="font-mono">#{activity.itemCode}</span>
+                              <span className="truncate">{activity.itemSubject}</span>
+                            </Link>
+                          ) : (
+                            <span className="text-sm truncate">
+                              <span className="font-mono">#{activity.itemCode}</span> {activity.itemSubject}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 4行目: 詳細情報 */}
+                        {details && (
+                          <div className="mt-2 ml-11">
+                            <p className="text-sm text-base-content/70 bg-base-200 rounded px-2 py-1 inline-block">
+                              {details}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ローディング & 無限スクロールトリガー */}
+      <div ref={sentinelRef} aria-hidden="true" />
+      {isLoading && (
+        <div className="py-8 flex justify-center">
+          <span className="loading loading-spinner loading-lg" />
+        </div>
+      )}
     </div>
   );
 }

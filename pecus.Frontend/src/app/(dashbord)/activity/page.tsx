@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { ActivityResponsePagedResponse, UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import ActivityClient from './ActivityClient';
 
 export default async function ActivityPage() {
@@ -40,7 +39,12 @@ export default async function ActivityPage() {
     redirect('/signin');
   }
 
-  const user = mapUserResponseToUserInfo(userResponse);
-
-  return <ActivityClient initialUser={user} initialActivities={initialActivities} fetchError={fetchError} />;
+  return (
+    <ActivityClient
+      initialUserName={userResponse.username ?? ''}
+      initialUserIconUrl={userResponse.identityIconUrl}
+      initialActivities={initialActivities}
+      fetchError={fetchError}
+    />
+  );
 }

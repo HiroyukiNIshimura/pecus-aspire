@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import { updateUserSetting } from '@/actions/profile';
-import AppHeader from '@/components/common/AppHeader';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Slider } from '@/components/common/Slider';
 import type { FocusScorePriority, LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { type UserSettingInput, userSettingSchema } from '@/schemas/userSettingSchemas';
-import type { UserInfo } from '@/types/userInfo';
 import { LANDING_PAGE_OPTIONS } from '@/utils/landingPage';
 
 interface UserSettingsClientProps {
-  initialUser: UserInfo;
   initialSettings: UserSettingResponse;
   fetchError?: string | null;
 }
@@ -28,9 +25,8 @@ const FOCUS_SCORE_PRIORITY_OPTIONS: { value: FocusScorePriority; label: string; 
   },
 ];
 
-export default function UserSettingsClient({ initialUser, initialSettings, fetchError }: UserSettingsClientProps) {
+export default function UserSettingsClient({ initialSettings, fetchError }: UserSettingsClientProps) {
   const notify = useNotify();
-  const [user] = useState<UserInfo>(initialUser);
   const [rowVersion, setRowVersion] = useState<number>(initialSettings.rowVersion ?? 0);
   const [formData, setFormData] = useState<UserSettingInput>({
     canReceiveEmail: initialSettings.canReceiveEmail ?? true,
@@ -104,165 +100,162 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <>
       <LoadingOverlay isLoading={isSubmitting} message="保存中..." />
-      <AppHeader userInfo={user} hideSettingsMenu={true} />
-      <main className="flex-1 p-6 bg-base-100">
-        <div className="max-w-xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">ユーザー設定</h1>
-            <p className="text-base-content/70">通知設定などの個人設定を管理してください</p>
+      <div className="max-w-xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">ユーザー設定</h1>
+          <p className="text-base-content/70">通知設定などの個人設定を管理してください</p>
+        </div>
+
+        {fetchError && (
+          <div className="alert alert-soft alert-error mb-4">
+            <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
+            <span>{fetchError}</span>
           </div>
+        )}
 
-          {fetchError && (
-            <div className="alert alert-soft alert-error mb-4">
-              <span className="icon-[mdi--alert-circle] size-5" aria-hidden="true" />
-              <span>{fetchError}</span>
-            </div>
-          )}
-
-          <div className="card bg-base-200">
-            <div className="card-body">
-              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-                <div className="form-control">
-                  <label htmlFor="canReceiveEmail" className="label cursor-pointer justify-start gap-4">
-                    <input
-                      id="canReceiveEmail"
-                      name="canReceiveEmail"
-                      type="checkbox"
-                      className="checkbox checkbox-primary"
-                      checked={!!formData.canReceiveEmail}
-                      onChange={(e) => handleFieldChange('canReceiveEmail', e.target.checked)}
-                      disabled={isSubmitting}
-                    />
-                    <div>
-                      <span className="label-text font-semibold">メール通知を受信する</span>
-                      <p className="text-sm text-base-content/70 mt-1">システムからの通知メールを受信します</p>
-                    </div>
-                  </label>
-                </div>
-
-                <div className="form-control">
-                  <label htmlFor="landingPage" className="label">
-                    <span className="label-text font-semibold">ログイン後の表示ページ</span>
-                  </label>
-                  <select
-                    id="landingPage"
-                    name="landingPage"
-                    className={`select select-bordered w-full ${shouldShowError('landingPage') ? 'select-error' : ''}`}
-                    value={formData.landingPage ?? 'Dashboard'}
-                    onChange={(e) => handleFieldChange('landingPage', e.target.value)}
+        <div className="card bg-base-200">
+          <div className="card-body">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+              <div className="form-control">
+                <label htmlFor="canReceiveEmail" className="label cursor-pointer justify-start gap-4">
+                  <input
+                    id="canReceiveEmail"
+                    name="canReceiveEmail"
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    checked={!!formData.canReceiveEmail}
+                    onChange={(e) => handleFieldChange('canReceiveEmail', e.target.checked)}
                     disabled={isSubmitting}
-                  >
-                    {LANDING_PAGE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {shouldShowError('landingPage') && (
-                    <span className="label-text-alt text-error">{getFieldError('landingPage')}</span>
-                  )}
-                  <p className="text-sm text-base-content/70 mt-1">ログイン後に最初に表示されるページを選択できます</p>
-                </div>
-
-                <div className="divider my-6">フォーカス推奨設定</div>
-
-                <div className="form-control">
-                  <label htmlFor="focusScorePriority" className="label">
-                    <span className="label-text font-semibold">スコアリング優先要素</span>
-                  </label>
-                  <select
-                    id="focusScorePriority"
-                    name="focusScorePriority"
-                    className={`select select-bordered w-full ${shouldShowError('focusScorePriority') ? 'select-error' : ''}`}
-                    value={formData.focusScorePriority ?? 'Deadline'}
-                    onChange={(e) => handleFieldChange('focusScorePriority', e.target.value)}
-                    disabled={isSubmitting}
-                  >
-                    {FOCUS_SCORE_PRIORITY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {shouldShowError('focusScorePriority') && (
-                    <span className="label-text-alt text-error">{getFieldError('focusScorePriority')}</span>
-                  )}
-                  <p className="text-sm text-base-content/70 mt-1">
-                    {
-                      FOCUS_SCORE_PRIORITY_OPTIONS.find(
-                        (opt) => opt.value === (formData.focusScorePriority ?? 'Deadline'),
-                      )?.description
-                    }
-                  </p>
-                </div>
-
-                <div className="form-control">
-                  <Slider
-                    min={5}
-                    max={20}
-                    step={1}
-                    name="focusTasksLimit"
-                    value={formData.focusTasksLimit}
-                    onChange={(value) => handleFieldChange('focusTasksLimit', value)}
-                    label="フォーカス推奨タスクの表示件数"
-                    showValue
-                    valueFormatter={(value) => `${value}件`}
-                    disabled={isSubmitting}
-                    ariaLabel="フォーカス推奨タスクの表示件数"
                   />
-                  {shouldShowError('focusTasksLimit') && (
-                    <span className="label-text-alt text-error">{getFieldError('focusTasksLimit')}</span>
-                  )}
-                  <p className="text-sm text-base-content/70 mt-1">
-                    着手可能なタスクのうち、上位何件を表示するか設定します
-                  </p>
-                </div>
+                  <div>
+                    <span className="label-text font-semibold">メール通知を受信する</span>
+                    <p className="text-sm text-base-content/70 mt-1">システムからの通知メールを受信します</p>
+                  </div>
+                </label>
+              </div>
 
-                <div className="form-control">
-                  <Slider
-                    min={5}
-                    max={20}
-                    step={1}
-                    name="waitingTasksLimit"
-                    value={formData.waitingTasksLimit}
-                    onChange={(value) => handleFieldChange('waitingTasksLimit', value)}
-                    label="待機中タスクの表示件数"
-                    showValue
-                    valueFormatter={(value) => `${value}件`}
-                    disabled={isSubmitting}
-                    ariaLabel="待機中タスクの表示件数"
-                  />
-                  {shouldShowError('waitingTasksLimit') && (
-                    <span className="label-text-alt text-error">{getFieldError('waitingTasksLimit')}</span>
-                  )}
-                  <p className="text-sm text-base-content/70 mt-1">
-                    先行タスクが未完了で待機中のタスクのうち、上位何件を表示するか設定します
-                  </p>
-                </div>
+              <div className="form-control">
+                <label htmlFor="landingPage" className="label">
+                  <span className="label-text font-semibold">ログイン後の表示ページ</span>
+                </label>
+                <select
+                  id="landingPage"
+                  name="landingPage"
+                  className={`select select-bordered w-full ${shouldShowError('landingPage') ? 'select-error' : ''}`}
+                  value={formData.landingPage ?? 'Dashboard'}
+                  onChange={(e) => handleFieldChange('landingPage', e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  {LANDING_PAGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {shouldShowError('landingPage') && (
+                  <span className="label-text-alt text-error">{getFieldError('landingPage')}</span>
+                )}
+                <p className="text-sm text-base-content/70 mt-1">ログイン後に最初に表示されるページを選択できます</p>
+              </div>
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => {
-                      resetForm();
-                      syncWithResponse(initialSettings);
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    リセット
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? '保存中...' : '保存'}
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="divider my-6">フォーカス推奨設定</div>
+
+              <div className="form-control">
+                <label htmlFor="focusScorePriority" className="label">
+                  <span className="label-text font-semibold">スコアリング優先要素</span>
+                </label>
+                <select
+                  id="focusScorePriority"
+                  name="focusScorePriority"
+                  className={`select select-bordered w-full ${shouldShowError('focusScorePriority') ? 'select-error' : ''}`}
+                  value={formData.focusScorePriority ?? 'Deadline'}
+                  onChange={(e) => handleFieldChange('focusScorePriority', e.target.value)}
+                  disabled={isSubmitting}
+                >
+                  {FOCUS_SCORE_PRIORITY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {shouldShowError('focusScorePriority') && (
+                  <span className="label-text-alt text-error">{getFieldError('focusScorePriority')}</span>
+                )}
+                <p className="text-sm text-base-content/70 mt-1">
+                  {
+                    FOCUS_SCORE_PRIORITY_OPTIONS.find(
+                      (opt) => opt.value === (formData.focusScorePriority ?? 'Deadline'),
+                    )?.description
+                  }
+                </p>
+              </div>
+
+              <div className="form-control">
+                <Slider
+                  min={5}
+                  max={20}
+                  step={1}
+                  name="focusTasksLimit"
+                  value={formData.focusTasksLimit}
+                  onChange={(value) => handleFieldChange('focusTasksLimit', value)}
+                  label="フォーカス推奨タスクの表示件数"
+                  showValue
+                  valueFormatter={(value) => `${value}件`}
+                  disabled={isSubmitting}
+                  ariaLabel="フォーカス推奨タスクの表示件数"
+                />
+                {shouldShowError('focusTasksLimit') && (
+                  <span className="label-text-alt text-error">{getFieldError('focusTasksLimit')}</span>
+                )}
+                <p className="text-sm text-base-content/70 mt-1">
+                  着手可能なタスクのうち、上位何件を表示するか設定します
+                </p>
+              </div>
+
+              <div className="form-control">
+                <Slider
+                  min={5}
+                  max={20}
+                  step={1}
+                  name="waitingTasksLimit"
+                  value={formData.waitingTasksLimit}
+                  onChange={(value) => handleFieldChange('waitingTasksLimit', value)}
+                  label="待機中タスクの表示件数"
+                  showValue
+                  valueFormatter={(value) => `${value}件`}
+                  disabled={isSubmitting}
+                  ariaLabel="待機中タスクの表示件数"
+                />
+                {shouldShowError('waitingTasksLimit') && (
+                  <span className="label-text-alt text-error">{getFieldError('waitingTasksLimit')}</span>
+                )}
+                <p className="text-sm text-base-content/70 mt-1">
+                  先行タスクが未完了で待機中のタスクのうち、上位何件を表示するか設定します
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => {
+                    resetForm();
+                    syncWithResponse(initialSettings);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  リセット
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? '保存中...' : '保存'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }

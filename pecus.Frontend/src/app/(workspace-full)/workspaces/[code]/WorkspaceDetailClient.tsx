@@ -13,8 +13,12 @@ import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/w
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/UserAvatar';
+import type { WorkspaceItemsSidebarHandle } from '@/components/workspaceItems/WorkspaceItemsSidebar';
+import WorkspaceItemsSidebar from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
+import EditWorkspaceModal from '@/components/workspaces/EditWorkspaceModal';
+import EditWorkspaceSkillsModal from '@/components/workspaces/EditWorkspaceSkillsModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
@@ -30,10 +34,6 @@ import { useNotify } from '@/hooks/useNotify';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
-import type { WorkspaceItemsSidebarHandle } from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
-import WorkspaceItemsSidebar from '../../../../components/workspaceItems/WorkspaceItemsSidebar';
-import EditWorkspaceModal from '../EditWorkspaceModal';
-import EditWorkspaceSkillsModal from '../EditWorkspaceSkillsModal';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
 

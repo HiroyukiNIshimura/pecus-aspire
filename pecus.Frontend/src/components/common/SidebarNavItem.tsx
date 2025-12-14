@@ -21,7 +21,7 @@ export default function SidebarNavItem({ href, label, iconClass, sidebarOpen }: 
     <li className="w-full">
       <a
         href={href}
-        className={`${isActive ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
+        className={`${isActive ? 'menu-active' : ''} lg:flex-row flex-col lg:justify-start! lg:items-start! ${sidebarOpen ? 'justify-start! items-center!' : 'justify-center! items-center!'} w-full`}
         title={label}
       >
         <span className={`${iconClass} size-5`} aria-hidden="true" />

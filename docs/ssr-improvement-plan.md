@@ -62,9 +62,9 @@ DashboardSidebar.tsx ('use client')
 ```
 
 **作業内容**:
-- [ ] メニュー項目のレンダリングを Server Component に移動
-- [ ] `usePathname()` を使うアクティブ判定のみを `SidebarNavItem.tsx` に分離
-- [ ] アイコン・ラベル・リンク構造は Server Component でレンダリング
+- [x] メニュー項目のレンダリングを Server Component に移動
+- [x] `usePathname()` を使うアクティブ判定のみを `SidebarNavItem.tsx` に分離
+- [x] アイコン・ラベル・リンク構造は Server Component でレンダリング
 
 #### 1-2. AppHeader の分離
 
@@ -83,10 +83,10 @@ AppHeader.tsx ('use client')
 ```
 
 **作業内容**:
-- [ ] 静的なロゴ・ナビ構造を Server Component に移動
-- [ ] テーマ切り替えを `ThemeToggle.tsx` に分離
-- [ ] ユーザーメニュー・ログアウトを `UserMenu.tsx` に分離
-- [ ] アクティブ状態判定が必要な場合は `AppHeaderNav.tsx` に分離
+- [x] 静的なロゴ・ナビ構造を Server Component に移動
+- [x] テーマ切り替えを `ThemeToggle.tsx` に分離
+- [x] ユーザーメニュー・ログアウトを `UserMenu.tsx` に分離
+- [x] アクティブ状態判定が必要な場合は `HeaderNavItem.tsx` に分離
 
 ---
 
@@ -123,9 +123,14 @@ export default async function DashboardLayout({ children }) {
 ```
 
 **作業内容**:
-- [ ] `layout.tsx` でユーザー情報を取得
-- [ ] `AppHeader` と `DashboardSidebar` を layout で配置
-- [ ] 各ページの `page.tsx` / `xxxClient.tsx` からヘッダー・サイドバーを削除
+- [x] `layout.tsx` でユーザー情報を取得
+- [x] `AppHeader` と `DashboardSidebar` を layout で配置
+- [x] 各ページの `page.tsx` / `xxxClient.tsx` からヘッダー・サイドバーを削除
+
+**追加作業**（2025-01-20実施）:
+- [x] `(workspace-full)` ルートグループ作成 - ワークスペース詳細の独自レイアウト対応
+- [x] `/workspaces/[code]` を `(workspace-full)` に移動
+- [x] `EditWorkspaceModal`, `EditWorkspaceSkillsModal` を `@/components/workspaces` に移動（共有化）
 
 ---
 

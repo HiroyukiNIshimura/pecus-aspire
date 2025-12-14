@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { UserDetailResponse, WorkspaceItemDetailResponsePagedResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import MyItemsClient from './MyItemsClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +14,7 @@ export default async function MyItemsPage() {
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
+    // ユーザー情報を取得（認証確認のため）
     userResponse = await api.profile.getApiProfile();
 
     // マイアイテムを取得（初回は All で取得）
@@ -40,7 +39,5 @@ export default async function MyItemsPage() {
     redirect('/signin');
   }
 
-  const user = mapUserResponseToUserInfo(userResponse);
-
-  return <MyItemsClient initialUser={user} initialItems={initialItems} fetchError={fetchError} />;
+  return <MyItemsClient initialItems={initialItems} fetchError={fetchError} />;
 }

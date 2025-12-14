@@ -2,17 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchMyTasksByWorkspace } from '@/actions/myTask';
-import AppHeader from '@/components/common/AppHeader';
 import DashboardFilterBar from '@/components/common/DashboardFilterBar';
-import DashboardSidebar from '@/components/common/DashboardSidebar';
 import WorkspaceTaskAccordion, { type WorkspaceInfo } from '@/components/common/WorkspaceTaskAccordion';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type { DashboardTaskFilter, MyTaskWorkspaceResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import type { UserInfo } from '@/types/userInfo';
 
 interface MyTasksDashboardClientProps {
-  initialUser?: UserInfo | null;
   initialWorkspaces: MyTaskWorkspaceResponse[];
   taskTypes: TaskTypeOption[];
   fetchError?: string | null;
@@ -22,13 +18,10 @@ interface MyTasksDashboardClientProps {
  * マイタスクダッシュボード（ワークスペース×期限日でグループ化）
  */
 export default function MyTasksDashboardClient({
-  initialUser,
   initialWorkspaces,
   taskTypes,
   fetchError,
 }: MyTasksDashboardClientProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo] = useState<UserInfo | null>(initialUser || null);
   const [currentFilter, setCurrentFilter] = useState<DashboardTaskFilter>('Active');
   const notify = useNotify();
 
@@ -103,73 +96,44 @@ export default function MyTasksDashboardClient({
   const totalReminderComments = allWorkspaces.reduce((sum, ws) => sum + (ws.reminderCommentCount || 0), 0);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Menu */}
-        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin ?? false} />
-
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <button
-            type="button"
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="サイドバーを閉じる"
-          />
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-y-auto">
-          {/* ページヘッダー */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3">
-              <span className="icon-[mdi--clipboard-check-outline] text-primary w-8 h-8" aria-hidden="true" />
-              <div>
-                <h1 className="text-2xl font-bold">タスク</h1>
-                <p className="text-base-content/70 mt-1">あなたに割り当てられたタスクの一覧（期日順）</p>
-              </div>
-            </div>
+    <>
+      {/* ページヘッダー */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <span className="icon-[mdi--clipboard-check-outline] text-primary w-8 h-8" aria-hidden="true" />
+          <div>
+            <h1 className="text-2xl font-bold">タスク</h1>
+            <p className="text-base-content/70 mt-1">あなたに割り当てられたタスクの一覧（期日順）</p>
           </div>
-
-          {/* フィルターバー */}
-          <DashboardFilterBar
-            currentFilter={currentFilter}
-            onFilterChange={setCurrentFilter}
-            stats={{
-              activeCount: totalActive,
-              completedCount: totalCompleted,
-              overdueCount: totalOverdue,
-              helpCommentCount: totalHelpComments,
-              reminderCommentCount: totalReminderComments,
-            }}
-            workspaceCount={allWorkspaces.length}
-          />
-
-          {/* ワークスペース×タスク一覧（アコーディオン） */}
-          <WorkspaceTaskAccordion
-            key={currentFilter}
-            workspaces={filteredWorkspaces}
-            fetchTasks={handleFetchTasks}
-            emptyMessage="担当のタスクがありません"
-            emptyIconClass="icon-[mdi--clipboard-check-outline]"
-            showItemCount={false}
-            taskTypes={taskTypes}
-            displayMode="committer"
-            currentUser={
-              userInfo
-                ? {
-                    id: userInfo.id,
-                    username: userInfo.username ?? userInfo.name,
-                    email: userInfo.email,
-                    identityIconUrl: userInfo.identityIconUrl,
-                  }
-                : null
-            }
-          />
-        </main>
+        </div>
       </div>
-    </div>
+
+      {/* フィルターバー */}
+      <DashboardFilterBar
+        currentFilter={currentFilter}
+        onFilterChange={setCurrentFilter}
+        stats={{
+          activeCount: totalActive,
+          completedCount: totalCompleted,
+          overdueCount: totalOverdue,
+          helpCommentCount: totalHelpComments,
+          reminderCommentCount: totalReminderComments,
+        }}
+        workspaceCount={allWorkspaces.length}
+      />
+
+      {/* ワークスペース×タスク一覧（アコーディオン） */}
+      <WorkspaceTaskAccordion
+        key={currentFilter}
+        workspaces={filteredWorkspaces}
+        fetchTasks={handleFetchTasks}
+        emptyMessage="担当のタスクがありません"
+        emptyIconClass="icon-[mdi--clipboard-check-outline]"
+        showItemCount={false}
+        taskTypes={taskTypes}
+        displayMode="committer"
+        currentUser={null}
+      />
+    </>
   );
 }

@@ -5,7 +5,6 @@ import { fetchMyTaskWorkspaces } from '@/actions/myTask';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MyTaskWorkspaceResponse, UserDetailResponse } from '@/connectors/api/pecus';
-import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import MyTasksDashboardClient from './MyTasksDashboardClient';
 
 export default async function MyTasksPage() {
@@ -17,7 +16,7 @@ export default async function MyTasksPage() {
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
+    // ユーザー情報を取得（認証確認のため）
     userResponse = await api.profile.getApiProfile();
 
     // マイタスクワークスペース一覧を取得
@@ -56,14 +55,5 @@ export default async function MyTasksPage() {
     redirect('/signin');
   }
 
-  const user = mapUserResponseToUserInfo(userResponse);
-
-  return (
-    <MyTasksDashboardClient
-      initialUser={user}
-      initialWorkspaces={initialWorkspaces}
-      taskTypes={taskTypes}
-      fetchError={fetchError}
-    />
-  );
+  return <MyTasksDashboardClient initialWorkspaces={initialWorkspaces} taskTypes={taskTypes} fetchError={fetchError} />;
 }

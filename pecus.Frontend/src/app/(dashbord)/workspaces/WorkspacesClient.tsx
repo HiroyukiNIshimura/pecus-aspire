@@ -3,8 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
-import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/common/DashboardSidebar';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
@@ -18,18 +16,13 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
-import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
 
 interface WorkspacesClientProps {
-  initialUser?: UserInfo | null;
-  fetchError?: string | null;
   genres: MasterGenreResponse[];
 }
 
-export default function WorkspacesClient({ initialUser, genres }: WorkspacesClientProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser || null);
+export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
   const [_isLoading, setIsLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -192,294 +185,273 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <AppHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+    <>
+      {showLoading && <LoadingOverlay isLoading={showLoading} />}
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar Menu */}
-        <DashboardSidebar sidebarOpen={sidebarOpen} isAdmin={userInfo?.isAdmin || false} />
+      {/* ページヘッダー */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="icon-[mdi--view-grid-outline] text-primary w-8 h-8" aria-hidden="true" />
+            <div>
+              <h1 className="text-2xl font-bold">マイワークスペース</h1>
+              <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
+            </div>
+          </div>
+          <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+            <span className="icon-[mdi--plus-circle-outline] w-5 h-5" aria-hidden="true" />
+            新規作成
+          </button>
+        </div>
+      </div>
 
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
+      {/* フィルターセクション */}
+      <div className="card mb-6">
+        <div className="card-body p-4">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 bg-base-100 overflow-y-auto">
-          {showLoading && <LoadingOverlay isLoading={showLoading} />}
-
-          {/* ページヘッダー */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="icon-[mdi--view-grid-outline] text-primary w-8 h-8" aria-hidden="true" />
-                <div>
-                  <h1 className="text-2xl font-bold">マイワークスペース</h1>
-                  <p className="text-base-content/70 mt-1">アクセス可能なワークスペースの一覧</p>
-                </div>
-              </div>
-              <button type="button" className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                <span className="icon-[mdi--plus-circle-outline] w-5 h-5" aria-hidden="true" />
-                新規作成
-              </button>
-            </div>
-          </div>
-
-          {/* フィルターセクション */}
-          <div className="card mb-6">
-            <div className="card-body p-4">
-              <div
-                className="flex items-center justify-between cursor-pointer py-2 mb-4"
-                onClick={() => setFilterOpen(!filterOpen)}
+            className="flex items-center justify-between cursor-pointer py-2 mb-4"
+            onClick={() => setFilterOpen(!filterOpen)}
+          >
+            <h2 className="card-title text-lg flex items-center gap-2">
+              <span className="icon-[mdi--filter-outline] w-5 h-5" aria-hidden="true" />
+              <span
+                className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
               >
-                <h2 className="card-title text-lg flex items-center gap-2">
-                  <span className="icon-[mdi--filter-outline] w-5 h-5" aria-hidden="true" />
-                  <span
-                    className={`underline decoration-dashed underline-offset-4 hover:decoration-solid transition-colors ${filterIsActive !== true || filterName || filterGenreId !== null ? 'text-success' : ''}`}
-                  >
-                    フィルター
-                  </span>
-                </h2>
-                <svg
-                  className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {filterOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  )}
-                </svg>
-              </div>
-
-              {filterOpen && (
-                <div className="pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
-                    {/* ジャンルフィルター */}
-                    <div className="form-control">
-                      <label htmlFor="filterGenreId" className="label">
-                        <span className="label-text">ジャンル</span>
-                      </label>
-                      <GenreSelect
-                        id="filterGenreId"
-                        name="filterGenreId"
-                        genres={genres}
-                        value={filterGenreId}
-                        onChange={(value) => setFilterGenreId(value)}
-                      />
-                    </div>
-
-                    {/* 名前検索 */}
-                    <div className="form-control">
-                      <label htmlFor="filterName" className="label">
-                        <span className="label-text">ワークスペース名</span>
-                      </label>
-                      <input
-                        id="filterName"
-                        type="text"
-                        placeholder="検索名を入力..."
-                        className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
-                        value={filterName}
-                        onChange={(e) => handleNameChange(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && nameValidation.isValid) {
-                            handleSearch();
-                          }
-                        }}
-                      />
-                      {nameValidation.error && (
-                        <div className="label">
-                          <span className="label-text-alt text-error">{nameValidation.error}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ステータスフィルター */}
-                    <ActiveStatusFilter
-                      name="workspace-status"
-                      value={filterIsActive}
-                      onChange={setFilterIsActive}
-                      size="xs"
-                    />
-                  </div>
-
-                  {/* ボタングループ */}
-                  <div className="flex gap-2 justify-end">
-                    <button type="button" className="btn btn-outline" onClick={handleReset}>
-                      リセット
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={handleSearch}
-                      disabled={!nameValidation.isValid}
-                    >
-                      <span className="icon-[mdi--magnify] w-4 h-4" aria-hidden="true" />
-                      検索
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ワークスペース一覧 */}
-          <div className="card">
-            <div className="card-body p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="card-title text-lg">ワークスペース一覧</h2>
-                  <span className="badge badge-primary">{totalCount}</span>
-                </div>
-              </div>
-
-              {workspaces.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-base-content/70">ワークスペースが見つかりません</p>
-                </div>
+                フィルター
+              </span>
+            </h2>
+            <svg
+              className={`w-5 h-5 transition-transform ${filterOpen ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {filterOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
               ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {workspaces.map((workspace) => (
-                      <div
-                        key={workspace.id}
-                        className="card hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
-                      >
-                        <div className="card-body p-4 flex flex-col flex-1">
-                          {/* ヘッダー */}
-                          <div className="mb-3">
-                            {/* コード、ステータス、メニュー */}
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
-                              <div className="flex items-center gap-2">
-                                {workspace.isActive ? (
-                                  <span className="icon-[mdi--power] w-4 h-4 text-success" aria-hidden="true" />
-                                ) : (
-                                  <span
-                                    className="icon-[mdi--power-off] w-4 h-4 text-base-content/50"
-                                    aria-hidden="true"
-                                  />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* ワークスペース名 */}
-                            <div>
-                              <Link href={`/workspaces/${workspace.code}`}>
-                                <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words flex items-center gap-2">
-                                  {workspace.genreIcon && (
-                                    <img
-                                      src={`/icons/genres/${workspace.genreIcon}.svg`}
-                                      alt={workspace.genreName || 'ジャンルアイコン'}
-                                      title={workspace.genreName || 'ジャンル'}
-                                      className="w-6 h-6 flex-shrink-0"
-                                    />
-                                  )}
-                                  <span>{workspace.name}</span>
-                                </h3>
-                              </Link>
-                            </div>
-                          </div>
-
-                          {/* 説明 */}
-                          {workspace.description && (
-                            <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
-                              {workspace.description}
-                            </p>
-                          )}
-
-                          {/* メタ情報 */}
-                          <div className="space-y-2 mb-3 flex-1">
-                            <div className="flex items-center justify-between text-sm gap-2">
-                              <span className="text-base-content/70 flex-shrink-0">メンバー</span>
-                              <div className="flex items-center gap-1 font-medium">
-                                <span className="icon-[mdi--account-outline] w-4 h-4" aria-hidden="true" />
-                                {workspace.memberCount || 0}
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between text-sm gap-2">
-                              <span className="text-base-content/70 flex-shrink-0">作成日</span>
-                              <span className="font-medium">
-                                {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '-'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* フッター（ジャンル） - 下部に固定 */}
-                          {workspace.genreIcon && workspace.genreName && (
-                            <div className="pt-3 border-t border-base-300 mt-auto">
-                              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                                <span className="text-lg">{workspace.genreIcon}</span>
-                                <span>{workspace.genreName}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* センチネル要素 - IntersectionObserver が監視 */}
-                  <div ref={sentinelRef} aria-hidden="true" />
-
-                  {/* ローディングインジケーター */}
-                  {isLoadingMore && (
-                    <div className="text-center py-4">
-                      <span className="loading loading-spinner loading-md"></span>
-                    </div>
-                  )}
-
-                  {/* 終了メッセージ */}
-                  {!isLoadingMore && currentPage >= totalPages && workspaces.length > 0 && (
-                    <div className="text-center py-4">
-                      <p className="text-base-content/70">すべてのワークスペースを表示しました</p>
-                    </div>
-                  )}
-                </>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               )}
-            </div>
+            </svg>
           </div>
 
-          {/* 統計情報カード */}
-          {statistics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">アクティブ</div>
-                  <div className="stat-value text-primary">{statistics.activeWorkspaceCount || 0}</div>
-                  <div className="stat-desc">利用中のワークスペース</div>
+          {filterOpen && (
+            <div className="pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
+                {/* ジャンルフィルター */}
+                <div className="form-control">
+                  <label htmlFor="filterGenreId" className="label">
+                    <span className="label-text">ジャンル</span>
+                  </label>
+                  <GenreSelect
+                    id="filterGenreId"
+                    name="filterGenreId"
+                    genres={genres}
+                    value={filterGenreId}
+                    onChange={(value) => setFilterGenreId(value)}
+                  />
                 </div>
+
+                {/* 名前検索 */}
+                <div className="form-control">
+                  <label htmlFor="filterName" className="label">
+                    <span className="label-text">ワークスペース名</span>
+                  </label>
+                  <input
+                    id="filterName"
+                    type="text"
+                    placeholder="検索名を入力..."
+                    className={`input input-bordered w-full ${nameValidation.hasErrors ? 'input-error' : ''}`}
+                    value={filterName}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && nameValidation.isValid) {
+                        handleSearch();
+                      }
+                    }}
+                  />
+                  {nameValidation.error && (
+                    <div className="label">
+                      <span className="label-text-alt text-error">{nameValidation.error}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* ステータスフィルター */}
+                <ActiveStatusFilter
+                  name="workspace-status"
+                  value={filterIsActive}
+                  onChange={setFilterIsActive}
+                  size="xs"
+                />
               </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">非アクティブ</div>
-                  <div className="stat-value text-secondary">{statistics.inactiveWorkspaceCount || 0}</div>
-                  <div className="stat-desc">停止中のワークスペース</div>
-                </div>
-              </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">総メンバー数</div>
-                  <div className="stat-value text-accent">{statistics.uniqueMemberCount || 0}</div>
-                  <div className="stat-desc">全ワークスペース合計</div>
-                </div>
-              </div>
-              <div className="stats shadow">
-                <div className="stat">
-                  <div className="stat-title">最近作成</div>
-                  <div className="stat-value text-info">{statistics.recentWorkspaceCount || 0}</div>
-                  <div className="stat-desc">過去30日以内</div>
-                </div>
+
+              {/* ボタングループ */}
+              <div className="flex gap-2 justify-end">
+                <button type="button" className="btn btn-outline" onClick={handleReset}>
+                  リセット
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSearch}
+                  disabled={!nameValidation.isValid}
+                >
+                  <span className="icon-[mdi--magnify] w-4 h-4" aria-hidden="true" />
+                  検索
+                </button>
               </div>
             </div>
           )}
-        </main>
+        </div>
       </div>
+
+      {/* ワークスペース一覧 */}
+      <div className="card">
+        <div className="card-body p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <h2 className="card-title text-lg">ワークスペース一覧</h2>
+              <span className="badge badge-primary">{totalCount}</span>
+            </div>
+          </div>
+
+          {workspaces.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-base-content/70">ワークスペースが見つかりません</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {workspaces.map((workspace) => (
+                  <div
+                    key={workspace.id}
+                    className="card hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
+                  >
+                    <div className="card-body p-4 flex flex-col flex-1">
+                      {/* ヘッダー */}
+                      <div className="mb-3">
+                        {/* コード、ステータス、メニュー */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <code className="text-xs badge badge-soft badge-accent badge-sm">{workspace.code}</code>
+                          <div className="flex items-center gap-2">
+                            {workspace.isActive ? (
+                              <span className="icon-[mdi--power] w-4 h-4 text-success" aria-hidden="true" />
+                            ) : (
+                              <span className="icon-[mdi--power-off] w-4 h-4 text-base-content/50" aria-hidden="true" />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ワークスペース名 */}
+                        <div>
+                          <Link href={`/workspaces/${workspace.code}`}>
+                            <h3 className="text-lg font-bold hover:text-primary transition-colors cursor-pointer break-words flex items-center gap-2">
+                              {workspace.genreIcon && (
+                                <img
+                                  src={`/icons/genres/${workspace.genreIcon}.svg`}
+                                  alt={workspace.genreName || 'ジャンルアイコン'}
+                                  title={workspace.genreName || 'ジャンル'}
+                                  className="w-6 h-6 flex-shrink-0"
+                                />
+                              )}
+                              <span>{workspace.name}</span>
+                            </h3>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* 説明 */}
+                      {workspace.description && (
+                        <p className="text-sm text-base-content/70 line-clamp-2 mb-3 break-words">
+                          {workspace.description}
+                        </p>
+                      )}
+
+                      {/* メタ情報 */}
+                      <div className="space-y-2 mb-3 flex-1">
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">メンバー</span>
+                          <div className="flex items-center gap-1 font-medium">
+                            <span className="icon-[mdi--account-outline] w-4 h-4" aria-hidden="true" />
+                            {workspace.memberCount || 0}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-sm gap-2">
+                          <span className="text-base-content/70 flex-shrink-0">作成日</span>
+                          <span className="font-medium">
+                            {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '-'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* フッター（ジャンル） - 下部に固定 */}
+                      {workspace.genreIcon && workspace.genreName && (
+                        <div className="pt-3 border-t border-base-300 mt-auto">
+                          <div className="flex items-center gap-2 text-sm text-base-content/70">
+                            <span className="text-lg">{workspace.genreIcon}</span>
+                            <span>{workspace.genreName}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* センチネル要素 - IntersectionObserver が監視 */}
+              <div ref={sentinelRef} aria-hidden="true" />
+
+              {/* ローディングインジケーター */}
+              {isLoadingMore && (
+                <div className="text-center py-4">
+                  <span className="loading loading-spinner loading-md"></span>
+                </div>
+              )}
+
+              {/* 終了メッセージ */}
+              {!isLoadingMore && currentPage >= totalPages && workspaces.length > 0 && (
+                <div className="text-center py-4">
+                  <p className="text-base-content/70">すべてのワークスペースを表示しました</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 統計情報カード */}
+      {statistics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div className="stats shadow">
+            <div className="stat">
+              <div className="stat-title">アクティブ</div>
+              <div className="stat-value text-primary">{statistics.activeWorkspaceCount || 0}</div>
+              <div className="stat-desc">利用中のワークスペース</div>
+            </div>
+          </div>
+          <div className="stats shadow">
+            <div className="stat">
+              <div className="stat-title">非アクティブ</div>
+              <div className="stat-value text-secondary">{statistics.inactiveWorkspaceCount || 0}</div>
+              <div className="stat-desc">停止中のワークスペース</div>
+            </div>
+          </div>
+          <div className="stats shadow">
+            <div className="stat">
+              <div className="stat-title">総メンバー数</div>
+              <div className="stat-value text-accent">{statistics.uniqueMemberCount || 0}</div>
+              <div className="stat-desc">全ワークスペース合計</div>
+            </div>
+          </div>
+          <div className="stats shadow">
+            <div className="stat">
+              <div className="stat-title">最近作成</div>
+              <div className="stat-value text-info">{statistics.recentWorkspaceCount || 0}</div>
+              <div className="stat-desc">過去30日以内</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ワークスペース作成モーダル */}
       <CreateWorkspaceModal
@@ -488,6 +460,6 @@ export default function WorkspacesClient({ initialUser, genres }: WorkspacesClie
         onSuccess={handleCreateSuccess}
         genres={genres}
       />
-    </div>
+    </>
   );
 }
