@@ -6,7 +6,7 @@ import WorkspaceItemFilterDrawer, {
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
-import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceListItemResponse } from '@/connectors/api/pecus';
+import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 
@@ -49,7 +49,13 @@ function isDueDatePast(dateString?: string | null): boolean {
 interface WorkspaceItemsSidebarProps {
   workspaceId: number;
   currentWorkspaceCode: string;
-  workspaces: WorkspaceListItemResponse[];
+  /** 現在のワークスペース情報（WorkspaceSwitcher 表示用） */
+  currentWorkspace?: {
+    name: string;
+    code: string;
+    genreIcon?: string | null;
+    genreName?: string | null;
+  };
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number, itemCode: string) => void;
   onCreateNew?: () => void;
@@ -81,7 +87,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     {
       workspaceId,
       currentWorkspaceCode,
-      workspaces,
+      currentWorkspace,
       onHomeSelect,
       onItemSelect,
       onCreateNew,
@@ -404,7 +410,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             <>
               {/* ワークスペース切り替え */}
               <div className="mb-4">
-                <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceCode={currentWorkspaceCode} />
+                <WorkspaceSwitcher currentWorkspaceCode={currentWorkspaceCode} currentWorkspace={currentWorkspace} />
               </div>
 
               {/* ワークスペースHomeボタン */}

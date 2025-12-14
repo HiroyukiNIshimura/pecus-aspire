@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
   addMemberToWorkspace,
-  getMyWorkspaces,
   removeMemberFromWorkspace,
   toggleWorkspaceActive,
   updateMemberRoleInWorkspace,
@@ -25,7 +24,6 @@ import type {
   MasterSkillResponse,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
-  WorkspaceListItemResponse,
   WorkspaceRole,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
@@ -42,7 +40,6 @@ import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './Workspace
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
   workspaceDetail: WorkspaceFullDetailResponse;
-  workspaces: WorkspaceListItemResponse[];
   userInfo: UserInfo | null;
   genres: MasterGenreResponse[];
   skills: MasterSkillResponse[];
@@ -50,17 +47,19 @@ interface WorkspaceDetailClientProps {
   taskTypes: TaskTypeOption[];
   /** URLクエリパラメータで指定された初期選択アイテムID */
   initialItemId?: number;
+  /** 初期スクロールターゲット (例: 'tasks') */
+  initialScrollTarget?: string;
 }
 
 export default function WorkspaceDetailClient({
   workspaceCode,
   workspaceDetail,
-  workspaces,
   userInfo,
   genres,
   skills,
   taskTypes,
   initialItemId,
+  initialScrollTarget,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -80,6 +79,9 @@ export default function WorkspaceDetailClient({
   const [selectedItemId, setSelectedItemId] = useState<number | null>(initialItemId ?? null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // ===== スクロールターゲット状態（一度使用したらクリア）=====
+  const [scrollTarget, setScrollTarget] = useState<string | null>(initialScrollTarget ?? null);
+
   // ===== 関連アイテム選択モードの状態 =====
   const [isAddingRelation, setIsAddingRelation] = useState(false);
 
@@ -92,9 +94,6 @@ export default function WorkspaceDetailClient({
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
-
-  // workspaces もローカル状態として管理（WorkspaceSwitcher の更新用）
-  const [currentWorkspaces, setCurrentWorkspaces] = useState<WorkspaceListItemResponse[]>(workspaces);
 
   // ===== メンバー管理の状態 =====
   // ログインユーザーがOwnerかどうか
@@ -406,12 +405,6 @@ export default function WorkspaceDetailClient({
     // バックエンドから返されたデータでローカルの状態を更新
     setCurrentWorkspaceDetail(updatedWorkspace);
 
-    // バックエンドからワークスペースリストを再取得（WorkspaceSwitcher のドロップダウンに反映）
-    const result = await getMyWorkspaces();
-    if (result.success) {
-      setCurrentWorkspaces(result.data);
-    }
-
     // 成功通知
     notify.success('ワークスペースを更新しました。');
   };
@@ -429,12 +422,6 @@ export default function WorkspaceDetailClient({
           ...prev,
           isActive: !prev.isActive,
         }));
-
-        // バックエンドからワークスペースリストを再取得（WorkspaceSwitcher のドロップダウンに反映）
-        const workspacesResult = await getMyWorkspaces();
-        if (workspacesResult.success) {
-          setCurrentWorkspaces(workspacesResult.data);
-        }
 
         notify.success(
           currentWorkspaceDetail.isActive ? 'ワークスペースを無効化しました。' : 'ワークスペースを有効化しました。',
@@ -478,6 +465,7 @@ export default function WorkspaceDetailClient({
   const handleHomeSelect = useCallback(() => {
     setShowWorkspaceDetail(true);
     setSelectedItemId(null);
+    setScrollTarget(null); // スクロールターゲットをクリア
     // URLからitemIdパラメータを削除
     router.push(pathname, { scroll: false });
   }, [router, pathname]);
@@ -487,11 +475,21 @@ export default function WorkspaceDetailClient({
     (itemId: number, itemCode: string) => {
       setShowWorkspaceDetail(false);
       setSelectedItemId(itemId);
-      // URLにitemCodeパラメータを追加
+      setScrollTarget(null); // スクロールターゲットをクリア（別アイテム選択時）
+      // URLにitemCodeパラメータを追加（scrollToは含めない）
       router.push(`${pathname}?itemCode=${itemCode}`, { scroll: false });
     },
     [router, pathname],
   );
+
+  // スクロール完了後にURLをクリーンアップ
+  const handleScrollComplete = useCallback(() => {
+    setScrollTarget(null);
+    // URLからscrollToパラメータを削除
+    const url = new URL(window.location.href);
+    url.searchParams.delete('scrollTo');
+    window.history.replaceState({}, '', url.toString());
+  }, []);
 
   // 新規作成ハンドラ（モーダルを開く）
   const handleCreateNew = useCallback(() => {
@@ -752,7 +750,12 @@ export default function WorkspaceDetailClient({
               ref={sidebarComponentRef}
               workspaceId={currentWorkspaceDetail.id}
               currentWorkspaceCode={workspaceCode}
-              workspaces={currentWorkspaces}
+              currentWorkspace={{
+                name: currentWorkspaceDetail.name,
+                code: currentWorkspaceDetail.code ?? '',
+                genreIcon: currentWorkspaceDetail.genreIcon,
+                genreName: currentWorkspaceDetail.genreName,
+              }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={handleItemSelect}
               onCreateNew={handleCreateNew}
@@ -924,6 +927,8 @@ export default function WorkspaceDetailClient({
               onStartAddRelation={handleStartAddRelation}
               isAddingRelation={isAddingRelation}
               workspaceMode={currentWorkspaceDetail.mode}
+              scrollTarget={scrollTarget}
+              onScrollComplete={handleScrollComplete}
             />
           )}
         </main>
@@ -1061,7 +1066,12 @@ export default function WorkspaceDetailClient({
               ref={mobileSidebarComponentRef}
               workspaceId={currentWorkspaceDetail.id}
               currentWorkspaceCode={workspaceCode}
-              workspaces={currentWorkspaces}
+              currentWorkspace={{
+                name: currentWorkspaceDetail.name,
+                code: currentWorkspaceDetail.code ?? '',
+                genreIcon: currentWorkspaceDetail.genreIcon,
+                genreName: currentWorkspaceDetail.genreName,
+              }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={(itemId, itemCode) => {
                 handleItemSelect(itemId, itemCode);

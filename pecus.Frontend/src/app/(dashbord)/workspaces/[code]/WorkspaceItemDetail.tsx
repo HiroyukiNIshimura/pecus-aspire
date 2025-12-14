@@ -37,6 +37,10 @@ interface WorkspaceItemDetailProps {
   isAddingRelation?: boolean;
   /** ワークスペースモード */
   workspaceMode?: WorkspaceMode;
+  /** スクロールターゲット (例: 'tasks') */
+  scrollTarget?: string | null;
+  /** スクロール完了時のコールバック */
+  onScrollComplete?: () => void;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -57,6 +61,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       onStartAddRelation,
       isAddingRelation,
       workspaceMode,
+      scrollTarget,
+      onScrollComplete,
     },
     ref,
   ) {
@@ -108,22 +114,22 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       fetchItemDetail();
     }, [fetchItemDetail]);
 
-    // URLフラグメントによるスクロール（DOM構築後に実行）
+    // スクロールターゲットが指定されている場合のスクロール処理（propsベース）
     useEffect(() => {
-      if (isLoading || !item) return;
+      if (isLoading || !item || !scrollTarget) return;
 
-      const hash = window.location.hash;
-      if (hash) {
-        // DOM が完全に構築されるまで少し待つ
-        const timeoutId = setTimeout(() => {
-          const element = document.querySelector(hash);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 100);
-        return () => clearTimeout(timeoutId);
-      }
-    }, [isLoading, item]);
+      // DOM が完全に構築されるまで少し待つ
+      const timeoutId = setTimeout(() => {
+        const element = document.getElementById(scrollTarget);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // スクロール完了を通知
+        onScrollComplete?.();
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }, [isLoading, item, scrollTarget, onScrollComplete]);
 
     // ドローワーを開く
     const openDrawer = () => {

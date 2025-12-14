@@ -23,6 +23,7 @@ import { validationError } from './types';
  * Server Action: ワークスペースリストを全件取得（一般ユーザー用）
  * WorkspaceSwitcher などワークスペース切り替え用で使用
  * ページネーションで全件取得する
+ * @deprecated getMyWorkspacesPaged を使用してください
  */
 export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemResponse[]>> {
   try {
@@ -45,6 +46,44 @@ export async function getMyWorkspaces(): Promise<ApiResponse<WorkspaceListItemRe
     }
 
     return { success: true, data: allWorkspaces };
+  } catch (error) {
+    console.error('Failed to fetch workspaces:', error);
+    return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');
+  }
+}
+
+/**
+ * ページネーション付きワークスペースリストレスポンス
+ */
+export interface PagedWorkspacesResponse {
+  data: WorkspaceListItemResponse[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  hasMore: boolean;
+}
+
+/**
+ * Server Action: ワークスペースリストをページネーションで取得（一般ユーザー用）
+ * WorkspaceSwitcher の無限スクロールで使用
+ *
+ * @param page ページ番号（1始まり）
+ */
+export async function getMyWorkspacesPaged(page: number = 1): Promise<ApiResponse<PagedWorkspacesResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspace.getApiWorkspaces(page, true, undefined, undefined);
+
+    return {
+      success: true,
+      data: {
+        data: response.data || [],
+        currentPage: response.currentPage || page,
+        totalPages: response.totalPages || 1,
+        totalCount: response.totalCount || 0,
+        hasMore: (response.currentPage || page) < (response.totalPages || 1),
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch workspaces:', error);
     return parseErrorResponse(error, 'ワークスペースリストの取得に失敗しました。');

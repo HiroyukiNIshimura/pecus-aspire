@@ -72,7 +72,7 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
           {comments.map((comment) => (
             <li key={comment.commentId}>
               <Link
-                href={`/workspaces/${comment.workspaceCode}?itemCode=${comment.itemCode}#tasks`}
+                href={`/workspaces/${comment.workspaceCode}?itemCode=${comment.itemCode}&scrollTo=tasks`}
                 className="block p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors group"
               >
                 {/* コメント内容 */}
