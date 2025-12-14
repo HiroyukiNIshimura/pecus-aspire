@@ -8414,6 +8414,61 @@
         }
       }
     },
+    "/api/workspaces/{workspaceId}/items/{itemId}/tasks/flow-map": {
+      "get": {
+        "tags": [
+          "WorkspaceTask"
+        ],
+        "summary": "タスクフローマップ取得\nアイテム内のタスク依存関係を可視化するためのデータを取得します",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "description": "ワークスペースID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "ワークスペースアイテムID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskFlowMapResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/tasks/assignee-load-check": {
       "get": {
         "tags": [
@@ -12564,6 +12619,215 @@
           "Urge"
         ],
         "type": "string"
+      },
+      "TaskFlowMapResponse": {
+        "required": [
+          "criticalPath",
+          "independentTasks",
+          "otherChains",
+          "summary"
+        ],
+        "type": "object",
+        "properties": {
+          "criticalPath": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskFlowNode"
+            },
+            "description": "クリティカルパス（最長の依存チェーン）"
+          },
+          "otherChains": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TaskFlowNode"
+              }
+            },
+            "description": "その他の依存チェーン（クリティカルパス以外）"
+          },
+          "independentTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskFlowNode"
+            },
+            "description": "独立タスク（依存関係なし）"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/TaskFlowSummary"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクフローマップレスポンス\nアイテム内のタスク依存関係を可視化するためのデータ"
+      },
+      "TaskFlowNode": {
+        "required": [
+          "canStart",
+          "content",
+          "id",
+          "isCompleted",
+          "isDiscarded",
+          "progressPercentage",
+          "successorCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "content": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タスク内容"
+          },
+          "taskTypeId": {
+            "type": "integer",
+            "description": "タスク種類ID",
+            "format": "int32",
+            "nullable": true
+          },
+          "taskTypeName": {
+            "type": "string",
+            "description": "タスク種類名",
+            "nullable": true
+          },
+          "taskTypeIcon": {
+            "type": "string",
+            "description": "タスク種類アイコン",
+            "nullable": true
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time",
+            "nullable": true
+          },
+          "progressPercentage": {
+            "type": "integer",
+            "description": "進捗率（0-100）",
+            "format": "int32"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ"
+          },
+          "isDiscarded": {
+            "type": "boolean",
+            "description": "破棄フラグ"
+          },
+          "assignedUserId": {
+            "type": "integer",
+            "description": "担当ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "assignedUsername": {
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
+          },
+          "assignedAvatarUrl": {
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
+          },
+          "canStart": {
+            "type": "boolean",
+            "description": "着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）"
+          },
+          "predecessorTaskId": {
+            "type": "integer",
+            "description": "先行タスクID",
+            "format": "int32",
+            "nullable": true
+          },
+          "predecessorTask": {
+            "$ref": "#/components/schemas/TaskFlowPredecessorInfo"
+          },
+          "successorCount": {
+            "type": "integer",
+            "description": "後続タスク数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクフローマップのノード（個別タスク）"
+      },
+      "TaskFlowPredecessorInfo": {
+        "required": [
+          "content",
+          "id",
+          "isCompleted"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "content": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タスク内容"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "完了フラグ"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクフローマップ用の先行タスク情報"
+      },
+      "TaskFlowSummary": {
+        "required": [
+          "completedCount",
+          "discardedCount",
+          "inProgressCount",
+          "readyCount",
+          "totalCount",
+          "waitingCount"
+        ],
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "総タスク数",
+            "format": "int32"
+          },
+          "readyCount": {
+            "type": "integer",
+            "description": "着手可能タスク数（先行タスクなし or 完了済み、かつ未完了・未破棄）",
+            "format": "int32"
+          },
+          "waitingCount": {
+            "type": "integer",
+            "description": "待機中タスク数（先行タスク未完了）",
+            "format": "int32"
+          },
+          "inProgressCount": {
+            "type": "integer",
+            "description": "進行中タスク数（進捗 > 0 かつ未完了）",
+            "format": "int32"
+          },
+          "completedCount": {
+            "type": "integer",
+            "description": "完了タスク数",
+            "format": "int32"
+          },
+          "discardedCount": {
+            "type": "integer",
+            "description": "破棄タスク数",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクフローマップのサマリ情報"
       },
       "TaskItemResponse": {
         "type": "object",

@@ -71,7 +71,7 @@ export default function FocusRecommendationModal({ isOpen, onClose }: FocusRecom
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
             <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <span className="icon-[mdi--target] size-5 sm:size-6" aria-hidden="true" />
-              フォーカス推奨
+              やることピックアップ
             </h2>
             <button
               type="button"

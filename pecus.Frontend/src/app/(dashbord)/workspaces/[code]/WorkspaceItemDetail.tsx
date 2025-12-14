@@ -108,6 +108,23 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       fetchItemDetail();
     }, [fetchItemDetail]);
 
+    // URLフラグメントによるスクロール（DOM構築後に実行）
+    useEffect(() => {
+      if (isLoading || !item) return;
+
+      const hash = window.location.hash;
+      if (hash) {
+        // DOM が完全に構築されるまで少し待つ
+        const timeoutId = setTimeout(() => {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+        return () => clearTimeout(timeoutId);
+      }
+    }, [isLoading, item]);
+
     // ドローワーを開く
     const openDrawer = () => {
       setIsDrawerOpen(true);
@@ -477,7 +494,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
           {/* タスク（ドキュメントモードでは非表示） */}
           {!isDocumentMode && (
-            <WorkspaceTasks
+            <div id="tasks">
+              <WorkspaceTasks
               workspaceId={workspaceId}
               itemId={itemId}
               itemOwnerId={item?.ownerId}
@@ -502,6 +520,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   : null
               }
             />
+            </div>
           )}
         </div>
 

@@ -6,8 +6,10 @@ import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
 import UserAvatar from '@/components/common/UserAvatar';
+import TaskFlowMapModal from '@/components/tasks/TaskFlowMapModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
+  TaskFlowNode,
   TaskStatusFilter as TaskStatusFilterType,
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
@@ -116,6 +118,9 @@ const WorkspaceTasks = ({
   // コメントモーダル状態
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [commentTargetTask, setCommentTargetTask] = useState<WorkspaceTaskDetailResponse | null>(null);
+
+  // フローマップモーダル状態
+  const [isFlowMapModalOpen, setIsFlowMapModalOpen] = useState(false);
 
   // タスク取得
   const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
@@ -276,6 +281,57 @@ const WorkspaceTasks = ({
     [handleTaskClick],
   );
 
+  // フローマップからのタスククリック時のハンドラ
+  const handleFlowMapTaskClick = useCallback(
+    (task: TaskFlowNode) => {
+      // タスク編集権限チェック: タスク担当者、アイテムのコミッター、担当者、オーナーなら編集可能
+      const canEdit =
+        currentUser &&
+        (task.assignedUserId === currentUser.id ||
+          itemCommitterId === currentUser.id ||
+          itemAssigneeId === currentUser.id ||
+          itemOwnerId === currentUser.id);
+
+      if (canEdit) {
+        // タスクリストからインデックスを探す（同じタスクがあれば）
+        const taskIndex = tasks.findIndex((t) => t.id === task.id);
+        if (taskIndex >= 0) {
+          handleTaskClick(taskIndex);
+        } else {
+          // リストにない場合は単体で編集モーダルを開く（ナビゲーションなし）
+          setEditTaskNavigation({
+            tasks: [
+              {
+                id: task.id,
+                content: task.content,
+                taskTypeId: task.taskTypeId ?? 0,
+                taskTypeName: task.taskTypeName ?? undefined,
+                taskTypeIcon: task.taskTypeIcon ?? undefined,
+                priority: task.priority,
+                dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : new Date().toISOString(),
+                progressPercentage: task.progressPercentage,
+                isCompleted: task.isCompleted,
+                isDiscarded: task.isDiscarded,
+                assignedUserId: task.assignedUserId ?? 0,
+                assignedUsername: task.assignedUsername ?? undefined,
+                assignedAvatarUrl: task.assignedAvatarUrl ?? undefined,
+                predecessorTaskId: task.predecessorTaskId,
+                successorTaskCount: task.successorCount,
+              } as WorkspaceTaskDetailResponse,
+            ],
+            currentIndex: 0,
+            currentPage: 1,
+            totalPages: 1,
+            totalCount: 1,
+            statusFilter: 'All',
+          });
+          setIsEditModalOpen(true);
+        }
+      }
+    },
+    [currentUser, itemCommitterId, itemAssigneeId, itemOwnerId, tasks, handleTaskClick],
+  );
+
   // タスクタイプのアイコンパスを取得（API レスポンスから）
   const getTaskTypeIconPath = (task: WorkspaceTaskDetailResponse) => {
     // API レスポンスに taskTypeIcon があればそれを使用
@@ -340,14 +396,25 @@ const WorkspaceTasks = ({
               )}
             </div>
           </div>
-          <button
-            type="button"
-            className="btn btn-outline btn-primary btn-sm"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-            タスク追加
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="btn btn-outline btn-secondary btn-sm gap-1"
+              onClick={() => setIsFlowMapModalOpen(true)}
+              title="タスクフローマップを表示"
+            >
+              <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
+              フロー
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-primary btn-sm"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
+              タスク追加
+            </button>
+          </div>
         </div>
         <div className="flex justify-center items-center py-8">
           <span className="loading loading-spinner loading-lg"></span>
@@ -362,6 +429,16 @@ const WorkspaceTasks = ({
           itemId={itemId}
           taskTypes={taskTypes}
           currentUser={currentUser}
+        />
+
+        {/* タスクフローマップモーダル */}
+        <TaskFlowMapModal
+          isOpen={isFlowMapModalOpen}
+          onClose={() => setIsFlowMapModalOpen(false)}
+          workspaceId={workspaceId}
+          itemId={itemId}
+          onTaskClick={handleFlowMapTaskClick}
+          clickable={true}
         />
       </div>
     );
@@ -387,14 +464,25 @@ const WorkspaceTasks = ({
             )}
           </div>
         </div>
-        <button
-          type="button"
-          className="btn  btn-outline btn-primary btn-sm"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-          タスク追加
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-outline btn-secondary btn-sm gap-1"
+            onClick={() => setIsFlowMapModalOpen(true)}
+            title="タスクフローマップを表示"
+          >
+            <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
+            フロー
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline btn-primary btn-sm"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
+            タスク追加
+          </button>
+        </div>
       </div>
 
       {/* フィルターエリア */}
@@ -911,6 +999,16 @@ const WorkspaceTasks = ({
           onCommentCountChange={() => handleEditTaskSuccess()}
         />
       )}
+
+      {/* タスクフローマップモーダル */}
+      <TaskFlowMapModal
+        isOpen={isFlowMapModalOpen}
+        onClose={() => setIsFlowMapModalOpen(false)}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        onTaskClick={handleFlowMapTaskClick}
+        clickable={true}
+      />
     </div>
   );
 };

@@ -122,6 +122,10 @@ export type { TaskCommentDetailResponseConcurrencyErrorResponse } from './models
 export type { TaskCommentDetailResponsePagedResponse } from './models/TaskCommentDetailResponsePagedResponse';
 export type { TaskCommentResponse } from './models/TaskCommentResponse';
 export type { TaskCommentType } from './models/TaskCommentType';
+export type { TaskFlowMapResponse } from './models/TaskFlowMapResponse';
+export type { TaskFlowNode } from './models/TaskFlowNode';
+export type { TaskFlowPredecessorInfo } from './models/TaskFlowPredecessorInfo';
+export type { TaskFlowSummary } from './models/TaskFlowSummary';
 export type { TaskItemResponse } from './models/TaskItemResponse';
 export type { TaskPriority } from './models/TaskPriority';
 export type { TasksByDueDateResponse } from './models/TasksByDueDateResponse';

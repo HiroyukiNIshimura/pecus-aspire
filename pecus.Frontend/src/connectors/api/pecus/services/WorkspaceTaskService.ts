@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadResponse';
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
+import type { TaskFlowMapResponse } from '../models/TaskFlowMapResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
@@ -137,6 +138,31 @@ export class WorkspaceTaskService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * タスクフローマップ取得
+     * アイテム内のタスク依存関係を可視化するためのデータを取得します
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @returns TaskFlowMapResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesItemsTasksFlowMap(
+        workspaceId: number,
+        itemId: number,
+    ): CancelablePromise<TaskFlowMapResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/flow-map',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            errors: {
+                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });

@@ -46,7 +46,7 @@ function getTaskTypeIconPath(task: FocusTaskResponse) {
  * 先行タスクが未完了のため着手できないタスクを表示
  */
 export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
-  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`;
+  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}#tasks`;
   const predecessorUrl = task.predecessorTask
     ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}`
     : null;

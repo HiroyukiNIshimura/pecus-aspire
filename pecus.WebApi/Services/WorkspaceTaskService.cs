@@ -1527,4 +1527,257 @@ public class WorkspaceTaskService
 
         return false;
     }
+
+    /// <summary>
+    /// アイテム内のタスクフローマップを取得
+    /// 依存関係をチェーン形式で可視化するためのデータを返す
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <returns>タスクフローマップレスポンス</returns>
+    public async Task<TaskFlowMapResponse> GetTaskFlowMapAsync(int workspaceId, int itemId)
+    {
+        // アイテム内の全タスクを取得
+        var tasks = await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.TaskType)
+            .Where(t => t.WorkspaceId == workspaceId && t.WorkspaceItemId == itemId)
+            .OrderBy(t => t.DueDate)
+            .ThenBy(t => t.CreatedAt)
+            .AsNoTracking()
+            .ToListAsync();
+
+        if (tasks.Count == 0)
+        {
+            return new TaskFlowMapResponse
+            {
+                CriticalPath = new List<TaskFlowNode>(),
+                OtherChains = new List<List<TaskFlowNode>>(),
+                IndependentTasks = new List<TaskFlowNode>(),
+                Summary = new TaskFlowSummary
+                {
+                    TotalCount = 0,
+                    ReadyCount = 0,
+                    WaitingCount = 0,
+                    InProgressCount = 0,
+                    CompletedCount = 0,
+                    DiscardedCount = 0,
+                },
+            };
+        }
+
+        // タスクIDからタスクへのマップを作成
+        var taskMap = tasks.ToDictionary(t => t.Id);
+
+        // 後続タスク数を計算
+        var successorCounts = tasks
+            .Where(t => t.PredecessorTaskId.HasValue)
+            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // 依存チェーンを構築
+        var chains = BuildDependencyChains(tasks, taskMap, successorCounts);
+
+        // クリティカルパス（最長チェーン）を特定
+        var criticalPath = chains.OrderByDescending(c => c.Count).FirstOrDefault() ?? new List<TaskFlowNode>();
+        var otherChains = chains.Where(c => c != criticalPath).ToList();
+
+        // 独立タスク（どのチェーンにも含まれないタスク）を特定
+        var chainTaskIds = chains.SelectMany(c => c.Select(n => n.Id)).ToHashSet();
+        var independentTasks = tasks
+            .Where(t => !chainTaskIds.Contains(t.Id))
+            .Select(t => BuildTaskFlowNode(t, taskMap, successorCounts))
+            .ToList();
+
+        // サマリを計算
+        var summary = CalculateTaskFlowSummary(tasks, taskMap);
+
+        return new TaskFlowMapResponse
+        {
+            CriticalPath = criticalPath,
+            OtherChains = otherChains,
+            IndependentTasks = independentTasks,
+            Summary = summary,
+        };
+    }
+
+    /// <summary>
+    /// 依存チェーンを構築
+    /// 分岐がある場合は、各末端までの完全なパスを別々のチェーンとして返す
+    /// </summary>
+    private List<List<TaskFlowNode>> BuildDependencyChains(
+        List<WorkspaceTask> tasks,
+        Dictionary<int, WorkspaceTask> taskMap,
+        Dictionary<int, int> successorCounts
+    )
+    {
+        // 後続タスクのマップを構築（親タスクID → 子タスクのリスト）
+        var successorMap = tasks
+            .Where(t => t.PredecessorTaskId.HasValue)
+            .GroupBy(t => t.PredecessorTaskId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var allPaths = new List<List<TaskFlowNode>>();
+
+        // 先行タスクを持たないタスク（チェーンの起点）を特定
+        var rootTasks = tasks.Where(t => !t.PredecessorTaskId.HasValue).ToList();
+
+        // 後続タスクを持つルートタスクからすべてのパスを探索
+        foreach (var rootTask in rootTasks.Where(t => successorMap.ContainsKey(t.Id)))
+        {
+            var paths = FindAllPathsFromRoot(rootTask, taskMap, successorCounts, successorMap);
+            allPaths.AddRange(paths);
+        }
+
+        // 先行タスクを持つが、その先行タスクがこのアイテム内にないタスク（孤立した起点）
+        var orphanRoots = tasks
+            .Where(t => t.PredecessorTaskId.HasValue && !taskMap.ContainsKey(t.PredecessorTaskId.Value))
+            .ToList();
+
+        foreach (var orphanRoot in orphanRoots)
+        {
+            var paths = FindAllPathsFromRoot(orphanRoot, taskMap, successorCounts, successorMap);
+            allPaths.AddRange(paths);
+        }
+
+        return allPaths;
+    }
+
+    /// <summary>
+    /// ルートタスクからすべての末端までのパスを探索（DFS）
+    /// </summary>
+    private List<List<TaskFlowNode>> FindAllPathsFromRoot(
+        WorkspaceTask rootTask,
+        Dictionary<int, WorkspaceTask> taskMap,
+        Dictionary<int, int> successorCounts,
+        Dictionary<int, List<WorkspaceTask>> successorMap
+    )
+    {
+        var allPaths = new List<List<TaskFlowNode>>();
+        var currentPath = new List<TaskFlowNode>();
+
+        void Dfs(WorkspaceTask task)
+        {
+            currentPath.Add(BuildTaskFlowNode(task, taskMap, successorCounts));
+
+            // 後続タスクがあるか確認
+            if (successorMap.TryGetValue(task.Id, out var successors) && successors.Count > 0)
+            {
+                // 各後続タスクについて再帰的に探索
+                foreach (var successor in successors)
+                {
+                    Dfs(successor);
+                }
+            }
+            else
+            {
+                // 末端に到達したら、現在のパスを保存
+                allPaths.Add(new List<TaskFlowNode>(currentPath));
+            }
+
+            // バックトラック
+            currentPath.RemoveAt(currentPath.Count - 1);
+        }
+
+        Dfs(rootTask);
+        return allPaths;
+    }
+
+    /// <summary>
+    /// TaskFlowNodeを構築
+    /// </summary>
+    private static TaskFlowNode BuildTaskFlowNode(
+        WorkspaceTask task,
+        Dictionary<int, WorkspaceTask> taskMap,
+        Dictionary<int, int> successorCounts
+    )
+    {
+        // 先行タスク情報を取得
+        TaskFlowPredecessorInfo? predecessorInfo = null;
+        if (task.PredecessorTaskId.HasValue && taskMap.TryGetValue(task.PredecessorTaskId.Value, out var predecessorTask))
+        {
+            predecessorInfo = new TaskFlowPredecessorInfo
+            {
+                Id = predecessorTask.Id,
+                Content = predecessorTask.Content,
+                IsCompleted = predecessorTask.IsCompleted,
+            };
+        }
+
+        // 着手可能かどうかを判定
+        var canStart = !task.IsCompleted && !task.IsDiscarded &&
+            (!task.PredecessorTaskId.HasValue ||
+             (taskMap.TryGetValue(task.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+
+        return new TaskFlowNode
+        {
+            Id = task.Id,
+            Content = task.Content,
+            TaskTypeId = task.TaskTypeId,
+            TaskTypeName = task.TaskType?.Name,
+            TaskTypeIcon = task.TaskType?.Icon,
+            Priority = task.Priority,
+            DueDate = task.DueDate,
+            ProgressPercentage = task.ProgressPercentage,
+            IsCompleted = task.IsCompleted,
+            IsDiscarded = task.IsDiscarded,
+            AssignedUserId = task.AssignedUserId,
+            AssignedUsername = task.AssignedUser?.Username,
+            AssignedAvatarUrl = task.AssignedUser != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: task.AssignedUser.AvatarType,
+                    userId: task.AssignedUser.Id,
+                    username: task.AssignedUser.Username,
+                    email: task.AssignedUser.Email,
+                    avatarPath: task.AssignedUser.UserAvatarPath
+                )
+                : null,
+            CanStart = canStart,
+            PredecessorTaskId = task.PredecessorTaskId,
+            PredecessorTask = predecessorInfo,
+            SuccessorCount = successorCounts.GetValueOrDefault(task.Id, 0),
+        };
+    }
+
+    /// <summary>
+    /// タスクフローサマリを計算
+    /// </summary>
+    private static TaskFlowSummary CalculateTaskFlowSummary(
+        List<WorkspaceTask> tasks,
+        Dictionary<int, WorkspaceTask> taskMap
+    )
+    {
+        var totalCount = tasks.Count;
+        var completedCount = tasks.Count(t => t.IsCompleted);
+        var discardedCount = tasks.Count(t => t.IsDiscarded);
+
+        // アクティブタスク（未完了・未破棄）
+        var activeTasks = tasks.Where(t => !t.IsCompleted && !t.IsDiscarded).ToList();
+
+        // 着手可能タスク（先行タスクなし or 先行タスク完了済み）
+        var readyCount = activeTasks.Count(t =>
+            !t.PredecessorTaskId.HasValue ||
+            (taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && pred.IsCompleted));
+
+        // 待機中タスク（先行タスク未完了）
+        var waitingCount = activeTasks.Count(t =>
+            t.PredecessorTaskId.HasValue &&
+            taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && !pred.IsCompleted);
+
+        // 進行中タスク（進捗 > 0 かつ未完了・着手可能）
+        var inProgressCount = activeTasks.Count(t =>
+            t.ProgressPercentage > 0 &&
+            (!t.PredecessorTaskId.HasValue ||
+             (taskMap.TryGetValue(t.PredecessorTaskId.Value, out var pred) && pred.IsCompleted)));
+
+        return new TaskFlowSummary
+        {
+            TotalCount = totalCount,
+            ReadyCount = readyCount,
+            WaitingCount = waitingCount,
+            InProgressCount = inProgressCount,
+            CompletedCount = completedCount,
+            DiscardedCount = discardedCount,
+        };
+    }
 }

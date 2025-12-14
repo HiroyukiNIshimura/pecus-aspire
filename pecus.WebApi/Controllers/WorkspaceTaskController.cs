@@ -181,6 +181,34 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
+    /// タスクフローマップ取得
+    /// アイテム内のタスク依存関係を可視化するためのデータを取得します
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <returns>タスクフローマップ</returns>
+    [HttpGet("flow-map")]
+    [ProducesResponseType(typeof(TaskFlowMapResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<TaskFlowMapResponse>> GetTaskFlowMap(
+        int workspaceId,
+        int itemId
+    )
+    {
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var response = await _workspaceTaskService.GetTaskFlowMapAsync(workspaceId, itemId);
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// 担当者のタスク負荷を期限日ごとにチェック
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

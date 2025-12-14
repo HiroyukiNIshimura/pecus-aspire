@@ -253,3 +253,21 @@ export async function getPredecessorTaskOptions(
     return parseErrorResponse(error, '先行タスク一覧の取得に失敗しました');
   }
 }
+
+/**
+ * タスクフローマップを取得
+ * アイテム内のタスク依存関係を可視化するためのデータを取得
+ */
+export async function getTaskFlowMap(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<import('@/connectors/api/pecus').TaskFlowMapResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasksFlowMap(workspaceId, itemId);
+
+    return { success: true, data: response };
+  } catch (error) {
+    return parseErrorResponse(error, 'タスクフローマップの取得に失敗しました');
+  }
+}
