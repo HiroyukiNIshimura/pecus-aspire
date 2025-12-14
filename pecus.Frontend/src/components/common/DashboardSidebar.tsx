@@ -1,6 +1,4 @@
-'use client';
-
-import { usePathname } from 'next/navigation';
+import SidebarNavItem from './SidebarNavItem';
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -22,8 +20,12 @@ const adminItem = {
   iconClass: 'icon-[mdi--cog-outline]',
 };
 
+/**
+ * ダッシュボードのサイドバー（Server Component）
+ * 静的なメニュー構造をSSRでレンダリング
+ * アクティブ状態の判定は SidebarNavItem (Client Component) で行う
+ */
 export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSidebarProps) {
-  const pathname = usePathname();
   const allMenuItems = isAdmin ? [...menuItems, adminItem] : menuItems;
 
   return (
@@ -35,16 +37,13 @@ export default function DashboardSidebar({ sidebarOpen, isAdmin }: DashboardSide
       </h2>
       <ul className="menu bg-base-100 rounded-box w-full">
         {allMenuItems.map((item) => (
-          <li key={item.href} className="w-full">
-            <a
-              href={item.href}
-              className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
-              title={item.label}
-            >
-              <span className={`${item.iconClass} size-5`} aria-hidden="true" />
-              <span className={`${sidebarOpen ? 'block' : 'hidden'} md:hidden lg:inline`}>{item.label}</span>
-            </a>
-          </li>
+          <SidebarNavItem
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            iconClass={item.iconClass}
+            sidebarOpen={sidebarOpen}
+          />
         ))}
       </ul>
     </aside>
