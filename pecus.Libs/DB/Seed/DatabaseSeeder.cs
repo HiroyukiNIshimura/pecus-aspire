@@ -1631,6 +1631,12 @@ public class DatabaseSeeder
             .Select(w => new { w.Id, w.OrganizationId })
             .ToDictionaryAsync(w => w.Id, w => w.OrganizationId);
 
+        // DocumentモードのワークスペースIDを取得（タスク作成対象外）
+        var documentModeWorkspaceIds = await _context.Workspaces
+            .Where(w => w.Mode == WorkspaceMode.Document)
+            .Select(w => w.Id)
+            .ToHashSetAsync();
+
         // タスク種類を取得
         var taskTypes = await _context.TaskTypes.Where(t => t.IsActive).ToListAsync();
         if (!taskTypes.Any())
@@ -1675,6 +1681,12 @@ public class DatabaseSeeder
 
         foreach (var workspaceItem in workspaceItems)
         {
+            // Documentモードのワークスペースはタスク作成をスキップ
+            if (documentModeWorkspaceIds.Contains(workspaceItem.WorkspaceId))
+            {
+                continue;
+            }
+
             if (!membersByWorkspace.TryGetValue(workspaceItem.WorkspaceId, out var workspaceMembers) || !workspaceMembers.Any())
             {
                 continue;
