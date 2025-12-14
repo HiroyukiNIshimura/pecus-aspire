@@ -559,7 +559,7 @@ const WorkspaceTasks = ({
                     </div>
 
                     {/* 担当者 + 期限（固定高さ） */}
-                    <div className="border-t border-base-300 pt-1.5 min-h-[3rem]">
+                    <div className="border-t border-base-300 pt-1.5 min-h-3rem">
                       {/* 担当者 */}
                       <div className="flex items-center gap-1.5 h-5">
                         {task.assignedUserId ? (

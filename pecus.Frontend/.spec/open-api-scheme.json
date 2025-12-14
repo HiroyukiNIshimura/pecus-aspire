@@ -3345,6 +3345,39 @@
         }
       }
     },
+    "/api/focus/me": {
+      "get": {
+        "tags": [
+          "Focus"
+        ],
+        "summary": "自分のフォーカス推奨タスクを取得",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FocusRecommendationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/master/genres": {
       "get": {
         "tags": [
@@ -9682,6 +9715,136 @@
         "additionalProperties": false,
         "description": "ファイルアップロードレスポンス"
       },
+      "FocusRecommendationResponse": {
+        "required": [
+          "focusTasks",
+          "generatedAt",
+          "totalTaskCount",
+          "waitingTasks"
+        ],
+        "type": "object",
+        "properties": {
+          "focusTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FocusTaskResponse"
+            },
+            "description": "今すぐ取り組むべきタスク（先行タスクなし or 完了済み、スコア上位）"
+          },
+          "waitingTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FocusTaskResponse"
+            },
+            "description": "今は着手できないタスク（先行タスク未完了）"
+          },
+          "totalTaskCount": {
+            "type": "integer",
+            "description": "対象タスクの総数",
+            "format": "int32"
+          },
+          "generatedAt": {
+            "type": "string",
+            "description": "レスポンス生成日時",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "フォーカス推奨レスポンス"
+      },
+      "FocusTaskResponse": {
+        "required": [
+          "content",
+          "dueDate",
+          "id",
+          "itemCode",
+          "progressPercentage",
+          "successorCount",
+          "totalScore",
+          "workspaceId",
+          "workspaceItemId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "タスクID",
+            "format": "int32"
+          },
+          "workspaceItemId": {
+            "type": "integer",
+            "description": "ワークスペースアイテムID",
+            "format": "int32"
+          },
+          "workspaceId": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "workspaceCode": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "workspaceName": {
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
+          },
+          "itemCode": {
+            "minLength": 1,
+            "type": "string",
+            "description": "アイテムコード（PROJ-42形式）"
+          },
+          "content": {
+            "minLength": 1,
+            "type": "string",
+            "description": "タスク内容"
+          },
+          "itemSubject": {
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
+          },
+          "priority": {
+            "$ref": "#/components/schemas/TaskPriority"
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "期限日時",
+            "format": "date-time"
+          },
+          "estimatedHours": {
+            "type": "number",
+            "description": "予定工数（時間）",
+            "format": "double",
+            "nullable": true
+          },
+          "progressPercentage": {
+            "type": "integer",
+            "description": "進捗率（0-100）",
+            "format": "int32"
+          },
+          "totalScore": {
+            "type": "number",
+            "description": "総合スコア（高いほど優先度が高い）",
+            "format": "double"
+          },
+          "successorCount": {
+            "type": "integer",
+            "description": "後続タスク数（このタスクを待っているタスクの数）",
+            "format": "int32"
+          },
+          "predecessorTask": {
+            "$ref": "#/components/schemas/PredecessorTaskInfo"
+          },
+          "scoreDetail": {
+            "$ref": "#/components/schemas/TaskScoreDetail"
+          }
+        },
+        "additionalProperties": false,
+        "description": "フォーカス推奨タスクレスポンス"
+      },
       "GenerativeApiVendor": {
         "enum": [
           "None",
@@ -12473,6 +12636,56 @@
         ],
         "type": "string"
       },
+      "TaskScoreDetail": {
+        "required": [
+          "deadlineScore",
+          "deadlineWeight",
+          "priorityScore",
+          "priorityWeight",
+          "successorImpactScore",
+          "successorImpactWeight"
+        ],
+        "type": "object",
+        "properties": {
+          "priorityScore": {
+            "type": "number",
+            "description": "優先度スコア（1-4）",
+            "format": "double"
+          },
+          "deadlineScore": {
+            "type": "number",
+            "description": "期限スコア（1-10）",
+            "format": "double"
+          },
+          "successorImpactScore": {
+            "type": "number",
+            "description": "後続タスク影響スコア（0-10）",
+            "format": "double"
+          },
+          "priorityWeight": {
+            "type": "number",
+            "description": "優先度の重み（デフォルト: 2）",
+            "format": "double"
+          },
+          "deadlineWeight": {
+            "type": "number",
+            "description": "期限の重み（デフォルト: 3）",
+            "format": "double"
+          },
+          "successorImpactWeight": {
+            "type": "number",
+            "description": "後続影響の重み（デフォルト: 5）",
+            "format": "double"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "スコア計算式の説明",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "タスクスコア詳細（デバッグ・説明用）"
+      },
       "TaskStatusFilter": {
         "enum": [
           "All",
@@ -15124,6 +15337,9 @@
     },
     {
       "name": "File"
+    },
+    {
+      "name": "Focus"
     },
     {
       "name": "Master"

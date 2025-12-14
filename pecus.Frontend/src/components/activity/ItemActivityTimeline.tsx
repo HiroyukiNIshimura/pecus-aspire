@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fetchItemActivities } from '@/actions/activity';
 import UserAvatar from '@/components/common/UserAvatar';
 import type { ActivityActionType, ActivityResponse } from '@/connectors/api/pecus';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface ItemActivityTimelineProps {
   workspaceId: number;
@@ -127,27 +128,13 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
 
 export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onClose }: ItemActivityTimelineProps) {
   const [activities, setActivities] = useState<ActivityResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  // 初期化
-  useEffect(() => {
-    if (isOpen) {
-      setActivities([]);
-      setPage(1);
-      setHasMore(true);
-      setError(null);
-    }
-  }, [isOpen, itemId]);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   // データ取得
   const loadActivities = useCallback(async () => {
-    if (!isOpen || isLoading || !hasMore) return;
-
-    setIsLoading(true);
     try {
       const result = await fetchItemActivities(workspaceId, itemId, page);
 
@@ -162,40 +149,40 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
       setPage((prev) => prev + 1);
     } catch {
       setError('アクティビティの取得に失敗しました。');
-    } finally {
-      setIsLoading(false);
     }
-  }, [isOpen, isLoading, hasMore, page, workspaceId, itemId]);
+  }, [page, workspaceId, itemId]);
+
+  // useInfiniteScroll フックを使用
+  const {
+    sentinelRef,
+    isLoading,
+    reset: resetInfiniteScroll,
+  } = useInfiniteScroll({
+    onLoadMore: loadActivities,
+    hasMore,
+    rootMargin: '100px',
+    disabled: !isOpen,
+  });
+
+  // 初期化
+  useEffect(() => {
+    if (isOpen) {
+      setActivities([]);
+      setPage(1);
+      setHasMore(true);
+      setError(null);
+      setIsFirstLoad(true);
+      resetInfiniteScroll();
+    }
+  }, [isOpen, itemId, resetInfiniteScroll]);
 
   // 初回読み込み
   useEffect(() => {
-    if (isOpen && activities.length === 0 && !isLoading && !error) {
+    if (isOpen && isFirstLoad && activities.length === 0 && !isLoading && !error) {
+      setIsFirstLoad(false);
       loadActivities();
     }
-  }, [isOpen, activities.length, isLoading, error, loadActivities]);
-
-  // 無限スクロール
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadActivities();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    const target = observerTarget.current;
-    if (target) {
-      observer.observe(target);
-    }
-
-    return () => {
-      if (target) {
-        observer.unobserve(target);
-      }
-    };
-  }, [hasMore, isLoading, loadActivities]);
+  }, [isOpen, isFirstLoad, activities.length, isLoading, error, loadActivities]);
 
   // ESCキーで閉じる
   useEffect(() => {
@@ -324,9 +311,12 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
             )}
 
             {/* ローディング & 無限スクロールトリガー */}
-            <div ref={observerTarget} className="py-4 flex justify-center">
-              {isLoading && <span className="loading loading-spinner loading-md" />}
-            </div>
+            <div ref={sentinelRef} aria-hidden="true" />
+            {isLoading && (
+              <div className="py-8 flex justify-center">
+                <span className="loading loading-spinner loading-md" />
+              </div>
+            )}
           </div>
         </div>
       </div>

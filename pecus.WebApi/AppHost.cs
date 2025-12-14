@@ -126,6 +126,7 @@ builder.Services.AddScoped<MasterDataService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<DashboardStatisticsService>();
+builder.Services.AddScoped<FocusRecommendationService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();

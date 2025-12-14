@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { fetchMyActivities } from '@/actions/activity';
 import AppHeader from '@/components/common/AppHeader';
 import DashboardSidebar from '@/components/common/DashboardSidebar';
@@ -12,6 +12,7 @@ import type {
   ActivityResponse,
   ActivityResponsePagedResponse,
 } from '@/connectors/api/pecus';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { UserInfo } from '@/types/userInfo';
 
 interface ActivityClientProps {
@@ -144,42 +145,12 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<ActivityPeriod>('Today');
   const [activities, setActivities] = useState<ActivityResponse[]>(initialActivities?.data || []);
-  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState((initialActivities?.currentPage ?? 1) < (initialActivities?.totalPages ?? 1));
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(fetchError);
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  // 期間変更時にリセット
-  const handlePeriodChange = useCallback(async (period: ActivityPeriod) => {
-    setSelectedPeriod(period);
-    setActivities([]);
-    setPage(1);
-    setHasMore(true);
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const result = await fetchMyActivities(1, period);
-      if (result.success) {
-        setActivities(result.data.data || []);
-        setHasMore(1 < (result.data.totalPages || 1));
-        setPage(2);
-      } else {
-        setError(result.message || 'アクティビティの取得に失敗しました。');
-      }
-    } catch {
-      setError('アクティビティの取得に失敗しました。');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
   // 追加データ読み込み
   const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore) return;
-
-    setIsLoading(true);
     try {
       const result = await fetchMyActivities(page, selectedPeriod);
       if (result.success) {
@@ -191,33 +162,45 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
       }
     } catch {
       setError('アクティビティの取得に失敗しました。');
-    } finally {
-      setIsLoading(false);
     }
-  }, [isLoading, hasMore, page, selectedPeriod]);
+  }, [page, selectedPeriod]);
 
-  // 無限スクロール
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMore();
+  // useInfiniteScroll フックを使用
+  const {
+    sentinelRef,
+    isLoading,
+    reset: resetInfiniteScroll,
+  } = useInfiniteScroll({
+    onLoadMore: loadMore,
+    hasMore,
+    rootMargin: '200px',
+  });
+
+  // 期間変更時にリセット
+  const handlePeriodChange = useCallback(
+    async (period: ActivityPeriod) => {
+      setSelectedPeriod(period);
+      setActivities([]);
+      setPage(1);
+      setHasMore(true);
+      setError(null);
+      resetInfiniteScroll();
+
+      try {
+        const result = await fetchMyActivities(1, period);
+        if (result.success) {
+          setActivities(result.data.data || []);
+          setHasMore(1 < (result.data.totalPages || 1));
+          setPage(2);
+        } else {
+          setError(result.message || 'アクティビティの取得に失敗しました。');
         }
-      },
-      { threshold: 0.1 },
-    );
-
-    const target = observerTarget.current;
-    if (target) {
-      observer.observe(target);
-    }
-
-    return () => {
-      if (target) {
-        observer.unobserve(target);
+      } catch {
+        setError('アクティビティの取得に失敗しました。');
       }
-    };
-  }, [hasMore, isLoading, loadMore]);
+    },
+    [resetInfiniteScroll],
+  );
 
   // 日付でグループ化
   const groupedActivities: { date: string; items: ActivityResponse[] }[] = [];
@@ -405,9 +388,12 @@ export default function ActivityClient({ initialUser, initialActivities, fetchEr
             )}
 
             {/* ローディング & 無限スクロールトリガー */}
-            <div ref={observerTarget} className="py-8 flex justify-center">
-              {isLoading && <span className="loading loading-spinner loading-lg" />}
-            </div>
+            <div ref={sentinelRef} aria-hidden="true" />
+            {isLoading && (
+              <div className="py-8 flex justify-center">
+                <span className="loading loading-spinner loading-lg" />
+              </div>
+            )}
           </div>
         </main>
       </div>
