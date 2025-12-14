@@ -1746,6 +1746,83 @@ public class DatabaseSeeder
             await ExecuteBulkInsertWorkspaceTasksAsync(valuesList);
         }
         _logger.LogInformation("Added {Count} workspace tasks in total", totalTasksAdded);
+
+        // 先行タスクを設定
+        await SeedPredecessorTasksAsync();
+    }
+
+    /// <summary>
+    /// ワークスペースタスクの先行タスクを設定
+    /// 同一ワークスペースアイテム内で未完了のタスクに対して、約30%の確率で先行タスクを設定する
+    /// </summary>
+    private async Task SeedPredecessorTasksAsync()
+    {
+        _logger.LogInformation("Setting predecessor tasks...");
+
+        // ワークスペースアイテムごとにタスクをグループ化して取得
+        var tasksByItem = await _context.WorkspaceTasks
+            .Where(t => !t.IsCompleted && !t.IsDiscarded)
+            .Select(t => new { t.Id, t.WorkspaceItemId, t.AssignedUserId })
+            .ToListAsync();
+
+        var groupedTasks = tasksByItem
+            .GroupBy(t => t.WorkspaceItemId)
+            .Where(g => g.Count() >= 2) // 2件以上のタスクがあるアイテムのみ対象
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        if (!groupedTasks.Any())
+        {
+            _logger.LogInformation("No suitable tasks found for setting predecessors");
+            return;
+        }
+
+        var updateStatements = new List<string>();
+        int predecessorsSet = 0;
+
+        foreach (var (workspaceItemId, tasks) in groupedTasks)
+        {
+            // 同一担当者のタスクをグループ化（先行タスクは同じ担当者のタスク間で設定）
+            var tasksByAssignee = tasks
+                .GroupBy(t => t.AssignedUserId)
+                .Where(g => g.Count() >= 2)
+                .ToDictionary(g => g.Key, g => g.Select(t => t.Id).ToList());
+
+            foreach (var (assigneeId, assigneeTasks) in tasksByAssignee)
+            {
+                // 最初のタスクは先行タスクなし、残りの約30%に先行タスクを設定
+                for (int i = 1; i < assigneeTasks.Count; i++)
+                {
+                    // 30%の確率で先行タスクを設定
+                    if (_random.Next(100) < 30)
+                    {
+                        // 直前のタスクを先行タスクとして設定
+                        var predecessorId = assigneeTasks[i - 1];
+                        var taskId = assigneeTasks[i];
+
+                        updateStatements.Add($"UPDATE \"WorkspaceTasks\" SET \"PredecessorTaskId\" = {predecessorId} WHERE \"Id\" = {taskId}");
+                        predecessorsSet++;
+
+                        // バッチ実行（1000件ごと）
+                        if (updateStatements.Count >= 1000)
+                        {
+                            var batchSql = string.Join("; ", updateStatements);
+                            await _context.Database.ExecuteSqlRawAsync(batchSql);
+                            _logger.LogInformation("Set {Count} predecessor tasks", predecessorsSet);
+                            updateStatements.Clear();
+                        }
+                    }
+                }
+            }
+        }
+
+        // 残りを実行
+        if (updateStatements.Any())
+        {
+            var batchSql = string.Join("; ", updateStatements);
+            await _context.Database.ExecuteSqlRawAsync(batchSql);
+        }
+
+        _logger.LogInformation("Set {Count} predecessor tasks in total", predecessorsSet);
     }
 
     /// <summary>
