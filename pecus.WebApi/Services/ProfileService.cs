@@ -367,6 +367,9 @@ public class ProfileService
                 TimeZone = user.Setting?.TimeZone ?? "Asia/Tokyo",
                 Language = user.Setting?.Language ?? "ja-JP",
                 LandingPage = user.Setting?.LandingPage,
+                FocusScorePriority = user.Setting?.FocusScorePriority ?? FocusScorePriority.Deadline,
+                FocusTasksLimit = user.Setting?.FocusTasksLimit ?? 5,
+                WaitingTasksLimit = user.Setting?.WaitingTasksLimit ?? 5,
                 RowVersion = user.Setting?.RowVersion ?? 0,
             },
         };

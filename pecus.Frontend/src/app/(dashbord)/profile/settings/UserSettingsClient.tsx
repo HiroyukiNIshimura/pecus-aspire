@@ -171,7 +171,6 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     min={5}
                     max={20}
                     step={1}
-                    defaultValue={settings.focusTasksLimit}
                     value={settings.focusTasksLimit}
                     onChange={(value) => handleSliderChange('focusTasksLimit', value)}
                     label="フォーカス推奨タスクの表示件数"
@@ -190,7 +189,6 @@ export default function UserSettingsClient({ initialUser, initialSettings, fetch
                     min={5}
                     max={20}
                     step={1}
-                    defaultValue={settings.waitingTasksLimit}
                     value={settings.waitingTasksLimit}
                     onChange={(value) => handleSliderChange('waitingTasksLimit', value)}
                     label="待機中タスクの表示件数"

@@ -12,8 +12,8 @@ interface SliderProps {
   max: number;
   /** スライダーのステップ値 */
   step: number;
-  /** 初期値（valueとは独立） */
-  defaultValue: number;
+  /** 初期値（非制御コンポーネントの場合に使用、valueが指定されている場合は無視される） */
+  defaultValue?: number;
   /** 現在の値（制御コンポーネントとして使用する場合） */
   value?: number;
   /** 値が変更された時のコールバック */
@@ -51,12 +51,11 @@ interface SliderProps {
  *   onChange={(value) => console.log(value)}
  * />
  *
- * // 制御コンポーネントとして使用
+ * // 制御コンポーネントとして使用（推奨）
  * <Slider
  *   min={0}
  *   max={10}
  *   step={0.5}
- *   defaultValue={5}
  *   value={sliderValue}
  *   onChange={setSliderValue}
  *   label="評価"
@@ -79,17 +78,20 @@ export function Slider({
   ariaLabel,
 }: SliderProps) {
   // 内部状態（非制御の場合に使用）
-  const [internalValue, setInternalValue] = useState(defaultValue);
+  const [internalValue, setInternalValue] = useState(() => defaultValue ?? min);
 
-  // 実際に表示する値（制御 or 非制御）
-  const currentValue = value !== undefined ? value : internalValue;
+  // 制御コンポーネントかどうか
+  const isControlled = value !== undefined;
 
-  // defaultValueの範囲チェック
+  // 実際に表示する値（制御コンポーネントの場合はvalueを直接使用）
+  const currentValue = isControlled ? value : internalValue;
+
+  // defaultValueの範囲チェック（非制御の場合のみ）
   useEffect(() => {
-    if (defaultValue < min || defaultValue > max) {
+    if (!isControlled && defaultValue !== undefined && (defaultValue < min || defaultValue > max)) {
       console.warn(`Slider: defaultValue (${defaultValue}) is out of range [${min}, ${max}]`);
     }
-  }, [defaultValue, min, max]);
+  }, [defaultValue, min, max, isControlled]);
 
   // 値の変更ハンドラー
   const handleChange = useCallback(
@@ -97,14 +99,14 @@ export function Slider({
       const newValue = Number.parseFloat(event.target.value);
 
       // 非制御の場合は内部状態を更新
-      if (value === undefined) {
+      if (!isControlled) {
         setInternalValue(newValue);
       }
 
       // コールバックがあれば実行
       onChange?.(newValue);
     },
-    [value, onChange],
+    [isControlled, onChange],
   );
 
   // 値のフォーマット
