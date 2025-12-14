@@ -10,6 +10,7 @@ import type {
   AvatarType,
   EmailChangeRequestResponse,
   EmailChangeVerifyResponse,
+  FocusScorePriority,
   LandingPage,
   MessageResponse,
   SuccessResponse,
@@ -321,6 +322,9 @@ export async function updateUserSetting(request: {
   timeZone: string;
   language: string;
   landingPage?: LandingPage;
+  focusScorePriority?: FocusScorePriority;
+  focusTasksLimit: number;
+  waitingTasksLimit: number;
   rowVersion: number;
 }): Promise<ApiResponse<UserSettingResponse>> {
   try {
@@ -331,6 +335,9 @@ export async function updateUserSetting(request: {
       timeZone: request.timeZone,
       language: request.language,
       landingPage: request.landingPage,
+      focusScorePriority: request.focusScorePriority,
+      focusTasksLimit: request.focusTasksLimit,
+      waitingTasksLimit: request.waitingTasksLimit,
       rowVersion: request.rowVersion,
     });
     return { success: true, data: response };
