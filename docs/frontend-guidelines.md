@@ -7,7 +7,7 @@
 - **フレームワーク**: React（Next.js）
 - **型安全**: TypeScript
 - **状態管理**: jotai
-- **UIライブラリ**: Tailwind CSS + FlyonUI
+- **UIライブラリ**: Tailwind CSS(4.1.18) + FlyonUI(2.4.1)
 - **API通信**: OpenAPI/Swagger定義から自動生成された型安全なクライアント（`openapi-typescript-codegen`）
 - **認証**: pecus.WebApiのJWT認証と連携（Redis ベースのサーバーサイドセッション、Cookie には sessionId のみ保存）
 - **ルーティング**: SPAルーター（Next.jsのApp Router）
@@ -274,7 +274,7 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
   - インタラクティブな要素（クリック可能なdivなど）には適切なARIA属性（`role`, `aria-label`）を設定
   - キーボード操作に対応（`tabIndex`, `onKeyDown`）
 - **Next.js Image**: 外部画像を使用する場合は `next/image` の `Image` コンポーネントを使用し、`next.config.ts` で `remotePatterns` を設定
-- **className**: Tailwind CSS + FlyonUI のクラスを使用し、カスタムCSSは最小限に抑える
+- **className**: Tailwind CSS(4.1.18) + FlyonUI(2.4.1) のクラスを使用し、カスタムCSSは最小限に抑える
 
 ## 7. クライアントサイドバリデーション（Zod）
 
