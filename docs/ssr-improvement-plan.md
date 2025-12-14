@@ -127,10 +127,12 @@ export default async function DashboardLayout({ children }) {
 - [x] `AppHeader` と `DashboardSidebar` を layout で配置
 - [x] 各ページの `page.tsx` / `xxxClient.tsx` からヘッダー・サイドバーを削除
 
-**追加作業**（2025-01-20実施）:
+**追加作業**（2025-12-14実施）:
 - [x] `(workspace-full)` ルートグループ作成 - ワークスペース詳細の独自レイアウト対応
 - [x] `/workspaces/[code]` を `(workspace-full)` に移動
 - [x] `EditWorkspaceModal`, `EditWorkspaceSkillsModal` を `@/components/workspaces` に移動（共有化）
+- [x] `(admin-full)` ルートグループ作成 - 管理者ページの独自レイアウト（AdminHeader + AdminSidebar）対応
+- [x] `/admin/*` を `(admin-full)` に移動
 
 ---
 
