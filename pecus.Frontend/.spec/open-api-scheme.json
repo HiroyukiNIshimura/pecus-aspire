@@ -8250,6 +8250,22 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "description": "ソート項目(省略時はSequence)",
+            "schema": {
+              "$ref": "#/components/schemas/TaskSortBy"
+            }
+          },
+          {
+            "name": "Order",
+            "in": "query",
+            "description": "ソート順序(省略時はAsc)",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
           }
         ],
         "responses": {
@@ -12296,6 +12312,14 @@
         "additionalProperties": false,
         "description": "スキルごとのユーザー数"
       },
+      "SortOrder": {
+        "enum": [
+          "Asc",
+          "Desc"
+        ],
+        "type": "string",
+        "description": "ソート順序"
+      },
       "SuccessResponse": {
         "required": [
           "message"
@@ -13173,6 +13197,15 @@
         },
         "additionalProperties": false,
         "description": "タスクスコア詳細（デバッグ・説明用）"
+      },
+      "TaskSortBy": {
+        "enum": [
+          "Sequence",
+          "Priority",
+          "DueDate"
+        ],
+        "type": "string",
+        "description": "タスクのソート項目"
       },
       "TaskStatusFilter": {
         "enum": [

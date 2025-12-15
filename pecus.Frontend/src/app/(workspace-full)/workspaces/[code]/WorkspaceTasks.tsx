@@ -9,7 +9,9 @@ import UserAvatar from '@/components/common/UserAvatar';
 import TaskFlowMapModal from '@/components/tasks/TaskFlowMapModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
+  SortOrder,
   TaskFlowNode,
+  TaskSortBy,
   TaskStatusFilter as TaskStatusFilterType,
   UserSearchResultResponse,
   WorkspaceTaskDetailResponse,
@@ -99,6 +101,8 @@ const WorkspaceTasks = ({
   const [assigneeSearchResults, setAssigneeSearchResults] = useState<UserSearchResultResponse[]>([]);
   const [isSearchingAssignee, setIsSearchingAssignee] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<TaskSortBy>('Sequence');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('Asc');
 
   // タスク作成モーダル状態
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -123,7 +127,13 @@ const WorkspaceTasks = ({
   const [isFlowMapModalOpen, setIsFlowMapModalOpen] = useState(false);
 
   // タスク取得
-  const fetchTasks = async (page: number, status: TaskStatus, assigneeId?: number | null) => {
+  const fetchTasks = async (
+    page: number,
+    status: TaskStatus,
+    assigneeId?: number | null,
+    sort?: TaskSortBy,
+    order?: SortOrder,
+  ) => {
     try {
       setIsLoading(true);
 
@@ -135,6 +145,8 @@ const WorkspaceTasks = ({
         ITEMS_PER_PAGE,
         toApiTaskStatusFilter(status),
         assigneeId ?? undefined,
+        sort ?? sortBy,
+        order ?? sortOrder,
       );
 
       if (result.success) {
@@ -155,26 +167,31 @@ const WorkspaceTasks = ({
 
   // 初回取得
   useEffect(() => {
-    fetchTasks(1, taskStatus, selectedAssignee?.id);
+    fetchTasks(1, taskStatus, selectedAssignee?.id, sortBy, sortOrder);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, itemId]);
 
   // フィルター変更時
-  const handleFilterChange = (newStatus: TaskStatus, newAssigneeId?: number | null) => {
+  const handleFilterChange = (
+    newStatus: TaskStatus,
+    newAssigneeId?: number | null,
+    newSortBy?: TaskSortBy,
+    newSortOrder?: SortOrder,
+  ) => {
     setCurrentPage(1);
-    fetchTasks(1, newStatus, newAssigneeId);
+    fetchTasks(1, newStatus, newAssigneeId, newSortBy, newSortOrder);
   };
 
   // ステータスフィルター変更
   const handleStatusChange = (status: TaskStatus) => {
     setTaskStatus(status);
-    handleFilterChange(status, selectedAssignee?.id);
+    handleFilterChange(status, selectedAssignee?.id, sortBy, sortOrder);
   };
 
   // ページ変更
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage || isLoading) return;
-    fetchTasks(page, taskStatus, selectedAssignee?.id);
+    fetchTasks(page, taskStatus, selectedAssignee?.id, sortBy, sortOrder);
   };
 
   // 担当者検索
@@ -212,13 +229,13 @@ const WorkspaceTasks = ({
     setSelectedAssignee(selected);
     setShowAssigneeDropdown(false);
     setAssigneeSearchResults([]);
-    handleFilterChange(taskStatus, selected.id);
+    handleFilterChange(taskStatus, selected.id, sortBy, sortOrder);
   };
 
   // 担当者クリア
   const handleClearAssignee = () => {
     setSelectedAssignee(null);
-    handleFilterChange(taskStatus, null);
+    handleFilterChange(taskStatus, null, sortBy, sortOrder);
   };
 
   // 自分を担当者に設定
@@ -231,14 +248,14 @@ const WorkspaceTasks = ({
         identityIconUrl: currentUser.identityIconUrl,
       };
       setSelectedAssignee(selected);
-      handleFilterChange(taskStatus, selected.id);
+      handleFilterChange(taskStatus, selected.id, sortBy, sortOrder);
     }
   };
 
   // タスク作成成功時のハンドラ
   const handleCreateTaskSuccess = () => {
     // タスクリストを最新の状態で再取得
-    fetchTasks(1, taskStatus, selectedAssignee?.id);
+    fetchTasks(1, taskStatus, selectedAssignee?.id, sortBy, sortOrder);
     setCurrentPage(1);
   };
 
@@ -262,8 +279,8 @@ const WorkspaceTasks = ({
   // タスク編集成功時のハンドラ
   const handleEditTaskSuccess = useCallback(() => {
     // タスクリストを再取得して最新状態に更新
-    fetchTasks(currentPage, taskStatus, selectedAssignee?.id);
-  }, [currentPage, taskStatus, selectedAssignee?.id]);
+    fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder);
+  }, [currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder]);
 
   // コメントボタンクリック時のハンドラ
   const handleCommentClick = useCallback((task: WorkspaceTaskDetailResponse, e: React.MouseEvent) => {
@@ -499,9 +516,54 @@ const WorkspaceTasks = ({
         {/* ステータスフィルター */}
         <TaskStatusFilter value={taskStatus} onChange={handleStatusChange} size="xs" />
 
+        {/* ソート項目 */}
+        <div className="form-control">
+          <span className="block text-sm mb-1">並び順</span>
+          <select
+            className="select select-xs select-bordered w-32"
+            value={sortBy}
+            onChange={(e) => {
+              const newSortBy = e.target.value as TaskSortBy;
+              setSortBy(newSortBy);
+              handleFilterChange(taskStatus, selectedAssignee?.id, newSortBy, sortOrder);
+            }}
+          >
+            <option value="Sequence">シーケンス</option>
+            <option value="Priority">優先度</option>
+            <option value="DueDate">期限日</option>
+          </select>
+        </div>
+
+        {/* ソート順序 */}
+        <div className="form-control">
+          <span className="block text-sm mb-1 invisible">順序</span>
+          <button
+            type="button"
+            className="btn btn-xs btn-outline btn-primary gap-1 w-24"
+            onClick={() => {
+              const newOrder: SortOrder = sortOrder === 'Asc' ? 'Desc' : 'Asc';
+              setSortOrder(newOrder);
+              handleFilterChange(taskStatus, selectedAssignee?.id, sortBy, newOrder);
+            }}
+            title={sortOrder === 'Asc' ? '昇順' : '降順'}
+          >
+            {sortOrder === 'Asc' ? (
+              <>
+                <span className="icon-[mdi--arrow-up] w-4 h-4" aria-hidden="true" />
+                昇順
+              </>
+            ) : (
+              <>
+                <span className="icon-[mdi--arrow-down] w-4 h-4" aria-hidden="true" />
+                降順
+              </>
+            )}
+          </button>
+        </div>
+
         {/* 担当者フィルター */}
         <div className="form-control">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 h-5">
             <span className="text-sm">担当者</span>
             {currentUser && (
               <button type="button" className="link link-primary text-xs" onClick={handleSelectSelf}>

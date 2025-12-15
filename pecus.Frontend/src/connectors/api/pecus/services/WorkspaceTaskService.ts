@@ -4,7 +4,9 @@
 /* eslint-disable */
 import type { AssigneeTaskLoadResponse } from '../models/AssigneeTaskLoadResponse';
 import type { CreateWorkspaceTaskRequest } from '../models/CreateWorkspaceTaskRequest';
+import type { SortOrder } from '../models/SortOrder';
 import type { TaskFlowMapResponse } from '../models/TaskFlowMapResponse';
+import type { TaskSortBy } from '../models/TaskSortBy';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { UpdateWorkspaceTaskRequest } from '../models/UpdateWorkspaceTaskRequest';
 import type { WorkspaceTaskDetailResponse } from '../models/WorkspaceTaskDetailResponse';
@@ -52,6 +54,8 @@ export class WorkspaceTaskService {
      * カルーセルのためクライアントからの指定を許可
      * @param status タスクのステータスフィルター（省略時はすべて表示）
      * @param assignedUserId 担当ユーザーIDでフィルタ
+     * @param sortBy ソート項目(省略時はSequence)
+     * @param order ソート順序(省略時はAsc)
      * @returns WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse OK
      * @throws ApiError
      */
@@ -62,6 +66,8 @@ export class WorkspaceTaskService {
         pageSize?: number,
         status?: TaskStatusFilter,
         assignedUserId?: number,
+        sortBy?: TaskSortBy,
+        order?: SortOrder,
     ): CancelablePromise<WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -75,6 +81,8 @@ export class WorkspaceTaskService {
                 'PageSize': pageSize,
                 'Status': status,
                 'AssignedUserId': assignedUserId,
+                'SortBy': sortBy,
+                'Order': order,
             },
             errors: {
                 404: `Not Found`,
