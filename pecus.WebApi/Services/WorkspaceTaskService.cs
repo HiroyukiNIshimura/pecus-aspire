@@ -309,10 +309,27 @@ public class WorkspaceTaskService
         // 総件数を取得
         var totalCount = await query.CountAsync();
 
+        // ソート処理
+        var sortBy = request.SortBy ?? TaskSortBy.Sequence;
+        var order = request.Order ?? SortOrder.Asc;
+
+        query = sortBy switch
+        {
+            TaskSortBy.Sequence => order == SortOrder.Asc
+                ? query.OrderBy(t => t.Sequence)
+                : query.OrderByDescending(t => t.Sequence),
+            TaskSortBy.Priority => order == SortOrder.Asc
+                ? query.OrderBy(t => t.Priority).ThenBy(t => t.Sequence)
+                : query.OrderByDescending(t => t.Priority).ThenBy(t => t.Sequence),
+            TaskSortBy.DueDate => order == SortOrder.Asc
+                ? query.OrderBy(t => t.DueDate).ThenBy(t => t.Sequence)
+                : query.OrderByDescending(t => t.DueDate).ThenBy(t => t.Sequence),
+            _ => query.OrderBy(t => t.Sequence),
+        };
+
         // ページネーション
         var pageSize = request.PageSize;
         var tasks = await query
-            .OrderByDescending(t => t.CreatedAt)
             .Skip((request.Page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

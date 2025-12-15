@@ -361,6 +361,105 @@ const WorkspaceTasks = ({
     return '';
   };
 
+  // ヘッダー部分の共通コンポーネント
+  const renderHeader = () => (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-4">
+        <h3 className="text-lg font-bold">タスク{totalCount > 0 ? ` (${totalCount})` : ''}</h3>
+        {/* コミッター表示 */}
+        <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+          <span className="text-base-content/50">コミッター:</span>
+          {itemCommitterName ? (
+            <UserAvatar
+              userName={itemCommitterName}
+              identityIconUrl={itemCommitterAvatarUrl}
+              size={20}
+              nameClassName="font-medium"
+            />
+          ) : (
+            <span className="text-base-content/50 italic">未設定</span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-outline btn-secondary btn-sm gap-1"
+          onClick={() => setIsFlowMapModalOpen(true)}
+          title="タスクフローマップを表示"
+        >
+          <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
+          フロー
+        </button>
+        <button type="button" className="btn btn-outline btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
+          <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
+          タスク追加
+        </button>
+      </div>
+    </div>
+  );
+
+  // モーダル群の共通コンポーネント
+  const renderModals = () => (
+    <>
+      {/* タスク作成モーダル */}
+      <CreateWorkspaceTaskModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCreateTaskSuccess}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        taskTypes={taskTypes}
+        currentUser={currentUser}
+      />
+
+      {/* タスク編集モーダル */}
+      <EditWorkspaceTaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditTaskNavigation(null);
+        }}
+        onSuccess={handleEditTaskSuccess}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        itemCommitterId={itemCommitterId}
+        itemCommitterName={itemCommitterName}
+        itemCommitterAvatarUrl={itemCommitterAvatarUrl}
+        initialNavigation={editTaskNavigation}
+        taskTypes={taskTypes}
+        currentUser={currentUser}
+        pageSize={ITEMS_PER_PAGE}
+      />
+
+      {/* コメントモーダル */}
+      {commentTargetTask && currentUser && (
+        <TaskCommentModal
+          isOpen={isCommentModalOpen}
+          onClose={() => {
+            setIsCommentModalOpen(false);
+            setCommentTargetTask(null);
+          }}
+          workspaceId={workspaceId}
+          itemId={itemId}
+          task={commentTargetTask}
+          currentUserId={currentUser.id}
+          onCommentCountChange={() => handleEditTaskSuccess()}
+        />
+      )}
+
+      {/* タスクフローマップモーダル */}
+      <TaskFlowMapModal
+        isOpen={isFlowMapModalOpen}
+        onClose={() => setIsFlowMapModalOpen(false)}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        onTaskClick={handleFlowMapTaskClick}
+        canEditTask={canEditTask}
+      />
+    </>
+  );
+
   // 優先度の表示
   const getPriorityBadge = (priority?: string) => {
     if (!priority) return null;
@@ -382,112 +481,18 @@ const WorkspaceTasks = ({
   if (isLoading && tasks.length === 0) {
     return (
       <div className="mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <h3 className="text-lg font-bold">タスク</h3>
-            {/* コミッター表示 */}
-            <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
-              <span className="text-base-content/50">コミッター:</span>
-              {itemCommitterName ? (
-                <UserAvatar
-                  userName={itemCommitterName}
-                  identityIconUrl={itemCommitterAvatarUrl}
-                  size={20}
-                  nameClassName="font-medium"
-                />
-              ) : (
-                <span className="text-base-content/50 italic">未設定</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="btn btn-outline btn-secondary btn-sm gap-1"
-              onClick={() => setIsFlowMapModalOpen(true)}
-              title="タスクフローマップを表示"
-            >
-              <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
-              フロー
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline btn-primary btn-sm"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-              タスク追加
-            </button>
-          </div>
-        </div>
+        {renderHeader()}
         <div className="flex justify-center items-center py-8">
           <span className="loading loading-spinner loading-lg"></span>
         </div>
-
-        {/* タスク作成モーダル */}
-        <CreateWorkspaceTaskModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={handleCreateTaskSuccess}
-          workspaceId={workspaceId}
-          itemId={itemId}
-          taskTypes={taskTypes}
-          currentUser={currentUser}
-        />
-
-        {/* タスクフローマップモーダル */}
-        <TaskFlowMapModal
-          isOpen={isFlowMapModalOpen}
-          onClose={() => setIsFlowMapModalOpen(false)}
-          workspaceId={workspaceId}
-          itemId={itemId}
-          onTaskClick={handleFlowMapTaskClick}
-          canEditTask={canEditTask}
-        />
+        {renderModals()}
       </div>
     );
   }
 
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <h3 className="text-lg font-bold">タスク ({totalCount})</h3>
-          {/* コミッター表示 */}
-          <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
-            <span className="text-base-content/50">コミッター:</span>
-            {itemCommitterName ? (
-              <UserAvatar
-                userName={itemCommitterName}
-                identityIconUrl={itemCommitterAvatarUrl}
-                size={20}
-                nameClassName="font-medium"
-              />
-            ) : (
-              <span className="text-base-content/50 italic">未設定</span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="btn btn-outline btn-secondary btn-sm gap-1"
-            onClick={() => setIsFlowMapModalOpen(true)}
-            title="タスクフローマップを表示"
-          >
-            <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
-            フロー
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline btn-primary btn-sm"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
-            タスク追加
-          </button>
-        </div>
-      </div>
+      {renderHeader()}
 
       {/* フィルターエリア */}
       <div className="flex flex-wrap items-end gap-6 mb-4">
@@ -630,6 +635,9 @@ const WorkspaceTasks = ({
                         )}
                       </div>
                     </div>
+
+                    {/* タスク番号 */}
+                    <div className="text-xs text-base-content/50 font-mono">T-{task.sequence}</div>
 
                     {/* タスク内容（2行で省略、ホバーで全文表示） */}
                     <div className="flex-1">
@@ -958,61 +966,7 @@ const WorkspaceTasks = ({
         </div>
       )}
 
-      {/* タスク作成モーダル */}
-      <CreateWorkspaceTaskModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={handleCreateTaskSuccess}
-        workspaceId={workspaceId}
-        itemId={itemId}
-        taskTypes={taskTypes}
-        currentUser={currentUser}
-      />
-
-      {/* タスク編集モーダル */}
-      <EditWorkspaceTaskModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditTaskNavigation(null);
-        }}
-        onSuccess={handleEditTaskSuccess}
-        workspaceId={workspaceId}
-        itemId={itemId}
-        itemCommitterId={itemCommitterId}
-        itemCommitterName={itemCommitterName}
-        itemCommitterAvatarUrl={itemCommitterAvatarUrl}
-        initialNavigation={editTaskNavigation}
-        taskTypes={taskTypes}
-        currentUser={currentUser}
-        pageSize={ITEMS_PER_PAGE}
-      />
-
-      {/* コメントモーダル */}
-      {commentTargetTask && currentUser && (
-        <TaskCommentModal
-          isOpen={isCommentModalOpen}
-          onClose={() => {
-            setIsCommentModalOpen(false);
-            setCommentTargetTask(null);
-          }}
-          workspaceId={workspaceId}
-          itemId={itemId}
-          task={commentTargetTask}
-          currentUserId={currentUser.id}
-          onCommentCountChange={() => handleEditTaskSuccess()}
-        />
-      )}
-
-      {/* タスクフローマップモーダル */}
-      <TaskFlowMapModal
-        isOpen={isFlowMapModalOpen}
-        onClose={() => setIsFlowMapModalOpen(false)}
-        workspaceId={workspaceId}
-        itemId={itemId}
-        onTaskClick={handleFlowMapTaskClick}
-        canEditTask={canEditTask}
-      />
+      {renderModals()}
     </div>
   );
 };

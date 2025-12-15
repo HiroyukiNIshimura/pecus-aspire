@@ -29,6 +29,43 @@ public enum TaskStatusFilter
 }
 
 /// <summary>
+/// タスクのソート項目
+/// </summary>
+public enum TaskSortBy
+{
+    /// <summary>
+    /// シーケンス番号順
+    /// </summary>
+    Sequence,
+
+    /// <summary>
+    /// 優先度順
+    /// </summary>
+    Priority,
+
+    /// <summary>
+    /// 期限日時順
+    /// </summary>
+    DueDate,
+}
+
+/// <summary>
+/// ソート順序
+/// </summary>
+public enum SortOrder
+{
+    /// <summary>
+    /// 昇順
+    /// </summary>
+    Asc,
+
+    /// <summary>
+    /// 降順
+    /// </summary>
+    Desc,
+}
+
+/// <summary>
 /// ワークスペースタスク一覧取得リクエスト
 /// </summary>
 public class GetWorkspaceTasksRequest
@@ -55,4 +92,14 @@ public class GetWorkspaceTasksRequest
     /// 担当ユーザーIDでフィルタ
     /// </summary>
     public int? AssignedUserId { get; set; }
+
+    /// <summary>
+    /// ソート項目(省略時はSequence)
+    /// </summary>
+    public TaskSortBy? SortBy { get; set; }
+
+    /// <summary>
+    /// ソート順序(省略時はAsc)
+    /// </summary>
+    public SortOrder? Order { get; set; }
 }
