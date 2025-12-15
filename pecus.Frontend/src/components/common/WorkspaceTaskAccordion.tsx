@@ -430,7 +430,7 @@ export default function WorkspaceTaskAccordion({
                     <button
                       type="button"
                       onClick={() => handleDueDateExpandAll(workspace.workspaceId, wsData.dueDateGroups, !allExpanded)}
-                      className="btn btn-ghost btn-xs"
+                      className="btn btn-soft btn-secondary btn-xs"
                       title={allExpanded ? 'すべて畳む' : 'すべて開く'}
                     >
                       {allExpanded ? '全部閉じる' : '全部開く'}
@@ -658,7 +658,7 @@ export default function WorkspaceTaskAccordion({
                                             <button
                                               type="button"
                                               onClick={() => handleOpenTaskEditModal(task, workspace.workspaceId)}
-                                              className="btn btn-ghost btn-xs btn-square"
+                                              className="btn btn-soft btn-secondary btn-xs btn-square"
                                               title="タスクを編集"
                                             >
                                               <span className="icon-[mdi--pencil] w-4 h-4" aria-hidden="true" />
@@ -666,7 +666,7 @@ export default function WorkspaceTaskAccordion({
                                           ) : (
                                             <Link
                                               href={`/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}`}
-                                              className="btn btn-ghost btn-xs btn-square"
+                                              className="btn btn-soft btn-secondary btn-xs btn-square"
                                               title="タスク詳細"
                                             >
                                               <span className="icon-[mdi--open-in-new] w-4 h-4" aria-hidden="true" />

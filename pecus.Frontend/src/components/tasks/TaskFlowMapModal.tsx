@@ -110,7 +110,12 @@ export default function TaskFlowMapModal({
               <span className="icon-[mdi--sitemap] w-6 h-6 text-primary" aria-hidden="true" />
               タスクフローマップ
             </h2>
-            <button type="button" className="btn btn-ghost btn-sm btn-circle" onClick={onClose} aria-label="閉じる">
+            <button
+              type="button"
+              className="btn btn-soft btn-secondary btn-sm btn-circle"
+              onClick={onClose}
+              aria-label="閉じる"
+            >
               <span className="icon-[mdi--close] w-5 h-5" aria-hidden="true" />
             </button>
           </div>
@@ -138,7 +143,7 @@ export default function TaskFlowMapModal({
 
           {/* フッター */}
           <div className="flex justify-end gap-2 p-4 border-t border-base-300">
-            <button type="button" className="btn btn-ghost" onClick={onClose}>
+            <button type="button" className="btn btn-soft btn-secondary" onClick={onClose}>
               閉じる
             </button>
           </div>

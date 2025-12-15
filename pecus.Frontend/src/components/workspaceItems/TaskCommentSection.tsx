@@ -308,7 +308,7 @@ export default function TaskCommentSection({
       </div>
 
       {/* コメント一覧 */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {isLoading && comments.length === 0 ? (
           <div className="flex justify-center items-center py-8">
             <span className="loading loading-spinner loading-md"></span>
@@ -320,125 +320,138 @@ export default function TaskCommentSection({
           </div>
         ) : (
           <>
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className={`flex gap-2 ${comment.isDeleted ? 'opacity-50' : ''} ${
-                  comment.userId === currentUserId ? 'flex-row-reverse' : ''
-                }`}
-              >
-                {/* アバター */}
-                <div className="flex-shrink-0">
-                  <UserAvatar
-                    userName={comment.username}
-                    identityIconUrl={comment.avatarUrl}
-                    size={32}
-                    showName={false}
-                  />
-                </div>
-
-                {/* コメント本体 */}
-                <div className={`flex-1 max-w-[85%] ${comment.userId === currentUserId ? 'text-right' : 'text-left'}`}>
-                  {/* ヘッダー */}
-                  <div
-                    className={`flex items-center gap-2 mb-1 flex-wrap ${comment.userId === currentUserId ? 'justify-end' : ''}`}
-                  >
-                    <span className="font-medium text-sm">{comment.username}</span>
-                    {(() => {
-                      const type = comment.commentType || 'Normal';
-                      const config = commentTypeConfig[type];
-                      return config ? (
-                        <span className={`badge badge-sm ${config.color}`} title={config.label}>
-                          <span className={`${config.iconClass} size-3 mr-0.5`} aria-hidden="true" />
-                          {config.label}
-                        </span>
-                      ) : null;
-                    })()}
-                    <span className="text-xs text-base-content/50">
-                      {comment.createdAt ? new Date(comment.createdAt).toLocaleString('ja-JP') : ''}
-                    </span>
-                  </div>
-
-                  {/* 内容 */}
-                  {editingCommentId === comment.id ? (
-                    // 編集モード
-                    <div className="space-y-2">
-                      <textarea
-                        className="textarea textarea-bordered textarea-sm w-full"
-                        value={editingContent}
-                        onChange={(e) => setEditingContent(e.target.value)}
-                        rows={2}
-                        disabled={isSubmitting}
+            {comments.map((comment) => {
+              const isOwn = comment.userId === currentUserId;
+              return (
+                <div
+                  key={comment.id}
+                  className={`flex gap-3 ${comment.isDeleted ? 'opacity-50' : ''} ${isOwn ? 'justify-end' : 'justify-start'}`}
+                >
+                  {/* アバター（相手のみ左側に表示） */}
+                  {!isOwn && (
+                    <div className="flex-shrink-0 pt-0.5">
+                      <UserAvatar
+                        userName={comment.username}
+                        identityIconUrl={comment.avatarUrl}
+                        size={36}
+                        showName={false}
                       />
-                      <div className="flex items-center gap-1.5">
-                        <select
-                          className="select select-bordered select-xs"
-                          value={editingType}
-                          onChange={(e) => setEditingType(e.target.value as TaskCommentType)}
+                    </div>
+                  )}
+
+                  {/* コメント本体 */}
+                  <div className={`max-w-[75%] ${isOwn ? 'text-right' : 'text-left'}`}>
+                    {/* ヘッダー */}
+                    <div className={`flex items-center gap-2 mb-1 flex-wrap ${isOwn ? 'justify-end' : ''}`}>
+                      <span className="font-medium text-sm">{comment.username}</span>
+                      {(() => {
+                        const type = comment.commentType || 'Normal';
+                        const config = commentTypeConfig[type];
+                        return config ? (
+                          <span className={`badge badge-sm ${config.color}`} title={config.label}>
+                            <span className={`${config.iconClass} size-3 mr-0.5`} aria-hidden="true" />
+                            {config.label}
+                          </span>
+                        ) : null;
+                      })()}
+                      <span className="text-xs text-base-content/50">
+                        {comment.createdAt ? new Date(comment.createdAt).toLocaleString('ja-JP') : ''}
+                      </span>
+                    </div>
+
+                    {/* 内容 */}
+                    {editingCommentId === comment.id ? (
+                      // 編集モード
+                      <div className="space-y-2">
+                        <textarea
+                          className="textarea textarea-bordered textarea-sm w-full"
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          rows={2}
                           disabled={isSubmitting}
-                        >
-                          {Object.entries(commentTypeConfig).map(([key, config]) => (
-                            <option key={key} value={key}>
-                              {config.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="flex-1"></div>
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <select
+                            className="select select-bordered select-xs"
+                            value={editingType}
+                            onChange={(e) => setEditingType(e.target.value as TaskCommentType)}
+                            disabled={isSubmitting}
+                          >
+                            {Object.entries(commentTypeConfig).map(([key, config]) => (
+                              <option key={key} value={key}>
+                                {config.label}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="flex-1"></div>
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-secondary"
+                            onClick={handleCancelEdit}
+                            disabled={isSubmitting}
+                          >
+                            キャンセル
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-primary"
+                            onClick={() => handleSaveEdit(comment)}
+                            disabled={isSubmitting}
+                          >
+                            {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : '保存'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // 表示モード
+                      <div
+                        className={`rounded-2xl px-3 py-2 inline-block text-left ${isOwn ? 'bg-primary/20' : 'bg-base-200'}`}
+                      >
+                        {comment.isDeleted ? (
+                          <span className="italic text-base-content/50 text-sm">このコメントは削除されました</span>
+                        ) : (
+                          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
+                    {!comment.isDeleted && isOwn && editingCommentId !== comment.id && (
+                      <div className="flex items-center gap-1 mt-1 justify-end">
                         <button
                           type="button"
-                          className="btn btn-xs btn-secondary"
-                          onClick={handleCancelEdit}
-                          disabled={isSubmitting}
+                          className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto"
+                          onClick={() => handleStartEdit(comment)}
+                          title="編集"
                         >
-                          キャンセル
+                          <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           type="button"
-                          className="btn btn-xs btn-primary"
-                          onClick={() => handleSaveEdit(comment)}
-                          disabled={isSubmitting}
+                          className="btn btn-xs btn-soft btn-secondary p-1 min-h-0 h-auto"
+                          onClick={() => handleDeleteClick(comment)}
+                          title="削除"
                         >
-                          {isSubmitting ? <span className="loading loading-spinner loading-xs"></span> : '保存'}
+                          <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    // 表示モード
-                    <div
-                      className={`rounded-lg p-2.5 ${comment.userId === currentUserId ? 'bg-primary/10 text-left' : 'bg-base-200 text-left'}`}
-                    >
-                      {comment.isDeleted ? (
-                        <span className="italic text-base-content/50 text-sm">このコメントは削除されました</span>
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  {/* アクションボタン（自分のコメントかつ削除されていない場合のみ） */}
-                  {!comment.isDeleted && comment.userId === currentUserId && editingCommentId !== comment.id && (
-                    <div className="flex items-center gap-1 mt-1 justify-end">
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-secondary text-base-content/50 hover:text-primary p-1 min-h-0 h-auto"
-                        onClick={() => handleStartEdit(comment)}
-                        title="編集"
-                      >
-                        <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-secondary text-base-content/50 hover:text-error p-1 min-h-0 h-auto"
-                        onClick={() => handleDeleteClick(comment)}
-                        title="削除"
-                      >
-                        <span className="icon-[mdi--delete-outline] w-4 h-4" aria-hidden="true" />
-                      </button>
+                  {/* アバター（自分のみ右側に表示） */}
+                  {isOwn && (
+                    <div className="flex-shrink-0 pt-0.5">
+                      <UserAvatar
+                        userName={comment.username}
+                        identityIconUrl={comment.avatarUrl}
+                        size={36}
+                        showName={false}
+                      />
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* さらに読み込むボタン */}
             {page < totalPages && (
@@ -461,26 +474,12 @@ export default function TaskCommentSection({
 
       {/* 新規コメント入力エリア */}
       <div className="p-3 border-t border-base-300 flex-shrink-0 bg-base-100">
-        <div className="flex gap-2 items-end">
-          {/* コメントタイプ選択 */}
-          <select
-            className="select select-bordered select-sm w-24"
-            value={newCommentType}
-            onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
-            disabled={isSubmitting}
-          >
-            {Object.entries(commentTypeConfig).map(([key, config]) => (
-              <option key={key} value={key}>
-                {config.label}
-              </option>
-            ))}
-          </select>
-
-          {/* テキストエリア */}
-          <div className="flex-1 flex flex-col">
+        {/* テキストエリアと送信ボタン */}
+        <div className="flex gap-2 items-start">
+          <div className="flex-1">
             <textarea
               ref={textareaRef}
-              className={`textarea textarea-bordered textarea-sm w-full min-h-10 max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
+              className={`textarea textarea-bordered textarea-sm w-full min-h-[40px] max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
               placeholder="コメント... (Shift+Enterで改行)"
               value={newComment}
               onChange={(e) => handleNewCommentChange(e.target.value)}
@@ -491,30 +490,44 @@ export default function TaskCommentSection({
               rows={1}
               maxLength={MAX_COMMENT_LENGTH + 50}
             />
-            <div className="flex justify-between items-center mt-1">
-              {newCommentError ? <span className="text-error text-xs">{newCommentError}</span> : <span></span>}
-              <span
-                className={`text-xs ${newComment.length > MAX_COMMENT_LENGTH ? 'text-error font-medium' : 'text-base-content/50'}`}
-              >
-                {newComment.length}/{MAX_COMMENT_LENGTH}
-              </span>
-            </div>
           </div>
-
           {/* 送信ボタン */}
           <button
             type="button"
-            className="btn btn-primary btn-sm self-start"
+            className="btn btn-primary btn-sm h-[40px] w-[40px] p-0 flex-shrink-0"
             onClick={handleSubmitComment}
             disabled={isSubmitting || !newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
             title="送信 (Enter)"
           >
             {isSubmitting ? (
-              <span className="loading loading-spinner loading-xs"></span>
+              <span className="loading loading-spinner loading-sm"></span>
             ) : (
-              <span className="icon-[mdi--send-outline] w-3.5 h-3.5" aria-hidden="true" />
+              <span className="icon-[mdi--send] w-5 h-5" aria-hidden="true" />
             )}
           </button>
+        </div>
+        {/* コメントタイプ選択と文字数 */}
+        <div className="flex justify-between items-center mt-2">
+          <select
+            className="select select-bordered select-xs w-auto min-w-0"
+            value={newCommentType}
+            onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
+            disabled={isSubmitting}
+          >
+            {Object.entries(commentTypeConfig).map(([key, config]) => (
+              <option key={key} value={key}>
+                {config.label}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center gap-2">
+            {newCommentError && <span className="text-error text-xs">{newCommentError}</span>}
+            <span
+              className={`text-xs tabular-nums ${newComment.length > MAX_COMMENT_LENGTH ? 'text-error font-medium' : 'text-base-content/50'}`}
+            >
+              {newComment.length}/{MAX_COMMENT_LENGTH}
+            </span>
+          </div>
         </div>
       </div>
 

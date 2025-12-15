@@ -123,7 +123,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
               <button
                 type="button"
                 onClick={() => setDisplayCount(INITIAL_DISPLAY_COUNT)}
-                className="btn btn-ghost btn-sm gap-1 text-base-content/60"
+                className="btn btn-soft btn-secondary btn-sm gap-1 text-base-content/60"
               >
                 <span className="icon-[mdi--chevron-up] w-4 h-4" aria-hidden="true" />
                 折りたたむ
