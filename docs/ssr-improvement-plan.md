@@ -136,7 +136,7 @@ export default async function DashboardLayout({ children }) {
 
 ---
 
-### Phase 3: 個別ページの改善（優先度: 中） TODO
+### Phase 3: 個別ページの改善（優先度: 中）
 
 #### 優先順位
 
@@ -308,14 +308,24 @@ Week 3:
   - `MobileMenuButton.tsx` (Client) 作成 - ハンバーガーメニュー
   - `AppHeader.tsx` を分離コンポーネント使用に変更
 
-### Phase 2
-- [ ] 2-1. DashboardLayout改善
+### Phase 2 ✅ 完了 (2025-12-15)
+- [x] 2-1. DashboardLayout改善 - **既にSSR最適化済み**
+  - `layout.tsx` でユーザー情報をSSR取得
+  - `DashboardLayoutClient.tsx` でサイドバー開閉状態を管理
+  - `DashboardSidebar.server.tsx` は Server Component
+  - `AppHeader.tsx` は `onToggleSidebar` コールバック受け取りのため Client だが、内部コンポーネントは分離済み
 
-### Phase 3
-- [ ] 3-1. WorkspacesPage改善
-- [ ] 3-2. DashboardPage改善
-- [ ] 3-3. MyItemsPage改善
-- [ ] 3-4. 他ページ改善
+### Phase 3 ✅ 完了 (2025-12-15)
+- [x] 3-1. WorkspacesPage改善
+  - `page.tsx` で初期データ（ワークスペース一覧、統計情報）をSSR取得
+  - `WorkspacesClient.tsx` から `useEffect` での初回fetch削除
+  - 二重fetch問題を解消
+- [x] 3-2. DashboardPage改善 - **既にSSR最適化済み**
+- [x] 3-3. MyItemsPage改善 - **既にSSR最適化済み**
+- [x] 3-4. 他ページ改善 - **既にSSR最適化済み**
+  - `/activity` - 既にSSR最適化済み
+  - `/tasks` - 既にSSR最適化済み
+  - `/admin` - 既にSSR最適化済み
 
 ### Phase 4
 - [ ] テンプレート・チェックリスト整備

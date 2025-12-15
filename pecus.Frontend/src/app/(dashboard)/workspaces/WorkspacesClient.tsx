@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
@@ -20,15 +20,25 @@ import CreateWorkspaceModal from './CreateWorkspaceModal';
 
 interface WorkspacesClientProps {
   genres: MasterGenreResponse[];
+  initialWorkspaces: WorkspaceListItemResponse[];
+  initialTotalPages: number;
+  initialTotalCount: number;
+  initialStatistics: WorkspaceStatistics | null;
 }
 
-export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
-  const [_isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
+export default function WorkspacesClient({
+  genres,
+  initialWorkspaces,
+  initialTotalPages,
+  initialTotalCount,
+  initialStatistics,
+}: WorkspacesClientProps) {
+  // SSRで取得した初期データを初期値として使用
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [totalCount, setTotalCount] = useState(initialTotalCount);
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>('');
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
@@ -51,28 +61,6 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
     hasMore: totalPages > 1 && currentPage < totalPages,
     rootMargin: '200px',
   });
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const response = await fetch('/api/workspaces?page=1&IsActive=true');
-        if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
-          setWorkspaces(data.data || []);
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
-          setTotalCount(data.totalCount || 0);
-          setStatistics(data.summary || null);
-        }
-      } catch (error) {
-        console.error('Failed to fetch initial workspaces:', error);
-        notify.error('サーバーとの通信でエラーが発生しました。', true);
-      }
-      setIsLoading(false);
-    };
-
-    fetchInitialData();
-  }, []);
 
   const loadMoreWorkspaces = async () => {
     try {
