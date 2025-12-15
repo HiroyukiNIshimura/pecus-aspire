@@ -46,6 +46,8 @@
   - Server/Client Component の使い分け、初期データ取得パターン、アンチパターン回避
 - **Tailwind任意値禁止**: `docs/tailwind-arbitrary-values.md`
   - `z-[10]` 等の角括弧構文は禁止。定義済みクラスまたは config 拡張を使用
+- **モーダルダイアログテンプレート**: `docs/modal-dialog-template.md`
+  - FlyonUI モーダル実装の必須パターン、アクセシビリティ、エラー表示位置
 - **バックエンド詳細**: `docs/backend-guidelines.md`
   - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
 - **例外処理**: `docs/global-exception-handling.md`
