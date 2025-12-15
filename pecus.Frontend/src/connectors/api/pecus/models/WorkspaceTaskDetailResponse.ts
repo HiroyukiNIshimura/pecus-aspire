@@ -21,6 +21,10 @@ export type WorkspaceTaskDetailResponse = {
      */
     workspaceItemId?: number;
     /**
+     * ワークスペースアイテム内でのシーケンス番号
+     */
+    sequence?: number;
+    /**
      * ワークスペースID
      */
     workspaceId?: number;
