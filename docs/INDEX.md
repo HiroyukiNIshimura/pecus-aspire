@@ -17,6 +17,7 @@
 - [lexical-grpc-service.md](./lexical-grpc-service.md) — Lexical gRPC サービスの設計・契約。
 - [mail-notifications.md](./mail-notifications.md) — メール通知の設計とテンプレート運用方針。
 - [mail.md](./mail.md) — メール送信基盤と実装ガイド。
+- [modal-dialog-template.md](./modal-dialog-template.md) — モーダルダイアログ実装リファレンス（AI エージェント向け）。
 - [redis-database-separation.md](./redis-database-separation.md) — Redis と DB の分離設計・運用指針。
 - [signalr-implementation.md](./signalr-implementation.md) — SignalR 実装の技術設計。
 - [signalr-presence.md](./signalr-presence.md) — プレゼンス管理（接続状態）設計。
