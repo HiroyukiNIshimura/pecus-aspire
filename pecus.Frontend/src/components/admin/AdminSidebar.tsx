@@ -30,7 +30,7 @@ export default function AdminSidebar({ sidebarOpen }: AdminSidebarProps) {
           <li key={item.href} className="w-full">
             <a
               href={item.href}
-              className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:!justify-start lg:!items-start ${sidebarOpen ? '!justify-start !items-center' : '!justify-center !items-center'} w-full`}
+              className={`${pathname === item.href ? 'menu-active' : ''} lg:flex-row flex-col lg:justify-start! lg:items-start! ${sidebarOpen ? 'justify-start! items-center!' : 'justify-center! items-center!'} w-full`}
               title={item.label}
             >
               <span className={`${item.iconClass} size-5`} aria-hidden="true" />
