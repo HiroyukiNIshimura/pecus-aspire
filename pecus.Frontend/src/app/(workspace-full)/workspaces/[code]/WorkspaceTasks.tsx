@@ -19,7 +19,6 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
-import EditWorkspaceTaskModal from './EditWorkspaceTaskModal';
 import TaskCommentModal from './TaskCommentModal';
 
 const hasHelpComment = (task: WorkspaceTaskDetailResponse): boolean => (task.commentTypeCounts?.HelpWanted ?? 0) > 0;
@@ -136,18 +135,6 @@ const WorkspaceTasks = ({
 
   // タスク作成モーダル状態
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  // タスク編集モーダル状態
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTaskNavigation, setEditTaskNavigation] = useState<{
-    tasks: WorkspaceTaskDetailResponse[];
-    currentIndex: number;
-    currentPage: number;
-    totalPages: number;
-    totalCount: number;
-    statusFilter: TaskStatusFilterType;
-    assignedUserId?: number;
-  } | null>(null);
 
   // コメントモーダル状態
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
@@ -315,10 +302,6 @@ const WorkspaceTasks = ({
           itemCommitterName ?? null,
           itemCommitterAvatarUrl ?? null,
         );
-      } else {
-        // モーダル表示（フォールバック）
-        setEditTaskNavigation(navigation);
-        setIsEditModalOpen(true);
       }
     },
     [
@@ -335,12 +318,6 @@ const WorkspaceTasks = ({
       itemCommitterAvatarUrl,
     ],
   );
-
-  // タスク編集成功時のハンドラ
-  const handleEditTaskSuccess = useCallback(() => {
-    // タスクリストを再取得して最新状態に更新
-    fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder);
-  }, [currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder]);
 
   // コメントボタンクリック時のハンドラ
   const handleCommentClick = useCallback((task: WorkspaceTaskDetailResponse, e: React.MouseEvent) => {
@@ -380,39 +357,6 @@ const WorkspaceTasks = ({
       if (taskIndex >= 0) {
         // タスクリストにあれば、handleTaskClickを使用（sequenceが取れる）
         handleTaskClick(taskIndex);
-      } else {
-        // リストにない場合は単体で編集（ナビゲーションなし）
-        // TaskFlowNodeにはsequenceがないため、モーダル表示にフォールバック
-        const singleTaskNavigation: TaskNavigation = {
-          tasks: [
-            {
-              id: task.id,
-              content: task.content,
-              taskTypeId: task.taskTypeId ?? 0,
-              taskTypeName: task.taskTypeName ?? undefined,
-              taskTypeIcon: task.taskTypeIcon ?? undefined,
-              priority: task.priority,
-              dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : new Date().toISOString(),
-              progressPercentage: task.progressPercentage,
-              isCompleted: task.isCompleted,
-              isDiscarded: task.isDiscarded,
-              assignedUserId: task.assignedUserId ?? 0,
-              assignedUsername: task.assignedUsername ?? undefined,
-              assignedAvatarUrl: task.assignedAvatarUrl ?? undefined,
-              predecessorTaskId: task.predecessorTaskId,
-              successorTaskCount: task.successorCount,
-            } as WorkspaceTaskDetailResponse,
-          ],
-          currentIndex: 0,
-          currentPage: 1,
-          totalPages: 1,
-          totalCount: 1,
-          statusFilter: 'All',
-        };
-
-        // TaskFlowNodeにはsequenceがないため、常にモーダル表示
-        setEditTaskNavigation(singleTaskNavigation);
-        setIsEditModalOpen(true);
       }
     },
     [tasks, handleTaskClick],
@@ -495,25 +439,6 @@ const WorkspaceTasks = ({
         currentUser={currentUser}
       />
 
-      {/* タスク編集モーダル */}
-      <EditWorkspaceTaskModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditTaskNavigation(null);
-        }}
-        onSuccess={handleEditTaskSuccess}
-        workspaceId={workspaceId}
-        itemId={itemId}
-        itemCommitterId={itemCommitterId}
-        itemCommitterName={itemCommitterName}
-        itemCommitterAvatarUrl={itemCommitterAvatarUrl}
-        initialNavigation={editTaskNavigation}
-        taskTypes={taskTypes}
-        currentUser={currentUser}
-        pageSize={ITEMS_PER_PAGE}
-      />
-
       {/* コメントモーダル */}
       {commentTargetTask && currentUser && (
         <TaskCommentModal
@@ -526,7 +451,7 @@ const WorkspaceTasks = ({
           itemId={itemId}
           task={commentTargetTask}
           currentUserId={currentUser.id}
-          onCommentCountChange={() => handleEditTaskSuccess()}
+          onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}
         />
       )}
 
