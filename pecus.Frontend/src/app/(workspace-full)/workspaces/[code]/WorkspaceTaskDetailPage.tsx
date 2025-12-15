@@ -584,7 +584,7 @@ export default function WorkspaceTaskDetailPage({
               aria-label="アイテム詳細に戻る"
             >
               <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
-              戻る
+              アイテム
             </button>
           </div>
         </div>
