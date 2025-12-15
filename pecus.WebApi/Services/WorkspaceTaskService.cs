@@ -7,10 +7,6 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
-using Pecus.Models.Requests.WorkspaceTask;
-using Pecus.Models.Responses.WorkspaceTask;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Pecus.Services;
 
@@ -92,44 +88,58 @@ public class WorkspaceTaskService
             }
         }
 
-        var task = new WorkspaceTask
-        {
-            WorkspaceItemId = itemId,
-            WorkspaceId = workspaceId,
-            OrganizationId = organizationId,
-            AssignedUserId = request.AssignedUserId,
-            CreatedByUserId = createdByUserId,
-            Content = request.Content,
-            TaskTypeId = request.TaskTypeId,
-            Priority = request.Priority,
-            StartDate = request.StartDate,
-            DueDate = request.DueDate,
-            EstimatedHours = request.EstimatedHours,
-            PredecessorTaskId = request.PredecessorTaskId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
+        // タスクを挿入
+        // シーケンス番号はワークスペースアイテム内での最大値＋1を設定
+        // 楽観的ロック用にxminも取得
+        // FromSqlでINSERT文を実行し、RETURNINGでxminを含むすべてのカラムを戻す必要あり
+        var inserted = await _context.WorkspaceTasks
+            .FromSql($@"
+                INSERT INTO ""WorkspaceTasks"" (
+                    ""WorkspaceItemId"",
+                    ""WorkspaceId"",
+                    ""OrganizationId"",
+                    ""Sequence"",
+                    ""AssignedUserId"",
+                    ""CreatedByUserId"",
+                    ""Content"",
+                    ""TaskTypeId"",
+                    ""Priority"",
+                    ""StartDate"",
+                    ""DueDate"",
+                    ""EstimatedHours"",
+                    ""PredecessorTaskId"",
+                    ""CreatedAt"",
+                    ""UpdatedAt""
+                )
+                VALUES (
+                    {itemId},
+                    {workspaceId},
+                    {organizationId},
+                    (SELECT COALESCE(MAX(""Sequence""), 0) + 1 FROM ""WorkspaceTasks"" WHERE ""WorkspaceItemId"" = {itemId}),
+                    {request.AssignedUserId},
+                    {createdByUserId},
+                    {request.Content},
+                    {request.TaskTypeId},
+                    {(request.Priority.HasValue ? (int)request.Priority.Value : TaskPriority.Medium)},
+                    {request.StartDate},
+                    {request.DueDate},
+                    {request.EstimatedHours},
+                    {request.PredecessorTaskId},
+                    {DateTime.UtcNow},
+                    {DateTime.UtcNow}
+                )
+                RETURNING ""xmin"", ""Id"", ""WorkspaceItemId"", ""WorkspaceId"", ""OrganizationId"", ""Sequence"", ""AssignedUserId"", ""CreatedByUserId"", ""Content"", ""TaskTypeId"", ""Priority"", ""StartDate"", ""DueDate"", ""EstimatedHours"", ""PredecessorTaskId"", ""IsCompleted"", ""CompletedAt"", ""IsDiscarded"", ""DiscardedAt"", ""DiscardReason"", ""ActualHours"", ""ProgressPercentage"", ""CreatedAt"", ""UpdatedAt""
+            ")
+            .ToListAsync();
 
-        _context.WorkspaceTasks.Add(task);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation(
-            "ワークスペースタスクを作成しました。TaskId={TaskId}, WorkspaceItemId={WorkspaceItemId}, CreatedByUserId={CreatedByUserId}",
-            task.Id,
-            itemId,
-            createdByUserId
-        );
+        _context.SaveChanges();
 
         // ナビゲーションプロパティを読み込み
-        await _context.Entry(task)
-            .Reference(t => t.AssignedUser)
-            .LoadAsync();
-        await _context.Entry(task)
-            .Reference(t => t.CreatedByUser)
-            .LoadAsync();
-        await _context.Entry(task)
-            .Reference(t => t.TaskType)
-            .LoadAsync();
+        var task = await _context.WorkspaceTasks
+        .Include(t => t.AssignedUser)
+        .Include(t => t.CreatedByUser)
+        .Include(t => t.TaskType)
+        .FirstAsync(t => t.Id == inserted.FirstOrDefault()!.Id);
 
         // アクティビティ記録: タスク追加
         var taskAddedDetails = ActivityDetailsBuilder.BuildTaskAddedDetails(

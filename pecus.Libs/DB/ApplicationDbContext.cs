@@ -758,6 +758,11 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(wt => wt.TaskTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // UNIQUE制約: WorkspaceItemId + Sequence の組み合わせを一意にする
+            entity.HasIndex(wt => new { wt.WorkspaceItemId, wt.Sequence })
+                .IsUnique()
+                .HasDatabaseName("IX_WorkspaceTasks_WorkspaceItemId_Sequence_Unique");
+
             // インデックス（検索効率化用）
             entity.HasIndex(wt => wt.WorkspaceItemId);
             entity.HasIndex(wt => wt.WorkspaceId);
