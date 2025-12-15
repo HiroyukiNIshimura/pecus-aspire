@@ -12863,6 +12863,7 @@
           "isCompleted",
           "isDiscarded",
           "progressPercentage",
+          "sequence",
           "successorCount"
         ],
         "type": "object",
@@ -12870,6 +12871,11 @@
           "id": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（アイテム内での通し番号）",
             "format": "int32"
           },
           "content": {
@@ -12957,13 +12963,19 @@
         "required": [
           "content",
           "id",
-          "isCompleted"
+          "isCompleted",
+          "sequence"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号",
             "format": "int32"
           },
           "content": {

@@ -147,7 +147,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
         {!task.canStart && !isInactive && task.predecessorTask && (
           <div className="flex items-center gap-1 text-xs text-warning bg-warning/10 px-2 py-1 rounded -mt-1 -mx-1">
             <span className="icon-[mdi--pause-circle-outline] w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            <span className="truncate">待機: {task.predecessorTask.content}</span>
+            <span className="truncate">待機: T-{task.predecessorTask.sequence ?? '?'} {task.predecessorTask.content}</span>
           </div>
         )}
 
@@ -194,7 +194,8 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
         </div>
 
         {/* タスク内容 */}
-        <p className="text-sm line-clamp-2" title={task.content}>
+        <p className="text-sm line-clamp-2" title={`T-${task.sequence} ${task.content}`}>
+          <span className="font-mono text-xs text-base-content/60 mr-1">T-{task.sequence}</span>
           {task.content}
         </p>
 

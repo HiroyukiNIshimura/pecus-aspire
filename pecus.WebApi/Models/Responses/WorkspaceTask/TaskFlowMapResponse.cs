@@ -88,6 +88,12 @@ public class TaskFlowNode
     public required int Id { get; set; }
 
     /// <summary>
+    /// タスクシーケンス番号（アイテム内での通し番号）
+    /// </summary>
+    [Required]
+    public required int Sequence { get; set; }
+
+    /// <summary>
     /// タスク内容
     /// </summary>
     [Required]
@@ -184,6 +190,12 @@ public class TaskFlowPredecessorInfo
     /// </summary>
     [Required]
     public required int Id { get; set; }
+
+    /// <summary>
+    /// タスクシーケンス番号
+    /// </summary>
+    [Required]
+    public required int Sequence { get; set; }
 
     /// <summary>
     /// タスク内容

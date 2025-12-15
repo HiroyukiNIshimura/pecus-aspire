@@ -13,6 +13,10 @@ export type TaskFlowNode = {
      */
     id: number;
     /**
+     * タスクシーケンス番号（アイテム内での通し番号）
+     */
+    sequence: number;
+    /**
      * タスク内容
      */
     content: string;

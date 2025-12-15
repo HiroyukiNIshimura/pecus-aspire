@@ -1727,6 +1727,7 @@ public class WorkspaceTaskService
             predecessorInfo = new TaskFlowPredecessorInfo
             {
                 Id = predecessorTask.Id,
+                Sequence = predecessorTask.Sequence,
                 Content = predecessorTask.Content,
                 IsCompleted = predecessorTask.IsCompleted,
             };
@@ -1740,6 +1741,7 @@ public class WorkspaceTaskService
         return new TaskFlowNode
         {
             Id = task.Id,
+            Sequence = task.Sequence,
             Content = task.Content,
             TaskTypeId = task.TaskTypeId,
             TaskTypeName = task.TaskType?.Name,
