@@ -761,6 +761,7 @@ public class WorkspaceTaskService
             ListIndex = listIndex,
             Id = task.Id,
             WorkspaceItemId = task.WorkspaceItemId,
+            Sequence = task.Sequence,
             WorkspaceId = task.WorkspaceId,
             OrganizationId = task.OrganizationId,
             AssignedUserId = task.AssignedUserId,

@@ -26,6 +26,11 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     public int WorkspaceItemId { get; set; }
 
     /// <summary>
+    /// ワークスペースアイテム内でのシーケンス番号
+    /// </summary>
+    public int Sequence { get; set; }
+
+    /// <summary>
     /// ワークスペースID
     /// </summary>
     public int WorkspaceId { get; set; }

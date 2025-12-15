@@ -20,6 +20,11 @@ public class WorkspaceTask
     public int WorkspaceItemId { get; set; }
 
     /// <summary>
+    /// ワークスペースアイテム内でのシーケンス番号
+    /// </summary>
+    public int Sequence { get; set; }
+
+    /// <summary>
     /// ワークスペースID（検索効率化のため直接保持）
     /// </summary>
     public int WorkspaceId { get; set; }
