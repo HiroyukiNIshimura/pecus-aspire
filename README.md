@@ -28,14 +28,31 @@ Pecus Aspire は、.NET Aspire 10.0 を使用した分散マイクロサービ�
 - **pecus.DbManager** - データベースマイグレーション・シード管理
 - **pecus.Libs** - 共有ライブラリ（DB モデル、Hangfire タスク、メールサービス）
 - **pecus.ServiceDefaults** - サービス共通設定（Serilog、ヘルスチェック、OpenTelemetry）
-- **pecus.Frontend** - Next.js フロントエンドアプリケーション
+- **pecus.Frontend** - Next.js フロントエンドアプリケーション (SSR-first, Server Actions)
 - **pecus.LexicalConverter** - Lexical 変換ユーティリティ（Node/Nest ベースのツール）
 - **pecus.Protos** - gRPC / Protobuf 定義群（サービス間およびクライアント連携用）
+
+### 技術スタック
+
+**バックエンド:**
+- .NET 10 (Preview)
+- Entity Framework Core 10
+- .NET Aspire 10.0
+- PostgreSQL (pgroonga拡張による全文検索)
+- Redis (セッションストア、Hangfireキュー)
+
+**フロントエンド:**
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4
+- FlyonUI (UIコンポーネント)
+- @iconify/tailwind4 (アイコン)
+- Biome (リンター/フォーマッター)
 
 ### インフラストラクチャ
 
 - **PostgreSQL** - メインデータベース（pecusdb）
-- **Redis** - Hangfire キュー・キャッシュ
+- **Redis** - セッション管理、Hangfire キュー・キャッシュ
 - **Hangfire Dashboard** - バックグラウンドジョブ管理UI
 
 ## 🔧 必要な環境
@@ -73,9 +90,10 @@ cp .env.sample .env
 
 # npm 依存パッケージをインストール
 npm install
-```
 
-※VSCodeのBiome拡張機能がモノレポ構成でBiomeバイナリを見つけられないため、現状`npm install -g @biomejs/biome`でBiomeをグローバルにインストールする必要あり
+# Biome (リンター) のグローバルインストール (VSCode拡張機能用)
+npm install -g @biomejs/biome
+```
 
 **注:** `.env` ファイルには WebApi のベース URL などの環境変数が含まれます。`.env.sample` をコピーして必要に応じて値を調整してください。
 
@@ -144,7 +162,7 @@ dotnet run
 | **Swagger UI** | https://localhost:7265/index | API ドキュメント |
 | **Hangfire Dashboard** | 動的 | バックグラウンドジョブ管理 |
 | **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
-| **Redis** | 動的 | キャッシュ・キュー |
+| **Redis** | 動的 | キャッシュ・キュー・セッション |
 
 ### 5. テストアカウント
 
@@ -152,6 +170,16 @@ dotnet run
 |---------|-----------|----------|------|
 | 管理者 | `admin` | `P@ssw0rd` | Admin（全権限） |
 | 一般ユーザー | `user001` - `user200` | `P@ssw0rd` | User（読取権限） |
+
+## 📚 ドキュメント
+
+詳細な設計ドキュメントは `docs/` ディレクトリにあります。
+
+- **[Frontend Guidelines](docs/frontend-guidelines.md)**: フロントエンド開発ガイドライン
+- **[Backend Guidelines](docs/backend-guidelines.md)**: バックエンド開発ガイドライン
+- **[SSR Design Guidelines](docs/ssr-design-guidelines.md)**: SSR/Server Actions 設計指針
+- **[Auth Architecture](docs/auth-architecture-redesign.md)**: 認証・セッション管理設計
+- **[DB Concurrency](docs/db-concurrency.md)**: データベース同時実行制御
 
 ## 📚 API ドキュメント
 
@@ -182,10 +210,11 @@ dotnet run
 - 5 つの組織（テナント）
 - 1 つの admin ユーザー（管理者）
 - 200 件のモックユーザー（user001 ～ user200）
-- 100 件のモックワークスペース（各種ステータス・優先度付き）
+- 350 件のモックワークスペース（各組織70件、各種ステータス・優先度付き）
 - ユーザースキル関連付け（各ユーザーに 1 ～ 5 個のランダムなスキル）
-- ワークスペースアイテム（タスク）とアクティビティ履歴
-- ワークスペースメンバー・アイテム担当者・関連付けデータ
+- ワークスペースアイテム（タスク）: 全体で最大20,000件（各ワークスペース約50件）
+- ワークスペースアイテムリレーション（関連タスク）: 各ワークスペース10〜20件
+- アクティビティ履歴、担当者割り当てなど
 
 > ⚠️ **注意:** 初回起動時は上記すべてのデータ投入を行うため、**数分程度の時間がかかります**。
 
