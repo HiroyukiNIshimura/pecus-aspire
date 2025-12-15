@@ -54,6 +54,7 @@ Pecus Aspire は、.NET Aspire 10.0 を使用した分散マイクロサービ�
 - **PostgreSQL** - メインデータベース（pecusdb）
 - **Redis** - セッション管理、Hangfire キュー・キャッシュ
 - **Hangfire Dashboard** - バックグラウンドジョブ管理UI
+- **DbGate** - Redis (Frontend) 管理UI
 
 ## 🔧 必要な環境
 
@@ -159,8 +160,9 @@ dotnet run
 |---------|-----|------|
 | **Aspire Dashboard** | 動的 | サービス管理・監視 |
 | **WebApi** | https://localhost:7265 | REST API ベースURL |
-| **Swagger UI** | https://localhost:7265/index | API ドキュメント |
 | **Hangfire Dashboard** | 動的 | バックグラウンドジョブ管理 |
+| **DbGate** | 動的 | Redis (Frontend) 管理UI |
+| **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
 | **PostgreSQL** | tcp:5432 | DB（ユーザー: postgres, パスワード: postgres） |
 | **Redis** | 動的 | キャッシュ・キュー・セッション |
 
