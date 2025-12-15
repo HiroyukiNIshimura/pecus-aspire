@@ -110,132 +110,137 @@ export default function EditWorkspaceSkillsModal({
     }
   };
 
+  // body スクロール制御
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* モーダル背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      {/* モーダルコンテナ */}
+      <div
+        className="bg-base-100 rounded-box shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* モーダルヘッダー */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <span className="icon-[mdi--lightbulb-outline] size-6" aria-hidden="true" />
+            必要スキル設定
+          </h2>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle"
+            onClick={onClose}
+            disabled={isSubmitting}
+            aria-label="閉じる"
+          >
+            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+          </button>
+        </div>
 
-      {/* モーダルコンテンツ */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="bg-base-100 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* モーダルヘッダー */}
-          <div className="flex items-center justify-between p-6 border-b border-base-300">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--lightbulb-outline] size-6" aria-hidden="true" />
-              必要スキル設定
-            </h2>
-            <button
-              type="button"
-              className="btn btn-sm btn-circle"
-              onClick={onClose}
-              disabled={isSubmitting}
-              aria-label="閉じる"
-            >
-              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
-            </button>
-          </div>
+        {/* モーダルボディ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* サーバーエラー表示 */}
+          {serverError && (
+            <div className="alert alert-soft alert-error mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{serverError}</span>
+            </div>
+          )}
 
-          {/* モーダルボディ */}
-          <div className="p-6">
-            {/* サーバーエラー表示 */}
-            {serverError && (
-              <div className="alert alert-soft alert-error mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 shrink-0 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          {/* ワークスペース情報 */}
+          {workspace && (
+            <div className="mb-6 p-4 bg-base-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                {workspace.genreIcon && (
+                  <img
+                    src={`/icons/genres/${workspace.genreIcon}.svg`}
+                    alt={workspace.genreName || 'ジャンルアイコン'}
+                    title={workspace.genreName || 'ジャンル'}
+                    className="w-10 h-10 flex-shrink-0"
                   />
-                </svg>
-                <span>{serverError}</span>
-              </div>
-            )}
-
-            {/* ワークスペース情報 */}
-            {workspace && (
-              <div className="mb-6 p-4 bg-base-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  {workspace.genreIcon && (
-                    <img
-                      src={`/icons/genres/${workspace.genreIcon}.svg`}
-                      alt={workspace.genreName || 'ジャンルアイコン'}
-                      title={workspace.genreName || 'ジャンル'}
-                      className="w-10 h-10 flex-shrink-0"
-                    />
-                  )}
-                  <div>
-                    <h3 className="font-bold text-lg">{workspace.name}</h3>
-                    {workspace.code && <code className="text-sm text-base-content/70">{workspace.code}</code>}
-                  </div>
+                )}
+                <div>
+                  <h3 className="font-bold text-lg">{workspace.name}</h3>
+                  {workspace.code && <code className="text-sm text-base-content/70">{workspace.code}</code>}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 説明文 */}
+          <p className="text-base-content/70 mb-4">
+            このワークスペースで必要とされるスキルを設定してください。
+            設定したスキルは、メンバーのスキルマッチングやタスクの割り当てに活用されます。
+          </p>
+
+          {/* スキル選択 */}
+          <div className="mb-6">
+            <MultiSelectDropdown
+              label="必要なスキル"
+              items={skills.map((s) => ({ id: s.id, name: s.name }))}
+              selectedIds={selectedSkillIds}
+              onSelectionChange={setSelectedSkillIds}
+              disabled={isSubmitting}
+              placeholder="スキルを選択してください"
+              emptyMessage="利用可能なスキルがありません"
+              badgeColor="accent"
+              changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
+              defaultOpen
+            />
+          </div>
+
+          {/* ボタングループ */}
+          <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+            {skillsChanged && (
+              <button type="button" className="btn btn-default" onClick={handleReset} disabled={isSubmitting}>
+                リセット
+              </button>
             )}
-
-            {/* 説明文 */}
-            <p className="text-base-content/70 mb-4">
-              このワークスペースで必要とされるスキルを設定してください。
-              設定したスキルは、メンバーのスキルマッチングやタスクの割り当てに活用されます。
-            </p>
-
-            {/* スキル選択 */}
-            <div className="mb-6">
-              <MultiSelectDropdown
-                label="必要なスキル"
-                items={skills.map((s) => ({ id: s.id, name: s.name }))}
-                selectedIds={selectedSkillIds}
-                onSelectionChange={setSelectedSkillIds}
-                disabled={isSubmitting}
-                placeholder="スキルを選択してください"
-                emptyMessage="利用可能なスキルがありません"
-                badgeColor="accent"
-                changeMessage={skillsChanged ? '✓ スキルが変更されています' : undefined}
-                defaultOpen
-              />
-            </div>
-
-            {/* ボタングループ */}
-            <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-              {skillsChanged && (
-                <button type="button" className="btn btn-default" onClick={handleReset} disabled={isSubmitting}>
-                  リセット
-                </button>
+            <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
+              キャンセル
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !skillsChanged}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  更新中...
+                </>
+              ) : (
+                <>
+                  <span className="icon-[mdi--lightbulb-outline] w-5 h-5" aria-hidden="true" />
+                  更新
+                </>
               )}
-              <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
-                キャンセル
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !skillsChanged}
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="loading loading-spinner loading-sm"></span>
-                    更新中...
-                  </>
-                ) : (
-                  <>
-                    <span className="icon-[mdi--lightbulb-outline] w-5 h-5" aria-hidden="true" />
-                    更新
-                  </>
-                )}
-              </button>
-            </div>
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

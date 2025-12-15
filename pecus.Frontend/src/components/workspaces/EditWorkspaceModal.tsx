@@ -88,192 +88,197 @@ export default function EditWorkspaceModal({ isOpen, onClose, onSuccess, workspa
     }
   }, [isOpen, resetForm]);
 
+  // body スクロール制御
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* モーダル背景オーバーレイ */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      {/* モーダルコンテナ */}
+      <div
+        className="bg-base-100 rounded-box shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* モーダルヘッダー */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-base-300 shrink-0">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
+            ワークスペース編集
+          </h2>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle"
+            onClick={onClose}
+            disabled={isSubmitting || isLoading}
+            aria-label="閉じる"
+          >
+            <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+          </button>
+        </div>
 
-      {/* モーダルコンテンツ */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="bg-base-100 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* モーダルヘッダー */}
-          <div className="flex items-center justify-between p-6 border-b border-base-300">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--pencil-outline] size-6" aria-hidden="true" />
-              ワークスペース編集
-            </h2>
-            <button
-              type="button"
-              className="btn btn-sm btn-circle"
-              onClick={onClose}
-              disabled={isSubmitting || isLoading}
-              aria-label="閉じる"
-            >
-              <span className="icon-[mdi--close] size-5" aria-hidden="true" />
-            </button>
-          </div>
+        {/* モーダルボディ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* ローディング表示 */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+          )}
 
-          {/* モーダルボディ */}
-          <div className="p-6">
-            {/* ローディング表示 */}
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
+          {/* サーバーエラー表示 */}
+          {!isLoading && serverErrors.length > 0 && (
+            <div className="alert alert-soft alert-error mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h3 className="font-bold">エラーが発生しました</h3>
+                <ul className="list-disc list-inside mt-2">
+                  {serverErrors.map((error) => (
+                    <li key={error.key}>{error.message}</li>
+                  ))}
+                </ul>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* サーバーエラー表示 */}
-            {!isLoading && serverErrors.length > 0 && (
-              <div className="alert alert-soft alert-error mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 shrink-0 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div>
-                  <h3 className="font-bold">エラーが発生しました</h3>
-                  <ul className="list-disc list-inside mt-2">
-                    {serverErrors.map((error) => (
-                      <li key={error.key}>{error.message}</li>
-                    ))}
-                  </ul>
+          {/* フォーム */}
+          {!isLoading && workspaceDetail && (
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
+              {/* ワークスペース名 */}
+              <div className="form-control">
+                <label htmlFor="name" className="label">
+                  <span className="label-text font-semibold">
+                    ワークスペース名 <span className="text-error">*</span>
+                  </span>
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  defaultValue={workspaceDetail.name}
+                  placeholder="例：プロジェクトA"
+                  className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
+                  onBlur={(e) => validateField('name', e.target.value)}
+                  disabled={isSubmitting}
+                />
+                {shouldShowError('name') && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError('name')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 説明 */}
+              <div className="form-control">
+                <label htmlFor="description" className="label">
+                  <span className="label-text font-semibold">説明</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  defaultValue={workspaceDetail.description || ''}
+                  placeholder="ワークスペースの説明を入力してください..."
+                  className={`textarea textarea-bordered h-24 ${
+                    shouldShowError('description') ? 'textarea-error' : ''
+                  }`}
+                  onBlur={(e) => validateField('description', e.target.value)}
+                  disabled={isSubmitting}
+                />
+                {shouldShowError('description') && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError('description')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ジャンル */}
+              <div className="form-control">
+                <label htmlFor="genreId" className="label">
+                  <span className="label-text font-semibold">
+                    ジャンル <span className="text-error">*</span>
+                  </span>
+                </label>
+                <GenreSelect
+                  id="genreId"
+                  name="genreId"
+                  genres={genres}
+                  defaultValue={workspaceDetail.genreId ?? ''}
+                  disabled={isSubmitting || genres.length === 0}
+                  error={shouldShowError('genreId')}
+                  onChange={() => {}}
+                />
+                {shouldShowError('genreId') && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* モード（表示のみ） */}
+              <div className="form-control">
+                <div className="label">
+                  <span className="label-text font-semibold">モード</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 bg-base-200 rounded-lg">
+                  {workspaceDetail.mode === 'Document' ? (
+                    <>
+                      <span className="icon-[mdi--file-document-outline] w-5 h-5" aria-hidden="true" />
+                      <span>ドキュメント</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="icon-[mdi--clipboard-list-outline] w-5 h-5" aria-hidden="true" />
+                      <span>通常</span>
+                    </>
+                  )}
+                </div>
+                <div className="label">
+                  <span className="label-text-alt text-base-content/70">モードは作成後に変更できません。</span>
                 </div>
               </div>
-            )}
 
-            {/* フォーム */}
-            {!isLoading && workspaceDetail && (
-              <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
-                {/* ワークスペース名 */}
-                <div className="form-control">
-                  <label htmlFor="name" className="label">
-                    <span className="label-text font-semibold">
-                      ワークスペース名 <span className="text-error">*</span>
-                    </span>
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    defaultValue={workspaceDetail.name}
-                    placeholder="例：プロジェクトA"
-                    className={`input input-bordered ${shouldShowError('name') ? 'input-error' : ''}`}
-                    onBlur={(e) => validateField('name', e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                  {shouldShowError('name') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('name')}</span>
-                    </div>
+              {/* ボタングループ */}
+              <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
+                <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
+                  キャンセル
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      更新中...
+                    </>
+                  ) : (
+                    <>
+                      <span className="icon-[mdi--pencil-outline] w-5 h-5" aria-hidden="true" />
+                      更新
+                    </>
                   )}
-                </div>
-
-                {/* 説明 */}
-                <div className="form-control">
-                  <label htmlFor="description" className="label">
-                    <span className="label-text font-semibold">説明</span>
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    defaultValue={workspaceDetail.description || ''}
-                    placeholder="ワークスペースの説明を入力してください..."
-                    className={`textarea textarea-bordered h-24 ${
-                      shouldShowError('description') ? 'textarea-error' : ''
-                    }`}
-                    onBlur={(e) => validateField('description', e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                  {shouldShowError('description') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('description')}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* ジャンル */}
-                <div className="form-control">
-                  <label htmlFor="genreId" className="label">
-                    <span className="label-text font-semibold">
-                      ジャンル <span className="text-error">*</span>
-                    </span>
-                  </label>
-                  <GenreSelect
-                    id="genreId"
-                    name="genreId"
-                    genres={genres}
-                    defaultValue={workspaceDetail.genreId ?? ''}
-                    disabled={isSubmitting || genres.length === 0}
-                    error={shouldShowError('genreId')}
-                    onChange={() => {}}
-                  />
-                  {shouldShowError('genreId') && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">{getFieldError('genreId')}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* モード（表示のみ） */}
-                <div className="form-control">
-                  <div className="label">
-                    <span className="label-text font-semibold">モード</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-base-200 rounded-lg">
-                    {workspaceDetail.mode === 'Document' ? (
-                      <>
-                        <span className="icon-[mdi--file-document-outline] w-5 h-5" aria-hidden="true" />
-                        <span>ドキュメント</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="icon-[mdi--clipboard-list-outline] w-5 h-5" aria-hidden="true" />
-                        <span>通常</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="label">
-                    <span className="label-text-alt text-base-content/70">モードは作成後に変更できません。</span>
-                  </div>
-                </div>
-
-                {/* ボタングループ */}
-                <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button type="button" className="btn btn-outline" onClick={onClose} disabled={isSubmitting}>
-                    キャンセル
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <span className="loading loading-spinner loading-sm"></span>
-                        更新中...
-                      </>
-                    ) : (
-                      <>
-                        <span className="icon-[mdi--pencil-outline] w-5 h-5" aria-hidden="true" />
-                        更新
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

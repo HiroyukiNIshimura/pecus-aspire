@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/DatePicker';
 import TagInput from '@/components/common/TagInput';
