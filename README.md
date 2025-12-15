@@ -15,7 +15,7 @@ AIに対するコーディングルールは、.github\copilot-instructions.md�
 
 ## 📋 プロジェクト概要
 
-Pecus Aspire は、.NET Aspire 9.0 を使用した分散マイクロサービス構成のマルチテナント管理システムです。
+Pecus Aspire は、.NET Aspire 10.0 を使用した分散マイクロサービス構成のマルチテナント管理システムです。
 複数の組織をサポートし、ユーザー管理、ワークスペース管理、スキル管理などの機能を提供します。
 
 ## 🏗️ アーキテクチャ
@@ -29,6 +29,8 @@ Pecus Aspire は、.NET Aspire 9.0 を使用した分散マイクロサービス
 - **pecus.Libs** - 共有ライブラリ（DB モデル、Hangfire タスク、メールサービス）
 - **pecus.ServiceDefaults** - サービス共通設定（Serilog、ヘルスチェック、OpenTelemetry）
 - **pecus.Frontend** - Next.js フロントエンドアプリケーション
+- **pecus.LexicalConverter** - Lexical 変換ユーティリティ（Node/Nest ベースのツール）
+- **pecus.Protos** - gRPC / Protobuf 定義群（サービス間およびクライアント連携用）
 
 ### インフラストラクチャ
 
@@ -261,4 +263,4 @@ MIT License
 
 ---
 
-**最終更新日:** 2025年12月11日
+**最終更新日:** 2025年12月15日
