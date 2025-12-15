@@ -11,7 +11,7 @@ import DevicesTab from './DevicesTab';
 import SecurityTab from './SecurityTab';
 import SkillsTab from './SkillsTab';
 
-interface ProfileSettingsClientProps {
+interface ProfileClientProps {
   initialUser: UserInfo;
   initialPendingEmailChange: PendingEmailChangeResponse | null;
   masterSkills: MasterSkillResponse[];
@@ -37,12 +37,12 @@ function getTabFromParam(param: string | null): TabType {
   return tabParamMap[normalized] ?? 'basic';
 }
 
-export default function ProfileSettingsClient({
+export default function ProfileClient({
   initialUser,
   initialPendingEmailChange,
   masterSkills,
   fetchError,
-}: ProfileSettingsClientProps) {
+}: ProfileClientProps) {
   const notify = useNotify();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('t');

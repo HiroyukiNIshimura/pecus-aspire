@@ -102,7 +102,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
   return (
     <>
       <LoadingOverlay isLoading={isSubmitting} message="保存中..." />
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">ユーザー設定</h1>
           <p className="text-base-content/70">通知設定などの個人設定を管理してください</p>
@@ -115,7 +115,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
           </div>
         )}
 
-        <div className="card bg-base-200">
+        <div className="card bg-base-100">
           <div className="card-body">
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="form-control">

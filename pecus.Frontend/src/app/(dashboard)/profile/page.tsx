@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type { MasterSkillResponse, PendingEmailChangeResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
-import ProfileSettingsClient from './ProfileSettingsClient';
+import ProfileClient from './ProfileClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +53,7 @@ export default async function ProfileSettingsPage() {
   const user = mapUserResponseToUserInfo(userResponse);
 
   return (
-    <ProfileSettingsClient
+    <ProfileClient
       initialUser={user}
       initialPendingEmailChange={pendingEmailChange}
       masterSkills={masterSkills}
