@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {
@@ -10,7 +10,7 @@ import {
   updateMemberRoleInWorkspace,
 } from '@/actions/workspace';
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
-import { getWorkspaceTasks } from '@/actions/workspaceTask';
+import { getWorkspaceTaskBySequence } from '@/actions/workspaceTask';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/UserAvatar';
@@ -303,36 +303,25 @@ export default function WorkspaceDetailClient({
 
     const loadTaskBySequence = async () => {
       try {
-        // タスクリストを取得（sequenceでフィルタリングはできないので全件取得して検索）
-        const result = await getWorkspaceTasks(
-          currentWorkspaceDetail.id,
-          selectedItemId,
-          1, // page
-          100, // pageSize - 十分な数を取得
-          'All', // statusFilter
-        );
+        // シーケンス番号で直接タスクを取得（1件取得API）
+        const result = await getWorkspaceTaskBySequence(currentWorkspaceDetail.id, selectedItemId, pendingTaskSequence);
 
-        if (result.success && result.data?.data) {
-          const tasks = result.data.data;
-          const taskIndex = tasks.findIndex((t: WorkspaceTaskDetailResponse) => t.sequence === pendingTaskSequence);
+        if (result.success && result.data) {
+          const task = result.data;
+          // タスクナビゲーション情報を構築（1件のみ）
+          const navigation: TaskNavigation = {
+            tasks: [task],
+            currentIndex: 0,
+            currentPage: 1,
+            totalPages: 1,
+            totalCount: 1,
+            statusFilter: 'All',
+          };
 
-          if (taskIndex >= 0) {
-            // タスクナビゲーション情報を構築
-            const navigation: TaskNavigation = {
-              tasks,
-              currentIndex: taskIndex,
-              currentPage: 1,
-              totalPages: Math.ceil((result.data.totalCount ?? 0) / 100),
-              totalCount: result.data.totalCount ?? 0,
-              statusFilter: 'All',
-            };
-
-            // タスク詳細ページを表示
-            setTaskDetailItemId(selectedItemId);
-            setTaskDetailNavigation(navigation);
-            // アイテム詳細からコミッター情報を取得する必要があるが、ここでは取得できないので後で設定
-            setShowTaskDetail(true);
-          }
+          // タスク詳細ページを表示
+          setTaskDetailItemId(selectedItemId);
+          setTaskDetailNavigation(navigation);
+          setShowTaskDetail(true);
         }
       } catch (error) {
         console.error('Failed to load task by sequence:', error);

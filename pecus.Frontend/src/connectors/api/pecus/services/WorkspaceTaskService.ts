@@ -151,6 +151,33 @@ export class WorkspaceTaskService {
         });
     }
     /**
+     * シーケンス番号でタスク取得
+     * @param workspaceId ワークスペースID
+     * @param itemId ワークスペースアイテムID
+     * @param sequence タスクシーケンス番号（アイテム内で一意）
+     * @returns WorkspaceTaskDetailResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesItemsTasksSequence(
+        workspaceId: number,
+        itemId: number,
+        sequence: number,
+    ): CancelablePromise<WorkspaceTaskDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/sequence/{sequence}',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+                'sequence': sequence,
+            },
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
      * タスクフローマップ取得
      * アイテム内のタスク依存関係を可視化するためのデータを取得します
      * @param workspaceId ワークスペースID

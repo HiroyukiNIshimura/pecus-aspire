@@ -54,12 +54,16 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
 
     // itemCode が指定されている場合、アイテムIDを解決
     if (itemCode && workspaceDetail) {
+      console.log('[SSR] Resolving itemCode:', itemCode, 'for workspaceId:', workspaceDetail.id);
       const itemResult = await fetchWorkspaceItemByCode(workspaceDetail.id, itemCode);
+      console.log('[SSR] itemResult:', itemResult);
       if (itemResult.success && itemResult.data) {
         initialItemId = itemResult.data.id;
+        console.log('[SSR] Resolved initialItemId:', initialItemId);
       }
       // アイテムが見つからない場合は無視（ワークスペース詳細を表示）
     }
+    console.log('[SSR] Final values - initialItemId:', initialItemId, 'initialTaskSequence:', initialTaskSequence);
 
     // ジャンル一覧取得（編集用）
     try {

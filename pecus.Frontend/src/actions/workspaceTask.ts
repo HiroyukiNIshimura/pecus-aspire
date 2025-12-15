@@ -16,6 +16,29 @@ import type { ApiResponse } from './types';
 import { validationError } from './types';
 
 /**
+ * シーケンス番号でタスクを1件取得
+ */
+export async function getWorkspaceTaskBySequence(
+  workspaceId: number,
+  itemId: number,
+  sequence: number,
+): Promise<ApiResponse<WorkspaceTaskDetailResponse>> {
+  try {
+    const api = await createPecusApiClients();
+    const response = await api.workspaceTask.getApiWorkspacesItemsTasksSequence(workspaceId, itemId, sequence);
+
+    return { success: true, data: response };
+  } catch (error: unknown) {
+    const err = error as { body?: { message?: string }; message?: string };
+    return {
+      success: false,
+      error: 'server',
+      message: err.body?.message || err.message || 'タスクの取得に失敗しました',
+    };
+  }
+}
+
+/**
  * ワークスペースアイテムのタスク一覧を取得
  */
 export async function getWorkspaceTasks(

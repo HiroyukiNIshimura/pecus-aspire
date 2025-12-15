@@ -255,6 +255,41 @@ public class WorkspaceTaskService
     }
 
     /// <summary>
+    /// シーケンス番号でタスクを取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="sequence">タスクシーケンス番号</param>
+    /// <returns>タスクとコメント情報のタプル</returns>
+    public async Task<(WorkspaceTask Task, int CommentCount, Dictionary<TaskCommentType, int> CommentTypeCounts)> GetWorkspaceTaskBySequenceAsync(
+        int workspaceId,
+        int itemId,
+        int sequence
+    )
+    {
+        var task = await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.TaskType)
+            .FirstOrDefaultAsync(t =>
+                t.Sequence == sequence &&
+                t.WorkspaceItemId == itemId &&
+                t.WorkspaceId == workspaceId
+            );
+
+        if (task == null)
+        {
+            throw new NotFoundException("タスクが見つかりません。");
+        }
+
+        var commentTypeCountsByTask = await GetCommentTypeCountsByTaskIdsAsync(new[] { task.Id });
+        var commentTypeCounts = commentTypeCountsByTask.GetValueOrDefault(task.Id, new Dictionary<TaskCommentType, int>());
+        var commentCount = SumCommentCounts(commentTypeCounts);
+
+        return (task, commentCount, commentTypeCounts);
+    }
+
+    /// <summary>
     /// ワークスペースアイテムのタスク一覧を取得
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

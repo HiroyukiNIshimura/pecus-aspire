@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import type { FocusTaskResponse } from '@/connectors/api/pecus';
 
 interface WaitingTaskCardProps {
@@ -63,7 +62,7 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
         </div>
 
         {/* タスク内容 */}
-        <Link href={taskUrl} className="group">
+        <a href={taskUrl} className="group">
           <div className="flex items-start gap-2 mb-1">
             {task.taskTypeId && getTaskTypeIconPath(task) && (
               <img
@@ -86,7 +85,7 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
               {task.itemSubject}
             </p>
           )}
-        </Link>
+        </a>
 
         {/* メタ情報 */}
         <div className="flex items-center gap-4 text-xs text-base-content/60">
@@ -116,9 +115,9 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
                 <p className="font-semibold text-warning mb-1">先行タスクを完了してください</p>
                 <div className="flex items-center gap-2 text-base-content/70">
                   {predecessorUrl ? (
-                    <Link href={predecessorUrl} className="font-medium text-primary underline hover:text-primary/80">
+                    <a href={predecessorUrl} className="font-medium text-primary underline hover:text-primary/80">
                       {task.predecessorTask.workspaceItemCode}
-                    </Link>
+                    </a>
                   ) : (
                     <span className="font-medium">{task.predecessorTask.workspaceItemCode}</span>
                   )}

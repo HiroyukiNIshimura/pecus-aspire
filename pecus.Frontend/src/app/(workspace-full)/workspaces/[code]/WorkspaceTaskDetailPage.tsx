@@ -525,6 +525,7 @@ export default function WorkspaceTaskDetailPage({
             <h2 className="text-xl font-bold flex items-center gap-2">
               <span className="icon-[mdi--clipboard-text-outline] size-6" aria-hidden="true" />
               タスク詳細
+              {task?.sequence && <span className="text-base-content/70 font-mono">T-{task.sequence}</span>}
             </h2>
             {/* ナビゲーションインジケーター */}
             {showNavigationControls && navigation && navigation.totalCount > 1 && (
@@ -609,30 +610,6 @@ export default function WorkspaceTaskDetailPage({
 
                 {/* フォーム */}
                 <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 relative" noValidate>
-                  {/* タスク内容 */}
-                  <div className="form-control">
-                    <label htmlFor="content" className="label">
-                      <span className="label-text font-semibold">
-                        タスク内容 <span className="text-error">*</span>
-                      </span>
-                    </label>
-                    <textarea
-                      id="content"
-                      name="content"
-                      placeholder="タスクの内容を入力してください..."
-                      className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      onBlur={(e) => validateField('content', e.target.value)}
-                      disabled={isSubmitting || isLoadingTask}
-                    />
-                    {shouldShowError('content') && (
-                      <div className="label">
-                        <span className="label-text-alt text-error">{getFieldError('content')}</span>
-                      </div>
-                    )}
-                  </div>
-
                   {/* タスクタイプと優先度を横並び */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* タスクタイプ */}
@@ -769,6 +746,30 @@ export default function WorkspaceTaskDetailPage({
                     {shouldShowError('assignedUserId') && (
                       <div className="label">
                         <span className="label-text-alt text-error">{getFieldError('assignedUserId')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* タスク内容 */}
+                  <div className="form-control">
+                    <label htmlFor="content" className="label">
+                      <span className="label-text font-semibold">
+                        タスク内容 <span className="text-error">*</span>
+                      </span>
+                    </label>
+                    <textarea
+                      id="content"
+                      name="content"
+                      placeholder="タスクの内容を入力してください..."
+                      className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      onBlur={(e) => validateField('content', e.target.value)}
+                      disabled={isSubmitting || isLoadingTask}
+                    />
+                    {shouldShowError('content') && (
+                      <div className="label">
+                        <span className="label-text-alt text-error">{getFieldError('content')}</span>
                       </div>
                     )}
                   </div>

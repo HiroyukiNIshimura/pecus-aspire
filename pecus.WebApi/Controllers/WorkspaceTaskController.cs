@@ -119,6 +119,39 @@ public class WorkspaceTaskController : BaseSecureController
     }
 
     /// <summary>
+    /// シーケンス番号でタスク取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="itemId">ワークスペースアイテムID</param>
+    /// <param name="sequence">タスクシーケンス番号（アイテム内で一意）</param>
+    /// <returns>タスク詳細</returns>
+    [HttpGet("sequence/{sequence}")]
+    [ProducesResponseType(typeof(WorkspaceTaskDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<WorkspaceTaskDetailResponse>> GetWorkspaceTaskBySequence(
+        int workspaceId,
+        int itemId,
+        int sequence
+    )
+    {
+        // ワークスペースへのアクセス権限をチェック
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("タスクが見つかりません。");
+        }
+
+        var (task, commentCount, commentTypeCounts) = await _workspaceTaskService.GetWorkspaceTaskBySequenceAsync(
+            workspaceId,
+            itemId,
+            sequence
+        );
+
+        return TypedResults.Ok(BuildTaskDetailResponse(task, commentCount: commentCount, commentTypeCounts: commentTypeCounts));
+    }
+
+    /// <summary>
     /// アイテムのタスク一覧取得
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>

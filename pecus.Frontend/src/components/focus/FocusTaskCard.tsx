@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import type { FocusTaskResponse } from '@/connectors/api/pecus';
 
 interface FocusTaskCardProps {
@@ -91,7 +90,7 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
         </div>
 
         {/* タスク内容 */}
-        <Link href={taskUrl} className="hover:text-primary transition-colors">
+        <a href={taskUrl} className="hover:text-primary transition-colors">
           <div className="flex items-start gap-2 mb-1">
             {task.taskTypeId && getTaskTypeIconPath(task) && (
               <img
@@ -111,7 +110,7 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
               <span className="text-primary font-medium">#{task.itemCode}</span> {task.itemSubject}
             </p>
           )}
-        </Link>
+        </a>
 
         {/* メタ情報 */}
         <div className="flex items-center gap-4 text-xs text-base-content/60">
@@ -161,10 +160,10 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
 
         {/* アクションボタン */}
         <div className="mt-3 flex justify-end">
-          <Link href={taskUrl} className="btn btn-sm btn-primary">
+          <a href={taskUrl} className="btn btn-sm btn-primary">
             取り組む
             <span className="icon-[mdi--arrow-right] w-4 h-4" aria-hidden="true" />
-          </Link>
+          </a>
         </div>
       </div>
     </div>
