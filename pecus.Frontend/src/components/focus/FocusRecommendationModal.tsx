@@ -21,16 +21,6 @@ export default function FocusRecommendationModal({ isOpen, onClose }: FocusRecom
   const [loading, setLoading] = useState(false);
   const notify = useNotify();
 
-  // モーダル表示時にbodyのスクロールを無効化
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   // モーダルが開いたときにデータを取得
   useEffect(() => {
     if (isOpen && !data) {

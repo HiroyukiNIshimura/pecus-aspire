@@ -18,16 +18,6 @@ interface CreateWorkspaceItemProps {
 }
 
 export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCreate }: CreateWorkspaceItemProps) {
-  // モーダル表示時にbodyのスクロールを無効化
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   // 一時ファイルアップロード用のセッションID（モーダル表示ごとに生成）
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 

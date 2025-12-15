@@ -20,16 +20,6 @@ interface EditWorkspaceItemProps {
 export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, currentUserId }: EditWorkspaceItemProps) {
   const notify = useNotify();
 
-  // モーダル表示時にbodyのスクロールを無効化
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   // 最新アイテムデータ
   const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
   const [isLoadingItem, setIsLoadingItem] = useState(false);

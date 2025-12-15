@@ -128,19 +128,6 @@ export default function MyComponent() {
 
 ## 3. モーダルの実装ルール
 
-### ✅ 必須: モーダル表示時に body スクロールを無効化
-
-```tsx
-useEffect(() => {
-  if (isOpen) {
-    document.body.style.overflow = 'hidden';
-  }
-  return () => {
-    document.body.style.overflow = '';
-  };
-}, [isOpen]);
-```
-
 ### ✅ 必須: ESC キーでモーダルを閉じる
 
 ```tsx
