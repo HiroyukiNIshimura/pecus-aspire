@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import WorkspaceTaskDetailPage from '@/app/(workspace-full)/workspaces/[code]/WorkspaceTaskDetailPage';
 import UserAvatar from '@/components/common/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { uiConfig } from '@/config/ui';
 import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
-import TaskEditModal from './TaskEditModal';
 
 type CommentTypeCounts = {
   HelpWanted?: number;
@@ -693,20 +693,35 @@ export default function WorkspaceTaskAccordion({
       })}
 
       {/* タスク編集モーダル */}
-      {taskTypes && editingTask && editingWorkspaceId && (
-        <TaskEditModal
-          isOpen={editModalOpen}
-          onClose={handleCloseTaskEditModal}
-          onSuccess={handleTaskEditSuccess}
-          workspaceId={editingWorkspaceId}
-          itemId={editingTask.itemId}
-          taskId={editingTask.taskId}
-          taskTypes={taskTypes}
-          currentUser={currentUser}
-          itemCommitterId={editingTask.itemCommitterId}
-          itemCommitterName={editingTask.itemCommitterUsername}
-          itemCommitterAvatarUrl={editingTask.itemCommitterAvatarUrl}
-        />
+      {editModalOpen && taskTypes && editingTask && editingWorkspaceId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={handleCloseTaskEditModal}
+        >
+          {/* モーダルコンテナ */}
+          <div
+            className="bg-base-100 rounded-box shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* モーダルボディ */}
+            <div className="flex-1 overflow-y-auto">
+              <WorkspaceTaskDetailPage
+                onClose={handleCloseTaskEditModal}
+                onSuccess={handleTaskEditSuccess}
+                workspaceId={editingWorkspaceId}
+                itemId={editingTask.itemId}
+                taskId={editingTask.taskId}
+                taskTypes={taskTypes}
+                currentUser={currentUser}
+                itemCommitterId={editingTask.itemCommitterId}
+                itemCommitterName={editingTask.itemCommitterUsername}
+                itemCommitterAvatarUrl={editingTask.itemCommitterAvatarUrl}
+                showNavigationControls={false}
+                isModal={true}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

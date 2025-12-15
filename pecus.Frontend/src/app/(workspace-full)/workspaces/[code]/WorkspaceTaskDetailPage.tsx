@@ -80,6 +80,8 @@ export interface WorkspaceTaskDetailPageProps {
   taskId?: number;
   /** ヘッダーのナビゲーション（前へ/次へ）を表示するか */
   showNavigationControls?: boolean;
+  /** モーダルとして表示するか（閉じるボタンのスタイルが変わる） */
+  isModal?: boolean;
 }
 
 export default function WorkspaceTaskDetailPage({
@@ -97,6 +99,7 @@ export default function WorkspaceTaskDetailPage({
   initialFocusComments = false,
   taskId,
   showNavigationControls = true,
+  isModal = false,
 }: WorkspaceTaskDetailPageProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -575,17 +578,29 @@ export default function WorkspaceTaskDetailPage({
                 </button>
               </>
             )}
-            {/* 戻るボタン */}
-            <button
-              type="button"
-              className="btn btn-sm btn-secondary gap-2"
-              onClick={onClose}
-              disabled={isSubmitting}
-              aria-label="アイテム詳細に戻る"
-            >
-              <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
-              アイテム
-            </button>
+            {/* 戻る/閉じるボタン */}
+            {isModal ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-circle"
+                onClick={onClose}
+                disabled={isSubmitting}
+                aria-label="閉じる"
+              >
+                <span className="icon-[mdi--close] size-5" aria-hidden="true" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary gap-2"
+                onClick={onClose}
+                disabled={isSubmitting}
+                aria-label="アイテム詳細に戻る"
+              >
+                <span className="icon-[mdi--arrow-left] size-5" aria-hidden="true" />
+                アイテム
+              </button>
+            )}
           </div>
         </div>
 
