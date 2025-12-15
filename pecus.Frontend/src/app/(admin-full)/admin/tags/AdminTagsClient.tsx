@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { deleteTag } from '@/actions/admin/tags';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -18,29 +18,18 @@ import type { UserInfo } from '@/types/userInfo';
 
 interface AdminTagsClientProps {
   initialUser?: UserInfo | null;
-  initialTags?: TagListItemResponse[];
-  initialTotalCount?: number;
-  initialTotalPages?: number;
-  initialStatistics?: TagStatistics | null;
-  fetchError?: string | null;
 }
 
-export default function AdminTagsClient({
-  initialUser,
-  initialTags,
-  initialTotalCount,
-  initialTotalPages,
-  initialStatistics,
-  fetchError,
-}: AdminTagsClientProps) {
+export default function AdminTagsClient({ initialUser }: AdminTagsClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
-  const [tags, setTags] = useState<TagListItemResponse[]>(initialTags || []);
+  const [tags, setTags] = useState<TagListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-  const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<TagStatistics | null>(initialStatistics || null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<TagStatistics | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // フィルター状態
   const [filterName, setFilterName] = useState<string>('');
@@ -56,6 +45,45 @@ export default function AdminTagsClient({
   const nameValidation = useValidation(tagNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const notify = useNotify();
+
+  // 初期データフェッチ（マウント時に1回だけ実行）
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true');
+
+        const response = await fetch(`/api/admin/tags?${params.toString()}`);
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setTags(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial tags:', error);
+        if (isMounted) {
+          notify.error('タグ一覧の取得に失敗しました。', true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 削除ボタンクリック時のハンドラ
   const handleDeleteClick = useCallback((tag: TagListItemResponse) => {
@@ -153,7 +181,10 @@ export default function AdminTagsClient({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <LoadingOverlay isLoading={showLoading} message="検索中..." />
+      <LoadingOverlay
+        isLoading={isInitialLoading || showLoading}
+        message={isInitialLoading ? '読み込み中...' : '検索中...'}
+      />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
@@ -173,26 +204,6 @@ export default function AdminTagsClient({
         {/* Main Content */}
         <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            {/* Error Alert */}
-            {fetchError && (
-              <div className="alert alert-soft alert-error mb-6" role="alert">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="stroke-current shrink-0 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m6-6l2 2m0 0l2 2m-2-2l-2 2m2-2l2-2"
-                  />
-                </svg>
-                <span>{fetchError}</span>
-              </div>
-            )}
-
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">タグ管理</h1>
               <button type="button" className="btn btn-primary">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { deleteSkill } from '@/actions/admin/skills';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -18,29 +18,18 @@ import type { UserInfo } from '@/types/userInfo';
 
 interface AdminSkillsClientProps {
   initialUser?: UserInfo | null;
-  initialSkills?: SkillListItemResponse[];
-  initialTotalCount?: number;
-  initialTotalPages?: number;
-  initialStatistics?: SkillStatistics | null;
-  fetchError?: string | null;
 }
 
-export default function AdminSkillsClient({
-  initialUser,
-  initialSkills,
-  initialTotalCount,
-  initialTotalPages,
-  initialStatistics,
-  fetchError,
-}: AdminSkillsClientProps) {
+export default function AdminSkillsClient({ initialUser }: AdminSkillsClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
-  const [skills, setSkills] = useState<SkillListItemResponse[]>(initialSkills || []);
+  const [skills, setSkills] = useState<SkillListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-  const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<SkillStatistics | null>(initialStatistics || null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<SkillStatistics | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // フィルター状態
   const [filterName, setFilterName] = useState<string>('');
@@ -56,6 +45,45 @@ export default function AdminSkillsClient({
   const nameValidation = useValidation(skillNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const notify = useNotify();
+
+  // 初期データフェッチ（マウント時に1回だけ実行）
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true');
+
+        const response = await fetch(`/api/admin/skills?${params.toString()}`);
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setSkills(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial skills:', error);
+        if (isMounted) {
+          notify.error('スキル一覧の取得に失敗しました。', true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 削除ボタンクリック時のハンドラ
   const handleDeleteClick = useCallback((skill: SkillListItemResponse) => {
@@ -137,16 +165,6 @@ export default function AdminSkillsClient({
     }
   };
 
-  // 初期スキルデータをPropsから取得
-  // const skills: Skill[] = (initialSkills ?? []).map((skill: any) => ({
-  //   id: skill.id || 0,
-  //   name: skill.name || '',
-  //   description: skill.description || undefined,
-  //   userCount: skill.userCount || 0,
-  //   createdAt: skill.createdAt || new Date().toISOString(),
-  //   isActive: skill.isActive !== undefined ? skill.isActive : true,
-  // }));
-
   // 日付をYYYY/MM/DD形式にフォーマット
   const formatDate = (dateString?: string): string => {
     if (!dateString) return '-';
@@ -163,7 +181,10 @@ export default function AdminSkillsClient({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <LoadingOverlay isLoading={showLoading} message="検索中..." />
+      <LoadingOverlay
+        isLoading={isInitialLoading || showLoading}
+        message={isInitialLoading ? '読み込み中...' : '検索中...'}
+      />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
@@ -183,26 +204,6 @@ export default function AdminSkillsClient({
         {/* Main Content */}
         <main className="flex-1 p-6 bg-base-100 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            {/* Error Alert */}
-            {fetchError && (
-              <div className="alert alert-soft alert-error mb-6" role="alert">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="stroke-current shrink-0 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m6-6l2 2m0 0l2 2m-2-2l-2 2m2-2l2-2"
-                  />
-                </svg>
-                <span>{fetchError}</span>
-              </div>
-            )}
-
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">スキル管理</h1>
               <button type="button" className="btn btn-primary">

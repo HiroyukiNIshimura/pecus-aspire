@@ -1,47 +1,30 @@
 import { redirect } from 'next/navigation';
-import { getWorkspaces } from '@/actions/admin/workspace';
 import { getGenres } from '@/actions/master';
-import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type {
-  MasterGenreResponse,
-  UserDetailResponse,
-  WorkspaceListItemResponse,
-  WorkspaceStatistics,
-} from '@/connectors/api/pecus';
+import { createPecusApiClients, detect401ValidationError } from '@/connectors/api/PecusApiClient';
+import type { MasterGenreResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';
 import AdminWorkspacesClient from './AdminWorkspacesClient';
 
 export const dynamic = 'force-dynamic';
 
-// Server-side page (SSR). Fetch required data here and pass to client component.
+/**
+ * ワークスペース管理ページ（SSR）
+ *
+ * NOTE: ワークスペース一覧データはClient側でフェッチする
+ * （SSRでHTMLレンダリングしないデータをSSRでフェッチしない方針）
+ * ジャンルはフィルターUIで使用するマスタデータなのでSSRで取得する
+ */
 export default async function AdminWorkspaces() {
-  let workspaces: WorkspaceListItemResponse[] = [];
-  let totalCount: number = 0;
-  let totalPages: number = 1;
-  let statistics: WorkspaceStatistics | null = null;
   let userResponse: UserDetailResponse | null = null;
   let genres: MasterGenreResponse[] = [];
-  let fetchError: string | null = null;
 
   try {
     const api = createPecusApiClients();
 
-    // ユーザー情報を取得
+    // ユーザー情報を取得（認証チェック）
     userResponse = await api.profile.getApiProfile();
 
-    // ワークスペース情報を取得
-    const workspacesResult = await getWorkspaces(1, true);
-    if (workspacesResult.success) {
-      const responseData = workspacesResult.data;
-      workspaces = responseData?.data ?? [];
-      totalCount = responseData?.totalCount ?? 0;
-      totalPages = responseData?.totalPages ?? 1;
-      statistics = responseData?.summary ?? null;
-    } else {
-      fetchError = `ワークスペース情報の取得に失敗しました (${workspacesResult.error})`;
-    }
-
-    // ジャンル情報を取得
+    // ジャンル情報を取得（フィルターUIで使用するマスタデータ）
     const genresResult = await getGenres();
     if (genresResult.success) {
       genres = genresResult.data ?? [];
@@ -54,11 +37,9 @@ export default async function AdminWorkspaces() {
     if (noAuthError) {
       redirect('/signin');
     }
-
-    fetchError = parseErrorResponse(error, 'データの取得に失敗しました').message;
   }
 
-  // エラーまたはユーザー情報が取得できない場合はリダイレクト
+  // ユーザー情報が取得できない場合はリダイレクト
   if (!userResponse) {
     redirect('/signin');
   }
@@ -66,15 +47,5 @@ export default async function AdminWorkspaces() {
   // UserDetailResponse から UserInfo に変換
   const user = mapUserResponseToUserInfo(userResponse);
 
-  return (
-    <AdminWorkspacesClient
-      initialWorkspaces={workspaces}
-      initialTotalCount={totalCount}
-      initialTotalPages={totalPages}
-      initialUser={user}
-      initialStatistics={statistics}
-      initialGenres={genres}
-      fetchError={fetchError}
-    />
-  );
+  return <AdminWorkspacesClient initialUser={user} initialGenres={genres} />;
 }

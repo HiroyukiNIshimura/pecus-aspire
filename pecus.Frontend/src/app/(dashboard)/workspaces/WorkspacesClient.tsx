@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
@@ -20,34 +20,64 @@ import CreateWorkspaceModal from './CreateWorkspaceModal';
 
 interface WorkspacesClientProps {
   genres: MasterGenreResponse[];
-  initialWorkspaces: WorkspaceListItemResponse[];
-  initialTotalPages: number;
-  initialTotalCount: number;
-  initialStatistics: WorkspaceStatistics | null;
 }
 
-export default function WorkspacesClient({
-  genres,
-  initialWorkspaces,
-  initialTotalPages,
-  initialTotalCount,
-  initialStatistics,
-}: WorkspacesClientProps) {
-  // SSRで取得した初期データを初期値として使用
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces);
+export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
+  // ワークスペース一覧データはClient側で初期フェッチ
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(initialTotalPages);
-  const [totalCount, setTotalCount] = useState(initialTotalCount);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>('');
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const nameValidation = useValidation(workspaceNameFilterSchema);
   const { showLoading, withDelayedLoading } = useDelayedLoading();
   const notify = useNotify();
+
+  // 初期データフェッチ（マウント時に1回だけ実行）
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true');
+
+        const response = await fetch(`/api/workspaces?${params.toString()}`);
+        if (response.ok && isMounted) {
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          setWorkspaces(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial workspaces:', error);
+        if (isMounted) {
+          notify.error('ワークスペース一覧の取得に失敗しました。', true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
+      }
+    };
+
+    fetchInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 無限スクロール
   const {
@@ -174,7 +204,10 @@ export default function WorkspacesClient({
 
   return (
     <>
-      {showLoading && <LoadingOverlay isLoading={showLoading} />}
+      <LoadingOverlay
+        isLoading={isInitialLoading || showLoading}
+        message={isInitialLoading ? '読み込み中...' : '検索中...'}
+      />
 
       {/* ページヘッダー */}
       <div className="mb-6">

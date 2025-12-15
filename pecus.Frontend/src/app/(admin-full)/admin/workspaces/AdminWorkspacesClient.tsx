@@ -37,31 +37,19 @@ import type { UserInfo } from '@/types/userInfo';
  */
 
 interface AdminWorkspacesClientProps {
-  initialWorkspaces?: WorkspaceListItemResponse[];
-  initialTotalCount?: number;
-  initialTotalPages?: number;
   initialUser?: UserInfo | null;
-  initialStatistics?: WorkspaceStatistics | null;
   initialGenres?: MasterGenreResponse[];
-  fetchError?: string | null;
 }
 
-export default function AdminWorkspacesClient({
-  initialWorkspaces,
-  initialTotalCount,
-  initialTotalPages,
-  initialUser,
-  initialStatistics,
-  initialGenres,
-}: AdminWorkspacesClientProps) {
+export default function AdminWorkspacesClient({ initialUser, initialGenres }: AdminWorkspacesClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, _setUserInfo] = useState<UserInfo | null>(initialUser || null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>(initialWorkspaces || []);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [workspaces, setWorkspaces] = useState<WorkspaceListItemResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-  const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(initialStatistics || null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<WorkspaceStatistics | null>(null);
   const [filterGenreId, setFilterGenreId] = useState<number | null>(null);
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
   const [filterName, setFilterName] = useState<string>('');
@@ -86,37 +74,44 @@ export default function AdminWorkspacesClient({
 
   const { showLoading, withDelayedLoading } = useDelayedLoading();
 
+  // 初期データフェッチ（マウント時に1回だけ実行）
   useEffect(() => {
+    let isMounted = true;
+
     const fetchInitialData = async () => {
-      if (!initialWorkspaces || initialWorkspaces.length === 0) {
-        try {
-          const response = await fetch('/api/admin/workspaces?page=1&IsActive=true');
-          if (response.ok) {
-            const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
-            setWorkspaces(data.data || []);
-            setCurrentPage(data.currentPage || 1);
-            setTotalPages(data.totalPages || 1);
-            setTotalCount(data.totalCount || 0);
-            setStatistics(data.summary || null);
-          }
-        } catch (error) {
-          console.error('Failed to fetch initial workspaces:', error);
-          notify.error('サーバーとの通信でエラーが発生しました。', true);
+      try {
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('IsActive', 'true');
+
+        const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
+        if (response.ok && isMounted) {
+          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          setWorkspaces(data.data || []);
+          setCurrentPage(data.currentPage || 1);
+          setTotalPages(data.totalPages || 1);
+          setTotalCount(data.totalCount || 0);
+          setStatistics(data.summary || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial workspaces:', error);
+        if (isMounted) {
+          notify.error('ワークスペース一覧の取得に失敗しました。', true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
         }
       }
-      setIsLoading(false);
     };
 
     fetchInitialData();
-  }, [initialWorkspaces, notify]);
 
-  // フィルター変更時の自動検索を削除（検索ボタン押下時のみ実行）
-  // useEffectAfterMount(
-  //   () => {
-  //     handleFilterChange();
-  //   },
-  //   [filterGenreId, filterIsActive]
-  // );
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
     try {
@@ -199,10 +194,13 @@ export default function AdminWorkspacesClient({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
+      <LoadingOverlay
+        isLoading={isInitialLoading || showLoading}
+        message={isInitialLoading ? '読み込み中...' : '検索中...'}
+      />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={isLoading} />
+      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}

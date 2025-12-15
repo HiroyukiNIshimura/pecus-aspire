@@ -9,7 +9,7 @@ import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
 import DeleteUserModal from '@/components/common/DeleteUserModal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
-import type { UserDetailResponse } from '@/connectors/api/pecus';
+import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
@@ -40,34 +40,20 @@ interface UserStatistics {
 }
 
 interface AdminUsersClientProps {
-  initialUsers?: User[];
-  initialTotalCount?: number;
-  initialTotalPages?: number;
   initialUser?: UserInfo | null;
-  initialStatistics?: UserStatistics | null;
-  initialSkills?: Skill[];
-  fetchError?: string | null;
 }
 
-export default function AdminUsersClient({
-  initialUsers,
-  initialTotalCount,
-  initialTotalPages,
-  initialUser,
-  initialStatistics,
-  initialSkills,
-  fetchError,
-}: AdminUsersClientProps) {
+export default function AdminUsersClient({ initialUser }: AdminUsersClientProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo] = useState<UserInfo | null>(initialUser || null);
-  const [users, setUsers] = useState<User[]>(initialUsers || []);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-  const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
-  const [statistics, setStatistics] = useState<UserStatistics | null>(initialStatistics || null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [skills, _setSkills] = useState<Skill[]>(initialSkills || []);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState<UserStatistics | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterUsername, setFilterUsername] = useState<string>('');
   const [filterIsActive, setFilterIsActive] = useState<boolean | null>(true);
@@ -88,39 +74,67 @@ export default function AdminUsersClient({
     setIsDeleteModalOpen(true);
   }, []);
 
+  // 初期データフェッチ（マウント時に1回だけ実行）
   useEffect(() => {
+    let isMounted = true;
+
     const fetchInitialData = async () => {
-      if (!initialUsers || initialUsers.length === 0) {
-        try {
-          const response = await fetch('/api/admin/users?page=1&IsActive=true');
-          if (response.ok) {
-            const data = await response.json();
-            if (data?.data) {
-              const mappedUsers = data.data.map((user: UserDetailResponse) => ({
-                id: user.id ?? 0,
-                username: user.username ?? '',
-                email: user.email ?? '',
-                isActive: user.isActive ?? true,
-                createdAt: user.createdAt ?? new Date().toISOString(),
-                skills: user.skills ?? [],
-              }));
-              setUsers(mappedUsers);
-              setCurrentPage(data.currentPage || 1);
-              setTotalPages(data.totalPages || 1);
-              setTotalCount(data.totalCount || 0);
-              setStatistics(data.summary || null);
-            }
+      try {
+        // ユーザー一覧とスキル一覧を並列取得
+        const [usersResponse, skillsResponse] = await Promise.all([
+          fetch('/api/admin/users?page=1&IsActive=true'),
+          fetch('/api/admin/skills?page=1&pageSize=1000&IsActive=true'),
+        ]);
+
+        if (usersResponse.ok && isMounted) {
+          const data = await usersResponse.json();
+          if (data?.data) {
+            const mappedUsers = data.data.map((user: UserDetailResponse) => ({
+              id: user.id ?? 0,
+              username: user.username ?? '',
+              email: user.email ?? '',
+              isActive: user.isActive ?? true,
+              createdAt: user.createdAt ?? new Date().toISOString(),
+              skills: user.skills ?? [],
+            }));
+            setUsers(mappedUsers);
+            setCurrentPage(data.currentPage || 1);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
+            setStatistics(data.summary || null);
           }
-        } catch (error) {
-          console.error('Failed to fetch initial users:', error);
-          notify.error('サーバーとの通信でエラーが発生しました。', true);
+        }
+
+        if (skillsResponse.ok && isMounted) {
+          const skillsData = await skillsResponse.json();
+          if (skillsData?.data) {
+            setSkills(
+              skillsData.data.map((skill: SkillListItemResponse) => ({
+                id: skill.id,
+                name: skill.name,
+              })),
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial data:', error);
+        if (isMounted) {
+          notify.error('データの取得に失敗しました。', true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false);
         }
       }
-      setIsLoading(false);
     };
 
     fetchInitialData();
-  }, [initialUsers, notify]);
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePageChange = withDelayedLoading(async ({ selected }: { selected: number }) => {
     try {
@@ -266,10 +280,10 @@ export default function AdminUsersClient({
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <LoadingOverlay isLoading={isLoading || showLoading} message={isLoading ? '初期化中...' : '検索中...'} />
+      <LoadingOverlay isLoading={isInitialLoading || showLoading} message={isInitialLoading ? '読み込み中...' : '検索中...'} />
 
       {/* Sticky Navigation Header */}
-      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={isLoading} />
+      <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Menu */}
@@ -292,13 +306,6 @@ export default function AdminUsersClient({
                 新規ユーザー作成
               </button>
             </div>
-
-            {/* Error Message */}
-            {fetchError && (
-              <div className="alert alert-soft alert-error mb-6">
-                <span>{fetchError}</span>
-              </div>
-            )}
 
             {/* Filter Section */}
             <div className="card mb-6">
@@ -376,7 +383,7 @@ export default function AdminUsersClient({
                           <summary className="btn btn-outline w-full justify-start">
                             {filterSkillIds.length > 0 ? `${filterSkillIds.length} 個選択中` : 'スキルを選択'}
                           </summary>
-                          <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-[1]">
+                          <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-1">
                             {skills.map((skill) => (
                               <li key={skill.id}>
                                 <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
