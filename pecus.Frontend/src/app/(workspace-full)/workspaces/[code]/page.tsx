@@ -25,12 +25,15 @@ interface WorkspaceDetailPageProps {
   searchParams: Promise<{
     itemCode?: string;
     scrollTo?: string;
+    task?: string;
   }>;
 }
 
 export default async function WorkspaceDetailPage({ params, searchParams }: WorkspaceDetailPageProps) {
   const { code } = await params;
-  const { itemCode, scrollTo } = await searchParams;
+  const { itemCode, scrollTo, task } = await searchParams;
+  // タスクシーケンス番号をパース（数値でない場合はundefined）
+  const initialTaskSequence = task ? parseInt(task, 10) : undefined;
 
   // ユーザー情報取得
   let userInfo: UserInfo | null = null;
@@ -125,7 +128,9 @@ export default async function WorkspaceDetailPage({ params, searchParams }: Work
       skills={skills}
       taskTypes={taskTypes}
       initialItemId={initialItemId}
+      initialItemCode={itemCode}
       initialScrollTarget={scrollTo}
+      initialTaskSequence={Number.isNaN(initialTaskSequence) ? undefined : initialTaskSequence}
     />
   );
 }

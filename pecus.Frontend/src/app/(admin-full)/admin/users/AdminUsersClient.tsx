@@ -280,7 +280,10 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <LoadingOverlay isLoading={isInitialLoading || showLoading} message={isInitialLoading ? '読み込み中...' : '検索中...'} />
+      <LoadingOverlay
+        isLoading={isInitialLoading || showLoading}
+        message={isInitialLoading ? '読み込み中...' : '検索中...'}
+      />
 
       {/* Sticky Navigation Header */}
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />

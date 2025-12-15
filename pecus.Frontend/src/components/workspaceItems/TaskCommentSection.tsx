@@ -479,7 +479,7 @@ export default function TaskCommentSection({
           <div className="flex-1">
             <textarea
               ref={textareaRef}
-              className={`textarea textarea-bordered textarea-sm w-full min-h-[40px] max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
+              className={`textarea textarea-bordered textarea-sm w-full min-h-10 max-h-24 resize-none ${newCommentError ? 'textarea-error' : ''}`}
               placeholder="コメント... (Shift+Enterで改行)"
               value={newComment}
               onChange={(e) => handleNewCommentChange(e.target.value)}
@@ -494,7 +494,7 @@ export default function TaskCommentSection({
           {/* 送信ボタン */}
           <button
             type="button"
-            className="btn btn-primary btn-sm h-[40px] w-[40px] p-0 flex-shrink-0"
+            className="btn btn-primary btn-sm h-10 w-10 p-0 flex-shrink-0"
             onClick={handleSubmitComment}
             disabled={isSubmitting || !newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
             title="送信 (Enter)"

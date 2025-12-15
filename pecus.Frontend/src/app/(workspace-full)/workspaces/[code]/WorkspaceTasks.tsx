@@ -50,6 +50,23 @@ interface SelectedUser {
   identityIconUrl: string | null;
 }
 
+/** タスクナビゲーション情報 */
+interface TaskNavigation {
+  /** 現在表示中のタスク一覧（現在のページ） */
+  tasks: WorkspaceTaskDetailResponse[];
+  /** 一覧内での現在のインデックス */
+  currentIndex: number;
+  /** 一覧のページ番号 */
+  currentPage: number;
+  /** 総ページ数 */
+  totalPages: number;
+  /** 総タスク数 */
+  totalCount: number;
+  /** フィルター条件 */
+  statusFilter: TaskStatusFilterType;
+  assignedUserId?: number;
+}
+
 interface WorkspaceTasksProps {
   workspaceId: number;
   itemId: number;
@@ -72,6 +89,17 @@ interface WorkspaceTasksProps {
     email: string;
     identityIconUrl: string | null;
   } | null;
+  /** タスク詳細ページを表示するコールバック（渡されない場合はモーダル表示） */
+  onShowTaskDetail?: (
+    taskSequence: number,
+    itemCode: string,
+    navigation: TaskNavigation,
+    itemCommitterId: number | null,
+    itemCommitterName: string | null,
+    itemCommitterAvatarUrl: string | null,
+  ) => void;
+  /** アイテムコード（URL用） */
+  itemCode: string;
 }
 
 const ITEMS_PER_PAGE = 8; // 4列 x 2行
@@ -86,6 +114,8 @@ const WorkspaceTasks = ({
   itemCommitterAvatarUrl,
   taskTypes,
   currentUser,
+  onShowTaskDetail,
+  itemCode,
 }: WorkspaceTasksProps) => {
   const notify = useNotify();
   const [tasks, setTasks] = useState<WorkspaceTaskDetailResponse[]>([]);
@@ -259,10 +289,13 @@ const WorkspaceTasks = ({
     setCurrentPage(1);
   };
 
-  // タスクカードクリック時のハンドラ（編集モーダルを開く）
+  // タスクカードクリック時のハンドラ（ページ表示またはモーダルを開く）
   const handleTaskClick = useCallback(
     (taskIndex: number) => {
-      setEditTaskNavigation({
+      const task = tasks[taskIndex];
+      if (!task) return;
+
+      const navigation: TaskNavigation = {
         tasks,
         currentIndex: taskIndex,
         currentPage,
@@ -270,10 +303,37 @@ const WorkspaceTasks = ({
         totalCount,
         statusFilter: toApiTaskStatusFilter(taskStatus),
         assignedUserId: selectedAssignee?.id,
-      });
-      setIsEditModalOpen(true);
+      };
+
+      // onShowTaskDetailが渡されている場合はページ表示
+      if (onShowTaskDetail && task.sequence !== undefined) {
+        onShowTaskDetail(
+          task.sequence,
+          itemCode,
+          navigation,
+          itemCommitterId ?? null,
+          itemCommitterName ?? null,
+          itemCommitterAvatarUrl ?? null,
+        );
+      } else {
+        // モーダル表示（フォールバック）
+        setEditTaskNavigation(navigation);
+        setIsEditModalOpen(true);
+      }
     },
-    [tasks, currentPage, totalPages, totalCount, taskStatus, selectedAssignee?.id],
+    [
+      tasks,
+      currentPage,
+      totalPages,
+      totalCount,
+      taskStatus,
+      selectedAssignee?.id,
+      onShowTaskDetail,
+      itemCode,
+      itemCommitterId,
+      itemCommitterName,
+      itemCommitterAvatarUrl,
+    ],
   );
 
   // タスク編集成功時のハンドラ
@@ -318,10 +378,12 @@ const WorkspaceTasks = ({
       // タスクリストからインデックスを探す（同じタスクがあれば）
       const taskIndex = tasks.findIndex((t) => t.id === task.id);
       if (taskIndex >= 0) {
+        // タスクリストにあれば、handleTaskClickを使用（sequenceが取れる）
         handleTaskClick(taskIndex);
       } else {
-        // リストにない場合は単体で編集モーダルを開く（ナビゲーションなし）
-        setEditTaskNavigation({
+        // リストにない場合は単体で編集（ナビゲーションなし）
+        // TaskFlowNodeにはsequenceがないため、モーダル表示にフォールバック
+        const singleTaskNavigation: TaskNavigation = {
           tasks: [
             {
               id: task.id,
@@ -346,7 +408,10 @@ const WorkspaceTasks = ({
           totalPages: 1,
           totalCount: 1,
           statusFilter: 'All',
-        });
+        };
+
+        // TaskFlowNodeにはsequenceがないため、常にモーダル表示
+        setEditTaskNavigation(singleTaskNavigation);
         setIsEditModalOpen(true);
       }
     },

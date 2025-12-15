@@ -15,13 +15,32 @@ import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   ErrorResponse,
   RelatedItemInfo,
+  TaskStatusFilter,
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
   WorkspaceMode,
+  WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
+
+/** タスクナビゲーション情報 */
+interface TaskNavigation {
+  /** 現在表示中のタスク一覧（現在のページ） */
+  tasks: WorkspaceTaskDetailResponse[];
+  /** 一覧内での現在のインデックス */
+  currentIndex: number;
+  /** 一覧のページ番号 */
+  currentPage: number;
+  /** 総ページ数 */
+  totalPages: number;
+  /** 総タスク数 */
+  totalCount: number;
+  /** フィルター条件 */
+  statusFilter: TaskStatusFilter;
+  assignedUserId?: number;
+}
 
 interface WorkspaceItemDetailProps {
   workspaceId: number;
@@ -41,6 +60,17 @@ interface WorkspaceItemDetailProps {
   scrollTarget?: string | null;
   /** スクロール完了時のコールバック */
   onScrollComplete?: () => void;
+  /** タスク詳細ページを表示するコールバック */
+  onShowTaskDetail?: (
+    taskSequence: number,
+    itemCode: string,
+    navigation: TaskNavigation,
+    itemCommitterId: number | null,
+    itemCommitterName: string | null,
+    itemCommitterAvatarUrl: string | null,
+  ) => void;
+  /** アイテムコード（URL生成用） */
+  itemCode?: string | null;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -63,6 +93,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       workspaceMode,
       scrollTarget,
       onScrollComplete,
+      onShowTaskDetail,
+      itemCode,
     },
     ref,
   ) {
@@ -504,6 +536,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               <WorkspaceTasks
                 workspaceId={workspaceId}
                 itemId={itemId}
+                itemCode={itemCode ?? ''}
                 itemOwnerId={item?.ownerId}
                 itemAssigneeId={item?.assigneeId}
                 itemCommitterId={item?.committerId}
@@ -525,6 +558,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                       })()
                     : null
                 }
+                onShowTaskDetail={onShowTaskDetail}
               />
             </div>
           )}

@@ -10,6 +10,7 @@ import {
   updateMemberRoleInWorkspace,
 } from '@/actions/workspace';
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
+import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import AppHeader from '@/components/common/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/UserAvatar';
@@ -26,9 +27,11 @@ import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
   MasterGenreResponse,
   MasterSkillResponse,
+  TaskStatusFilter,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
   WorkspaceRole,
+  WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
@@ -36,6 +39,24 @@ import { type SignalRNotification, useSignalRContext } from '@/providers/SignalR
 import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
+import WorkspaceTaskDetailPage from './WorkspaceTaskDetailPage';
+
+/** タスクナビゲーション情報 */
+interface TaskNavigation {
+  /** 現在表示中のタスク一覧（現在のページ） */
+  tasks: WorkspaceTaskDetailResponse[];
+  /** 一覧内での現在のインデックス */
+  currentIndex: number;
+  /** 一覧のページ番号 */
+  currentPage: number;
+  /** 総ページ数 */
+  totalPages: number;
+  /** 総タスク数 */
+  totalCount: number;
+  /** フィルター条件 */
+  statusFilter: TaskStatusFilter;
+  assignedUserId?: number;
+}
 
 interface WorkspaceDetailClientProps {
   workspaceCode: string;
@@ -47,8 +68,12 @@ interface WorkspaceDetailClientProps {
   taskTypes: TaskTypeOption[];
   /** URLクエリパラメータで指定された初期選択アイテムID */
   initialItemId?: number;
+  /** URLクエリパラメータで指定された初期選択アイテムコード */
+  initialItemCode?: string;
   /** 初期スクロールターゲット (例: 'tasks') */
   initialScrollTarget?: string;
+  /** URLクエリパラメータで指定された初期選択タスクシーケンス */
+  initialTaskSequence?: number;
 }
 
 export default function WorkspaceDetailClient({
@@ -59,7 +84,9 @@ export default function WorkspaceDetailClient({
   skills,
   taskTypes,
   initialItemId,
+  initialItemCode,
   initialScrollTarget,
+  initialTaskSequence,
 }: WorkspaceDetailClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -77,6 +104,8 @@ export default function WorkspaceDetailClient({
   // initialItemId が指定されている場合は、最初からアイテム詳細を表示
   const [showWorkspaceDetail, setShowWorkspaceDetail] = useState(!initialItemId);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(initialItemId ?? null);
+  // アイテムコード（URL生成用）
+  const [selectedItemCode, setSelectedItemCode] = useState<string | null>(initialItemCode ?? null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // ===== スクロールターゲット状態（一度使用したらクリア）=====
@@ -84,6 +113,17 @@ export default function WorkspaceDetailClient({
 
   // ===== 関連アイテム選択モードの状態 =====
   const [isAddingRelation, setIsAddingRelation] = useState(false);
+
+  // ===== タスク詳細ページの状態 =====
+  // initialTaskSequenceがある場合も、タスクリストロード後に自動で開くため最初はfalse
+  const [showTaskDetail, setShowTaskDetail] = useState(false);
+  const [taskDetailNavigation, setTaskDetailNavigation] = useState<TaskNavigation | null>(null);
+  const [taskDetailItemId, setTaskDetailItemId] = useState<number | null>(null);
+  const [taskDetailItemCommitterId, setTaskDetailItemCommitterId] = useState<number | null>(null);
+  const [taskDetailItemCommitterName, setTaskDetailItemCommitterName] = useState<string | null>(null);
+  const [taskDetailItemCommitterAvatarUrl, setTaskDetailItemCommitterAvatarUrl] = useState<string | null>(null);
+  // URLから復元するためのタスクシーケンス
+  const [pendingTaskSequence, setPendingTaskSequence] = useState<number | null>(initialTaskSequence ?? null);
 
   // ===== モバイルドロワーの状態 =====
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
@@ -253,6 +293,57 @@ export default function WorkspaceDetailClient({
     // notify を依存配列から除外（useRef ベースのため参照は安定）
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onNotification]);
+
+  // ===== pendingTaskSequence がある場合にタスクを直接取得してタスク詳細ページを開く =====
+  useEffect(() => {
+    // pendingTaskSequence がない、または既にタスク詳細が表示中なら何もしない
+    if (pendingTaskSequence === null || showTaskDetail || !selectedItemId) {
+      return;
+    }
+
+    const loadTaskBySequence = async () => {
+      try {
+        // タスクリストを取得（sequenceでフィルタリングはできないので全件取得して検索）
+        const result = await getWorkspaceTasks(
+          currentWorkspaceDetail.id,
+          selectedItemId,
+          1, // page
+          100, // pageSize - 十分な数を取得
+          'All', // statusFilter
+        );
+
+        if (result.success && result.data?.data) {
+          const tasks = result.data.data;
+          const taskIndex = tasks.findIndex((t: WorkspaceTaskDetailResponse) => t.sequence === pendingTaskSequence);
+
+          if (taskIndex >= 0) {
+            // タスクナビゲーション情報を構築
+            const navigation: TaskNavigation = {
+              tasks,
+              currentIndex: taskIndex,
+              currentPage: 1,
+              totalPages: Math.ceil((result.data.totalCount ?? 0) / 100),
+              totalCount: result.data.totalCount ?? 0,
+              statusFilter: 'All',
+            };
+
+            // タスク詳細ページを表示
+            setTaskDetailItemId(selectedItemId);
+            setTaskDetailNavigation(navigation);
+            // アイテム詳細からコミッター情報を取得する必要があるが、ここでは取得できないので後で設定
+            setShowTaskDetail(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load task by sequence:', error);
+      } finally {
+        // 処理完了、pendingをクリア
+        setPendingTaskSequence(null);
+      }
+    };
+
+    loadTaskBySequence();
+  }, [pendingTaskSequence, showTaskDetail, selectedItemId, currentWorkspaceDetail.id]);
 
   // ===== メンバー管理のコールバック（Owner専用） =====
 
@@ -465,6 +556,10 @@ export default function WorkspaceDetailClient({
   const handleHomeSelect = useCallback(() => {
     setShowWorkspaceDetail(true);
     setSelectedItemId(null);
+    setSelectedItemCode(null);
+    setShowTaskDetail(false);
+    setTaskDetailNavigation(null);
+    setPendingTaskSequence(null);
     setScrollTarget(null); // スクロールターゲットをクリア
     // URLからitemIdパラメータを削除
     router.push(pathname, { scroll: false });
@@ -475,12 +570,62 @@ export default function WorkspaceDetailClient({
     (itemId: number, itemCode: string) => {
       setShowWorkspaceDetail(false);
       setSelectedItemId(itemId);
+      setSelectedItemCode(itemCode);
+      setShowTaskDetail(false);
+      setTaskDetailNavigation(null);
+      setPendingTaskSequence(null);
       setScrollTarget(null); // スクロールターゲットをクリア（別アイテム選択時）
       // URLにitemCodeパラメータを追加（scrollToは含めない）
       router.push(`${pathname}?itemCode=${itemCode}`, { scroll: false });
     },
     [router, pathname],
   );
+
+  // タスク詳細ページを表示するハンドラ
+  const handleShowTaskDetail = useCallback(
+    (
+      taskSequence: number,
+      itemCode: string,
+      navigation: TaskNavigation,
+      itemCommitterId: number | null,
+      itemCommitterName: string | null,
+      itemCommitterAvatarUrl: string | null,
+    ) => {
+      setTaskDetailItemId(selectedItemId);
+      setTaskDetailNavigation(navigation);
+      setTaskDetailItemCommitterId(itemCommitterId);
+      setTaskDetailItemCommitterName(itemCommitterName);
+      setTaskDetailItemCommitterAvatarUrl(itemCommitterAvatarUrl);
+      setShowTaskDetail(true);
+      setPendingTaskSequence(null); // URL復元時のpendingをクリア
+      // URLを更新（task=シーケンス番号）
+      router.push(`${pathname}?itemCode=${itemCode}&task=${taskSequence}`, { scroll: false });
+    },
+    [router, pathname, selectedItemId],
+  );
+
+  // タスク詳細ページを閉じるハンドラ
+  const handleCloseTaskDetail = useCallback(() => {
+    setShowTaskDetail(false);
+    setTaskDetailNavigation(null);
+    setTaskDetailItemId(null);
+    setTaskDetailItemCommitterId(null);
+    setTaskDetailItemCommitterName(null);
+    setTaskDetailItemCommitterAvatarUrl(null);
+    setPendingTaskSequence(null);
+    // URLからtaskパラメータを削除
+    if (selectedItemCode) {
+      router.push(`${pathname}?itemCode=${selectedItemCode}`, { scroll: false });
+    } else {
+      router.push(pathname, { scroll: false });
+    }
+  }, [router, pathname, selectedItemCode]);
+
+  // タスク詳細ページ更新成功時のハンドラ
+  const handleTaskDetailSuccess = useCallback(() => {
+    // アイテム詳細のタスクリストを更新
+    itemDetailRef.current?.refreshItem();
+  }, []);
 
   // スクロール完了後にURLをクリーンアップ
   const handleScrollComplete = useCallback(() => {
@@ -914,12 +1059,45 @@ export default function WorkspaceDetailClient({
             </div>
           )}
 
+          {/* タスク詳細ページ */}
+          {!showWorkspaceDetail && selectedItemId && showTaskDetail && taskDetailNavigation && taskDetailItemId && (
+            <WorkspaceTaskDetailPage
+              workspaceId={currentWorkspaceDetail.id}
+              itemId={taskDetailItemId}
+              itemCommitterId={taskDetailItemCommitterId}
+              itemCommitterName={taskDetailItemCommitterName}
+              itemCommitterAvatarUrl={taskDetailItemCommitterAvatarUrl}
+              initialNavigation={taskDetailNavigation}
+              taskTypes={taskTypes}
+              currentUser={
+                userInfo
+                  ? {
+                      id: userInfo.id,
+                      username: userInfo.username || userInfo.name,
+                      email: userInfo.email,
+                      identityIconUrl: userInfo.identityIconUrl,
+                    }
+                  : null
+              }
+              onClose={handleCloseTaskDetail}
+              onSuccess={handleTaskDetailSuccess}
+            />
+          )}
+
+          {/* タスクシーケンスからのロード中 */}
+          {!showWorkspaceDetail && selectedItemId && !showTaskDetail && pendingTaskSequence !== null && (
+            <div className="flex h-full items-center justify-center">
+              <span className="loading loading-spinner loading-lg text-primary" />
+            </div>
+          )}
+
           {/* アイテム詳細情報 */}
-          {!showWorkspaceDetail && selectedItemId && (
+          {!showWorkspaceDetail && selectedItemId && !showTaskDetail && pendingTaskSequence === null && (
             <WorkspaceItemDetail
               ref={itemDetailRef}
               workspaceId={currentWorkspaceDetail.id}
               itemId={selectedItemId}
+              itemCode={selectedItemCode}
               onItemSelect={handleItemSelect}
               members={members}
               currentUserId={userInfo?.id}
@@ -929,6 +1107,7 @@ export default function WorkspaceDetailClient({
               workspaceMode={currentWorkspaceDetail.mode}
               scrollTarget={scrollTarget}
               onScrollComplete={handleScrollComplete}
+              onShowTaskDetail={handleShowTaskDetail}
             />
           )}
         </main>
