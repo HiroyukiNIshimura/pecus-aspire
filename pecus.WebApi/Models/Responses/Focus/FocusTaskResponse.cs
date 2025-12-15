@@ -16,6 +16,12 @@ public class FocusTaskResponse
     public required int Id { get; set; }
 
     /// <summary>
+    /// タスクシーケンス番号（アイテム内の順序）
+    /// </summary>
+    [Required]
+    public required int Sequence { get; set; }
+
+    /// <summary>
     /// ワークスペースアイテムID
     /// </summary>
     [Required]

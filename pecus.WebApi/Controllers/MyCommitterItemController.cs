@@ -252,6 +252,7 @@ public class MyCommitterItemController : BaseSecureController
             PredecessorTask = task.PredecessorTask != null ? new PredecessorTaskInfo
             {
                 Id = task.PredecessorTask.Id,
+                Sequence = task.PredecessorTask.Sequence,
                 Content = task.PredecessorTask.Content,
                 IsCompleted = task.PredecessorTask.IsCompleted,
                 WorkspaceItemCode = null

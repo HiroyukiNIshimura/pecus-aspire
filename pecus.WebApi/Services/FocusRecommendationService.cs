@@ -307,6 +307,7 @@ public class FocusRecommendationService
         return new FocusTaskResponse
         {
             Id = task.Id,
+            Sequence = task.Sequence,
             WorkspaceItemId = task.WorkspaceItemId,
             WorkspaceId = task.WorkspaceId,
             WorkspaceCode = task.WorkspaceItem.Workspace?.Code,
@@ -336,6 +337,7 @@ public class FocusRecommendationService
                 ? new PredecessorTaskInfo
                 {
                     Id = task.PredecessorTask.Id,
+                    Sequence = task.PredecessorTask.Sequence,
                     WorkspaceItemCode = task.PredecessorTask.WorkspaceItem.Code,
                     Content = task.PredecessorTask.Content,
                     IsCompleted = task.PredecessorTask.IsCompleted

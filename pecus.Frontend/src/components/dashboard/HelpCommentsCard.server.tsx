@@ -88,6 +88,7 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
                 <div className="ml-6 mb-2">
                   <div className="flex items-center gap-1.5 text-xs text-base-content/70">
                     <span className="icon-[mdi--checkbox-marked-outline] w-3.5 h-3.5" aria-hidden="true" />
+                    <span className="text-primary font-semibold">T-{comment.taskSequence}</span>
                     <span className="truncate">{truncateContent(comment.taskContent, 50)}</span>
                   </div>
                 </div>

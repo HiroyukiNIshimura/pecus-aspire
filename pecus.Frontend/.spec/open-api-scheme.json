@@ -9901,6 +9901,7 @@
           "id",
           "itemCode",
           "progressPercentage",
+          "sequence",
           "successorCount",
           "totalScore",
           "workspaceId",
@@ -9911,6 +9912,11 @@
           "id": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
           "workspaceItemId": {
@@ -10058,6 +10064,7 @@
           "itemId",
           "taskContent",
           "taskId",
+          "taskSequence",
           "workspaceCode",
           "workspaceId",
           "workspaceName"
@@ -10097,6 +10104,11 @@
           "taskId": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "taskSequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
           "taskContent": {
@@ -11421,6 +11433,11 @@
           "id": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
           "content": {
@@ -13234,6 +13251,7 @@
           "itemCode",
           "itemId",
           "itemSubject",
+          "sequence",
           "taskContent",
           "taskId",
           "workspaceCode"
@@ -13248,6 +13266,11 @@
           "taskId": {
             "type": "integer",
             "description": "タスクID",
+            "format": "int32"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
           "taskContent": {

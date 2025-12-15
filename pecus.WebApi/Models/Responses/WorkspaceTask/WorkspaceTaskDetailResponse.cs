@@ -203,6 +203,11 @@ public class PredecessorTaskInfo
     public int Id { get; set; }
 
     /// <summary>
+    /// タスクシーケンス番号（アイテム内の順序）
+    /// </summary>
+    public int Sequence { get; set; }
+
+    /// <summary>
     /// タスク内容
     /// </summary>
     public string Content { get; set; } = string.Empty;

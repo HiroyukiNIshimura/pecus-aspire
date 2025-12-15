@@ -17,6 +17,10 @@ export type TaskWithItemResponse = {
      */
     taskId: number;
     /**
+     * タスクシーケンス番号（アイテム内の順序）
+     */
+    sequence: number;
+    /**
      * タスク内容
      */
     taskContent: string | null;

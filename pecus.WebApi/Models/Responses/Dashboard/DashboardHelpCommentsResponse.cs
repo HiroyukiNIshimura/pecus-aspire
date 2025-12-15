@@ -67,6 +67,12 @@ public class HelpCommentItem
     public required int TaskId { get; set; }
 
     /// <summary>
+    /// タスクシーケンス番号（アイテム内の順序）
+    /// </summary>
+    [Required]
+    public required int TaskSequence { get; set; }
+
+    /// <summary>
     /// タスク内容
     /// </summary>
     [Required]

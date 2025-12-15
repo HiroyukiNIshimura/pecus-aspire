@@ -81,7 +81,7 @@ export default function PersonalSummarySection({ data }: PersonalSummarySectionP
         </div>
       </section>
 
-      {/* フォーカス推奨モーダル */}
+      {/* やることピックアップモーダル */}
       <FocusRecommendationModal isOpen={isFocusModalOpen} onClose={() => setIsFocusModalOpen(false)} />
     </>
   );

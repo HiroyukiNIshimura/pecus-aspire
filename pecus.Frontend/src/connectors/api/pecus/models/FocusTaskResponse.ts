@@ -15,6 +15,10 @@ export type FocusTaskResponse = {
      */
     id: number;
     /**
+     * タスクシーケンス番号（アイテム内の順序）
+     */
+    sequence: number;
+    /**
      * ワークスペースアイテムID
      */
     workspaceItemId: number;

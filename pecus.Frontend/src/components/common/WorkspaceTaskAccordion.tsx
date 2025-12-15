@@ -561,6 +561,7 @@ export default function WorkspaceTaskAccordion({
                                             className="text-sm font-medium leading-tight line-clamp-2"
                                             title={task.taskContent || undefined}
                                           >
+                                            <span className="text-primary font-semibold mr-1">T-{task.sequence}</span>
                                             {task.taskContent}
                                           </p>
                                           <span className="text-xs text-base-content/50 font-mono">

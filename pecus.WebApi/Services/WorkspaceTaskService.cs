@@ -1409,6 +1409,7 @@ public class WorkspaceTaskService
 
             // タスク情報
             TaskId = task.Id,
+            Sequence = task.Sequence,
             TaskContent = task.Content,
             TaskTypeId = task.TaskTypeId,
             TaskTypeCode = task.TaskType?.Code,

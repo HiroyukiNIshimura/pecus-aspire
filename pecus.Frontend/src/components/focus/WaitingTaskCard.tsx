@@ -46,9 +46,9 @@ function getTaskTypeIconPath(task: FocusTaskResponse) {
  * 先行タスクが未完了のため着手できないタスクを表示
  */
 export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
-  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}&scrollTo=tasks`;
+  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}&task=${task.sequence}`;
   const predecessorUrl = task.predecessorTask
-    ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}&scrollTo=tasks`
+    ? `/workspaces/${task.workspaceCode}?itemCode=${task.predecessorTask.workspaceItemCode}&task=${task.predecessorTask.sequence}`
     : null;
 
   return (
@@ -74,6 +74,7 @@ export default function WaitingTaskCard({ task }: WaitingTaskCardProps) {
               />
             )}
             <h3 className="text-base font-semibold line-clamp-2 text-base-content/70 group-hover:text-primary transition-colors">
+              <span className="text-primary font-semibold mr-1">T-{task.sequence}</span>
               {task.content}
             </h3>
           </div>

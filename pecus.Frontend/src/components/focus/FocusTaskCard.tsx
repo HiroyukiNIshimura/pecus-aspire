@@ -73,7 +73,7 @@ function getDueDateBadge(dueDate: string) {
  * 着手可能なタスクを表示
  */
 export default function FocusTaskCard({ task }: FocusTaskCardProps) {
-  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}&scrollTo=tasks`;
+  const taskUrl = `/workspaces/${task.workspaceCode}?itemCode=${task.itemCode}&task=${task.sequence}`;
 
   return (
     <div className="card bg-base-100 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
@@ -101,7 +101,10 @@ export default function FocusTaskCard({ task }: FocusTaskCardProps) {
                 title={task.taskTypeName || ''}
               />
             )}
-            <h3 className="text-base font-semibold line-clamp-2">{task.content}</h3>
+            <h3 className="text-base font-semibold line-clamp-2">
+              <span className="text-primary font-semibold mr-1">T-{task.sequence}</span>
+              {task.content}
+            </h3>
           </div>
           {task.itemSubject && (
             <p className="text-sm text-base-content/70 line-clamp-1 mb-2">

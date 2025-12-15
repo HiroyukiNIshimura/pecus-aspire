@@ -35,6 +35,10 @@ export type HelpCommentItem = {
      */
     taskId: number;
     /**
+     * タスクシーケンス番号（アイテム内の順序）
+     */
+    taskSequence: number;
+    /**
      * タスク内容
      */
     taskContent: string;

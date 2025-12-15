@@ -22,6 +22,11 @@ public class TaskWithItemResponse
     public required int TaskId { get; set; }
 
     /// <summary>
+    /// タスクシーケンス番号（アイテム内の順序）
+    /// </summary>
+    public required int Sequence { get; set; }
+
+    /// <summary>
     /// タスク内容
     /// </summary>
     public required string TaskContent { get; set; }

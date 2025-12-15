@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { deleteWorkspace } from '@/actions/deleteWorkspace';
 import {

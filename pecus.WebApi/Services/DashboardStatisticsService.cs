@@ -691,6 +691,7 @@ public class DashboardStatisticsService
                     avatarPath: c.User.UserAvatarPath
                 ),
                 TaskId = c.WorkspaceTaskId,
+                TaskSequence = c.WorkspaceTask!.Sequence,
                 TaskContent = c.WorkspaceTask!.Content,
                 TaskAssigneeId = c.WorkspaceTask.AssignedUserId,
                 TaskAssigneeName = c.WorkspaceTask.AssignedUser != null ? c.WorkspaceTask.AssignedUser.Username : null,
