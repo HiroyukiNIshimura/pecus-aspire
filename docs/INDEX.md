@@ -23,6 +23,7 @@
 - [signalr-presence.md](./signalr-presence.md) — プレゼンス管理（接続状態）設計。
 - [skill-matching.md](./skill-matching.md) — スキルマッチング機能のアルゴリズム設計。
 - [ssr-design-guidelines.md](./ssr-design-guidelines.md) — SSR設計ガイドライン（Server/Client Component の使い分け）。
+- [tailwind-arbitrary-values.md](./tailwind-arbitrary-values.md) — Tailwind CSS 任意値（`z-[10]` 等）禁止ルール。
 - [task-focus-recommendation.md](./task-focus-recommendation.md) — タスク集中推薦機能の設計。
 - [ui-component-guidelines.md](./ui-component-guidelines.md) — UI コンポーネント実装の必須ルール（エラー表示位置、モーダル、スクロール等）。
 - [ui-writing-guidelines.md](./ui-writing-guidelines.md) — UI 文言・コピーの作法と例。
