@@ -533,17 +533,10 @@ export default function CreateWorkspaceTaskModal({
                   value={dueDate}
                   onChange={(val) => {
                     setDueDate(val);
-                    // エラーがある場合は値変更時に再検証
-                    if (shouldShowError('dueDate')) {
-                      validateField('dueDate', val);
-                    }
                   }}
-                  onBlur={() => validateField('dueDate', dueDate)}
                   onClose={(val) => {
-                    // DatePickerが閉じた時に最終値で検証
-                    if (shouldShowError('dueDate')) {
-                      validateField('dueDate', val);
-                    }
+                    // DatePickerが閉じた時に常に検証を実行
+                    validateField('dueDate', val);
                   }}
                   placeholder="期限日を選択"
                   disabled={isSubmitting}
