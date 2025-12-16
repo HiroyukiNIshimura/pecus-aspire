@@ -210,7 +210,9 @@ public class AdminWorkspaceController : BaseAdminController
                     {
                         ActiveWorkspaceCount = 0,
                         InactiveWorkspaceCount = 0,
+                        TotalWorkspaceCount = 0,
                         UniqueMemberCount = 0,
+                        AverageMembersPerWorkspace = 0,
                         RecentWorkspaceCount = 0,
                         WorkspaceCountByGenre = new List<GenreCount>()
                     }

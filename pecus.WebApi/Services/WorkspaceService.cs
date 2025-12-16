@@ -507,15 +507,6 @@ public class WorkspaceService
     /// </summary>
     public async Task<WorkspaceStatistics> GetWorkspaceStatisticsAsync(int organizationId)
     {
-        var statistics = new WorkspaceStatistics
-        {
-            ActiveWorkspaceCount = 0,
-            InactiveWorkspaceCount = 0,
-            UniqueMemberCount = 0,
-            RecentWorkspaceCount = 0,
-            WorkspaceCountByGenre = new List<GenreCount>()
-        };
-
         // アクティブ/非アクティブのワークスペース数を取得
         var workspaceCounts = await _context.Workspaces
             .Where(w => w.OrganizationId == organizationId)
@@ -523,18 +514,19 @@ public class WorkspaceService
             .Select(g => new { IsActive = g.Key, Count = g.Count() })
             .ToListAsync();
 
-        statistics.ActiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
-        statistics.InactiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+        var activeCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
+        var inactiveCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+        var totalCount = activeCount + inactiveCount;
 
         // ユニークなメンバーの総数を取得（同じユーザーが複数のワークスペースに属する場合も1人とカウント）
-        statistics.UniqueMemberCount = await _context.WorkspaceUsers
+        var uniqueMemberCount = await _context.WorkspaceUsers
             .Where(wu => wu.Workspace.OrganizationId == organizationId && wu.User != null && wu.User.IsActive)
             .Select(wu => wu.UserId)
             .Distinct()
             .CountAsync();
 
         // ジャンルごとのワークスペース数を取得
-        statistics.WorkspaceCountByGenre = await _context.Workspaces
+        var workspaceCountByGenre = await _context.Workspaces
             .Where(w => w.OrganizationId == organizationId)
             .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
             .Select(g => new GenreCount
@@ -546,11 +538,20 @@ public class WorkspaceService
             .ToListAsync();
 
         // 最近作成されたワークスペース数（過去30日）
-        statistics.RecentWorkspaceCount = await _context.Workspaces
+        var recentWorkspaceCount = await _context.Workspaces
             .Where(w => w.OrganizationId == organizationId && w.CreatedAt >= DateTime.UtcNow.AddDays(-30))
             .CountAsync();
 
-        return statistics;
+        return new WorkspaceStatistics
+        {
+            ActiveWorkspaceCount = activeCount,
+            InactiveWorkspaceCount = inactiveCount,
+            TotalWorkspaceCount = totalCount,
+            UniqueMemberCount = uniqueMemberCount,
+            AverageMembersPerWorkspace = totalCount > 0 ? (double)uniqueMemberCount / totalCount : 0,
+            RecentWorkspaceCount = recentWorkspaceCount,
+            WorkspaceCountByGenre = workspaceCountByGenre
+        };
     }
 
     /// <summary>
@@ -615,15 +616,6 @@ public class WorkspaceService
     /// </summary>
     public async Task<WorkspaceStatistics> GetAccessibleWorkspaceStatisticsAsync(int userId)
     {
-        var statistics = new WorkspaceStatistics
-        {
-            ActiveWorkspaceCount = 0,
-            InactiveWorkspaceCount = 0,
-            UniqueMemberCount = 0,
-            RecentWorkspaceCount = 0,
-            WorkspaceCountByGenre = new List<GenreCount>()
-        };
-
         // ユーザーが参加しているワークスペースのIDリストを取得
         var accessibleWorkspaceIds = await _context
             .WorkspaceUsers
@@ -638,18 +630,19 @@ public class WorkspaceService
             .Select(g => new { IsActive = g.Key, Count = g.Count() })
             .ToListAsync();
 
-        statistics.ActiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
-        statistics.InactiveWorkspaceCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+        var activeCount = workspaceCounts.FirstOrDefault(w => w.IsActive)?.Count ?? 0;
+        var inactiveCount = workspaceCounts.FirstOrDefault(w => !w.IsActive)?.Count ?? 0;
+        var totalCount = activeCount + inactiveCount;
 
         // アクセス可能なワークスペース全体のユニークなメンバー数を取得
-        statistics.UniqueMemberCount = await _context.WorkspaceUsers
+        var uniqueMemberCount = await _context.WorkspaceUsers
             .Where(wu => accessibleWorkspaceIds.Contains(wu.WorkspaceId) && wu.User != null && wu.User.IsActive)
             .Select(wu => wu.UserId)
             .Distinct()
             .CountAsync();
 
         // ジャンルごとのワークスペース数を取得
-        statistics.WorkspaceCountByGenre = await _context.Workspaces
+        var workspaceCountByGenre = await _context.Workspaces
             .Where(w => accessibleWorkspaceIds.Contains(w.Id))
             .GroupBy(w => new { w.GenreId, GenreName = w.Genre != null ? w.Genre.Name : "未設定" })
             .Select(g => new GenreCount
@@ -661,11 +654,20 @@ public class WorkspaceService
             .ToListAsync();
 
         // 最近作成されたワークスペース数（過去30日）
-        statistics.RecentWorkspaceCount = await _context.Workspaces
+        var recentWorkspaceCount = await _context.Workspaces
             .Where(w => accessibleWorkspaceIds.Contains(w.Id) && w.CreatedAt >= DateTime.UtcNow.AddDays(-30))
             .CountAsync();
 
-        return statistics;
+        return new WorkspaceStatistics
+        {
+            ActiveWorkspaceCount = activeCount,
+            InactiveWorkspaceCount = inactiveCount,
+            TotalWorkspaceCount = totalCount,
+            UniqueMemberCount = uniqueMemberCount,
+            AverageMembersPerWorkspace = totalCount > 0 ? (double)uniqueMemberCount / totalCount : 0,
+            RecentWorkspaceCount = recentWorkspaceCount,
+            WorkspaceCountByGenre = workspaceCountByGenre
+        };
     }
 
     private async Task RaiseConflictException(int workspaceId)

@@ -23,7 +23,7 @@ public class WorkspaceStatistics
     /// 総ワークスペース数（アクティブ + 非アクティブ）
     /// </summary>
     [Required]
-    public int TotalWorkspaceCount => ActiveWorkspaceCount + InactiveWorkspaceCount;
+    public required int TotalWorkspaceCount { get; set; } = 0;
 
     /// <summary>
     /// ワークスペースメンバーの総数（ユニークなユーザー数）
@@ -35,7 +35,7 @@ public class WorkspaceStatistics
     /// 平均メンバー数 per ワークスペース
     /// </summary>
     [Required]
-    public double AverageMembersPerWorkspace => TotalWorkspaceCount > 0 ? (double)UniqueMemberCount / TotalWorkspaceCount : 0;
+    public required double AverageMembersPerWorkspace { get; set; } = 0;
 
     /// <summary>
     /// 最近作成されたワークスペース数（過去30日）

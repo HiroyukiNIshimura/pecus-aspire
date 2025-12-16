@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -14,6 +15,7 @@ using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
+using Pecus.OpenApi;
 using Pecus.Services;
 using StackExchange.Redis;
 using System.Reflection;
@@ -322,38 +324,22 @@ builder.Services.AddControllers(options =>
         opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// Swagger/OpenAPIの設定
-// https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-8.0&tabs=visual-studio
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+// OpenAPIの設定 (Microsoft.AspNetCore.OpenApi)
+builder.Services.AddOpenApi("v1", options =>
 {
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new OpenApiInfo
         {
             Title = pecusConfig.Application.Name,
             Version = pecusConfig.Application.Version,
             Description = "AIを社畜扱いして作成するWebAPIです。",
-        }
-    );
-    options.AddSecurityDefinition(
-        "bearerAuth",
-        new OpenApiSecurityScheme
-        {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description = "JWT Authorization header using the Bearer scheme.",
-        }
-    );
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+        };
+        return Task.CompletedTask;
     });
 
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    // JWT Bearer認証のセキュリティスキーム設定
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
 
 // HttpLoggingの設定
@@ -369,11 +355,11 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.MapOpenApi();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(
-            "/swagger/v1/swagger.json",
+            "/openapi/v1.json",
             $"{pecusConfig.Application.Name} {pecusConfig.Application.Version}"
         );
         options.RoutePrefix = string.Empty;
