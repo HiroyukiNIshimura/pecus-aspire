@@ -71,6 +71,12 @@ interface WorkspaceItemDetailProps {
   ) => void;
   /** アイテムコード（URL生成用） */
   itemCode?: string | null;
+  /** タスクフローマップページを表示するコールバック */
+  onShowFlowMap?: (
+    itemTitle: string | null,
+    itemCommitterName: string | null,
+    itemCommitterAvatarUrl: string | null,
+  ) => void;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -95,6 +101,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       onScrollComplete,
       onShowTaskDetail,
       itemCode,
+      onShowFlowMap,
     },
     ref,
   ) {
@@ -359,6 +366,19 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               >
                 <span className="icon-[mdi--history] size-4" aria-hidden="true" />
               </button>
+              {/* タスクフローマップボタン（ドキュメントモードでは非表示） */}
+              {!isDocumentMode && onShowFlowMap && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onShowFlowMap(item.subject ?? null, item.committerUsername ?? null, item.committerAvatarUrl ?? null)
+                  }
+                  className="btn btn-secondary btn-sm gap-1"
+                  title="タスクフローマップを表示"
+                >
+                  <span className="icon-[mdi--sitemap] size-4" aria-hidden="true" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleEditClick}
@@ -559,6 +579,16 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                     : null
                 }
                 onShowTaskDetail={onShowTaskDetail}
+                onShowFlowMap={
+                  onShowFlowMap
+                    ? () =>
+                        onShowFlowMap(
+                          item.subject ?? null,
+                          item.committerUsername ?? null,
+                          item.committerAvatarUrl ?? null,
+                        )
+                    : undefined
+                }
               />
             </div>
           )}

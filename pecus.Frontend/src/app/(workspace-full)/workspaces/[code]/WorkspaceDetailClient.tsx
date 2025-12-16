@@ -38,6 +38,7 @@ import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
+import TaskFlowMapPage from './TaskFlowMapPage';
 import WorkspaceItemDetail, { type WorkspaceItemDetailHandle } from './WorkspaceItemDetail';
 import WorkspaceTaskDetailPage from './WorkspaceTaskDetailPage';
 
@@ -124,6 +125,12 @@ export default function WorkspaceDetailClient({
   const [taskDetailItemCommitterAvatarUrl, setTaskDetailItemCommitterAvatarUrl] = useState<string | null>(null);
   // URLから復元するためのタスクシーケンス
   const [pendingTaskSequence, setPendingTaskSequence] = useState<number | null>(initialTaskSequence ?? null);
+
+  // ===== タスクフローマップページの状態 =====
+  const [showFlowMap, setShowFlowMap] = useState(false);
+  const [flowMapItemTitle, setFlowMapItemTitle] = useState<string | null>(null);
+  const [flowMapItemCommitterName, setFlowMapItemCommitterName] = useState<string | null>(null);
+  const [flowMapItemCommitterAvatarUrl, setFlowMapItemCommitterAvatarUrl] = useState<string | null>(null);
 
   // ===== モバイルドロワーの状態 =====
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
@@ -616,6 +623,25 @@ export default function WorkspaceDetailClient({
     itemDetailRef.current?.refreshItem();
   }, []);
 
+  // タスクフローマップページを表示するハンドラ
+  const handleShowFlowMap = useCallback(
+    async (itemTitle: string | null, itemCommitterName: string | null, itemCommitterAvatarUrl: string | null) => {
+      setFlowMapItemTitle(itemTitle);
+      setFlowMapItemCommitterName(itemCommitterName);
+      setFlowMapItemCommitterAvatarUrl(itemCommitterAvatarUrl);
+      setShowFlowMap(true);
+    },
+    [],
+  );
+
+  // タスクフローマップページを閉じるハンドラ
+  const handleCloseFlowMap = useCallback(() => {
+    setShowFlowMap(false);
+    setFlowMapItemTitle(null);
+    setFlowMapItemCommitterName(null);
+    setFlowMapItemCommitterAvatarUrl(null);
+  }, []);
+
   // スクロール完了後にURLをクリーンアップ
   const handleScrollComplete = useCallback(() => {
     setScrollTarget(null);
@@ -1074,31 +1100,56 @@ export default function WorkspaceDetailClient({
           )}
 
           {/* タスクシーケンスからのロード中 */}
-          {!showWorkspaceDetail && selectedItemId && !showTaskDetail && pendingTaskSequence !== null && (
-            <div className="flex h-full items-center justify-center">
-              <span className="loading loading-spinner loading-lg text-primary" />
-            </div>
+          {!showWorkspaceDetail &&
+            selectedItemId &&
+            !showTaskDetail &&
+            !showFlowMap &&
+            pendingTaskSequence !== null && (
+              <div className="flex h-full items-center justify-center">
+                <span className="loading loading-spinner loading-lg text-primary" />
+              </div>
+            )}
+
+          {/* タスクフローマップページ */}
+          {!showWorkspaceDetail && selectedItemId && !showTaskDetail && showFlowMap && (
+            <TaskFlowMapPage
+              workspaceId={currentWorkspaceDetail.id}
+              itemId={selectedItemId}
+              itemTitle={flowMapItemTitle}
+              itemCommitterName={flowMapItemCommitterName}
+              itemCommitterAvatarUrl={flowMapItemCommitterAvatarUrl}
+              onClose={handleCloseFlowMap}
+              onTaskClick={(task) => {
+                // タスククリック時の処理（必要に応じて実装）
+                console.log('Task clicked:', task);
+              }}
+            />
           )}
 
           {/* アイテム詳細情報 */}
-          {!showWorkspaceDetail && selectedItemId && !showTaskDetail && pendingTaskSequence === null && (
-            <WorkspaceItemDetail
-              ref={itemDetailRef}
-              workspaceId={currentWorkspaceDetail.id}
-              itemId={selectedItemId}
-              itemCode={selectedItemCode}
-              onItemSelect={handleItemSelect}
-              members={members}
-              currentUserId={userInfo?.id}
-              taskTypes={taskTypes}
-              onStartAddRelation={handleStartAddRelation}
-              isAddingRelation={isAddingRelation}
-              workspaceMode={currentWorkspaceDetail.mode}
-              scrollTarget={scrollTarget}
-              onScrollComplete={handleScrollComplete}
-              onShowTaskDetail={handleShowTaskDetail}
-            />
-          )}
+          {!showWorkspaceDetail &&
+            selectedItemId &&
+            !showTaskDetail &&
+            !showFlowMap &&
+            pendingTaskSequence === null && (
+              <WorkspaceItemDetail
+                ref={itemDetailRef}
+                workspaceId={currentWorkspaceDetail.id}
+                itemId={selectedItemId}
+                itemCode={selectedItemCode}
+                onItemSelect={handleItemSelect}
+                members={members}
+                currentUserId={userInfo?.id}
+                taskTypes={taskTypes}
+                onStartAddRelation={handleStartAddRelation}
+                isAddingRelation={isAddingRelation}
+                workspaceMode={currentWorkspaceDetail.mode}
+                scrollTarget={scrollTarget}
+                onScrollComplete={handleScrollComplete}
+                onShowTaskDetail={handleShowTaskDetail}
+                onShowFlowMap={handleShowFlowMap}
+              />
+            )}
         </main>
 
         {/* メンバー追加モーダル */}
