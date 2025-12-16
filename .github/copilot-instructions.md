@@ -22,7 +22,7 @@
 - 競合処理はサービスで `DbUpdateConcurrencyException` を catch → `FindAsync()` で最新取り直し → `ConcurrencyException<T>` を投げる。`GlobalExceptionFilter` が 409 を返す。
 - フロントは SSR-first。ミューテーションは `Server Actions`（`src/actions/`）を使い、直接フロントから `pecus.WebApi` を叩かない。
 - フロント UI は Tailwind CSS と `FlyonUI` を利用しています。絶対にFlyonUIのデザインを壊さないでください。**daisyUIは使用しない。** **アイコンは"@iconify/tailwind4" https://iconify.design/ を使用する**
-- セッション/トークン: Cookie には `sessionId` のみ保存（`httpOnly: true`）。トークンは Redis に保持し、`ServerSessionManager`（`src/libs/serverSession.ts`）経由で取得。詳細は `docs/auth-architecture-redesign.md` 参照。
+- セッション/トークン: Cookie には `sessionId` のみ保存（`httpOnly: true`）。トークンは Redis に保持し、`ServerSessionManager`（`src/libs/serverSession.ts`）経由で取得。詳細は `docs/spec/auth-architecture-redesign.md` 参照。
 - 自動生成クライアント: `pecus.Frontend/src/connectors/api/PecusApiClient.generated.ts` は自動生成物 → 編集禁止。生成スクリプト: `pecus.Frontend/scripts/generate-pecus-api-client.js`。
 - 主要コマンド（必ず確認）: `dotnet build pecus.sln` / `dotnet run --project pecus.AppHost`（バックエンド）、`npx tsc --noEmit` / `npm run dev`（フロント）
 - 禁止事項（必守）: 横断変更の無断実施、フロントからの API 直叩き、自動生成物の手動編集、コントローラーでのトランザクション開始。
@@ -42,6 +42,8 @@
 
 詳細な実装ガイドラインは以下のドキュメントを参照してください。
 
+- **プロジェクトのビジョン**: `docs/spec/PRODUCT_VISION_PERSONAS_JA.md`
+  - このアプリケーションの目的、ターゲットユーザー、成功指標、MVP 機能セット等
 - **フロントエンド詳細**: `docs/frontend-guidelines.md`
   - アーキテクチャ、APIアクセスルール、SSR、バリデーション、エラーハンドリング等
 - **SSR設計ガイドライン**: `docs/ssr-design-guidelines.md`
@@ -54,13 +56,13 @@
   - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
 - **例外処理**: `docs/global-exception-handling.md`
 - **DB同時実行制御**: `docs/db-concurrency.md`
-- **その他**: 認証、権限、UI規定などの特定トピックは `docs/` ディレクトリ内のドキュメントを参照してください。
+- **その他**: 認証、権限、UI規定などの特定トピックは `docs/` または `docs/spec/` ディレクトリ内のドキュメントを参照してください。
 
 ## 開発フロー／コマンド
 
-- バックエンド: `dotnet format pecus.sln` → `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`
-- フロントエンド: `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build` → `npm run dev`
-- API クライアント生成: `npm run full:api`（自動フックあり）
+- バックエンド: `dotnet format pecus.sln` → `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`（エージェントの実行禁止）
+- フロントエンド: `cd pecus.Frontend` → `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build`（エージェントの実行禁止） → `npm run dev`（エージェントの実行禁止）
+- API クライアント生成: `npm run full:api`（エージェントの実行禁止）
 
 ## プロジェクト特有のルール（必ず守る）
 
