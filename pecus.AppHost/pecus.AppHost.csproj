@@ -14,7 +14,6 @@
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.DbGate" Version="13.0.0" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.9.0" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Redis.Extensions" Version="13.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
