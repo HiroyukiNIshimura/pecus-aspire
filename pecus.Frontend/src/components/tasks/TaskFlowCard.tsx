@@ -9,6 +9,8 @@ interface TaskFlowCardProps {
   clickable?: boolean;
   /** クリック時のコールバック */
   onClick?: () => void;
+  /** コンパクト表示モード（水平フロー用） */
+  compact?: boolean;
 }
 
 /**
@@ -116,10 +118,95 @@ function getStatusIcon(task: TaskFlowNode) {
 /**
  * タスクフローマップのタスクカード
  */
-export default function TaskFlowCard({ task, clickable = false, onClick }: TaskFlowCardProps) {
+export default function TaskFlowCard({ task, clickable = false, onClick, compact = false }: TaskFlowCardProps) {
   const status = getStatusIcon(task);
   const iconPath = getTaskTypeIconPath(task);
   const isInactive = task.isCompleted || task.isDiscarded;
+
+  // コンパクトモード用のカード
+  if (compact) {
+    return (
+      <div
+        className={`card bg-base-100 border border-base-300 transition-all ${
+          isInactive ? 'opacity-60' : ''
+        } ${!task.canStart && !isInactive ? 'border-l-4 border-l-warning' : ''} ${
+          task.successorCount > 0 && task.canStart && !isInactive ? 'border-l-4 border-l-error' : ''
+        } ${clickable ? 'cursor-pointer hover:border-primary hover:shadow-md' : 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100'}`}
+        onClick={clickable ? onClick : undefined}
+        role={clickable ? 'button' : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        onKeyDown={
+          clickable
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onClick?.();
+                }
+              }
+            : undefined
+        }
+      >
+        <div className="card-body p-2 gap-1.5">
+          {/* ヘッダー: ステータス・バッジ */}
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1.5">
+              <span className={`${status.icon} w-4 h-4 ${status.className}`} aria-label={status.label} />
+              {task.taskTypeId && iconPath && (
+                <img src={iconPath} alt={task.taskTypeName || ''} className="w-4 h-4 rounded" />
+              )}
+              <span className="font-mono text-xs text-base-content/60">T-{task.sequence}</span>
+            </div>
+            <div className="flex gap-0.5">
+              {task.successorCount > 0 && (
+                <span className="badge badge-error badge-xs gap-0.5" title={`${task.successorCount}タスクが待機中`}>
+                  <span className="icon-[mdi--link-variant] w-2.5 h-2.5" aria-hidden="true" />
+                  {task.successorCount}
+                </span>
+              )}
+              {getPriorityBadge(task.priority)}
+            </div>
+          </div>
+
+          {/* タスク内容 */}
+          <p className="text-xs line-clamp-2 leading-tight" title={task.content}>
+            {task.content}
+          </p>
+
+          {/* 進捗バー */}
+          <progress
+            className={`progress w-full h-1 ${
+              task.isCompleted
+                ? 'progress-success'
+                : task.progressPercentage > 0
+                  ? 'progress-primary'
+                  : 'progress-secondary'
+            }`}
+            value={task.progressPercentage}
+            max="100"
+          />
+
+          {/* フッター: 担当者 */}
+          <div className="flex items-center justify-between text-xs text-base-content/60">
+            {task.assignedUserId ? (
+              <UserAvatar
+                userName={task.assignedUsername}
+                identityIconUrl={task.assignedAvatarUrl}
+                size={14}
+                nameClassName="text-xs truncate max-w-[60px]"
+              />
+            ) : (
+              <span className="text-base-content/30 text-xs">未割当</span>
+            )}
+            {task.dueDate && (
+              <span className="text-xs">
+                {new Date(task.dueDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -67,7 +67,7 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-6">
             {/* クリティカルパス */}
             {criticalPath.length > 0 && (
               <div className="rounded-box border border-error/30 bg-error/5 p-4 shadow-sm">
@@ -76,7 +76,7 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
                   <h3 className="text-base font-bold">クリティカルパス</h3>
                   <span className="badge badge-error badge-sm">{criticalPath.length}ステップ</span>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-transparent">
                   <TaskFlowChain tasks={criticalPath} onTaskClick={onTaskClick} canEditTask={canEditTask} />
                 </div>
               </div>
@@ -90,13 +90,13 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
                   <h3 className="text-base font-bold">その他の依存チェーン</h3>
                   <span className="badge badge-info badge-sm">{otherChains.length}件</span>
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {otherChains.map((chain) => (
                     <div
                       key={`chain-${chain[0]?.id ?? 'empty'}`}
                       className="rounded-box border border-base-300 bg-base-100 p-3 shadow-sm"
                     >
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-transparent">
                         <TaskFlowChain tasks={chain} onTaskClick={onTaskClick} canEditTask={canEditTask} />
                       </div>
                     </div>
