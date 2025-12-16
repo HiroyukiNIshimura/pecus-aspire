@@ -446,3 +446,74 @@ export async function removeWorkspaceItemRelation(
     return parseErrorResponse(error, '関連アイテムの削除に失敗しました。');
   }
 }
+
+/**
+ * エクスポートフォーマット
+ */
+export type ExportFormat = 'markdown' | 'html' | 'json';
+
+/**
+ * Server Action: ワークスペースアイテムをMarkdown形式でエクスポート
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ */
+export async function exportWorkspaceItemMarkdown(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.getApiWorkspacesItemsExportMarkdown(workspaceId, itemId);
+    return { success: true, data: response as string };
+  } catch (error) {
+    console.error('Failed to export workspace item as markdown:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'Markdownエクスポートに失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムをHTML形式でエクスポート
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ */
+export async function exportWorkspaceItemHtml(workspaceId: number, itemId: number): Promise<ApiResponse<string>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.getApiWorkspacesItemsExportHtml(workspaceId, itemId);
+    return { success: true, data: response as string };
+  } catch (error) {
+    console.error('Failed to export workspace item as HTML:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'HTMLエクスポートに失敗しました。');
+  }
+}
+
+/**
+ * Server Action: ワークスペースアイテムをJSON形式でエクスポート（Node データ）
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ */
+export async function exportWorkspaceItemJson(workspaceId: number, itemId: number): Promise<ApiResponse<unknown>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.getApiWorkspacesItemsExportJson(workspaceId, itemId);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Failed to export workspace item as JSON:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'JSONエクスポートに失敗しました。');
+  }
+}

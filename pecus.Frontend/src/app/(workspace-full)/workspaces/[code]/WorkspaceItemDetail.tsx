@@ -3,6 +3,10 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import {
   addWorkspaceItemPin,
+  type ExportFormat,
+  exportWorkspaceItemHtml,
+  exportWorkspaceItemJson,
+  exportWorkspaceItemMarkdown,
   fetchLatestWorkspaceItem,
   removeWorkspaceItemPin,
   removeWorkspaceItemRelation,
@@ -122,6 +126,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     const [isDrawerClosing, setIsDrawerClosing] = useState(false);
     const [isPinLoading, setIsPinLoading] = useState(false);
     const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState<ExportFormat | null>(null);
 
     // 関連削除モーダルの状態
     const [deleteRelationModal, setDeleteRelationModal] = useState<{
@@ -279,6 +284,67 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       } finally {
         setIsDeleting(false);
         handleCloseDeleteRelationModal();
+      }
+    };
+
+    // ファイルダウンロードのヘルパー関数
+    const downloadFile = (content: string, filename: string, mimeType: string) => {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    // エクスポートハンドラー
+    const handleExport = async (format: ExportFormat) => {
+      if (!item) return;
+
+      setIsExporting(format);
+      try {
+        const filename = item.code || `item-${itemId}`;
+
+        switch (format) {
+          case 'markdown': {
+            const result = await exportWorkspaceItemMarkdown(workspaceId, itemId);
+            if (result.success) {
+              downloadFile(result.data, `${filename}.md`, 'text/markdown;charset=utf-8');
+              notify.success('Markdownファイルをダウンロードしました。');
+            } else {
+              notify.error(result.message || 'Markdownエクスポートに失敗しました。');
+            }
+            break;
+          }
+          case 'html': {
+            const result = await exportWorkspaceItemHtml(workspaceId, itemId);
+            if (result.success) {
+              downloadFile(result.data, `${filename}.html`, 'text/html;charset=utf-8');
+              notify.success('HTMLファイルをダウンロードしました。');
+            } else {
+              notify.error(result.message || 'HTMLエクスポートに失敗しました。');
+            }
+            break;
+          }
+          case 'json': {
+            const result = await exportWorkspaceItemJson(workspaceId, itemId);
+            if (result.success) {
+              const jsonContent = typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2);
+              downloadFile(jsonContent, `${filename}.json`, 'application/json;charset=utf-8');
+              notify.success('JSONファイルをダウンロードしました。');
+            } else {
+              notify.error(result.message || 'JSONエクスポートに失敗しました。');
+            }
+            break;
+          }
+        }
+      } catch (_err: unknown) {
+        notify.error('エクスポート中にエラーが発生しました。');
+      } finally {
+        setIsExporting(null);
       }
     };
 
@@ -633,6 +699,56 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
               />
             </div>
           )}
+
+          {/* ダウンロードセクション */}
+          <div className="mt-8 pt-4 border-t border-base-300 pb-16 lg:pb-0">
+            <h3 className="text-lg font-bold mb-3">エクスポート</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleExport('markdown')}
+                className="btn btn-secondary btn-sm gap-2"
+                disabled={isExporting !== null}
+                title="Markdown形式でダウンロード"
+              >
+                {isExporting === 'markdown' ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <span className="icon-[mdi--language-markdown] size-4" aria-hidden="true" />
+                )}
+                Markdown
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExport('html')}
+                className="btn btn-secondary btn-sm gap-2"
+                disabled={isExporting !== null}
+                title="HTML形式でダウンロード"
+              >
+                {isExporting === 'html' ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <span className="icon-[mdi--language-html5] size-4" aria-hidden="true" />
+                )}
+                HTML
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExport('json')}
+                className="btn btn-secondary btn-sm gap-2"
+                disabled={isExporting !== null}
+                title="JSON形式でダウンロード（Nodeデータ）"
+              >
+                {isExporting === 'json' ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <span className="icon-[mdi--code-json] size-4" aria-hidden="true" />
+                )}
+                JSON
+              </button>
+            </div>
+            <p className="text-xs text-base-content/50 mt-2">アイテムの本文をさまざまな形式でダウンロードできます。</p>
+          </div>
         </div>
 
         {/* 編集モーダル */}
