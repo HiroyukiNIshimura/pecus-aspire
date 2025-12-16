@@ -118,3 +118,32 @@ export async function updateOrganizationSetting(request: {
 export async function getOrganization(): Promise<ApiResponse<OrganizationResponse>> {
   return getOrganizationDetail();
 }
+
+/** タスク関連の組織設定（フロントで必要な項目のみ） */
+export interface TaskOrganizationSettings {
+  /** タスク作成時に見積もりを必須とするか */
+  requireEstimateOnTaskCreation: boolean;
+  /** 先行タスクが完了しないと次のタスクを操作できないようにするか */
+  enforcePredecessorCompletion: boolean;
+}
+
+/**
+ * Server Action: タスク関連の組織設定を取得
+ * タスク作成・更新時に必要な設定のみを返す
+ */
+export async function getTaskOrganizationSettings(): Promise<ApiResponse<TaskOrganizationSettings>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.adminOrganization.getApiAdminOrganization();
+    return {
+      success: true,
+      data: {
+        requireEstimateOnTaskCreation: response.setting?.requireEstimateOnTaskCreation ?? false,
+        enforcePredecessorCompletion: response.setting?.enforcePredecessorCompletion ?? false,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch task organization settings:', error);
+    return parseErrorResponse(error, 'タスク設定の取得に失敗しました');
+  }
+}

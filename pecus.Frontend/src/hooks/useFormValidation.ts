@@ -33,6 +33,7 @@ function isBooleanSchema(schema: unknown): boolean {
  * - 入力時検証: Zodスキーマのフィールド検証
  * - サブミット時検証: Zodスキーマの全体検証
  * - 属性管理: data-pristine-*不要
+ * - Zod v4 では refine() も ZodObject を返すためそのまま使用可能
  */
 export function useFormValidation<T extends z.ZodRawShape>({ schema, onSubmit }: UseFormValidationOptions<T>) {
   const formRef = useRef<HTMLFormElement>(null);

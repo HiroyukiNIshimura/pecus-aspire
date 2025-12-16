@@ -9,12 +9,16 @@ interface DatePickerProps {
   value: string;
   /** 日付変更時のコールバック（YYYY-MM-DD 形式で返す） */
   onChange: (date: string) => void;
+  /** フォーカスが外れた時のコールバック */
+  onBlur?: () => void;
   /** 無効状態 */
   disabled?: boolean;
   /** プレースホルダー */
   placeholder?: string;
   /** 追加の CSS クラス */
   className?: string;
+  /** エラー状態 */
+  error?: boolean;
 }
 
 /**
@@ -23,9 +27,11 @@ interface DatePickerProps {
 export default function DatePicker({
   value,
   onChange,
+  onBlur,
   disabled = false,
   placeholder = '日付を選択',
   className = '',
+  error = false,
 }: DatePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fpRef = useRef<flatpickr.Instance | null>(null);
@@ -47,6 +53,10 @@ export default function DatePicker({
           } else {
             onChange('');
           }
+        },
+        onClose: () => {
+          // カレンダーが閉じられた時に onBlur を呼び出す
+          onBlur?.();
         },
       });
     }
@@ -75,7 +85,7 @@ export default function DatePicker({
     <input
       ref={inputRef}
       type="text"
-      className={`input input-bordered ${className}`}
+      className={`input input-bordered ${error ? 'input-error' : ''} ${className}`}
       placeholder={placeholder}
       disabled={disabled}
       readOnly

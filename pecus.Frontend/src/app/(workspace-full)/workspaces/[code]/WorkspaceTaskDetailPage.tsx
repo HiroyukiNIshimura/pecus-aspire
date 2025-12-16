@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getTaskOrganizationSettings, type TaskOrganizationSettings } from '@/actions/admin/organizations';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import {
   getPredecessorTaskOptions,
@@ -23,7 +24,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
-import { taskPriorityOptions, updateWorkspaceTaskSchema } from '@/schemas/workspaceTaskSchemas';
+import { taskPriorityOptions, updateWorkspaceTaskSchemaWithRequiredEstimate } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -149,6 +150,31 @@ export default function WorkspaceTaskDetailPage({
   const [predecessorTaskId, setPredecessorTaskId] = useState<number | null>(null);
   const [predecessorTaskOptions, setPredecessorTaskOptions] = useState<PredecessorTaskOption[]>([]);
 
+  // 組織設定（タスク関連）
+  const [taskSettings, setTaskSettings] = useState<TaskOrganizationSettings | null>(null);
+
+  // 動的にスキーマを生成（組織設定に基づく）
+  const taskSchema = useMemo(
+    () => updateWorkspaceTaskSchemaWithRequiredEstimate(taskSettings?.requireEstimateOnTaskCreation ?? false),
+    [taskSettings?.requireEstimateOnTaskCreation],
+  );
+
+  // 現在選択中の先行タスクが完了していないかどうかを判定
+  // predecessorTaskIdが変更された場合でも、predecessorTaskOptionsから最新の状態を取得
+  const isPredecessorIncomplete = useMemo(() => {
+    if (!predecessorTaskId) return false;
+    const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
+    // predecessorTaskOptionsに見つからない場合は、元のtask.predecessorTaskを参照
+    if (selectedPredecessor) {
+      return !selectedPredecessor.isCompleted;
+    }
+    // フォールバック：サーバーから取得した元の先行タスク情報を参照
+    if (task?.predecessorTask && task.predecessorTaskId === predecessorTaskId) {
+      return !task.predecessorTask.isCompleted;
+    }
+    return false;
+  }, [predecessorTaskId, predecessorTaskOptions, task?.predecessorTask, task?.predecessorTaskId]);
+
   // タスクデータをフォーム状態に反映
   const syncTaskToForm = useCallback((taskData: WorkspaceTaskDetailResponse) => {
     // 担当者
@@ -199,10 +225,11 @@ export default function WorkspaceTaskDetailPage({
       setServerErrors([]);
 
       try {
-        // タスクデータと先行タスク候補を並列で取得
-        const [taskResult, predecessorResult] = await Promise.all([
+        // タスクデータ、先行タスク候補、組織設定を並列で取得
+        const [taskResult, predecessorResult, settingsResult] = await Promise.all([
           getWorkspaceTask(workspaceId, itemId, targetTaskId),
           getPredecessorTaskOptions(workspaceId, itemId, targetTaskId),
+          getTaskOrganizationSettings(),
         ]);
 
         if (taskResult.success) {
@@ -214,6 +241,10 @@ export default function WorkspaceTaskDetailPage({
 
         if (predecessorResult.success) {
           setPredecessorTaskOptions(predecessorResult.data || []);
+        }
+
+        if (settingsResult.success && settingsResult.data) {
+          setTaskSettings(settingsResult.data);
         }
       } catch {
         notifyRef.current.error('タスクの取得中にエラーが発生しました');
@@ -353,15 +384,10 @@ export default function WorkspaceTaskDetailPage({
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
-      schema: updateWorkspaceTaskSchema,
+      schema: taskSchema,
       onSubmit: async (data) => {
         if (!task) return;
         setServerErrors([]);
-
-        if (!selectedAssignee) {
-          setServerErrors([{ key: 0, message: '担当者を選択してください。' }]);
-          return;
-        }
 
         // 日付を ISO 8601 形式（UTC）に変換
         const toISODateString = (dateStr: string | undefined | null): string | null => {
@@ -370,20 +396,13 @@ export default function WorkspaceTaskDetailPage({
           return date.toISOString();
         };
 
-        // dueDateは必須なので変換して必ずnon-nullを保証
-        const dueDateISO = toISODateString(data.dueDate);
-        if (!dueDateISO) {
-          setServerErrors([{ key: 0, message: '期限日は必須です。' }]);
-          return;
-        }
-
         const requestData: UpdateWorkspaceTaskRequest = {
           content: data.content,
           taskTypeId: data.taskTypeId,
-          assignedUserId: selectedAssignee.id,
+          assignedUserId: data.assignedUserId,
           priority: data.priority as TaskPriority | undefined,
           startDate: toISODateString(data.startDate),
-          dueDate: dueDateISO,
+          dueDate: toISODateString(data.dueDate)!,
           estimatedHours: data.estimatedHours || null,
           actualHours: data.actualHours || null,
           progressPercentage: data.progressPercentage ?? 0,
@@ -831,10 +850,22 @@ export default function WorkspaceTaskDetailPage({
                       <input type="hidden" name="dueDate" value={dueDate} />
                       <DatePicker
                         value={dueDate}
-                        onChange={setDueDate}
+                        onChange={(val) => {
+                          setDueDate(val);
+                          if (shouldShowError('dueDate')) {
+                            validateField('dueDate', val);
+                          }
+                        }}
+                        onBlur={() => validateField('dueDate', dueDate)}
                         placeholder="期限日を選択"
                         disabled={isSubmitting || isLoadingTask}
+                        error={shouldShowError('dueDate')}
                       />
+                      {shouldShowError('dueDate') && (
+                        <div className="label">
+                          <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -856,7 +887,7 @@ export default function WorkspaceTaskDetailPage({
                       <option value="">なし</option>
                       {predecessorTaskOptions.map((t) => (
                         <option key={t.id} value={t.id}>
-                          {t.content.length > 50 ? `${t.content.substring(0, 50)}...` : t.content}
+                          T-{t.sequence}: {t.content.length > 40 ? `${t.content.substring(0, 40)}...` : t.content}
                         </option>
                       ))}
                     </select>
@@ -867,10 +898,15 @@ export default function WorkspaceTaskDetailPage({
                     {/* 予定工数 */}
                     <div className="form-control">
                       <label htmlFor="estimatedHours" className="label">
-                        <span className="label-text font-semibold">予定工数（時間）</span>
+                        <span className="label-text font-semibold">
+                          予定工数（時間）
+                          {taskSettings?.requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
+                        </span>
                       </label>
                       <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
-                      <div className="input input-bordered flex items-center">
+                      <div
+                        className={`input input-bordered flex items-center ${shouldShowError('estimatedHours') ? 'input-error' : ''}`}
+                      >
                         <input
                           id="estimatedHours"
                           type="text"
@@ -878,15 +914,24 @@ export default function WorkspaceTaskDetailPage({
                           value={estimatedHours || ''}
                           onChange={(e) => {
                             const val = e.target.value;
+                            let newValue = 0;
                             if (val === '') {
-                              setEstimatedHours(0);
+                              newValue = 0;
                             } else {
                               const num = parseFloat(val);
                               if (!Number.isNaN(num) && num >= 0) {
-                                setEstimatedHours(num);
+                                newValue = num;
+                              } else {
+                                return; // 無効な入力は無視
                               }
                             }
+                            setEstimatedHours(newValue);
+                            // エラーがある場合は値変更時に再検証
+                            if (shouldShowError('estimatedHours')) {
+                              validateField('estimatedHours', newValue);
+                            }
                           }}
+                          onBlur={() => validateField('estimatedHours', estimatedHours)}
                           className="flex-1 bg-transparent outline-none min-w-0"
                           placeholder="0"
                           disabled={isSubmitting || isLoadingTask}
@@ -913,6 +958,11 @@ export default function WorkspaceTaskDetailPage({
                           </button>
                         </span>
                       </div>
+                      {shouldShowError('estimatedHours') && (
+                        <div className="label">
+                          <span className="label-text-alt text-error">{getFieldError('estimatedHours')}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* 実績工数 */}
@@ -1014,18 +1064,24 @@ export default function WorkspaceTaskDetailPage({
                           disabled={
                             isSubmitting ||
                             isLoadingTask ||
-                            (itemCommitterId != null && currentUser?.id !== itemCommitterId)
+                            (itemCommitterId != null && currentUser?.id !== itemCommitterId) ||
+                            (taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
                           title={
-                            itemCommitterId != null && currentUser?.id !== itemCommitterId
-                              ? '完了操作はコミッターのみ可能です'
-                              : undefined
+                            taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete
+                              ? '先行タスクが完了していないため、完了にできません'
+                              : itemCommitterId != null && currentUser?.id !== itemCommitterId
+                                ? '完了操作はコミッターのみ可能です'
+                                : undefined
                           }
                         />
                         <label htmlFor="isCompleted" className="label-text cursor-pointer">
                           完了
                           {itemCommitterId != null && currentUser?.id !== itemCommitterId && (
                             <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
+                          )}
+                          {taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete && (
+                            <span className="text-xs text-warning ml-1">(先行タスク未完了)</span>
                           )}
                         </label>
                       </div>

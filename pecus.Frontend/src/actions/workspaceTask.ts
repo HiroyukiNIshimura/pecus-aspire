@@ -243,6 +243,7 @@ export async function checkAssigneeTaskLoad(
 /** 先行タスク候補として使用するシンプルなタスク情報 */
 export interface PredecessorTaskOption {
   id: number;
+  sequence: number;
   content: string;
   isCompleted: boolean;
 }
@@ -273,6 +274,7 @@ export async function getPredecessorTaskOptions(
       .filter((t) => t.id !== excludeTaskId) // 自タスクを除外
       .map((t) => ({
         id: t.id,
+        sequence: t.sequence || 0,
         content: t.content || '',
         isCompleted: t.isCompleted || false,
       }));

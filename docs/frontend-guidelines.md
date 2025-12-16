@@ -306,6 +306,7 @@ export default function AdminTagsClient({ initialUser, fetchError }) {
    - エラーメッセージの統一的な抽出
 
 3. **フック層** - 用途により2つのフックを使い分ける
+   いずれもzodスキーマをパラメータとして受け取れるので、検証ロジックを動的に変更する際にはzodスキーマを動的に変更するだけでよい（余計なロジックを作成しないこと！）
 
    **3-1. 個別フィールドバリデーション用 (`src/hooks/useValidation.ts`)**
    - リアルタイムバリデーション（入力時）に最適

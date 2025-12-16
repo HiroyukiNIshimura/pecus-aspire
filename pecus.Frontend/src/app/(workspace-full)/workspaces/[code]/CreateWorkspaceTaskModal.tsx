@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getTaskOrganizationSettings, type TaskOrganizationSettings } from '@/actions/admin/organizations';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import {
   checkAssigneeTaskLoad,
@@ -20,7 +21,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
-import { createWorkspaceTaskSchema, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
+import { createWorkspaceTaskSchemaWithRequiredEstimate, taskPriorityOptions } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
 interface SelectedUser {
@@ -84,6 +85,15 @@ export default function CreateWorkspaceTaskModal({
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
   const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
 
+  // 組織設定（タスク関連）
+  const [taskSettings, setTaskSettings] = useState<TaskOrganizationSettings | null>(null);
+
+  // 動的にスキーマを生成（組織設定に基づく）
+  const taskSchema = useMemo(
+    () => createWorkspaceTaskSchemaWithRequiredEstimate(taskSettings?.requireEstimateOnTaskCreation ?? false),
+    [taskSettings?.requireEstimateOnTaskCreation],
+  );
+
   const toISODateString = useCallback((dateStr: string | undefined | null): string | null => {
     if (!dateStr) return null;
     const date = new Date(dateStr);
@@ -104,38 +114,35 @@ export default function CreateWorkspaceTaskModal({
     }
   }, [workspaceId, itemId]);
 
-  // モーダルが開いたら先行タスク候補を取得
+  // 組織設定を取得
+  const fetchTaskSettings = useCallback(async () => {
+    const result = await getTaskOrganizationSettings();
+    if (result.success && result.data) {
+      setTaskSettings(result.data);
+    }
+  }, []);
+
+  // モーダルが開いたら先行タスク候補と組織設定を取得
   useEffect(() => {
     if (isOpen) {
       fetchPredecessorTasks();
+      fetchTaskSettings();
     }
-  }, [isOpen, fetchPredecessorTasks]);
+  }, [isOpen, fetchPredecessorTasks, fetchTaskSettings]);
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
     useFormValidation({
-      schema: createWorkspaceTaskSchema,
+      schema: taskSchema,
       onSubmit: async (data) => {
         setServerErrors([]);
-
-        if (!selectedAssignee) {
-          setServerErrors([{ key: 0, message: '担当者を選択してください。' }]);
-          return;
-        }
-
-        // dueDateは必須なので変換して必ずnon-nullを保証
-        const dueDateISO = toISODateString(data.dueDate);
-        if (!dueDateISO) {
-          setServerErrors([{ key: 0, message: '期限日は必須です。' }]);
-          return;
-        }
 
         const requestData: CreateWorkspaceTaskRequest = {
           content: data.content,
           taskTypeId: data.taskTypeId,
-          assignedUserId: selectedAssignee.id,
+          assignedUserId: data.assignedUserId,
           priority: data.priority as TaskPriority | undefined,
           startDate: toISODateString(data.startDate),
-          dueDate: dueDateISO,
+          dueDate: toISODateString(data.dueDate)!,
           estimatedHours: data.estimatedHours || null,
           predecessorTaskId: predecessorTaskId,
         };
@@ -224,6 +231,7 @@ export default function CreateWorkspaceTaskModal({
       setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
+      setTaskSettings(null);
     }
   }, [isOpen, resetForm]);
 
@@ -321,33 +329,6 @@ export default function CreateWorkspaceTaskModal({
 
         {/* モーダルボディ */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {/* サーバーエラー表示 */}
-          {serverErrors.length > 0 && (
-            <div className="alert alert-soft alert-error mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 shrink-0 stroke-current"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div>
-                <h3 className="font-bold">エラーが発生しました</h3>
-                <ul className="list-disc list-inside mt-2">
-                  {serverErrors.map((error) => (
-                    <li key={error.key}>{error.message}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
           {/* フォーム */}
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* タスク内容 */}
@@ -531,7 +512,25 @@ export default function CreateWorkspaceTaskModal({
                   </span>
                 </label>
                 <input type="hidden" name="dueDate" value={dueDate} />
-                <DatePicker value={dueDate} onChange={setDueDate} placeholder="期限日を選択" disabled={isSubmitting} />
+                <DatePicker
+                  value={dueDate}
+                  onChange={(val) => {
+                    setDueDate(val);
+                    // エラーがある場合は値変更時に再検証
+                    if (shouldShowError('dueDate')) {
+                      validateField('dueDate', val);
+                    }
+                  }}
+                  onBlur={() => validateField('dueDate', dueDate)}
+                  placeholder="期限日を選択"
+                  disabled={isSubmitting}
+                  error={shouldShowError('dueDate')}
+                />
+                {shouldShowError('dueDate') && (
+                  <div className="label">
+                    <span className="label-text-alt text-error">{getFieldError('dueDate')}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -551,7 +550,7 @@ export default function CreateWorkspaceTaskModal({
                 <option value="">なし</option>
                 {predecessorTaskOptions.map((task) => (
                   <option key={task.id} value={task.id}>
-                    {task.content.length > 50 ? `${task.content.substring(0, 50)}...` : task.content}
+                    T-{task.sequence}: {task.content.length > 40 ? `${task.content.substring(0, 40)}...` : task.content}
                   </option>
                 ))}
               </select>
@@ -593,10 +592,15 @@ export default function CreateWorkspaceTaskModal({
             {/* 予定工数 */}
             <div className="form-control">
               <label htmlFor="estimatedHours" className="label">
-                <span className="label-text font-semibold">予定工数（時間）</span>
+                <span className="label-text font-semibold">
+                  予定工数（時間）
+                  {taskSettings?.requireEstimateOnTaskCreation && <span className="text-error"> *</span>}
+                </span>
               </label>
               <input type="hidden" name="estimatedHours" value={estimatedHours || ''} />
-              <div className="input input-bordered max-w-xs flex items-center">
+              <div
+                className={`input input-bordered max-w-xs flex items-center ${shouldShowError('estimatedHours') ? 'input-error' : ''}`}
+              >
                 <input
                   id="estimatedHours"
                   type="text"
@@ -604,15 +608,24 @@ export default function CreateWorkspaceTaskModal({
                   value={estimatedHours || ''}
                   onChange={(e) => {
                     const val = e.target.value;
+                    let newValue = 0;
                     if (val === '') {
-                      setEstimatedHours(0);
+                      newValue = 0;
                     } else {
                       const num = parseFloat(val);
                       if (!Number.isNaN(num) && num >= 0) {
-                        setEstimatedHours(num);
+                        newValue = num;
+                      } else {
+                        return; // 無効な入力は無視
                       }
                     }
+                    setEstimatedHours(newValue);
+                    // エラーがある場合は値変更時に再検証
+                    if (shouldShowError('estimatedHours')) {
+                      validateField('estimatedHours', newValue);
+                    }
                   }}
+                  onBlur={() => validateField('estimatedHours', estimatedHours)}
                   className="flex-1 bg-transparent outline-none min-w-0"
                   placeholder="0"
                   disabled={isSubmitting}
@@ -645,6 +658,33 @@ export default function CreateWorkspaceTaskModal({
                 </div>
               )}
             </div>
+
+            {/* サーバーエラー表示 */}
+            {serverErrors.length > 0 && (
+              <div className="alert alert-soft alert-error mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <h3 className="font-bold">エラーが発生しました</h3>
+                  <ul className="list-disc list-inside mt-2">
+                    {serverErrors.map((error) => (
+                      <li key={error.key}>{error.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             {/* ボタングループ */}
             <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
