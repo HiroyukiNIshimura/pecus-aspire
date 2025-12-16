@@ -88,16 +88,15 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
   const iconPath = getTaskTypeIconPath(task);
   const isInactive = task.isCompleted || task.isDiscarded;
 
-  const blurClass = !clickable ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : '';
+  // 完了/破棄されたタスクにはblurを適用（タスク一覧と同じ仕様）
+  const blurClass = isInactive ? 'blur-[1px] opacity-60 hover:blur-none hover:opacity-100' : '';
   const clickableClass = clickable ? 'cursor-pointer hover:border-primary hover:shadow-md' : '';
 
   return (
     <div
       className={`rounded-lg bg-base-100 border border-base-content/25 shadow-sm transition-all ${
-        isInactive ? 'opacity-60' : ''
-      } ${!task.canStart && !isInactive ? 'border-l-4 border-l-warning' : ''} ${
-        task.successorCount > 0 && task.canStart && !isInactive ? 'border-l-4 border-l-error' : ''
-      } ${blurClass} ${clickableClass}`}
+        !task.canStart && !isInactive ? 'border-l-4 border-l-warning' : ''
+      } ${task.successorCount > 0 && task.canStart && !isInactive ? 'border-l-4 border-l-error' : ''} ${blurClass} ${clickableClass}`}
       onClick={clickable ? onClick : undefined}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
