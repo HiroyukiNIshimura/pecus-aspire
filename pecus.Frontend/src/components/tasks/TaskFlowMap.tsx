@@ -67,53 +67,57 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
         </div>
       ) : (
         <>
-          {/* クリティカルパス */}
-          {criticalPath.length > 0 && (
-            <div>
-              <h3 className="text-base font-bold mb-3 flex items-center gap-2">
-                <span className="icon-[mdi--fire] w-5 h-5 text-error" aria-hidden="true" />
-                クリティカルパス
-                <span className="badge badge-error badge-sm">{criticalPath.length}ステップ</span>
-              </h3>
-              <div className="bg-error/5 border border-error/20 rounded-box p-4">
-                <TaskFlowChain tasks={criticalPath} onTaskClick={onTaskClick} canEditTask={canEditTask} />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {/* クリティカルパス */}
+            {criticalPath.length > 0 && (
+              <div className="rounded-box border border-error/30 bg-error/5 p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="icon-[mdi--fire] w-5 h-5 text-error" aria-hidden="true" />
+                  <h3 className="text-base font-bold">クリティカルパス</h3>
+                  <span className="badge badge-error badge-sm">{criticalPath.length}ステップ</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <TaskFlowChain tasks={criticalPath} onTaskClick={onTaskClick} canEditTask={canEditTask} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* その他の依存チェーン */}
-          {otherChains.length > 0 && (
-            <div>
-              <h3 className="text-base font-bold mb-3 flex items-center gap-2">
-                <span className="icon-[mdi--source-branch] w-5 h-5 text-info" aria-hidden="true" />
-                その他の依存チェーン
-                <span className="badge badge-info badge-sm">{otherChains.length}件</span>
-              </h3>
-              <div className="space-y-4">
-                {otherChains.map((chain) => (
-                  <div
-                    key={`chain-${chain[0]?.id ?? 'empty'}`}
-                    className="bg-base-200/50 border border-base-300 rounded-box p-4"
-                  >
-                    <TaskFlowChain tasks={chain} onTaskClick={onTaskClick} canEditTask={canEditTask} />
-                  </div>
-                ))}
+            {/* その他の依存チェーン */}
+            {otherChains.length > 0 && (
+              <div className="rounded-box border border-info/30 bg-base-200/50 p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="icon-[mdi--source-branch] w-5 h-5 text-info" aria-hidden="true" />
+                  <h3 className="text-base font-bold">その他の依存チェーン</h3>
+                  <span className="badge badge-info badge-sm">{otherChains.length}件</span>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {otherChains.map((chain) => (
+                    <div
+                      key={`chain-${chain[0]?.id ?? 'empty'}`}
+                      className="rounded-box border border-base-300 bg-base-100 p-3 shadow-sm"
+                    >
+                      <div className="overflow-x-auto">
+                        <TaskFlowChain tasks={chain} onTaskClick={onTaskClick} canEditTask={canEditTask} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* 独立タスク */}
           {independentTasks.length > 0 && (
             <div>
-              <h3 className="text-base font-bold mb-3 flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-3">
                 <span
                   className="icon-[mdi--checkbox-marked-circle-outline] w-5 h-5 text-secondary"
                   aria-hidden="true"
                 />
-                独立タスク（依存関係なし）
+                <h3 className="text-base font-bold">独立タスク（依存関係なし）</h3>
                 <span className="badge badge-secondary badge-sm">{independentTasks.length}件</span>
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {independentTasks.map((task) => {
                   const clickable = canEditTask?.(task) ?? false;
                   return (

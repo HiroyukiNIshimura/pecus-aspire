@@ -27,9 +27,18 @@ export default function TaskFlowChain({ tasks, onTaskClick, canEditTask }: TaskF
           <div key={task.id} className="w-full max-w-md">
             {/* 矢印コネクタ（最初のタスク以外） */}
             {index > 0 && (
-              <div className="flex flex-col items-center py-1">
-                <div className="w-0.5 h-3 bg-base-300" />
-                <span className="icon-[mdi--chevron-down] w-5 h-5 text-base-300 -my-1" aria-hidden="true" />
+              <div className="flex justify-center py-1">
+                <svg
+                  width="20"
+                  height="24"
+                  viewBox="0 0 20 24"
+                  fill="none"
+                  className="text-base-content"
+                  aria-hidden="true"
+                >
+                  <line x1="10" y1="0" x2="10" y2="18" stroke="currentColor" strokeWidth="2" />
+                  <polygon points="10,24 5,16 15,16" fill="currentColor" />
+                </svg>
               </div>
             )}
 
