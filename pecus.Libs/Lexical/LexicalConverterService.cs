@@ -46,6 +46,48 @@ public class LexicalConverterService : ILexicalConverterService, IDisposable
         return await ConvertAsync(lexicalJson, ConvertType.PlainText, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async Task<LexicalConvertResult> FromMarkdownAsync(string markdown, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            // 空の Markdown は空の EditorState を返す
+            return new LexicalConvertResult
+            {
+                Success = true,
+                Result = "{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}",
+                ProcessingTimeMs = 0
+            };
+        }
+
+        try
+        {
+            var request = new MarkdownToLexicalRequest { Markdown = markdown };
+            var response = await _client.FromMarkdownAsync(request, cancellationToken: cancellationToken);
+
+            return new LexicalConvertResult
+            {
+                Success = response.Success,
+                Result = response.Result,
+                ErrorMessage = response.HasErrorMessage ? response.ErrorMessage : null,
+                ProcessingTimeMs = response.ProcessingTimeMs,
+                UnknownNodes = [.. response.UnknownNodes]
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to convert Markdown to Lexical JSON");
+
+            return new LexicalConvertResult
+            {
+                Success = false,
+                Result = string.Empty,
+                ErrorMessage = ex.Message,
+                ProcessingTimeMs = 0
+            };
+        }
+    }
+
     private enum ConvertType
     {
         Html,

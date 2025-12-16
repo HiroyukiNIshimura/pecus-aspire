@@ -28,6 +28,14 @@ public interface ILexicalConverterService
     /// <param name="cancellationToken">キャンセルトークン</param>
     /// <returns>変換結果</returns>
     Task<LexicalConvertResult> ToPlainTextAsync(string lexicalJson, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Markdown を Lexical JSON に変換する
+    /// </summary>
+    /// <param name="markdown">Markdown 文字列</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>変換結果（Result には Lexical EditorState JSON が入る）</returns>
+    Task<LexicalConvertResult> FromMarkdownAsync(string markdown, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

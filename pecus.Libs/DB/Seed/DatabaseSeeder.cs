@@ -21,6 +21,7 @@ public class DatabaseSeeder
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<DatabaseSeeder> _logger;
+    private readonly ILexicalConverterService? _lexicalConverterService;
     private readonly Random _random = new Random();
     private readonly Bogus.Faker _faker;
 
@@ -29,10 +30,15 @@ public class DatabaseSeeder
     /// </summary>
     /// <param name="context"></param>
     /// <param name="logger"></param>
-    public DatabaseSeeder(ApplicationDbContext context, ILogger<DatabaseSeeder> logger)
+    /// <param name="lexicalConverterService">Lexical 変換サービス（オプション）</param>
+    public DatabaseSeeder(
+        ApplicationDbContext context,
+        ILogger<DatabaseSeeder> logger,
+        ILexicalConverterService? lexicalConverterService = null)
     {
         _context = context;
         _logger = logger;
+        _lexicalConverterService = lexicalConverterService;
         _faker = new Bogus.Faker("ja");
     }
 

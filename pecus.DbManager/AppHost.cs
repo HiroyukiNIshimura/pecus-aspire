@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Pecus.DbManager;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
+using Pecus.Libs.Lexical;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,14 @@ builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
 
 // DatabaseSeederの登録
 builder.Services.AddScoped<DatabaseSeeder>();
+
+// Lexical Converter gRPC サービスの登録
+var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
+builder.Services.AddSingleton<ILexicalConverterService>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<LexicalConverterService>>();
+    return new LexicalConverterService(lexicalConverterEndpoint, logger);
+});
 
 // OpenTelemetryの設定
 builder
