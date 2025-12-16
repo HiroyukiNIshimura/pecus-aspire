@@ -9,11 +9,11 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * 添付ファイルID
      */
-    id: number | string;
+    id: number;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId?: number | string;
+    workspaceItemId?: number;
     /**
      * ファイル名
      */
@@ -21,7 +21,7 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * ファイルサイズ（バイト）
      */
-    fileSize?: number | string;
+    fileSize?: number;
     /**
      * MIMEタイプ
      */
@@ -45,7 +45,7 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * アップロードしたユーザーID
      */
-    uploadedByUserId?: number | string;
+    uploadedByUserId?: number;
     /**
      * アップロードしたユーザー名
      */

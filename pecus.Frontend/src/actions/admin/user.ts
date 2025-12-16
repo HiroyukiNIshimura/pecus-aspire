@@ -2,9 +2,9 @@
 
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  PagedResponseOfUserDetailResponseAndUserStatistics,
   SuccessResponse,
   UserDetailResponse,
-  UserDetailResponseUserStatisticsPagedResponse,
   UserSearchResultResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
@@ -18,7 +18,7 @@ export async function getUsers(
   username?: string,
   skillIds?: number[],
   skillFilterMode: string = 'and',
-): Promise<ApiResponse<UserDetailResponseUserStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfUserDetailResponseAndUserStatistics>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminUser.getApiAdminUsers1(page, isActive, username, skillIds, skillFilterMode);

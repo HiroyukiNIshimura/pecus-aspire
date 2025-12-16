@@ -9,11 +9,11 @@ export type TaskFlowPredecessorInfo = {
     /**
      * タスクID
      */
-    id: number | string;
+    id: number;
     /**
      * タスクシーケンス番号
      */
-    sequence: number | string;
+    sequence: number;
     /**
      * タスク内容
      */

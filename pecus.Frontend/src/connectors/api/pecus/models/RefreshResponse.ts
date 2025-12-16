@@ -21,7 +21,7 @@ export type RefreshResponse = {
     /**
      * トークンの有効時間（秒）
      */
-    expiresIn?: number | string;
+    expiresIn?: number;
     /**
      * リフレッシュトークン
      */

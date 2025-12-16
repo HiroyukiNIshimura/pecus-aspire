@@ -10,7 +10,7 @@ export type AddWorkspaceItemRelationRequest = {
     /**
      * 関連先アイテムID
      */
-    toItemId: number | string;
+    toItemId: number;
     relationType?: (null | RelationType);
 };
 

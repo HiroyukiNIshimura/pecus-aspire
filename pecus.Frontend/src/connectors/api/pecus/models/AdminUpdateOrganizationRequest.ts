@@ -11,6 +11,6 @@ export type AdminUpdateOrganizationRequest = {
     representativeName?: string | null;
     phoneNumber?: string | null;
     email?: string | null;
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

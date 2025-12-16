@@ -6,7 +6,7 @@
  * ユーザーのスキル設定リクエスト
  */
 export type SetUserSkillsRequest = {
-    skillIds: Array<number | string>;
-    userRowVersion?: number | string | null;
+    skillIds: Array<number>;
+    userRowVersion?: number | null;
 };
 

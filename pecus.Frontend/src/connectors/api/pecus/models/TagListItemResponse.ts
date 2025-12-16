@@ -9,7 +9,7 @@ export type TagListItemResponse = {
     /**
      * タグID
      */
-    id: number | string;
+    id: number;
     /**
      * タグ名
      */
@@ -29,6 +29,6 @@ export type TagListItemResponse = {
     /**
      * このタグが付与されているアイテム数
      */
-    itemCount?: number | string;
+    itemCount?: number;
 };
 

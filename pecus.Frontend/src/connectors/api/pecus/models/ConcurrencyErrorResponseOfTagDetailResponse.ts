@@ -11,7 +11,7 @@ export type ConcurrencyErrorResponseOfTagDetailResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * エラーメッセージ
      */

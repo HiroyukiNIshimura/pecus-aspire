@@ -10,11 +10,11 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 関連ID
      */
-    id: number | string;
+    id: number;
     /**
      * 関連元アイテムID
      */
-    fromItemId?: number | string;
+    fromItemId?: number;
     /**
      * 関連元アイテムコード
      */
@@ -26,7 +26,7 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 関連先アイテムID
      */
-    toItemId?: number | string;
+    toItemId?: number;
     /**
      * 関連先アイテムコード
      */
@@ -43,7 +43,7 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 作成者ID
      */
-    createdByUserId?: number | string;
+    createdByUserId?: number;
     /**
      * 作成者ユーザー名
      */

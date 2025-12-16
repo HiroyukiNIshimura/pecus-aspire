@@ -8,6 +8,6 @@
 export type CreateUserWithoutPasswordRequest = {
     username: string;
     email: string;
-    roles: Array<number | string>;
+    roles: Array<number>;
 };
 

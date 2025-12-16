@@ -25,8 +25,8 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsTasks(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: CreateWorkspaceTaskRequest,
     ): CancelablePromise<WorkspaceTaskResponse> {
         return __request(OpenAPI, {
@@ -60,12 +60,12 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasks(
-        workspaceId: number | string,
-        itemId: number | string,
-        page?: number | string,
-        pageSize?: number | string,
+        workspaceId: number,
+        itemId: number,
+        page?: number,
+        pageSize?: number,
         status?: TaskStatusFilter,
-        assignedUserId?: number | string,
+        assignedUserId?: number,
         sortBy?: TaskSortBy,
         order?: SortOrder,
     ): CancelablePromise<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics> {
@@ -99,9 +99,9 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasks1(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
     ): CancelablePromise<WorkspaceTaskDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -127,9 +127,9 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static putApiWorkspacesItemsTasks(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
         requestBody: UpdateWorkspaceTaskRequest,
     ): CancelablePromise<WorkspaceTaskResponse> {
         return __request(OpenAPI, {
@@ -159,9 +159,9 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksSequence(
-        workspaceId: number | string,
-        itemId: number | string,
-        sequence: number | string,
+        workspaceId: number,
+        itemId: number,
+        sequence: number,
     ): CancelablePromise<WorkspaceTaskDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -186,8 +186,8 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksFlowMap(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<TaskFlowMapResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -212,9 +212,9 @@ export class WorkspaceTaskService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksAssigneeLoadCheck(
-        workspaceId: number | string,
-        itemId: number | string,
-        assignedUserId?: number | string,
+        workspaceId: number,
+        itemId: number,
+        assignedUserId?: number,
         dueDate?: string,
     ): CancelablePromise<AssigneeTaskLoadResponse> {
         return __request(OpenAPI, {

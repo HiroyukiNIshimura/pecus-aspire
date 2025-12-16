@@ -11,6 +11,6 @@ export type PriorityTaskCount = {
     /**
      * タスク数
      */
-    count: number | string;
+    count: number;
 };
 

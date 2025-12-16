@@ -1,7 +1,7 @@
 'use server';
 
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { ActivityPeriod, ActivityResponsePagedResponse } from '@/connectors/api/pecus';
+import type { ActivityPeriod, PagedResponseOfActivityResponse } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 
 /**
@@ -11,7 +11,7 @@ export async function fetchItemActivities(
   workspaceId: number,
   itemId: number,
   page: number = 1,
-): Promise<ApiResponse<ActivityResponsePagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfActivityResponse>> {
   try {
     const api = await createPecusApiClients();
     const result = await api.activity.getApiWorkspacesItemsActivities(workspaceId, itemId, page);
@@ -32,7 +32,7 @@ export async function fetchItemActivities(
 export async function fetchMyActivities(
   page: number = 1,
   period?: ActivityPeriod,
-): Promise<ApiResponse<ActivityResponsePagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfActivityResponse>> {
   try {
     const api = await createPecusApiClients();
     const result = await api.my.getApiMyActivities(page, period);

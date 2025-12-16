@@ -185,21 +185,24 @@ export default function CreateWorkspaceTaskModal({
   }, []);
 
   // 担当者選択
-  const handleSelectAssignee = useCallback((user: UserSearchResultResponse) => {
-    const selected: SelectedUser = {
-      id: user.id || 0,
-      username: user.username || '',
-      email: user.email || '',
-      identityIconUrl: user.identityIconUrl || null,
-    };
-    setSelectedAssignee(selected);
-    setShowAssigneeDropdown(false);
-    setAssigneeSearchResults([]);
-    // エラーがある場合は値変更時に再検証
-    if (shouldShowError('assignedUserId')) {
-      validateField('assignedUserId', user.id || '');
-    }
-  }, [shouldShowError, validateField]);
+  const handleSelectAssignee = useCallback(
+    (user: UserSearchResultResponse) => {
+      const selected: SelectedUser = {
+        id: user.id || 0,
+        username: user.username || '',
+        email: user.email || '',
+        identityIconUrl: user.identityIconUrl || null,
+      };
+      setSelectedAssignee(selected);
+      setShowAssigneeDropdown(false);
+      setAssigneeSearchResults([]);
+      // エラーがある場合は値変更時に再検証
+      if (shouldShowError('assignedUserId')) {
+        validateField('assignedUserId', user.id || '');
+      }
+    },
+    [shouldShowError, validateField],
+  );
 
   // 担当者クリア
   const handleClearAssignee = useCallback(() => {

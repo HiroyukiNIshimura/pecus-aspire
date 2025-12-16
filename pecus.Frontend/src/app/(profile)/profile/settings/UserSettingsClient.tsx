@@ -33,8 +33,8 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
     canReceiveRealtimeNotification: initialSettings.canReceiveRealtimeNotification ?? true,
     timeZone: initialSettings.timeZone,
     language: initialSettings.language,
-    landingPage: initialSettings.landingPage,
-    focusScorePriority: initialSettings.focusScorePriority,
+    landingPage: initialSettings.landingPage ?? undefined,
+    focusScorePriority: initialSettings.focusScorePriority ?? undefined,
     focusTasksLimit: initialSettings.focusTasksLimit ?? 10,
     waitingTasksLimit: initialSettings.waitingTasksLimit ?? 10,
   });
@@ -84,8 +84,8 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
       canReceiveRealtimeNotification: setting.canReceiveRealtimeNotification ?? true,
       timeZone: setting.timeZone,
       language: setting.language,
-      landingPage: setting.landingPage,
-      focusScorePriority: setting.focusScorePriority,
+      landingPage: setting.landingPage ?? undefined,
+      focusScorePriority: setting.focusScorePriority ?? undefined,
       focusTasksLimit: setting.focusTasksLimit ?? 10,
       waitingTasksLimit: setting.waitingTasksLimit ?? 10,
     });

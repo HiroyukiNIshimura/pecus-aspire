@@ -17,6 +17,6 @@ export type UpdateWorkspaceItemStatusRequest = {
     /**
      * アイテムの楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

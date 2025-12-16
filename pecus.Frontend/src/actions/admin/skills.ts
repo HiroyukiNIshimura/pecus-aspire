@@ -2,9 +2,9 @@
 
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  PagedResponseOfSkillListItemResponseAndSkillStatistics,
   SkillDetailResponse,
   SkillListItemResponse,
-  SkillListItemResponseSkillStatisticsPagedResponse,
   SkillResponse,
   SuccessResponse,
 } from '@/connectors/api/pecus';
@@ -16,7 +16,7 @@ import type { ApiResponse } from '../types';
 export async function getSkills(
   page: number = 1,
   isActive: boolean = true,
-): Promise<ApiResponse<SkillListItemResponseSkillStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfSkillListItemResponseAndSkillStatistics>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminSkill.getApiAdminSkills(page, isActive);

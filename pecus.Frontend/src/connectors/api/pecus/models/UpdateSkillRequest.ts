@@ -9,6 +9,6 @@ export type UpdateSkillRequest = {
     name?: string | null;
     description?: string | null;
     isActive?: boolean | null;
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

@@ -21,7 +21,7 @@ export class FileService {
      */
     public static getApiDownloads(
         fileType: FileType,
-        resourceId: number | string,
+        resourceId: number,
         fileName: string,
         useOriginal?: boolean,
     ): CancelablePromise<any> {
@@ -51,7 +51,7 @@ export class FileService {
      */
     public static deleteApiDownloadsIcons(
         fileType?: FileType,
-        resourceId?: number | string,
+        resourceId?: number,
         fileName?: string,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
@@ -76,7 +76,7 @@ export class FileService {
     public static postApiFiles(
         formData: {
             FileType?: FileType;
-            ResourceId?: number | string;
+            ResourceId?: number;
             File?: IFormFile;
         },
     ): CancelablePromise<FileUploadResponse> {

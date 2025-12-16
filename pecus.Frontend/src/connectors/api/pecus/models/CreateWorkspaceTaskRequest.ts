@@ -14,11 +14,11 @@ export type CreateWorkspaceTaskRequest = {
     /**
      * タスク種類ID
      */
-    taskTypeId: number | string;
+    taskTypeId: number;
     /**
      * 担当ユーザーID
      */
-    assignedUserId: number | string;
+    assignedUserId: number;
     priority?: (null | TaskPriority);
     /**
      * 開始日時(ISO 8601 形式)
@@ -31,10 +31,10 @@ export type CreateWorkspaceTaskRequest = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | string | null;
+    estimatedHours?: number | null;
     /**
      * 先行タスクID（このタスクが完了しないと着手できない）
      */
-    predecessorTaskId?: number | string | null;
+    predecessorTaskId?: number | null;
 };
 

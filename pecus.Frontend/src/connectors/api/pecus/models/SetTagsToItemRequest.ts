@@ -15,6 +15,6 @@ export type SetTagsToItemRequest = {
      * アイテムの楽観的ロック用RowVersion。
      * 競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。
      */
-    itemRowVersion?: number | string | null;
+    itemRowVersion?: number | null;
 };
 

@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type RelationType = number;
+export type RelationType = 'Related' | 'Blocks' | 'BlockedBy' | 'DependsOn' | 'Duplicates' | 'SubtaskOf' | 'ParentOf' | 'RelatesTo';

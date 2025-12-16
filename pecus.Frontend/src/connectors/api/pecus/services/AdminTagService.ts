@@ -46,7 +46,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static getApiAdminTags(
-        page?: number | string,
+        page?: number,
         isActive?: boolean,
         unusedOnly?: boolean,
         name?: string,
@@ -72,7 +72,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static getApiAdminTags1(
-        id: number | string,
+        id: number,
     ): CancelablePromise<TagDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,7 +94,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static putApiAdminTags(
-        id: number | string,
+        id: number,
         requestBody: UpdateTagRequest,
     ): CancelablePromise<TagResponse> {
         return __request(OpenAPI, {
@@ -120,7 +120,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static deleteApiAdminTags(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -141,7 +141,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static patchApiAdminTagsDeactivate(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -163,7 +163,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static patchApiAdminTagsActivate(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

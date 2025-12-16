@@ -22,7 +22,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static getApiAdminUsers(
-        id: number | string,
+        id: number,
     ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -44,7 +44,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static deleteApiAdminUsers(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -71,10 +71,10 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static getApiAdminUsers1(
-        page?: number | string,
+        page?: number,
         isActive?: boolean,
         username?: string,
-        skillIds?: Array<number | string>,
+        skillIds?: Array<number>,
         skillFilterMode?: string,
     ): CancelablePromise<PagedResponseOfUserDetailResponseAndUserStatistics> {
         return __request(OpenAPI, {
@@ -101,7 +101,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersActiveStatus(
-        id: number | string,
+        id: number,
         requestBody: SetUserActiveStatusRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
@@ -131,7 +131,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersSkills(
-        id: number | string,
+        id: number,
         requestBody: SetUserSkillsRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
@@ -180,7 +180,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static postApiAdminUsersRequestPasswordReset(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -206,7 +206,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersRoles(
-        id: number | string,
+        id: number,
         requestBody: SetUserRolesRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {

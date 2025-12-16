@@ -11,7 +11,7 @@ export type ConcurrencyErrorResponseOfOrganizationResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * エラーメッセージ
      */

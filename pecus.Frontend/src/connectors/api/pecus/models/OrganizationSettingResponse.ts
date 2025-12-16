@@ -12,11 +12,11 @@ export type OrganizationSettingResponse = {
     /**
      * タスク超過チェックの閾値（日数）
      */
-    taskOverdueThreshold: number | string;
+    taskOverdueThreshold: number;
     /**
      * 週間レポートの配信曜日（0=未設定/日曜起点などクライアント定義）
      */
-    weeklyReportDeliveryDay: number | string;
+    weeklyReportDeliveryDay: number;
     /**
      * メール配信元のメールアドレス
      */
@@ -49,10 +49,10 @@ export type OrganizationSettingResponse = {
     /**
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
-    dashboardHelpCommentMaxCount: number | string;
+    dashboardHelpCommentMaxCount: number;
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

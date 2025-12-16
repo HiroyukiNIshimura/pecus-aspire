@@ -11,7 +11,7 @@ export type ConcurrencyErrorResponseOfWorkspaceTaskDetailResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * エラーメッセージ
      */

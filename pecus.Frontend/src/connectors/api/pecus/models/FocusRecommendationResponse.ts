@@ -18,7 +18,7 @@ export type FocusRecommendationResponse = {
     /**
      * 対象タスクの総数
      */
-    totalTaskCount: number | string;
+    totalTaskCount: number;
     /**
      * レスポンス生成日時
      */

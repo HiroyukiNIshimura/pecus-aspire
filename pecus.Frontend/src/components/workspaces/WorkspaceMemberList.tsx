@@ -20,7 +20,7 @@ export interface MemberItem {
   /** アイデンティティアイコンURL */
   identityIconUrl?: string | null;
   /** ワークスペースロール */
-  workspaceRole?: WorkspaceRole;
+  workspaceRole?: WorkspaceRole | null;
   /** アクティブフラグ */
   isActive?: boolean;
   /** 最終ログイン日時 */

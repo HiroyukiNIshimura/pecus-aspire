@@ -5,4 +5,4 @@
 /**
  * 組織の利用プラン
  */
-export type OrganizationPlan = number;
+export type OrganizationPlan = 'Unknown' | 'Free' | 'Standard' | 'Enterprise';

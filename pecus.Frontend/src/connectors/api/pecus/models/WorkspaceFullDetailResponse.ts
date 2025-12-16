@@ -13,7 +13,7 @@ export type WorkspaceFullDetailResponse = {
     /**
      * ワークスペースID
      */
-    id: number | string;
+    id: number;
     /**
      * ワークスペース名
      */
@@ -29,7 +29,7 @@ export type WorkspaceFullDetailResponse = {
     /**
      * ジャンルID
      */
-    genreId?: number | string | null;
+    genreId?: number | null;
     /**
      * ジャンル名
      */
@@ -72,6 +72,6 @@ export type WorkspaceFullDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

@@ -13,11 +13,11 @@ export type UserDetailResponse = {
     /**
      * ユーザーID
      */
-    id: number | string;
+    id: number;
     /**
      * 組織ID
      */
-    organizationId?: number | string | null;
+    organizationId?: number | null;
     /**
      * ログインID
      */
@@ -69,7 +69,7 @@ export type UserDetailResponse = {
     /**
      * ユーザーの楽観的ロック用RowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
     /**
      * ユーザー設定
      */

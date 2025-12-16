@@ -17,7 +17,7 @@ export class WorkspaceItemTempAttachmentService {
      * @throws ApiError
      */
     public static postApiWorkspacesTempAttachments(
-        workspaceId: number | string,
+        workspaceId: number,
         sessionId: string,
         formData: {
             file?: IFormFile;
@@ -46,7 +46,7 @@ export class WorkspaceItemTempAttachmentService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesTempAttachments(
-        workspaceId: number | string,
+        workspaceId: number,
         sessionId: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
@@ -70,7 +70,7 @@ export class WorkspaceItemTempAttachmentService {
      * @throws ApiError
      */
     public static getApiWorkspacesTempAttachments(
-        workspaceId: number | string,
+        workspaceId: number,
         sessionId: string,
         fileName: string,
     ): CancelablePromise<any> {

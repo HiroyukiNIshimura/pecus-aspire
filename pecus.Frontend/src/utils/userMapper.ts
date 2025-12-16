@@ -29,7 +29,7 @@ export function mapUserResponseToUserInfo(userResponse: UserDetailResponse): Use
     loginId: userResponse.loginId,
     username: userResponse.username,
     rowVersion: userResponse.rowVersion,
-    avatarType: userResponse.avatarType,
+    avatarType: userResponse.avatarType ?? undefined,
     userAvatarPath: userResponse.userAvatarPath,
     identityIconUrl: userResponse.identityIconUrl,
     createdAt: userResponse.createdAt,

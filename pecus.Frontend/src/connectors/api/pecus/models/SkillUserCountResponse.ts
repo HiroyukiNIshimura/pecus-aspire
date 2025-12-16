@@ -9,7 +9,7 @@ export type SkillUserCountResponse = {
     /**
      * スキルID
      */
-    id: number | string;
+    id: number;
     /**
      * スキル名
      */
@@ -17,6 +17,6 @@ export type SkillUserCountResponse = {
     /**
      * ユーザー数
      */
-    count: number | string;
+    count: number;
 };
 

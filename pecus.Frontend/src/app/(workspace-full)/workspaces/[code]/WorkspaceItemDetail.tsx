@@ -55,7 +55,7 @@ interface WorkspaceItemDetailProps {
   /** 関連アイテム追加モードが有効かどうか */
   isAddingRelation?: boolean;
   /** ワークスペースモード */
-  workspaceMode?: WorkspaceMode;
+  workspaceMode?: WorkspaceMode | null;
   /** スクロールターゲット (例: 'tasks') */
   scrollTarget?: string | null;
   /** スクロール完了時のコールバック */

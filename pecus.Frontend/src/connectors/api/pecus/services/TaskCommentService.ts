@@ -25,10 +25,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksComments(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
-        page?: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
+        page?: number,
         commentType?: TaskCommentType,
         includeDeleted?: boolean,
     ): CancelablePromise<PagedResponseOfTaskCommentDetailResponse> {
@@ -61,9 +61,9 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsTasksComments(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
         requestBody: CreateTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {
@@ -93,10 +93,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksComments1(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
-        commentId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
+        commentId: number,
     ): CancelablePromise<TaskCommentDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -124,10 +124,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static putApiWorkspacesItemsTasksComments(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
-        commentId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
+        commentId: number,
         requestBody: UpdateTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {
@@ -160,10 +160,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItemsTasksComments(
-        workspaceId: number | string,
-        itemId: number | string,
-        taskId: number | string,
-        commentId: number | string,
+        workspaceId: number,
+        itemId: number,
+        taskId: number,
+        commentId: number,
         requestBody: DeleteTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {

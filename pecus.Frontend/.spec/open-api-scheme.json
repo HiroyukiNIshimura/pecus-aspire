@@ -187,11 +187,7 @@
             "in": "query",
             "description": "取得する週数（1-12、デフォルト8）",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32",
               "default": 8
             }
@@ -253,11 +249,7 @@
             "in": "query",
             "description": "取得件数（1-20、デフォルト10）",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32",
               "default": 10
             }
@@ -319,11 +311,7 @@
             "in": "query",
             "description": "取得件数（1-20、デフォルト10）",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32",
               "default": 10
             }
@@ -429,11 +417,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -503,11 +487,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -570,11 +550,7 @@
                   "ResourceId": {
                     "maximum": 2147483647,
                     "minimum": 1,
-                    "pattern": "^-?(?:0|[1-9]\\d*)$",
-                    "type": [
-                      "integer",
-                      "string"
-                    ],
+                    "type": "integer",
                     "format": "int32"
                   },
                   "File": {
@@ -695,11 +671,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -709,11 +681,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -722,11 +690,7 @@
             "in": "query",
             "description": "ページ番号（1から開始）",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32",
               "default": 1
             }
@@ -921,11 +885,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1070,11 +1030,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1083,11 +1039,7 @@
             "in": "query",
             "description": "ワークスペースID（任意）",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -1151,11 +1103,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1261,11 +1209,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1538,11 +1482,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1552,11 +1492,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1566,11 +1502,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1581,11 +1513,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1652,11 +1580,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1666,11 +1590,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1680,11 +1600,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -1768,11 +1684,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1782,11 +1694,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1796,11 +1704,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1810,11 +1714,7 @@
             "description": "コメントID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -1865,11 +1765,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1879,11 +1775,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1893,11 +1785,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -1907,11 +1795,7 @@
             "description": "コメントID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -2003,11 +1887,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -2017,11 +1897,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -2031,11 +1907,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -2045,11 +1917,7 @@
             "description": "コメントID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -2155,11 +2023,7 @@
             "schema": {
               "maximum": 50,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -2279,11 +2143,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -2298,11 +2158,7 @@
             "name": "GenreId",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -2864,31 +2720,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "text/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "application/*+json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             }
@@ -2974,31 +2818,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "text/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "application/*+json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             }
@@ -3169,11 +3001,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3183,11 +3011,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3274,11 +3098,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3288,11 +3108,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3348,11 +3164,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3362,11 +3174,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3376,11 +3184,7 @@
             "description": "添付ファイルID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3449,11 +3253,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3463,11 +3263,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3524,11 +3320,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3608,11 +3400,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3622,11 +3410,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3653,11 +3437,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3668,11 +3448,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3683,11 +3459,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3763,11 +3535,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3776,11 +3544,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3830,11 +3594,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3843,11 +3603,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -3937,11 +3693,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -3950,11 +3702,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4016,11 +3764,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4080,11 +3824,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4093,11 +3833,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4189,11 +3925,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4202,11 +3934,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4299,11 +4027,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4312,11 +4036,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4417,11 +4137,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4431,11 +4147,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4484,11 +4196,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4498,11 +4206,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4551,11 +4255,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4565,11 +4265,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4618,11 +4314,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4632,11 +4324,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4697,11 +4385,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4711,11 +4395,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4779,11 +4459,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4835,11 +4511,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4848,11 +4520,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -4932,11 +4600,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -4945,11 +4609,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5001,11 +4661,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5014,11 +4670,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5027,11 +4679,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5084,11 +4732,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5098,11 +4742,7 @@
             "description": "アイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5196,11 +4836,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5310,11 +4946,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5373,11 +5005,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5445,11 +5073,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5459,11 +5083,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5545,11 +5165,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5559,11 +5175,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5574,11 +5186,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5589,11 +5197,7 @@
             "schema": {
               "maximum": 50,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5610,11 +5214,7 @@
             "in": "query",
             "description": "担当ユーザーIDでフィルタ",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5683,11 +5283,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5697,11 +5293,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5711,11 +5303,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5766,11 +5354,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5780,11 +5364,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5794,11 +5374,7 @@
             "description": "タスクID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5892,11 +5468,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5906,11 +5478,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5920,11 +5488,7 @@
             "description": "タスクシーケンス番号（アイテム内で一意）",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -5977,11 +5541,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -5991,11 +5551,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -6048,11 +5604,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -6062,11 +5614,7 @@
             "description": "ワークスペースアイテムID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -6077,11 +5625,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -6220,11 +5764,7 @@
             "description": "デバイスID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8102,11 +7642,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -8170,11 +7706,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8224,11 +7756,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8318,11 +7846,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8374,11 +7898,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8440,11 +7960,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8578,11 +8094,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -8649,11 +8161,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8703,11 +8211,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8797,11 +8301,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8853,11 +8353,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8919,11 +8415,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -8987,11 +8479,7 @@
             "description": "ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9047,11 +8535,7 @@
             "description": "ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9109,11 +8593,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -9143,11 +8623,7 @@
               "maxItems": 10,
               "type": "array",
               "items": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "int32"
               }
             }
@@ -9205,11 +8681,7 @@
             "description": "ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9298,11 +8770,7 @@
             "description": "対象ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9458,11 +8926,7 @@
             "description": "ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9520,11 +8984,7 @@
             "description": "対象ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9710,11 +9170,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -9729,11 +9185,7 @@
             "name": "GenreId",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -9783,11 +9235,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9837,11 +9285,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9931,11 +9375,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -9987,11 +9427,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -10000,31 +9436,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "text/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "application/*+json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             }
@@ -10088,11 +9512,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -10101,31 +9521,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "text/json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             },
             "application/*+json": {
               "schema": {
-                "pattern": "^-?(?:0|[1-9]\\d*)$",
-                "type": [
-                  "integer",
-                  "string"
-                ],
+                "type": "integer",
                 "format": "uint32"
               }
             }
@@ -10189,11 +9597,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -10274,11 +9678,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -10288,11 +9688,7 @@
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -10341,11 +9737,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -10354,11 +9746,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -10412,11 +9800,7 @@
             "description": "ワークスペースID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -10426,11 +9810,7 @@
             "description": "対象ユーザーID",
             "required": true,
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -10523,29 +9903,33 @@
           "TaskCompleted",
           "TaskDiscarded"
         ],
+        "type": "string",
         "description": "アクティビティのアクション種類を表す列挙型"
       },
       "ActivityPeriod": {
-        "type": "integer"
+        "enum": [
+          "Today",
+          "Yesterday",
+          "ThisWeek",
+          "LastWeek",
+          "ThisMonth",
+          "LastMonth"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "ActivityResponse": {
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティビティID",
             "format": "int64"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -10565,11 +9949,7 @@
             "description": "ワークスペースのジャンルアイコン"
           },
           "itemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
@@ -10582,11 +9962,9 @@
             "description": "アイテム件名"
           },
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "ユーザーID（NULL = システム操作）",
             "format": "int32"
@@ -10633,11 +10011,7 @@
           "userId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "workspaceRole": {
@@ -10661,11 +10035,7 @@
         "type": "object",
         "properties": {
           "toItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "関連先アイテムID",
             "format": "int32"
           },
@@ -10750,11 +10120,7 @@
             ]
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -10771,22 +10137,14 @@
           "taskOverdueThreshold": {
             "maximum": 365,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク超過チェックの閾値（日数）。0で未設定。",
             "format": "int32"
           },
           "weeklyReportDeliveryDay": {
             "maximum": 7,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "週間レポートの配信曜日（0=未設定 / 1=日曜〜7=土曜を想定）",
             "format": "int32"
           },
@@ -10844,20 +10202,12 @@
           "dashboardHelpCommentMaxCount": {
             "maximum": 20,
             "minimum": 5,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ダッシュボードに表示するヘルプコメントの最大件数（5〜20）",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用RowVersion",
             "format": "uint32"
           }
@@ -10868,11 +10218,7 @@
         "type": "object",
         "properties": {
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
             "format": "int32"
           },
@@ -10882,29 +10228,17 @@
             "format": "date-time"
           },
           "threshold": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "しきい値（組織設定 TaskOverdueThreshold）",
             "format": "int32"
           },
           "activeTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在の未完了・未破棄タスク数",
             "format": "int32"
           },
           "projectedTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "新規作成を含めた想定タスク数",
             "format": "int32"
           },
@@ -10919,8 +10253,11 @@
         "enum": [
           "Gravatar",
           "UserAvatar",
-          "AutoGenerated",
-          null
+          "AutoGenerated"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "ConcurrencyErrorResponseOfOrganizationResponse": {
@@ -10941,11 +10278,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -10981,11 +10314,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11021,11 +10350,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11061,11 +10386,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11101,11 +10422,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11141,11 +10458,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11181,11 +10494,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11221,11 +10530,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11261,11 +10566,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11301,11 +10602,7 @@
             ]
           },
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -11457,11 +10754,7 @@
           "roles": {
             "type": "array",
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -11487,11 +10780,9 @@
             "description": "本文（WYSIWYGのノードデータをJSON形式で保存）"
           },
           "assigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作業中のユーザーID（NULL可）",
             "format": "int32"
@@ -11520,11 +10811,9 @@
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "コミッターユーザーID（NULL可）",
             "format": "int32"
@@ -11581,11 +10870,7 @@
           "genreId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "mode": {
@@ -11602,11 +10887,9 @@
           "ownerId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "オーナーユーザーID（任意）",
             "format": "int32"
@@ -11631,20 +10914,12 @@
           "taskTypeId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
             "format": "int32"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
             "format": "int32"
           },
@@ -11675,21 +10950,17 @@
           "estimatedHours": {
             "maximum": 10000,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
           },
           "predecessorTaskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "先行タスクID（このタスクが完了しないと着手できない）",
             "format": "int32"
@@ -11712,11 +10983,7 @@
             "description": "ヘルプコメント一覧"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総件数",
             "format": "int32"
           }
@@ -11775,38 +11042,22 @@
         "type": "object",
         "properties": {
           "publishedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "公開アイテム数（公開済み・未アーカイブ）",
             "format": "int32"
           },
           "draftCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "下書きアイテム数",
             "format": "int32"
           },
           "archivedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アーカイブ済みアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           }
@@ -11824,47 +11075,27 @@
         "type": "object",
         "properties": {
           "assignedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当中タスク数（未完了・未破棄）",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了タスク数（指定期間内）",
             "format": "int32"
           },
           "overdueCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限切れタスク数",
             "format": "int32"
           },
           "dueThisWeekCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "今週期限タスク数",
             "format": "int32"
           },
           "completedThisWeekCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "今週完了したタスク数（ActivityベースではなくCompletedAtベース）",
             "format": "int32"
           }
@@ -11890,7 +11121,17 @@
         "description": "ダッシュボード統計サマリレスポンス\nタスクとアイテムの現在状態を集計したサマリ情報"
       },
       "DashboardTaskFilter": {
-        "type": "integer"
+        "enum": [
+          "Active",
+          "Completed",
+          "Overdue",
+          "HelpWanted",
+          "Reminder"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "DashboardTasksByPriorityResponse": {
         "required": [
@@ -11907,11 +11148,7 @@
             "description": "優先度別の内訳"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "合計（進行中タスクのみ）",
             "format": "int32"
           }
@@ -11931,65 +11168,37 @@
         "type": "object",
         "properties": {
           "inProgressCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進行中タスク数（未完了・未破棄）",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了タスク数",
             "format": "int32"
           },
           "discardedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "破棄タスク数",
             "format": "int32"
           },
           "overdueCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限切れタスク数（期限超過の未完了タスク）",
             "format": "int32"
           },
           "dueThisWeekCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "今週期限タスク数（今週中に期限の未完了タスク）",
             "format": "int32"
           },
           "unassignedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "未アサインタスク数（担当者未設定の未完了・未破棄タスク）",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総タスク数",
             "format": "int32"
           }
@@ -12054,11 +11263,7 @@
         "type": "object",
         "properties": {
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -12078,47 +11283,27 @@
             "description": "ジャンルアイコン"
           },
           "inProgressCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進行中タスク数",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了タスク数",
             "format": "int32"
           },
           "overdueCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限切れタスク数",
             "format": "int32"
           },
           "itemCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテム数",
             "format": "int32"
           },
           "memberCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "メンバー数",
             "format": "int32"
           }
@@ -12132,11 +11317,7 @@
         "type": "object",
         "properties": {
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion（必須）",
             "format": "uint32"
           }
@@ -12147,11 +11328,9 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "紐づく端末ID（端末情報が無い場合は null）",
             "format": "int32"
@@ -12230,8 +11409,11 @@
           "Browser",
           "MobileApp",
           "DesktopApp",
-          "Other",
-          null
+          "Other"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "EmailChangeRequestResponse": {
@@ -12294,11 +11476,7 @@
         "type": "object",
         "properties": {
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -12320,6 +11498,7 @@
         "enum": [
           "Avatar"
         ],
+        "type": "string",
         "description": "ファイル種別"
       },
       "FileUploadResponse": {
@@ -12337,11 +11516,7 @@
             "description": "ファイルURL（公開アクセス用）"
           },
           "fileSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ファイルサイズ（バイト）",
             "format": "int64"
           },
@@ -12391,11 +11566,7 @@
             "description": "今は着手できないタスク（先行タスク未完了）"
           },
           "totalTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "対象タスクの総数",
             "format": "int32"
           },
@@ -12411,8 +11582,11 @@
         "enum": [
           "Priority",
           "Deadline",
-          "SuccessorImpact",
-          null
+          "SuccessorImpact"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "FocusTaskResponse": {
@@ -12431,38 +11605,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
           "workspaceItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースアイテムID",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -12496,11 +11654,7 @@
             "description": "アイテム件名"
           },
           "taskTypeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
             "format": "int32"
           },
@@ -12542,39 +11696,25 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
             "format": "int32"
           },
           "totalScore": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "総合スコア（高いほど優先度が高い）",
             "format": "double"
           },
           "successorCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "後続タスク数（このタスクを待っているタスクの数）",
             "format": "int32"
           },
@@ -12615,7 +11755,14 @@
         "description": "フォーカス推奨タスクレスポンス"
       },
       "GenerativeApiVendor": {
-        "type": "integer",
+        "enum": [
+          "None",
+          "OpenAi",
+          "AzureOpenAi",
+          "Anthropic",
+          "GoogleGemini"
+        ],
+        "type": "string",
         "description": "利用する生成APIベンダーの種類"
       },
       "GenreCount": {
@@ -12627,11 +11774,7 @@
         "type": "object",
         "properties": {
           "genreId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ジャンルID",
             "format": "int32"
           },
@@ -12640,11 +11783,7 @@
             "description": "ジャンル名"
           },
           "count": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペース数",
             "format": "int32"
           }
@@ -12670,11 +11809,7 @@
         "type": "object",
         "properties": {
           "commentId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメントID",
             "format": "int32"
           },
@@ -12688,11 +11823,7 @@
             "format": "date-time"
           },
           "commentUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメント投稿者ID",
             "format": "int32"
           },
@@ -12708,20 +11839,12 @@
             "description": "コメント投稿者アバターURL"
           },
           "taskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "taskSequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
@@ -12730,11 +11853,9 @@
             "description": "タスク内容"
           },
           "taskAssigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "タスク担当者ID",
             "format": "int32"
@@ -12747,11 +11868,7 @@
             "description": "タスク担当者名"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -12764,11 +11881,7 @@
             "description": "ワークスペース名"
           },
           "itemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
@@ -12789,8 +11902,11 @@
       "HelpNotificationTarget": {
         "enum": [
           "Organization",
-          "WorkspaceUsers",
-          null
+          "WorkspaceUsers"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "HotItemEntry": {
@@ -12808,11 +11924,7 @@
         "type": "object",
         "properties": {
           "itemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
@@ -12825,11 +11937,7 @@
             "description": "アイテム件名"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -12849,11 +11957,7 @@
             "description": "ジャンルアイコン"
           },
           "activityCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "直近のアクティビティ数",
             "format": "int32"
           },
@@ -12863,11 +11967,9 @@
             "format": "date-time"
           },
           "lastActorId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "最終操作者のユーザーID（システム操作の場合はnull）",
             "format": "int32"
@@ -12912,11 +12014,7 @@
         "type": "object",
         "properties": {
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -12936,29 +12034,17 @@
             "description": "ジャンルアイコン"
           },
           "taskAddedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク追加数（直近）",
             "format": "int32"
           },
           "taskCompletedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク完了数（直近）",
             "format": "int32"
           },
           "totalTaskActivityCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク関連アクティビティの合計",
             "format": "int32"
           }
@@ -12977,11 +12063,7 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
@@ -13005,19 +12087,20 @@
           "Workspace",
           "MyItems",
           "Tasks",
-          "Committer",
-          null
+          "Committer"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "LoginDeviceInfo": {
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "デバイスID",
             "format": "int32"
@@ -13125,20 +12208,12 @@
             "format": "date-time"
           },
           "expiresIn": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "トークンの有効時間（秒）",
             "format": "int32"
           },
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
@@ -13227,11 +12302,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ジャンルID",
             "format": "int32"
           },
@@ -13254,11 +12325,7 @@
             "description": "ジャンルアイコン"
           },
           "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "表示順",
             "format": "int32"
           }
@@ -13273,11 +12340,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -13304,11 +12367,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
             "format": "int32"
           },
@@ -13335,11 +12394,7 @@
             "description": "タスク種類アイコン（拡張子なしのファイル名）"
           },
           "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "表示順",
             "format": "int32"
           }
@@ -13374,20 +12429,12 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -13414,56 +12461,32 @@
             "description": "ジャンル名"
           },
           "itemCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コミッターになっているアイテム数",
             "format": "int32"
           },
           "activeTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "未完了タスク数",
             "format": "int32"
           },
           "completedTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了済みタスク数",
             "format": "int32"
           },
           "overdueTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限超過タスク数",
             "format": "int32"
           },
           "helpCommentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ヘルプコメント数",
             "format": "int32"
           },
           "reminderCommentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "督促コメント数",
             "format": "int32"
           },
@@ -13479,7 +12502,17 @@
         "description": "マイコミッターワークスペースレスポンス\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
       },
       "MyItemRelationType": {
-        "type": "integer"
+        "enum": [
+          "All",
+          "Owner",
+          "Assignee",
+          "Committer",
+          "Pinned"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "MyTaskDetailResponse": {
         "required": [
@@ -13489,29 +12522,17 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "workspaceItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースアイテムID",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -13558,11 +12579,9 @@
             "description": "アイテム件名"
           },
           "itemOwnerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "アイテムオーナーID",
             "format": "int32"
@@ -13582,11 +12601,9 @@
             "description": "アイテムオーナーアバターURL"
           },
           "itemAssigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "アイテム担当者ID",
             "format": "int32"
@@ -13606,11 +12623,9 @@
             "description": "アイテム担当者アバターURL"
           },
           "itemCommitterId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "アイテムコミッターID",
             "format": "int32"
@@ -13630,20 +12645,12 @@
             "description": "アイテムコミッターアバターURL"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
             "format": "int32"
           },
@@ -13662,11 +12669,7 @@
             "description": "担当ユーザーアバターURL"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "作成ユーザーID",
             "format": "int32"
           },
@@ -13689,11 +12692,7 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
             "format": "int32"
           },
@@ -13743,31 +12742,23 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
           },
           "actualHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "実績工数（時間）",
             "format": "double"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
             "format": "int32"
           },
@@ -13813,20 +12804,12 @@
             "format": "date-time"
           },
           "commentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメント数",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -13847,20 +12830,12 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -13887,47 +12862,27 @@
             "description": "ジャンル名"
           },
           "activeTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "未完了タスク数",
             "format": "int32"
           },
           "completedTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了済みタスク数",
             "format": "int32"
           },
           "overdueTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限超過タスク数",
             "format": "int32"
           },
           "helpCommentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ヘルプコメント数",
             "format": "int32"
           },
           "reminderCommentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "督促コメント数",
             "format": "int32"
           },
@@ -13950,11 +12905,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -13973,7 +12924,13 @@
         "description": "組織情報レスポンス（簡易版）"
       },
       "OrganizationPlan": {
-        "type": "integer",
+        "enum": [
+          "Unknown",
+          "Free",
+          "Standard",
+          "Enterprise"
+        ],
+        "type": "string",
         "description": "組織の利用プラン"
       },
       "OrganizationResponse": {
@@ -13987,11 +12944,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -14049,20 +13002,12 @@
             "description": "アクティブフラグ"
           },
           "userCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "所属ユーザー数",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           },
@@ -14087,20 +13032,12 @@
         "type": "object",
         "properties": {
           "taskOverdueThreshold": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク超過チェックの閾値（日数）",
             "format": "int32"
           },
           "weeklyReportDeliveryDay": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "週間レポートの配信曜日（0=未設定/日曜起点などクライアント定義）",
             "format": "int32"
           },
@@ -14155,20 +13092,12 @@
             "description": "先行タスクが完了しないと次のタスクを操作できないようにするか"
           },
           "dashboardHelpCommentMaxCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ダッシュボードに表示するヘルプコメントの最大件数（5〜20）",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用RowVersion",
             "format": "uint32"
           }
@@ -14200,8 +13129,11 @@
           "MacOS",
           "Linux",
           "iOS",
-          "Android",
-          null
+          "Android"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "PagedResponseOfActivityResponse": {
@@ -14218,38 +13150,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14278,38 +13194,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14349,38 +13249,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14420,38 +13304,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14491,38 +13359,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14551,38 +13403,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14622,38 +13458,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14682,38 +13502,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14753,38 +13557,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14824,38 +13612,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14887,38 +13659,22 @@
             "description": "データのリスト"
           },
           "currentPage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "現在のページ番号（1から始まる）",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "1ページあたりのアイテム数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総アイテム数",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ページ数",
             "format": "int32"
           },
@@ -14962,20 +13718,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
@@ -15015,11 +13763,7 @@
             ]
           },
           "count": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク数",
             "format": "int32"
           }
@@ -15042,11 +13786,9 @@
             ]
           },
           "status": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "int32"
           },
@@ -15177,11 +13919,7 @@
             "format": "date-time"
           },
           "expiresIn": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "トークンの有効時間（秒）",
             "format": "int32"
           },
@@ -15201,29 +13939,17 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
           "relationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "関連ID（削除時に使用）",
             "format": "int32"
           },
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
@@ -15251,11 +13977,9 @@
             "description": "関連の方向（このアイテムから見て）\n\"from\": このアイテムが関連元\n\"to\": このアイテムが関連先"
           },
           "ownerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "オーナーID",
             "format": "int32"
@@ -15282,7 +14006,20 @@
         "description": "関連アイテムの基本情報"
       },
       "RelationType": {
-        "type": "integer"
+        "enum": [
+          "Related",
+          "Blocks",
+          "BlockedBy",
+          "DependsOn",
+          "Duplicates",
+          "SubtaskOf",
+          "ParentOf",
+          "RelatesTo"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "RequestEmailChangeRequest": {
         "required": [
@@ -15345,11 +14082,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールID",
             "format": "int32"
           },
@@ -15368,11 +14101,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールID",
             "format": "int32"
           },
@@ -15393,11 +14122,7 @@
             "format": "date-time"
           },
           "permissionCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールが持つ権限数",
             "format": "int32"
           }
@@ -15412,11 +14137,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールID",
             "format": "int32"
           },
@@ -15448,11 +14169,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールID",
             "format": "int32"
           },
@@ -15461,11 +14178,7 @@
             "description": "ロール名"
           },
           "count": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー数",
             "format": "int32"
           }
@@ -15481,21 +14194,15 @@
               "array"
             ],
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             },
             "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。"
           },
           "userRowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "ユーザーの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
             "format": "uint32"
@@ -15518,11 +14225,9 @@
             "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。"
           },
           "itemRowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "アイテムの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
             "format": "uint32"
@@ -15576,20 +14281,14 @@
           "roles": {
             "type": "array",
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
           "userRowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "uint32"
           }
@@ -15605,20 +14304,14 @@
           "skillIds": {
             "type": "array",
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
           "userRowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "format": "uint32"
           }
@@ -15637,21 +14330,13 @@
               "array"
             ],
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             },
             "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースの楽観的ロック用RowVersion。\n競合検出に使用されます。",
             "format": "uint32"
           }
@@ -15667,11 +14352,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -15687,11 +14368,7 @@
             "description": "スキルの説明"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -15701,11 +14378,9 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作成者ユーザーID",
             "format": "int32"
@@ -15719,11 +14394,9 @@
             "format": "date-time"
           },
           "updatedByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "更新者ユーザーID",
             "format": "int32"
@@ -15733,20 +14406,12 @@
             "description": "スキルのアクティブ/非アクティブ状態"
           },
           "userCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー数",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -15761,11 +14426,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -15794,11 +14455,9 @@
             "format": "date-time"
           },
           "updatedByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "更新者ユーザーID",
             "format": "int32"
@@ -15815,11 +14474,7 @@
             "description": "スキルの利用状況"
           },
           "userCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー数",
             "format": "int32"
           }
@@ -15865,29 +14520,17 @@
         "type": "object",
         "properties": {
           "totalSkills": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルのトータル件数",
             "format": "int32"
           },
           "activeSkills": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティブなスキルの件数",
             "format": "int32"
           },
           "inactiveSkills": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "非アクティブなスキルの件数",
             "format": "int32"
           },
@@ -15916,11 +14559,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -15940,11 +14579,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -15953,11 +14588,7 @@
             "description": "スキル名"
           },
           "count": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー数",
             "format": "int32"
           }
@@ -15965,17 +14596,20 @@
         "description": "スキルごとのユーザー数"
       },
       "SortOrder": {
-        "type": "integer"
+        "enum": [
+          "Asc",
+          "Desc"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "SuccessorTaskInfo": {
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
@@ -16000,11 +14634,7 @@
         "type": "object",
         "properties": {
           "statusCode": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "HTTPステータスコード",
             "format": "int32"
           },
@@ -16023,20 +14653,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグID",
             "format": "int32"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -16050,11 +14672,7 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "作成者ユーザーID",
             "format": "int32"
           },
@@ -16067,11 +14685,9 @@
             "format": "date-time"
           },
           "updatedByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "更新者ユーザーID",
             "format": "int32"
@@ -16081,20 +14697,12 @@
             "description": "アクティブ状態"
           },
           "itemCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "このタグが付与されているアイテム数",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用RowVersion",
             "format": "uint32"
           }
@@ -16108,11 +14716,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグID",
             "format": "int32"
           },
@@ -16130,11 +14734,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグID",
             "format": "int32"
           },
@@ -16160,11 +14760,7 @@
             "description": "アクティブ状態"
           },
           "itemCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "このタグが付与されているアイテム数",
             "format": "int32"
           }
@@ -16207,29 +14803,17 @@
         "type": "object",
         "properties": {
           "totalTags": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグのトータル件数",
             "format": "int32"
           },
           "activeTags": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティブなタグの件数",
             "format": "int32"
           },
           "inactiveTags": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "非アクティブなタグの件数",
             "format": "int32"
           },
@@ -16258,11 +14842,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグID",
             "format": "int32"
           },
@@ -16281,29 +14861,17 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメントID",
             "format": "int32"
           },
           "workspaceTaskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメントしたユーザーID",
             "format": "int32"
           },
@@ -16359,11 +14927,7 @@
             "format": "date-time"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -16402,8 +14966,11 @@
           "HelpWanted",
           "NeedReply",
           "Reminder",
-          "Urge",
-          null
+          "Urge"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "TaskFlowMapResponse": {
@@ -16460,20 +15027,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号（アイテム内での通し番号）",
             "format": "int32"
           },
@@ -16482,11 +15041,9 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "タスク種類ID",
             "format": "int32"
@@ -16525,11 +15082,7 @@
             "format": "date-time"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
             "format": "int32"
           },
@@ -16542,11 +15095,9 @@
             "description": "破棄フラグ"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "担当ユーザーID",
             "format": "int32"
@@ -16570,11 +15121,9 @@
             "description": "着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）"
           },
           "predecessorTaskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "先行タスクID",
             "format": "int32"
@@ -16591,11 +15140,7 @@
             ]
           },
           "successorCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "後続タスク数",
             "format": "int32"
           }
@@ -16612,20 +15157,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号",
             "format": "int32"
           },
@@ -16652,56 +15189,32 @@
         "type": "object",
         "properties": {
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総タスク数",
             "format": "int32"
           },
           "readyCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "着手可能タスク数（先行タスクなし or 完了済み、かつ未完了・未破棄）",
             "format": "int32"
           },
           "waitingCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "待機中タスク数（先行タスク未完了）",
             "format": "int32"
           },
           "inProgressCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進行中タスク数（進捗 &gt; 0 かつ未完了）",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了タスク数",
             "format": "int32"
           },
           "discardedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "破棄タスク数",
             "format": "int32"
           }
@@ -16712,11 +15225,7 @@
         "type": "object",
         "properties": {
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -16757,11 +15266,7 @@
             "description": "件名"
           },
           "ownerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "オーナーユーザーID",
             "format": "int32"
           },
@@ -16780,11 +15285,9 @@
             "description": "オーナーアバターURL"
           },
           "assigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作業中のユーザーID",
             "format": "int32"
@@ -16831,11 +15334,9 @@
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "コミッターユーザーID",
             "format": "int32"
@@ -16871,8 +15372,11 @@
           "Low",
           "Medium",
           "High",
-          "Critical",
-          null
+          "Critical"
+        ],
+        "type": [
+          "null",
+          "string"
         ]
       },
       "TasksByDueDateResponse": {
@@ -16883,11 +15387,7 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
@@ -16918,56 +15418,32 @@
         "type": "object",
         "properties": {
           "priorityScore": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "優先度スコア（1-4）",
             "format": "double"
           },
           "deadlineScore": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "期限スコア（1-10）",
             "format": "double"
           },
           "successorImpactScore": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "後続タスク影響スコア（0-10）",
             "format": "double"
           },
           "priorityWeight": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "優先度の重み（デフォルト: 2）",
             "format": "double"
           },
           "deadlineWeight": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "期限の重み（デフォルト: 3）",
             "format": "double"
           },
           "successorImpactWeight": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "後続影響の重み（デフォルト: 5）",
             "format": "double"
           },
@@ -16982,10 +15458,27 @@
         "description": "タスクスコア詳細（デバッグ・説明用）"
       },
       "TaskSortBy": {
-        "type": "integer"
+        "enum": [
+          "Sequence",
+          "Priority",
+          "DueDate"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "TaskStatusFilter": {
-        "type": "integer"
+        "enum": [
+          "All",
+          "Active",
+          "Completed",
+          "Discarded"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "TaskWithItemResponse": {
         "required": [
@@ -17000,29 +15493,17 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内での一意なインデックス（フロントエンドのReact key用）",
             "format": "int32"
           },
           "taskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクシーケンス番号（アイテム内の順序）",
             "format": "int32"
           },
@@ -17031,11 +15512,9 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "タスク種類ID",
             "format": "int32"
@@ -17089,31 +15568,23 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
           },
           "actualHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "実績工数（時間）",
             "format": "double"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
             "format": "int32"
           },
@@ -17134,11 +15605,7 @@
             "description": "破棄状態"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
             "format": "int32"
           },
@@ -17167,11 +15634,7 @@
             "format": "date-time"
           },
           "itemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
@@ -17188,11 +15651,7 @@
             "description": "ワークスペースコード"
           },
           "itemOwnerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムオーナーユーザーID",
             "format": "int32"
           },
@@ -17211,11 +15670,9 @@
             "description": "アイテムオーナーアバターURL"
           },
           "itemCommitterId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "アイテムコミッターユーザーID",
             "format": "int32"
@@ -17237,11 +15694,7 @@
           "commentTypeCounts": {
             "type": "object",
             "additionalProperties": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             },
             "description": "コメントタイプ別件数"
@@ -17273,11 +15726,7 @@
             "description": "元のファイル名"
           },
           "fileSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ファイルサイズ（バイト）",
             "format": "int64"
           },
@@ -17349,20 +15798,12 @@
               "array"
             ],
             "items": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -17395,11 +15836,7 @@
             ]
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -17425,11 +15862,7 @@
             "description": "アクティブフラグ"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タグの楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -17462,11 +15895,7 @@
             ]
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion（必須）",
             "format": "uint32"
           }
@@ -17526,31 +15955,19 @@
           "focusTasksLimit": {
             "maximum": 20,
             "minimum": 5,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "フォーカス推奨タスクの表示件数（5-20）",
             "format": "int32"
           },
           "waitingTasksLimit": {
             "maximum": 20,
             "minimum": 5,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "待機中タスクの表示件数（5-20）",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー設定の楽観的ロック用 RowVersion",
             "format": "uint32"
           }
@@ -17564,21 +15981,15 @@
         "type": "object",
         "properties": {
           "assigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "担当者ユーザーID（NULL で割り当て解除）",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用バージョン",
             "format": "uint32"
           }
@@ -17603,11 +16014,7 @@
             ]
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用バージョン",
             "format": "uint32"
           }
@@ -17636,11 +16043,9 @@
             "description": "本文（WYSIWYGのノードデータをJSON形式で保存）"
           },
           "assigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作業中のユーザーID（NULL可）",
             "format": "int32"
@@ -17679,11 +16084,9 @@
             "description": "編集不可フラグ（アーカイブ）"
           },
           "committerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "コミッターユーザーID（NULL可）",
             "format": "int32"
@@ -17706,11 +16109,7 @@
             "description": "タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -17738,11 +16137,7 @@
             "description": "アーカイブフラグ"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムの楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -17771,19 +16166,11 @@
           "genreId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "uint32"
           }
         },
@@ -17807,21 +16194,17 @@
           "taskTypeId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "タスク種類ID",
             "format": "int32"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "担当ユーザーID",
             "format": "int32"
@@ -17853,11 +16236,9 @@
           "estimatedHours": {
             "maximum": 10000,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
@@ -17865,11 +16246,9 @@
           "actualHours": {
             "maximum": 10000,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "実績工数（時間）",
             "format": "double"
@@ -17877,11 +16256,9 @@
           "progressPercentage": {
             "maximum": 100,
             "minimum": 0,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "進捗率（0-100）",
             "format": "int32"
@@ -17909,11 +16286,9 @@
             "description": "破棄理由"
           },
           "predecessorTaskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "先行タスクID（このタスクが完了しないと着手できない）\nnullを設定すると先行タスクを解除",
             "format": "int32"
@@ -17923,11 +16298,7 @@
             "description": "先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion（必須）",
             "format": "uint32"
           }
@@ -17962,20 +16333,14 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "組織ID",
             "format": "int32"
@@ -18050,11 +16415,7 @@
             "format": "date-time"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion",
             "format": "uint32"
           },
@@ -18073,11 +16434,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ロールID",
             "format": "int32"
           },
@@ -18096,11 +16453,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
@@ -18147,11 +16500,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -18214,31 +16563,19 @@
           "focusTasksLimit": {
             "maximum": 20,
             "minimum": 5,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "フォーカス推奨タスクの表示件数（5-20）",
             "format": "int32"
           },
           "waitingTasksLimit": {
             "maximum": 20,
             "minimum": 5,
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "待機中タスクの表示件数（5-20）",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザー設定の楽観的ロック用 RowVersion",
             "format": "uint32"
           }
@@ -18253,11 +16590,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -18294,38 +16627,22 @@
             "description": "ロールごとのユーザー数サマリ"
           },
           "activeUserCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティブなユーザー数",
             "format": "int32"
           },
           "inactiveUserCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "非アクティブなユーザー数",
             "format": "int32"
           },
           "workspaceParticipationCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースに参加しているユーザー数",
             "format": "int32"
           },
           "noWorkspaceParticipationCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースに参加していないユーザー数",
             "format": "int32"
           }
@@ -18348,11 +16665,7 @@
             "format": "date-time"
           },
           "weekNumber": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "週番号（年間での週番号）",
             "format": "int32"
           },
@@ -18361,20 +16674,12 @@
             "description": "表示用ラベル（例: \"12/2〜12/8\"）"
           },
           "createdCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "その週に作成されたタスク数",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "その週に完了したタスク数",
             "format": "int32"
           }
@@ -18390,11 +16695,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -18417,11 +16718,7 @@
             "description": "ワークスペースの説明"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -18437,11 +16734,9 @@
             ]
           },
           "genreId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "ジャンルID",
             "format": "int32"
@@ -18487,11 +16782,9 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作成者ユーザーID",
             "format": "int32"
@@ -18505,11 +16798,9 @@
             "format": "date-time"
           },
           "updatedByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "更新者ユーザーID",
             "format": "int32"
@@ -18519,11 +16810,7 @@
             "description": "アクティブフラグ"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -18534,11 +16821,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
@@ -18595,11 +16878,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -18622,11 +16901,9 @@
             "description": "ワークスペースの説明"
           },
           "genreId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "ジャンルID",
             "format": "int32"
@@ -18718,11 +16995,7 @@
             "description": "ワークスペースに設定されているスキル一覧"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -18736,20 +17009,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "添付ファイルID",
             "format": "int32"
           },
           "workspaceItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースアイテムID",
             "format": "int32"
           },
@@ -18758,11 +17023,7 @@
             "description": "ファイル名"
           },
           "fileSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ファイルサイズ（バイト）",
             "format": "int64"
           },
@@ -18794,11 +17055,7 @@
             "format": "date-time"
           },
           "uploadedByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アップロードしたユーザーID",
             "format": "int32"
           },
@@ -18820,20 +17077,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アイテムID",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -18881,11 +17130,7 @@
             "description": "本文"
           },
           "ownerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "オーナーユーザーID",
             "format": "int32"
           },
@@ -18904,11 +17149,9 @@
             "description": "オーナーアバターURL"
           },
           "assigneeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "作業中のユーザーID",
             "format": "int32"
@@ -18955,11 +17198,9 @@
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "コミッターユーザーID",
             "format": "int32"
@@ -19000,11 +17241,7 @@
             "description": "ログイン中のユーザーがこのアイテムをPINしているか"
           },
           "pinCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "このアイテムのPIN総数",
             "format": "int32"
           },
@@ -19016,11 +17253,7 @@
             "description": "関連アイテムのリスト"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -19034,20 +17267,12 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "関連ID",
             "format": "int32"
           },
           "fromItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "関連元アイテムID",
             "format": "int32"
           },
@@ -19060,11 +17285,7 @@
             "description": "関連元アイテム件名"
           },
           "toItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "関連先アイテムID",
             "format": "int32"
           },
@@ -19093,11 +17314,7 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "作成者ID",
             "format": "int32"
           },
@@ -19126,11 +17343,7 @@
             "description": "関連先としての関連一覧（他からこのアイテムへ）"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "全関連数",
             "format": "int32"
           }
@@ -19170,11 +17383,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
@@ -19197,11 +17406,7 @@
             "description": "ワークスペースの説明"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
@@ -19213,11 +17418,9 @@
             "description": "組織名"
           },
           "genreId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "ジャンルID",
             "format": "int32"
@@ -19237,11 +17440,7 @@
             "description": "ジャンルのアイコン（例: FontAwesome のクラス名）"
           },
           "activeItemCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティブなアイテム数",
             "format": "int32"
           },
@@ -19263,11 +17462,7 @@
             "description": "アクティブフラグ"
           },
           "memberCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "参加者数（アクティブなワークスペースユーザーの数）",
             "format": "int32"
           },
@@ -19296,7 +17491,15 @@
         "description": "ワークスペースリストアイテムレスポンス"
       },
       "WorkspaceMode": {
-        "type": "integer"
+        "enum": [
+          "Unknown",
+          "Normal",
+          "Document"
+        ],
+        "type": [
+          "null",
+          "string"
+        ]
       },
       "WorkspaceRole": {
         "enum": [
@@ -19304,6 +17507,7 @@
           "Member",
           "Owner"
         ],
+        "type": "string",
         "description": "ワークスペース内でのユーザーの役割を表す列挙型"
       },
       "WorkspaceSkillResponse": {
@@ -19314,11 +17518,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "スキルID",
             "format": "int32"
           },
@@ -19342,56 +17542,32 @@
         "type": "object",
         "properties": {
           "activeWorkspaceCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "アクティブなワークスペースの総数",
             "format": "int32"
           },
           "inactiveWorkspaceCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "非アクティブなワークスペースの総数",
             "format": "int32"
           },
           "totalWorkspaceCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総ワークスペース数（アクティブ + 非アクティブ）",
             "format": "int32"
           },
           "uniqueMemberCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースメンバーの総数（ユニークなユーザー数）",
             "format": "int32"
           },
           "averageMembersPerWorkspace": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
-            "type": [
-              "number",
-              "string"
-            ],
+            "type": "number",
             "description": "平均メンバー数 per ワークスペース",
             "format": "double"
           },
           "recentWorkspaceCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "最近作成されたワークスペース数（過去30日）",
             "format": "int32"
           },
@@ -19413,65 +17589,37 @@
         "type": "object",
         "properties": {
           "listIndex": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "リスト内でのインデックス（Reactのkey用）",
             "format": "int32"
           },
           "id": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスクID",
             "format": "int32"
           },
           "workspaceItemId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースアイテムID",
             "format": "int32"
           },
           "sequence": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースアイテム内でのシーケンス番号",
             "format": "int32"
           },
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
           "organizationId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "組織ID",
             "format": "int32"
           },
           "assignedUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
             "format": "int32"
           },
@@ -19490,11 +17638,7 @@
             "description": "担当ユーザーアバターURL"
           },
           "createdByUserId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "作成ユーザーID",
             "format": "int32"
           },
@@ -19517,11 +17661,7 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
             "format": "int32"
           },
@@ -19571,31 +17711,23 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "予定工数（時間）",
             "format": "double"
           },
           "actualHours": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
-              "number",
-              "string"
+              "number"
             ],
             "description": "実績工数（時間）",
             "format": "double"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
             "format": "int32"
           },
@@ -19641,32 +17773,22 @@
             "format": "date-time"
           },
           "commentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメント数",
             "format": "int32"
           },
           "commentTypeCounts": {
             "type": "object",
             "additionalProperties": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             },
             "description": "コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）"
           },
           "predecessorTaskId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "null",
-              "integer",
-              "string"
+              "integer"
             ],
             "description": "先行タスクID（このタスクが完了しないと着手できない）",
             "format": "int32"
@@ -19683,20 +17805,12 @@
             ]
           },
           "successorTaskCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "このタスクを待っている後続タスク数",
             "format": "int32"
           },
           "rowVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "楽観的ロック用のRowVersion",
             "format": "uint32"
           }
@@ -19742,74 +17856,42 @@
         "type": "object",
         "properties": {
           "commentCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "コメント数",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "総件数",
             "format": "int32"
           },
           "completedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "完了済み件数",
             "format": "int32"
           },
           "incompleteCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "未完了件数",
             "format": "int32"
           },
           "overdueCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "期限切れ件数",
             "format": "int32"
           },
           "dueTodayCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "今日締め切り件数",
             "format": "int32"
           },
           "dueSoonCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "近日締め切り件数（7日以内）",
             "format": "int32"
           },
           "discardedCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "破棄された件数",
             "format": "int32"
           }
@@ -19826,20 +17908,12 @@
         "type": "object",
         "properties": {
           "workspaceId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ワークスペースID",
             "format": "int32"
           },
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },
@@ -19896,11 +17970,7 @@
         "type": "object",
         "properties": {
           "userId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "description": "ユーザーID",
             "format": "int32"
           },

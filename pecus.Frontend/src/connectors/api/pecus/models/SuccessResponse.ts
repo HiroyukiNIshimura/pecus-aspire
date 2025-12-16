@@ -9,7 +9,7 @@ export type SuccessResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * 成功メッセージ
      */

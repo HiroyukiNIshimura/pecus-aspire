@@ -7,8 +7,8 @@ import LoadingOverlay from '@/components/common/LoadingOverlay';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,
+  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   WorkspaceListItemResponse,
-  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
@@ -52,7 +52,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok && isMounted) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -109,7 +109,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+        const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
         setWorkspaces((prev) => [...prev, ...(data.data || [])]);
         setCurrentPage(data.currentPage || nextPage);
         setTotalPages(data.totalPages || 1);
@@ -141,7 +141,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
       const response = await fetch(`/api/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+        const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
         setWorkspaces(data.data || []);
         setCurrentPage(1);
         setTotalPages(data.totalPages || 1);
@@ -182,7 +182,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
 
         const response = await fetch(`/api/workspaces?${params.toString()}`);
         if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(1);
           setTotalPages(data.totalPages || 1);

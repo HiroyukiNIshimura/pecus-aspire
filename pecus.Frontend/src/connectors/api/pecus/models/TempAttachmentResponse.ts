@@ -21,7 +21,7 @@ export type TempAttachmentResponse = {
     /**
      * ファイルサイズ（バイト）
      */
-    fileSize: number | string;
+    fileSize: number;
     /**
      * MIMEタイプ
      */

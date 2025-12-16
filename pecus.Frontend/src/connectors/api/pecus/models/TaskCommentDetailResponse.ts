@@ -10,15 +10,15 @@ export type TaskCommentDetailResponse = {
     /**
      * コメントID
      */
-    id: number | string;
+    id: number;
     /**
      * タスクID
      */
-    workspaceTaskId?: number | string;
+    workspaceTaskId?: number;
     /**
      * コメントしたユーザーID
      */
-    userId?: number | string;
+    userId?: number;
     /**
      * コメントしたユーザー名
      */
@@ -51,6 +51,6 @@ export type TaskCommentDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

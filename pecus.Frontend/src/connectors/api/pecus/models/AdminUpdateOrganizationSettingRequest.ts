@@ -12,11 +12,11 @@ export type AdminUpdateOrganizationSettingRequest = {
     /**
      * タスク超過チェックの閾値（日数）。0で未設定。
      */
-    taskOverdueThreshold?: number | string;
+    taskOverdueThreshold?: number;
     /**
      * 週間レポートの配信曜日（0=未設定 / 1=日曜〜7=土曜を想定）
      */
-    weeklyReportDeliveryDay?: number | string;
+    weeklyReportDeliveryDay?: number;
     /**
      * メール配信元アドレス
      */
@@ -50,10 +50,10 @@ export type AdminUpdateOrganizationSettingRequest = {
     /**
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
-    dashboardHelpCommentMaxCount?: number | string;
+    dashboardHelpCommentMaxCount?: number;
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

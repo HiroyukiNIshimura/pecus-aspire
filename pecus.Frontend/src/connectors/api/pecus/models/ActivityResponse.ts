@@ -10,11 +10,11 @@ export type ActivityResponse = {
     /**
      * アクティビティID
      */
-    id?: number | string;
+    id?: number;
     /**
      * ワークスペースID
      */
-    workspaceId?: number | string;
+    workspaceId?: number;
     /**
      * ワークスペースコード
      */
@@ -30,7 +30,7 @@ export type ActivityResponse = {
     /**
      * アイテムID
      */
-    itemId?: number | string;
+    itemId?: number;
     /**
      * アイテムコード
      */
@@ -42,7 +42,7 @@ export type ActivityResponse = {
     /**
      * ユーザーID（NULL = システム操作）
      */
-    userId?: number | string | null;
+    userId?: number | null;
     /**
      * ユーザー名
      */

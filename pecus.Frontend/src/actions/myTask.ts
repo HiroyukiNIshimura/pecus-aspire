@@ -3,8 +3,8 @@
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardTaskFilter,
-  MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse,
   MyTaskWorkspaceResponse,
+  PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics,
   TaskStatusFilter,
   TasksByDueDateResponse,
 } from '@/connectors/api/pecus';
@@ -16,7 +16,7 @@ import type { ApiResponse } from './types';
 export async function fetchMyTasks(
   page: number = 1,
   status?: TaskStatusFilter,
-): Promise<ApiResponse<MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics>> {
   try {
     const api = await createPecusApiClients();
     const response = await api.my.getApiMyTasks(page, status);

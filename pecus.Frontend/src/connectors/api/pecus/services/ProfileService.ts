@@ -41,7 +41,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static deleteApiProfileDevices(
-        deviceId: number | string,
+        deviceId: number,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',

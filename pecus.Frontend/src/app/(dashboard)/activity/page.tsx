@@ -3,12 +3,12 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { fetchMyActivities } from '@/actions/activity';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { ActivityResponsePagedResponse, UserDetailResponse } from '@/connectors/api/pecus';
+import type { PagedResponseOfActivityResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import ActivityClient from './ActivityClient';
 
 export default async function ActivityPage() {
   let userResponse: UserDetailResponse | null = null;
-  let initialActivities: ActivityResponsePagedResponse | null = null;
+  let initialActivities: PagedResponseOfActivityResponse | null = null;
   let fetchError: string | null = null;
 
   try {

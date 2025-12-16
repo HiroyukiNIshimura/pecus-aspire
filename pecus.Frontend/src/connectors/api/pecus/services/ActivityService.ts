@@ -16,9 +16,9 @@ export class ActivityService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsActivities(
-        workspaceId: number | string,
-        itemId: number | string,
-        page?: number | string,
+        workspaceId: number,
+        itemId: number,
+        page: number = 1,
     ): CancelablePromise<PagedResponseOfActivityResponse> {
         return __request(OpenAPI, {
             method: 'GET',

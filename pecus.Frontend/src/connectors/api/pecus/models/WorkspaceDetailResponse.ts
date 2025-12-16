@@ -11,7 +11,7 @@ export type WorkspaceDetailResponse = {
     /**
      * ワークスペースID
      */
-    id: number | string;
+    id: number;
     /**
      * ワークスペース名
      */
@@ -27,12 +27,12 @@ export type WorkspaceDetailResponse = {
     /**
      * 組織ID
      */
-    organizationId?: number | string;
+    organizationId?: number;
     organization?: (null | OrganizationInfoResponse);
     /**
      * ジャンルID
      */
-    genreId?: number | string | null;
+    genreId?: number | null;
     /**
      * ジャンル名
      */
@@ -53,7 +53,7 @@ export type WorkspaceDetailResponse = {
     /**
      * 作成者ユーザーID
      */
-    createdByUserId?: number | string | null;
+    createdByUserId?: number | null;
     /**
      * 更新日時
      */
@@ -61,7 +61,7 @@ export type WorkspaceDetailResponse = {
     /**
      * 更新者ユーザーID
      */
-    updatedByUserId?: number | string | null;
+    updatedByUserId?: number | null;
     /**
      * アクティブフラグ
      */
@@ -69,6 +69,6 @@ export type WorkspaceDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

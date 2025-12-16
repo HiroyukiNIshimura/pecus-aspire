@@ -11,6 +11,6 @@ export type UpdateProfileRequest = {
     avatarType?: (null | AvatarType);
     userAvatarPath?: string | null;
     skillIds?: any[] | null;
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

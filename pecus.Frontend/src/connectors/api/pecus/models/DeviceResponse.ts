@@ -9,7 +9,7 @@ export type DeviceResponse = {
     /**
      * 紐づく端末ID（端末情報が無い場合は null）
      */
-    id?: number | string | null;
+    id?: number | null;
     /**
      * 表示用短ID（端末がある場合）
      */

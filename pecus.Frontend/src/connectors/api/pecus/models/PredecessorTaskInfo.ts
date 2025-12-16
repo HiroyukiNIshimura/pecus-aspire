@@ -9,11 +9,11 @@ export type PredecessorTaskInfo = {
     /**
      * タスクID
      */
-    id?: number | string;
+    id?: number;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    sequence?: number | string;
+    sequence?: number;
     /**
      * タスク内容
      */

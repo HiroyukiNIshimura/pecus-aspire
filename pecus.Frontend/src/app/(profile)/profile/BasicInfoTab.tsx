@@ -55,7 +55,7 @@ export default function BasicInfoTab({ user, onUpdate, notify, isLoading, setIsL
           const updatedUserInfo: UserInfo = {
             ...user,
             username: result.data.username,
-            avatarType: result.data.avatarType,
+            avatarType: result.data.avatarType ?? undefined,
             userAvatarPath: result.data.userAvatarPath,
             identityIconUrl: result.data.identityIconUrl,
             rowVersion: result.data.rowVersion,

@@ -13,19 +13,19 @@ export type FocusTaskResponse = {
     /**
      * タスクID
      */
-    id: number | string;
+    id: number;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    sequence: number | string;
+    sequence: number;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId: number | string;
+    workspaceItemId: number;
     /**
      * ワークスペースID
      */
-    workspaceId: number | string;
+    workspaceId: number;
     /**
      * ワークスペースコード
      */
@@ -49,7 +49,7 @@ export type FocusTaskResponse = {
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | string;
+    taskTypeId?: number;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
@@ -70,19 +70,19 @@ export type FocusTaskResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | string | null;
+    estimatedHours?: number | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage: number | string;
+    progressPercentage: number;
     /**
      * 総合スコア（高いほど優先度が高い）
      */
-    totalScore: number | string;
+    totalScore: number;
     /**
      * 後続タスク数（このタスクを待っているタスクの数）
      */
-    successorCount: number | string;
+    successorCount: number;
     successorTask?: (null | SuccessorTaskInfo);
     predecessorTask?: (null | PredecessorTaskInfo);
     scoreDetail?: (null | TaskScoreDetail);

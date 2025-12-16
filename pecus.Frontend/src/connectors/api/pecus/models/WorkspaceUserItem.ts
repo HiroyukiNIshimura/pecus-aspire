@@ -10,7 +10,7 @@ export type WorkspaceUserItem = {
     /**
      * ユーザーID
      */
-    userId: number | string;
+    userId: number;
     /**
      * ユーザー名
      */

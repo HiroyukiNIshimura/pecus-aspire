@@ -9,7 +9,7 @@ export type LoginDeviceInfo = {
     /**
      * デバイスID
      */
-    id?: number | string | null;
+    id?: number | null;
     /**
      * デバイスの公開ID（セッション管理用）
      */

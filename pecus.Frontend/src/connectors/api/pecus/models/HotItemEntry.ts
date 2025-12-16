@@ -9,7 +9,7 @@ export type HotItemEntry = {
     /**
      * アイテムID
      */
-    itemId: number | string;
+    itemId: number;
     /**
      * アイテムコード（URL用）
      */
@@ -21,7 +21,7 @@ export type HotItemEntry = {
     /**
      * ワークスペースID
      */
-    workspaceId: number | string;
+    workspaceId: number;
     /**
      * ワークスペースコード
      */
@@ -37,7 +37,7 @@ export type HotItemEntry = {
     /**
      * 直近のアクティビティ数
      */
-    activityCount: number | string;
+    activityCount: number;
     /**
      * 最終アクティビティ日時（UTC）
      */
@@ -45,7 +45,7 @@ export type HotItemEntry = {
     /**
      * 最終操作者のユーザーID（システム操作の場合はnull）
      */
-    lastActorId?: number | string | null;
+    lastActorId?: number | null;
     /**
      * 最終操作者の表示名
      */

@@ -25,11 +25,11 @@ export type LoginResponse = {
     /**
      * トークンの有効時間（秒）
      */
-    expiresIn?: number | string;
+    expiresIn?: number;
     /**
      * ユーザーID
      */
-    userId?: number | string;
+    userId?: number;
     /**
      * ログインID
      */

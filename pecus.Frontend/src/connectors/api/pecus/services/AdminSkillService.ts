@@ -46,7 +46,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static getApiAdminSkills(
-        page?: number | string,
+        page?: number,
         isActive?: boolean,
         unusedOnly?: boolean,
         name?: string,
@@ -72,7 +72,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static getApiAdminSkills1(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SkillDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,7 +94,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static putApiAdminSkills(
-        id: number | string,
+        id: number,
         requestBody: UpdateSkillRequest,
     ): CancelablePromise<SkillResponse> {
         return __request(OpenAPI, {
@@ -120,7 +120,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static deleteApiAdminSkills(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -141,7 +141,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static patchApiAdminSkillsDeactivate(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -163,7 +163,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static patchApiAdminSkillsActivate(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

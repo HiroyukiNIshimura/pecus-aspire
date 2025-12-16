@@ -46,9 +46,9 @@ export class WorkspaceService {
      * @throws ApiError
      */
     public static getApiWorkspaces(
-        page?: number | string,
+        page?: number,
         isActive?: boolean,
-        genreId?: number | string,
+        genreId?: number,
         name?: string,
     ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
         return __request(OpenAPI, {
@@ -246,7 +246,7 @@ export class WorkspaceService {
      */
     public static postApiWorkspacesActivate(
         id: number,
-        requestBody: number | string,
+        requestBody: number,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -273,7 +273,7 @@ export class WorkspaceService {
      */
     public static postApiWorkspacesDeactivate(
         id: number,
-        requestBody: number | string,
+        requestBody: number,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',

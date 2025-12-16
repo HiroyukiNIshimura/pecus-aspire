@@ -10,7 +10,7 @@ export type WorkspaceDetailUserResponse = {
     /**
      * ユーザーID
      */
-    id?: number | string;
+    id?: number;
     /**
      * ユーザー名
      */

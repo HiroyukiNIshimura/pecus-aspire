@@ -11,15 +11,15 @@ export type TaskWithItemResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number | string;
+    listIndex?: number;
     /**
      * タスクID
      */
-    taskId: number | string;
+    taskId: number;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    sequence: number | string;
+    sequence: number;
     /**
      * タスク内容
      */
@@ -27,7 +27,7 @@ export type TaskWithItemResponse = {
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | string | null;
+    taskTypeId?: number | null;
     /**
      * タスク種類コード
      */
@@ -52,15 +52,15 @@ export type TaskWithItemResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | string | null;
+    estimatedHours?: number | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | string | null;
+    actualHours?: number | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number | string;
+    progressPercentage?: number;
     /**
      * 完了フラグ
      */
@@ -76,7 +76,7 @@ export type TaskWithItemResponse = {
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number | string;
+    assignedUserId?: number;
     /**
      * 担当ユーザー名
      */
@@ -96,7 +96,7 @@ export type TaskWithItemResponse = {
     /**
      * アイテムID
      */
-    itemId: number | string;
+    itemId: number;
     /**
      * アイテムコード
      */
@@ -112,7 +112,7 @@ export type TaskWithItemResponse = {
     /**
      * アイテムオーナーユーザーID
      */
-    itemOwnerId?: number | string;
+    itemOwnerId?: number;
     /**
      * アイテムオーナーユーザー名
      */
@@ -124,7 +124,7 @@ export type TaskWithItemResponse = {
     /**
      * アイテムコミッターユーザーID
      */
-    itemCommitterId?: number | string | null;
+    itemCommitterId?: number | null;
     /**
      * アイテムコミッターユーザー名
      */
@@ -136,6 +136,6 @@ export type TaskWithItemResponse = {
     /**
      * コメントタイプ別件数
      */
-    commentTypeCounts?: Record<string, number | string>;
+    commentTypeCounts?: Record<string, number>;
 };
 

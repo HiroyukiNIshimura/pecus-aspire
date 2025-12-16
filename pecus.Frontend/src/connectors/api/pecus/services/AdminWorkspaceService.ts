@@ -46,9 +46,9 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static getApiAdminWorkspaces(
-        page?: number | string,
+        page?: number,
         isActive?: boolean,
-        genreId?: number | string,
+        genreId?: number,
         name?: string,
     ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
         return __request(OpenAPI, {
@@ -72,7 +72,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static getApiAdminWorkspaces1(
-        id: number | string,
+        id: number,
     ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,7 +94,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static putApiAdminWorkspaces(
-        id: number | string,
+        id: number,
         requestBody: UpdateWorkspaceRequest,
     ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
@@ -120,7 +120,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static deleteApiAdminWorkspaces(
-        id: number | string,
+        id: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -142,8 +142,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesDeactivate(
-        id: number | string,
-        requestBody: number | string,
+        id: number,
+        requestBody: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -168,8 +168,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesActivate(
-        id: number | string,
-        requestBody: number | string,
+        id: number,
+        requestBody: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -194,7 +194,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static postApiAdminWorkspacesUsers(
-        id: number | string,
+        id: number,
         requestBody: AddUserToWorkspaceRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
@@ -221,8 +221,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static getApiAdminWorkspacesUsers(
-        id: number | string,
-        page?: number | string,
+        id: number,
+        page?: number,
         activeOnly?: boolean,
     ): CancelablePromise<PagedResponseOfWorkspaceUserDetailResponseAndObject> {
         return __request(OpenAPI, {
@@ -248,8 +248,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static deleteApiAdminWorkspacesUsers(
-        id: number | string,
-        userId: number | string,
+        id: number,
+        userId: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -275,8 +275,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesUsersRole(
-        id: number | string,
-        userId: number | string,
+        id: number,
+        userId: number,
         requestBody: UpdateWorkspaceUserRoleRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {

@@ -11,6 +11,6 @@ export type UpdateWorkspaceItemAttributeRequest = {
     /**
      * 楽観的ロック用バージョン
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

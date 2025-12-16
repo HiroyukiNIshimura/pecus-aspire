@@ -3,8 +3,8 @@
 import { createPecusApiClients, detectConcurrencyError } from '@/connectors/api/PecusApiClient';
 import type {
   CreateTaskCommentRequest,
+  PagedResponseOfTaskCommentDetailResponse,
   TaskCommentDetailResponse,
-  TaskCommentDetailResponsePagedResponse,
   TaskCommentResponse,
   TaskCommentType,
   UpdateTaskCommentRequest,
@@ -21,7 +21,7 @@ export async function getTaskComments(
   page: number = 1,
   commentType?: TaskCommentType,
   includeDeleted?: boolean,
-): Promise<ApiResponse<TaskCommentDetailResponsePagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfTaskCommentDetailResponse>> {
   try {
     const api = await createPecusApiClients();
     const response = await api.taskComment.getApiWorkspacesItemsTasksComments(

@@ -16,19 +16,19 @@ export type PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics
     /**
      * 現在のページ番号（1から始まる）
      */
-    currentPage?: number | string;
+    currentPage?: number;
     /**
      * 1ページあたりのアイテム数
      */
-    pageSize?: number | string;
+    pageSize?: number;
     /**
      * 総アイテム数
      */
-    totalCount?: number | string;
+    totalCount?: number;
     /**
      * 総ページ数
      */
-    totalPages?: number | string;
+    totalPages?: number;
     /**
      * 前のページが存在するか
      */

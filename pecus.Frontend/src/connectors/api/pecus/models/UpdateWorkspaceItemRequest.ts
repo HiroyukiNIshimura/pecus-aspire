@@ -18,7 +18,7 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * 作業中のユーザーID（NULL可）
      */
-    assigneeId?: number | string | null;
+    assigneeId?: number | null;
     priority?: (null | TaskPriority);
     /**
      * 期限日時(ISO 8601 形式)
@@ -35,7 +35,7 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * コミッターユーザーID（NULL可）
      */
-    committerId?: number | string | null;
+    committerId?: number | null;
     /**
      * アクティブフラグ
      */
@@ -47,6 +47,6 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * アイテムの楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

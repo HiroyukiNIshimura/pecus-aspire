@@ -10,8 +10,8 @@ import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Pagination from '@/components/common/Pagination';
 import type {
   MasterGenreResponse,
+  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   WorkspaceListItemResponse,
-  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceStatistics,
 } from '@/connectors/api/pecus';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
@@ -86,7 +86,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
 
         const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
         if (response.ok && isMounted) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -129,7 +129,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
       }
       const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
       if (response.ok) {
-        const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+        const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
         setWorkspaces(data.data || []);
         setCurrentPage(data.currentPage || 1);
         setTotalPages(data.totalPages || 1);
@@ -159,7 +159,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
         }
         const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
         if (response.ok) {
-          const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse = await response.json();
+          const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics = await response.json();
           setWorkspaces(data.data || []);
           setCurrentPage(data.currentPage || 1);
           setTotalPages(data.totalPages || 1);
@@ -336,7 +336,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
 
                               const response = await fetch(`/api/admin/workspaces?${params.toString()}`);
                               if (response.ok) {
-                                const data: WorkspaceListItemResponseWorkspaceStatisticsPagedResponse =
+                                const data: PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics =
                                   await response.json();
                                 setWorkspaces(data.data || []);
                                 setCurrentPage(data.currentPage || 1);

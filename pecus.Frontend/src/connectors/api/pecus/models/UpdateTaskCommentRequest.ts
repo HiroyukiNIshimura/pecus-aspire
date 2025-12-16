@@ -15,6 +15,6 @@ export type UpdateTaskCommentRequest = {
     /**
      * 楽観的ロック用のRowVersion（必須）
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

@@ -10,15 +10,15 @@ export type RelatedItemInfo = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number | string;
+    listIndex?: number;
     /**
      * 関連ID（削除時に使用）
      */
-    relationId?: number | string;
+    relationId?: number;
     /**
      * アイテムID
      */
-    id?: number | string;
+    id?: number;
     /**
      * 件名
      */
@@ -37,7 +37,7 @@ export type RelatedItemInfo = {
     /**
      * オーナーID
      */
-    ownerId?: number | string | null;
+    ownerId?: number | null;
     /**
      * アーカイブ済みかどうか
      */

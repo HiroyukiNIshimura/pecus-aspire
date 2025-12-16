@@ -2,9 +2,9 @@
 
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  PagedResponseOfTagListItemResponseAndTagStatistics,
   SuccessResponse,
   TagDetailResponse,
-  TagListItemResponseTagStatisticsPagedResponse,
   TagResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
@@ -15,7 +15,7 @@ import type { ApiResponse } from '../types';
 export async function getTags(
   page: number = 1,
   isActive: boolean = true,
-): Promise<ApiResponse<TagListItemResponseTagStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfTagListItemResponseAndTagStatistics>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminTag.getApiAdminTags(page, isActive);

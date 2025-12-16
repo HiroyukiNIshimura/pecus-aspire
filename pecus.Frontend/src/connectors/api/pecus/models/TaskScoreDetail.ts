@@ -9,27 +9,27 @@ export type TaskScoreDetail = {
     /**
      * 優先度スコア（1-4）
      */
-    priorityScore: number | string;
+    priorityScore: number;
     /**
      * 期限スコア（1-10）
      */
-    deadlineScore: number | string;
+    deadlineScore: number;
     /**
      * 後続タスク影響スコア（0-10）
      */
-    successorImpactScore: number | string;
+    successorImpactScore: number;
     /**
      * 優先度の重み（デフォルト: 2）
      */
-    priorityWeight: number | string;
+    priorityWeight: number;
     /**
      * 期限の重み（デフォルト: 3）
      */
-    deadlineWeight: number | string;
+    deadlineWeight: number;
     /**
      * 後続影響の重み（デフォルト: 5）
      */
-    successorImpactWeight: number | string;
+    successorImpactWeight: number;
     /**
      * スコア計算式の説明
      */

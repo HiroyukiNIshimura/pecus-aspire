@@ -4,12 +4,12 @@ import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } fro
 import type {
   AssigneeTaskLoadResponse,
   CreateWorkspaceTaskRequest,
+  PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics,
   SortOrder,
   TaskSortBy,
   TaskStatusFilter,
   UpdateWorkspaceTaskRequest,
   WorkspaceTaskDetailResponse,
-  WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse,
   WorkspaceTaskResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
@@ -50,7 +50,7 @@ export async function getWorkspaceTasks(
   assignedUserId?: number,
   sortBy?: TaskSortBy,
   order?: SortOrder,
-): Promise<ApiResponse<WorkspaceTaskDetailResponseWorkspaceTaskStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics>> {
   try {
     const api = await createPecusApiClients();
     const response = await api.workspaceTask.getApiWorkspacesItemsTasks(

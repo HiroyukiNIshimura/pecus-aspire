@@ -11,13 +11,13 @@ import type {
   AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
   MyItemRelationType,
+  PagedResponseOfWorkspaceItemDetailResponse,
   RelationType,
   SuccessResponse,
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
   WorkspaceItemDetailResponse,
-  WorkspaceItemDetailResponsePagedResponse,
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
@@ -38,7 +38,7 @@ export async function fetchMyItems(
   page: number = 1,
   relation?: MyItemRelationType,
   includeArchived?: boolean,
-): Promise<ApiResponse<WorkspaceItemDetailResponsePagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfWorkspaceItemDetailResponse>> {
   try {
     const api = createPecusApiClients();
     const response = await api.my.getApiMyWorkspaceItems(page, relation, includeArchived);

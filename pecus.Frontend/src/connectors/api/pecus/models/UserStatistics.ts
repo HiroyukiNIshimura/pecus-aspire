@@ -19,18 +19,18 @@ export type UserStatistics = {
     /**
      * アクティブなユーザー数
      */
-    activeUserCount: number | string;
+    activeUserCount: number;
     /**
      * 非アクティブなユーザー数
      */
-    inactiveUserCount: number | string;
+    inactiveUserCount: number;
     /**
      * ワークスペースに参加しているユーザー数
      */
-    workspaceParticipationCount: number | string;
+    workspaceParticipationCount: number;
     /**
      * ワークスペースに参加していないユーザー数
      */
-    noWorkspaceParticipationCount: number | string;
+    noWorkspaceParticipationCount: number;
 };
 

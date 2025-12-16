@@ -31,8 +31,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsAttachments(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         formData: {
             file?: IFormFile;
         },
@@ -62,8 +62,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsAttachments(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<Array<WorkspaceItemAttachmentResponse>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -87,9 +87,9 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItemsAttachments(
-        workspaceId: number | string,
-        itemId: number | string,
-        attachmentId: number | string,
+        workspaceId: number,
+        itemId: number,
+        attachmentId: number,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -116,8 +116,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsAttachmentsDownload(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         fileName: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -142,7 +142,7 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static postApiWorkspacesItems(
-        workspaceId: number | string,
+        workspaceId: number,
         requestBody: CreateWorkspaceItemRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
@@ -178,13 +178,13 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItems(
-        workspaceId: number | string,
-        page?: number | string,
+        workspaceId: number,
+        page?: number,
         isDraft?: boolean,
         isArchived?: boolean,
-        assigneeId?: number | string,
-        ownerId?: number | string,
-        committerId?: number | string,
+        assigneeId?: number,
+        ownerId?: number,
+        committerId?: number,
         priority?: TaskPriority,
         pinned?: boolean,
         hasDueDate?: boolean,
@@ -221,8 +221,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItems1(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<WorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -246,8 +246,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static patchApiWorkspacesItems(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: UpdateWorkspaceItemRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
@@ -275,8 +275,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItems(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -300,7 +300,7 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsCode(
-        workspaceId: number | string,
+        workspaceId: number,
         code: string,
     ): CancelablePromise<WorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
@@ -325,8 +325,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static patchApiWorkspacesItemsStatus(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: UpdateWorkspaceItemStatusRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
@@ -355,8 +355,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static patchApiWorkspacesItemsAssignee(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: UpdateWorkspaceItemAssigneeRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
@@ -392,8 +392,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static patchApiWorkspacesItems1(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         attr: string,
         requestBody: UpdateWorkspaceItemAttributeRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
@@ -423,8 +423,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsExportJson(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -447,8 +447,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsExportMarkdown(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -471,8 +471,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsExportHtml(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -495,8 +495,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsPin(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -520,8 +520,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItemsPin(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -546,8 +546,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsRelations(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: AddWorkspaceItemRelationRequest,
     ): CancelablePromise<AddWorkspaceItemRelationResponse> {
         return __request(OpenAPI, {
@@ -574,8 +574,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsRelations(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
     ): CancelablePromise<WorkspaceItemRelationsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -599,9 +599,9 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItemsRelations(
-        workspaceId: number | string,
-        itemId: number | string,
-        relationId: number | string,
+        workspaceId: number,
+        itemId: number,
+        relationId: number,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -626,8 +626,8 @@ export class WorkspaceItemService {
      * @throws ApiError
      */
     public static putApiWorkspacesItemsTags(
-        workspaceId: number | string,
-        itemId: number | string,
+        workspaceId: number,
+        itemId: number,
         requestBody: SetTagsToItemRequest,
     ): CancelablePromise<WorkspaceItemResponse> {
         return __request(OpenAPI, {

@@ -10,27 +10,27 @@ export type WorkspaceStatistics = {
     /**
      * アクティブなワークスペースの総数
      */
-    activeWorkspaceCount: number | string;
+    activeWorkspaceCount: number;
     /**
      * 非アクティブなワークスペースの総数
      */
-    inactiveWorkspaceCount: number | string;
+    inactiveWorkspaceCount: number;
     /**
      * 総ワークスペース数（アクティブ + 非アクティブ）
      */
-    totalWorkspaceCount: number | string;
+    totalWorkspaceCount: number;
     /**
      * ワークスペースメンバーの総数（ユニークなユーザー数）
      */
-    uniqueMemberCount: number | string;
+    uniqueMemberCount: number;
     /**
      * 平均メンバー数 per ワークスペース
      */
-    averageMembersPerWorkspace: number | string;
+    averageMembersPerWorkspace: number;
     /**
      * 最近作成されたワークスペース数（過去30日）
      */
-    recentWorkspaceCount: number | string;
+    recentWorkspaceCount: number;
     /**
      * ワークスペースのジャンルごとのワークスペース数
      */

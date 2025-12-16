@@ -26,7 +26,7 @@ export class MyService {
      * @throws ApiError
      */
     public static getApiMyActivities(
-        page?: number | string,
+        page?: number,
         period?: ActivityPeriod,
     ): CancelablePromise<PagedResponseOfActivityResponse> {
         return __request(OpenAPI, {
@@ -89,8 +89,8 @@ export class MyService {
      * @throws ApiError
      */
     public static getApiMyCommitterItems(
-        page?: number | string,
-        workspaceId?: number | string,
+        page?: number,
+        workspaceId?: number,
     ): CancelablePromise<PagedResponseOfItemWithTasksResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -118,7 +118,7 @@ export class MyService {
      * @throws ApiError
      */
     public static getApiMyWorkspaceItems(
-        page?: number | string,
+        page?: number,
         relation?: MyItemRelationType,
         includeArchived?: boolean,
     ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
@@ -160,7 +160,7 @@ export class MyService {
      * @throws ApiError
      */
     public static getApiMyTasks(
-        page?: number | string,
+        page?: number,
         status?: TaskStatusFilter,
     ): CancelablePromise<PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics> {
         return __request(OpenAPI, {
@@ -225,7 +225,7 @@ export class MyService {
      * @throws ApiError
      */
     public static getApiMyPinnedItems(
-        page?: number | string,
+        page?: number,
     ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',

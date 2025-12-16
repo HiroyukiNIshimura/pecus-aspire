@@ -11,7 +11,7 @@ export type ItemWithTasksResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number | string;
+    listIndex?: number;
     item: TaskItemResponse;
     /**
      * アイテムに紐づくタスクのリスト

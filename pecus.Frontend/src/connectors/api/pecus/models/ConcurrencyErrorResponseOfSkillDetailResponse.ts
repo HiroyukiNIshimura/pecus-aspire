@@ -11,7 +11,7 @@ export type ConcurrencyErrorResponseOfSkillDetailResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * エラーメッセージ
      */

@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { UserDetailResponse, WorkspaceItemDetailResponsePagedResponse } from '@/connectors/api/pecus';
+import type { PagedResponseOfWorkspaceItemDetailResponse, UserDetailResponse } from '@/connectors/api/pecus';
 import MyItemsClient from './MyItemsClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MyItemsPage() {
   let userResponse: UserDetailResponse | null = null;
-  let initialItems: WorkspaceItemDetailResponsePagedResponse | null = null;
+  let initialItems: PagedResponseOfWorkspaceItemDetailResponse | null = null;
   let fetchError: string | null = null;
 
   try {

@@ -9,7 +9,7 @@ export type MasterTaskTypeResponse = {
     /**
      * タスク種類ID
      */
-    id: number | string;
+    id: number;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
@@ -29,6 +29,6 @@ export type MasterTaskTypeResponse = {
     /**
      * 表示順
      */
-    displayOrder?: number | string;
+    displayOrder?: number;
 };
 

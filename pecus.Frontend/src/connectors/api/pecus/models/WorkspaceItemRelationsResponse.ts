@@ -18,6 +18,6 @@ export type WorkspaceItemRelationsResponse = {
     /**
      * 全関連数
      */
-    totalCount?: number | string;
+    totalCount?: number;
 };
 

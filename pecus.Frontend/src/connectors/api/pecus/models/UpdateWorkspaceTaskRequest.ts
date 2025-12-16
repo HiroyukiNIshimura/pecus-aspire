@@ -14,11 +14,11 @@ export type UpdateWorkspaceTaskRequest = {
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | string | null;
+    taskTypeId?: number | null;
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number | string | null;
+    assignedUserId?: number | null;
     priority?: (null | TaskPriority);
     /**
      * 開始日時(ISO 8601 形式)
@@ -31,15 +31,15 @@ export type UpdateWorkspaceTaskRequest = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | string | null;
+    estimatedHours?: number | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | string | null;
+    actualHours?: number | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number | string | null;
+    progressPercentage?: number | null;
     /**
      * 完了フラグ
      */
@@ -56,7 +56,7 @@ export type UpdateWorkspaceTaskRequest = {
      * 先行タスクID（このタスクが完了しないと着手できない）
      * nullを設定すると先行タスクを解除
      */
-    predecessorTaskId?: number | string | null;
+    predecessorTaskId?: number | null;
     /**
      * 先行タスクを解除するかどうか（trueの場合、PredecessorTaskIdをnullに設定）
      */
@@ -64,6 +64,6 @@ export type UpdateWorkspaceTaskRequest = {
     /**
      * 楽観的ロック用のRowVersion（必須）
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

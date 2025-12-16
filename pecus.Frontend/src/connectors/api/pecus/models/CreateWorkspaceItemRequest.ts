@@ -18,7 +18,7 @@ export type CreateWorkspaceItemRequest = {
     /**
      * 作業中のユーザーID（NULL可）
      */
-    assigneeId?: number | string | null;
+    assigneeId?: number | null;
     priority?: (null | TaskPriority);
     /**
      * 期限日時(ISO 8601 形式)
@@ -31,7 +31,7 @@ export type CreateWorkspaceItemRequest = {
     /**
      * コミッターユーザーID（NULL可）
      */
-    committerId?: number | string | null;
+    committerId?: number | null;
     /**
      * タグ名のリスト（存在しないタグは自動作成）
      */

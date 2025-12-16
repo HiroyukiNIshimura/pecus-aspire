@@ -8,14 +8,14 @@ import type {
   ActivityActionType,
   ActivityPeriod,
   ActivityResponse,
-  ActivityResponsePagedResponse,
+  PagedResponseOfActivityResponse,
 } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface ActivityClientProps {
   initialUserName: string;
   initialUserIconUrl?: string | null;
-  initialActivities: ActivityResponsePagedResponse | null;
+  initialActivities: PagedResponseOfActivityResponse | null;
   fetchError: string | null;
 }
 

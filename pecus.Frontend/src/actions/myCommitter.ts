@@ -3,8 +3,8 @@
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
   DashboardTaskFilter,
-  ItemWithTasksResponsePagedResponse,
   MyCommitterWorkspaceResponse,
+  PagedResponseOfItemWithTasksResponse,
   TasksByDueDateResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
@@ -30,7 +30,7 @@ export async function fetchMyCommitterWorkspaces(): Promise<ApiResponse<MyCommit
 export async function fetchMyCommitterItems(
   workspaceId: number,
   page: number = 1,
-): Promise<ApiResponse<ItemWithTasksResponsePagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfItemWithTasksResponse>> {
   try {
     const api = await createPecusApiClients();
     const response = await api.my.getApiMyCommitterItems(page, workspaceId);

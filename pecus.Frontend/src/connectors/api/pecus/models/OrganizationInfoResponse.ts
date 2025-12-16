@@ -9,7 +9,7 @@ export type OrganizationInfoResponse = {
     /**
      * 組織ID
      */
-    id: number | string;
+    id: number;
     /**
      * 組織名
      */

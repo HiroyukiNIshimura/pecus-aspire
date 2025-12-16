@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type MyItemRelationType = number;
+export type MyItemRelationType = 'All' | 'Owner' | 'Assignee' | 'Committer' | 'Pinned';

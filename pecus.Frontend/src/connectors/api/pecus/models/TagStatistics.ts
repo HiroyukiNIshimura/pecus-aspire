@@ -10,15 +10,15 @@ export type TagStatistics = {
     /**
      * タグのトータル件数
      */
-    totalTags: number | string;
+    totalTags: number;
     /**
      * アクティブなタグの件数
      */
-    activeTags: number | string;
+    activeTags: number;
     /**
      * 非アクティブなタグの件数
      */
-    inactiveTags: number | string;
+    inactiveTags: number;
     /**
      * 利用されているタグのトップ５
      */

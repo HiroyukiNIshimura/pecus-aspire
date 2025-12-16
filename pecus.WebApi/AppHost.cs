@@ -340,6 +340,12 @@ builder.Services.AddOpenApi("v1", options =>
 
     // JWT Bearer認証のセキュリティスキーム設定
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+
+    // 整数型を integer のみに統一（integer | string のユニオン型を防止）
+    options.AddSchemaTransformer<IntegerSchemaTransformer>();
+
+    // Enum を文字列として出力
+    options.AddSchemaTransformer<EnumSchemaTransformer>();
 });
 
 // HttpLoggingの設定

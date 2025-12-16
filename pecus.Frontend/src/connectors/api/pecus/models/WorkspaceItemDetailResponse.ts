@@ -12,11 +12,11 @@ export type WorkspaceItemDetailResponse = {
     /**
      * アイテムID
      */
-    id: number | string;
+    id: number;
     /**
      * ワークスペースID
      */
-    workspaceId?: number | string;
+    workspaceId?: number;
     /**
      * ワークスペースコード
      */
@@ -48,7 +48,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * オーナーユーザーID
      */
-    ownerId?: number | string;
+    ownerId?: number;
     /**
      * オーナーユーザー名
      */
@@ -60,7 +60,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * 作業中のユーザーID
      */
-    assigneeId?: number | string | null;
+    assigneeId?: number | null;
     /**
      * 作業中のユーザー名
      */
@@ -85,7 +85,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * コミッターユーザーID
      */
-    committerId?: number | string | null;
+    committerId?: number | null;
     /**
      * コミッターユーザー名
      */
@@ -113,7 +113,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * このアイテムのPIN総数
      */
-    pinCount?: number | string;
+    pinCount?: number;
     /**
      * 関連アイテムのリスト
      */
@@ -121,6 +121,6 @@ export type WorkspaceItemDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 

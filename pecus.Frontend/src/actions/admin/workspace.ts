@@ -2,9 +2,9 @@
 
 import { createPecusApiClients, detectConcurrencyError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import type {
+  PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,
   SuccessResponse,
   WorkspaceDetailResponse,
-  WorkspaceListItemResponseWorkspaceStatisticsPagedResponse,
   WorkspaceUserDetailResponse,
 } from '@/connectors/api/pecus';
 import type { ApiResponse } from '../types';
@@ -16,7 +16,7 @@ export async function getWorkspaces(
   page: number = 1,
   isActive?: boolean,
   genreId?: number,
-): Promise<ApiResponse<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse>> {
+): Promise<ApiResponse<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics>> {
   try {
     const api = createPecusApiClients();
     const response = await api.adminWorkspace.getApiAdminWorkspaces(page, isActive, genreId);
@@ -117,10 +117,13 @@ export async function deleteWorkspace(workspaceId: number): Promise<ApiResponse<
  * Server Action: ワークスペースを有効化
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function activateWorkspace(workspaceId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function activateWorkspace(
+  workspaceId: number,
+  rowVersion: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId);
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesActivate(workspaceId, rowVersion);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出
@@ -148,10 +151,13 @@ export async function activateWorkspace(workspaceId: number): Promise<ApiRespons
  * Server Action: ワークスペースを無効化
  * @note 409 Conflict: 並行更新による競合。最新データを返す
  */
-export async function deactivateWorkspace(workspaceId: number): Promise<ApiResponse<SuccessResponse>> {
+export async function deactivateWorkspace(
+  workspaceId: number,
+  rowVersion: number,
+): Promise<ApiResponse<SuccessResponse>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId);
+    const response = await api.adminWorkspace.patchApiAdminWorkspacesDeactivate(workspaceId, rowVersion);
     return { success: true, data: response };
   } catch (error) {
     // 409 Conflict: 並行更新による競合を検出

@@ -9,7 +9,7 @@ export type SuccessorTaskInfo = {
     /**
      * タスクID
      */
-    id?: number | string;
+    id?: number;
     /**
      * タスク内容
      */

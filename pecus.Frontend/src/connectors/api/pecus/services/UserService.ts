@@ -19,7 +19,7 @@ export class UserService {
      */
     public static getApiUsersSearch(
         q?: string,
-        limit?: number | string,
+        limit?: number,
     ): CancelablePromise<Array<UserSearchResultResponse>> {
         return __request(OpenAPI, {
             method: 'GET',

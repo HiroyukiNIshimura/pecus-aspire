@@ -30,14 +30,14 @@ export type UserSettingResponse = {
     /**
      * フォーカス推奨タスクの表示件数（5-20）
      */
-    focusTasksLimit: number | string;
+    focusTasksLimit: number;
     /**
      * 待機中タスクの表示件数（5-20）
      */
-    waitingTasksLimit: number | string;
+    waitingTasksLimit: number;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */
-    rowVersion?: number | string;
+    rowVersion?: number;
 };
 

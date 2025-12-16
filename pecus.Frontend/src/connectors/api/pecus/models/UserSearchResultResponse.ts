@@ -11,7 +11,7 @@ export type UserSearchResultResponse = {
     /**
      * ユーザーID
      */
-    id?: number | string;
+    id?: number;
     /**
      * ユーザー名
      */

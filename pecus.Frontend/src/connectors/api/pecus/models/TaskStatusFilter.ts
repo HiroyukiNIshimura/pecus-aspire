@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type TaskStatusFilter = number;
+export type TaskStatusFilter = 'All' | 'Active' | 'Completed' | 'Discarded';

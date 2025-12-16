@@ -11,7 +11,7 @@ export type ConcurrencyErrorResponseOfUserSettingResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number | string;
+    statusCode?: number;
     /**
      * エラーメッセージ
      */

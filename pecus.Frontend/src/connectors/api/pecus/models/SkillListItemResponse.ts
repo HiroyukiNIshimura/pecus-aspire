@@ -9,7 +9,7 @@ export type SkillListItemResponse = {
     /**
      * スキルID
      */
-    id: number | string;
+    id: number;
     /**
      * スキル名
      */
@@ -29,7 +29,7 @@ export type SkillListItemResponse = {
     /**
      * 更新者ユーザーID
      */
-    updatedByUserId?: number | string | null;
+    updatedByUserId?: number | null;
     /**
      * スキルのアクティブ/非アクティブ状態
      */
@@ -41,6 +41,6 @@ export type SkillListItemResponse = {
     /**
      * ユーザー数
      */
-    userCount?: number | string;
+    userCount?: number;
 };
 

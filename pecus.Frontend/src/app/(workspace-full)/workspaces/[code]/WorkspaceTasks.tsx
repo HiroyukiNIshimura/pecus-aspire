@@ -438,7 +438,7 @@ const WorkspaceTasks = ({
   );
 
   // 優先度の表示
-  const getPriorityBadge = (priority?: string) => {
+  const getPriorityBadge = (priority?: string | null) => {
     if (!priority) return null;
 
     const badges = {

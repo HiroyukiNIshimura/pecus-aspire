@@ -10,11 +10,11 @@ export type MyTaskWorkspaceResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number | string;
+    listIndex?: number;
     /**
      * ワークスペースID
      */
-    workspaceId: number | string;
+    workspaceId: number;
     /**
      * ワークスペースコード
      */
@@ -34,23 +34,23 @@ export type MyTaskWorkspaceResponse = {
     /**
      * 未完了タスク数
      */
-    activeTaskCount: number | string;
+    activeTaskCount: number;
     /**
      * 完了済みタスク数
      */
-    completedTaskCount: number | string;
+    completedTaskCount: number;
     /**
      * 期限超過タスク数
      */
-    overdueTaskCount: number | string;
+    overdueTaskCount: number;
     /**
      * ヘルプコメント数
      */
-    helpCommentCount: number | string;
+    helpCommentCount: number;
     /**
      * 督促コメント数
      */
-    reminderCommentCount: number | string;
+    reminderCommentCount: number;
     /**
      * 最も古い期限日（ソート用、未完了タスクのみ対象）
      */

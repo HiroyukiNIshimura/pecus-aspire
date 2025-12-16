@@ -86,7 +86,7 @@ export class DashboardService {
      * @throws ApiError
      */
     public static getApiDashboardTasksTrend(
-        weeks?: number | string,
+        weeks: number = 8,
     ): CancelablePromise<DashboardTaskTrendResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -110,7 +110,7 @@ export class DashboardService {
      */
     public static getApiDashboardHotItems(
         period: string = '24h',
-        limit?: number | string,
+        limit: number = 10,
     ): CancelablePromise<DashboardHotItemsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -135,7 +135,7 @@ export class DashboardService {
      */
     public static getApiDashboardHotWorkspaces(
         period: string = '24h',
-        limit?: number | string,
+        limit: number = 10,
     ): CancelablePromise<DashboardHotWorkspacesResponse> {
         return __request(OpenAPI, {
             method: 'GET',

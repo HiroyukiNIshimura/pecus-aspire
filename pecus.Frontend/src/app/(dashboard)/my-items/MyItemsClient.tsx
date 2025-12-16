@@ -6,14 +6,14 @@ import { fetchMyItems } from '@/actions/workspaceItem';
 import UserAvatar from '@/components/common/UserAvatar';
 import type {
   MyItemRelationType,
+  PagedResponseOfWorkspaceItemDetailResponse,
   WorkspaceItemDetailResponse,
-  WorkspaceItemDetailResponsePagedResponse,
 } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 
 interface MyItemsClientProps {
-  initialItems?: WorkspaceItemDetailResponsePagedResponse | null;
+  initialItems?: PagedResponseOfWorkspaceItemDetailResponse | null;
   fetchError?: string | null;
 }
 

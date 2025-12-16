@@ -11,31 +11,31 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * リスト内でのインデックス（Reactのkey用）
      */
-    listIndex?: number | string;
+    listIndex?: number;
     /**
      * タスクID
      */
-    id: number | string;
+    id: number;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId?: number | string;
+    workspaceItemId?: number;
     /**
      * ワークスペースアイテム内でのシーケンス番号
      */
-    sequence?: number | string;
+    sequence?: number;
     /**
      * ワークスペースID
      */
-    workspaceId?: number | string;
+    workspaceId?: number;
     /**
      * 組織ID
      */
-    organizationId?: number | string;
+    organizationId?: number;
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number | string;
+    assignedUserId?: number;
     /**
      * 担当ユーザー名
      */
@@ -47,7 +47,7 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * 作成ユーザーID
      */
-    createdByUserId?: number | string;
+    createdByUserId?: number;
     /**
      * 作成ユーザー名
      */
@@ -63,7 +63,7 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | string;
+    taskTypeId?: number;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
@@ -88,15 +88,15 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | string | null;
+    estimatedHours?: number | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | string | null;
+    actualHours?: number | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number | string;
+    progressPercentage?: number;
     /**
      * 完了フラグ
      */
@@ -128,23 +128,23 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * コメント数
      */
-    commentCount?: number | string;
+    commentCount?: number;
     /**
      * コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）
      */
-    commentTypeCounts?: Record<string, number | string>;
+    commentTypeCounts?: Record<string, number>;
     /**
      * 先行タスクID（このタスクが完了しないと着手できない）
      */
-    predecessorTaskId?: number | string | null;
+    predecessorTaskId?: number | null;
     predecessorTask?: (null | PredecessorTaskInfo);
     /**
      * このタスクを待っている後続タスク数
      */
-    successorTaskCount?: number | string;
+    successorTaskCount?: number;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number | string;
+    rowVersion: number;
 };
 
