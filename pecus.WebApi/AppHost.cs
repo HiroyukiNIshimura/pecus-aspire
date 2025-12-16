@@ -328,6 +328,7 @@ builder.Services.AddControllers(options =>
 // OpenAPI 3.0 に固定（3.1 では nullable や integer の扱いが異なるため）
 builder.Services.AddOpenApi("v1", options =>
 {
+    //本プロジェクトでは恒久的に変更禁止
     options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
 
     options.AddDocumentTransformer((document, context, cancellationToken) =>

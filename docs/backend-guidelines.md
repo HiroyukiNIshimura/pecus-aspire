@@ -206,6 +206,42 @@ builder.AddRedisClient("redis");
  - 配列／リスト（例: `List<string> TagNames`, `List<int> SkillIds`）の要素検証は DataAnnotations 単体では表現しづらいので、要件がある場合はカスタムバリデータ（`ValidationAttribute` の派生）か `IValidatableObject` 実装を用いて要素ごとの検証（非空、最大長、範囲など）を行ってください。
  - ErrorMessage は必ず日本語で具体的に記述してください（例: `"件名は200文字以内で入力してください。"`）。
 
+### OpenAPI 設定（スキーマトランスフォーマー）
+
+本プロジェクトでは `Microsoft.AspNetCore.OpenApi` を使用して OpenAPI スキーマを生成しています。.NET 10 での OpenAPI 生成の挙動を制御するため、以下のカスタムトランスフォーマーを使用しています。
+
+**設定ファイル**: `pecus.WebApi/AppHost.cs`
+
+```csharp
+builder.Services.AddOpenApi("v1", options =>
+{
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0; // 3.0 に固定
+
+    // 整数型を integer のみに統一（integer | string のユニオン型を防止）
+    options.AddSchemaTransformer<IntegerSchemaTransformer>();
+
+    // Enum を文字列として出力
+    options.AddSchemaTransformer<EnumSchemaTransformer>();
+});
+```
+
+**重要な設計決定**:
+
+1. **OpenAPI 3.0 に固定**: OpenAPI 3.1 では `nullable` の扱いや `integer` の出力形式が異なるため、安定性のため 3.0 を使用。
+
+2. **IntegerSchemaTransformer** (`pecus.WebApi/OpenApi/IntegerSchemaTransformer.cs`):
+   - .NET 10 では整数型が `integer | string` のユニオン型として出力される問題を修正
+   - TypeScript 生成時に `number | string` になることを防止
+
+3. **EnumSchemaTransformer** (`pecus.WebApi/OpenApi/EnumSchemaTransformer.cs`):
+   - Enum を文字列リテラル型として出力（`'Value1' | 'Value2' | ...`）
+   - `Nullable<Enum>` の場合は `| null` を含む型として出力
+
+**フロントエンドへの影響**:
+- Enum 型は `'Value1' | 'Value2' | ... | null`（nullable の場合）として生成される
+- フロントエンドで `Record<EnumType, ...>` を使用する場合は `NonNullable<EnumType>` を使用すること
+- `<select value={enumValue}>` では `enumValue ?? ''` または `enumValue ?? 'デフォルト値'` でデフォルト値を設定すること
+
 ### 複数テーブルにまたがる操作のトランザクション
 複数テーブルの変更が発生する処理（生成・削除・多対多の更新等）はサービス層で明示的にトランザクションを開始して処理してください。
 

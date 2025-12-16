@@ -91,6 +91,41 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 - **Git管理**: 自動生成ファイルは `.gitignore` に登録済み
  - **編集可/不可のSSoT**: 編集可: `src/connectors/api/PecusApiClient.ts`（トークン取得・OpenAPI 設定ロジック）／編集不可: `src/connectors/api/PecusApiClient.generated.ts`（サービスインスタンス定義）／型の参照: `src/connectors/api/pecus/index.ts`（自動生成エクスポート）
 
+### Enum 型の扱い（重要）
+
+バックエンドで `Nullable<Enum>` を使用している場合、生成される TypeScript の型は `'Value1' | 'Value2' | ... | null` となります。これはバックエンドの `EnumSchemaTransformer` の仕様です。
+
+**フロントエンドでの対応が必要な箇所**:
+
+1. **`Record<EnumType, ...>` を使用する場合**:
+   ```typescript
+   // ❌ エラー: null はキーにできない
+   const config: Record<TaskPriority, string> = { ... };
+
+   // ✅ 正しい: NonNullable で null を除外
+   const config: Record<NonNullable<TaskPriority>, string> = { ... };
+   ```
+
+2. **`<select>` や `<option>` の `value` 属性**:
+   ```tsx
+   // ❌ エラー: null は value に設定できない
+   <select value={enumValue}>
+
+   // ✅ 正しい: デフォルト値を設定
+   <select value={enumValue ?? ''}>
+   <select value={enumValue ?? 'DefaultValue'}>
+   ```
+
+3. **Zod スキーマでの Enum 配列定義**:
+   ```typescript
+   // ❌ エラー: 生成された型には null が含まれる
+   import type { LandingPage } from '@/connectors/api/pecus';
+   const landingPages: readonly [LandingPage, ...LandingPage[]] = [...];
+
+   // ✅ 正しい: 独自に定義
+   const landingPages = ['Dashboard', 'Workspace', ...] as const;
+   ```
+
 ## 4. アクセストークン管理の設計方針
 
 > 詳細は `docs/spec/auth-architecture-redesign.md` を参照
