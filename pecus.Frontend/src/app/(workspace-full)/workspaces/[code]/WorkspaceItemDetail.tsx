@@ -701,53 +701,54 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           )}
 
           {/* ダウンロードセクション */}
-          <div className="mt-8 pt-4 border-t border-base-300 pb-16 lg:pb-0">
-            <h3 className="text-lg font-bold mb-3">エクスポート</h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleExport('markdown')}
-                className="btn btn-secondary btn-sm gap-2"
-                disabled={isExporting !== null}
-                title="Markdown形式でダウンロード"
-              >
-                {isExporting === 'markdown' ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <span className="icon-[mdi--language-markdown] size-4" aria-hidden="true" />
-                )}
-                Markdown
-              </button>
-              <button
-                type="button"
-                onClick={() => handleExport('html')}
-                className="btn btn-secondary btn-sm gap-2"
-                disabled={isExporting !== null}
-                title="HTML形式でダウンロード"
-              >
-                {isExporting === 'html' ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <span className="icon-[mdi--language-html5] size-4" aria-hidden="true" />
-                )}
-                HTML
-              </button>
-              <button
-                type="button"
-                onClick={() => handleExport('json')}
-                className="btn btn-secondary btn-sm gap-2"
-                disabled={isExporting !== null}
-                title="JSON形式でダウンロード（Nodeデータ）"
-              >
-                {isExporting === 'json' ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <span className="icon-[mdi--code-json] size-4" aria-hidden="true" />
-                )}
-                JSON
-              </button>
+          <div className="mt-8 pt-4 border-t border-base-300 pb-16 lg:pb-0 flex flex-col items-end">
+            <div className="text-right">
+              <h4 className="text-sm font-semibold mb-2 text-base-content/70">アイテム本文のエクスポート</h4>
+              <div className="flex flex-wrap gap-1 justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleExport('markdown')}
+                  className="btn btn-ghost btn-xs gap-1"
+                  disabled={isExporting !== null}
+                  title="Markdown形式でダウンロード"
+                >
+                  {isExporting === 'markdown' ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <span className="icon-[mdi--language-markdown] size-3.5" aria-hidden="true" />
+                  )}
+                  Markdown
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport('html')}
+                  className="btn btn-ghost btn-xs gap-1"
+                  disabled={isExporting !== null}
+                  title="HTML形式でダウンロード"
+                >
+                  {isExporting === 'html' ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <span className="icon-[mdi--language-html5] size-3.5" aria-hidden="true" />
+                  )}
+                  HTML
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport('json')}
+                  className="btn btn-ghost btn-xs gap-1"
+                  disabled={isExporting !== null}
+                  title="JSON形式でダウンロード（Nodeデータ）"
+                >
+                  {isExporting === 'json' ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <span className="icon-[mdi--code-json] size-3.5" aria-hidden="true" />
+                  )}
+                  JSON
+                </button>
+              </div>
             </div>
-            <p className="text-xs text-base-content/50 mt-2">アイテムの本文をさまざまな形式でダウンロードできます。</p>
           </div>
         </div>
 
