@@ -16,8 +16,8 @@ export type RefreshRequest = {
      * デバイス名（任意）
      */
     deviceName?: string | null;
-    deviceType?: (null | DeviceType);
-    os?: (null | OSPlatform);
+    deviceType?: DeviceType;
+    os?: OSPlatform;
     /**
      * User-Agent（ヘッダー優先、任意）
      */

@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical' | null;

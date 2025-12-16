@@ -9,13 +9,7 @@ import type { DashboardTaskSummary } from './DashboardTaskSummary';
  * タスクとアイテムの現在状態を集計したサマリ情報
  */
 export type DashboardSummaryResponse = {
-    /**
-     * タスク統計
-     */
     taskSummary: DashboardTaskSummary;
-    /**
-     * アイテム統計
-     */
     itemSummary: DashboardItemSummary;
 };
 

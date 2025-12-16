@@ -56,7 +56,7 @@ export type TaskItemResponse = {
      * 作業中のユーザーアバターURL
      */
     assigneeAvatarUrl?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 期限日時
      */

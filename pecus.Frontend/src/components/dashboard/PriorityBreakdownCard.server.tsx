@@ -8,7 +8,7 @@ interface PriorityBreakdownCardProps {
 /**
  * 優先度の表示設定
  */
-const priorityConfig: Record<TaskPriority | 'null', { label: string; color: string; bgColor: string }> = {
+const priorityConfig: Record<NonNullable<TaskPriority> | 'null', { label: string; color: string; bgColor: string }> = {
   Critical: { label: '緊急', color: 'text-error', bgColor: 'bg-error' },
   High: { label: '高', color: 'text-warning', bgColor: 'bg-warning' },
   Medium: { label: '中', color: 'text-info', bgColor: 'bg-info' },

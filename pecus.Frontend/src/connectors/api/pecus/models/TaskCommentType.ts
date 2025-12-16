@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type TaskCommentType = 'Normal' | 'Memo' | 'HelpWanted' | 'NeedReply' | 'Reminder' | 'Urge';
+export type TaskCommentType = 'Normal' | 'Memo' | 'HelpWanted' | 'NeedReply' | 'Reminder' | 'Urge' | null;

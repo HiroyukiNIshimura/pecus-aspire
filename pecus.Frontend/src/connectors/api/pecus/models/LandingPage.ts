@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type LandingPage = 'Dashboard' | 'Workspace' | 'MyItems' | 'Tasks' | 'Committer';
+export type LandingPage = 'Dashboard' | 'Workspace' | 'MyItems' | 'Tasks' | 'Committer' | null;

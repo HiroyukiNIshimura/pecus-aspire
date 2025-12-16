@@ -19,7 +19,7 @@ export type UpdateWorkspaceItemRequest = {
      * 作業中のユーザーID（NULL可）
      */
     assigneeId?: number | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 期限日時(ISO 8601 形式)
      */
@@ -43,7 +43,7 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）
      */
-    tagNames?: any[] | null;
+    tagNames?: Array<string> | null;
     /**
      * アイテムの楽観的ロック用のRowVersion
      */

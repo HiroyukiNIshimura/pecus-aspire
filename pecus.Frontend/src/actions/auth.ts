@@ -72,8 +72,8 @@ export async function login(request: {
       device: {
         publicId: response.device?.publicId ?? undefined,
         name: request.deviceName,
-        type: request.deviceType,
-        os: request.os,
+        type: request.deviceType ?? undefined,
+        os: request.os ?? undefined,
         userAgent: request.userAgent,
         appVersion: request.appVersion,
         timezone: request.timezone,

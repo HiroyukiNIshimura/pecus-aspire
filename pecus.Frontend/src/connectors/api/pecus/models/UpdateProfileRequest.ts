@@ -8,9 +8,9 @@ import type { AvatarType } from './AvatarType';
  */
 export type UpdateProfileRequest = {
     username?: string | null;
-    avatarType?: (null | AvatarType);
+    avatarType?: AvatarType;
     userAvatarPath?: string | null;
-    skillIds?: any[] | null;
+    skillIds?: Array<number> | null;
     rowVersion: number;
 };
 

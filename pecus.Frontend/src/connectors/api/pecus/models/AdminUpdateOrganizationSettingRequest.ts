@@ -25,20 +25,13 @@ export type AdminUpdateOrganizationSettingRequest = {
      * メール配信元名
      */
     mailFromName?: string | null;
-    /**
-     * 利用する生成APIベンダー
-     * GenerativeApiVendor.Noneの場合、生成APIは利用しない。
-     */
     generativeApiVendor: GenerativeApiVendor;
     /**
      * 生成APIキー
      */
     generativeApiKey?: string | null;
-    /**
-     * 利用プラン
-     */
     plan: OrganizationPlan;
-    helpNotificationTarget?: (null | HelpNotificationTarget);
+    helpNotificationTarget?: HelpNotificationTarget;
     /**
      * タスク作成時に見積もりを必須とするか
      */

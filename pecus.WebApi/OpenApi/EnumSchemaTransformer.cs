@@ -27,6 +27,8 @@ public sealed class EnumSchemaTransformer : IOpenApiSchemaTransformer
             var enumNames = Enum.GetNames(enumType);
 
             // スキーマを文字列型に変更
+            // OpenAPI 3.0 では nullable は別プロパティだが、Microsoft.OpenApi v2 では
+            // JsonSchemaType でユニオン表現するため、Nullable<Enum> の場合は Null を含める
             if (underlyingType != null)
             {
                 // Nullable<Enum> の場合

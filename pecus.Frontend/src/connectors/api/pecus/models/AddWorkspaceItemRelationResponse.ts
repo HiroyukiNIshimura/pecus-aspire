@@ -15,6 +15,6 @@ export type AddWorkspaceItemRelationResponse = {
      * メッセージ
      */
     message?: string;
-    relation?: (null | WorkspaceItemRelationResponse);
+    relation?: WorkspaceItemRelationResponse;
 };
 

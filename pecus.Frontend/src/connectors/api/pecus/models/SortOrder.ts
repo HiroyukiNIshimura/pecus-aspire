@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type SortOrder = 'Asc' | 'Desc';
+export type SortOrder = 'Asc' | 'Desc' | null;

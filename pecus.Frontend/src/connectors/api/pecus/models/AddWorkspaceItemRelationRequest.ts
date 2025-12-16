@@ -11,6 +11,6 @@ export type AddWorkspaceItemRelationRequest = {
      * 関連先アイテムID
      */
     toItemId: number;
-    relationType?: (null | RelationType);
+    relationType?: RelationType;
 };
 

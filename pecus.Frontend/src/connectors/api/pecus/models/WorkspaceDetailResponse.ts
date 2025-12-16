@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
+import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
  * ワークスペース詳細情報レスポンス（管理者用）
  */
@@ -28,7 +29,7 @@ export type WorkspaceDetailResponse = {
      * 組織ID
      */
     organizationId?: number;
-    organization?: (null | OrganizationInfoResponse);
+    organization?: OrganizationInfoResponse;
     /**
      * ジャンルID
      */
@@ -44,8 +45,8 @@ export type WorkspaceDetailResponse = {
     /**
      * 参加しているユーザー一覧
      */
-    members?: any[] | null;
-    owner?: (null | WorkspaceDetailUserResponse);
+    members?: Array<WorkspaceUserDetailResponse> | null;
+    owner?: WorkspaceDetailUserResponse;
     /**
      * 作成日時
      */

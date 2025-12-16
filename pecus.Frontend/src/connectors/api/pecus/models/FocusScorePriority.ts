@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type FocusScorePriority = 'Priority' | 'Deadline' | 'SuccessorImpact';
+export type FocusScorePriority = 'Priority' | 'Deadline' | 'SuccessorImpact' | null;

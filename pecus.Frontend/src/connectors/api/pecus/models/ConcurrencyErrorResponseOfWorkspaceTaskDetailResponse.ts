@@ -7,7 +7,7 @@ import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse'
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfWorkspaceTaskDetailResponse = {
-    current?: (null | WorkspaceTaskDetailResponse);
+    current?: WorkspaceTaskDetailResponse;
     /**
      * HTTPステータスコード
      */

@@ -69,7 +69,7 @@ export type WorkspaceItemDetailResponse = {
      * 作業中のユーザーアバターURL
      */
     assigneeAvatarUrl?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 期限日時
      */

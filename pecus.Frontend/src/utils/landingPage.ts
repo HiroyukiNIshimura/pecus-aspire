@@ -25,7 +25,7 @@ export function getLandingPageUrl(landingPage?: LandingPage | null): string {
 /**
  * ランディングページの選択肢一覧
  */
-export const LANDING_PAGE_OPTIONS: { value: LandingPage; label: string }[] = [
+export const LANDING_PAGE_OPTIONS: { value: NonNullable<LandingPage>; label: string }[] = [
   { value: 'Dashboard', label: 'ダッシュボード' },
   { value: 'Workspace', label: 'マイワークスペース' },
   { value: 'MyItems', label: 'マイアイテム' },

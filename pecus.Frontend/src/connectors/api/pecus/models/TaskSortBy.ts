@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type TaskSortBy = 'Sequence' | 'Priority' | 'DueDate';
+export type TaskSortBy = 'Sequence' | 'Priority' | 'DueDate' | null;

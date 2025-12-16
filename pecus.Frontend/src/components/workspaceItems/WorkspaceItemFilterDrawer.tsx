@@ -53,7 +53,7 @@ interface WorkspaceItemFilterDrawerProps {
 }
 
 /** 優先度の選択肢 */
-const priorityOptions: { value: TaskPriority | ''; label: string }[] = [
+const priorityOptions: { value: NonNullable<TaskPriority> | ''; label: string }[] = [
   { value: '', label: 'すべて' },
   { value: 'Low', label: '低' },
   { value: 'Medium', label: '中' },

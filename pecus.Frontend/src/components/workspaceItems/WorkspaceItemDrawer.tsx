@@ -21,7 +21,7 @@ const PRIORITY_OPTIONS: { value: TaskPriority | null; label: string; className: 
 ];
 
 /** 優先度の文字列を数値に変換（バックエンドの enum 値に対応） */
-const PRIORITY_TO_NUMBER: Record<TaskPriority, number> = {
+const PRIORITY_TO_NUMBER: Record<NonNullable<TaskPriority>, number> = {
   Low: 1,
   Medium: 2,
   High: 3,
@@ -130,7 +130,7 @@ export default function WorkspaceItemDrawer({
     await handleItemUpdate(
       async () => {
         const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'committer', {
-          value: newCommitterId,
+          value: newCommitterId ?? undefined,
           rowVersion: currentRowVersion,
         });
         return result;
@@ -172,7 +172,7 @@ export default function WorkspaceItemDrawer({
           isoDateValue = date.toISOString();
         }
         const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'duedate', {
-          value: isoDateValue,
+          value: isoDateValue ?? undefined,
           rowVersion: currentRowVersion,
         });
         return result;
@@ -192,7 +192,7 @@ export default function WorkspaceItemDrawer({
         // バックエンドは数値を期待するため、文字列から数値に変換
         const priorityValue = newPriority ? PRIORITY_TO_NUMBER[newPriority] : null;
         const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'priority', {
-          value: priorityValue,
+          value: priorityValue ?? undefined,
           rowVersion: currentRowVersion,
         });
         return result;

@@ -1,25 +1,9 @@
 import { z } from 'zod';
-import type { GenerativeApiVendor, HelpNotificationTarget, OrganizationPlan } from '@/connectors/api/pecus';
 
-const generativeVendors: readonly [GenerativeApiVendor, ...GenerativeApiVendor[]] = [
-  'None',
-  'OpenAi',
-  'AzureOpenAi',
-  'Anthropic',
-  'GoogleGemini',
-];
-
-const organizationPlans: readonly [OrganizationPlan, ...OrganizationPlan[]] = [
-  'Unknown',
-  'Free',
-  'Standard',
-  'Enterprise',
-];
-
-const helpNotificationTargets: readonly [HelpNotificationTarget, ...HelpNotificationTarget[]] = [
-  'Organization',
-  'WorkspaceUsers',
-];
+// Enum 値の定義（API から生成される型には null が含まれるため、独自に定義）
+const generativeVendors = ['None', 'OpenAi', 'AzureOpenAi', 'Anthropic', 'GoogleGemini'] as const;
+const organizationPlans = ['Unknown', 'Free', 'Standard', 'Enterprise'] as const;
+const helpNotificationTargets = ['Organization', 'WorkspaceUsers'] as const;
 
 export const organizationSettingSchema = z.object({
   taskOverdueThreshold: z.preprocess(

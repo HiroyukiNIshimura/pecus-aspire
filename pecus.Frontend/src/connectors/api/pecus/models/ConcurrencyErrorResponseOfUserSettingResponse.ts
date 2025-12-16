@@ -7,7 +7,7 @@ import type { UserSettingResponse } from './UserSettingResponse';
  * 競合エラーレスポンス（409 Conflict）
  */
 export type ConcurrencyErrorResponseOfUserSettingResponse = {
-    current?: (null | UserSettingResponse);
+    current?: UserSettingResponse;
     /**
      * HTTPステータスコード
      */

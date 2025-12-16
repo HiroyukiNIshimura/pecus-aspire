@@ -42,29 +42,23 @@ export type WorkspaceFullDetailResponse = {
      * メンバー一覧
      */
     members?: Array<WorkspaceDetailUserResponse>;
-    owner?: (null | WorkspaceDetailUserResponse);
+    owner?: WorkspaceDetailUserResponse;
     /**
      * 作成日時
      */
     createdAt?: string;
-    /**
-     * 作成ユーザー（無効なユーザーでも含む）
-     */
     createdBy?: WorkspaceDetailUserResponse;
     /**
      * 更新日時
      */
     updatedAt?: string | null;
-    /**
-     * 更新ユーザー（無効なユーザーでも含む）
-     */
     updatedBy?: WorkspaceDetailUserResponse;
     /**
      * アクティブフラグ
      */
     isActive?: boolean;
-    mode?: (null | WorkspaceMode);
-    currentUserRole?: (null | WorkspaceRole);
+    mode?: WorkspaceMode;
+    currentUserRole?: WorkspaceRole;
     /**
      * ワークスペースに設定されているスキル一覧
      */

@@ -25,19 +25,13 @@ export type OrganizationSettingResponse = {
      * メール配信元のFrom（表示名）
      */
     mailFromName?: string | null;
-    /**
-     * 利用する生成APIのベンダー種類
-     */
     generativeApiVendor: GenerativeApiVendor;
     /**
      * 生成APIキー
      */
     generativeApiKey?: string | null;
-    /**
-     * 利用プラン
-     */
     plan: OrganizationPlan;
-    helpNotificationTarget?: (null | HelpNotificationTarget);
+    helpNotificationTarget?: HelpNotificationTarget;
     /**
      * タスク作成時に見積もりを必須とするか
      */

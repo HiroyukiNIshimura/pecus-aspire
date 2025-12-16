@@ -110,7 +110,7 @@ const planOptions: { value: OrganizationSettingResponse['plan']; label: string }
   { value: 'Enterprise', label: 'Enterprise' },
 ];
 
-const helpNotificationTargetOptions: { value: HelpNotificationTarget; label: string }[] = [
+const helpNotificationTargetOptions: { value: NonNullable<HelpNotificationTarget>; label: string }[] = [
   { value: 'Organization', label: '組織全体' },
   { value: 'WorkspaceUsers', label: 'ワークスペースユーザー' },
 ];

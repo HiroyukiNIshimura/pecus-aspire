@@ -21,9 +21,6 @@ export type TaskFlowMapResponse = {
      * 独立タスク（依存関係なし）
      */
     independentTasks: Array<TaskFlowNode>;
-    /**
-     * サマリ情報
-     */
     summary: TaskFlowSummary;
 };
 

@@ -1,5 +1,5 @@
 {
-  "openapi": "3.1.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "Pecus API",
     "description": "AIを社畜扱いして作成するWebAPIです。",
@@ -9915,10 +9915,8 @@
           "ThisMonth",
           "LastMonth"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "ActivityResponse": {
         "type": "object",
@@ -9942,11 +9940,9 @@
             "description": "ワークスペース名"
           },
           "workspaceGenreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースのジャンルアイコン"
+            "type": "string",
+            "description": "ワークスペースのジャンルアイコン",
+            "nullable": true
           },
           "itemId": {
             "type": "integer",
@@ -9962,37 +9958,28 @@
             "description": "アイテム件名"
           },
           "userId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "ユーザーID（NULL = システム操作）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "username": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ユーザー名"
+            "type": "string",
+            "description": "ユーザー名",
+            "nullable": true
           },
           "identityIconUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ユーザーのアイデンティティアイコンURL"
+            "type": "string",
+            "description": "ユーザーのアイデンティティアイコンURL",
+            "nullable": true
           },
           "actionType": {
-            "description": "操作タイプ",
             "$ref": "#/components/schemas/ActivityActionType"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "操作の詳細データ（JSON文字列）"
+            "type": "string",
+            "description": "操作の詳細データ（JSON文字列）",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -10017,10 +10004,9 @@
           "workspaceRole": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペース内での役割（任意、未指定時は Member）",
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
             ]
@@ -10042,10 +10028,9 @@
           "relationType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "関連タイプ（NULL の場合は Related として扱う）",
                 "$ref": "#/components/schemas/RelationType"
               }
             ]
@@ -10067,10 +10052,9 @@
           "relation": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "関連情報",
                 "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
               }
             ]
@@ -10086,38 +10070,28 @@
         "properties": {
           "name": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "representativeName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "phoneNumber": {
             "maxLength": 20,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "email": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -10150,43 +10124,34 @@
           },
           "mailFromAddress": {
             "maxLength": 254,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メール配信元アドレス"
+            "type": "string",
+            "description": "メール配信元アドレス",
+            "nullable": true
           },
           "mailFromName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メール配信元名"
+            "type": "string",
+            "description": "メール配信元名",
+            "nullable": true
           },
           "generativeApiVendor": {
-            "description": "利用する生成APIベンダー\nGenerativeApiVendor.Noneの場合、生成APIは利用しない。",
             "$ref": "#/components/schemas/GenerativeApiVendor"
           },
           "generativeApiKey": {
             "maxLength": 512,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "生成APIキー"
+            "type": "string",
+            "description": "生成APIキー",
+            "nullable": true
           },
           "plan": {
-            "description": "利用プラン",
             "$ref": "#/components/schemas/OrganizationPlan"
           },
           "helpNotificationTarget": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ヘルプコメント通知の送信先",
                 "$ref": "#/components/schemas/HelpNotificationTarget"
               }
             ]
@@ -10255,10 +10220,8 @@
           "UserAvatar",
           "AutoGenerated"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "ConcurrencyErrorResponseOfOrganizationResponse": {
         "required": [
@@ -10269,10 +10232,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/OrganizationResponse"
               }
             ]
@@ -10287,11 +10249,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10305,10 +10265,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/OrganizationSettingResponse"
               }
             ]
@@ -10323,11 +10282,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10341,10 +10298,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/SkillDetailResponse"
               }
             ]
@@ -10359,11 +10315,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10377,10 +10331,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/TagDetailResponse"
               }
             ]
@@ -10395,11 +10348,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10413,10 +10364,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/TaskCommentDetailResponse"
               }
             ]
@@ -10431,11 +10381,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10449,10 +10397,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/UserDetailResponse"
               }
             ]
@@ -10467,11 +10414,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10485,10 +10430,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/UserSettingResponse"
               }
             ]
@@ -10503,11 +10447,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10521,10 +10463,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/WorkspaceDetailResponse"
               }
             ]
@@ -10539,11 +10480,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10557,10 +10496,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
               }
             ]
@@ -10575,11 +10513,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10593,10 +10529,9 @@
           "current": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "DBの最新データ",
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
             ]
@@ -10611,11 +10546,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "競合エラーレスポンス（409 Conflict）"
@@ -10639,31 +10572,23 @@
           },
           "code": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "representativeName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "email": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "adminUsername": {
             "maxLength": 50,
@@ -10688,10 +10613,8 @@
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         },
         "description": "スキル作成リクエスト"
@@ -10724,10 +10647,9 @@
           "commentType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "コメントタイプ（NULL の場合は Normal として扱う）",
                 "$ref": "#/components/schemas/TaskCommentType"
               }
             ]
@@ -10773,78 +10695,63 @@
             "description": "件名"
           },
           "body": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "本文（WYSIWYGのノードデータをJSON形式で保存）"
+            "type": "string",
+            "description": "本文（WYSIWYGのノードデータをJSON形式で保存）",
+            "nullable": true
           },
           "assigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作業中のユーザーID（NULL可）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "重要度（指定しない場合は NULL として保存される）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時(ISO 8601 形式)",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isDraft": {
             "type": "boolean",
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "コミッターユーザーID（NULL可）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "tagNames": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト（存在しないタグは自動作成）"
+            "description": "タグ名のリスト（存在しないタグは自動作成）",
+            "nullable": true
           },
           "tempSessionId": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）"
+            "type": "string",
+            "description": "一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）",
+            "nullable": true
           },
           "tempAttachmentIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）"
+            "description": "一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）",
+            "nullable": true
           }
         },
         "description": "ワークスペースアイテム作成リクエスト"
@@ -10862,10 +10769,8 @@
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "genreId": {
             "maximum": 2147483647,
@@ -10876,10 +10781,9 @@
           "mode": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペースモード",
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
@@ -10887,12 +10791,10 @@
           "ownerId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "オーナーユーザーID（任意）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           }
         },
         "description": "ワークスペース登録リクエスト"
@@ -10926,21 +10828,18 @@
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度（NULL の場合は Medium として扱う）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "startDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "開始日時(ISO 8601 形式)",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
             "type": "string",
@@ -10950,20 +10849,16 @@
           "estimatedHours": {
             "maximum": 10000,
             "minimum": 0,
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "predecessorTaskId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "先行タスクID（このタスクが完了しないと着手できない）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           }
         },
         "description": "ワークスペースタスク作成リクエスト"
@@ -11110,11 +11005,9 @@
         "type": "object",
         "properties": {
           "taskSummary": {
-            "description": "タスク統計",
             "$ref": "#/components/schemas/DashboardTaskSummary"
           },
           "itemSummary": {
-            "description": "アイテム統計",
             "$ref": "#/components/schemas/DashboardItemSummary"
           }
         },
@@ -11128,10 +11021,8 @@
           "HelpWanted",
           "Reminder"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "DashboardTasksByPriorityResponse": {
         "required": [
@@ -11276,11 +11167,9 @@
             "description": "ワークスペース名"
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "inProgressCount": {
             "type": "integer",
@@ -11328,47 +11217,35 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "紐づく端末ID（端末情報が無い場合は null）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "publicId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "表示用短ID（端末がある場合）"
+            "type": "string",
+            "description": "表示用短ID（端末がある場合）",
+            "nullable": true
           },
           "name": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "表示名"
+            "type": "string",
+            "description": "表示名",
+            "nullable": true
           },
           "deviceType": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "端末の種類"
+            "type": "string",
+            "description": "端末の種類",
+            "nullable": true
           },
           "os": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "OS"
+            "type": "string",
+            "description": "OS",
+            "nullable": true
           },
           "client": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "クライアント情報"
+            "type": "string",
+            "description": "クライアント情報",
+            "nullable": true
           },
           "firstSeenAt": {
             "type": "string",
@@ -11381,25 +11258,19 @@
             "format": "date-time"
           },
           "lastIpMasked": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "マスクされたIPアドレス"
+            "type": "string",
+            "description": "マスクされたIPアドレス",
+            "nullable": true
           },
           "lastSeenLocation": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "最終確認場所"
+            "type": "string",
+            "description": "最終確認場所",
+            "nullable": true
           },
           "timezone": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タイムゾーン"
+            "type": "string",
+            "description": "タイムゾーン",
+            "nullable": true
           }
         },
         "description": "デバイス情報レスポンス"
@@ -11411,10 +11282,8 @@
           "DesktopApp",
           "Other"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "EmailChangeRequestResponse": {
         "required": [
@@ -11485,11 +11354,9 @@
             "description": "エラーメッセージ"
           },
           "details": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "エラー詳細（オプション）"
+            "type": "string",
+            "description": "エラー詳細（オプション）",
+            "nullable": true
           }
         },
         "description": "エラーレスポンス"
@@ -11509,11 +11376,9 @@
             "description": "アップロード成功フラグ"
           },
           "fileUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ファイルURL（公開アクセス用）"
+            "type": "string",
+            "description": "ファイルURL（公開アクセス用）",
+            "nullable": true
           },
           "fileSize": {
             "type": "integer",
@@ -11521,11 +11386,9 @@
             "format": "int64"
           },
           "contentType": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ファイル形式"
+            "type": "string",
+            "description": "ファイル形式",
+            "nullable": true
           },
           "uploadedAt": {
             "type": "string",
@@ -11533,11 +11396,9 @@
             "format": "date-time"
           },
           "message": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メッセージ"
+            "type": "string",
+            "description": "メッセージ",
+            "nullable": true
           }
         },
         "description": "ファイルアップロードレスポンス"
@@ -11584,10 +11445,8 @@
           "Deadline",
           "SuccessorImpact"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "FocusTaskResponse": {
         "required": [
@@ -11625,18 +11484,14 @@
             "format": "int32"
           },
           "workspaceCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "workspaceName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペース名"
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
           },
           "itemCode": {
             "type": "string",
@@ -11647,11 +11502,9 @@
             "description": "タスク内容"
           },
           "itemSubject": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテム件名"
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
           },
           "taskTypeId": {
             "type": "integer",
@@ -11659,33 +11512,26 @@
             "format": "int32"
           },
           "taskTypeCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）"
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
           },
           "taskTypeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類名（日本語表示名）"
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
           },
           "taskTypeIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン（拡張子なしのファイル名）"
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
@@ -11696,12 +11542,10 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "progressPercentage": {
             "type": "integer",
@@ -11721,10 +11565,9 @@
           "successorTask": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "後続タスク情報（先頭1件、存在する場合）",
                 "$ref": "#/components/schemas/SuccessorTaskInfo"
               }
             ]
@@ -11732,10 +11575,9 @@
           "predecessorTask": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "先行タスク情報（存在する場合）",
                 "$ref": "#/components/schemas/PredecessorTaskInfo"
               }
             ]
@@ -11743,10 +11585,9 @@
           "scoreDetail": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "スコア詳細（デバッグ・説明用）",
                 "$ref": "#/components/schemas/TaskScoreDetail"
               }
             ]
@@ -11832,11 +11673,9 @@
             "description": "コメント投稿者名"
           },
           "commentUserAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コメント投稿者アバターURL"
+            "type": "string",
+            "description": "コメント投稿者アバターURL",
+            "nullable": true
           },
           "taskId": {
             "type": "integer",
@@ -11853,19 +11692,15 @@
             "description": "タスク内容"
           },
           "taskAssigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "タスク担当者ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "taskAssigneeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク担当者名"
+            "type": "string",
+            "description": "タスク担当者名",
+            "nullable": true
           },
           "workspaceId": {
             "type": "integer",
@@ -11890,11 +11725,9 @@
             "description": "アイテムコード（PROJ-42形式）"
           },
           "itemSubject": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテム件名"
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
           }
         },
         "description": "ヘルプコメント項目"
@@ -11904,10 +11737,8 @@
           "Organization",
           "WorkspaceUsers"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "HotItemEntry": {
         "required": [
@@ -11950,11 +11781,9 @@
             "description": "ワークスペース名"
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "activityCount": {
             "type": "integer",
@@ -11967,33 +11796,25 @@
             "format": "date-time"
           },
           "lastActorId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "最終操作者のユーザーID（システム操作の場合はnull）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "lastActorName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "最終操作者の表示名"
+            "type": "string",
+            "description": "最終操作者の表示名",
+            "nullable": true
           },
           "lastActorAvatar": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "最終操作者のアバターURL"
+            "type": "string",
+            "description": "最終操作者のアバターURL",
+            "nullable": true
           },
           "lastActionLabel": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "最終操作の種類（例: \"編集\", \"コメント\", \"ファイル追加\"）"
+            "type": "string",
+            "description": "最終操作の種類（例: \"編集\", \"コメント\", \"ファイル追加\"）",
+            "nullable": true
           },
           "canAccess": {
             "type": "boolean",
@@ -12027,11 +11848,9 @@
             "description": "ワークスペース名"
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "taskAddedCount": {
             "type": "integer",
@@ -12089,28 +11908,22 @@
           "Tasks",
           "Committer"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "LoginDeviceInfo": {
         "type": "object",
         "properties": {
           "id": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "デバイスID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "publicId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "デバイスの公開ID（セッション管理用）"
+            "type": "string",
+            "description": "デバイスの公開ID（セッション管理用）",
+            "nullable": true
           },
           "isNewDevice": {
             "type": "boolean",
@@ -12136,10 +11949,8 @@
           },
           "deviceName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "deviceType": {
             "$ref": "#/components/schemas/DeviceType"
@@ -12149,38 +11960,28 @@
           },
           "userAgent": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "appVersion": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "timezone": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "location": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "ipAddress": {
             "maxLength": 45,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         },
         "description": "ログインリクエスト"
@@ -12232,20 +12033,17 @@
           "avatarType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "アバタータイプ",
                 "$ref": "#/components/schemas/AvatarType"
               }
             ]
           },
           "identityIconUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイデンティティアイコンURL"
+            "type": "string",
+            "description": "アイデンティティアイコンURL",
+            "nullable": true
           },
           "roles": {
             "type": "array",
@@ -12255,27 +12053,22 @@
             "description": "ユーザーが持つロール一覧"
           },
           "refreshToken": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "リフレッシュトークン"
+            "type": "string",
+            "description": "リフレッシュトークン",
+            "nullable": true
           },
           "refreshExpiresAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "リフレッシュトークンの有効期限（UTC）",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "device": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ログインに使用したデバイス情報",
                 "$ref": "#/components/schemas/LoginDeviceInfo"
               }
             ]
@@ -12283,10 +12076,9 @@
           "landingPage": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ログイン後のランディングページ",
                 "$ref": "#/components/schemas/LandingPage"
               }
             ]
@@ -12311,18 +12103,14 @@
             "description": "ジャンル名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルの説明"
+            "type": "string",
+            "description": "ジャンルの説明",
+            "nullable": true
           },
           "icon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "displayOrder": {
             "type": "integer",
@@ -12349,11 +12137,9 @@
             "description": "スキル名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "説明"
+            "type": "string",
+            "description": "説明",
+            "nullable": true
           }
         },
         "description": "マスターデータ用スキルレスポンス"
@@ -12380,18 +12166,14 @@
             "description": "タスク種類名（日本語表示名）"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類説明"
+            "type": "string",
+            "description": "タスク種類説明",
+            "nullable": true
           },
           "icon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン（拡張子なしのファイル名）"
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
           },
           "displayOrder": {
             "type": "integer",
@@ -12447,18 +12229,14 @@
             "description": "ワークスペース名"
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "itemCount": {
             "type": "integer",
@@ -12491,12 +12269,10 @@
             "format": "int32"
           },
           "oldestDueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最も古い期限日（ソート用、未完了タスクのみ対象）",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           }
         },
         "description": "マイコミッターワークスペースレスポンス\nログインユーザーがコミッターになっているアイテムを持つワークスペースの情報"
@@ -12509,10 +12285,8 @@
           "Committer",
           "Pinned"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "MyTaskDetailResponse": {
         "required": [
@@ -12537,112 +12311,82 @@
             "format": "int32"
           },
           "workspaceCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "workspaceName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペース名"
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "itemCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムコード"
+            "type": "string",
+            "description": "アイテムコード",
+            "nullable": true
           },
           "itemSubject": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテム件名"
+            "type": "string",
+            "description": "アイテム件名",
+            "nullable": true
           },
           "itemOwnerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "アイテムオーナーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "itemOwnerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムオーナー名"
+            "type": "string",
+            "description": "アイテムオーナー名",
+            "nullable": true
           },
           "itemOwnerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムオーナーアバターURL"
+            "type": "string",
+            "description": "アイテムオーナーアバターURL",
+            "nullable": true
           },
           "itemAssigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "アイテム担当者ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "itemAssigneeUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテム担当者名"
+            "type": "string",
+            "description": "アイテム担当者名",
+            "nullable": true
           },
           "itemAssigneeAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテム担当者アバターURL"
+            "type": "string",
+            "description": "アイテム担当者アバターURL",
+            "nullable": true
           },
           "itemCommitterId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "アイテムコミッターID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "itemCommitterUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムコミッター名"
+            "type": "string",
+            "description": "アイテムコミッター名",
+            "nullable": true
           },
           "itemCommitterAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムコミッターアバターURL"
+            "type": "string",
+            "description": "アイテムコミッターアバターURL",
+            "nullable": true
           },
           "organizationId": {
             "type": "integer",
@@ -12655,18 +12399,14 @@
             "format": "int32"
           },
           "assignedUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザー名"
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
           },
           "assignedAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザーアバターURL"
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
           },
           "createdByUserId": {
             "type": "integer",
@@ -12674,18 +12414,14 @@
             "format": "int32"
           },
           "createdByUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作成ユーザー名"
+            "type": "string",
+            "description": "作成ユーザー名",
+            "nullable": true
           },
           "createdByAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作成ユーザーアバターURL"
+            "type": "string",
+            "description": "作成ユーザーアバターURL",
+            "nullable": true
           },
           "content": {
             "type": "string",
@@ -12697,44 +12433,35 @@
             "format": "int32"
           },
           "taskTypeCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）"
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
           },
           "taskTypeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類名（日本語表示名）"
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
           },
           "taskTypeIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン（拡張子なしのファイル名）"
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度（NULL の場合は Medium として扱う）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "startDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "開始日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
             "type": "string",
@@ -12742,20 +12469,16 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "actualHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "実績工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "progressPercentage": {
             "type": "integer",
@@ -12767,31 +12490,25 @@
             "description": "完了フラグ"
           },
           "completedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "タスク完了日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isDiscarded": {
             "type": "boolean",
             "description": "破棄状態"
           },
           "discardedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "破棄日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "discardReason": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "破棄理由"
+            "type": "string",
+            "description": "破棄理由",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -12848,18 +12565,14 @@
             "description": "ワークスペース名"
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "activeTaskCount": {
             "type": "integer",
@@ -12887,12 +12600,10 @@
             "format": "int32"
           },
           "oldestDueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最も古い期限日（ソート用、未完了タスクのみ対象）",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           }
         },
         "description": "マイタスクワークスペースレスポンス\nログインユーザーが担当のタスクを持つワークスペースの情報"
@@ -12914,11 +12625,9 @@
             "description": "組織名"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "組織コード"
+            "type": "string",
+            "description": "組織コード",
+            "nullable": true
           }
         },
         "description": "組織情報レスポンス（簡易版）"
@@ -12953,36 +12662,28 @@
             "description": "組織名"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "組織コード"
+            "type": "string",
+            "description": "組織コード",
+            "nullable": true
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "組織の説明"
+            "type": "string",
+            "description": "組織の説明",
+            "nullable": true
           },
           "representativeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "代表者名"
+            "type": "string",
+            "description": "代表者名",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string",
             "description": "電話番号"
           },
           "email": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メールアドレス"
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -12990,12 +12691,10 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -13012,7 +12711,6 @@
             "format": "uint32"
           },
           "setting": {
-            "description": "組織設定",
             "$ref": "#/components/schemas/OrganizationSettingResponse"
           }
         },
@@ -13043,42 +12741,33 @@
           },
           "mailFromAddress": {
             "maxLength": 254,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メール配信元のメールアドレス"
+            "type": "string",
+            "description": "メール配信元のメールアドレス",
+            "nullable": true
           },
           "mailFromName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メール配信元のFrom（表示名）"
+            "type": "string",
+            "description": "メール配信元のFrom（表示名）",
+            "nullable": true
           },
           "generativeApiVendor": {
-            "description": "利用する生成APIのベンダー種類",
             "$ref": "#/components/schemas/GenerativeApiVendor"
           },
           "generativeApiKey": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "生成APIキー"
+            "type": "string",
+            "description": "生成APIキー",
+            "nullable": true
           },
           "plan": {
-            "description": "利用プラン",
             "$ref": "#/components/schemas/OrganizationPlan"
           },
           "helpNotificationTarget": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ヘルプコメント通知の送信先",
                 "$ref": "#/components/schemas/HelpNotificationTarget"
               }
             ]
@@ -13112,11 +12801,9 @@
         "type": "object",
         "properties": {
           "organization": {
-            "description": "組織情報",
             "$ref": "#/components/schemas/OrganizationResponse"
           },
           "adminUser": {
-            "description": "管理者ユーザー情報",
             "$ref": "#/components/schemas/UserDetailResponse"
           }
         },
@@ -13131,10 +12818,8 @@
           "iOS",
           "Android"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "PagedResponseOfActivityResponse": {
         "required": [
@@ -13233,10 +12918,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/WorkspaceTaskStatistics"
               }
             ]
@@ -13288,10 +12972,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/SkillStatistics"
               }
             ]
@@ -13343,10 +13026,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/TagStatistics"
               }
             ]
@@ -13442,10 +13124,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/UserStatistics"
               }
             ]
@@ -13541,10 +13222,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/WorkspaceStatistics"
               }
             ]
@@ -13596,10 +13276,9 @@
           "summary": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "リストデータの統計情報",
                 "$ref": "#/components/schemas/WorkspaceTaskStatistics"
               }
             ]
@@ -13736,11 +13415,9 @@
             "description": "完了フラグ"
           },
           "workspaceItemCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）"
+            "type": "string",
+            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）",
+            "nullable": true
           }
         },
         "description": "先行タスク情報"
@@ -13754,10 +13431,9 @@
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度（null の場合は Medium として扱う）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
@@ -13774,35 +13450,25 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "title": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "status": {
-            "type": [
-              "null",
-              "integer"
-            ],
-            "format": "int32"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "detail": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "instance": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -13827,19 +13493,16 @@
           },
           "deviceName": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "デバイス名（任意）"
+            "type": "string",
+            "description": "デバイス名（任意）",
+            "nullable": true
           },
           "deviceType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "端末の種類（任意、未指定時は Browser 扱い）",
                 "$ref": "#/components/schemas/DeviceType"
               }
             ]
@@ -13847,53 +13510,42 @@
           "os": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "OS プラットフォーム（任意、未指定時は Unknown）",
                 "$ref": "#/components/schemas/OSPlatform"
               }
             ]
           },
           "userAgent": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "User-Agent（ヘッダー優先、任意）"
+            "type": "string",
+            "description": "User-Agent（ヘッダー優先、任意）",
+            "nullable": true
           },
           "appVersion": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アプリバージョン（任意）"
+            "type": "string",
+            "description": "アプリバージョン（任意）",
+            "nullable": true
           },
           "timezone": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タイムゾーン（任意）"
+            "type": "string",
+            "description": "タイムゾーン（任意）",
+            "nullable": true
           },
           "location": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ロケーション（任意）"
+            "type": "string",
+            "description": "ロケーション（任意）",
+            "nullable": true
           },
           "ipAddress": {
             "maxLength": 45,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "IPアドレス（任意、未指定時はサーバー側推定）"
+            "type": "string",
+            "description": "IPアドレス（任意、未指定時はサーバー側推定）",
+            "nullable": true
           }
         },
         "description": "リフレッシュトークン交換 / ログアウト用リクエスト"
@@ -13964,10 +13616,9 @@
           "relationType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "関連タイプ",
                 "$ref": "#/components/schemas/RelationType"
               }
             ]
@@ -13977,30 +13628,24 @@
             "description": "関連の方向（このアイテムから見て）\n\"from\": このアイテムが関連元\n\"to\": このアイテムが関連先"
           },
           "ownerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "オーナーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isArchived": {
             "type": "boolean",
             "description": "アーカイブ済みかどうか"
           },
           "ownerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーユーザー名"
+            "type": "string",
+            "description": "オーナーユーザー名",
+            "nullable": true
           },
           "ownerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーアバターURL"
+            "type": "string",
+            "description": "オーナーアバターURL",
+            "nullable": true
           }
         },
         "description": "関連アイテムの基本情報"
@@ -14016,10 +13661,8 @@
           "ParentOf",
           "RelatesTo"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "RequestEmailChangeRequest": {
         "required": [
@@ -14110,11 +13753,9 @@
             "description": "ロール名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ロールの説明"
+            "type": "string",
+            "description": "ロールの説明",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -14146,11 +13787,9 @@
             "description": "ロール名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ロールの説明"
+            "type": "string",
+            "description": "ロールの説明",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -14189,23 +13828,19 @@
         "type": "object",
         "properties": {
           "skillIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。"
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
           },
           "userRowVersion": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "ユーザーの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、ユーザーのRowVersionをチェックします。",
-            "format": "uint32"
+            "format": "uint32",
+            "nullable": true
           }
         },
         "description": "自ユーザースキル設定リクエスト"
@@ -14215,22 +13850,18 @@
         "properties": {
           "tags": {
             "maxItems": 20,
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。"
+            "description": "タグ名のリスト。既存のすべてのタグを置き換えます。\n空のリストまたはnullの場合はすべてのタグを削除します。",
+            "nullable": true
           },
           "itemRowVersion": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "アイテムの楽観的ロック用RowVersion。\n競合検出に使用されます。設定されている場合、アイテムのRowVersionをチェックします。",
-            "format": "uint32"
+            "format": "uint32",
+            "nullable": true
           }
         },
         "description": "Request DTO for setting all tags on a workspace item"
@@ -14264,10 +13895,8 @@
             "type": "string"
           },
           "resetAllDeviceSessions": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "type": "boolean",
+            "nullable": true
           }
         },
         "description": "ユーザーパスワード設定リクエスト"
@@ -14286,11 +13915,9 @@
             }
           },
           "userRowVersion": {
-            "type": [
-              "null",
-              "integer"
-            ],
-            "format": "uint32"
+            "type": "integer",
+            "format": "uint32",
+            "nullable": true
           }
         },
         "description": "ユーザーロール設定リクエスト"
@@ -14309,11 +13936,9 @@
             }
           },
           "userRowVersion": {
-            "type": [
-              "null",
-              "integer"
-            ],
-            "format": "uint32"
+            "type": "integer",
+            "format": "uint32",
+            "nullable": true
           }
         },
         "description": "ユーザーのスキル設定リクエスト"
@@ -14325,15 +13950,13 @@
         "type": "object",
         "properties": {
           "skillIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
             },
-            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。"
+            "description": "スキルIDのリスト。既存のすべてのスキルを置き換えます。\n空のリストまたはnullの場合はすべてのスキルを削除します。",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -14361,11 +13984,9 @@
             "description": "スキル名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "スキルの説明"
+            "type": "string",
+            "description": "スキルの説明",
+            "nullable": true
           },
           "organizationId": {
             "type": "integer",
@@ -14378,28 +13999,22 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作成者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "updatedByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "更新者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -14435,11 +14050,9 @@
             "description": "スキル名"
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "スキルの説明"
+            "type": "string",
+            "description": "スキルの説明",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -14447,20 +14060,16 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "updatedByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "更新者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -14498,10 +14107,9 @@
           "skill": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "スキル詳細",
                 "$ref": "#/components/schemas/SkillDetailResponse"
               }
             ]
@@ -14600,10 +14208,8 @@
           "Asc",
           "Desc"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "SuccessorTaskInfo": {
         "type": "object",
@@ -14618,11 +14224,9 @@
             "description": "タスク内容"
           },
           "workspaceItemCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）"
+            "type": "string",
+            "description": "ワークスペースアイテムコード（例: \"PROJ-42\"）",
+            "nullable": true
           }
         },
         "description": "後続タスク情報（先頭1件）"
@@ -14677,20 +14281,16 @@
             "format": "int32"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "updatedByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "更新者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -14748,12 +14348,10 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -14781,10 +14379,9 @@
           "tag": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "タグ情報",
                 "$ref": "#/components/schemas/TagDetailResponse"
               }
             ]
@@ -14876,18 +14473,14 @@
             "format": "int32"
           },
           "username": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コメントしたユーザー名"
+            "type": "string",
+            "description": "コメントしたユーザー名",
+            "nullable": true
           },
           "avatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コメントしたユーザーアバターURL"
+            "type": "string",
+            "description": "コメントしたユーザーアバターURL",
+            "nullable": true
           },
           "content": {
             "type": "string",
@@ -14896,10 +14489,9 @@
           "commentType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "コメントタイプ（NULL の場合は Normal として扱う）",
                 "$ref": "#/components/schemas/TaskCommentType"
               }
             ]
@@ -14909,12 +14501,10 @@
             "description": "削除済みフラグ"
           },
           "deletedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "削除日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -14948,10 +14538,9 @@
           "taskComment": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "タスクコメント詳細",
                 "$ref": "#/components/schemas/TaskCommentDetailResponse"
               }
             ]
@@ -14968,10 +14557,8 @@
           "Reminder",
           "Urge"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "TaskFlowMapResponse": {
         "required": [
@@ -15007,7 +14594,6 @@
             "description": "独立タスク（依存関係なし）"
           },
           "summary": {
-            "description": "サマリ情報",
             "$ref": "#/components/schemas/TaskFlowSummary"
           }
         },
@@ -15041,45 +14627,36 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "taskTypeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類名"
+            "type": "string",
+            "description": "タスク種類名",
+            "nullable": true
           },
           "taskTypeIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン"
+            "type": "string",
+            "description": "タスク種類アイコン",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "progressPercentage": {
             "type": "integer",
@@ -15095,46 +14672,37 @@
             "description": "破棄フラグ"
           },
           "assignedUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "assignedUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザー名"
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
           },
           "assignedAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザーアバターURL"
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
           },
           "canStart": {
             "type": "boolean",
             "description": "着手可能か（先行タスクなし or 完了済み、かつ自身が未完了・未破棄）"
           },
           "predecessorTaskId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "先行タスクID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "predecessorTask": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "先行タスク情報（待機中の場合）",
                 "$ref": "#/components/schemas/TaskFlowPredecessorInfo"
               }
             ]
@@ -15230,32 +14798,24 @@
             "format": "int32"
           },
           "workspaceCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "workspaceName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペース名"
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "code": {
             "type": "string",
@@ -15271,59 +14831,46 @@
             "format": "int32"
           },
           "ownerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーユーザー名"
+            "type": "string",
+            "description": "オーナーユーザー名",
+            "nullable": true
           },
           "ownerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーアバターURL"
+            "type": "string",
+            "description": "オーナーアバターURL",
+            "nullable": true
           },
           "assigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作業中のユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "assigneeUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作業中のユーザー名"
+            "type": "string",
+            "description": "作業中のユーザー名",
+            "nullable": true
           },
           "assigneeAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作業中のユーザーアバターURL"
+            "type": "string",
+            "description": "作業中のユーザーアバターURL",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "重要度（NULL の場合は未設定）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isArchived": {
             "type": "boolean",
@@ -15334,26 +14881,20 @@
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "コミッターユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "committerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コミッターユーザー名"
+            "type": "string",
+            "description": "コミッターユーザー名",
+            "nullable": true
           },
           "committerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コミッターアバターURL"
+            "type": "string",
+            "description": "コミッターアバターURL",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -15374,10 +14915,8 @@
           "High",
           "Critical"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "TasksByDueDateResponse": {
         "required": [
@@ -15448,11 +14987,9 @@
             "format": "double"
           },
           "explanation": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "スコア計算式の説明"
+            "type": "string",
+            "description": "スコア計算式の説明",
+            "nullable": true
           }
         },
         "description": "タスクスコア詳細（デバッグ・説明用）"
@@ -15463,10 +15000,8 @@
           "Priority",
           "DueDate"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "TaskStatusFilter": {
         "enum": [
@@ -15475,10 +15010,8 @@
           "Completed",
           "Discarded"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "TaskWithItemResponse": {
         "required": [
@@ -15512,76 +15045,59 @@
             "description": "タスク内容"
           },
           "taskTypeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "taskTypeCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類コード"
+            "type": "string",
+            "description": "タスク種類コード",
+            "nullable": true
           },
           "taskTypeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類名"
+            "type": "string",
+            "description": "タスク種類名",
+            "nullable": true
           },
           "taskTypeIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン"
+            "type": "string",
+            "description": "タスク種類アイコン",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "startDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "開始日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "estimatedHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "actualHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "実績工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "progressPercentage": {
             "type": "integer",
@@ -15593,12 +15109,10 @@
             "description": "完了フラグ"
           },
           "completedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "タスク完了日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isDiscarded": {
             "type": "boolean",
@@ -15610,18 +15124,14 @@
             "format": "int32"
           },
           "assignedUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザー名"
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
           },
           "assignedAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザーアバターURL"
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -15656,40 +15166,30 @@
             "format": "int32"
           },
           "itemOwnerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムオーナーユーザー名"
+            "type": "string",
+            "description": "アイテムオーナーユーザー名",
+            "nullable": true
           },
           "itemOwnerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムオーナーアバターURL"
+            "type": "string",
+            "description": "アイテムオーナーアバターURL",
+            "nullable": true
           },
           "itemCommitterId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "アイテムコミッターユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "itemCommitterUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムコミッターユーザー名"
+            "type": "string",
+            "description": "アイテムコミッターユーザー名",
+            "nullable": true
           },
           "itemCommitterAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイテムコミッターアバターURL"
+            "type": "string",
+            "description": "アイテムコミッターアバターURL",
+            "nullable": true
           },
           "commentTypeCounts": {
             "type": "object",
@@ -15770,15 +15270,13 @@
         "properties": {
           "username": {
             "maxLength": 50,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "avatarType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
                 "$ref": "#/components/schemas/AvatarType"
@@ -15787,20 +15285,16 @@
           },
           "userAvatarPath": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "skillIds": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
-            }
+            },
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -15817,23 +15311,17 @@
         "properties": {
           "name": {
             "maxLength": 100,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "isActive": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "type": "boolean",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -15855,11 +15343,9 @@
             "description": "タグ名"
           },
           "isActive": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "アクティブフラグ"
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -15877,19 +15363,16 @@
         "properties": {
           "content": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コメント内容"
+            "type": "string",
+            "description": "コメント内容",
+            "nullable": true
           },
           "commentType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "コメントタイプ",
                 "$ref": "#/components/schemas/TaskCommentType"
               }
             ]
@@ -15933,10 +15416,9 @@
           "landingPage": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ログイン後のランディングページ",
                 "$ref": "#/components/schemas/LandingPage"
               }
             ]
@@ -15944,10 +15426,9 @@
           "focusScorePriority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "フォーカス推奨のスコアリング優先要素\nPriority: 優先度重視、Deadline: 期限重視、SuccessorImpact: 後続タスク影響重視",
                 "$ref": "#/components/schemas/FocusScorePriority"
               }
             ]
@@ -15981,12 +15462,10 @@
         "type": "object",
         "properties": {
           "assigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "担当者ユーザーID（NULL で割り当て解除）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -16005,10 +15484,9 @@
           "value": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "更新する値（属性に応じた型を JSON 形式で送信。null で値をクリア）",
                 "$ref": "#/components/schemas/JsonElement"
               }
             ]
@@ -16029,84 +15507,65 @@
         "properties": {
           "subject": {
             "maxLength": 200,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "件名"
+            "type": "string",
+            "description": "件名",
+            "nullable": true
           },
           "body": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "本文（WYSIWYGのノードデータをJSON形式で保存）"
+            "type": "string",
+            "description": "本文（WYSIWYGのノードデータをJSON形式で保存）",
+            "nullable": true
           },
           "assigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作業中のユーザーID（NULL可）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "重要度",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時(ISO 8601 形式)",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isDraft": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "下書き中フラグ"
+            "type": "boolean",
+            "description": "下書き中フラグ",
+            "nullable": true
           },
           "isArchived": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "編集不可フラグ（アーカイブ）"
+            "type": "boolean",
+            "description": "編集不可フラグ（アーカイブ）",
+            "nullable": true
           },
           "committerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "コミッターユーザーID（NULL可）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isActive": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "アクティブフラグ"
+            "type": "boolean",
+            "description": "アクティブフラグ",
+            "nullable": true
           },
           "tagNames": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）"
+            "description": "タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -16123,18 +15582,14 @@
         "type": "object",
         "properties": {
           "isDraft": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "下書き中フラグ"
+            "type": "boolean",
+            "description": "下書き中フラグ",
+            "nullable": true
           },
           "isArchived": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "アーカイブフラグ"
+            "type": "boolean",
+            "description": "アーカイブフラグ",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -16158,10 +15613,8 @@
           },
           "description": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": "string",
+            "nullable": true
           },
           "genreId": {
             "maximum": 2147483647,
@@ -16185,48 +15638,39 @@
         "properties": {
           "content": {
             "maxLength": 2000,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク内容"
+            "type": "string",
+            "description": "タスク内容",
+            "nullable": true
           },
           "taskTypeId": {
             "maximum": 2147483647,
             "minimum": 1,
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "タスク種類ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "assignedUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "担当ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "startDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "開始日時(ISO 8601 形式)",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
             "type": "string",
@@ -16236,62 +15680,48 @@
           "estimatedHours": {
             "maximum": 10000,
             "minimum": 0,
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "actualHours": {
             "maximum": 10000,
             "minimum": 0,
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "実績工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "progressPercentage": {
             "maximum": 100,
             "minimum": 0,
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "進捗率（0-100）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isCompleted": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "完了フラグ"
+            "type": "boolean",
+            "description": "完了フラグ",
+            "nullable": true
           },
           "isDiscarded": {
-            "type": [
-              "null",
-              "boolean"
-            ],
-            "description": "破棄状態"
+            "type": "boolean",
+            "description": "破棄状態",
+            "nullable": true
           },
           "discardReason": {
             "maxLength": 500,
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "破棄理由"
+            "type": "string",
+            "description": "破棄理由",
+            "nullable": true
           },
           "predecessorTaskId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "先行タスクID（このタスクが完了しないと着手できない）\nnullを設定すると先行タスクを解除",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "clearPredecessorTask": {
             "type": "boolean",
@@ -16312,7 +15742,6 @@
         "type": "object",
         "properties": {
           "workspaceRole": {
-            "description": "新しいワークスペースロール",
             "$ref": "#/components/schemas/WorkspaceRole"
           }
         },
@@ -16338,12 +15767,10 @@
             "format": "int32"
           },
           "organizationId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "組織ID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "loginId": {
             "type": "string",
@@ -16360,20 +15787,17 @@
           "avatarType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "アバタータイプ",
                 "$ref": "#/components/schemas/AvatarType"
               }
             ]
           },
           "userAvatarPath": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）"
+            "type": "string",
+            "description": "ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）\nAvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）",
+            "nullable": true
           },
           "identityIconUrl": {
             "type": "string",
@@ -16407,12 +15831,10 @@
             "format": "date-time"
           },
           "lastLoginAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最終ログイン日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "rowVersion": {
             "type": "integer",
@@ -16420,7 +15842,6 @@
             "format": "uint32"
           },
           "setting": {
-            "description": "ユーザー設定",
             "$ref": "#/components/schemas/UserSettingResponse"
           }
         },
@@ -16468,20 +15889,17 @@
           "avatarType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "アバタータイプ",
                 "$ref": "#/components/schemas/AvatarType"
               }
             ]
           },
           "identityIconUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイデンティティアイコンURL"
+            "type": "string",
+            "description": "アイデンティティアイコンURL",
+            "nullable": true
           },
           "skills": {
             "type": "array",
@@ -16541,10 +15959,9 @@
           "landingPage": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ログイン後のランディングページ",
                 "$ref": "#/components/schemas/LandingPage"
               }
             ]
@@ -16552,10 +15969,9 @@
           "focusScorePriority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "フォーカス推奨のスコアリング優先要素\nPriority: 優先度重視、Deadline: 期限重視、SuccessorImpact: 後続タスク影響重視",
                 "$ref": "#/components/schemas/FocusScorePriority"
               }
             ]
@@ -16704,18 +16120,14 @@
             "description": "ワークスペース名"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースの説明"
+            "type": "string",
+            "description": "ワークスペースの説明",
+            "nullable": true
           },
           "organizationId": {
             "type": "integer",
@@ -16725,53 +16137,43 @@
           "organization": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "所属する組織情報",
                 "$ref": "#/components/schemas/OrganizationInfoResponse"
               }
             ]
           },
           "genreId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "ジャンルID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "members": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceUserDetailResponse"
             },
-            "description": "参加しているユーザー一覧"
+            "description": "参加しているユーザー一覧",
+            "nullable": true
           },
           "owner": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "オーナー情報",
                 "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
               }
             ]
@@ -16782,28 +16184,22 @@
             "format": "date-time"
           },
           "createdByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作成者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "updatedByUserId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "更新者ユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -16830,26 +16226,21 @@
             "description": "ユーザー名"
           },
           "email": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "メールアドレス"
+            "type": "string",
+            "description": "メールアドレス",
+            "nullable": true
           },
           "identityIconUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アイデンティティアイコン URL"
+            "type": "string",
+            "description": "アイデンティティアイコン URL",
+            "nullable": true
           },
           "workspaceRole": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペースロール（メンバー一覧の場合に設定）",
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
             ]
@@ -16859,12 +16250,10 @@
             "description": "アクティブフラグ"
           },
           "lastLoginAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最終ログイン日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           }
         },
         "description": "ワークスペース詳細取得用ユーザー情報"
@@ -16887,40 +16276,30 @@
             "description": "ワークスペース名"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースの説明"
+            "type": "string",
+            "description": "ワークスペースの説明",
+            "nullable": true
           },
           "genreId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "ジャンルID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "members": {
             "type": "array",
@@ -16932,10 +16311,9 @@
           "owner": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "オーナー情報",
                 "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
               }
             ]
@@ -16946,19 +16324,15 @@
             "format": "date-time"
           },
           "createdBy": {
-            "description": "作成ユーザー（無効なユーザーでも含む）",
             "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "updatedBy": {
-            "description": "更新ユーザー（無効なユーザーでも含む）",
             "$ref": "#/components/schemas/WorkspaceDetailUserResponse"
           },
           "isActive": {
@@ -16968,10 +16342,9 @@
           "mode": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペースモード",
                 "$ref": "#/components/schemas/WorkspaceMode"
               }
             ]
@@ -16979,10 +16352,9 @@
           "currentUserRole": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ログインユーザーのこのワークスペースに対するロール",
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
             ]
@@ -17036,18 +16408,14 @@
             "description": "ダウンロードURL"
           },
           "thumbnailMediumUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "サムネイル（サイズM）URL"
+            "type": "string",
+            "description": "サムネイル（サイズM）URL",
+            "nullable": true
           },
           "thumbnailSmallUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "サムネイル（サイズS）URL"
+            "type": "string",
+            "description": "サムネイル（サイズS）URL",
+            "nullable": true
           },
           "uploadedAt": {
             "type": "string",
@@ -17060,11 +16428,9 @@
             "format": "int32"
           },
           "uploadedByUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "アップロードしたユーザー名"
+            "type": "string",
+            "description": "アップロードしたユーザー名",
+            "nullable": true
           }
         },
         "description": "ワークスペースアイテム添付ファイルレスポンス"
@@ -17087,32 +16453,24 @@
             "format": "int32"
           },
           "workspaceCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "workspaceName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペース名"
+            "type": "string",
+            "description": "ワークスペース名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルアイコン"
+            "type": "string",
+            "description": "ジャンルアイコン",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "code": {
             "type": "string",
@@ -17123,11 +16481,9 @@
             "description": "件名"
           },
           "body": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "本文"
+            "type": "string",
+            "description": "本文",
+            "nullable": true
           },
           "ownerId": {
             "type": "integer",
@@ -17135,59 +16491,46 @@
             "format": "int32"
           },
           "ownerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーユーザー名"
+            "type": "string",
+            "description": "オーナーユーザー名",
+            "nullable": true
           },
           "ownerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "オーナーアバターURL"
+            "type": "string",
+            "description": "オーナーアバターURL",
+            "nullable": true
           },
           "assigneeId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "作業中のユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "assigneeUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作業中のユーザー名"
+            "type": "string",
+            "description": "作業中のユーザー名",
+            "nullable": true
           },
           "assigneeAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作業中のユーザーアバターURL"
+            "type": "string",
+            "description": "作業中のユーザーアバターURL",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "重要度（NULL の場合は未設定）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "dueDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "期限日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isArchived": {
             "type": "boolean",
@@ -17198,26 +16541,20 @@
             "description": "下書き中フラグ"
           },
           "committerId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "コミッターユーザーID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "committerUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コミッターユーザー名"
+            "type": "string",
+            "description": "コミッターユーザー名",
+            "nullable": true
           },
           "committerAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "コミッターアバターURL"
+            "type": "string",
+            "description": "コミッターアバターURL",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -17300,10 +16637,9 @@
           "relationType": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "関連タイプ",
                 "$ref": "#/components/schemas/RelationType"
               }
             ]
@@ -17364,10 +16700,9 @@
           "workspaceItem": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペースアイテム情報",
                 "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
               }
             ]
@@ -17392,18 +16727,14 @@
             "description": "ワークスペース名"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースコード"
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
           },
           "description": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ワークスペースの説明"
+            "type": "string",
+            "description": "ワークスペースの説明",
+            "nullable": true
           },
           "organizationId": {
             "type": "integer",
@@ -17411,33 +16742,25 @@
             "format": "int32"
           },
           "organizationName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "組織名"
+            "type": "string",
+            "description": "組織名",
+            "nullable": true
           },
           "genreId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "ジャンルID",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "genreName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンル名"
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
           },
           "genreIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "ジャンルのアイコン（例: FontAwesome のクラス名）"
+            "type": "string",
+            "description": "ジャンルのアイコン（例: FontAwesome のクラス名）",
+            "nullable": true
           },
           "activeItemCount": {
             "type": "integer",
@@ -17450,12 +16773,10 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "更新日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -17467,22 +16788,19 @@
             "format": "int32"
           },
           "members": {
-            "type": [
-              "null",
-              "array"
-            ],
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceUserItem"
             },
-            "description": "参加しているユーザー一覧"
+            "description": "参加しているユーザー一覧",
+            "nullable": true
           },
           "owner": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "オーナー情報",
                 "$ref": "#/components/schemas/WorkspaceUserItem"
               }
             ]
@@ -17496,10 +16814,8 @@
           "Normal",
           "Document"
         ],
-        "type": [
-          "null",
-          "string"
-        ]
+        "type": "string",
+        "nullable": true
       },
       "WorkspaceRole": {
         "enum": [
@@ -17624,18 +16940,14 @@
             "format": "int32"
           },
           "assignedUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザー名"
+            "type": "string",
+            "description": "担当ユーザー名",
+            "nullable": true
           },
           "assignedAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "担当ユーザーアバターURL"
+            "type": "string",
+            "description": "担当ユーザーアバターURL",
+            "nullable": true
           },
           "createdByUserId": {
             "type": "integer",
@@ -17643,18 +16955,14 @@
             "format": "int32"
           },
           "createdByUsername": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作成ユーザー名"
+            "type": "string",
+            "description": "作成ユーザー名",
+            "nullable": true
           },
           "createdByAvatarUrl": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "作成ユーザーアバターURL"
+            "type": "string",
+            "description": "作成ユーザーアバターURL",
+            "nullable": true
           },
           "content": {
             "type": "string",
@@ -17666,44 +16974,35 @@
             "format": "int32"
           },
           "taskTypeCode": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）"
+            "type": "string",
+            "description": "タスク種類コード（例: \"Bug\", \"Feature\"）",
+            "nullable": true
           },
           "taskTypeName": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類名（日本語表示名）"
+            "type": "string",
+            "description": "タスク種類名（日本語表示名）",
+            "nullable": true
           },
           "taskTypeIcon": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "タスク種類アイコン（拡張子なしのファイル名）"
+            "type": "string",
+            "description": "タスク種類アイコン（拡張子なしのファイル名）",
+            "nullable": true
           },
           "priority": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "優先度（NULL の場合は Medium として扱う）",
                 "$ref": "#/components/schemas/TaskPriority"
               }
             ]
           },
           "startDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "開始日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
             "type": "string",
@@ -17711,20 +17010,16 @@
             "format": "date-time"
           },
           "estimatedHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "予定工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "actualHours": {
-            "type": [
-              "null",
-              "number"
-            ],
+            "type": "number",
             "description": "実績工数（時間）",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "progressPercentage": {
             "type": "integer",
@@ -17736,31 +17031,25 @@
             "description": "完了フラグ"
           },
           "completedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "タスク完了日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isDiscarded": {
             "type": "boolean",
             "description": "破棄状態"
           },
           "discardedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "破棄日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "discardReason": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "description": "破棄理由"
+            "type": "string",
+            "description": "破棄理由",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -17786,20 +17075,17 @@
             "description": "コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）"
           },
           "predecessorTaskId": {
-            "type": [
-              "null",
-              "integer"
-            ],
+            "type": "integer",
             "description": "先行タスクID（このタスクが完了しないと着手できない）",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "predecessorTask": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "先行タスク情報",
                 "$ref": "#/components/schemas/PredecessorTaskInfo"
               }
             ]
@@ -17831,10 +17117,9 @@
           "workspaceTask": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペースタスク情報",
                 "$ref": "#/components/schemas/WorkspaceTaskDetailResponse"
               }
             ]
@@ -17932,10 +17217,9 @@
           "workspaceRole": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペース内での役割",
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
             ]
@@ -17946,12 +17230,10 @@
             "format": "date-time"
           },
           "lastAccessedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最終アクセス日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean",
@@ -17989,10 +17271,9 @@
           "workspaceRole": {
             "oneOf": [
               {
-                "type": "null"
+                "nullable": true
               },
               {
-                "description": "ワークスペース内での役割",
                 "$ref": "#/components/schemas/WorkspaceRole"
               }
             ]
@@ -18002,12 +17283,10 @@
             "description": "アクティブフラグ"
           },
           "lastLoginAt": {
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": "string",
             "description": "最終ログイン日時",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           }
         },
         "description": "ワークスペースユーザー一覧用DTO（軽量）"

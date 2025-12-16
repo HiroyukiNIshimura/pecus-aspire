@@ -62,7 +62,7 @@ export type FocusTaskResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 期限日時
      */
@@ -83,8 +83,8 @@ export type FocusTaskResponse = {
      * 後続タスク数（このタスクを待っているタスクの数）
      */
     successorCount: number;
-    successorTask?: (null | SuccessorTaskInfo);
-    predecessorTask?: (null | PredecessorTaskInfo);
-    scoreDetail?: (null | TaskScoreDetail);
+    successorTask?: SuccessorTaskInfo;
+    predecessorTask?: PredecessorTaskInfo;
+    scoreDetail?: TaskScoreDetail;
 };
 

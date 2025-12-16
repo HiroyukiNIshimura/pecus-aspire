@@ -30,7 +30,7 @@ export type UserDetailResponse = {
      * メールアドレス
      */
     email: string;
-    avatarType?: (null | AvatarType);
+    avatarType?: AvatarType;
     /**
      * ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
      * AvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）
@@ -70,9 +70,6 @@ export type UserDetailResponse = {
      * ユーザーの楽観的ロック用RowVersion
      */
     rowVersion: number;
-    /**
-     * ユーザー設定
-     */
     setting: UserSettingResponse;
 };
 

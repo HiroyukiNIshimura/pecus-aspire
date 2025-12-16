@@ -325,8 +325,11 @@ builder.Services.AddControllers(options =>
     });
 
 // OpenAPIの設定 (Microsoft.AspNetCore.OpenApi)
+// OpenAPI 3.0 に固定（3.1 では nullable や integer の扱いが異なるため）
 builder.Services.AddOpenApi("v1", options =>
 {
+    options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
         document.Info = new OpenApiInfo

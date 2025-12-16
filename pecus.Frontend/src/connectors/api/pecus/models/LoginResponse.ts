@@ -42,7 +42,7 @@ export type LoginResponse = {
      * メールアドレス
      */
     email: string;
-    avatarType?: (null | AvatarType);
+    avatarType?: AvatarType;
     /**
      * アイデンティティアイコンURL
      */
@@ -59,7 +59,7 @@ export type LoginResponse = {
      * リフレッシュトークンの有効期限（UTC）
      */
     refreshExpiresAt?: string | null;
-    device?: (null | LoginDeviceInfo);
-    landingPage?: (null | LandingPage);
+    device?: LoginDeviceInfo;
+    landingPage?: LandingPage;
 };
 

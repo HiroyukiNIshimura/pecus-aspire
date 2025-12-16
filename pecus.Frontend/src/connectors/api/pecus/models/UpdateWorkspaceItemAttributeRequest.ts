@@ -7,7 +7,7 @@ import type { JsonElement } from './JsonElement';
  * ワークスペースアイテム属性更新リクエスト
  */
 export type UpdateWorkspaceItemAttributeRequest = {
-    value?: (null | JsonElement);
+    value?: JsonElement;
     /**
      * 楽観的ロック用バージョン
      */

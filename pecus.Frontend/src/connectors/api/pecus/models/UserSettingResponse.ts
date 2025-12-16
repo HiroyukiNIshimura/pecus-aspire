@@ -25,8 +25,8 @@ export type UserSettingResponse = {
      * 言語設定（TODO：未使用）
      */
     language: string;
-    landingPage?: (null | LandingPage);
-    focusScorePriority?: (null | FocusScorePriority);
+    landingPage?: LandingPage;
+    focusScorePriority?: FocusScorePriority;
     /**
      * フォーカス推奨タスクの表示件数（5-20）
      */

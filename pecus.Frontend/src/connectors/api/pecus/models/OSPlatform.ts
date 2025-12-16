@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type OSPlatform = 'Unknown' | 'Windows' | 'MacOS' | 'Linux' | 'iOS' | 'Android';
+export type OSPlatform = 'Unknown' | 'Windows' | 'MacOS' | 'Linux' | 'iOS' | 'Android' | null;

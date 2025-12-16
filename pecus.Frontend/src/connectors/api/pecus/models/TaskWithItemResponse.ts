@@ -40,7 +40,7 @@ export type TaskWithItemResponse = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 開始日時
      */

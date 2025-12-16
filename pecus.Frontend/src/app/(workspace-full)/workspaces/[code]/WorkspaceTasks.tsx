@@ -481,7 +481,7 @@ const WorkspaceTasks = ({
           <span className="block text-sm mb-1">並び順</span>
           <select
             className="select select-xs select-bordered w-32"
-            value={sortBy}
+            value={sortBy ?? 'Sequence'}
             onChange={(e) => {
               const newSortBy = e.target.value as TaskSortBy;
               setSortBy(newSortBy);

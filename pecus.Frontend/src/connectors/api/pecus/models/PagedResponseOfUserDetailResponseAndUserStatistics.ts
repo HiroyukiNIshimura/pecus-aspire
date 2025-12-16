@@ -8,7 +8,7 @@ import type { UserStatistics } from './UserStatistics';
  * ページネーション付きレスポンス（統計情報付き）
  */
 export type PagedResponseOfUserDetailResponseAndUserStatistics = {
-    summary?: (null | UserStatistics);
+    summary?: UserStatistics;
     /**
      * データのリスト
      */

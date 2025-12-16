@@ -76,7 +76,7 @@ export type WorkspaceTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 開始日時
      */
@@ -137,7 +137,7 @@ export type WorkspaceTaskDetailResponse = {
      * 先行タスクID（このタスクが完了しないと着手できない）
      */
     predecessorTaskId?: number | null;
-    predecessorTask?: (null | PredecessorTaskInfo);
+    predecessorTask?: PredecessorTaskInfo;
     /**
      * このタスクを待っている後続タスク数
      */

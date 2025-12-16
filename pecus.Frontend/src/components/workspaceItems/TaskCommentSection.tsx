@@ -15,7 +15,7 @@ import { useNotify } from '@/hooks/useNotify';
 /** コメントの最大文字数 */
 const MAX_COMMENT_LENGTH = 500;
 
-const commentTypeConfig: Record<TaskCommentType, { label: string; color: string; iconClass: string }> = {
+const commentTypeConfig: Record<NonNullable<TaskCommentType>, { label: string; color: string; iconClass: string }> = {
   Normal: { label: '通常', color: 'badge-neutral', iconClass: 'icon-[mdi--message-outline]' },
   Memo: { label: 'メモ', color: 'badge-info', iconClass: 'icon-[mdi--note-outline]' },
   HelpWanted: { label: '助けて', color: 'badge-warning', iconClass: 'icon-[mdi--help-circle-outline]' },
@@ -373,7 +373,7 @@ export default function TaskCommentSection({
                         <div className="flex items-center gap-1.5">
                           <select
                             className="select select-bordered select-xs"
-                            value={editingType}
+                            value={editingType ?? 'Normal'}
                             onChange={(e) => setEditingType(e.target.value as TaskCommentType)}
                             disabled={isSubmitting}
                           >
@@ -510,7 +510,7 @@ export default function TaskCommentSection({
         <div className="flex justify-between items-center mt-2">
           <select
             className="select select-bordered select-xs w-auto min-w-0"
-            value={newCommentType}
+            value={newCommentType ?? 'Normal'}
             onChange={(e) => setNewCommentType(e.target.value as TaskCommentType)}
             disabled={isSubmitting}
           >

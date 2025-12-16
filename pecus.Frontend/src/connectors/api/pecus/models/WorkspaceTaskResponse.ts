@@ -15,6 +15,6 @@ export type WorkspaceTaskResponse = {
      * メッセージ
      */
     message?: string;
-    workspaceTask?: (null | WorkspaceTaskDetailResponse);
+    workspaceTask?: WorkspaceTaskDetailResponse;
 };
 

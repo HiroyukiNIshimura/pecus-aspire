@@ -715,7 +715,7 @@ export default function WorkspaceTaskDetailPage({
                         id="priority"
                         name="priority"
                         className="select select-bordered"
-                        value={priority}
+                        value={priority ?? ''}
                         onChange={(e) => setPriority(e.target.value as TaskPriority)}
                         disabled={isSubmitting || isLoadingTask}
                       >

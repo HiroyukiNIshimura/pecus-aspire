@@ -7,7 +7,7 @@ import type { TaskPriority } from './TaskPriority';
  * 優先度ごとのタスク数
  */
 export type PriorityTaskCount = {
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * タスク数
      */

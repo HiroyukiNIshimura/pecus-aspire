@@ -32,7 +32,7 @@ export type TaskFlowNode = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 期限日時
      */
@@ -69,7 +69,7 @@ export type TaskFlowNode = {
      * 先行タスクID
      */
     predecessorTaskId?: number | null;
-    predecessorTask?: (null | TaskFlowPredecessorInfo);
+    predecessorTask?: TaskFlowPredecessorInfo;
     /**
      * 後続タスク数
      */

@@ -20,7 +20,7 @@ export type UserSearchResultResponse = {
      * メールアドレス
      */
     email: string;
-    avatarType?: (null | AvatarType);
+    avatarType?: AvatarType;
     /**
      * アイデンティティアイコンURL
      */

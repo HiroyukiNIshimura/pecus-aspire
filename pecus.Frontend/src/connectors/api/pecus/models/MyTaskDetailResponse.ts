@@ -127,7 +127,7 @@ export type MyTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: (null | TaskPriority);
+    priority?: TaskPriority;
     /**
      * 開始日時
      */

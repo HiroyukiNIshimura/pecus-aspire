@@ -15,7 +15,7 @@ interface UserSettingsClientProps {
   fetchError?: string | null;
 }
 
-const FOCUS_SCORE_PRIORITY_OPTIONS: { value: FocusScorePriority; label: string; description: string }[] = [
+const FOCUS_SCORE_PRIORITY_OPTIONS: { value: NonNullable<FocusScorePriority>; label: string; description: string }[] = [
   { value: 'Priority', label: '優先度重視', description: 'タスクの優先度を最も重視してスコアリングします' },
   { value: 'Deadline', label: '期限重視', description: 'タスクの期限を最も重視してスコアリングします' },
   {

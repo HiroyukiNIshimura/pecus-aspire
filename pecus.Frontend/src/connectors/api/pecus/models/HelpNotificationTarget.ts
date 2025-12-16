@@ -2,4 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type HelpNotificationTarget = 'Organization' | 'WorkspaceUsers';
+export type HelpNotificationTarget = 'Organization' | 'WorkspaceUsers' | null;

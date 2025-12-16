@@ -35,7 +35,7 @@ export type WorkspaceItemRelationResponse = {
      * 関連先アイテム件名
      */
     toItemSubject?: string;
-    relationType?: (null | RelationType);
+    relationType?: RelationType;
     /**
      * 作成日時
      */

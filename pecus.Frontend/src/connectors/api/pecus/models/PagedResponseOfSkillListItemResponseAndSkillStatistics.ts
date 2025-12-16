@@ -8,7 +8,7 @@ import type { SkillStatistics } from './SkillStatistics';
  * ページネーション付きレスポンス（統計情報付き）
  */
 export type PagedResponseOfSkillListItemResponseAndSkillStatistics = {
-    summary?: (null | SkillStatistics);
+    summary?: SkillStatistics;
     /**
      * データのリスト
      */

@@ -11,7 +11,7 @@ export type UpdateTaskCommentRequest = {
      * コメント内容
      */
     content?: string | null;
-    commentType?: (null | TaskCommentType);
+    commentType?: TaskCommentType;
     /**
      * 楽観的ロック用のRowVersion（必須）
      */
