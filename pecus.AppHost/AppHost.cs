@@ -22,11 +22,6 @@ try
         .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
-    var dbManager = builder
-        .AddProject<Projects.pecus_DbManager>("dbmanager")
-        .WithReference(pecusDb)
-        .WaitFor(pecusDb);
-
     // WebApi の uploads フォルダの絶対パスを取得
     var webApiProjectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.WebApi"));
     var uploadsPath = Path.Combine(webApiProjectPath, "uploads");
@@ -44,6 +39,13 @@ try
         .WithEnvironment("GRPC_PORT", "5100")
         .WithEnvironment("GRPC_HOST", "0.0.0.0")
         .WithEnvironment("LEXICAL_PROTO_PATH", lexicalProtoPath);
+
+    //マイグレーションとシードデータの投入サービス
+    var dbManager = builder
+        .AddProject<Projects.pecus_DbManager>("dbmanager")
+        .WithReference(pecusDb)
+        .WaitFor(lexicalConverter)
+        .WaitFor(pecusDb);
 
     var backfire = builder
     .AddProject<Projects.pecus_BackFire>("backfire")

@@ -1346,10 +1346,13 @@ public class DatabaseSeeder
                 return;
             }
 
-            // playground.json を読み込み
-            var playgroundJson = await LoadPlaygroundJsonAsync();
-            // シードデータでは RawBody は空文字（実際のデータ投入時に gRPC で生成される）
-            var rawBody = string.Empty;
+            // Markdown ファイルを読み込んで Lexical JSON に変換
+            var bodyDataList = await LoadMarkdownFilesAsLexicalJsonAsync();
+            if (bodyDataList.Count == 0)
+            {
+                _logger.LogWarning("No markdown files found for seeding workspace items, using empty body");
+                bodyDataList.Add((FileName: "サンプルアイテム", Body: "{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}", RawBody: ""));
+            }
 
             int totalItemsAdded = 0;
             const int maxTotalItems = 20000; // 全体で最大20000件
@@ -1396,14 +1399,17 @@ public class DatabaseSeeder
                         itemNumber++;
                         var ownerId = workspaceMembers[_random.Next(workspaceMembers.Count)];
 
+                        // bodyDataList から順番に本文を取得（ループ）
+                        var bodyData = bodyDataList[totalItemsAdded % bodyDataList.Count];
+
                         var workspaceItem = new WorkspaceItem
                         {
                             WorkspaceId = workspace.Id,
                             ItemNumber = itemNumber,
                             Code = itemNumber.ToString(),
-                            Subject = _faker.Lorem.Paragraphs(1).ClampLength(max: 200),
-                            Body = playgroundJson, // playground.json の内容
-                            RawBody = rawBody, // LexicalTextExtractor で抽出したプレーンテキスト
+                            Subject = bodyData.FileName.ClampLength(max: 200), // Markdownファイル名（拡張子なし）
+                            Body = bodyData.Body, // Markdown から変換された Lexical JSON
+                            RawBody = bodyData.RawBody, // プレーンテキスト
                             OwnerId = ownerId,
                             AssigneeId = _random.Next(2) == 1 ? workspaceMembers[_random.Next(workspaceMembers.Count)] : null,
                             Priority = _random.Next(4) switch
@@ -1477,37 +1483,112 @@ public class DatabaseSeeder
     }
 
     /// <summary>
-    /// playground.json ファイルを読み込む
+    /// md ディレクトリ内の Markdown ファイルを読み込み、Lexical JSON に変換する
     /// </summary>
-    /// <returns>JSON 文字列</returns>
-    private static async Task<string> LoadPlaygroundJsonAsync()
+    /// <returns>変換結果のリスト (FileName: 拡張子なしファイル名, Body: Lexical JSON, RawBody: プレーンテキスト)</returns>
+    private async Task<List<(string FileName, string Body, string RawBody)>> LoadMarkdownFilesAsLexicalJsonAsync()
     {
+        var result = new List<(string FileName, string Body, string RawBody)>();
+
         // アセンブリの場所を基準にファイルパスを取得
         var assemblyLocation = Assembly.GetExecutingAssembly().Location;
         var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? string.Empty;
 
         // 開発時とビルド時で異なるパスを試行
-        var possiblePaths = new[]
+        var possibleMdDirs = new[]
         {
             // ビルド出力からの相対パス
-            Path.Combine(assemblyDirectory, "DB", "Seed", "playground.json"),
+            Path.Combine(assemblyDirectory, "DB", "Seed", "md"),
             // プロジェクトルートからの相対パス（開発時）
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "playground.json"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "md"),
             // 直接参照（開発時のホットリロード用）
-            Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "playground.json")),
+            Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", "..", "..", "pecus.Libs", "DB", "Seed", "md")),
         };
 
-        foreach (var path in possiblePaths)
+        string? mdDirectory = null;
+        foreach (var path in possibleMdDirs)
         {
-            if (File.Exists(path))
+            if (Directory.Exists(path))
             {
-                return await File.ReadAllTextAsync(path);
+                mdDirectory = path;
+                break;
             }
         }
 
-        throw new FileNotFoundException(
-            $"playground.json not found. Tried paths: {string.Join(", ", possiblePaths)}"
-        );
+        if (mdDirectory == null)
+        {
+            _logger.LogWarning("Markdown directory not found. Tried paths: {Paths}", string.Join(", ", possibleMdDirs));
+            return result;
+        }
+
+        // Markdown ファイルを取得（INDEX.md を除く、アルファベット順）
+        var mdFiles = Directory.GetFiles(mdDirectory, "*.md")
+            .Where(f => !Path.GetFileName(f).Equals("INDEX.md", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(f => Path.GetFileName(f))
+            .ToList();
+
+        if (mdFiles.Count == 0)
+        {
+            _logger.LogWarning("No markdown files found in {Directory}", mdDirectory);
+            return result;
+        }
+
+        _logger.LogInformation("Found {Count} markdown files for seeding", mdFiles.Count);
+
+        // _lexicalConverterService が null の場合はフォールバック
+        if (_lexicalConverterService == null)
+        {
+            _logger.LogWarning("LexicalConverterService is not available, using markdown as raw text");
+            foreach (var mdFile in mdFiles)
+            {
+                var markdown = await File.ReadAllTextAsync(mdFile);
+                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(mdFile);
+                // フォールバック: 空の Lexical JSON とマークダウンをそのまま RawBody に
+                result.Add((
+                    FileName: fileNameWithoutExt,
+                    Body: "{\"root\":{\"children\":[{\"children\":[],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}",
+                    RawBody: markdown
+                ));
+            }
+            return result;
+        }
+
+        // 各 Markdown ファイルを読み込み、Lexical JSON に変換
+        foreach (var mdFile in mdFiles)
+        {
+            try
+            {
+                var markdown = await File.ReadAllTextAsync(mdFile);
+                var fileName = Path.GetFileName(mdFile);
+
+                // Markdown → Lexical JSON 変換
+                var convertResult = await _lexicalConverterService.FromMarkdownAsync(markdown);
+                if (!convertResult.Success)
+                {
+                    _logger.LogWarning(
+                        "Failed to convert {FileName} to Lexical JSON: {Error}",
+                        fileName,
+                        convertResult.ErrorMessage
+                    );
+                    continue;
+                }
+
+                // Lexical JSON → プレーンテキスト変換（RawBody 用）
+                var plainTextResult = await _lexicalConverterService.ToPlainTextAsync(convertResult.Result);
+                var rawBody = plainTextResult.Success ? plainTextResult.Result : string.Empty;
+
+                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(mdFile);
+                result.Add((FileName: fileNameWithoutExt, Body: convertResult.Result, RawBody: rawBody));
+                _logger.LogDebug("Converted {FileName} to Lexical JSON ({Length} chars)", fileName, convertResult.Result.Length);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to process markdown file {FileName}", Path.GetFileName(mdFile));
+            }
+        }
+
+        _logger.LogInformation("Successfully converted {Count} markdown files to Lexical JSON", result.Count);
+        return result;
     }
 
     /// <summary>
@@ -1747,7 +1828,10 @@ public class DatabaseSeeder
                 var discardReasonStr = discardReason != null ? "'" + discardReason.Replace("'", "''") + "'" : "NULL";
                 var priorityStr = priority.HasValue ? ((int)priority.Value).ToString() : "NULL";
 
-                valuesList.Add("(" + workspaceItem.Id + ", " + workspaceItem.WorkspaceId + ", " + workspaceToOrg[workspaceItem.WorkspaceId] + ", " + assignedUserId + ", " + createdByUserId + ", '" + content + "', " + taskType.Id + ", " + priorityStr + ", " + startDateStr + ", '" + dueDate.ToString("yyyy-MM-dd HH:mm:ss+00") + "', " + estimatedHoursStr + ", " + actualHoursStr + ", " + (isCompleted ? 100 : progressPercentage) + ", " + isCompleted.ToString().ToLower() + ", " + completedAtStr + ", " + isDiscarded.ToString().ToLower() + ", " + discardedAtStr + ", " + discardReasonStr + ", '" + createdAt.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + updatedAt.ToString("yyyy-MM-dd HH:mm:ss") + "')");
+                // Sequence は 1 から始まる（i は 0 から開始なので +1）
+                var sequence = i + 1;
+
+                valuesList.Add("(" + workspaceItem.Id + ", " + workspaceItem.WorkspaceId + ", " + workspaceToOrg[workspaceItem.WorkspaceId] + ", " + sequence + ", " + assignedUserId + ", " + createdByUserId + ", '" + content + "', " + taskType.Id + ", " + priorityStr + ", " + startDateStr + ", '" + dueDate.ToString("yyyy-MM-dd HH:mm:ss+00") + "', " + estimatedHoursStr + ", " + actualHoursStr + ", " + (isCompleted ? 100 : progressPercentage) + ", " + isCompleted.ToString().ToLower() + ", " + completedAtStr + ", " + isDiscarded.ToString().ToLower() + ", " + discardedAtStr + ", " + discardReasonStr + ", '" + createdAt.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + updatedAt.ToString("yyyy-MM-dd HH:mm:ss") + "')");
                 totalTasksAdded++;
 
                 if (valuesList.Count >= batchSize)
@@ -1849,7 +1933,7 @@ public class DatabaseSeeder
     private async Task ExecuteBulkInsertWorkspaceTasksAsync(List<string> valuesList)
     {
         var valuesClause = string.Join(", ", valuesList);
-        var sql = "INSERT INTO \"WorkspaceTasks\" (\"WorkspaceItemId\", \"WorkspaceId\", \"OrganizationId\", \"AssignedUserId\", \"CreatedByUserId\", \"Content\", \"TaskTypeId\", \"Priority\", \"StartDate\", \"DueDate\", \"EstimatedHours\", \"ActualHours\", \"ProgressPercentage\", \"IsCompleted\", \"CompletedAt\", \"IsDiscarded\", \"DiscardedAt\", \"DiscardReason\", \"CreatedAt\", \"UpdatedAt\") VALUES " + valuesClause;
+        var sql = "INSERT INTO \"WorkspaceTasks\" (\"WorkspaceItemId\", \"WorkspaceId\", \"OrganizationId\", \"Sequence\", \"AssignedUserId\", \"CreatedByUserId\", \"Content\", \"TaskTypeId\", \"Priority\", \"StartDate\", \"DueDate\", \"EstimatedHours\", \"ActualHours\", \"ProgressPercentage\", \"IsCompleted\", \"CompletedAt\", \"IsDiscarded\", \"DiscardedAt\", \"DiscardReason\", \"CreatedAt\", \"UpdatedAt\") VALUES " + valuesClause;
 
         await _context.Database.ExecuteSqlRawAsync(sql);
     }
