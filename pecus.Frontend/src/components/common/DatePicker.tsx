@@ -110,14 +110,37 @@ export default function DatePicker({
     }
   }, [disabled]);
 
+  // 日付をクリアする
+  const handleClear = () => {
+    if (fpRef.current) {
+      fpRef.current.clear();
+    }
+    onChangeRef.current('');
+    onCloseRef.current?.('');
+  };
+
+  const showClearButton = value && !disabled;
+
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      className={`input input-bordered ${error ? 'input-error' : ''} ${className}`}
-      placeholder={placeholder}
-      disabled={disabled}
-      readOnly
-    />
+    <div className="relative inline-flex w-full">
+      <input
+        ref={inputRef}
+        type="text"
+        className={`input input-bordered w-full ${showClearButton ? 'pr-10' : ''} ${error ? 'input-error' : ''} ${className}`}
+        placeholder={placeholder}
+        disabled={disabled}
+        readOnly
+      />
+      {showClearButton && (
+        <button
+          type="button"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 btn btn-xs btn-circle"
+          onClick={handleClear}
+          aria-label="日付をクリア"
+        >
+          <span className="icon-[mdi--close] size-5" />
+        </button>
+      )}
+    </div>
   );
 }
