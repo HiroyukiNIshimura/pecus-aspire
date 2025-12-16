@@ -61,8 +61,8 @@ export default function RootLayout({
             `,
           }}
         />
-        <div className="flex h-screen flex-col">
-          <main>{children}</main>
+        <div className="flex min-h-screen flex-col">
+          <main className="flex-1">{children}</main>
           <AppFooter />
         </div>
         <FlyonuiScript />
