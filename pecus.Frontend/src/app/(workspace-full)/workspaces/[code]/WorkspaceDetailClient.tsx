@@ -27,6 +27,7 @@ import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
   MasterGenreResponse,
   MasterSkillResponse,
+  TaskFlowNode,
   TaskStatusFilter,
   WorkspaceDetailUserResponse,
   WorkspaceFullDetailResponse,
@@ -131,6 +132,9 @@ export default function WorkspaceDetailClient({
   const [flowMapItemTitle, setFlowMapItemTitle] = useState<string | null>(null);
   const [flowMapItemCommitterName, setFlowMapItemCommitterName] = useState<string | null>(null);
   const [flowMapItemCommitterAvatarUrl, setFlowMapItemCommitterAvatarUrl] = useState<string | null>(null);
+  const [flowMapItemOwnerId, setFlowMapItemOwnerId] = useState<number | null>(null);
+  const [flowMapItemAssigneeId, setFlowMapItemAssigneeId] = useState<number | null>(null);
+  const [flowMapItemCommitterId, setFlowMapItemCommitterId] = useState<number | null>(null);
 
   // ===== モバイルドロワーの状態 =====
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(true);
@@ -625,10 +629,20 @@ export default function WorkspaceDetailClient({
 
   // タスクフローマップページを表示するハンドラ
   const handleShowFlowMap = useCallback(
-    async (itemTitle: string | null, itemCommitterName: string | null, itemCommitterAvatarUrl: string | null) => {
+    (
+      itemTitle: string | null,
+      itemCommitterName: string | null,
+      itemCommitterAvatarUrl: string | null,
+      itemOwnerId: number | null,
+      itemAssigneeId: number | null,
+      itemCommitterId: number | null,
+    ) => {
       setFlowMapItemTitle(itemTitle);
       setFlowMapItemCommitterName(itemCommitterName);
       setFlowMapItemCommitterAvatarUrl(itemCommitterAvatarUrl);
+      setFlowMapItemOwnerId(itemOwnerId);
+      setFlowMapItemAssigneeId(itemAssigneeId);
+      setFlowMapItemCommitterId(itemCommitterId);
       setShowFlowMap(true);
     },
     [],
@@ -640,7 +654,24 @@ export default function WorkspaceDetailClient({
     setFlowMapItemTitle(null);
     setFlowMapItemCommitterName(null);
     setFlowMapItemCommitterAvatarUrl(null);
+    setFlowMapItemOwnerId(null);
+    setFlowMapItemAssigneeId(null);
+    setFlowMapItemCommitterId(null);
   }, []);
+
+  // タスクフローマップ用のタスク編集権限チェック関数
+  const canEditTaskForFlowMap = useCallback(
+    (task: TaskFlowNode): boolean => {
+      if (!userInfo) return false;
+      return (
+        task.assignedUserId === userInfo.id ||
+        flowMapItemCommitterId === userInfo.id ||
+        flowMapItemAssigneeId === userInfo.id ||
+        flowMapItemOwnerId === userInfo.id
+      );
+    },
+    [userInfo, flowMapItemCommitterId, flowMapItemAssigneeId, flowMapItemOwnerId],
+  );
 
   // スクロール完了後にURLをクリーンアップ
   const handleScrollComplete = useCallback(() => {
@@ -1119,9 +1150,15 @@ export default function WorkspaceDetailClient({
               itemCommitterName={flowMapItemCommitterName}
               itemCommitterAvatarUrl={flowMapItemCommitterAvatarUrl}
               onClose={handleCloseFlowMap}
+              canEditTask={canEditTaskForFlowMap}
               onTaskClick={(task) => {
-                // タスククリック時の処理（必要に応じて実装）
-                console.log('Task clicked:', task);
+                // フローマップを閉じてタスク詳細を表示
+                handleCloseFlowMap();
+                setPendingTaskSequence(task.sequence);
+                // URLを更新
+                if (selectedItemCode) {
+                  router.push(`${pathname}?itemCode=${selectedItemCode}&task=${task.sequence}`, { scroll: false });
+                }
               }}
             />
           )}

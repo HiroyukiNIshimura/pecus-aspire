@@ -6,9 +6,11 @@ import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
 import UserAvatar from '@/components/common/UserAvatar';
+import TaskFlowMapModal from '@/components/tasks/TaskFlowMapModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   SortOrder,
+  TaskFlowNode,
   TaskSortBy,
   TaskStatusFilter as TaskStatusFilterType,
   UserSearchResultResponse,
@@ -140,6 +142,9 @@ const WorkspaceTasks = ({
   // コメントモーダル状態
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [commentTargetTask, setCommentTargetTask] = useState<WorkspaceTaskDetailResponse | null>(null);
+
+  // フローマップモーダル状態
+  const [isFlowMapModalOpen, setIsFlowMapModalOpen] = useState(false);
 
   // タスク取得
   const fetchTasks = async (
@@ -333,7 +338,34 @@ const WorkspaceTasks = ({
     [handleTaskClick],
   );
 
-  // タスクタイプのアイコンパスを取得（API レスポンスから）
+  // タスク編集権限チェック関数(フローマップで各タスクのクリック可否を判断)
+  const canEditTask = useCallback(
+    (task: TaskFlowNode): boolean => {
+      if (!currentUser) return false;
+      return (
+        task.assignedUserId === currentUser.id ||
+        itemCommitterId === currentUser.id ||
+        itemAssigneeId === currentUser.id ||
+        itemOwnerId === currentUser.id
+      );
+    },
+    [currentUser, itemCommitterId, itemAssigneeId, itemOwnerId],
+  );
+
+  // フローマップからのタスククリック時のハンドラ
+  const handleFlowMapTaskClick = useCallback(
+    (task: TaskFlowNode) => {
+      // タスクリストからインデックスを探す(同じタスクがあれば)
+      const taskIndex = tasks.findIndex((t) => t.id === task.id);
+      if (taskIndex >= 0) {
+        // タスクリストにあれば、handleTaskClickを使用(sequenceが取れる)
+        handleTaskClick(taskIndex);
+      }
+    },
+    [tasks, handleTaskClick],
+  );
+
+  // タスクタイプのアイコンパスを取得(API レスポンスから)
   const getTaskTypeIconPath = (task: WorkspaceTaskDetailResponse) => {
     // API レスポンスに taskTypeIcon があればそれを使用
     // Icon 値からハイフンを除去してファイル名と一致させる
@@ -379,17 +411,21 @@ const WorkspaceTasks = ({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {onShowFlowMap && (
-          <button
-            type="button"
-            className="btn btn-outline btn-secondary btn-sm gap-1"
-            onClick={onShowFlowMap}
-            title="タスクフローマップを表示"
-          >
-            <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
-            フロー
-          </button>
-        )}
+        <button
+          type="button"
+          className="btn btn-outline btn-secondary btn-sm gap-1"
+          onClick={() => {
+            if (onShowFlowMap) {
+              onShowFlowMap();
+            } else {
+              setIsFlowMapModalOpen(true);
+            }
+          }}
+          title="タスクフローマップを表示"
+        >
+          <span className="icon-[mdi--sitemap] w-4 h-4" aria-hidden="true" />
+          フロー
+        </button>
         <button type="button" className="btn btn-outline btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>
           <span className="icon-[mdi--plus-circle-outline] w-4 h-4" aria-hidden="true" />
           タスク追加
@@ -427,6 +463,16 @@ const WorkspaceTasks = ({
           onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}
         />
       )}
+
+      {/* フローマップモーダル */}
+      <TaskFlowMapModal
+        isOpen={isFlowMapModalOpen}
+        onClose={() => setIsFlowMapModalOpen(false)}
+        workspaceId={workspaceId}
+        itemId={itemId}
+        onTaskClick={handleFlowMapTaskClick}
+        canEditTask={canEditTask}
+      />
     </>
   );
 

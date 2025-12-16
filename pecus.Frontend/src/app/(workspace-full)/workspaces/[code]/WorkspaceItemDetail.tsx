@@ -76,6 +76,9 @@ interface WorkspaceItemDetailProps {
     itemTitle: string | null,
     itemCommitterName: string | null,
     itemCommitterAvatarUrl: string | null,
+    itemOwnerId: number | null,
+    itemAssigneeId: number | null,
+    itemCommitterId: number | null,
   ) => void;
 }
 
@@ -371,7 +374,14 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <button
                   type="button"
                   onClick={() =>
-                    onShowFlowMap(item.subject ?? null, item.committerUsername ?? null, item.committerAvatarUrl ?? null)
+                    onShowFlowMap(
+                      item.subject ?? null,
+                      item.committerUsername ?? null,
+                      item.committerAvatarUrl ?? null,
+                      item.ownerId ?? null,
+                      item.assigneeId ?? null,
+                      item.committerId ?? null,
+                    )
                   }
                   className="btn btn-secondary btn-sm gap-1"
                   title="タスクフローマップを表示"
@@ -586,6 +596,9 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                           item.subject ?? null,
                           item.committerUsername ?? null,
                           item.committerAvatarUrl ?? null,
+                          item.ownerId ?? null,
+                          item.assigneeId ?? null,
+                          item.committerId ?? null,
                         )
                     : undefined
                 }
