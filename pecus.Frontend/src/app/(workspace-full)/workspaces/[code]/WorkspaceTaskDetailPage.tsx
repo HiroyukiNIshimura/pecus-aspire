@@ -534,7 +534,7 @@ export default function WorkspaceTaskDetailPage({
               {task?.sequence && <span className="text-base-content/70 font-mono">T-{task.sequence}</span>}
             </h2>
             {/* ナビゲーションインジケーター */}
-            {showNavigationControls && navigation && navigation.totalCount > 1 && (
+            {showNavigationControls && navigation && navigation.totalCount > 1 && (canGoPrev || canGoNext) && (
               <span className="text-sm text-base-content/60">
                 {currentPosition} / {navigation.totalCount}
               </span>
@@ -559,7 +559,7 @@ export default function WorkspaceTaskDetailPage({
             {onShowFlowMap && (
               <button
                 type="button"
-                className="btn btn-outline btn-secondary btn-sm gap-1"
+                className="btn btn-outline btn-success btn-sm gap-1"
                 onClick={onShowFlowMap}
                 disabled={isLoadingTask || isSubmitting}
                 title="タスクフローマップを表示"
@@ -568,7 +568,7 @@ export default function WorkspaceTaskDetailPage({
                 フロー
               </button>
             )}
-            {showNavigationControls && (
+            {showNavigationControls && (canGoPrev || canGoNext) && (
               <>
                 {/* 前へボタン */}
                 <button

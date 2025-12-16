@@ -6,7 +6,6 @@ import { getWorkspaceTasks } from '@/actions/workspaceTask';
 import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
 import UserAvatar from '@/components/common/UserAvatar';
-import TaskFlowMapModal from '@/components/tasks/TaskFlowMapModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   SortOrder,
@@ -421,7 +420,7 @@ const WorkspaceTasks = ({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="btn btn-outline btn-secondary btn-sm gap-1"
+          className="btn btn-outline btn-success btn-sm gap-1"
           onClick={() => {
             if (onShowFlowMap) {
               onShowFlowMap();
@@ -471,16 +470,6 @@ const WorkspaceTasks = ({
           onCommentCountChange={() => fetchTasks(currentPage, taskStatus, selectedAssignee?.id, sortBy, sortOrder)}
         />
       )}
-
-      {/* フローマップモーダル */}
-      <TaskFlowMapModal
-        isOpen={isFlowMapModalOpen}
-        onClose={() => setIsFlowMapModalOpen(false)}
-        workspaceId={workspaceId}
-        itemId={itemId}
-        onTaskClick={handleFlowMapTaskClick}
-        canEditTask={canEditTask}
-      />
     </>
   );
 
