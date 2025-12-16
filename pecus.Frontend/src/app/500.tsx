@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function ServerErrorPage() {
   return (
-    <div className="relative flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="relative flex items-center justify-center flex-1 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* 背景アニメーション用の浮遊要素 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* 赤系グラデーション円 */}

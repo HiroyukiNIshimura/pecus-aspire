@@ -230,7 +230,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
   const vendorRequiresKey = formData.generativeApiVendor !== 'None';
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       <AdminHeader userInfo={initialUser} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={false} />

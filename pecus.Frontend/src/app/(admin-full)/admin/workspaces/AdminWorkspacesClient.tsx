@@ -193,7 +193,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay
         isLoading={isInitialLoading || showLoading}
         message={isInitialLoading ? '読み込み中...' : '検索中...'}

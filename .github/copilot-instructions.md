@@ -53,6 +53,9 @@
   - `z-[10]` 等の角括弧構文は禁止。定義済みクラスまたは config 拡張を使用
 - **モーダルダイアログテンプレート**: `docs/modal-dialog-template.md`
   - FlyonUI モーダル実装の必須パターン、アクセシビリティ、エラー表示位置
+- **【必読】レイアウトテンプレート**: `docs/layout-template.md`
+  - ページコンポーネントで `h-screen` / `min-h-screen` は禁止。`flex-1` を使用すること
+  - スクロールは `overflow-y-auto` で制御。フッターが常に表示されるレイアウト設計
 - **バックエンド詳細**: `docs/backend-guidelines.md`
   - Aspire構成、DB設計、マイグレーション、コントローラ設計、EF Core最適化等
 - **例外処理**: `docs/global-exception-handling.md`
@@ -98,6 +101,8 @@
 
 ## アンチパターン・禁止事項（**必ず遵守**）
 - **コードやUIのリファクタリング時に業務ロジックを絶対に変更しない**変更が必要な場合は必ず報告し確認をとること（実装プラン上の最優先）
+- **ページコンポーネントで h-screen / min-h-screen 禁止**（`flex-1` を使用。詳細は `docs/layout-template.md` 参照）
+- **レイアウト構造を変更する前に必ず `docs/layout-template.md` を確認すること**
 - **サービス間の直接参照禁止**
 - **型宣言の重複定義禁止**（DTO/リクエスト・レスポンス型は必ず単一ソースで管理）
 - **API直叩き禁止**（フロントエンドからWebApiへ直接fetch禁止。Server Actions/Next.js API Routes経由のみ許可）

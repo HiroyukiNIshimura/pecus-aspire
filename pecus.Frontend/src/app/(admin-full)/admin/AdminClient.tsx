@@ -48,7 +48,7 @@ export default function AdminClient({
   }, [clientError, router]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay isLoading={showLoading} message="読み込み中..." />
 
       <AdminHeader userInfo={userInfo} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} loading={showLoading} />

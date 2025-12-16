@@ -24,7 +24,7 @@ export default function ErrorTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="flex-1 bg-base-200">
       {/* コントロールパネル */}
       <div className="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">

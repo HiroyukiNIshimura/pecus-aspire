@@ -12,6 +12,7 @@
 - [frontend-guidelines.md](./frontend-guidelines.md) — フロントエンド実装のガイドライン（SSR/Server Actions 等）。
 - [frontend-url-security.md](./frontend-url-security.md) — フロントでの URL/ルーティングに関するセキュリティ指針。
 - [global-exception-handling.md](./global-exception-handling.md) — 例外処理とグローバルフィルタの設計。
+- [layout-template.md](./layout-template.md) — **【必読】レイアウトテンプレート設計ガイドライン（h-screen/min-h-screen 禁止ルール）**。
 - [modal-dialog-template.md](./modal-dialog-template.md) — モーダルダイアログ実装リファレンス（AI エージェント向け）。
 - [ssr-design-guidelines.md](./ssr-design-guidelines.md) — SSR設計ガイドライン（Server/Client Component の使い分け）。
 - [tailwind-arbitrary-values.md](./tailwind-arbitrary-values.md) — Tailwind CSS 任意値（`z-[10]` 等）禁止ルール。

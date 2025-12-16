@@ -76,7 +76,7 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       <LoadingOverlay isLoading={isSubmitting} message="更新中..." />
 
       {/* Sticky Navigation Header */}
