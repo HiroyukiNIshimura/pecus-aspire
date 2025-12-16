@@ -36,9 +36,9 @@ public sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvide
                 [new OpenApiSecuritySchemeReference("Bearer", document)] = []
             };
 
-            if (document.Paths is not null)
+            if (document.Paths is { } paths)
             {
-                foreach (var operation in document.Paths.Values.SelectMany(path => path.Operations))
+                foreach (var operation in paths.Values.SelectMany(path => path.Operations ?? []))
                 {
                     operation.Value.Security ??= new List<OpenApiSecurityRequirement>();
                     operation.Value.Security.Add(securityRequirement);
