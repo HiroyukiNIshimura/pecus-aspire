@@ -12,11 +12,11 @@ export type OrganizationSettingResponse = {
     /**
      * タスク超過チェックの閾値（日数）
      */
-    taskOverdueThreshold: number;
+    taskOverdueThreshold: number | string;
     /**
      * 週間レポートの配信曜日（0=未設定/日曜起点などクライアント定義）
      */
-    weeklyReportDeliveryDay: number;
+    weeklyReportDeliveryDay: number | string;
     /**
      * メール配信元のメールアドレス
      */
@@ -25,13 +25,19 @@ export type OrganizationSettingResponse = {
      * メール配信元のFrom（表示名）
      */
     mailFromName?: string | null;
+    /**
+     * 利用する生成APIのベンダー種類
+     */
     generativeApiVendor: GenerativeApiVendor;
     /**
      * 生成APIキー
      */
     generativeApiKey?: string | null;
+    /**
+     * 利用プラン
+     */
     plan: OrganizationPlan;
-    helpNotificationTarget?: HelpNotificationTarget;
+    helpNotificationTarget?: (null | HelpNotificationTarget);
     /**
      * タスク作成時に見積もりを必須とするか
      */
@@ -43,10 +49,10 @@ export type OrganizationSettingResponse = {
     /**
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
-    dashboardHelpCommentMaxCount: number;
+    dashboardHelpCommentMaxCount: number | string;
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

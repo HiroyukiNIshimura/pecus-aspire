@@ -9,7 +9,7 @@ export type MasterGenreResponse = {
     /**
      * ジャンルID
      */
-    id: number;
+    id: number | string;
     /**
      * ジャンル名
      */
@@ -25,6 +25,6 @@ export type MasterGenreResponse = {
     /**
      * 表示順
      */
-    displayOrder?: number;
+    displayOrder?: number | string;
 };
 

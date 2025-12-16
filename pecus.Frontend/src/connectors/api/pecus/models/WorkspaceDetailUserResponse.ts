@@ -10,11 +10,11 @@ export type WorkspaceDetailUserResponse = {
     /**
      * ユーザーID
      */
-    id?: number;
+    id?: number | string;
     /**
      * ユーザー名
      */
-    userName?: string | null;
+    userName?: string;
     /**
      * メールアドレス
      */
@@ -23,7 +23,7 @@ export type WorkspaceDetailUserResponse = {
      * アイデンティティアイコン URL
      */
     identityIconUrl?: string | null;
-    workspaceRole?: WorkspaceRole;
+    workspaceRole?: (null | WorkspaceRole);
     /**
      * アクティブフラグ
      */

@@ -14,7 +14,7 @@ export type WorkspaceItemResponse = {
     /**
      * メッセージ
      */
-    message?: string | null;
-    workspaceItem?: WorkspaceItemDetailResponse;
+    message?: string;
+    workspaceItem?: (null | WorkspaceItemDetailResponse);
 };
 

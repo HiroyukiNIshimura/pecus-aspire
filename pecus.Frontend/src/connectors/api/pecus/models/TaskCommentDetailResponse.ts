@@ -10,15 +10,15 @@ export type TaskCommentDetailResponse = {
     /**
      * コメントID
      */
-    id: number;
+    id: number | string;
     /**
      * タスクID
      */
-    workspaceTaskId?: number;
+    workspaceTaskId?: number | string;
     /**
      * コメントしたユーザーID
      */
-    userId?: number;
+    userId?: number | string;
     /**
      * コメントしたユーザー名
      */
@@ -30,8 +30,8 @@ export type TaskCommentDetailResponse = {
     /**
      * コメント内容
      */
-    content?: string | null;
-    commentType?: TaskCommentType;
+    content?: string;
+    commentType?: (null | TaskCommentType);
     /**
      * 削除済みフラグ
      */
@@ -51,6 +51,6 @@ export type TaskCommentDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

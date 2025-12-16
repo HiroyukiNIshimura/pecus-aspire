@@ -17,7 +17,7 @@ export type LoginResponse = {
     /**
      * トークンタイプ（常に "Bearer"）
      */
-    tokenType?: string | null;
+    tokenType?: string;
     /**
      * トークンの有効期限（UTC）
      */
@@ -25,11 +25,11 @@ export type LoginResponse = {
     /**
      * トークンの有効時間（秒）
      */
-    expiresIn?: number;
+    expiresIn?: number | string;
     /**
      * ユーザーID
      */
-    userId?: number;
+    userId?: number | string;
     /**
      * ログインID
      */
@@ -42,7 +42,7 @@ export type LoginResponse = {
      * メールアドレス
      */
     email: string;
-    avatarType?: AvatarType;
+    avatarType?: (null | AvatarType);
     /**
      * アイデンティティアイコンURL
      */
@@ -50,7 +50,7 @@ export type LoginResponse = {
     /**
      * ユーザーが持つロール一覧
      */
-    roles?: Array<RoleInfoResponse> | null;
+    roles?: Array<RoleInfoResponse>;
     /**
      * リフレッシュトークン
      */
@@ -59,7 +59,7 @@ export type LoginResponse = {
      * リフレッシュトークンの有効期限（UTC）
      */
     refreshExpiresAt?: string | null;
-    device?: LoginDeviceInfo;
-    landingPage?: LandingPage;
+    device?: (null | LoginDeviceInfo);
+    landingPage?: (null | LandingPage);
 };
 

@@ -14,7 +14,7 @@ export type TaskCommentResponse = {
     /**
      * メッセージ
      */
-    message?: string | null;
-    taskComment?: TaskCommentDetailResponse;
+    message?: string;
+    taskComment?: (null | TaskCommentDetailResponse);
 };
 

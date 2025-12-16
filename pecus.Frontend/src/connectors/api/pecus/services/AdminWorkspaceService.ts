@@ -4,13 +4,13 @@
 /* eslint-disable */
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
+import type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } from '../models/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics';
+import type { PagedResponseOfWorkspaceUserDetailResponseAndObject } from '../models/PagedResponseOfWorkspaceUserDetailResponseAndObject';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { WorkspaceDetailResponse } from '../models/WorkspaceDetailResponse';
-import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
-import type { WorkspaceUserDetailResponseObjectPagedResponse } from '../models/WorkspaceUserDetailResponseObjectPagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -22,7 +22,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static postApiAdminWorkspaces(
-        requestBody?: CreateWorkspaceRequest,
+        requestBody: CreateWorkspaceRequest,
     ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -42,15 +42,15 @@ export class AdminWorkspaceService {
      * @param isActive
      * @param genreId
      * @param name
-     * @returns WorkspaceListItemResponseWorkspaceStatisticsPagedResponse OK
+     * @returns PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics OK
      * @throws ApiError
      */
     public static getApiAdminWorkspaces(
-        page?: number,
+        page?: number | string,
         isActive?: boolean,
-        genreId?: number,
+        genreId?: number | string,
         name?: string,
-    ): CancelablePromise<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/workspaces',
@@ -72,7 +72,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static getApiAdminWorkspaces1(
-        id: number,
+        id: number | string,
     ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,8 +94,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static putApiAdminWorkspaces(
-        id: number,
-        requestBody?: UpdateWorkspaceRequest,
+        id: number | string,
+        requestBody: UpdateWorkspaceRequest,
     ): CancelablePromise<WorkspaceDetailResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -120,7 +120,7 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static deleteApiAdminWorkspaces(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -142,8 +142,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesDeactivate(
-        id: number,
-        requestBody?: number,
+        id: number | string,
+        requestBody: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -168,8 +168,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesActivate(
-        id: number,
-        requestBody?: number,
+        id: number | string,
+        requestBody: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -194,8 +194,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static postApiAdminWorkspacesUsers(
-        id: number,
-        requestBody?: AddUserToWorkspaceRequest,
+        id: number | string,
+        requestBody: AddUserToWorkspaceRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -217,14 +217,14 @@ export class AdminWorkspaceService {
      * @param id ワークスペースID
      * @param page
      * @param activeOnly
-     * @returns WorkspaceUserDetailResponseObjectPagedResponse OK
+     * @returns PagedResponseOfWorkspaceUserDetailResponseAndObject OK
      * @throws ApiError
      */
     public static getApiAdminWorkspacesUsers(
-        id: number,
-        page?: number,
+        id: number | string,
+        page?: number | string,
         activeOnly?: boolean,
-    ): CancelablePromise<WorkspaceUserDetailResponseObjectPagedResponse> {
+    ): CancelablePromise<PagedResponseOfWorkspaceUserDetailResponseAndObject> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/workspaces/{id}/users',
@@ -248,8 +248,8 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static deleteApiAdminWorkspacesUsers(
-        id: number,
-        userId: number,
+        id: number | string,
+        userId: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -275,9 +275,9 @@ export class AdminWorkspaceService {
      * @throws ApiError
      */
     public static patchApiAdminWorkspacesUsersRole(
-        id: number,
-        userId: number,
-        requestBody?: UpdateWorkspaceUserRoleRequest,
+        id: number | string,
+        userId: number | string,
+        requestBody: UpdateWorkspaceUserRoleRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

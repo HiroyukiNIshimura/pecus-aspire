@@ -2,31 +2,31 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceItemDetailResponse } from './WorkspaceItemDetailResponse';
+import type { ActivityResponse } from './ActivityResponse';
 /**
  * ページネーション付きレスポンス
  */
-export type WorkspaceItemDetailResponsePagedResponse = {
+export type PagedResponseOfActivityResponse = {
     /**
      * データのリスト
      */
-    data: Array<WorkspaceItemDetailResponse>;
+    data: Array<ActivityResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */
-    currentPage?: number;
+    currentPage?: number | string;
     /**
      * 1ページあたりのアイテム数
      */
-    pageSize?: number;
+    pageSize?: number | string;
     /**
      * 総アイテム数
      */
-    totalCount?: number;
+    totalCount?: number | string;
     /**
      * 総ページ数
      */
-    totalPages?: number;
+    totalPages?: number | string;
     /**
      * 前のページが存在するか
      */

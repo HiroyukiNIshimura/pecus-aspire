@@ -10,22 +10,22 @@ export type DashboardPersonalSummaryResponse = {
     /**
      * 担当中タスク数（未完了・未破棄）
      */
-    assignedCount: number;
+    assignedCount: number | string;
     /**
      * 完了タスク数（指定期間内）
      */
-    completedCount: number;
+    completedCount: number | string;
     /**
      * 期限切れタスク数
      */
-    overdueCount: number;
+    overdueCount: number | string;
     /**
      * 今週期限タスク数
      */
-    dueThisWeekCount: number;
+    dueThisWeekCount: number | string;
     /**
      * 今週完了したタスク数（ActivityベースではなくCompletedAtベース）
      */
-    completedThisWeekCount: number;
+    completedThisWeekCount: number | string;
 };
 

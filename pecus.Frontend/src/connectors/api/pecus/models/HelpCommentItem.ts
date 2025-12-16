@@ -9,7 +9,7 @@ export type HelpCommentItem = {
     /**
      * コメントID
      */
-    commentId: number;
+    commentId: number | string;
     /**
      * コメント内容
      */
@@ -21,7 +21,7 @@ export type HelpCommentItem = {
     /**
      * コメント投稿者ID
      */
-    commentUserId: number;
+    commentUserId: number | string;
     /**
      * コメント投稿者名
      */
@@ -33,11 +33,11 @@ export type HelpCommentItem = {
     /**
      * タスクID
      */
-    taskId: number;
+    taskId: number | string;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    taskSequence: number;
+    taskSequence: number | string;
     /**
      * タスク内容
      */
@@ -45,7 +45,7 @@ export type HelpCommentItem = {
     /**
      * タスク担当者ID
      */
-    taskAssigneeId?: number | null;
+    taskAssigneeId?: number | string | null;
     /**
      * タスク担当者名
      */
@@ -53,7 +53,7 @@ export type HelpCommentItem = {
     /**
      * ワークスペースID
      */
-    workspaceId: number;
+    workspaceId: number | string;
     /**
      * ワークスペースコード
      */
@@ -65,7 +65,7 @@ export type HelpCommentItem = {
     /**
      * アイテムID
      */
-    itemId: number;
+    itemId: number | string;
     /**
      * アイテムコード（PROJ-42形式）
      */

@@ -10,7 +10,7 @@ export type WorkspaceListItemResponse = {
     /**
      * ワークスペースID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペース名
      */
@@ -26,7 +26,7 @@ export type WorkspaceListItemResponse = {
     /**
      * 組織ID
      */
-    organizationId?: number;
+    organizationId?: number | string;
     /**
      * 組織名
      */
@@ -34,7 +34,7 @@ export type WorkspaceListItemResponse = {
     /**
      * ジャンルID
      */
-    genreId?: number | null;
+    genreId?: number | string | null;
     /**
      * ジャンル名
      */
@@ -46,7 +46,7 @@ export type WorkspaceListItemResponse = {
     /**
      * アクティブなアイテム数
      */
-    activeItemCount?: number;
+    activeItemCount?: number | string;
     /**
      * 作成日時
      */
@@ -62,11 +62,11 @@ export type WorkspaceListItemResponse = {
     /**
      * 参加者数（アクティブなワークスペースユーザーの数）
      */
-    memberCount?: number;
+    memberCount?: number | string;
     /**
      * 参加しているユーザー一覧
      */
-    members?: Array<WorkspaceUserItem> | null;
-    owner?: WorkspaceUserItem;
+    members?: any[] | null;
+    owner?: (null | WorkspaceUserItem);
 };
 

@@ -9,7 +9,7 @@ export type SkillDetailResponse = {
     /**
      * スキルID
      */
-    id: number;
+    id: number | string;
     /**
      * スキル名
      */
@@ -21,7 +21,7 @@ export type SkillDetailResponse = {
     /**
      * 組織ID
      */
-    organizationId?: number;
+    organizationId?: number | string;
     /**
      * 作成日時
      */
@@ -29,7 +29,7 @@ export type SkillDetailResponse = {
     /**
      * 作成者ユーザーID
      */
-    createdByUserId?: number | null;
+    createdByUserId?: number | string | null;
     /**
      * 更新日時
      */
@@ -37,7 +37,7 @@ export type SkillDetailResponse = {
     /**
      * 更新者ユーザーID
      */
-    updatedByUserId?: number | null;
+    updatedByUserId?: number | string | null;
     /**
      * スキルのアクティブ/非アクティブ状態
      */
@@ -45,10 +45,10 @@ export type SkillDetailResponse = {
     /**
      * ユーザー数
      */
-    userCount?: number;
+    userCount?: number | string;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

@@ -9,7 +9,7 @@ export type UserSkillResponse = {
     /**
      * スキルID
      */
-    id: number;
+    id: number | string;
     /**
      * スキル名
      */

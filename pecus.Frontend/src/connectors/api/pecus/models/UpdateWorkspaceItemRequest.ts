@@ -18,8 +18,8 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * 作業中のユーザーID（NULL可）
      */
-    assigneeId?: number | null;
-    priority?: TaskPriority;
+    assigneeId?: number | string | null;
+    priority?: (null | TaskPriority);
     /**
      * 期限日時(ISO 8601 形式)
      */
@@ -35,7 +35,7 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * コミッターユーザーID（NULL可）
      */
-    committerId?: number | null;
+    committerId?: number | string | null;
     /**
      * アクティブフラグ
      */
@@ -43,10 +43,10 @@ export type UpdateWorkspaceItemRequest = {
     /**
      * タグ名のリスト（NULL: 変更なし、空配列: 全タグ削除、配列: 指定タグに置換）
      */
-    tagNames?: Array<string> | null;
+    tagNames?: any[] | null;
     /**
      * アイテムの楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

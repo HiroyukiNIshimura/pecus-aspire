@@ -10,14 +10,14 @@ export type WorkspaceItemRelationsResponse = {
     /**
      * 関連元としての関連一覧（このアイテムから他へ）
      */
-    relationsFrom?: Array<WorkspaceItemRelationResponse> | null;
+    relationsFrom?: Array<WorkspaceItemRelationResponse>;
     /**
      * 関連先としての関連一覧（他からこのアイテムへ）
      */
-    relationsTo?: Array<WorkspaceItemRelationResponse> | null;
+    relationsTo?: Array<WorkspaceItemRelationResponse>;
     /**
      * 全関連数
      */
-    totalCount?: number;
+    totalCount?: number | string;
 };
 

@@ -9,7 +9,7 @@ export type GenreCount = {
     /**
      * ジャンルID
      */
-    genreId: number;
+    genreId: number | string;
     /**
      * ジャンル名
      */
@@ -17,6 +17,6 @@ export type GenreCount = {
     /**
      * ワークスペース数
      */
-    count: number;
+    count: number | string;
 };
 

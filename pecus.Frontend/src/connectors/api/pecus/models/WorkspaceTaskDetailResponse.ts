@@ -11,31 +11,31 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * リスト内でのインデックス（Reactのkey用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     /**
      * タスクID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId?: number;
+    workspaceItemId?: number | string;
     /**
      * ワークスペースアイテム内でのシーケンス番号
      */
-    sequence?: number;
+    sequence?: number | string;
     /**
      * ワークスペースID
      */
-    workspaceId?: number;
+    workspaceId?: number | string;
     /**
      * 組織ID
      */
-    organizationId?: number;
+    organizationId?: number | string;
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number;
+    assignedUserId?: number | string;
     /**
      * 担当ユーザー名
      */
@@ -47,7 +47,7 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * 作成ユーザーID
      */
-    createdByUserId?: number;
+    createdByUserId?: number | string;
     /**
      * 作成ユーザー名
      */
@@ -59,11 +59,11 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * タスク内容
      */
-    content?: string | null;
+    content?: string;
     /**
      * タスク種類ID
      */
-    taskTypeId?: number;
+    taskTypeId?: number | string;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
@@ -76,7 +76,7 @@ export type WorkspaceTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 開始日時
      */
@@ -88,15 +88,15 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | null;
+    estimatedHours?: number | string | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | null;
+    actualHours?: number | string | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number;
+    progressPercentage?: number | string;
     /**
      * 完了フラグ
      */
@@ -128,30 +128,23 @@ export type WorkspaceTaskDetailResponse = {
     /**
      * コメント数
      */
-    commentCount?: number;
+    commentCount?: number | string;
     /**
      * コメントタイプ別件数（キーは TaskCommentType。NULL は Normal として集計）
      */
-    commentTypeCounts?: {
-        Normal?: number;
-        Memo?: number;
-        HelpWanted?: number;
-        NeedReply?: number;
-        Reminder?: number;
-        Urge?: number;
-    } | null;
+    commentTypeCounts?: Record<string, number | string>;
     /**
      * 先行タスクID（このタスクが完了しないと着手できない）
      */
-    predecessorTaskId?: number | null;
-    predecessorTask?: PredecessorTaskInfo;
+    predecessorTaskId?: number | string | null;
+    predecessorTask?: (null | PredecessorTaskInfo);
     /**
      * このタスクを待っている後続タスク数
      */
-    successorTaskCount?: number;
+    successorTaskCount?: number | string;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

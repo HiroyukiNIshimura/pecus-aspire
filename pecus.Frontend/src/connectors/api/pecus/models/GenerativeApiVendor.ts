@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type GenerativeApiVendor = 'None' | 'OpenAi' | 'AzureOpenAi' | 'Anthropic' | 'GoogleGemini';
+/**
+ * 利用する生成APIベンダーの種類
+ */
+export type GenerativeApiVendor = number;

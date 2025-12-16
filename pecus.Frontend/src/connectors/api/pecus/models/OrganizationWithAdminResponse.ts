@@ -8,7 +8,13 @@ import type { UserDetailResponse } from './UserDetailResponse';
  * 組織登録レスポンス（管理者ユーザー情報含む）
  */
 export type OrganizationWithAdminResponse = {
+    /**
+     * 組織情報
+     */
     organization: OrganizationResponse;
+    /**
+     * 管理者ユーザー情報
+     */
     adminUser: UserDetailResponse;
 };
 

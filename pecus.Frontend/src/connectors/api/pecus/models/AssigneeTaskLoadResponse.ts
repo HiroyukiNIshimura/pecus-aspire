@@ -9,7 +9,7 @@ export type AssigneeTaskLoadResponse = {
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number;
+    assignedUserId?: number | string;
     /**
      * 期限日（UTC, 日単位）
      */
@@ -17,15 +17,15 @@ export type AssigneeTaskLoadResponse = {
     /**
      * しきい値（組織設定 TaskOverdueThreshold）
      */
-    threshold?: number;
+    threshold?: number | string;
     /**
      * 現在の未完了・未破棄タスク数
      */
-    activeTaskCount?: number;
+    activeTaskCount?: number | string;
     /**
      * 新規作成を含めた想定タスク数
      */
-    projectedTaskCount?: number;
+    projectedTaskCount?: number | string;
     /**
      * しきい値を超過しているか
      */

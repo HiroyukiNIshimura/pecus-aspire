@@ -18,8 +18,8 @@ export type CreateWorkspaceItemRequest = {
     /**
      * 作業中のユーザーID（NULL可）
      */
-    assigneeId?: number | null;
-    priority?: TaskPriority;
+    assigneeId?: number | string | null;
+    priority?: (null | TaskPriority);
     /**
      * 期限日時(ISO 8601 形式)
      */
@@ -31,11 +31,11 @@ export type CreateWorkspaceItemRequest = {
     /**
      * コミッターユーザーID（NULL可）
      */
-    committerId?: number | null;
+    committerId?: number | string | null;
     /**
      * タグ名のリスト（存在しないタグは自動作成）
      */
-    tagNames?: Array<string> | null;
+    tagNames?: any[] | null;
     /**
      * 一時添付ファイルのセッションID（エディタでアップロードした画像を正式化するため）
      */
@@ -43,6 +43,6 @@ export type CreateWorkspaceItemRequest = {
     /**
      * 一時添付ファイルIDのリスト（コンテンツ内で参照されている一時ファイル）
      */
-    tempAttachmentIds?: Array<string> | null;
+    tempAttachmentIds?: any[] | null;
 };
 

@@ -2,7 +2,4 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-/**
- * タスクのソート項目
- */
-export type TaskSortBy = 'Sequence' | 'Priority' | 'DueDate';
+export type TaskSortBy = number;

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { IFormFile } from '../models/IFormFile';
 import type { TempAttachmentResponse } from '../models/TempAttachmentResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -11,18 +12,15 @@ export class WorkspaceItemTempAttachmentService {
      * 一時添付ファイルをアップロード（アイテム作成前用）
      * @param workspaceId ワークスペースID
      * @param sessionId セッション識別子（フロントで生成したUUID等）
-     * @param formData
+     * @param formData アップロードするファイル
      * @returns TempAttachmentResponse Created
      * @throws ApiError
      */
     public static postApiWorkspacesTempAttachments(
-        workspaceId: number,
+        workspaceId: number | string,
         sessionId: string,
-        formData?: {
-            /**
-             * アップロードするファイル
-             */
-            file?: Blob;
+        formData: {
+            file?: IFormFile;
         },
     ): CancelablePromise<TempAttachmentResponse> {
         return __request(OpenAPI, {
@@ -48,7 +46,7 @@ export class WorkspaceItemTempAttachmentService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesTempAttachments(
-        workspaceId: number,
+        workspaceId: number | string,
         sessionId: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
@@ -72,7 +70,7 @@ export class WorkspaceItemTempAttachmentService {
      * @throws ApiError
      */
     public static getApiWorkspacesTempAttachments(
-        workspaceId: number,
+        workspaceId: number | string,
         sessionId: string,
         fileName: string,
     ): CancelablePromise<any> {

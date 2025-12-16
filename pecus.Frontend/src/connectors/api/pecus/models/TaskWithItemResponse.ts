@@ -11,23 +11,23 @@ export type TaskWithItemResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     /**
      * タスクID
      */
-    taskId: number;
+    taskId: number | string;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    sequence: number;
+    sequence: number | string;
     /**
      * タスク内容
      */
-    taskContent: string | null;
+    taskContent: string;
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | null;
+    taskTypeId?: number | string | null;
     /**
      * タスク種類コード
      */
@@ -40,7 +40,7 @@ export type TaskWithItemResponse = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 開始日時
      */
@@ -52,15 +52,15 @@ export type TaskWithItemResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | null;
+    estimatedHours?: number | string | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | null;
+    actualHours?: number | string | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number;
+    progressPercentage?: number | string;
     /**
      * 完了フラグ
      */
@@ -76,7 +76,7 @@ export type TaskWithItemResponse = {
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number;
+    assignedUserId?: number | string;
     /**
      * 担当ユーザー名
      */
@@ -96,23 +96,23 @@ export type TaskWithItemResponse = {
     /**
      * アイテムID
      */
-    itemId: number;
+    itemId: number | string;
     /**
      * アイテムコード
      */
-    itemCode: string | null;
+    itemCode: string;
     /**
      * アイテム件名
      */
-    itemSubject: string | null;
+    itemSubject: string;
     /**
      * ワークスペースコード
      */
-    workspaceCode: string | null;
+    workspaceCode: string;
     /**
      * アイテムオーナーユーザーID
      */
-    itemOwnerId?: number;
+    itemOwnerId?: number | string;
     /**
      * アイテムオーナーユーザー名
      */
@@ -124,7 +124,7 @@ export type TaskWithItemResponse = {
     /**
      * アイテムコミッターユーザーID
      */
-    itemCommitterId?: number | null;
+    itemCommitterId?: number | string | null;
     /**
      * アイテムコミッターユーザー名
      */
@@ -136,13 +136,6 @@ export type TaskWithItemResponse = {
     /**
      * コメントタイプ別件数
      */
-    commentTypeCounts?: {
-        Normal?: number;
-        Memo?: number;
-        HelpWanted?: number;
-        NeedReply?: number;
-        Reminder?: number;
-        Urge?: number;
-    } | null;
+    commentTypeCounts?: Record<string, number | string>;
 };
 

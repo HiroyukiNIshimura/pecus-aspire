@@ -19,7 +19,7 @@ export class EntrancePasswordService {
      * @throws ApiError
      */
     public static postApiEntrancePasswordSet(
-        requestBody?: SetUserPasswordRequest,
+        requestBody: SetUserPasswordRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -40,7 +40,7 @@ export class EntrancePasswordService {
      * @throws ApiError
      */
     public static postApiEntrancePasswordRequestReset(
-        requestBody?: RequestPasswordResetRequest,
+        requestBody: RequestPasswordResetRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -58,7 +58,7 @@ export class EntrancePasswordService {
      * @throws ApiError
      */
     public static postApiEntrancePasswordReset(
-        requestBody?: ResetPasswordRequest,
+        requestBody: ResetPasswordRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'POST',

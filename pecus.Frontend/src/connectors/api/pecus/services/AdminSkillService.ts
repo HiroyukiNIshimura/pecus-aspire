@@ -3,8 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateSkillRequest } from '../models/CreateSkillRequest';
+import type { PagedResponseOfSkillListItemResponseAndSkillStatistics } from '../models/PagedResponseOfSkillListItemResponseAndSkillStatistics';
 import type { SkillDetailResponse } from '../models/SkillDetailResponse';
-import type { SkillListItemResponseSkillStatisticsPagedResponse } from '../models/SkillListItemResponseSkillStatisticsPagedResponse';
 import type { SkillResponse } from '../models/SkillResponse';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateSkillRequest } from '../models/UpdateSkillRequest';
@@ -19,7 +19,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static postApiAdminSkills(
-        requestBody?: CreateSkillRequest,
+        requestBody: CreateSkillRequest,
     ): CancelablePromise<SkillResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -42,15 +42,15 @@ export class AdminSkillService {
      * @param isActive
      * @param unusedOnly
      * @param name
-     * @returns SkillListItemResponseSkillStatisticsPagedResponse OK
+     * @returns PagedResponseOfSkillListItemResponseAndSkillStatistics OK
      * @throws ApiError
      */
     public static getApiAdminSkills(
-        page?: number,
+        page?: number | string,
         isActive?: boolean,
         unusedOnly?: boolean,
         name?: string,
-    ): CancelablePromise<SkillListItemResponseSkillStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfSkillListItemResponseAndSkillStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/skills',
@@ -72,7 +72,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static getApiAdminSkills1(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SkillDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,8 +94,8 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static putApiAdminSkills(
-        id: number,
-        requestBody?: UpdateSkillRequest,
+        id: number | string,
+        requestBody: UpdateSkillRequest,
     ): CancelablePromise<SkillResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -120,7 +120,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static deleteApiAdminSkills(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -141,7 +141,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static patchApiAdminSkillsDeactivate(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -163,7 +163,7 @@ export class AdminSkillService {
      * @throws ApiError
      */
     public static patchApiAdminSkillsActivate(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

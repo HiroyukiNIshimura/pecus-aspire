@@ -11,6 +11,6 @@ export type CreateTaskCommentRequest = {
      * コメント内容
      */
     content: string;
-    commentType?: TaskCommentType;
+    commentType?: (null | TaskCommentType);
 };
 

@@ -16,7 +16,7 @@ export class TagService {
      * @throws ApiError
      */
     public static postApiTags(
-        requestBody?: CreateTagRequest,
+        requestBody: CreateTagRequest,
     ): CancelablePromise<TagResponse> {
         return __request(OpenAPI, {
             method: 'POST',

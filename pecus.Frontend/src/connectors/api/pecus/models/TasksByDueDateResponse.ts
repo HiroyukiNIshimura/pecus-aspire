@@ -10,7 +10,7 @@ export type TasksByDueDateResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     /**
      * 期限日（日付のみ）
      */
@@ -18,6 +18,6 @@ export type TasksByDueDateResponse = {
     /**
      * その期限日のタスク一覧（アイテムID + タスクID順）
      */
-    tasks: Array<TaskWithItemResponse> | null;
+    tasks: Array<TaskWithItemResponse>;
 };
 

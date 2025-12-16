@@ -17,7 +17,7 @@ export type FileUploadResponse = {
     /**
      * ファイルサイズ（バイト）
      */
-    fileSize?: number;
+    fileSize?: number | string;
     /**
      * ファイル形式
      */

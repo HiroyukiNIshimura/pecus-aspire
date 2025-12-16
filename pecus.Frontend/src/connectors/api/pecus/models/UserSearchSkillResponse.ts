@@ -9,10 +9,10 @@ export type UserSearchSkillResponse = {
     /**
      * スキルID
      */
-    id?: number;
+    id?: number | string;
     /**
      * スキル名
      */
-    name: string | null;
+    name: string;
 };
 

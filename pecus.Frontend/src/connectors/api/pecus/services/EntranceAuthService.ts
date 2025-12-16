@@ -18,7 +18,7 @@ export class EntranceAuthService {
      * @throws ApiError
      */
     public static postApiEntranceAuthLogin(
-        requestBody?: LoginRequest,
+        requestBody: LoginRequest,
     ): CancelablePromise<LoginResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -39,7 +39,7 @@ export class EntranceAuthService {
      * @throws ApiError
      */
     public static postApiEntranceRefresh(
-        requestBody?: RefreshRequest,
+        requestBody: RefreshRequest,
     ): CancelablePromise<RefreshResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -60,7 +60,7 @@ export class EntranceAuthService {
      * @throws ApiError
      */
     public static postApiEntranceLogout(
-        requestBody?: RefreshRequest,
+        requestBody: RefreshRequest,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',

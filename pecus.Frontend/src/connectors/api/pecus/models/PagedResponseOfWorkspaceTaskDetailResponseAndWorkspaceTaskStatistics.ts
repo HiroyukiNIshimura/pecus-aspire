@@ -2,32 +2,33 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { SkillListItemResponse } from './SkillListItemResponse';
-import type { SkillStatistics } from './SkillStatistics';
+import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse';
+import type { WorkspaceTaskStatistics } from './WorkspaceTaskStatistics';
 /**
  * ページネーション付きレスポンス（統計情報付き）
  */
-export type SkillListItemResponseSkillStatisticsPagedResponse = {
+export type PagedResponseOfWorkspaceTaskDetailResponseAndWorkspaceTaskStatistics = {
+    summary?: (null | WorkspaceTaskStatistics);
     /**
      * データのリスト
      */
-    data: Array<SkillListItemResponse>;
+    data: Array<WorkspaceTaskDetailResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */
-    currentPage?: number;
+    currentPage?: number | string;
     /**
      * 1ページあたりのアイテム数
      */
-    pageSize?: number;
+    pageSize?: number | string;
     /**
      * 総アイテム数
      */
-    totalCount?: number;
+    totalCount?: number | string;
     /**
      * 総ページ数
      */
-    totalPages?: number;
+    totalPages?: number | string;
     /**
      * 前のページが存在するか
      */
@@ -36,6 +37,5 @@ export type SkillListItemResponseSkillStatisticsPagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
-    summary?: SkillStatistics;
 };
 

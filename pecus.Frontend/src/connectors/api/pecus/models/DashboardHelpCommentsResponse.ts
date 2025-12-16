@@ -14,6 +14,6 @@ export type DashboardHelpCommentsResponse = {
     /**
      * 総件数
      */
-    totalCount: number;
+    totalCount: number | string;
 };
 

@@ -17,6 +17,6 @@ export type UpdateTagRequest = {
     /**
      * タグの楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

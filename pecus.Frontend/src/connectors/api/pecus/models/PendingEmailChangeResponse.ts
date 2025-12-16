@@ -9,7 +9,7 @@ export type PendingEmailChangeResponse = {
     /**
      * 変更予定の新しいメールアドレス
      */
-    newEmail: string | null;
+    newEmail: string;
     /**
      * トークン有効期限（UTC）
      */

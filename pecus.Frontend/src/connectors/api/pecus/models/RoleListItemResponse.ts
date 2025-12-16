@@ -9,7 +9,7 @@ export type RoleListItemResponse = {
     /**
      * ロールID
      */
-    id: number;
+    id: number | string;
     /**
      * ロール名
      */
@@ -25,6 +25,6 @@ export type RoleListItemResponse = {
     /**
      * ロールが持つ権限数
      */
-    permissionCount?: number;
+    permissionCount?: number | string;
 };
 

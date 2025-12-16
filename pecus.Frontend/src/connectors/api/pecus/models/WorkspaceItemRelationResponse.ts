@@ -10,32 +10,32 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 関連ID
      */
-    id: number;
+    id: number | string;
     /**
      * 関連元アイテムID
      */
-    fromItemId?: number;
+    fromItemId?: number | string;
     /**
      * 関連元アイテムコード
      */
-    fromItemCode?: string | null;
+    fromItemCode?: string;
     /**
      * 関連元アイテム件名
      */
-    fromItemSubject?: string | null;
+    fromItemSubject?: string;
     /**
      * 関連先アイテムID
      */
-    toItemId?: number;
+    toItemId?: number | string;
     /**
      * 関連先アイテムコード
      */
-    toItemCode?: string | null;
+    toItemCode?: string;
     /**
      * 関連先アイテム件名
      */
-    toItemSubject?: string | null;
-    relationType?: RelationType;
+    toItemSubject?: string;
+    relationType?: (null | RelationType);
     /**
      * 作成日時
      */
@@ -43,10 +43,10 @@ export type WorkspaceItemRelationResponse = {
     /**
      * 作成者ID
      */
-    createdByUserId?: number;
+    createdByUserId?: number | string;
     /**
      * 作成者ユーザー名
      */
-    createdByUsername?: string | null;
+    createdByUsername?: string;
 };
 

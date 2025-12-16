@@ -10,19 +10,19 @@ export type MyCommitterWorkspaceResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     /**
      * ワークスペースID
      */
-    workspaceId: number;
+    workspaceId: number | string;
     /**
      * ワークスペースコード
      */
-    workspaceCode: string | null;
+    workspaceCode: string;
     /**
      * ワークスペース名
      */
-    workspaceName: string | null;
+    workspaceName: string;
     /**
      * ジャンルアイコン
      */
@@ -34,27 +34,27 @@ export type MyCommitterWorkspaceResponse = {
     /**
      * コミッターになっているアイテム数
      */
-    itemCount: number;
+    itemCount: number | string;
     /**
      * 未完了タスク数
      */
-    activeTaskCount: number;
+    activeTaskCount: number | string;
     /**
      * 完了済みタスク数
      */
-    completedTaskCount: number;
+    completedTaskCount: number | string;
     /**
      * 期限超過タスク数
      */
-    overdueTaskCount: number;
+    overdueTaskCount: number | string;
     /**
      * ヘルプコメント数
      */
-    helpCommentCount: number;
+    helpCommentCount: number | string;
     /**
      * 督促コメント数
      */
-    reminderCommentCount: number;
+    reminderCommentCount: number | string;
     /**
      * 最も古い期限日（ソート用、未完了タスクのみ対象）
      */

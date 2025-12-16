@@ -13,11 +13,11 @@ export type UserDetailResponse = {
     /**
      * ユーザーID
      */
-    id: number;
+    id: number | string;
     /**
      * 組織ID
      */
-    organizationId?: number | null;
+    organizationId?: number | string | null;
     /**
      * ログインID
      */
@@ -30,7 +30,7 @@ export type UserDetailResponse = {
      * メールアドレス
      */
     email: string;
-    avatarType?: AvatarType;
+    avatarType?: (null | AvatarType);
     /**
      * ユーザーがアップロードしたカスタムアバター画像のパス（ファイル名）
      * AvatarTypeに関わらず、過去にアップロードされたファイルのパスを保持（再利用可能）
@@ -49,7 +49,7 @@ export type UserDetailResponse = {
     /**
      * ユーザーのスキル一覧
      */
-    skills?: Array<UserSkillResponse> | null;
+    skills?: Array<UserSkillResponse>;
     /**
      * 管理者権限を持つかどうか
      */
@@ -69,7 +69,10 @@ export type UserDetailResponse = {
     /**
      * ユーザーの楽観的ロック用RowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
+    /**
+     * ユーザー設定
+     */
     setting: UserSettingResponse;
 };
 

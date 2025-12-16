@@ -9,7 +9,7 @@ export type RoleInfoResponse = {
     /**
      * ロールID
      */
-    id: number;
+    id: number | string;
     /**
      * ロール名
      */

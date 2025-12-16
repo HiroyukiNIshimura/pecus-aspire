@@ -2,4 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type OrganizationPlan = 'Unknown' | 'Free' | 'Standard' | 'Enterprise';
+/**
+ * 組織の利用プラン
+ */
+export type OrganizationPlan = number;

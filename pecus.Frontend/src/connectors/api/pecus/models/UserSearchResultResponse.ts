@@ -11,16 +11,16 @@ export type UserSearchResultResponse = {
     /**
      * ユーザーID
      */
-    id?: number;
+    id?: number | string;
     /**
      * ユーザー名
      */
-    username: string | null;
+    username: string;
     /**
      * メールアドレス
      */
-    email: string | null;
-    avatarType?: AvatarType;
+    email: string;
+    avatarType?: (null | AvatarType);
     /**
      * アイデンティティアイコンURL
      */
@@ -28,6 +28,6 @@ export type UserSearchResultResponse = {
     /**
      * ユーザーが持つスキル一覧
      */
-    skills?: Array<UserSearchSkillResponse> | null;
+    skills?: Array<UserSearchSkillResponse>;
 };
 

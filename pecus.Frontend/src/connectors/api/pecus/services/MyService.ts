@@ -3,17 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ActivityPeriod } from '../models/ActivityPeriod';
-import type { ActivityResponsePagedResponse } from '../models/ActivityResponsePagedResponse';
 import type { DashboardTaskFilter } from '../models/DashboardTaskFilter';
-import type { ItemWithTasksResponsePagedResponse } from '../models/ItemWithTasksResponsePagedResponse';
 import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
-import type { MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse } from '../models/MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse';
 import type { MyTaskWorkspaceResponse } from '../models/MyTaskWorkspaceResponse';
 import type { OrganizationResponse } from '../models/OrganizationResponse';
+import type { PagedResponseOfActivityResponse } from '../models/PagedResponseOfActivityResponse';
+import type { PagedResponseOfItemWithTasksResponse } from '../models/PagedResponseOfItemWithTasksResponse';
+import type { PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics } from '../models/PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics';
+import type { PagedResponseOfWorkspaceItemDetailResponse } from '../models/PagedResponseOfWorkspaceItemDetailResponse';
 import type { TasksByDueDateResponse } from '../models/TasksByDueDateResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
-import type { WorkspaceItemDetailResponsePagedResponse } from '../models/WorkspaceItemDetailResponsePagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -22,13 +22,13 @@ export class MyService {
      * 自分のアクティビティ一覧を取得（活動レポート用）
      * @param page ページ番号（1から開始）
      * @param period 期間フィルタ（省略時は全期間）
-     * @returns ActivityResponsePagedResponse OK
+     * @returns PagedResponseOfActivityResponse アクティビティ一覧
      * @throws ApiError
      */
     public static getApiMyActivities(
-        page?: number,
+        page?: number | string,
         period?: ActivityPeriod,
-    ): CancelablePromise<ActivityResponsePagedResponse> {
+    ): CancelablePromise<PagedResponseOfActivityResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/activities',
@@ -85,13 +85,13 @@ export class MyService {
      * ログインユーザーがコミッターとして割り当てられたアイテムとそのタスクを取得します
      * @param page ページ番号（1から始まる）
      * @param workspaceId ワークスペースID（任意）
-     * @returns ItemWithTasksResponsePagedResponse OK
+     * @returns PagedResponseOfItemWithTasksResponse OK
      * @throws ApiError
      */
     public static getApiMyCommitterItems(
-        page?: number,
-        workspaceId?: number,
-    ): CancelablePromise<ItemWithTasksResponsePagedResponse> {
+        page?: number | string,
+        workspaceId?: number | string,
+    ): CancelablePromise<PagedResponseOfItemWithTasksResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/committer-items',
@@ -114,14 +114,14 @@ export class MyService {
      * @param includeArchived アーカイブ済みアイテムを含めるかどうか（デフォルト: false）
      * true の場合、アーカイブ済みアイテムのみ表示
      * false または未指定の場合、アーカイブ済みアイテムを除外
-     * @returns WorkspaceItemDetailResponsePagedResponse OK
+     * @returns PagedResponseOfWorkspaceItemDetailResponse OK
      * @throws ApiError
      */
     public static getApiMyWorkspaceItems(
-        page?: number,
+        page?: number | string,
         relation?: MyItemRelationType,
         includeArchived?: boolean,
-    ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
+    ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/workspace-items',
@@ -156,13 +156,13 @@ export class MyService {
      * ログインユーザーに割り当てられたタスクを全ワークスペース横断で取得
      * @param page ページ番号（1から開始）
      * @param status ステータスフィルター（省略時はすべて表示）
-     * @returns MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse OK
+     * @returns PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics OK
      * @throws ApiError
      */
     public static getApiMyTasks(
-        page?: number,
+        page?: number | string,
         status?: TaskStatusFilter,
-    ): CancelablePromise<MyTaskDetailResponseWorkspaceTaskStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/tasks',
@@ -221,12 +221,12 @@ export class MyService {
     /**
      * ログインユーザーがPINしたアイテム一覧を取得
      * @param page ページ番号（1から開始）
-     * @returns WorkspaceItemDetailResponsePagedResponse OK
+     * @returns PagedResponseOfWorkspaceItemDetailResponse OK
      * @throws ApiError
      */
     public static getApiMyPinnedItems(
-        page?: number,
-    ): CancelablePromise<WorkspaceItemDetailResponsePagedResponse> {
+        page?: number | string,
+    ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/pinned-items',

@@ -10,7 +10,7 @@ export type OrganizationResponse = {
     /**
      * 組織ID
      */
-    id: number;
+    id: number | string;
     /**
      * 組織名
      */
@@ -50,11 +50,14 @@ export type OrganizationResponse = {
     /**
      * 所属ユーザー数
      */
-    userCount?: number;
+    userCount?: number | string;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
+    /**
+     * 組織設定
+     */
     setting: OrganizationSettingResponse;
 };
 

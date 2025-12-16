@@ -11,11 +11,11 @@ export type ItemWithTasksResponse = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     item: TaskItemResponse;
     /**
      * アイテムに紐づくタスクのリスト
      */
-    tasks: Array<WorkspaceTaskDetailResponse> | null;
+    tasks: Array<WorkspaceTaskDetailResponse>;
 };
 

@@ -9,11 +9,11 @@ import type { WorkspaceMode } from './WorkspaceMode';
 export type CreateWorkspaceRequest = {
     name: string;
     description?: string | null;
-    genreId: number;
-    mode?: WorkspaceMode;
+    genreId: number | string;
+    mode?: (null | WorkspaceMode);
     /**
      * オーナーユーザーID（任意）
      */
-    ownerId?: number | null;
+    ownerId?: number | string | null;
 };
 

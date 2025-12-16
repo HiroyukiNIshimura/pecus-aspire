@@ -10,34 +10,34 @@ export type RelatedItemInfo = {
     /**
      * リスト内での一意なインデックス（フロントエンドのReact key用）
      */
-    listIndex?: number;
+    listIndex?: number | string;
     /**
      * 関連ID（削除時に使用）
      */
-    relationId?: number;
+    relationId?: number | string;
     /**
      * アイテムID
      */
-    id?: number;
+    id?: number | string;
     /**
      * 件名
      */
-    subject?: string | null;
+    subject?: string;
     /**
      * コード
      */
-    code?: string | null;
-    relationType?: RelationType;
+    code?: string;
+    relationType?: (null | RelationType);
     /**
      * 関連の方向（このアイテムから見て）
      * "from": このアイテムが関連元
      * "to": このアイテムが関連先
      */
-    direction?: string | null;
+    direction?: string;
     /**
      * オーナーID
      */
-    ownerId?: number | null;
+    ownerId?: number | string | null;
     /**
      * アーカイブ済みかどうか
      */

@@ -2,15 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { UserSettingResponse } from './UserSettingResponse';
+import type { UserDetailResponse } from './UserDetailResponse';
 /**
  * 競合エラーレスポンス（409 Conflict）
  */
-export type UserSettingResponseConcurrencyErrorResponse = {
+export type ConcurrencyErrorResponseOfUserDetailResponse = {
+    current?: (null | UserDetailResponse);
     /**
      * HTTPステータスコード
      */
-    statusCode?: number;
+    statusCode?: number | string;
     /**
      * エラーメッセージ
      */
@@ -19,6 +20,5 @@ export type UserSettingResponseConcurrencyErrorResponse = {
      * エラー詳細（オプション）
      */
     details?: string | null;
-    current?: UserSettingResponse;
 };
 

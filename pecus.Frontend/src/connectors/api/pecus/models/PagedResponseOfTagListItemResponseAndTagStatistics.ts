@@ -2,31 +2,33 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
+import type { TagListItemResponse } from './TagListItemResponse';
+import type { TagStatistics } from './TagStatistics';
 /**
  * ページネーション付きレスポンス（統計情報付き）
  */
-export type WorkspaceUserDetailResponseObjectPagedResponse = {
+export type PagedResponseOfTagListItemResponseAndTagStatistics = {
+    summary?: (null | TagStatistics);
     /**
      * データのリスト
      */
-    data: Array<WorkspaceUserDetailResponse>;
+    data: Array<TagListItemResponse>;
     /**
      * 現在のページ番号（1から始まる）
      */
-    currentPage?: number;
+    currentPage?: number | string;
     /**
      * 1ページあたりのアイテム数
      */
-    pageSize?: number;
+    pageSize?: number | string;
     /**
      * 総アイテム数
      */
-    totalCount?: number;
+    totalCount?: number | string;
     /**
      * 総ページ数
      */
-    totalPages?: number;
+    totalPages?: number | string;
     /**
      * 前のページが存在するか
      */
@@ -35,9 +37,5 @@ export type WorkspaceUserDetailResponseObjectPagedResponse = {
      * 次のページが存在するか
      */
     hasNextPage?: boolean;
-    /**
-     * リストデータの統計情報
-     */
-    summary?: any;
 };
 

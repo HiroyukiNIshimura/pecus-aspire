@@ -4,12 +4,12 @@
 /* eslint-disable */
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
+import type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } from '../models/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UpdateWorkspaceRequest } from '../models/UpdateWorkspaceRequest';
 import type { UpdateWorkspaceUserRoleRequest } from '../models/UpdateWorkspaceUserRoleRequest';
 import type { WorkspaceFullDetailResponse } from '../models/WorkspaceFullDetailResponse';
-import type { WorkspaceListItemResponseWorkspaceStatisticsPagedResponse } from '../models/WorkspaceListItemResponseWorkspaceStatisticsPagedResponse';
 import type { WorkspaceUserDetailResponse } from '../models/WorkspaceUserDetailResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -22,7 +22,7 @@ export class WorkspaceService {
      * @throws ApiError
      */
     public static postApiWorkspaces(
-        requestBody?: CreateWorkspaceRequest,
+        requestBody: CreateWorkspaceRequest,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -42,15 +42,15 @@ export class WorkspaceService {
      * @param isActive
      * @param genreId
      * @param name
-     * @returns WorkspaceListItemResponseWorkspaceStatisticsPagedResponse OK
+     * @returns PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics OK
      * @throws ApiError
      */
     public static getApiWorkspaces(
-        page?: number,
+        page?: number | string,
         isActive?: boolean,
-        genreId?: number,
+        genreId?: number | string,
         name?: string,
-    ): CancelablePromise<WorkspaceListItemResponseWorkspaceStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces',
@@ -74,7 +74,7 @@ export class WorkspaceService {
      */
     public static putApiWorkspaces(
         id: number,
-        requestBody?: UpdateWorkspaceRequest,
+        requestBody: UpdateWorkspaceRequest,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -164,7 +164,7 @@ export class WorkspaceService {
      */
     public static postApiWorkspacesMembers(
         id: number,
-        requestBody?: AddUserToWorkspaceRequest,
+        requestBody: AddUserToWorkspaceRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -219,7 +219,7 @@ export class WorkspaceService {
     public static patchApiWorkspacesMembersRole(
         id: number,
         userId: number,
-        requestBody?: UpdateWorkspaceUserRoleRequest,
+        requestBody: UpdateWorkspaceUserRoleRequest,
     ): CancelablePromise<WorkspaceUserDetailResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -246,7 +246,7 @@ export class WorkspaceService {
      */
     public static postApiWorkspacesActivate(
         id: number,
-        requestBody?: number,
+        requestBody: number | string,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -273,7 +273,7 @@ export class WorkspaceService {
      */
     public static postApiWorkspacesDeactivate(
         id: number,
-        requestBody?: number,
+        requestBody: number | string,
     ): CancelablePromise<WorkspaceFullDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -302,7 +302,7 @@ export class WorkspaceService {
      */
     public static putApiWorkspacesSkills(
         id: number,
-        requestBody?: SetWorkspaceSkillsRequest,
+        requestBody: SetWorkspaceSkillsRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

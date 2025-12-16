@@ -9,6 +9,6 @@ export type DeleteTaskCommentRequest = {
     /**
      * 楽観的ロック用のRowVersion（必須）
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

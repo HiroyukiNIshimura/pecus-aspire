@@ -9,7 +9,7 @@ export type SkillUsageItem = {
     /**
      * スキルID
      */
-    id: number;
+    id: number | string;
     /**
      * スキル名
      */

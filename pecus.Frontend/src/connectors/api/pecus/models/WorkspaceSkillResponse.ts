@@ -9,7 +9,7 @@ export type WorkspaceSkillResponse = {
     /**
      * スキルID
      */
-    id: number;
+    id: number | string;
     /**
      * スキル名
      */

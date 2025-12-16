@@ -2,15 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceTaskDetailResponse } from './WorkspaceTaskDetailResponse';
+import type { OrganizationSettingResponse } from './OrganizationSettingResponse';
 /**
  * 競合エラーレスポンス（409 Conflict）
  */
-export type WorkspaceTaskDetailResponseConcurrencyErrorResponse = {
+export type ConcurrencyErrorResponseOfOrganizationSettingResponse = {
+    current?: (null | OrganizationSettingResponse);
     /**
      * HTTPステータスコード
      */
-    statusCode?: number;
+    statusCode?: number | string;
     /**
      * エラーメッセージ
      */
@@ -19,6 +20,5 @@ export type WorkspaceTaskDetailResponseConcurrencyErrorResponse = {
      * エラー詳細（オプション）
      */
     details?: string | null;
-    current?: WorkspaceTaskDetailResponse;
 };
 

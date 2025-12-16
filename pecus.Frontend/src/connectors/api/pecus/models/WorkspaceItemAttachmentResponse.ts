@@ -9,27 +9,27 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * 添付ファイルID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId?: number;
+    workspaceItemId?: number | string;
     /**
      * ファイル名
      */
-    fileName?: string | null;
+    fileName?: string;
     /**
      * ファイルサイズ（バイト）
      */
-    fileSize?: number;
+    fileSize?: number | string;
     /**
      * MIMEタイプ
      */
-    mimeType?: string | null;
+    mimeType?: string;
     /**
      * ダウンロードURL
      */
-    downloadUrl?: string | null;
+    downloadUrl?: string;
     /**
      * サムネイル（サイズM）URL
      */
@@ -45,7 +45,7 @@ export type WorkspaceItemAttachmentResponse = {
     /**
      * アップロードしたユーザーID
      */
-    uploadedByUserId?: number;
+    uploadedByUserId?: number | string;
     /**
      * アップロードしたユーザー名
      */

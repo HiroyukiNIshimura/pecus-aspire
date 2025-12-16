@@ -14,6 +14,6 @@ export type DashboardTasksByPriorityResponse = {
     /**
      * 合計（進行中タスクのみ）
      */
-    totalCount: number;
+    totalCount: number | string;
 };
 

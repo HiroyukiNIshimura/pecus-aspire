@@ -13,7 +13,7 @@ export type RefreshResponse = {
     /**
      * トークンタイプ（常に "Bearer"）
      */
-    tokenType?: string | null;
+    tokenType?: string;
     /**
      * トークンの有効期限（UTC）
      */
@@ -21,7 +21,7 @@ export type RefreshResponse = {
     /**
      * トークンの有効時間（秒）
      */
-    expiresIn?: number;
+    expiresIn?: number | string;
     /**
      * リフレッシュトークン
      */

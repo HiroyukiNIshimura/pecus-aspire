@@ -41,7 +41,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static deleteApiProfileDevices(
-        deviceId: number,
+        deviceId: number | string,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -64,7 +64,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static postApiProfileEmailRequestChange(
-        requestBody?: RequestEmailChangeRequest,
+        requestBody: RequestEmailChangeRequest,
     ): CancelablePromise<EmailChangeRequestResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -143,7 +143,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static putApiProfile(
-        requestBody?: UpdateProfileRequest,
+        requestBody: UpdateProfileRequest,
     ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -166,7 +166,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static putApiProfileSetting(
-        requestBody?: UpdateUserSettingRequest,
+        requestBody: UpdateUserSettingRequest,
     ): CancelablePromise<UserSettingResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -190,7 +190,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static putApiProfileSkills(
-        requestBody?: SetOwnSkillsRequest,
+        requestBody: SetOwnSkillsRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -213,7 +213,7 @@ export class ProfileService {
      * @throws ApiError
      */
     public static patchApiProfilePassword(
-        requestBody?: UpdatePasswordRequest,
+        requestBody: UpdatePasswordRequest,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

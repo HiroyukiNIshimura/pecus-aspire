@@ -12,11 +12,11 @@ export type AdminUpdateOrganizationSettingRequest = {
     /**
      * タスク超過チェックの閾値（日数）。0で未設定。
      */
-    taskOverdueThreshold?: number;
+    taskOverdueThreshold?: number | string;
     /**
      * 週間レポートの配信曜日（0=未設定 / 1=日曜〜7=土曜を想定）
      */
-    weeklyReportDeliveryDay?: number;
+    weeklyReportDeliveryDay?: number | string;
     /**
      * メール配信元アドレス
      */
@@ -25,13 +25,20 @@ export type AdminUpdateOrganizationSettingRequest = {
      * メール配信元名
      */
     mailFromName?: string | null;
+    /**
+     * 利用する生成APIベンダー
+     * GenerativeApiVendor.Noneの場合、生成APIは利用しない。
+     */
     generativeApiVendor: GenerativeApiVendor;
     /**
      * 生成APIキー
      */
     generativeApiKey?: string | null;
+    /**
+     * 利用プラン
+     */
     plan: OrganizationPlan;
-    helpNotificationTarget?: HelpNotificationTarget;
+    helpNotificationTarget?: (null | HelpNotificationTarget);
     /**
      * タスク作成時に見積もりを必須とするか
      */
@@ -43,10 +50,10 @@ export type AdminUpdateOrganizationSettingRequest = {
     /**
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
-    dashboardHelpCommentMaxCount?: number;
+    dashboardHelpCommentMaxCount?: number | string;
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

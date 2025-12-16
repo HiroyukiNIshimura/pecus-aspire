@@ -13,7 +13,7 @@ export type WorkspaceFullDetailResponse = {
     /**
      * ワークスペースID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペース名
      */
@@ -29,7 +29,7 @@ export type WorkspaceFullDetailResponse = {
     /**
      * ジャンルID
      */
-    genreId?: number | null;
+    genreId?: number | string | null;
     /**
      * ジャンル名
      */
@@ -41,31 +41,37 @@ export type WorkspaceFullDetailResponse = {
     /**
      * メンバー一覧
      */
-    members?: Array<WorkspaceDetailUserResponse> | null;
-    owner?: WorkspaceDetailUserResponse;
+    members?: Array<WorkspaceDetailUserResponse>;
+    owner?: (null | WorkspaceDetailUserResponse);
     /**
      * 作成日時
      */
     createdAt?: string;
+    /**
+     * 作成ユーザー（無効なユーザーでも含む）
+     */
     createdBy?: WorkspaceDetailUserResponse;
     /**
      * 更新日時
      */
     updatedAt?: string | null;
+    /**
+     * 更新ユーザー（無効なユーザーでも含む）
+     */
     updatedBy?: WorkspaceDetailUserResponse;
     /**
      * アクティブフラグ
      */
     isActive?: boolean;
-    mode?: WorkspaceMode;
-    currentUserRole?: WorkspaceRole;
+    mode?: (null | WorkspaceMode);
+    currentUserRole?: (null | WorkspaceRole);
     /**
      * ワークスペースに設定されているスキル一覧
      */
-    skills?: Array<WorkspaceSkillResponse> | null;
+    skills?: Array<WorkspaceSkillResponse>;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

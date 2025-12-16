@@ -9,7 +9,7 @@ export type DashboardWorkspaceStatistics = {
     /**
      * ワークスペースID
      */
-    workspaceId: number;
+    workspaceId: number | string;
     /**
      * ワークスペースコード
      */
@@ -25,22 +25,22 @@ export type DashboardWorkspaceStatistics = {
     /**
      * 進行中タスク数
      */
-    inProgressCount: number;
+    inProgressCount: number | string;
     /**
      * 完了タスク数
      */
-    completedCount: number;
+    completedCount: number | string;
     /**
      * 期限切れタスク数
      */
-    overdueCount: number;
+    overdueCount: number | string;
     /**
      * アイテム数
      */
-    itemCount: number;
+    itemCount: number | string;
     /**
      * メンバー数
      */
-    memberCount: number;
+    memberCount: number | string;
 };
 

@@ -3,9 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateTagRequest } from '../models/CreateTagRequest';
+import type { PagedResponseOfTagListItemResponseAndTagStatistics } from '../models/PagedResponseOfTagListItemResponseAndTagStatistics';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { TagDetailResponse } from '../models/TagDetailResponse';
-import type { TagListItemResponseTagStatisticsPagedResponse } from '../models/TagListItemResponseTagStatisticsPagedResponse';
 import type { TagResponse } from '../models/TagResponse';
 import type { UpdateTagRequest } from '../models/UpdateTagRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -19,7 +19,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static postApiAdminTags(
-        requestBody?: CreateTagRequest,
+        requestBody: CreateTagRequest,
     ): CancelablePromise<TagResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -42,15 +42,15 @@ export class AdminTagService {
      * @param isActive アクティブ状態フィルター
      * @param unusedOnly 未使用のタグのみ取得するか（true: 未使用のみ、false または null: すべて）
      * @param name タグ名で前方一致検索（オプション）
-     * @returns TagListItemResponseTagStatisticsPagedResponse OK
+     * @returns PagedResponseOfTagListItemResponseAndTagStatistics OK
      * @throws ApiError
      */
     public static getApiAdminTags(
-        page?: number,
+        page?: number | string,
         isActive?: boolean,
         unusedOnly?: boolean,
         name?: string,
-    ): CancelablePromise<TagListItemResponseTagStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfTagListItemResponseAndTagStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/tags',
@@ -72,7 +72,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static getApiAdminTags1(
-        id: number,
+        id: number | string,
     ): CancelablePromise<TagDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -94,8 +94,8 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static putApiAdminTags(
-        id: number,
-        requestBody?: UpdateTagRequest,
+        id: number | string,
+        requestBody: UpdateTagRequest,
     ): CancelablePromise<TagResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -120,7 +120,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static deleteApiAdminTags(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -141,7 +141,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static patchApiAdminTagsDeactivate(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
@@ -163,7 +163,7 @@ export class AdminTagService {
      * @throws ApiError
      */
     public static patchApiAdminTagsActivate(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',

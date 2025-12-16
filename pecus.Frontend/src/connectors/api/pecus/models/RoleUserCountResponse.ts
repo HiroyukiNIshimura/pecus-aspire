@@ -9,7 +9,7 @@ export type RoleUserCountResponse = {
     /**
      * ロールID
      */
-    id: number;
+    id: number | string;
     /**
      * ロール名
      */
@@ -17,6 +17,6 @@ export type RoleUserCountResponse = {
     /**
      * ユーザー数
      */
-    count: number;
+    count: number | string;
 };
 

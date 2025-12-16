@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { FileType } from '../models/FileType';
 import type { FileUploadResponse } from '../models/FileUploadResponse';
+import type { IFormFile } from '../models/IFormFile';
 import type { MessageResponse } from '../models/MessageResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -20,7 +21,7 @@ export class FileService {
      */
     public static getApiDownloads(
         fileType: FileType,
-        resourceId: number,
+        resourceId: number | string,
         fileName: string,
         useOriginal?: boolean,
     ): CancelablePromise<any> {
@@ -49,9 +50,9 @@ export class FileService {
      * @throws ApiError
      */
     public static deleteApiDownloadsIcons(
-        fileType: FileType,
-        resourceId: number,
-        fileName: string,
+        fileType?: FileType,
+        resourceId?: number | string,
+        fileName?: string,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -68,21 +69,15 @@ export class FileService {
     }
     /**
      * ファイルをアップロード
-     * @param formData
+     * @param formData アップロードするファイル
      * @returns FileUploadResponse OK
      * @throws ApiError
      */
     public static postApiFiles(
-        formData?: {
-            FileType: FileType;
-            /**
-             * リソースID（ユーザーIDまたはジャンルID）
-             */
-            ResourceId: number;
-            /**
-             * アップロードするファイル
-             */
-            File: Blob;
+        formData: {
+            FileType?: FileType;
+            ResourceId?: number | string;
+            File?: IFormFile;
         },
     ): CancelablePromise<FileUploadResponse> {
         return __request(OpenAPI, {

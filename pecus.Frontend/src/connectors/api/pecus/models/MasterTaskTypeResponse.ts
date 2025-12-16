@@ -9,15 +9,15 @@ export type MasterTaskTypeResponse = {
     /**
      * タスク種類ID
      */
-    id: number;
+    id: number | string;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
-    code: string | null;
+    code: string;
     /**
      * タスク種類名（日本語表示名）
      */
-    name: string | null;
+    name: string;
     /**
      * タスク種類説明
      */
@@ -29,6 +29,6 @@ export type MasterTaskTypeResponse = {
     /**
      * 表示順
      */
-    displayOrder?: number;
+    displayOrder?: number | string;
 };
 

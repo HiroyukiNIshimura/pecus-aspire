@@ -7,7 +7,7 @@ import type { WorkspaceRole } from './WorkspaceRole';
  * ワークスペースにユーザーを参加させるリクエスト
  */
 export type AddUserToWorkspaceRequest = {
-    userId: number;
-    workspaceRole?: WorkspaceRole;
+    userId: number | string;
+    workspaceRole?: (null | WorkspaceRole);
 };
 

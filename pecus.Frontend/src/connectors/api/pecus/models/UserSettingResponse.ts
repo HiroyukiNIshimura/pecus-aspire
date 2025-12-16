@@ -25,19 +25,19 @@ export type UserSettingResponse = {
      * 言語設定（TODO：未使用）
      */
     language: string;
-    landingPage?: LandingPage;
-    focusScorePriority?: FocusScorePriority;
+    landingPage?: (null | LandingPage);
+    focusScorePriority?: (null | FocusScorePriority);
     /**
      * フォーカス推奨タスクの表示件数（5-20）
      */
-    focusTasksLimit: number;
+    focusTasksLimit: number | string;
     /**
      * 待機中タスクの表示件数（5-20）
      */
-    waitingTasksLimit: number;
+    waitingTasksLimit: number | string;
     /**
      * ユーザー設定の楽観的ロック用 RowVersion
      */
-    rowVersion?: number;
+    rowVersion?: number | string;
 };
 

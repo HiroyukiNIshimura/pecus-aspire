@@ -12,11 +12,11 @@ export type WorkspaceItemDetailResponse = {
     /**
      * アイテムID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペースID
      */
-    workspaceId?: number;
+    workspaceId?: number | string;
     /**
      * ワークスペースコード
      */
@@ -36,11 +36,11 @@ export type WorkspaceItemDetailResponse = {
     /**
      * コード
      */
-    code?: string | null;
+    code?: string;
     /**
      * 件名
      */
-    subject?: string | null;
+    subject?: string;
     /**
      * 本文
      */
@@ -48,7 +48,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * オーナーユーザーID
      */
-    ownerId?: number;
+    ownerId?: number | string;
     /**
      * オーナーユーザー名
      */
@@ -60,7 +60,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * 作業中のユーザーID
      */
-    assigneeId?: number | null;
+    assigneeId?: number | string | null;
     /**
      * 作業中のユーザー名
      */
@@ -69,7 +69,7 @@ export type WorkspaceItemDetailResponse = {
      * 作業中のユーザーアバターURL
      */
     assigneeAvatarUrl?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 期限日時
      */
@@ -85,7 +85,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * コミッターユーザーID
      */
-    committerId?: number | null;
+    committerId?: number | string | null;
     /**
      * コミッターユーザー名
      */
@@ -105,7 +105,7 @@ export type WorkspaceItemDetailResponse = {
     /**
      * タグのリスト
      */
-    tags?: Array<TagInfoResponse> | null;
+    tags?: Array<TagInfoResponse>;
     /**
      * ログイン中のユーザーがこのアイテムをPINしているか
      */
@@ -113,14 +113,14 @@ export type WorkspaceItemDetailResponse = {
     /**
      * このアイテムのPIN総数
      */
-    pinCount?: number;
+    pinCount?: number | string;
     /**
      * 関連アイテムのリスト
      */
-    relatedItems?: Array<RelatedItemInfo> | null;
+    relatedItems?: Array<RelatedItemInfo>;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

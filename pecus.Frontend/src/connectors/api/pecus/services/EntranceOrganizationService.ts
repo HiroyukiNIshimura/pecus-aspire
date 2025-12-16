@@ -18,7 +18,7 @@ export class EntranceOrganizationService {
      * @throws ApiError
      */
     public static postApiEntranceOrganizations(
-        requestBody?: CreateOrganizationRequest,
+        requestBody: CreateOrganizationRequest,
     ): CancelablePromise<OrganizationWithAdminResponse> {
         return __request(OpenAPI, {
             method: 'POST',

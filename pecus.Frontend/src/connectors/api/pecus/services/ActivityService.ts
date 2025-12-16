@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ActivityResponsePagedResponse } from '../models/ActivityResponsePagedResponse';
+import type { PagedResponseOfActivityResponse } from '../models/PagedResponseOfActivityResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -12,14 +12,14 @@ export class ActivityService {
      * @param workspaceId ワークスペースID
      * @param itemId アイテムID
      * @param page ページ番号（1から開始）
-     * @returns ActivityResponsePagedResponse OK
+     * @returns PagedResponseOfActivityResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesItemsActivities(
-        workspaceId: number,
-        itemId: number,
-        page: number = 1,
-    ): CancelablePromise<ActivityResponsePagedResponse> {
+        workspaceId: number | string,
+        itemId: number | string,
+        page?: number | string,
+    ): CancelablePromise<PagedResponseOfActivityResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces/{workspaceId}/items/{itemId}/activities',

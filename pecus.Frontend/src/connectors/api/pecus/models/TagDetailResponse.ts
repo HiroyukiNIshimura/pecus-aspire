@@ -9,15 +9,15 @@ export type TagDetailResponse = {
     /**
      * タグID
      */
-    id: number;
+    id: number | string;
     /**
      * 組織ID
      */
-    organizationId?: number;
+    organizationId?: number | string;
     /**
      * タグ名
      */
-    name?: string | null;
+    name?: string;
     /**
      * 作成日時
      */
@@ -25,7 +25,7 @@ export type TagDetailResponse = {
     /**
      * 作成者ユーザーID
      */
-    createdByUserId?: number;
+    createdByUserId?: number | string;
     /**
      * 更新日時
      */
@@ -33,7 +33,7 @@ export type TagDetailResponse = {
     /**
      * 更新者ユーザーID
      */
-    updatedByUserId?: number | null;
+    updatedByUserId?: number | string | null;
     /**
      * アクティブ状態
      */
@@ -41,10 +41,10 @@ export type TagDetailResponse = {
     /**
      * このタグが付与されているアイテム数
      */
-    itemCount?: number;
+    itemCount?: number | string;
     /**
      * 楽観的ロック用RowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

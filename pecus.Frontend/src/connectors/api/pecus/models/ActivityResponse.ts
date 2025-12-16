@@ -10,19 +10,19 @@ export type ActivityResponse = {
     /**
      * アクティビティID
      */
-    id?: number;
+    id?: number | string;
     /**
      * ワークスペースID
      */
-    workspaceId?: number;
+    workspaceId?: number | string;
     /**
      * ワークスペースコード
      */
-    workspaceCode?: string | null;
+    workspaceCode?: string;
     /**
      * ワークスペース名
      */
-    workspaceName?: string | null;
+    workspaceName?: string;
     /**
      * ワークスペースのジャンルアイコン
      */
@@ -30,19 +30,19 @@ export type ActivityResponse = {
     /**
      * アイテムID
      */
-    itemId?: number;
+    itemId?: number | string;
     /**
      * アイテムコード
      */
-    itemCode?: string | null;
+    itemCode?: string;
     /**
      * アイテム件名
      */
-    itemSubject?: string | null;
+    itemSubject?: string;
     /**
      * ユーザーID（NULL = システム操作）
      */
-    userId?: number | null;
+    userId?: number | string | null;
     /**
      * ユーザー名
      */
@@ -51,6 +51,9 @@ export type ActivityResponse = {
      * ユーザーのアイデンティティアイコンURL
      */
     identityIconUrl?: string | null;
+    /**
+     * 操作タイプ
+     */
     actionType?: ActivityActionType;
     /**
      * 操作の詳細データ（JSON文字列）

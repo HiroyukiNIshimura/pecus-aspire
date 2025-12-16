@@ -4,8 +4,8 @@
 /* eslint-disable */
 import type { CreateTaskCommentRequest } from '../models/CreateTaskCommentRequest';
 import type { DeleteTaskCommentRequest } from '../models/DeleteTaskCommentRequest';
+import type { PagedResponseOfTaskCommentDetailResponse } from '../models/PagedResponseOfTaskCommentDetailResponse';
 import type { TaskCommentDetailResponse } from '../models/TaskCommentDetailResponse';
-import type { TaskCommentDetailResponsePagedResponse } from '../models/TaskCommentDetailResponsePagedResponse';
 import type { TaskCommentResponse } from '../models/TaskCommentResponse';
 import type { TaskCommentType } from '../models/TaskCommentType';
 import type { UpdateTaskCommentRequest } from '../models/UpdateTaskCommentRequest';
@@ -21,17 +21,17 @@ export class TaskCommentService {
      * @param page ページ番号（1から始まる）
      * @param commentType コメントタイプでフィルタ
      * @param includeDeleted 削除されたコメントも含める（デフォルトはfalse）
-     * @returns TaskCommentDetailResponsePagedResponse OK
+     * @returns PagedResponseOfTaskCommentDetailResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksComments(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        page?: number,
+        workspaceId: number | string,
+        itemId: number | string,
+        taskId: number | string,
+        page?: number | string,
         commentType?: TaskCommentType,
         includeDeleted?: boolean,
-    ): CancelablePromise<TaskCommentDetailResponsePagedResponse> {
+    ): CancelablePromise<PagedResponseOfTaskCommentDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces/{workspaceId}/items/{itemId}/tasks/{taskId}/comments',
@@ -61,10 +61,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static postApiWorkspacesItemsTasksComments(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        requestBody?: CreateTaskCommentRequest,
+        workspaceId: number | string,
+        itemId: number | string,
+        taskId: number | string,
+        requestBody: CreateTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -93,10 +93,10 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static getApiWorkspacesItemsTasksComments1(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        commentId: number,
+        workspaceId: number | string,
+        itemId: number | string,
+        taskId: number | string,
+        commentId: number | string,
     ): CancelablePromise<TaskCommentDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -124,11 +124,11 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static putApiWorkspacesItemsTasksComments(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        commentId: number,
-        requestBody?: UpdateTaskCommentRequest,
+        workspaceId: number | string,
+        itemId: number | string,
+        taskId: number | string,
+        commentId: number | string,
+        requestBody: UpdateTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -160,11 +160,11 @@ export class TaskCommentService {
      * @throws ApiError
      */
     public static deleteApiWorkspacesItemsTasksComments(
-        workspaceId: number,
-        itemId: number,
-        taskId: number,
-        commentId: number,
-        requestBody?: DeleteTaskCommentRequest,
+        workspaceId: number | string,
+        itemId: number | string,
+        taskId: number | string,
+        commentId: number | string,
+        requestBody: DeleteTaskCommentRequest,
     ): CancelablePromise<TaskCommentResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',

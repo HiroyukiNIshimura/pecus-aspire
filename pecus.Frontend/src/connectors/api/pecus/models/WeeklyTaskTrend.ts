@@ -13,7 +13,7 @@ export type WeeklyTaskTrend = {
     /**
      * 週番号（年間での週番号）
      */
-    weekNumber: number;
+    weekNumber: number | string;
     /**
      * 表示用ラベル（例: "12/2〜12/8"）
      */
@@ -21,10 +21,10 @@ export type WeeklyTaskTrend = {
     /**
      * その週に作成されたタスク数
      */
-    createdCount: number;
+    createdCount: number | string;
     /**
      * その週に完了したタスク数
      */
-    completedCount: number;
+    completedCount: number | string;
 };
 

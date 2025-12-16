@@ -7,6 +7,9 @@ import type { WorkspaceRole } from './WorkspaceRole';
  * ワークスペースメンバーのロール変更リクエスト
  */
 export type UpdateWorkspaceUserRoleRequest = {
+    /**
+     * 新しいワークスペースロール
+     */
     workspaceRole: WorkspaceRole;
 };
 

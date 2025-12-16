@@ -9,15 +9,15 @@ export type PredecessorTaskInfo = {
     /**
      * タスクID
      */
-    id?: number;
+    id?: number | string;
     /**
      * タスクシーケンス番号（アイテム内の順序）
      */
-    sequence?: number;
+    sequence?: number | string;
     /**
      * タスク内容
      */
-    content?: string | null;
+    content?: string;
     /**
      * 完了フラグ
      */

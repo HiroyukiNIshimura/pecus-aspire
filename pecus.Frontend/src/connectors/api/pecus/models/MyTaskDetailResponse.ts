@@ -10,15 +10,15 @@ export type MyTaskDetailResponse = {
     /**
      * タスクID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペースアイテムID
      */
-    workspaceItemId?: number;
+    workspaceItemId?: number | string;
     /**
      * ワークスペースID
      */
-    workspaceId?: number;
+    workspaceId?: number | string;
     /**
      * ワークスペースコード
      */
@@ -46,7 +46,7 @@ export type MyTaskDetailResponse = {
     /**
      * アイテムオーナーID
      */
-    itemOwnerId?: number | null;
+    itemOwnerId?: number | string | null;
     /**
      * アイテムオーナー名
      */
@@ -58,7 +58,7 @@ export type MyTaskDetailResponse = {
     /**
      * アイテム担当者ID
      */
-    itemAssigneeId?: number | null;
+    itemAssigneeId?: number | string | null;
     /**
      * アイテム担当者名
      */
@@ -70,7 +70,7 @@ export type MyTaskDetailResponse = {
     /**
      * アイテムコミッターID
      */
-    itemCommitterId?: number | null;
+    itemCommitterId?: number | string | null;
     /**
      * アイテムコミッター名
      */
@@ -82,11 +82,11 @@ export type MyTaskDetailResponse = {
     /**
      * 組織ID
      */
-    organizationId?: number;
+    organizationId?: number | string;
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number;
+    assignedUserId?: number | string;
     /**
      * 担当ユーザー名
      */
@@ -98,7 +98,7 @@ export type MyTaskDetailResponse = {
     /**
      * 作成ユーザーID
      */
-    createdByUserId?: number;
+    createdByUserId?: number | string;
     /**
      * 作成ユーザー名
      */
@@ -110,11 +110,11 @@ export type MyTaskDetailResponse = {
     /**
      * タスク内容
      */
-    content?: string | null;
+    content?: string;
     /**
      * タスク種類ID
      */
-    taskTypeId?: number;
+    taskTypeId?: number | string;
     /**
      * タスク種類コード（例: "Bug", "Feature"）
      */
@@ -127,7 +127,7 @@ export type MyTaskDetailResponse = {
      * タスク種類アイコン（拡張子なしのファイル名）
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 開始日時
      */
@@ -139,15 +139,15 @@ export type MyTaskDetailResponse = {
     /**
      * 予定工数（時間）
      */
-    estimatedHours?: number | null;
+    estimatedHours?: number | string | null;
     /**
      * 実績工数（時間）
      */
-    actualHours?: number | null;
+    actualHours?: number | string | null;
     /**
      * 進捗率（0-100）
      */
-    progressPercentage?: number;
+    progressPercentage?: number | string;
     /**
      * 完了フラグ
      */
@@ -179,10 +179,10 @@ export type MyTaskDetailResponse = {
     /**
      * コメント数
      */
-    commentCount?: number;
+    commentCount?: number | string;
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 

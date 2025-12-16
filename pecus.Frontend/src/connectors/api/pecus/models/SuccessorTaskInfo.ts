@@ -9,11 +9,11 @@ export type SuccessorTaskInfo = {
     /**
      * タスクID
      */
-    id?: number;
+    id?: number | string;
     /**
      * タスク内容
      */
-    content?: string | null;
+    content?: string;
     /**
      * ワークスペースアイテムコード（例: "PROJ-42"）
      */

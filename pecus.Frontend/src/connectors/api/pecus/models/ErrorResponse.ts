@@ -9,7 +9,7 @@ export type ErrorResponse = {
     /**
      * HTTPステータスコード
      */
-    statusCode?: number;
+    statusCode?: number | string;
     /**
      * エラーメッセージ
      */

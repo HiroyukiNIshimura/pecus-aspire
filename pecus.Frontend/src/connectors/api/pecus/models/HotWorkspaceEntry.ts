@@ -9,7 +9,7 @@ export type HotWorkspaceEntry = {
     /**
      * ワークスペースID
      */
-    workspaceId: number;
+    workspaceId: number | string;
     /**
      * ワークスペースコード
      */
@@ -25,14 +25,14 @@ export type HotWorkspaceEntry = {
     /**
      * タスク追加数（直近）
      */
-    taskAddedCount: number;
+    taskAddedCount: number | string;
     /**
      * タスク完了数（直近）
      */
-    taskCompletedCount: number;
+    taskCompletedCount: number | string;
     /**
      * タスク関連アクティビティの合計
      */
-    totalTaskActivityCount: number;
+    totalTaskActivityCount: number | string;
 };
 

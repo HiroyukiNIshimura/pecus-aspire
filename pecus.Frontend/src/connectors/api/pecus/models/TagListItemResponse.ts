@@ -9,11 +9,11 @@ export type TagListItemResponse = {
     /**
      * タグID
      */
-    id: number;
+    id: number | string;
     /**
      * タグ名
      */
-    name?: string | null;
+    name?: string;
     /**
      * 作成日時
      */
@@ -29,6 +29,6 @@ export type TagListItemResponse = {
     /**
      * このタグが付与されているアイテム数
      */
-    itemCount?: number;
+    itemCount?: number | string;
 };
 

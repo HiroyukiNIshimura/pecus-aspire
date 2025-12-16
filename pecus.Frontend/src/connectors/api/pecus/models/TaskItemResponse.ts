@@ -7,7 +7,7 @@ export type TaskItemResponse = {
     /**
      * ワークスペースID
      */
-    workspaceId?: number;
+    workspaceId?: number | string;
     /**
      * ワークスペースコード
      */
@@ -27,15 +27,15 @@ export type TaskItemResponse = {
     /**
      * コード
      */
-    code?: string | null;
+    code?: string;
     /**
      * 件名
      */
-    subject?: string | null;
+    subject?: string;
     /**
      * オーナーユーザーID
      */
-    ownerId?: number;
+    ownerId?: number | string;
     /**
      * オーナーユーザー名
      */
@@ -47,7 +47,7 @@ export type TaskItemResponse = {
     /**
      * 作業中のユーザーID
      */
-    assigneeId?: number | null;
+    assigneeId?: number | string | null;
     /**
      * 作業中のユーザー名
      */
@@ -56,7 +56,7 @@ export type TaskItemResponse = {
      * 作業中のユーザーアバターURL
      */
     assigneeAvatarUrl?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 期限日時
      */
@@ -72,7 +72,7 @@ export type TaskItemResponse = {
     /**
      * コミッターユーザーID
      */
-    committerId?: number | null;
+    committerId?: number | string | null;
     /**
      * コミッターユーザー名
      */

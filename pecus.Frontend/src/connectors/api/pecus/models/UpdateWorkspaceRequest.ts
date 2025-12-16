@@ -8,7 +8,7 @@
 export type UpdateWorkspaceRequest = {
     name: string;
     description?: string | null;
-    genreId: number;
-    rowVersion: number;
+    genreId: number | string;
+    rowVersion: number | string;
 };
 

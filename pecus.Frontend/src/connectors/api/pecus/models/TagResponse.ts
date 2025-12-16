@@ -14,7 +14,7 @@ export type TagResponse = {
     /**
      * メッセージ
      */
-    message?: string | null;
-    tag?: TagDetailResponse;
+    message?: string;
+    tag?: (null | TagDetailResponse);
 };
 

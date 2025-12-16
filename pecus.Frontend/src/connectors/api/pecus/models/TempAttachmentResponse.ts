@@ -9,26 +9,26 @@ export type TempAttachmentResponse = {
     /**
      * 一時ファイルID（UUID形式）
      */
-    tempFileId: string | null;
+    tempFileId: string;
     /**
      * セッションID
      */
-    sessionId: string | null;
+    sessionId: string;
     /**
      * 元のファイル名
      */
-    fileName: string | null;
+    fileName: string;
     /**
      * ファイルサイズ（バイト）
      */
-    fileSize: number;
+    fileSize: number | string;
     /**
      * MIMEタイプ
      */
-    mimeType: string | null;
+    mimeType: string;
     /**
      * 一時ファイルのプレビューURL
      */
-    previewUrl: string | null;
+    previewUrl: string;
 };
 

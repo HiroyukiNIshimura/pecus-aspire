@@ -11,11 +11,11 @@ export type TaskFlowNode = {
     /**
      * タスクID
      */
-    id: number;
+    id: number | string;
     /**
      * タスクシーケンス番号（アイテム内での通し番号）
      */
-    sequence: number;
+    sequence: number | string;
     /**
      * タスク内容
      */
@@ -23,7 +23,7 @@ export type TaskFlowNode = {
     /**
      * タスク種類ID
      */
-    taskTypeId?: number | null;
+    taskTypeId?: number | string | null;
     /**
      * タスク種類名
      */
@@ -32,7 +32,7 @@ export type TaskFlowNode = {
      * タスク種類アイコン
      */
     taskTypeIcon?: string | null;
-    priority?: TaskPriority;
+    priority?: (null | TaskPriority);
     /**
      * 期限日時
      */
@@ -40,7 +40,7 @@ export type TaskFlowNode = {
     /**
      * 進捗率（0-100）
      */
-    progressPercentage: number;
+    progressPercentage: number | string;
     /**
      * 完了フラグ
      */
@@ -52,7 +52,7 @@ export type TaskFlowNode = {
     /**
      * 担当ユーザーID
      */
-    assignedUserId?: number | null;
+    assignedUserId?: number | string | null;
     /**
      * 担当ユーザー名
      */
@@ -68,11 +68,11 @@ export type TaskFlowNode = {
     /**
      * 先行タスクID
      */
-    predecessorTaskId?: number | null;
-    predecessorTask?: TaskFlowPredecessorInfo;
+    predecessorTaskId?: number | string | null;
+    predecessorTask?: (null | TaskFlowPredecessorInfo);
     /**
      * 後続タスク数
      */
-    successorCount: number;
+    successorCount: number | string;
 };
 

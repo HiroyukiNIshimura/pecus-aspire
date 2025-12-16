@@ -9,18 +9,18 @@ export type DashboardItemSummary = {
     /**
      * 公開アイテム数（公開済み・未アーカイブ）
      */
-    publishedCount: number;
+    publishedCount: number | string;
     /**
      * 下書きアイテム数
      */
-    draftCount: number;
+    draftCount: number | string;
     /**
      * アーカイブ済みアイテム数
      */
-    archivedCount: number;
+    archivedCount: number | string;
     /**
      * 総アイテム数
      */
-    totalCount: number;
+    totalCount: number | string;
 };
 

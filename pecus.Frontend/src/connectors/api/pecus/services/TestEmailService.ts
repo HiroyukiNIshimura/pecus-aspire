@@ -46,7 +46,7 @@ export class TestEmailService {
      * @throws ApiError
      */
     public static postApiDevEmailTestSetRecipient(
-        requestBody?: RecipientRequest,
+        requestBody: RecipientRequest,
     ): CancelablePromise<MessageResponse> {
         return __request(OpenAPI, {
             method: 'POST',

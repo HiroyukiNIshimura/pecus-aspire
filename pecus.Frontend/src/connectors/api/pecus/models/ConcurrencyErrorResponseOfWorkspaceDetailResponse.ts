@@ -6,11 +6,12 @@ import type { WorkspaceDetailResponse } from './WorkspaceDetailResponse';
 /**
  * 競合エラーレスポンス（409 Conflict）
  */
-export type WorkspaceDetailResponseConcurrencyErrorResponse = {
+export type ConcurrencyErrorResponseOfWorkspaceDetailResponse = {
+    current?: (null | WorkspaceDetailResponse);
     /**
      * HTTPステータスコード
      */
-    statusCode?: number;
+    statusCode?: number | string;
     /**
      * エラーメッセージ
      */
@@ -19,6 +20,5 @@ export type WorkspaceDetailResponseConcurrencyErrorResponse = {
      * エラー詳細（オプション）
      */
     details?: string | null;
-    current?: WorkspaceDetailResponse;
 };
 

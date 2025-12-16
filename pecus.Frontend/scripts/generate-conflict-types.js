@@ -95,10 +95,17 @@ function processConcurrencyErrorSchema(schemaName, spec, conflictTypes) {
   let currentTypeName = null;
 
   if (currentSchema.$ref) {
+    // 直接 $ref の場合
     currentTypeName = currentSchema.$ref.split('/').pop();
   } else if (currentSchema.allOf) {
     // allOf 形式の場合、最初の $ref を取得
     const refItem = currentSchema.allOf.find(item => item.$ref);
+    if (refItem) {
+      currentTypeName = refItem.$ref.split('/').pop();
+    }
+  } else if (currentSchema.oneOf) {
+    // oneOf 形式の場合（nullable 対応）、$ref を含むアイテムを探す
+    const refItem = currentSchema.oneOf.find(item => item.$ref);
     if (refItem) {
       currentTypeName = refItem.$ref.split('/').pop();
     }

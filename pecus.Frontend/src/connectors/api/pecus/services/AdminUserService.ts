@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateUserWithoutPasswordRequest } from '../models/CreateUserWithoutPasswordRequest';
+import type { PagedResponseOfUserDetailResponseAndUserStatistics } from '../models/PagedResponseOfUserDetailResponseAndUserStatistics';
 import type { RoleListItemResponse } from '../models/RoleListItemResponse';
 import type { SetUserActiveStatusRequest } from '../models/SetUserActiveStatusRequest';
 import type { SetUserRolesRequest } from '../models/SetUserRolesRequest';
 import type { SetUserSkillsRequest } from '../models/SetUserSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
 import type { UserDetailResponse } from '../models/UserDetailResponse';
-import type { UserDetailResponseUserStatisticsPagedResponse } from '../models/UserDetailResponseUserStatisticsPagedResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -22,7 +22,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static getApiAdminUsers(
-        id: number,
+        id: number | string,
     ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -44,7 +44,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static deleteApiAdminUsers(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -67,16 +67,16 @@ export class AdminUserService {
      * @param skillIds スキルIDで絞り込み（指定されたスキルを持つユーザーのみを検索）
      * @param skillFilterMode スキルフィルターのモード（"and": すべてのスキルを保有、"or": いずれかのスキルを保有）
      * デフォルトは "and"
-     * @returns UserDetailResponseUserStatisticsPagedResponse ユーザー一覧を返します
+     * @returns PagedResponseOfUserDetailResponseAndUserStatistics ユーザー一覧を返します
      * @throws ApiError
      */
     public static getApiAdminUsers1(
-        page?: number,
+        page?: number | string,
         isActive?: boolean,
         username?: string,
-        skillIds?: Array<number>,
+        skillIds?: Array<number | string>,
         skillFilterMode?: string,
-    ): CancelablePromise<UserDetailResponseUserStatisticsPagedResponse> {
+    ): CancelablePromise<PagedResponseOfUserDetailResponseAndUserStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admin/users',
@@ -101,8 +101,8 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersActiveStatus(
-        id: number,
-        requestBody?: SetUserActiveStatusRequest,
+        id: number | string,
+        requestBody: SetUserActiveStatusRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -121,11 +121,9 @@ export class AdminUserService {
     }
     /**
      * ユーザーのスキルを設定（管理者が他のユーザーのスキルを管理）
-     *
-     * 管理者が組織内のユーザーのスキルを設定します（洗い替え）。
+     *     管理者が組織内のユーザーのスキルを設定します（洗い替え）。
      * 指定されたスキル以外は削除されます。
-     *
-     * <strong>重要</strong>：このエンドポイントは管理者による操作であり、
+     * 重要：このエンドポイントは管理者による操作であり、
      * ユーザーが自身のスキルを変更する場合は PUT /api/profile/skills を使用してください。
      * @param id 対象ユーザーID
      * @param requestBody スキルIDのリスト
@@ -133,8 +131,8 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersSkills(
-        id: number,
-        requestBody?: SetUserSkillsRequest,
+        id: number | string,
+        requestBody: SetUserSkillsRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -160,7 +158,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static postApiAdminUsersCreateWithoutPassword(
-        requestBody?: CreateUserWithoutPasswordRequest,
+        requestBody: CreateUserWithoutPasswordRequest,
     ): CancelablePromise<UserDetailResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -182,7 +180,7 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static postApiAdminUsersRequestPasswordReset(
-        id: number,
+        id: number | string,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -198,11 +196,9 @@ export class AdminUserService {
     }
     /**
      * ユーザーのロールを設定（管理者が他のユーザーのロールを管理）
-     *
-     * 管理者が組織内のユーザーのロールを設定します（洗い替え）。
+     *     管理者が組織内のユーザーのロールを設定します（洗い替え）。
      * 指定されたロール以外は削除されます。
-     *
-     * <strong>重要</strong>：このエンドポイントは管理者による操作です。
+     * 重要：このエンドポイントは管理者による操作です。
      * ユーザーのロールはシステム管理者によってのみ変更されるべきです。
      * @param id 対象ユーザーID
      * @param requestBody ロールIDのリスト
@@ -210,8 +206,8 @@ export class AdminUserService {
      * @throws ApiError
      */
     public static putApiAdminUsersRoles(
-        id: number,
-        requestBody?: SetUserRolesRequest,
+        id: number | string,
+        requestBody: SetUserRolesRequest,
     ): CancelablePromise<SuccessResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

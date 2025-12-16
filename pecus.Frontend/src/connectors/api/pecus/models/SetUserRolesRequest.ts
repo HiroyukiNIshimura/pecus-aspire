@@ -6,7 +6,7 @@
  * ユーザーロール設定リクエスト
  */
 export type SetUserRolesRequest = {
-    roles: Array<number>;
-    userRowVersion?: number | null;
+    roles: Array<number | string>;
+    userRowVersion?: number | string | null;
 };
 

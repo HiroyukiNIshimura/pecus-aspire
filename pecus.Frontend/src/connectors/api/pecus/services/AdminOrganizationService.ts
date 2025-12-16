@@ -34,7 +34,7 @@ export class AdminOrganizationService {
      * @throws ApiError
      */
     public static putApiAdminOrganization(
-        requestBody?: AdminUpdateOrganizationRequest,
+        requestBody: AdminUpdateOrganizationRequest,
     ): CancelablePromise<OrganizationResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -57,7 +57,7 @@ export class AdminOrganizationService {
      * @throws ApiError
      */
     public static putApiAdminOrganizationSetting(
-        requestBody?: AdminUpdateOrganizationSettingRequest,
+        requestBody: AdminUpdateOrganizationSettingRequest,
     ): CancelablePromise<OrganizationSettingResponse> {
         return __request(OpenAPI, {
             method: 'PUT',

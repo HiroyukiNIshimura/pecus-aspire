@@ -9,7 +9,7 @@ export type TagUsageItem = {
     /**
      * タグID
      */
-    id: number;
+    id: number | string;
     /**
      * タグ名
      */

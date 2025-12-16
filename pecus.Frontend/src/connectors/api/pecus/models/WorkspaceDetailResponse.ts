@@ -4,7 +4,6 @@
 /* eslint-disable */
 import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
-import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
  * ワークスペース詳細情報レスポンス（管理者用）
  */
@@ -12,7 +11,7 @@ export type WorkspaceDetailResponse = {
     /**
      * ワークスペースID
      */
-    id: number;
+    id: number | string;
     /**
      * ワークスペース名
      */
@@ -28,12 +27,12 @@ export type WorkspaceDetailResponse = {
     /**
      * 組織ID
      */
-    organizationId?: number;
-    organization?: OrganizationInfoResponse;
+    organizationId?: number | string;
+    organization?: (null | OrganizationInfoResponse);
     /**
      * ジャンルID
      */
-    genreId?: number | null;
+    genreId?: number | string | null;
     /**
      * ジャンル名
      */
@@ -45,8 +44,8 @@ export type WorkspaceDetailResponse = {
     /**
      * 参加しているユーザー一覧
      */
-    members?: Array<WorkspaceUserDetailResponse> | null;
-    owner?: WorkspaceDetailUserResponse;
+    members?: any[] | null;
+    owner?: (null | WorkspaceDetailUserResponse);
     /**
      * 作成日時
      */
@@ -54,7 +53,7 @@ export type WorkspaceDetailResponse = {
     /**
      * 作成者ユーザーID
      */
-    createdByUserId?: number | null;
+    createdByUserId?: number | string | null;
     /**
      * 更新日時
      */
@@ -62,7 +61,7 @@ export type WorkspaceDetailResponse = {
     /**
      * 更新者ユーザーID
      */
-    updatedByUserId?: number | null;
+    updatedByUserId?: number | string | null;
     /**
      * アクティブフラグ
      */
@@ -70,6 +69,6 @@ export type WorkspaceDetailResponse = {
     /**
      * 楽観的ロック用のRowVersion
      */
-    rowVersion: number;
+    rowVersion: number | string;
 };
 
