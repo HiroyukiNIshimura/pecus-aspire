@@ -708,7 +708,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <button
                   type="button"
                   onClick={() => handleExport('markdown')}
-                  className="btn btn-ghost btn-xs gap-1"
+                  className="btn btn-secondary btn-xs gap-1"
                   disabled={isExporting !== null}
                   title="Markdown形式でダウンロード"
                 >
@@ -722,7 +722,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <button
                   type="button"
                   onClick={() => handleExport('html')}
-                  className="btn btn-ghost btn-xs gap-1"
+                  className="btn btn-secondary btn-xs gap-1"
                   disabled={isExporting !== null}
                   title="HTML形式でダウンロード"
                 >
@@ -736,7 +736,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 <button
                   type="button"
                   onClick={() => handleExport('json')}
-                  className="btn btn-ghost btn-xs gap-1"
+                  className="btn btn-secondary btn-xs gap-1"
                   disabled={isExporting !== null}
                   title="JSON形式でダウンロード（Nodeデータ）"
                 >
