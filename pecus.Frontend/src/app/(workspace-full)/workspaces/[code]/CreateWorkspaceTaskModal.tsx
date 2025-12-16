@@ -83,7 +83,6 @@ export default function CreateWorkspaceTaskModal({
   // 担当者負荷チェック
   const [assigneeLoadCheck, setAssigneeLoadCheck] = useState<AssigneeTaskLoadResponse | null>(null);
   const [assigneeLoadError, setAssigneeLoadError] = useState<string | null>(null);
-  const [isCheckingAssigneeLoad, setIsCheckingAssigneeLoad] = useState(false);
 
   const toISODateString = useCallback((dateStr: string | undefined | null): string | null => {
     if (!dateStr) return null;
@@ -225,7 +224,6 @@ export default function CreateWorkspaceTaskModal({
       setPredecessorTaskOptions([]);
       setAssigneeLoadCheck(null);
       setAssigneeLoadError(null);
-      setIsCheckingAssigneeLoad(false);
     }
   }, [isOpen, resetForm]);
 
@@ -241,12 +239,10 @@ export default function CreateWorkspaceTaskModal({
     let cancelled = false;
 
     const runCheck = async () => {
-      setIsCheckingAssigneeLoad(true);
       setAssigneeLoadError(null);
 
       const dueDateISO = toISODateString(dueDate);
       if (!dueDateISO) {
-        setIsCheckingAssigneeLoad(false);
         return;
       }
 
@@ -260,8 +256,6 @@ export default function CreateWorkspaceTaskModal({
         setAssigneeLoadCheck(null);
         setAssigneeLoadError(result.message);
       }
-
-      setIsCheckingAssigneeLoad(false);
     };
 
     runCheck();
@@ -571,34 +565,30 @@ export default function CreateWorkspaceTaskModal({
               )}
             </div>
 
-            {/* 担当者負荷チェック結果 */}
-            <div className="space-y-2">
-              {isCheckingAssigneeLoad && (
-                <div className="alert alert-soft alert-info">
-                  <span className="loading loading-spinner loading-sm" aria-hidden="true" />
-                  <span>担当者のタスク状況を確認しています...</span>
-                </div>
-              )}
-              {assigneeLoadError && (
-                <div className="alert alert-soft alert-warning">
-                  <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-                  <span>{assigneeLoadError}</span>
-                </div>
-              )}
-              {assigneeLoadCheck?.isExceeded && selectedAssignee && (
-                <div className="alert alert-soft alert-warning">
-                  <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
-                  <div>
-                    <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
-                    <p className="text-sm">
-                      {selectedAssignee.username} のタスクが同じ期限日 {dueDate} に{' '}
-                      {assigneeLoadCheck.projectedTaskCount} 件 （閾値 {assigneeLoadCheck.threshold}{' '}
-                      件）と集中しています。担当者の負荷を考慮して、期限日の調整や担当者の変更を検討してください。
-                    </p>
+            {/* 担当者負荷チェック結果（エラーまたは閾値超過時のみ表示） */}
+            {(assigneeLoadError || (assigneeLoadCheck?.isExceeded && selectedAssignee)) && (
+              <div className="space-y-2">
+                {assigneeLoadError && (
+                  <div className="alert alert-soft alert-warning">
+                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                    <span>{assigneeLoadError}</span>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+                {assigneeLoadCheck?.isExceeded && selectedAssignee && (
+                  <div className="alert alert-soft alert-warning">
+                    <span className="icon-[mdi--alert-circle-outline] size-5" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold">同じ期限日の担当タスクが閾値を超えています。</p>
+                      <p className="text-sm">
+                        {selectedAssignee.username} のタスクが同じ期限日 {dueDate} に{' '}
+                        {assigneeLoadCheck.projectedTaskCount} 件 （閾値 {assigneeLoadCheck.threshold}{' '}
+                        件）と集中しています。担当者の負荷を考慮して、期限日の調整や担当者の変更を検討してください。
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 予定工数 */}
             <div className="form-control">
