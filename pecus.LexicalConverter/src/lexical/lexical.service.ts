@@ -1,10 +1,11 @@
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
+import { HorizontalRuleNode } from '@lexical/extension';
 import { createHeadlessEditor } from '@lexical/headless';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { MarkNode } from '@lexical/mark';
-import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
+import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
 import { OverflowNode } from '@lexical/overflow';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
@@ -12,6 +13,7 @@ import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { $getRoot, type Klass, type LexicalNode } from 'lexical';
 import { initializeDomEnvironment } from './dom-environment';
 import { CustomNodes } from './nodes';
+import { PLAYGROUND_TRANSFORMERS } from './transformers/markdown-transformers';
 
 /** 変換結果 */
 export interface ConvertResult {
@@ -46,6 +48,8 @@ const REGISTERED_NODE_TYPES: Set<string> = new Set([
   'overflow',
   // @lexical/mark
   'mark',
+  // @lexical/extension
+  'horizontalrule',
 ]);
 
 // カスタムノードのタイプを追加
@@ -107,6 +111,7 @@ export class LexicalService implements OnModuleInit {
         LinkNode,
         OverflowNode,
         MarkNode,
+        HorizontalRuleNode,
         // カスタムノード
         ...CustomNodes,
       ],
@@ -134,7 +139,7 @@ export class LexicalService implements OnModuleInit {
     const editorState = editor.parseEditorState(lexicalJson);
 
     const result = editorState.read(() => {
-      return $convertToMarkdownString(TRANSFORMERS);
+      return $convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
     });
 
     return { result, unknownNodes };
@@ -150,5 +155,26 @@ export class LexicalService implements OnModuleInit {
     });
 
     return { result, unknownNodes };
+  }
+
+  /**
+   * Markdown文字列をLexical EditorState JSONに変換
+   * @param markdown Markdown文字列
+   * @returns Lexical EditorState JSON
+   */
+  fromMarkdown(markdown: string): ConvertResult {
+    const editor = this.createEditor();
+
+    editor.update(
+      () => {
+        $convertFromMarkdownString(markdown, PLAYGROUND_TRANSFORMERS);
+      },
+      { discrete: true },
+    );
+
+    const editorState = editor.getEditorState();
+    const result = JSON.stringify(editorState.toJSON());
+
+    return { result, unknownNodes: [] };
   }
 }

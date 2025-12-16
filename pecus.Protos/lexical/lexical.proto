@@ -22,12 +22,21 @@ service LexicalConverter {
 
   // Lexical JSON → プレーンテキスト変換
   rpc ToPlainText(ConvertRequest) returns (ConvertResponse);
+
+  // Markdown → Lexical JSON 変換
+  rpc FromMarkdown(MarkdownToLexicalRequest) returns (ConvertResponse);
 }
 
 // 変換リクエスト
 message ConvertRequest {
   // Lexical EditorState JSON 文字列
   string lexical_json = 1;
+}
+
+// Markdown → Lexical 変換リクエスト
+message MarkdownToLexicalRequest {
+  // Markdown 文字列
+  string markdown = 1;
 }
 
 // 変換レスポンス
