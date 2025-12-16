@@ -68,6 +68,9 @@ interface WorkspaceItemDetailProps {
     itemCommitterId: number | null,
     itemCommitterName: string | null,
     itemCommitterAvatarUrl: string | null,
+    itemOwnerId: number | null,
+    itemAssigneeId: number | null,
+    itemTitle: string | null,
   ) => void;
   /** アイテムコード（URL生成用） */
   itemCode?: string | null;
@@ -588,7 +591,32 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                       })()
                     : null
                 }
-                onShowTaskDetail={onShowTaskDetail}
+                onShowTaskDetail={
+                  onShowTaskDetail
+                    ? (
+                        taskSequence,
+                        itemCodeParam,
+                        navigation,
+                        itemCommitterId,
+                        itemCommitterNameParam,
+                        itemCommitterAvatarUrlParam,
+                        itemOwnerIdParam,
+                        itemAssigneeIdParam,
+                        _itemTitle,
+                      ) =>
+                        onShowTaskDetail(
+                          taskSequence,
+                          itemCodeParam,
+                          navigation,
+                          itemCommitterId,
+                          itemCommitterNameParam,
+                          itemCommitterAvatarUrlParam,
+                          itemOwnerIdParam,
+                          itemAssigneeIdParam,
+                          item.subject ?? null, // アイテムの件名を渡す
+                        )
+                    : undefined
+                }
                 onShowFlowMap={
                   onShowFlowMap
                     ? () =>

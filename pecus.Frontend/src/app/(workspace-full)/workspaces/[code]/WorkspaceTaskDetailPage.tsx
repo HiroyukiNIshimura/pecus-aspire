@@ -82,6 +82,8 @@ export interface WorkspaceTaskDetailPageProps {
   showNavigationControls?: boolean;
   /** モーダルとして表示するか（閉じるボタンのスタイルが変わる） */
   isModal?: boolean;
+  /** タスクフローマップを表示するコールバック */
+  onShowFlowMap?: () => void;
 }
 
 export default function WorkspaceTaskDetailPage({
@@ -100,6 +102,7 @@ export default function WorkspaceTaskDetailPage({
   taskId,
   showNavigationControls = true,
   isModal = false,
+  onShowFlowMap,
 }: WorkspaceTaskDetailPageProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -552,6 +555,19 @@ export default function WorkspaceTaskDetailPage({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* フローボタン */}
+            {onShowFlowMap && (
+              <button
+                type="button"
+                className="btn btn-outline btn-secondary btn-sm gap-1"
+                onClick={onShowFlowMap}
+                disabled={isLoadingTask || isSubmitting}
+                title="タスクフローマップを表示"
+              >
+                <span className="icon-[mdi--sitemap] size-4" aria-hidden="true" />
+                フロー
+              </button>
+            )}
             {showNavigationControls && (
               <>
                 {/* 前へボタン */}

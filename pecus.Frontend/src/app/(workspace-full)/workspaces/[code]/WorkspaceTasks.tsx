@@ -96,6 +96,9 @@ interface WorkspaceTasksProps {
     itemCommitterId: number | null,
     itemCommitterName: string | null,
     itemCommitterAvatarUrl: string | null,
+    itemOwnerId: number | null,
+    itemAssigneeId: number | null,
+    itemTitle: string | null,
   ) => void;
   /** タスクフローマップページを表示するコールバック */
   onShowFlowMap?: () => void;
@@ -304,6 +307,9 @@ const WorkspaceTasks = ({
           itemCommitterId ?? null,
           itemCommitterName ?? null,
           itemCommitterAvatarUrl ?? null,
+          itemOwnerId ?? null,
+          itemAssigneeId ?? null,
+          null, // itemTitleはWorkspaceItemDetailから渡される
         );
       }
     },
@@ -319,6 +325,8 @@ const WorkspaceTasks = ({
       itemCommitterId,
       itemCommitterName,
       itemCommitterAvatarUrl,
+      itemOwnerId,
+      itemAssigneeId,
     ],
   );
 

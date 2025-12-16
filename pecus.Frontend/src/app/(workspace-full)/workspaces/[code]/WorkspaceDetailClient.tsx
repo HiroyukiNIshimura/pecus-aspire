@@ -124,6 +124,10 @@ export default function WorkspaceDetailClient({
   const [taskDetailItemCommitterId, setTaskDetailItemCommitterId] = useState<number | null>(null);
   const [taskDetailItemCommitterName, setTaskDetailItemCommitterName] = useState<string | null>(null);
   const [taskDetailItemCommitterAvatarUrl, setTaskDetailItemCommitterAvatarUrl] = useState<string | null>(null);
+  // タスク詳細からフローマップ遷移用の追加情報
+  const [taskDetailItemOwnerId, setTaskDetailItemOwnerId] = useState<number | null>(null);
+  const [taskDetailItemAssigneeId, setTaskDetailItemAssigneeId] = useState<number | null>(null);
+  const [taskDetailItemTitle, setTaskDetailItemTitle] = useState<string | null>(null);
   // URLから復元するためのタスクシーケンス
   const [pendingTaskSequence, setPendingTaskSequence] = useState<number | null>(initialTaskSequence ?? null);
 
@@ -590,12 +594,18 @@ export default function WorkspaceDetailClient({
       itemCommitterId: number | null,
       itemCommitterName: string | null,
       itemCommitterAvatarUrl: string | null,
+      itemOwnerId: number | null,
+      itemAssigneeId: number | null,
+      itemTitle: string | null,
     ) => {
       setTaskDetailItemId(selectedItemId);
       setTaskDetailNavigation(navigation);
       setTaskDetailItemCommitterId(itemCommitterId);
       setTaskDetailItemCommitterName(itemCommitterName);
       setTaskDetailItemCommitterAvatarUrl(itemCommitterAvatarUrl);
+      setTaskDetailItemOwnerId(itemOwnerId);
+      setTaskDetailItemAssigneeId(itemAssigneeId);
+      setTaskDetailItemTitle(itemTitle);
       setShowTaskDetail(true);
       setPendingTaskSequence(null); // URL復元時のpendingをクリア
       // URLを更新（task=シーケンス番号）
@@ -612,6 +622,9 @@ export default function WorkspaceDetailClient({
     setTaskDetailItemCommitterId(null);
     setTaskDetailItemCommitterName(null);
     setTaskDetailItemCommitterAvatarUrl(null);
+    setTaskDetailItemOwnerId(null);
+    setTaskDetailItemAssigneeId(null);
+    setTaskDetailItemTitle(null);
     setPendingTaskSequence(null);
     // URLからtaskパラメータを削除
     if (selectedItemCode) {
@@ -627,7 +640,41 @@ export default function WorkspaceDetailClient({
     itemDetailRef.current?.refreshItem();
   }, []);
 
-  // タスクフローマップページを表示するハンドラ
+  // タスク詳細画面からフローマップへ遷移するハンドラ
+  const handleShowFlowMapFromTaskDetail = useCallback(() => {
+    // タスク詳細表示時に保持している情報を使用してフローマップを表示
+    // 先にフローマップ用の情報を設定
+    setFlowMapItemTitle(taskDetailItemTitle);
+    setFlowMapItemCommitterName(taskDetailItemCommitterName);
+    setFlowMapItemCommitterAvatarUrl(taskDetailItemCommitterAvatarUrl);
+    setFlowMapItemOwnerId(taskDetailItemOwnerId);
+    setFlowMapItemAssigneeId(taskDetailItemAssigneeId);
+    setFlowMapItemCommitterId(taskDetailItemCommitterId);
+
+    // タスク詳細を閉じる（URLは更新しない、フラグのみ）
+    setShowTaskDetail(false);
+    setTaskDetailNavigation(null);
+    setTaskDetailItemId(null);
+    setTaskDetailItemCommitterId(null);
+    setTaskDetailItemCommitterName(null);
+    setTaskDetailItemCommitterAvatarUrl(null);
+    setTaskDetailItemOwnerId(null);
+    setTaskDetailItemAssigneeId(null);
+    setTaskDetailItemTitle(null);
+    setPendingTaskSequence(null);
+
+    // フローマップを表示
+    setShowFlowMap(true);
+  }, [
+    taskDetailItemTitle,
+    taskDetailItemCommitterName,
+    taskDetailItemCommitterAvatarUrl,
+    taskDetailItemOwnerId,
+    taskDetailItemAssigneeId,
+    taskDetailItemCommitterId,
+  ]);
+
+  // タスクフローマップページを表示するハンドラ（アイテム詳細から）
   const handleShowFlowMap = useCallback(
     (
       itemTitle: string | null,
@@ -1127,6 +1174,7 @@ export default function WorkspaceDetailClient({
               }
               onClose={handleCloseTaskDetail}
               onSuccess={handleTaskDetailSuccess}
+              onShowFlowMap={handleShowFlowMapFromTaskDetail}
             />
           )}
 
