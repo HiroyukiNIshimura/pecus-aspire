@@ -611,4 +611,4 @@ onNewMessage((msg) => {
 
 ## 参考
 
-- SignalR グループ設計: `docs/signalr-implementation.md`
+- SignalR グループ設計: `docs/spec/signalr-implementation.md`

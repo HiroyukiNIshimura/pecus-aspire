@@ -1,5 +1,18 @@
 ## GlobalExceptionFilter — 例外ハンドリング方針（バックエンド）
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: ASP.NET Core Web API のグローバル例外処理。
+- **重要ルール**:
+  - **実装方針**: コントローラー/サービスで try-catch しない。例外をスローして `GlobalExceptionFilter` に任せる。
+  - **マッピング**:
+    - `NotFoundException` -> 404
+    - `ConcurrencyException` -> 409
+    - `DuplicateException` / `InvalidOperationException` -> 400
+    - その他 -> 500
+  - **レスポンス形式**: `ErrorResponse` (JSON) で統一。
+- **関連ファイル**: `pecus.WebApi/Filters/GlobalExceptionFilter.cs`
+
 このドキュメントは、`pecus.WebApi` 内で採用しているグローバル例外ハンドリングの方式（`GlobalExceptionFilter`）について説明します。
 
 要点（短縮）

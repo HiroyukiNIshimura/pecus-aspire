@@ -1,5 +1,15 @@
 # モーダルダイアログ実装リファレンス（AI エージェント向け）
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: FlyonUI を使用したモーダル実装。
+- **重要ルール**:
+  - **構造**: `fixed inset-0` (オーバーレイ) > `bg-base-100` (コンテナ) > ヘッダー/ボディ/フッター。
+  - **スクロール**: ボディ部分 (`flex-1 overflow-y-auto`) のみスクロールさせる。
+  - **禁止事項**: `daisyUI` の `<dialog className="modal">` や Headless UI は使用しない。`div` ベースで実装する。
+  - **エラー表示**: フッター（アクションボタン）の直前に配置。
+- **参照実装**: `pecus.Frontend/src/app/(workspace-full)/workspaces/[code]/CreateWorkspaceItem.tsx`
+
 **参照実装**: `pecus.Frontend/src/app/(workspace-full)/workspaces/[code]/CreateWorkspaceItem.tsx`
 
 ---

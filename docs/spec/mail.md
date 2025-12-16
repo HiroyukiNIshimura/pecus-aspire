@@ -178,5 +178,5 @@ await emailService.SendAsync(raw);
 
 ## 通知一覧（参照）
 
-各種通知の一覧とテンプレートの対応状況は別ファイルにまとめています: `docs/mail-notifications.md`
+各種通知の一覧とテンプレートの対応状況は別ファイルにまとめています: `docs/spec/mail-notifications.md`
 （テンプレートの追加や運用方針の議論は上ファイルを編集してください。）

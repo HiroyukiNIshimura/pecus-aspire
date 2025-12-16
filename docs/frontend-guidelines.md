@@ -1,5 +1,18 @@
 # フロントエンド開発ガイドライン
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: Next.js (App Router) + TypeScript + Tailwind CSS + FlyonUI。
+- **重要ルール**:
+  - **APIアクセス**: 読み取りは SSR (Server Component)、書き込みは Server Actions。`pecus.WebApi` への直 fetch は禁止（`createPecusApiClients` を使用）。
+  - **認証**: Cookie には `sessionId` のみ。トークンは Redis (`ServerSessionManager`) から取得。
+  - **UI**: Tailwind CSS + FlyonUI を使用。`daisyUI` は禁止。アイコンは `@iconify/tailwind4`。
+  - **自動生成**: `src/connectors/api/PecusApiClient.generated.ts` は編集禁止。
+  - **禁止事項**: クライアントコンポーネントでの API 直叩き、`z-[10]` 等の Tailwind 任意値。
+- **関連ファイル**:
+  - `src/libs/serverSession.ts` (セッション管理)
+  - `src/actions/` (Server Actions)
+
 ## 1. アーキテクチャ概要
 
 `pecus.Frontend` は Next.js（React）+ TypeScript によるSPA/Web UI拡張用ディレクトリです。主なアーキテクチャ方針は以下の通りです。
@@ -80,7 +93,7 @@ API設計や認証フローは `pecus.WebApi` 側の仕様に厳密に従って�
 
 ## 4. アクセストークン管理の設計方針
 
-> 詳細は `docs/auth-architecture-redesign.md` を参照
+> 詳細は `docs/spec/auth-architecture-redesign.md` を参照
 
 ### 保存場所
 

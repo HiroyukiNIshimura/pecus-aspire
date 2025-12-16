@@ -1,5 +1,15 @@
 ## pecus.WebApi における DB 競合（楽観ロック）対応まとめ
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: EF Core 10 + PostgreSQL (`xmin`) による楽観的同時実行制御。
+- **実装ルール**:
+  - **RowVersion**: C# では `uint`、DB では `xmin`。フロントエンドへは `number` として渡す。
+  - **更新処理**: `try-catch (DbUpdateConcurrencyException)` で囲む。
+  - **例外処理**: catch ブロックで `FindAsync` して最新データを取得し、`ConcurrencyException<T>` をスロー。
+  - **HTTP**: `GlobalExceptionFilter` が 409 Conflict を返す。
+- **禁止事項**: `DbUpdateConcurrencyException.Entries` を使った複雑な復元（`FindAsync` でシンプルに再取得すること）。
+
 このドキュメントは `pecus.WebApi` で採用している楽観的ロック（RowVersion）に関する短い要約と実装参照です。まずは全体の要点を短く示します。
 
 要点（短縮版）

@@ -1,6 +1,16 @@
 # useInfiniteScroll フック
 
-IntersectionObserver を利用した無限スクロールのカスタムフック。
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: 無限スクロール実装用のカスタムフック。
+- **重要ルール**:
+  - **使用フック**: `import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';`
+  - **実装方法**:
+    - `sentinelRef` をリストの**最後**に配置する（`div` 要素）。
+    - `onLoadMore` コールバックでデータ取得を行う。
+    - `hasMore` で終了判定を行う。
+  - **スクロールコンテナ**: 特定の要素内でスクロールする場合は `rootRef` を指定する。
+- **禁止事項**: `react-infinite-scroll-component` などの外部ライブラリの使用。
 
 ## 概要
 

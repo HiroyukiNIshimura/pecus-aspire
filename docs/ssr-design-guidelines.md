@@ -1,5 +1,15 @@
 # SSR設計ガイドライン
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: Next.js App Router (Server Components) の設計指針。
+- **重要ルール**:
+  - **デフォルト**: 原則 Server Component (`page.tsx`, `layout.tsx`) で実装。
+  - **Client Component**: `useState`, `useEffect`, `onClick` が必要な場合のみ `"use client"` を使用し、末端のコンポーネントとして切り出す。
+  - **データ取得**: 初期データは Server Component で `createPecusApiClients` を使って取得し、Props で Client Component に渡す。
+  - **禁止事項**: `page.tsx` 全体を `"use client"` にすること。Server Component で `useState` を使うこと。
+- **関連ファイル**: `docs/frontend-guidelines.md`
+
 ## 概要
 
 このドキュメントは、Next.js App Router におけるServer Components（SSR）とClient Componentsの適切な使い分けを定義します。

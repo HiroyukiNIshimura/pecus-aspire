@@ -1,5 +1,18 @@
 # バックエンド開発ガイドライン
 
+## AI エージェント向け要約（必読）
+
+- **コンテキスト**: .NET 10 / EF Core 10 / .NET Aspire ベースのマイクロサービスバックエンド。
+- **重要ルール**:
+  - **コントローラー**: MVC コントローラー + `HttpResults`（`Ok<T>`, `Created<T>`）。`IActionResult` は禁止。
+  - **競合制御**: `DbUpdateConcurrencyException` を catch → `FindAsync` で最新取得 → `ConcurrencyException<T>` をスロー。
+  - **DTO**: 必ず検証属性（`[Required]`, `[MaxLength]`）を付与。`RowVersion` (`uint`) を含める。
+  - **トランザクション**: サービス層で `BeginTransactionAsync` を使用。コントローラーでは禁止。
+  - **禁止事項**: `HasDefaultValue` の使用（C#側で制御）、コントローラーでのビジネスロジック実装。
+- **関連ファイル**:
+  - `pecus.Libs/DB/ApplicationDbContext.cs` (DB設定)
+  - `pecus.WebApi/Filters/GlobalExceptionFilter.cs` (例外ハンドリング)
+
 ## 1. アーキテクチャ概要
 
 ### .NET Aspire による分散マイクロサービス
