@@ -85,6 +85,8 @@ export interface WorkspaceTaskDetailPageProps {
   isModal?: boolean;
   /** タスクフローマップを表示するコールバック */
   onShowFlowMap?: () => void;
+  /** 指定タスクへナビゲートするコールバック（先行タスクリンク用） */
+  onNavigateToTask?: (taskSequence: number) => void;
 }
 
 export default function WorkspaceTaskDetailPage({
@@ -104,6 +106,7 @@ export default function WorkspaceTaskDetailPage({
   showNavigationControls = true,
   isModal = false,
   onShowFlowMap,
+  onNavigateToTask,
 }: WorkspaceTaskDetailPageProps) {
   const notify = useNotify();
   const notifyRef = useRef(notify);
@@ -893,6 +896,24 @@ export default function WorkspaceTaskDetailPage({
                   <div className="form-control">
                     <label htmlFor="predecessorTaskId" className="label">
                       <span className="label-text font-semibold">先行タスク</span>
+                      {(() => {
+                        // 現在選択中の先行タスクのシーケンス番号を取得
+                        const selectedPredecessor = predecessorTaskOptions.find((t) => t.id === predecessorTaskId);
+                        const predecessorSequence = selectedPredecessor?.sequence ?? task?.predecessorTask?.sequence;
+                        if (predecessorSequence && onNavigateToTask) {
+                          return (
+                            <button
+                              type="button"
+                              className="link link-primary text-sm ml-2"
+                              onClick={() => onNavigateToTask(predecessorSequence)}
+                              title={`先行タスク T-${predecessorSequence} を表示`}
+                            >
+                              T-{predecessorSequence} を表示
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                       <span className="label-text-alt text-base-content/60">
                         （このタスクが完了しないと着手できない）
                       </span>
@@ -1200,7 +1221,7 @@ export default function WorkspaceTaskDetailPage({
                       onClick={onClose}
                       disabled={isSubmitting || isLoadingTask}
                     >
-                      キャンセル
+                      閉じる
                     </button>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoadingTask}>
                       {isSubmitting ? (

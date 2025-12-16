@@ -214,18 +214,37 @@ export default function WorkspaceDetailClient({
   // ブラウザの戻る/進むボタンに対応
   useEffect(() => {
     const handlePopState = () => {
-      // URLからitemCodeパラメータを取得
+      // URLからパラメータを取得
       const urlParams = new URLSearchParams(window.location.search);
       const itemCodeParam = urlParams.get('itemCode');
+      const taskParam = urlParams.get('task');
 
       if (itemCodeParam) {
-        // itemCodeがある場合は、SSRでアイテムIDを解決するためにページをリロード
-        // Next.js App Router では router.refresh() で SSR を再実行
-        router.refresh();
+        // taskパラメータがある場合は、タスク詳細を表示
+        if (taskParam) {
+          const taskSequence = parseInt(taskParam, 10);
+          if (!Number.isNaN(taskSequence)) {
+            // 現在のタスク詳細を閉じて、新しいタスクをロード
+            setShowTaskDetail(false);
+            setTaskDetailNavigation(null);
+            setPendingTaskSequence(taskSequence);
+            return;
+          }
+        }
+        // taskパラメータがない場合は、タスク詳細を閉じてアイテム詳細を表示
+        if (showTaskDetail) {
+          setShowTaskDetail(false);
+          setTaskDetailNavigation(null);
+          setTaskDetailItemId(null);
+          setPendingTaskSequence(null);
+        }
       } else {
         // itemCodeがない場合はホーム表示
         setShowWorkspaceDetail(true);
         setSelectedItemId(null);
+        setShowTaskDetail(false);
+        setTaskDetailNavigation(null);
+        setPendingTaskSequence(null);
       }
     };
 
@@ -233,7 +252,7 @@ export default function WorkspaceDetailClient({
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [router]);
+  }, [showTaskDetail]);
 
   // ===== SignalR ワークスペースグループ参加・離脱 =====
   const workspaceIdRef = useRef<number | null>(null);
@@ -639,6 +658,20 @@ export default function WorkspaceDetailClient({
     // アイテム詳細のタスクリストを更新
     itemDetailRef.current?.refreshItem();
   }, []);
+
+  // タスク詳細画面から指定タスクへ遷移するハンドラ（先行タスクリンク用）
+  const handleNavigateToTask = useCallback(
+    (taskSequence: number) => {
+      if (!selectedItemCode) return;
+      // 現在のタスク詳細を閉じて、新しいタスクをロード
+      setShowTaskDetail(false);
+      setTaskDetailNavigation(null);
+      setPendingTaskSequence(taskSequence);
+      // URLを更新
+      router.push(`${pathname}?itemCode=${selectedItemCode}&task=${taskSequence}`, { scroll: false });
+    },
+    [router, pathname, selectedItemCode],
+  );
 
   // タスク詳細画面からフローマップへ遷移するハンドラ
   const handleShowFlowMapFromTaskDetail = useCallback(() => {
@@ -1175,6 +1208,7 @@ export default function WorkspaceDetailClient({
               onClose={handleCloseTaskDetail}
               onSuccess={handleTaskDetailSuccess}
               onShowFlowMap={handleShowFlowMapFromTaskDetail}
+              onNavigateToTask={handleNavigateToTask}
             />
           )}
 
