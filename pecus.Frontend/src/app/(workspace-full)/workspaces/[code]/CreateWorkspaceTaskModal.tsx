@@ -195,12 +195,20 @@ export default function CreateWorkspaceTaskModal({
     setSelectedAssignee(selected);
     setShowAssigneeDropdown(false);
     setAssigneeSearchResults([]);
-  }, []);
+    // エラーがある場合は値変更時に再検証
+    if (shouldShowError('assignedUserId')) {
+      validateField('assignedUserId', user.id || '');
+    }
+  }, [shouldShowError, validateField]);
 
   // 担当者クリア
   const handleClearAssignee = useCallback(() => {
     setSelectedAssignee(null);
-  }, []);
+    // エラーがある場合は値変更時に再検証
+    if (shouldShowError('assignedUserId')) {
+      validateField('assignedUserId', '');
+    }
+  }, [shouldShowError, validateField]);
 
   // 自分を担当者に設定
   const handleSelectSelf = useCallback(() => {
@@ -212,8 +220,12 @@ export default function CreateWorkspaceTaskModal({
         identityIconUrl: currentUser.identityIconUrl,
       };
       setSelectedAssignee(selected);
+      // エラーがある場合は値変更時に再検証
+      if (shouldShowError('assignedUserId')) {
+        validateField('assignedUserId', currentUser.id);
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, shouldShowError, validateField]);
 
   // モーダルが閉じられたらエラーとフォームをクリア
   useEffect(() => {
@@ -343,6 +355,11 @@ export default function CreateWorkspaceTaskModal({
                 name="content"
                 placeholder="タスクの内容を入力してください..."
                 className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
+                onChange={(e) => {
+                  if (shouldShowError('content')) {
+                    validateField('content', e.target.value);
+                  }
+                }}
                 onBlur={(e) => validateField('content', e.target.value)}
                 disabled={isSubmitting}
               />
@@ -522,6 +539,12 @@ export default function CreateWorkspaceTaskModal({
                     }
                   }}
                   onBlur={() => validateField('dueDate', dueDate)}
+                  onClose={(val) => {
+                    // DatePickerが閉じた時に最終値で検証
+                    if (shouldShowError('dueDate')) {
+                      validateField('dueDate', val);
+                    }
+                  }}
                   placeholder="期限日を選択"
                   disabled={isSubmitting}
                   error={shouldShowError('dueDate')}

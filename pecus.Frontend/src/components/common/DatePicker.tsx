@@ -11,6 +11,8 @@ interface DatePickerProps {
   onChange: (date: string) => void;
   /** フォーカスが外れた時のコールバック */
   onBlur?: () => void;
+  /** カレンダーが閉じた時のコールバック（最終的な日付値を渡す） */
+  onClose?: (date: string) => void;
   /** 無効状態 */
   disabled?: boolean;
   /** プレースホルダー */
@@ -28,6 +30,7 @@ export default function DatePicker({
   value,
   onChange,
   onBlur,
+  onClose,
   disabled = false,
   placeholder = '日付を選択',
   className = '',
@@ -35,6 +38,24 @@ export default function DatePicker({
 }: DatePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fpRef = useRef<flatpickr.Instance | null>(null);
+
+  // コールバックの最新値を保持するref
+  const onChangeRef = useRef(onChange);
+  const onBlurRef = useRef(onBlur);
+  const onCloseRef = useRef(onClose);
+
+  // コールバックが変更されたらrefを更新
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    onBlurRef.current = onBlur;
+  }, [onBlur]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (inputRef.current && !fpRef.current) {
@@ -49,14 +70,22 @@ export default function DatePicker({
             const year = selectedDates[0].getFullYear();
             const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
             const day = String(selectedDates[0].getDate()).padStart(2, '0');
-            onChange(`${year}-${month}-${day}`);
+            onChangeRef.current(`${year}-${month}-${day}`);
           } else {
-            onChange('');
+            onChangeRef.current('');
           }
         },
-        onClose: () => {
-          // カレンダーが閉じられた時に onBlur を呼び出す
-          onBlur?.();
+        onClose: (selectedDates) => {
+          // カレンダーが閉じられた時の処理
+          let dateStr = '';
+          if (selectedDates.length > 0) {
+            const year = selectedDates[0].getFullYear();
+            const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+            const day = String(selectedDates[0].getDate()).padStart(2, '0');
+            dateStr = `${year}-${month}-${day}`;
+          }
+          onBlurRef.current?.();
+          onCloseRef.current?.(dateStr);
         },
       });
     }

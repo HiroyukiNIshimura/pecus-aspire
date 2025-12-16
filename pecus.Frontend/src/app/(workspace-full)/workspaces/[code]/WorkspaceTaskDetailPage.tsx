@@ -462,22 +462,33 @@ export default function WorkspaceTaskDetailPage({
   }, []);
 
   // 担当者選択
-  const handleSelectAssignee = useCallback((user: UserSearchResultResponse) => {
-    const selected: SelectedUser = {
-      id: user.id || 0,
-      username: user.username || '',
-      email: user.email || '',
-      identityIconUrl: user.identityIconUrl || null,
-    };
-    setSelectedAssignee(selected);
-    setShowAssigneeDropdown(false);
-    setAssigneeSearchResults([]);
-  }, []);
+  const handleSelectAssignee = useCallback(
+    (user: UserSearchResultResponse) => {
+      const selected: SelectedUser = {
+        id: user.id || 0,
+        username: user.username || '',
+        email: user.email || '',
+        identityIconUrl: user.identityIconUrl || null,
+      };
+      setSelectedAssignee(selected);
+      setShowAssigneeDropdown(false);
+      setAssigneeSearchResults([]);
+      // エラーがある場合は値変更時に再検証
+      if (shouldShowError('assignedUserId')) {
+        validateField('assignedUserId', user.id || '');
+      }
+    },
+    [shouldShowError, validateField],
+  );
 
   // 担当者クリア
   const handleClearAssignee = useCallback(() => {
     setSelectedAssignee(null);
-  }, []);
+    // エラーがある場合は値変更時に再検証
+    if (shouldShowError('assignedUserId')) {
+      validateField('assignedUserId', '');
+    }
+  }, [shouldShowError, validateField]);
 
   // 自分を担当者に設定
   const handleSelectSelf = useCallback(() => {
@@ -489,8 +500,12 @@ export default function WorkspaceTaskDetailPage({
         identityIconUrl: currentUser.identityIconUrl,
       };
       setSelectedAssignee(selected);
+      // エラーがある場合は値変更時に再検証
+      if (shouldShowError('assignedUserId')) {
+        validateField('assignedUserId', currentUser.id);
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, shouldShowError, validateField]);
 
   // ページ離脱時の状態リセット処理（resetFormをuseEffect外で呼ぶ必要がない場合はコメントアウト可）
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -813,7 +828,12 @@ export default function WorkspaceTaskDetailPage({
                       placeholder="タスクの内容を入力してください..."
                       className={`textarea textarea-bordered h-24 ${shouldShowError('content') ? 'textarea-error' : ''}`}
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      onChange={(e) => {
+                        setContent(e.target.value);
+                        if (shouldShowError('content')) {
+                          validateField('content', e.target.value);
+                        }
+                      }}
                       onBlur={(e) => validateField('content', e.target.value)}
                       disabled={isSubmitting || isLoadingTask}
                     />
@@ -857,6 +877,12 @@ export default function WorkspaceTaskDetailPage({
                           }
                         }}
                         onBlur={() => validateField('dueDate', dueDate)}
+                        onClose={(val) => {
+                          // DatePickerが閉じた時に最終値で検証
+                          if (shouldShowError('dueDate')) {
+                            validateField('dueDate', val);
+                          }
+                        }}
                         placeholder="期限日を選択"
                         disabled={isSubmitting || isLoadingTask}
                         error={shouldShowError('dueDate')}
