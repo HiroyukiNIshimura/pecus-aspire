@@ -1146,6 +1146,7 @@ export default function WorkspaceDetailClient({
             <TaskFlowMapPage
               workspaceId={currentWorkspaceDetail.id}
               itemId={selectedItemId}
+              itemCode={selectedItemCode}
               itemTitle={flowMapItemTitle}
               itemCommitterName={flowMapItemCommitterName}
               itemCommitterAvatarUrl={flowMapItemCommitterAvatarUrl}

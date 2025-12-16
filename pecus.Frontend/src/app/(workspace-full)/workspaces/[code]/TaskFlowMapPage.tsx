@@ -13,6 +13,8 @@ export interface TaskFlowMapPageProps {
   workspaceId: number;
   /** ワークスペースアイテムID */
   itemId: number;
+  /** アイテムコード（表示用） */
+  itemCode?: string | null;
   /** アイテムタイトル（表示用） */
   itemTitle?: string | null;
   /** アイテムのコミッター名 */
@@ -33,6 +35,7 @@ export default function TaskFlowMapPage({
   onClose,
   workspaceId,
   itemId,
+  itemCode,
   itemTitle,
   itemCommitterName,
   itemCommitterAvatarUrl,
@@ -87,16 +90,23 @@ export default function TaskFlowMapPage({
     <div className="card">
       <div className="card-body">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <span className="icon-[mdi--sitemap] size-6" aria-hidden="true" />
-              タスクフローマップ
-              {itemTitle && <span className="text-base-content/70 text-base font-normal">- {itemTitle}</span>}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          {/* 左側: タイトルとコミッター */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold flex items-center gap-2 flex-wrap">
+              <span className="icon-[mdi--sitemap] size-6 shrink-0" aria-hidden="true" />
+              <span>タスクフローマップ</span>
+              {(itemCode || itemTitle) && (
+                <span className="text-base-content/70 text-base font-normal truncate max-w-md">
+                  - {itemCode && `#${itemCode}`}
+                  {itemCode && itemTitle && ' '}
+                  {itemTitle}
+                </span>
+              )}
             </h2>
             {/* コミッター表示 */}
             {itemCommitterName && (
-              <div className="flex items-center gap-2 text-sm text-base-content/70 border-l border-base-300 pl-4">
+              <div className="flex items-center gap-2 text-sm text-base-content/70 mt-1">
                 <span className="text-base-content/50">コミッター:</span>
                 <UserAvatar
                   userName={itemCommitterName}
@@ -107,8 +117,8 @@ export default function TaskFlowMapPage({
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {/* 戻るボタン */}
+          {/* 右側: 戻るボタン */}
+          <div className="shrink-0">
             <button
               type="button"
               className="btn btn-sm btn-secondary gap-2"
