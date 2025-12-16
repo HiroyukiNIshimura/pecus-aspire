@@ -48,7 +48,6 @@ export default function TaskFlowChain({ tasks, onTaskClick, canEditTask }: TaskF
                 task={task}
                 clickable={clickable}
                 onClick={clickable ? () => onTaskClick?.(task) : undefined}
-                compact
               />
             </div>
           </div>
