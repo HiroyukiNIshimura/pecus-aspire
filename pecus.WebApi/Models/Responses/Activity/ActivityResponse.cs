@@ -34,6 +34,12 @@ public class ActivityResponse
     public string? WorkspaceGenreIcon { get; set; }
 
     /// <summary>
+    /// ワークスペースモード（Normal/Document）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? WorkspaceMode { get; set; }
+
+    /// <summary>
     /// アイテムID
     /// </summary>
     public int ItemId { get; set; }

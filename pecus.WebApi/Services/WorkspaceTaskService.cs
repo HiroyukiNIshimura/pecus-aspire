@@ -765,6 +765,7 @@ public class WorkspaceTaskService
             WorkspaceName = item.Workspace?.Name,
             GenreIcon = item.Workspace?.Genre?.Icon,
             GenreName = item.Workspace?.Genre?.Name,
+            WorkspaceMode = item.Workspace?.Mode,
             Code = item.Code,
             Subject = item.Subject,
             Body = item.Body,
@@ -998,6 +999,7 @@ public class WorkspaceTaskService
             WorkspaceName = item?.Workspace?.Name,
             GenreIcon = item?.Workspace?.Genre?.Icon,
             GenreName = item?.Workspace?.Genre?.Name,
+            WorkspaceMode = item?.Workspace?.Mode,
             ItemCode = item?.Code,
             ItemSubject = item?.Subject,
             ItemOwnerId = item?.OwnerId,
@@ -1103,6 +1105,7 @@ public class WorkspaceTaskService
                 WorkspaceName = wi.Workspace!.Name,
                 GenreIcon = wi.Workspace!.Genre != null ? wi.Workspace.Genre.Icon : null,
                 GenreName = wi.Workspace!.Genre != null ? wi.Workspace.Genre.Name : null,
+                Mode = wi.Workspace!.Mode,
             })
             .Select(g => new
             {
@@ -1111,6 +1114,7 @@ public class WorkspaceTaskService
                 g.Key.WorkspaceName,
                 g.Key.GenreIcon,
                 g.Key.GenreName,
+                g.Key.Mode,
                 ItemCount = g.Count(),
                 ItemIds = g.Select(wi => wi.Id).ToList(),
             })
@@ -1153,6 +1157,7 @@ public class WorkspaceTaskService
                 WorkspaceName = w.WorkspaceName ?? string.Empty,
                 GenreIcon = w.GenreIcon,
                 GenreName = w.GenreName,
+                Mode = w.Mode,
                 ItemCount = w.ItemCount,
                 ActiveTaskCount = stats?.ActiveTaskCount ?? 0,
                 CompletedTaskCount = stats?.CompletedTaskCount ?? 0,
@@ -1197,6 +1202,7 @@ public class WorkspaceTaskService
                 WorkspaceName = t.WorkspaceItem!.Workspace!.Name,
                 GenreIcon = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Icon : null,
                 GenreName = t.WorkspaceItem!.Workspace!.Genre != null ? t.WorkspaceItem.Workspace.Genre.Name : null,
+                Mode = t.WorkspaceItem!.Workspace!.Mode,
             })
             .Select(g => new MyTaskWorkspaceResponse
             {
@@ -1205,6 +1211,7 @@ public class WorkspaceTaskService
                 WorkspaceName = g.Key.WorkspaceName ?? string.Empty,
                 GenreIcon = g.Key.GenreIcon,
                 GenreName = g.Key.GenreName,
+                Mode = g.Key.Mode,
                 ActiveTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded),
                 CompletedTaskCount = g.Count(t => t.IsCompleted && !t.IsDiscarded),
                 OverdueTaskCount = g.Count(t => !t.IsCompleted && !t.IsDiscarded && t.DueDate < todayStart),

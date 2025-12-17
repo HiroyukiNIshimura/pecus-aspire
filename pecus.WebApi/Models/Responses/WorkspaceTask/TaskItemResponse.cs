@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.WorkspaceTask;
 
@@ -28,6 +29,12 @@ public class TaskItemResponse
     /// ジャンル名
     /// </summary>
     public string? GenreName { get; set; }
+
+    /// <summary>
+    /// ワークスペースモード（Normal/Document）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? Mode { get; set; }
 
     /// <summary>
     /// コード

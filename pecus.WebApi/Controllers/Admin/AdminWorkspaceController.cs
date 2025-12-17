@@ -73,6 +73,7 @@ public class AdminWorkspaceController : BaseAdminController
             GenreId = workspace.GenreId,
             GenreName = workspace.Genre?.Name,
             GenreIcon = workspace.Genre?.Icon,
+            Mode = workspace.Mode,
             UpdatedAt = workspace.UpdatedAt,
             UpdatedByUserId = workspace.UpdatedByUserId,
             Owner = workspace.Owner != null
@@ -134,6 +135,7 @@ public class AdminWorkspaceController : BaseAdminController
             GenreId = workspace.GenreId,
             GenreName = workspace.Genre?.Name,
             GenreIcon = workspace.Genre?.Icon,
+            Mode = workspace.Mode,
             Members = workspace.WorkspaceUsers?
                 .Where(wu => wu.User != null && wu.User.IsActive)
                 .Select(wu => new WorkspaceUserDetailResponse
@@ -245,6 +247,7 @@ public class AdminWorkspaceController : BaseAdminController
                 GenreId = w.GenreId,
                 GenreName = w.Genre?.Name,
                 GenreIcon = w.Genre?.Icon,
+                Mode = w.Mode,
                 ActiveItemCount = w.WorkspaceItems?.Count(wi => wi.IsActive) ?? 0,
                 CreatedAt = w.CreatedAt,
                 UpdatedAt = w.UpdatedAt,
@@ -335,6 +338,7 @@ public class AdminWorkspaceController : BaseAdminController
             GenreId = workspace.GenreId,
             GenreName = workspace.Genre?.Name,
             GenreIcon = workspace.Genre?.Icon,
+            Mode = workspace.Mode,
             CreatedAt = workspace.CreatedAt,
             CreatedByUserId = workspace.CreatedByUserId,
             UpdatedAt = workspace.UpdatedAt,

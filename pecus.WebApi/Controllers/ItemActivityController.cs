@@ -91,6 +91,10 @@ public class ItemActivityController : BaseSecureController
     {
         Id = a.Id,
         WorkspaceId = a.WorkspaceId,
+        WorkspaceCode = a.Workspace?.Code ?? string.Empty,
+        WorkspaceName = a.Workspace?.Name ?? string.Empty,
+        WorkspaceGenreIcon = a.Workspace?.Genre?.Icon,
+        WorkspaceMode = a.Workspace?.Mode,
         ItemId = a.ItemId,
         ItemCode = a.Item?.Code ?? string.Empty,
         ItemSubject = a.Item?.Subject ?? string.Empty,

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Pecus.Libs.DB.Models.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Responses.Workspace;
 
@@ -53,6 +55,12 @@ public class WorkspaceDetailResponse : IConflictModel
     /// ジャンルアイコン
     /// </summary>
     public string? GenreIcon { get; set; }
+
+    /// <summary>
+    /// ワークスペースモード（Normal/Document）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? Mode { get; set; }
 
     /// <summary>
     /// 参加しているユーザー一覧

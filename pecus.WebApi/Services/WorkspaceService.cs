@@ -688,6 +688,7 @@ public class WorkspaceService
                 Description = latestWorkspace.Description,
                 OrganizationId = latestWorkspace.OrganizationId,
                 GenreId = latestWorkspace.GenreId,
+                Mode = latestWorkspace.Mode,
                 CreatedAt = latestWorkspace.CreatedAt,
                 UpdatedAt = latestWorkspace.UpdatedAt,
                 IsActive = latestWorkspace.IsActive,

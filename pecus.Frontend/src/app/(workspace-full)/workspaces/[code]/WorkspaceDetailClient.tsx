@@ -910,20 +910,20 @@ export default function WorkspaceDetailClient({
               className="w-8 h-8 flex-shrink-0"
             />
           )}
-          <span>{currentWorkspaceDetail.name}</span>
+          <span className="truncate">{currentWorkspaceDetail.name}</span>
+          {currentWorkspaceDetail.mode === 'Document' && (
+            <span
+              className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+              title="ドキュメントワークスペース"
+              aria-label="ドキュメントワークスペース"
+            />
+          )}
         </h2>
         {currentWorkspaceDetail.code && (
           <div className="flex items-center gap-1 mt-2">
             <code className="text-sm badge badge-soft badge-accent badge-md truncate max-w-full">
               {currentWorkspaceDetail.code}
             </code>
-            {currentWorkspaceDetail.mode === 'Document' && (
-              <span
-                className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
-                title="ドキュメントワークスペース"
-                aria-label="ドキュメントワークスペース"
-              />
-            )}
           </div>
         )}
       </div>

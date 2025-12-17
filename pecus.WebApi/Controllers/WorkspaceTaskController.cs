@@ -399,6 +399,7 @@ public class WorkspaceTaskController : BaseSecureController
             WorkspaceName = item.Workspace?.Name,
             GenreIcon = item.Workspace?.Genre?.Icon,
             GenreName = item.Workspace?.Genre?.Name,
+            Mode = item.Workspace?.Mode,
             Code = item.Code,
             Subject = item.Subject,
             OwnerId = item.OwnerId,

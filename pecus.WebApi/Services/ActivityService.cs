@@ -60,6 +60,8 @@ public class ActivityService
             .Take(pageSize)
             .Include(a => a.User)
             .Include(a => a.Item)
+            .Include(a => a.Workspace)
+                .ThenInclude(w => w!.Genre)
             .ToListAsync();
 
         return (activities, totalCount);

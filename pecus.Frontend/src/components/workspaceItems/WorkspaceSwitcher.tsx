@@ -15,6 +15,7 @@ interface WorkspaceSwitcherProps {
     code: string;
     genreIcon?: string | null;
     genreName?: string | null;
+    mode?: string | null;
   };
 }
 
@@ -157,7 +158,14 @@ export default function WorkspaceSwitcher({ currentWorkspaceCode, currentWorkspa
                 className="w-5 h-5 flex-shrink-0"
               />
             )}
-            <span>{currentWorkspace?.name || 'ワークスペース'}</span>
+            <span className="truncate">{currentWorkspace?.name || 'ワークスペース'}</span>
+            {currentWorkspace?.mode === 'Document' && (
+              <span
+                className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+                title="ドキュメントワークスペース"
+                aria-label="ドキュメントワークスペース"
+              />
+            )}
           </div>
           {currentWorkspace?.code && (
             <code className="text-xs text-base-content/70 truncate block">{currentWorkspace.code}</code>

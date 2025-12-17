@@ -1,3 +1,6 @@
+using Pecus.Libs.DB.Models.Enums;
+using System.Text.Json.Serialization;
+
 namespace Pecus.Models.Responses.WorkspaceTask;
 
 /// <summary>
@@ -35,6 +38,12 @@ public record MyCommitterWorkspaceResponse
     /// ジャンル名
     /// </summary>
     public string? GenreName { get; init; }
+
+    /// <summary>
+    /// ワークスペースモード（Normal/Document）
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkspaceMode>))]
+    public WorkspaceMode? Mode { get; init; }
 
     /// <summary>
     /// コミッターになっているアイテム数

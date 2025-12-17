@@ -137,6 +137,7 @@ public class WorkspaceController : BaseSecureController
                 GenreId = w.GenreId,
                 GenreName = w.Genre?.Name,
                 GenreIcon = w.Genre?.Icon,
+                Mode = w.Mode,
                 ActiveItemCount = w.WorkspaceItems?.Count(wi => wi.IsActive) ?? 0,
                 CreatedAt = w.CreatedAt,
                 UpdatedAt = w.UpdatedAt,
