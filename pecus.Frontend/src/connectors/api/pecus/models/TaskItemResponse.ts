@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
+import type { WorkspaceMode } from './WorkspaceMode';
 export type TaskItemResponse = {
     /**
      * ワークスペースID
@@ -24,6 +25,7 @@ export type TaskItemResponse = {
      * ジャンル名
      */
     genreName?: string | null;
+    mode?: WorkspaceMode;
     /**
      * コード
      */

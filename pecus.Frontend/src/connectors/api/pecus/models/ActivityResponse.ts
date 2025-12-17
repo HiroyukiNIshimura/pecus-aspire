@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ActivityActionType } from './ActivityActionType';
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * アクティビティレスポンス
  */
@@ -27,6 +28,7 @@ export type ActivityResponse = {
      * ワークスペースのジャンルアイコン
      */
     workspaceGenreIcon?: string | null;
+    workspaceMode?: WorkspaceMode;
     /**
      * アイテムID
      */

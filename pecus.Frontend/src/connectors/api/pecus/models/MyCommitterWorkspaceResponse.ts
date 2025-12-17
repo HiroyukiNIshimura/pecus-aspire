@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * マイコミッターワークスペースレスポンス
  * ログインユーザーがコミッターになっているアイテムを持つワークスペースの情報
@@ -31,6 +32,7 @@ export type MyCommitterWorkspaceResponse = {
      * ジャンル名
      */
     genreName?: string | null;
+    mode?: WorkspaceMode;
     /**
      * コミッターになっているアイテム数
      */

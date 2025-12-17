@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { OrganizationInfoResponse } from './OrganizationInfoResponse';
 import type { WorkspaceDetailUserResponse } from './WorkspaceDetailUserResponse';
+import type { WorkspaceMode } from './WorkspaceMode';
 import type { WorkspaceUserDetailResponse } from './WorkspaceUserDetailResponse';
 /**
  * ワークスペース詳細情報レスポンス（管理者用）
@@ -42,6 +43,7 @@ export type WorkspaceDetailResponse = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
+    mode?: WorkspaceMode;
     /**
      * 参加しているユーザー一覧
      */

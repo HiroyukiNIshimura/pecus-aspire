@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * ホットアイテムのエントリ
  */
@@ -34,6 +35,7 @@ export type HotItemEntry = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
+    mode?: WorkspaceMode;
     /**
      * 直近のアクティビティ数
      */

@@ -375,7 +375,14 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                                   className="w-6 h-6 flex-shrink-0"
                                 />
                               )}
-                              <span>{workspace.name}</span>
+                              <span className="truncate">{workspace.name}</span>
+                              {workspace.mode === 'Document' && (
+                                <span
+                                  className="icon-[mdi--file-document-outline] w-4 h-4 text-base-content/60"
+                                  aria-label="ドキュメントワークスペース"
+                                  title="ドキュメントワークスペース"
+                                />
+                              )}
                             </h3>
                           </Link>
                         </div>

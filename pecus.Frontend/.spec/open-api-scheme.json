@@ -10199,6 +10199,16 @@
             "description": "ワークスペースのジャンルアイコン",
             "nullable": true
           },
+          "workspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "itemId": {
             "type": "integer",
             "description": "アイテムID",
@@ -11447,6 +11457,16 @@
             "description": "ジャンルアイコン",
             "nullable": true
           },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "inProgressCount": {
             "type": "integer",
             "description": "進行中タスク数",
@@ -12122,6 +12142,16 @@
             "description": "ジャンルアイコン",
             "nullable": true
           },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "activityCount": {
             "type": "integer",
             "description": "直近のアクティビティ数",
@@ -12188,6 +12218,16 @@
             "type": "string",
             "description": "ジャンルアイコン",
             "nullable": true
+          },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
           },
           "taskAddedCount": {
             "type": "integer",
@@ -12575,6 +12615,16 @@
             "description": "ジャンル名",
             "nullable": true
           },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "itemCount": {
             "type": "integer",
             "description": "コミッターになっているアイテム数",
@@ -12666,6 +12716,16 @@
             "type": "string",
             "description": "ジャンル名",
             "nullable": true
+          },
+          "workspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
           },
           "itemCode": {
             "type": "string",
@@ -12910,6 +12970,16 @@
             "type": "string",
             "description": "ジャンル名",
             "nullable": true
+          },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
           },
           "activeTaskCount": {
             "type": "integer",
@@ -15154,6 +15224,16 @@
             "description": "ジャンル名",
             "nullable": true
           },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "code": {
             "type": "string",
             "description": "コード"
@@ -16528,6 +16608,16 @@
             "description": "ジャンルアイコン",
             "nullable": true
           },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "members": {
             "type": "array",
             "items": {
@@ -16853,6 +16943,16 @@
             "description": "ジャンル名",
             "nullable": true
           },
+          "workspaceMode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          },
           "code": {
             "type": "string",
             "description": "コード"
@@ -17173,6 +17273,16 @@
             "type": "string",
             "description": "ジャンルのアイコン（例: FontAwesome のクラス名）",
             "nullable": true
+          },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
           },
           "activeItemCount": {
             "type": "integer",

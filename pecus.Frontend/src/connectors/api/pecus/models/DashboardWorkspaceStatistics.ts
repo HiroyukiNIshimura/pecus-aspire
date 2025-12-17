@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * ワークスペースごとの統計
  */
@@ -22,6 +23,7 @@ export type DashboardWorkspaceStatistics = {
      * ジャンルアイコン
      */
     genreIcon?: string | null;
+    mode?: WorkspaceMode;
     /**
      * 進行中タスク数
      */

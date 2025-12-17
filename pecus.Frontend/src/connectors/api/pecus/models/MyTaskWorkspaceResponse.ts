@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * マイタスクワークスペースレスポンス
  * ログインユーザーが担当のタスクを持つワークスペースの情報
@@ -31,6 +32,7 @@ export type MyTaskWorkspaceResponse = {
      * ジャンル名
      */
     genreName?: string | null;
+    mode?: WorkspaceMode;
     /**
      * 未完了タスク数
      */

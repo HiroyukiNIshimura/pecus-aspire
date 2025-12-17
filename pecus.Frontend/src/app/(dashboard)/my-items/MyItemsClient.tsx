@@ -228,7 +228,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         {/* ワークスペース名 + ステータス */}
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="badge badge-soft badge-accent badge-sm truncate p-3">
+                            <span className="badge badge-soft badge-accent badge-sm truncate p-3 flex items-center gap-1">
                               {item.genreIcon && (
                                 <img
                                   src={`/icons/genres/${item.genreIcon}.svg`}
@@ -237,7 +237,14 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                                   className="w-4 h-4 flex-shrink-0"
                                 />
                               )}
-                              {item.workspaceName || 'ワークスペース'}
+                              <span className="truncate">{item.workspaceName || 'ワークスペース'}</span>
+                              {item.workspaceMode === 'Document' && (
+                                <span
+                                  className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
+                                  aria-label="ドキュメントワークスペース"
+                                  title="ドキュメントワークスペース"
+                                />
+                              )}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">

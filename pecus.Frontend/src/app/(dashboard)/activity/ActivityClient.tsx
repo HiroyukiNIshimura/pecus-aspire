@@ -322,7 +322,16 @@ export default function ActivityClient({
                               className="w-4 h-4 flex-shrink-0"
                             />
                           )}
-                          <span className="text-sm text-base-content/70">{activity.workspaceName || 'Unknown'}</span>
+                          <span className="text-sm text-base-content/70 truncate">
+                            {activity.workspaceName || 'Unknown'}
+                          </span>
+                          {activity.workspaceMode === 'Document' && (
+                            <span
+                              className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
+                              aria-label="ドキュメントワークスペース"
+                              title="ドキュメントワークスペース"
+                            />
+                          )}
                         </div>
 
                         {/* 3行目: アイテム情報 */}

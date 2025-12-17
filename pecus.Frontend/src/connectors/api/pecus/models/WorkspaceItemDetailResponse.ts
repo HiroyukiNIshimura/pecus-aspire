@@ -5,6 +5,7 @@
 import type { RelatedItemInfo } from './RelatedItemInfo';
 import type { TagInfoResponse } from './TagInfoResponse';
 import type { TaskPriority } from './TaskPriority';
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * ワークスペースアイテム詳細レスポンス
  */
@@ -33,6 +34,7 @@ export type WorkspaceItemDetailResponse = {
      * ジャンル名
      */
     genreName?: string | null;
+    workspaceMode?: WorkspaceMode;
     /**
      * コード
      */

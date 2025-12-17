@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { TaskPriority } from './TaskPriority';
+import type { WorkspaceMode } from './WorkspaceMode';
 /**
  * ログインユーザーのタスク詳細レスポンス（アイテム情報含む）
  */
@@ -35,6 +36,7 @@ export type MyTaskDetailResponse = {
      * ジャンル名
      */
     genreName?: string | null;
+    workspaceMode?: WorkspaceMode;
     /**
      * アイテムコード
      */

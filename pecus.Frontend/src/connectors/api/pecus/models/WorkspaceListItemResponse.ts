@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { WorkspaceMode } from './WorkspaceMode';
 import type { WorkspaceUserItem } from './WorkspaceUserItem';
 /**
  * ワークスペースリストアイテムレスポンス
@@ -43,6 +44,7 @@ export type WorkspaceListItemResponse = {
      * ジャンルのアイコン（例: FontAwesome のクラス名）
      */
     genreIcon?: string | null;
+    mode?: WorkspaceMode;
     /**
      * アクティブなアイテム数
      */

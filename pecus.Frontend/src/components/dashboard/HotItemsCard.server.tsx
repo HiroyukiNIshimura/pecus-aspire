@@ -89,7 +89,15 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
                     )}
                   </div>
                   {/* ワークスペース名 */}
-                  <div className="ml-6 mt-1 text-xs text-base-content/50 truncate">{item.workspaceName}</div>
+                  <div className="ml-6 mt-1 text-xs text-base-content/50 truncate flex items-center gap-1">
+                    <span className="truncate">{item.workspaceName}</span>
+                    {item.mode === 'Document' && (
+                      <span
+                        className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60"
+                        aria-label="ドキュメントワークスペース"
+                      />
+                    )}
+                  </div>
                   {/* 最終アクター情報 */}
                   <div className="flex items-center gap-1.5 mt-1.5 ml-6 text-xs text-base-content/60">
                     {item.lastActorAvatar ? (

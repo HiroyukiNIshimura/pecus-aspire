@@ -60,6 +60,12 @@ export default function HotWorkspacesCard({ data }: HotWorkspacesCardProps) {
                   <span className="font-medium truncate group-hover:text-primary transition-colors">
                     {ws.workspaceName}
                   </span>
+                  {ws.mode === 'Document' && (
+                    <span
+                      className="icon-[mdi--file-document-outline] w-4 h-4 text-base-content/60"
+                      aria-label="ドキュメントワークスペース"
+                    />
+                  )}
                 </div>
 
                 {/* タスク統計 */}

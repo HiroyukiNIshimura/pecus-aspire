@@ -210,7 +210,14 @@ export default function WorkspaceSwitcher({ currentWorkspaceCode, currentWorkspa
                         className="w-5 h-5 flex-shrink-0"
                       />
                     )}
-                    <span>{workspace.name}</span>
+                    <span className="truncate">{workspace.name}</span>
+                    {workspace.mode === 'Document' && (
+                      <span
+                        className="icon-[mdi--file-document-outline] text-base align-middle ml-1"
+                        title="ドキュメントワークスペース"
+                        aria-label="ドキュメントワークスペース"
+                      />
+                    )}
                   </div>
                   {workspace.code && (
                     <code className="text-xs text-base-content/70 truncate block">{workspace.code}</code>

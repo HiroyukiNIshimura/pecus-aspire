@@ -81,7 +81,13 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
                       {ws.genreIcon && (
                         <img src={`/icons/genres/${ws.genreIcon}.svg`} alt="" className="w-4 h-4 flex-shrink-0" />
                       )}
-                      <span className="font-medium">{ws.workspaceName}</span>
+                      <span className="font-medium truncate">{ws.workspaceName}</span>
+                      {ws.mode === 'Document' && (
+                        <span
+                          className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60"
+                          aria-label="ドキュメントワークスペース"
+                        />
+                      )}
                       <span className="text-xs text-base-content/50 hidden sm:inline">({ws.workspaceCode})</span>
                     </Link>
                   </td>
