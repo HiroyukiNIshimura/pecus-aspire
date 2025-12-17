@@ -906,9 +906,18 @@ export default function WorkspaceDetailClient({
           <span>{currentWorkspaceDetail.name}</span>
         </h2>
         {currentWorkspaceDetail.code && (
-          <code className="text-sm badge badge-soft badge-accent badge-md mt-2 truncate max-w-full block">
-            {currentWorkspaceDetail.code}
-          </code>
+          <div className="flex items-center gap-1 mt-2">
+            <code className="text-sm badge badge-soft badge-accent badge-md truncate max-w-full">
+              {currentWorkspaceDetail.code}
+            </code>
+            {currentWorkspaceDetail.mode === 'Document' && (
+              <span
+                className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+                title="ドキュメントワークスペース"
+                aria-label="ドキュメントワークスペース"
+              />
+            )}
+          </div>
         )}
       </div>
       {/* アクションメニュー - Ownerのみ表示（右寄せ） */}
@@ -1074,8 +1083,25 @@ export default function WorkspaceDetailClient({
                   </p>
                 )}
 
-                {/* メタ情報（4列） */}
+                {/* メタ情報（4列＋モード） */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 py-4 border-y border-base-300 text-sm">
+                  {/* モード */}
+                  <div>
+                    <span className="text-xs text-base-content/70">モード</span>
+                    <p className="font-semibold flex items-center gap-2">
+                      {currentWorkspaceDetail.mode === 'Document' ? (
+                        <>
+                          <span
+                            className="icon-[mdi--file-document-outline] text-lg align-middle"
+                            aria-label="ドキュメントワークスペース"
+                          />
+                          ドキュメント
+                        </>
+                      ) : (
+                        '通常'
+                      )}
+                    </p>
+                  </div>
                   {/* ジャンル */}
                   {currentWorkspaceDetail.genreName && (
                     <div>
