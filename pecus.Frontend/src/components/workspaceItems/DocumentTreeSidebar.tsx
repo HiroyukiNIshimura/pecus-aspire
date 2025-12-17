@@ -170,7 +170,7 @@ export default function DocumentTreeSidebar({
         )}
         <div className="flex-1 truncate flex items-center gap-2">
           <span className="icon-[mdi--file-document-outline] w-4 h-4 flex-shrink-0 opacity-70" aria-hidden="true" />
-          <span className="text-xs text-base-content/50 flex-shrink-0">{item?.code}</span>
+          <span className="text-xs text-base-content/50 flex-shrink-0">#{item?.code}</span>
           <span className="truncate">{node.text}</span>
         </div>
         {item?.isDraft && <span className="badge badge-xs badge-ghost ml-2">Draft</span>}
@@ -235,7 +235,7 @@ export default function DocumentTreeSidebar({
             }}
             dropTargetOffset={10}
             placeholderRender={(_node, { depth }) => (
-              <div className="bg-primary/50 h-[2px] absolute right-0 z-50" style={{ left: depth * 24 }} />
+              <div className="bg-primary/50 h-0.5 absolute right-0 z-50" style={{ left: depth * 24 }} />
             )}
           />
         )}
