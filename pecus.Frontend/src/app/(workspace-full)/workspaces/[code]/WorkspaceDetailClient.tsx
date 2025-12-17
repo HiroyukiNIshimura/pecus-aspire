@@ -1035,6 +1035,7 @@ export default function WorkspaceDetailClient({
                 code: currentWorkspaceDetail.code ?? '',
                 genreIcon: currentWorkspaceDetail.genreIcon,
                 genreName: currentWorkspaceDetail.genreName,
+                mode: currentWorkspaceDetail.mode,
               }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={handleItemSelect}
@@ -1436,6 +1437,7 @@ export default function WorkspaceDetailClient({
                 code: currentWorkspaceDetail.code ?? '',
                 genreIcon: currentWorkspaceDetail.genreIcon,
                 genreName: currentWorkspaceDetail.genreName,
+                mode: currentWorkspaceDetail.mode,
               }}
               onHomeSelect={handleHomeSelect}
               onItemSelect={(itemId, itemCode) => {

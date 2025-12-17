@@ -2,11 +2,12 @@
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import DocumentTreeSidebar from '@/components/workspaceItems/DocumentTreeSidebar';
 import WorkspaceItemFilterDrawer, {
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';
 import WorkspaceSwitcher from '@/components/workspaceItems/WorkspaceSwitcher';
-import type { TaskPriority, WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
+import type { TaskPriority, WorkspaceItemDetailResponse, WorkspaceMode } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 
@@ -55,6 +56,7 @@ interface WorkspaceItemsSidebarProps {
     code: string;
     genreIcon?: string | null;
     genreName?: string | null;
+    mode?: WorkspaceMode;
   };
   onHomeSelect?: () => void;
   onItemSelect?: (itemId: number, itemCode: string) => void;
@@ -119,6 +121,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [selectionModeCurrentItemId, setSelectionModeCurrentItemId] = useState<number | null>(null);
     const [excludeItemIds, setExcludeItemIds] = useState<number[]>([]);
     const [selectedForRelation, setSelectedForRelation] = useState<Set<number>>(new Set());
+
+    // 表示モード（リスト/ツリー）
+    const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
 
     // スクロールコンテナの ref
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -434,7 +439,29 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               </div>
 
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-bold">アイテム一覧</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold">アイテム一覧</h3>
+                  {currentWorkspace?.mode === 'Document' && (
+                    <div className="join">
+                      <button
+                        type="button"
+                        className={`btn btn-xs join-item ${viewMode === 'list' ? 'btn-active btn-primary' : ''}`}
+                        onClick={() => setViewMode('list')}
+                        title="リスト表示"
+                      >
+                        <span className="icon-[mdi--format-list-bulleted] w-4 h-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn btn-xs join-item ${viewMode === 'tree' ? 'btn-active btn-primary' : ''}`}
+                        onClick={() => setViewMode('tree')}
+                        title="ツリー表示"
+                      >
+                        <span className="icon-[mdi--file-tree-outline] w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -453,22 +480,31 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               </p>
 
               {/* 検索ボックス */}
-              <DebouncedSearchInput onSearch={handleSearch} placeholder="あいまい検索..." debounceMs={300} size="sm" />
+              {(currentWorkspace?.mode !== 'Document' || viewMode === 'list') && (
+                <DebouncedSearchInput
+                  onSearch={handleSearch}
+                  placeholder="あいまい検索..."
+                  debounceMs={300}
+                  size="sm"
+                />
+              )}
 
               {/* 詳細フィルターリンク */}
-              <button
-                type="button"
-                onClick={() => setIsFilterDrawerOpen(true)}
-                className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
-              >
-                <span className="icon-[mdi--filter-outline] w-3 h-3" aria-hidden="true" />
-                <span>詳細フィルター</span>
-                {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
-                  <span className="badge badge-primary badge-xs">
-                    {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
-                  </span>
-                )}
-              </button>
+              {(currentWorkspace?.mode !== 'Document' || viewMode === 'list') && (
+                <button
+                  type="button"
+                  onClick={() => setIsFilterDrawerOpen(true)}
+                  className="mt-2 w-full flex items-center justify-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <span className="icon-[mdi--filter-outline] w-3 h-3" aria-hidden="true" />
+                  <span>詳細フィルター</span>
+                  {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length > 0 && (
+                    <span className="badge badge-primary badge-xs">
+                      {Object.values(filters).filter((v) => v !== null && v !== undefined && v !== '').length}
+                    </span>
+                  )}
+                </button>
+              )}
             </>
           )}
         </div>
@@ -482,6 +518,14 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           <div className="p-4 text-center text-base-content/70">
             <p className="text-sm">{searchQuery ? '該当するアイテムがありません' : 'アイテムがありません'}</p>
           </div>
+        ) : viewMode === 'tree' && currentWorkspace?.mode === 'Document' ? (
+          <DocumentTreeSidebar
+            items={items}
+            onItemSelect={(itemId, itemCode) => {
+              setSelectedItemId(itemId);
+              onItemSelect?.(itemId, itemCode);
+            }}
+          />
         ) : (
           <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>
             <ul className="space-y-1 p-2">
