@@ -243,7 +243,7 @@ function EditorContainer({
   const { isFullscreen } = useFullscreen();
 
   return (
-    <div className={`notion-like-editor ${isFullscreen ? 'fixed inset-0 z-[9999] bg-base-100 flex flex-col' : ''}`}>
+    <div className={`notion-like-editor ${isFullscreen ? 'fixed inset-0 z-9999 bg-base-100 flex flex-col' : ''}`}>
       <FlashMessageContext>
         <SettingsContext initialSettings={settings}>
           <ImageUploadProvider handler={imageUploadHandler ?? null}>
