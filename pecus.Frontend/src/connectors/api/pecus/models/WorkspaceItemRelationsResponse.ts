@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceItemRelationResponse } from './WorkspaceItemRelationResponse';
+import type { WorkspaceItemDocRelationResponse } from './WorkspaceItemDocRelationResponse';
 /**
  * ワークスペースアイテム関連一覧レスポンス
  */
@@ -10,6 +10,6 @@ export type WorkspaceItemRelationsResponse = {
     /**
      * 関連リスト
      */
-    relations?: Array<WorkspaceItemRelationResponse>;
+    relations?: Array<WorkspaceItemDocRelationResponse>;
 };
 

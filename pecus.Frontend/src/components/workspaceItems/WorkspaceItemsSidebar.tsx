@@ -122,8 +122,8 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     const [excludeItemIds, setExcludeItemIds] = useState<number[]>([]);
     const [selectedForRelation, setSelectedForRelation] = useState<Set<number>>(new Set());
 
-    // 表示モード（リスト/ツリー）
-    const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
+    // 表示モード（リスト/ツリー）- ワークスペースモードに応じて初期値を設定
+    const [viewMode, setViewMode] = useState<'list' | 'tree'>(currentWorkspace?.mode === 'Document' ? 'tree' : 'list');
 
     // ワークスペースモードが変更されたらビューモードをリセット
     useEffect(() => {
@@ -547,6 +547,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
               onItemSelect?.(itemId, itemCode);
             }}
             selectedItemId={typeof selectedItemId === 'number' ? selectedItemId : null}
+            onItemMoved={() => refreshItems()}
           />
         ) : (
           <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>

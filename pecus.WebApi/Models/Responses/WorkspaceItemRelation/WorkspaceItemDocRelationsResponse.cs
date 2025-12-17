@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.WebApi.Models.Responses;
 
@@ -26,13 +27,14 @@ public class WorkspaceItemDocRelationResponse
     /// <summary>
     /// 関連タイプ
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<RelationType>))]
     public RelationType? RelationType { get; set; }
 }
 
 /// <summary>
-/// ワークスペースアイテム関連一覧レスポンス
+/// ワークスペースアイテム関連一覧レスポンス（ドキュメントツリー用）
 /// </summary>
-public class WorkspaceItemRelationsResponse
+public class WorkspaceDocRelationsResponse
 {
     /// <summary>
     /// 関連リスト

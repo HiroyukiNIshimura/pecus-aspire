@@ -1819,4 +1819,85 @@ public class WorkspaceItemService
 
         return false;
     }
+
+    /// <summary>
+    /// ドキュメントツリー用のアイテム一覧を取得
+    /// ワークスペース内の全アイテムと親子関係を解決して返す
+    /// </summary>
+    public async Task<DocumentTreeResponse> GetDocumentTreeAsync(int workspaceId, int userId)
+    {
+        // 権限チェック
+        await _accessHelper.EnsureWorkspaceAccessAsync(workspaceId, userId);
+
+        // ワークスペースの存在確認とモードチェック
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        if (workspace.Mode != WorkspaceMode.Document)
+        {
+            throw new InvalidOperationException("このエンドポイントはドキュメントモードのワークスペースでのみ使用できます。");
+        }
+
+        // アイテム数の上限チェック
+        var itemCount = await _context.WorkspaceItems
+            .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
+            .CountAsync();
+
+        if (itemCount > _config.Limits.MaxDocumentsPerWorkspace)
+        {
+            throw new InvalidOperationException(
+                $"ワークスペース内のアイテム数が上限（{_config.Limits.MaxDocumentsPerWorkspace}件）を超えています。");
+        }
+
+        // ワークスペース内の全アイテムを取得（アーカイブ済みは除外）
+        var items = await _context.WorkspaceItems
+            .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
+            .OrderBy(wi => wi.ItemNumber)
+            .Select(wi => new
+            {
+                wi.Id,
+                wi.Code,
+                wi.Subject,
+                wi.IsDraft,
+                wi.ItemNumber
+            })
+            .ToListAsync();
+
+        if (!items.Any())
+        {
+            return new DocumentTreeResponse
+            {
+                Items = [],
+                TotalCount = 0
+            };
+        }
+
+        var itemIds = items.Select(i => i.Id).ToList();
+
+        // ParentOf リレーションを取得して親子関係のマッピングを作成
+        // ParentOf: From=Parent, To=Child なので、ToItemId をキーに FromItemId(親) を取得
+        var parentRelations = await _context.WorkspaceItemRelations
+            .Where(r => itemIds.Contains(r.ToItemId) && r.RelationType == RelationType.ParentOf)
+            .ToDictionaryAsync(r => r.ToItemId, r => r.FromItemId);
+
+        // レスポンス構築
+        var treeItems = items.Select((item, index) => new DocumentTreeItemResponse
+        {
+            Id = item.Id,
+            Code = item.Code,
+            Subject = item.Subject ?? "（件名なし）",
+            ParentId = parentRelations.TryGetValue(item.Id, out var parentId) ? parentId : null,
+            IsDraft = item.IsDraft,
+            SortOrder = index // 現状はItemNumber順をそのまま使用
+        }).ToList();
+
+        return new DocumentTreeResponse
+        {
+            Items = treeItems,
+            TotalCount = treeItems.Count
+        };
+    }
 }

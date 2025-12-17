@@ -32,13 +32,13 @@ public class WorkspaceRelationsController : BaseSecureController
     /// ワークスペース内の全アイテムリレーションを取得
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(WorkspaceItemRelationsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WorkspaceDocRelationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<Ok<WorkspaceItemRelationsResponse>> GetWorkspaceRelations(int workspaceId)
+    public async Task<Ok<WorkspaceDocRelationsResponse>> GetWorkspaceRelations(int workspaceId)
     {
         var relations = await _itemService.GetWorkspaceRelationsAsync(workspaceId, CurrentUserId);
 
-        var response = new WorkspaceItemRelationsResponse
+        var response = new WorkspaceDocRelationsResponse
         {
             Relations = relations.Select(r => new WorkspaceItemDocRelationResponse
             {

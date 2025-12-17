@@ -16766,7 +16766,7 @@
         },
         "description": "ワークスペースアイテム詳細レスポンス"
       },
-      "WorkspaceItemRelationResponse": {
+      "WorkspaceItemDocRelationResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -16797,13 +16797,77 @@
         },
         "description": "ワークスペースアイテム関連レスポンス"
       },
+      "WorkspaceItemRelationResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "関連ID",
+            "format": "int32"
+          },
+          "fromItemId": {
+            "type": "integer",
+            "description": "関連元アイテムID",
+            "format": "int32"
+          },
+          "fromItemCode": {
+            "type": "string",
+            "description": "関連元アイテムコード"
+          },
+          "fromItemSubject": {
+            "type": "string",
+            "description": "関連元アイテム件名"
+          },
+          "toItemId": {
+            "type": "integer",
+            "description": "関連先アイテムID",
+            "format": "int32"
+          },
+          "toItemCode": {
+            "type": "string",
+            "description": "関連先アイテムコード"
+          },
+          "toItemSubject": {
+            "type": "string",
+            "description": "関連先アイテム件名"
+          },
+          "relationType": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RelationType"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "作成日時",
+            "format": "date-time"
+          },
+          "createdByUserId": {
+            "type": "integer",
+            "description": "作成者ID",
+            "format": "int32"
+          },
+          "createdByUsername": {
+            "type": "string",
+            "description": "作成者ユーザー名"
+          }
+        },
+        "description": "ワークスペースアイテム関連情報レスポンス"
+      },
       "WorkspaceItemRelationsResponse": {
         "type": "object",
         "properties": {
           "relations": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
+              "$ref": "#/components/schemas/WorkspaceItemDocRelationResponse"
             },
             "description": "関連リスト"
           }

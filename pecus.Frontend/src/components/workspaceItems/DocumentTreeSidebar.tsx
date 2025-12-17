@@ -1,11 +1,11 @@
 'use client';
 
 import { type DropOptions, type NodeModel, Tree } from '@minoru/react-dnd-treeview';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { fetchWorkspaceRelations, updateItemParent } from '@/actions/workspaceRelation';
-import type { WorkspaceItemDetailResponse, WorkspaceItemRelationResponse } from '@/connectors/api/pecus';
+import type { WorkspaceItemDetailResponse, WorkspaceItemDocRelationResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
 interface DocumentTreeSidebarProps {
@@ -13,6 +13,8 @@ interface DocumentTreeSidebarProps {
   items: WorkspaceItemDetailResponse[];
   onItemSelect?: (itemId: number, itemCode: string) => void;
   selectedItemId?: number | null;
+  /** アイテムが移動された後に呼び出されるコールバック（親の items を再取得するため） */
+  onItemMoved?: () => Promise<void> | void;
 }
 
 type CustomNodeModel = NodeModel<WorkspaceItemDetailResponse>;
@@ -22,24 +24,34 @@ export default function DocumentTreeSidebar({
   items,
   onItemSelect,
   selectedItemId,
+  onItemMoved,
 }: DocumentTreeSidebarProps) {
   const [treeData, setTreeData] = useState<CustomNodeModel[]>([]);
-  const [relations, setRelations] = useState<WorkspaceItemRelationResponse[]>([]);
+  const [relations, setRelations] = useState<WorkspaceItemDocRelationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // ドロップ処理中フラグ（楽観的更新を維持するため）
+  const [isDropping, setIsDropping] = useState(false);
   const notify = useNotify();
+  const notifyRef = useRef(notify);
+
+  // notifyの最新値をrefで保持
+  useEffect(() => {
+    notifyRef.current = notify;
+  }, [notify]);
 
   // リレーションデータの取得
   const loadRelations = useCallback(async () => {
     try {
       const data = await fetchWorkspaceRelations(workspaceId);
+      console.log('[DocumentTree] Relations fetched:', JSON.stringify(data.relations, null, 2));
       setRelations(data.relations || []);
     } catch (error) {
       console.error('Failed to fetch relations:', error);
-      notify.error('リレーション情報の取得に失敗しました。');
+      notifyRef.current.error('リレーション情報の取得に失敗しました。');
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, notify]);
+  }, [workspaceId]);
 
   useEffect(() => {
     loadRelations();
@@ -47,16 +59,27 @@ export default function DocumentTreeSidebar({
 
   // ツリーデータの構築
   useEffect(() => {
-    if (isLoading) return;
+    // ドロップ処理中は楽観的更新を維持するため再構築しない
+    if (isLoading || isDropping) return;
 
     // 親子関係のマッピングを作成 (ChildId -> ParentId)
     // RelationType.ParentOf の場合、From=Parent, To=Child なので、ToItemId をキーに FromItemId を取得
     const parentMap = new Map<number, number>();
     relations.forEach((rel) => {
+      console.log(
+        '[DocumentTree] Processing relation:',
+        rel.relationType,
+        'from:',
+        rel.fromItemId,
+        'to:',
+        rel.toItemId,
+      );
       if (rel.relationType === 'ParentOf' && rel.toItemId !== undefined && rel.fromItemId !== undefined) {
         parentMap.set(rel.toItemId as number, rel.fromItemId as number);
       }
     });
+
+    console.log('[DocumentTree] ParentMap:', Object.fromEntries(parentMap));
 
     const nodes: CustomNodeModel[] = items.map((item) => ({
       id: item.id,
@@ -66,8 +89,13 @@ export default function DocumentTreeSidebar({
       data: item,
     }));
 
+    console.log(
+      '[DocumentTree] TreeData:',
+      nodes.map((n) => ({ id: n.id, parent: n.parent, text: n.text })),
+    );
+
     setTreeData(nodes);
-  }, [items, relations, isLoading]);
+  }, [items, relations, isLoading, isDropping]);
 
   // ドロップ時の処理
   const handleDrop = async (newTree: CustomNodeModel[], options: DropOptions) => {
@@ -78,6 +106,8 @@ export default function DocumentTreeSidebar({
     const newParentId = dropTargetId === 0 ? null : Number(dropTargetId);
     const targetItemId = Number(dragSourceId);
 
+    // ドロップ処理中フラグをON（楽観的更新を維持）
+    setIsDropping(true);
     // 楽観的UI更新
     setTreeData(newTree);
 
@@ -94,15 +124,22 @@ export default function DocumentTreeSidebar({
         rowVersion: targetItem.rowVersion,
       });
 
-      notify.success('アイテムを移動しました。');
+      notifyRef.current.success('アイテムを移動しました。');
 
-      // リレーション情報を再取得して整合性を保つ
+      // リレーション情報を再取得
       await loadRelations();
+      // 親コンポーネントのアイテムリストを更新
+      if (onItemMoved) {
+        await onItemMoved();
+      }
     } catch (error) {
       console.error('Failed to update parent:', error);
-      notify.error('アイテムの移動に失敗しました。');
-      // エラー時はリレーションを再取得して元に戻す（簡易的なロールバック）
-      loadRelations();
+      notifyRef.current.error('アイテムの移動に失敗しました。');
+      // エラー時はリレーションを再取得して元に戻す
+      await loadRelations();
+    } finally {
+      // ドロップ処理完了後、フラグをOFF
+      setIsDropping(false);
     }
   };
 
@@ -156,14 +193,14 @@ export default function DocumentTreeSidebar({
             }}
             sort={false}
             insertDroppableFirst={false}
-            canDrop={(tree, { dragSource, dropTargetId }) => {
+            canDrop={(_tree, { dragSource, dropTargetId }) => {
               if (dragSource?.parent === dropTargetId) {
                 return true;
               }
               return true;
             }}
             dropTargetOffset={10}
-            placeholderRender={(node, { depth }) => (
+            placeholderRender={(_node, { depth }) => (
               <div className="bg-primary/50 h-[2px] absolute right-0 z-50" style={{ left: depth * 24 }} />
             )}
           />

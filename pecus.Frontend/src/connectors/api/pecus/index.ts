@@ -176,6 +176,7 @@ export type { WorkspaceDetailUserResponse } from './models/WorkspaceDetailUserRe
 export type { WorkspaceFullDetailResponse } from './models/WorkspaceFullDetailResponse';
 export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAttachmentResponse';
 export type { WorkspaceItemDetailResponse } from './models/WorkspaceItemDetailResponse';
+export type { WorkspaceItemDocRelationResponse } from './models/WorkspaceItemDocRelationResponse';
 export type { WorkspaceItemRelationResponse } from './models/WorkspaceItemRelationResponse';
 export type { WorkspaceItemRelationsResponse } from './models/WorkspaceItemRelationsResponse';
 export type { WorkspaceItemResponse } from './models/WorkspaceItemResponse';
