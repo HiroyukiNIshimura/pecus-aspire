@@ -60,6 +60,20 @@ public class WorkspaceItemService
                 throw new NotFoundException("ワークスペースが見つかりません。");
             }
 
+            // ドキュメントモードの場合、アイテム数の上限チェック
+            if (workspace.Mode == WorkspaceMode.Document)
+            {
+                var currentItemCount = await _context.WorkspaceItems
+                    .Where(wi => wi.WorkspaceId == workspaceId && !wi.IsArchived)
+                    .CountAsync();
+
+                if (currentItemCount >= _config.Limits.MaxDocumentsPerWorkspace)
+                {
+                    throw new InvalidOperationException(
+                        $"ドキュメントモードのワークスペースはアイテム数が上限（{_config.Limits.MaxDocumentsPerWorkspace}件）に達しています。");
+                }
+            }
+
             // Assigneeが指定されている場合、存在確認とメンバーチェック
             if (request.AssigneeId.HasValue)
             {
@@ -1096,6 +1110,12 @@ public class WorkspaceItemService
         if (request.IsArchived.HasValue)
         {
             item.IsArchived = request.IsArchived.Value;
+
+            // アーカイブ時に子アイテムの処理（ドキュメントモード用）
+            if (request.IsArchived.Value && request.ArchiveChildren.HasValue)
+            {
+                await ProcessChildrenOnArchiveAsync(workspaceId, itemId, request.ArchiveChildren.Value, userId);
+            }
         }
 
         item.UpdatedAt = DateTime.UtcNow;
@@ -1146,6 +1166,68 @@ public class WorkspaceItemService
         }
 
         return item;
+    }
+
+    /// <summary>
+    /// アーカイブ時の子アイテム処理
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="parentItemId">アーカイブする親アイテムID</param>
+    /// <param name="archiveChildren">true: 子供もアーカイブ、false: 子供はルートに移動</param>
+    /// <param name="userId">操作ユーザーID</param>
+    private async Task ProcessChildrenOnArchiveAsync(int workspaceId, int parentItemId, bool archiveChildren, int userId)
+    {
+        // この親アイテムの直接の子供を取得（ParentOf: From=Parent, To=Child）
+        var childRelations = await _context.WorkspaceItemRelations
+            .Where(r => r.FromItemId == parentItemId && r.RelationType == RelationType.ParentOf)
+            .Include(r => r.ToItem)
+            .ToListAsync();
+
+        if (!childRelations.Any())
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
+        foreach (var relation in childRelations)
+        {
+            var childItem = relation.ToItem;
+            if (childItem == null || childItem.IsArchived)
+            {
+                continue;
+            }
+
+            if (archiveChildren)
+            {
+                // 子供もアーカイブする
+                childItem.IsArchived = true;
+                childItem.UpdatedAt = now;
+                childItem.UpdatedByUserId = userId;
+
+                // Activity記録
+                EnqueueActivityIfChanged(workspaceId, childItem.Id, userId,
+                    ActivityActionType.ArchivedChanged,
+                    ActivityDetailsBuilder.BuildBoolChangeDetails(false, true));
+
+                // 孫以下も再帰的にアーカイブ
+                await ProcessChildrenOnArchiveAsync(workspaceId, childItem.Id, true, userId);
+            }
+            else
+            {
+                // 子供はルートに移動（親子関係を解除）
+                _context.WorkspaceItemRelations.Remove(relation);
+
+                // 親子関係解除のActivity記録
+                // Note: 親アーカイブによる自動移動のため、RelationRemovedではなく専用のActivityを検討
+                // 現状はRelationRemovedで記録（親アイテムのコードを取得する必要があるため、ここではID文字列で代用）
+                EnqueueActivityIfChanged(workspaceId, childItem.Id, userId,
+                    ActivityActionType.RelationRemoved,
+                    ActivityDetailsBuilder.BuildRelationRemovedDetails(parentItemId.ToString(), "ParentOf"));
+            }
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -1884,8 +1966,52 @@ public class WorkspaceItemService
             .Where(r => itemIds.Contains(r.ToItemId) && r.RelationType == RelationType.ParentOf)
             .ToDictionaryAsync(r => r.ToItemId, r => r.FromItemId);
 
+        // アーカイブされた親を持つアイテムを再帰的に除外
+        // 親がアーカイブ済み = parentRelationsに親IDがあるが、itemIdsに含まれていない
+        var validItemIds = new HashSet<int>(itemIds);
+        var itemsToExclude = new HashSet<int>();
+
+        // 再帰的に除外対象を特定
+        void MarkDescendantsForExclusion(int excludedParentId)
+        {
+            // この親を持つ子供を探す
+            var children = parentRelations
+                .Where(pr => pr.Value == excludedParentId)
+                .Select(pr => pr.Key)
+                .ToList();
+
+            foreach (var childId in children)
+            {
+                if (itemsToExclude.Add(childId))
+                {
+                    // 子供の子供も再帰的に除外
+                    MarkDescendantsForExclusion(childId);
+                }
+            }
+        }
+
+        // 親がアーカイブ済み（取得対象に含まれていない）アイテムを特定して除外
+        foreach (var relation in parentRelations)
+        {
+            var childId = relation.Key;
+            var parentId = relation.Value;
+
+            // 親が取得対象に含まれていない = 親がアーカイブ済み
+            if (!validItemIds.Contains(parentId))
+            {
+                if (itemsToExclude.Add(childId))
+                {
+                    // この子供の子孫も除外
+                    MarkDescendantsForExclusion(childId);
+                }
+            }
+        }
+
+        // 除外対象を取り除く
+        var filteredItems = items.Where(i => !itemsToExclude.Contains(i.Id)).ToList();
+
         // レスポンス構築
-        var treeItems = items.Select((item, index) => new DocumentTreeItemResponse
+        var treeItems = filteredItems.Select((item, index) => new DocumentTreeItemResponse
         {
             Id = item.Id,
             Code = item.Code,
