@@ -1,4 +1,4 @@
-import SidebarNavItem from './SidebarNavItem';
+import SidebarNavItem from '../navigation/SidebarNavItem';
 
 interface ProfileSidebarProps {
   sidebarOpen: boolean;

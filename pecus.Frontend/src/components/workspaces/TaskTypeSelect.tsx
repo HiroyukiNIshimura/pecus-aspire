@@ -183,7 +183,7 @@ export default function TaskTypeSelect({
           color: 'var(--color-base-content)',
         },
       }),
-    }),
+    }) satisfies StylesConfig<SelectOption, false>,
     [error],
   );
 

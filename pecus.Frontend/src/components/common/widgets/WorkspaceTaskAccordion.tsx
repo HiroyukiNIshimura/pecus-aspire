@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WorkspaceTaskDetailPage from '@/app/(workspace-full)/workspaces/[code]/WorkspaceTaskDetailPage';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { uiConfig } from '@/config/ui';
 import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/api/pecus';

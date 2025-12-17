@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getTaskFlowMap } from '@/actions/workspaceTask';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskFlowMap from '@/components/tasks/TaskFlowMap';
 import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
 

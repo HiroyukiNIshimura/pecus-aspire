@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
-import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import TaskStatusFilter, { type TaskStatus } from '@/components/common/TaskStatusFilter';
-import UserAvatar from '@/components/common/UserAvatar';
+import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import TaskStatusFilter, { type TaskStatus } from '@/components/common/filters/TaskStatusFilter';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   SortOrder,

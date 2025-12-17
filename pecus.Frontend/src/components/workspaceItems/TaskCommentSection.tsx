@@ -7,7 +7,7 @@ import {
   getTaskComments,
   updateTaskComment,
 } from '@/actions/workspaceTaskComment';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 

@@ -162,7 +162,7 @@ export default function GenreSelect({
           color: 'var(--color-base-content)',
         },
       }),
-    }),
+    }) satisfies StylesConfig<GenreOption, false>,
     [error],
   );
 

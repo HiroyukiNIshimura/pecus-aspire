@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { fetchItemActivities } from '@/actions/activity';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { ActivityActionType, ActivityResponse } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 

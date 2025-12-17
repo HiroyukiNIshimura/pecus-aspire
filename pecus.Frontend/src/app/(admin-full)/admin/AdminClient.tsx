@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
 import type { UserInfo } from '@/types/userInfo';

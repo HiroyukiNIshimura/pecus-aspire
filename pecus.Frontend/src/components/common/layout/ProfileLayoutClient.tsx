@@ -1,8 +1,8 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
-import AppHeader from '@/components/common/AppHeader';
-import ProfileSidebar from '@/components/common/ProfileSidebar';
+import AppHeader from '@/components/common/layout/AppHeader';
+import ProfileSidebar from '@/components/common/layout/ProfileSidebar';
 import type { UserInfo } from '@/types/userInfo';
 
 interface ProfileLayoutClientProps {

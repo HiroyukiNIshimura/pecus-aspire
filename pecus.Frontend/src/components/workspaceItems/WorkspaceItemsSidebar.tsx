@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
+import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import WorkspaceItemFilterDrawer, {
   type WorkspaceItemFilters,
 } from '@/components/workspaceItems/WorkspaceItemFilterDrawer';

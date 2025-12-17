@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { deleteDevice } from '@/actions/profile';
-import DeleteConfirmModal from '@/components/common/DeleteConfirmModal';
+import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
 import type { DeviceResponse } from '@/connectors/api/pecus';
 
 interface DevicesTabProps {

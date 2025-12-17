@@ -12,7 +12,7 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';

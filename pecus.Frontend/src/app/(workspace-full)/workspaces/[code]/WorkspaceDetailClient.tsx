@@ -11,9 +11,9 @@ import {
 } from '@/actions/workspace';
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { getWorkspaceTaskBySequence } from '@/actions/workspaceTask';
-import AppHeader from '@/components/common/AppHeader';
-import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
-import UserAvatar from '@/components/common/UserAvatar';
+import AppHeader from '@/components/common/layout/AppHeader';
+import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { WorkspaceItemsSidebarHandle } from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import WorkspaceItemsSidebar from '@/components/workspaceItems/WorkspaceItemsSidebar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';

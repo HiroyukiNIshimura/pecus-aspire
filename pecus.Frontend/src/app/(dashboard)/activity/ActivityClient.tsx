@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { fetchMyActivities } from '@/actions/activity';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   ActivityActionType,
   ActivityPeriod,

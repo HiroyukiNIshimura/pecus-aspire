@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { createWorkspaceItem } from '@/actions/workspaceItem';
-import DatePicker from '@/components/common/DatePicker';
-import TagInput from '@/components/common/TagInput';
+import DatePicker from '@/components/common/filters/DatePicker';
+import TagInput from '@/components/common/forms/TagInput';
 import { PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { DashboardHelpCommentsResponse } from '@/connectors/api/pecus';
 
 /**

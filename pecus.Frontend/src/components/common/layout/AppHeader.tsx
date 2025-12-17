@@ -1,11 +1,11 @@
 'use client';
 
 import type { UserInfo } from '@/types/userInfo';
-import HeaderLogo from './HeaderLogo';
-import HeaderNavItem from './HeaderNavItem';
-import MobileMenuButton from './MobileMenuButton';
-import ThemeToggle from './ThemeToggle';
-import UserMenu from './UserMenu';
+import HeaderLogo from '../navigation/HeaderLogo';
+import HeaderNavItem from '../navigation/HeaderNavItem';
+import MobileMenuButton from '../navigation/MobileMenuButton';
+import ThemeToggle from '../navigation/ThemeToggle';
+import UserMenu from '../navigation/UserMenu';
 
 interface AppHeaderProps {
   userInfo: UserInfo | null;

@@ -10,9 +10,9 @@ import {
   type PredecessorTaskOption,
   updateWorkspaceTask,
 } from '@/actions/workspaceTask';
-import DatePicker from '@/components/common/DatePicker';
-import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import UserAvatar from '@/components/common/UserAvatar';
+import DatePicker from '@/components/common/filters/DatePicker';
+import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskCommentSection from '@/components/workspaceItems/TaskCommentSection';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {

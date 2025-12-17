@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
   MasterGenreResponse,

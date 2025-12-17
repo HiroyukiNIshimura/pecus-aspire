@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { updateUserSetting } from '@/actions/profile';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
-import { Slider } from '@/components/common/Slider';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import { Slider } from '@/components/common/filters/Slider';
 import type { FocusScorePriority, LandingPage, UserSettingResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';

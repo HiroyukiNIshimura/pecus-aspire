@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchMyItems } from '@/actions/workspaceItem';
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   MyItemRelationType,
   PagedResponseOfWorkspaceItemDetailResponse,

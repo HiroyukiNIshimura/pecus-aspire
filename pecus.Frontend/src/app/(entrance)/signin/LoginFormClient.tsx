@@ -3,7 +3,7 @@
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { login } from '@/actions/auth';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { deviceInfoAtom } from '@/libs/atoms/deviceInfoAtom';
 import { loginSchema } from '@/schemas/signInSchemas';

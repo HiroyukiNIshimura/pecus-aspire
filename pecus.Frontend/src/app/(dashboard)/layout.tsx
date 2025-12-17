@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import DashboardLayoutClient from '@/components/common/DashboardLayoutClient';
+import DashboardLayoutClient from '@/components/common/layout/DashboardLayoutClient';
 import { createPecusApiClients, detect401ValidationError, parseErrorResponse } from '@/connectors/api/PecusApiClient';
 import { SignalRProvider } from '@/providers/SignalRProvider';
 import { mapUserResponseToUserInfo } from '@/utils/userMapper';

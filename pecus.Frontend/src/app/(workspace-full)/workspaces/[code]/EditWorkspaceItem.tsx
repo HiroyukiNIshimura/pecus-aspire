@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { $ZodIssue } from 'zod/v4/core';
 import { fetchLatestWorkspaceItem, updateWorkspaceItem } from '@/actions/workspaceItem';
-import TagInput from '@/components/common/TagInput';
+import TagInput from '@/components/common/forms/TagInput';
 import { PecusNotionLikeEditor, useExistingItemImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';

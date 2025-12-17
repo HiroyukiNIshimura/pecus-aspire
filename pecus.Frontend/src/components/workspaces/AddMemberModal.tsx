@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
-import DebouncedSearchInput from '@/components/common/DebouncedSearchInput';
-import UserAvatar from '@/components/common/UserAvatar';
+import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { UserSearchResultResponse, WorkspaceRole, WorkspaceUserItem } from '@/connectors/api/pecus';
 
 /**

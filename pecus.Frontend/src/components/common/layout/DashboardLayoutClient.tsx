@@ -1,8 +1,8 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
-import AppHeader from '@/components/common/AppHeader';
-import DashboardSidebar from '@/components/common/DashboardSidebar.server';
+import AppHeader from '@/components/common/layout/AppHeader';
+import DashboardSidebar from '@/components/common/layout/DashboardSidebar.server';
 import type { UserInfo } from '@/types/userInfo';
 
 interface DashboardLayoutClientProps {

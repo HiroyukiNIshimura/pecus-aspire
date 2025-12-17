@@ -10,8 +10,8 @@ import {
 } from '@/actions/admin/workspace';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
-import UserAvatar from '@/components/common/UserAvatar';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import AddMemberModal from '@/components/workspaces/AddMemberModal';
 import ChangeRoleModal from '@/components/workspaces/ChangeRoleModal';
 import GenreSelect from '@/components/workspaces/GenreSelect';

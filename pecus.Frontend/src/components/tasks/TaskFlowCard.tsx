@@ -1,6 +1,6 @@
 'use client';
 
-import UserAvatar from '@/components/common/UserAvatar';
+import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskFlowNode, TaskPriority } from '@/connectors/api/pecus';
 
 interface TaskFlowCardProps {

@@ -1,7 +1,7 @@
 'use client';
 
-import MemberActionMenu from '@/components/common/MemberActionMenu';
-import MemberCard from '@/components/common/MemberCard';
+import MemberActionMenu from '@/components/common/widgets/user/MemberActionMenu';
+import MemberCard from '@/components/common/widgets/user/MemberCard';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
 
 /**

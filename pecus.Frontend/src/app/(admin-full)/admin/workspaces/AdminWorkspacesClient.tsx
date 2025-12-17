@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { deleteWorkspace } from '@/actions/admin/workspace';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import ActiveStatusFilter from '@/components/common/ActiveStatusFilter';
-import DeleteWorkspaceModal from '@/components/common/DeleteWorkspaceModal';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
-import Pagination from '@/components/common/Pagination';
+import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
+import Pagination from '@/components/common/filters/Pagination';
+import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
 import type {
   MasterGenreResponse,
   PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics,

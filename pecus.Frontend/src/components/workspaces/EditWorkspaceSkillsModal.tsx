@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getWorkspaceDetail, setWorkspaceSkills } from '@/actions/workspace';
-import MultiSelectDropdown from '@/components/common/MultiSelectDropdown';
+import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
 import type { MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
