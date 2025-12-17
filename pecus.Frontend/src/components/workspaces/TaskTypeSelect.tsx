@@ -104,86 +104,87 @@ export default function TaskTypeSelect({
   // スタイル定義（portal内でも動作するようインラインスタイルで完全制御）
   // FlyonUI の CSS 変数を使用: var(--color-base-100), var(--color-base-content) 等
   const customStyles: StylesConfig<SelectOption, false> = useMemo(
-    () => ({
-      control: (base, state) => ({
-        ...base,
-        minWidth: '180px',
-        minHeight: '38px',
-        borderRadius: '8px',
-        borderColor: error
-          ? 'var(--color-error)'
-          : state.isFocused
-            ? 'var(--color-primary)'
-            : 'color-mix(in oklch, var(--color-base-content) 30%, transparent)',
-        backgroundColor: 'var(--color-base-100)',
-        boxShadow: state.isFocused ? '0 0 0 1px var(--color-primary)' : 'none',
-        '&:hover': {
-          borderColor: state.isFocused
-            ? 'var(--color-primary)'
-            : 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
-        },
-      }),
-      menu: (base) => ({
-        ...base,
-        backgroundColor: 'var(--color-base-200)',
-        borderRadius: '8px',
-        border: '1px solid color-mix(in oklch, var(--color-base-content) 20%, transparent)',
-        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-        zIndex: 9999,
-        overflow: 'hidden',
-      }),
-      menuList: (base) => ({
-        ...base,
-        padding: 0,
-        backgroundColor: 'var(--color-base-200)',
-      }),
-      menuPortal: (base) => ({
-        ...base,
-        zIndex: 9999,
-        color: 'var(--color-base-content)',
-      }),
-      option: (base, state) => ({
-        ...base,
-        backgroundColor: state.isFocused
-          ? 'color-mix(in oklch, var(--color-base-200) 85%, var(--color-base-content) 15%)'
-          : 'var(--color-base-200)',
-        color: 'inherit',
-        padding: '10px 12px',
-        cursor: 'pointer',
-        '&:active': {
-          backgroundColor: 'color-mix(in oklch, var(--color-base-200) 75%, var(--color-base-content) 25%)',
-        },
-      }),
-      singleValue: (base) => ({
-        ...base,
-        color: 'var(--color-base-content)',
-      }),
-      placeholder: (base) => ({
-        ...base,
-        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
-      }),
-      input: (base) => ({
-        ...base,
-        color: 'var(--color-base-content)',
-      }),
-      indicatorSeparator: () => ({
-        display: 'none',
-      }),
-      dropdownIndicator: (base) => ({
-        ...base,
-        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
-        '&:hover': {
+    () =>
+      ({
+        control: (base, state) => ({
+          ...base,
+          minWidth: '180px',
+          minHeight: '38px',
+          borderRadius: '8px',
+          borderColor: error
+            ? 'var(--color-error)'
+            : state.isFocused
+              ? 'var(--color-primary)'
+              : 'color-mix(in oklch, var(--color-base-content) 30%, transparent)',
+          backgroundColor: 'var(--color-base-100)',
+          boxShadow: state.isFocused ? '0 0 0 1px var(--color-primary)' : 'none',
+          '&:hover': {
+            borderColor: state.isFocused
+              ? 'var(--color-primary)'
+              : 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+          },
+        }),
+        menu: (base) => ({
+          ...base,
+          backgroundColor: 'var(--color-base-200)',
+          borderRadius: '8px',
+          border: '1px solid color-mix(in oklch, var(--color-base-content) 20%, transparent)',
+          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+          zIndex: 9999,
+          overflow: 'hidden',
+        }),
+        menuList: (base) => ({
+          ...base,
+          padding: 0,
+          backgroundColor: 'var(--color-base-200)',
+        }),
+        menuPortal: (base) => ({
+          ...base,
+          zIndex: 9999,
           color: 'var(--color-base-content)',
-        },
-      }),
-      clearIndicator: (base) => ({
-        ...base,
-        color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
-        '&:hover': {
+        }),
+        option: (base, state) => ({
+          ...base,
+          backgroundColor: state.isFocused
+            ? 'color-mix(in oklch, var(--color-base-200) 85%, var(--color-base-content) 15%)'
+            : 'var(--color-base-200)',
+          color: 'inherit',
+          padding: '10px 12px',
+          cursor: 'pointer',
+          '&:active': {
+            backgroundColor: 'color-mix(in oklch, var(--color-base-200) 75%, var(--color-base-content) 25%)',
+          },
+        }),
+        singleValue: (base) => ({
+          ...base,
           color: 'var(--color-base-content)',
-        },
-      }),
-    }) satisfies StylesConfig<SelectOption, false>,
+        }),
+        placeholder: (base) => ({
+          ...base,
+          color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+        }),
+        input: (base) => ({
+          ...base,
+          color: 'var(--color-base-content)',
+        }),
+        indicatorSeparator: () => ({
+          display: 'none',
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+          '&:hover': {
+            color: 'var(--color-base-content)',
+          },
+        }),
+        clearIndicator: (base) => ({
+          ...base,
+          color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+          '&:hover': {
+            color: 'var(--color-base-content)',
+          },
+        }),
+      }) satisfies StylesConfig<SelectOption, false>,
     [error],
   );
 
