@@ -138,8 +138,12 @@ export default function MultiSelectDropdown({
           ) : (
             items.map((item) => (
               <li key={item.id}>
-                <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
+                <label
+                  className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2"
+                  htmlFor={`multi-select-item-${item.id}`}
+                >
                   <input
+                    id={`multi-select-item-${item.id}`}
                     type="checkbox"
                     checked={selectedIds.includes(item.id)}
                     onChange={() => toggleItem(item.id)}

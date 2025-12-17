@@ -108,7 +108,7 @@ export default function TaskStatusFilter({
               id={inputId}
               type="radio"
               name={filterName}
-              className={`btn ${sizeClass} ${isResetOption ? 'filter-reset' : ''}`}
+              className={`btn btn-secondary ${sizeClass} ${isResetOption ? 'filter-reset' : ''}`}
               aria-label={option.label}
               checked={isChecked}
               onChange={() => onChange(option.value)}

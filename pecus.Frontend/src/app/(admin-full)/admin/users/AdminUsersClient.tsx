@@ -389,9 +389,13 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
                           <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-1">
                             {skills.map((skill) => (
                               <li key={skill.id}>
-                                <label className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2">
+                                <label
+                                  className="label cursor-pointer gap-3 hover:bg-base-200 rounded p-2"
+                                  htmlFor={`filter-skill-${skill.id}`}
+                                >
                                   <input
                                     type="checkbox"
+                                    id={`filter-skill-${skill.id}`}
                                     checked={filterSkillIds.includes(skill.id)}
                                     onChange={() => toggleSkillFilter(skill.id)}
                                     className="checkbox checkbox-primary checkbox-sm"
@@ -423,8 +427,9 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
                             </div>
                             {/* Skill Filter Mode */}
                             <div className="flex gap-4 mt-3">
-                              <label className="flex items-center cursor-pointer gap-2">
+                              <label className="flex items-center cursor-pointer gap-2" htmlFor="skill-filter-mode-and">
                                 <input
+                                  id="skill-filter-mode-and"
                                   type="radio"
                                   name="skillFilterMode"
                                   value="and"
@@ -434,8 +439,9 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
                                 />
                                 <span className="text-sm">すべてのスキルを保有</span>
                               </label>
-                              <label className="flex items-center cursor-pointer gap-2">
+                              <label className="flex items-center cursor-pointer gap-2" htmlFor="skill-filter-mode-or">
                                 <input
+                                  id="skill-filter-mode-or"
                                   type="radio"
                                   name="skillFilterMode"
                                   value="or"

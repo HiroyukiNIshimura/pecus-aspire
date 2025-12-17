@@ -412,7 +412,7 @@ export default function WorkspaceTaskAccordion({
                   {/* 統計バッジ */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-2">
                     {showItemCount && workspace.itemCount !== undefined && (
-                      <span className="badge badge-ghost badge-sm sm:badge-md whitespace-nowrap text-center min-w-18 sm:min-w-0">
+                      <span className="badge badge-secondary badge-sm sm:badge-md whitespace-nowrap text-center min-w-18 sm:min-w-0">
                         {workspace.itemCount} アイテム
                       </span>
                     )}
@@ -489,7 +489,7 @@ export default function WorkspaceTaskAccordion({
                               </div>
 
                               <div className="flex items-center gap-3">
-                                <span className="badge badge-ghost badge-sm">
+                                <span className="badge badge-secondary badge-sm">
                                   {dueDateGroup.tasks?.length || 0} タスク
                                 </span>
                                 <span

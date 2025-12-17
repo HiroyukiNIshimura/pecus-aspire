@@ -229,10 +229,10 @@
 ラベルの後に赤いアスタリスクを付ける：
 
 ```tsx
-<label className="label">
+<div className="label">
   <span className="label-text font-semibold">ワークスペース名</span>
   <span className="label-text-alt text-error">*</span>
-</label>
+</div>
 ```
 
 ---

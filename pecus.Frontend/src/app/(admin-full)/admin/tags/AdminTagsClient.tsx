@@ -281,7 +281,7 @@ export default function AdminTagsClient({ initialUser }: AdminTagsClientProps) {
                         <div className="label">
                           <span className="label-text">使用状況</span>
                         </div>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer" htmlFor="filter-unused">
                           <input
                             id="filter-unused"
                             type="checkbox"

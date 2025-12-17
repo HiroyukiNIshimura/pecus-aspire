@@ -88,8 +88,10 @@ export default function SkillsTab({ initialSkillIds, masterSkills, notify, isLoa
                   <label
                     key={skill.id}
                     className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer"
+                    htmlFor={`skill-checkbox-${skill.id}`}
                   >
                     <input
+                      id={`skill-checkbox-${skill.id}`}
                       type="checkbox"
                       className="checkbox checkbox-sm"
                       checked={selectedSkillIds.has(skill.id)}

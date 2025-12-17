@@ -192,8 +192,9 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                 <span className="label-text font-semibold">モード</span>
               </div>
               <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer" htmlFor="mode-normal">
                   <input
+                    id="mode-normal"
                     type="radio"
                     name="mode"
                     className="radio radio-primary"
@@ -206,8 +207,9 @@ export default function CreateWorkspaceModal({ isOpen, onClose, onSuccess, genre
                     通常
                   </span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer" htmlFor="mode-document">
                   <input
+                    id="mode-document"
                     type="radio"
                     name="mode"
                     className="radio radio-primary"
