@@ -21,6 +21,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const searchParams = request.nextUrl.searchParams;
 
     const page = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
+    const pageSize = searchParams.get('pageSize') ? parseInt(searchParams.get('pageSize')!, 10) : undefined;
     const searchQuery = searchParams.get('searchQuery') || undefined;
     const isDraft = searchParams.get('isDraft') !== null ? searchParams.get('isDraft') === 'true' : undefined;
     const isArchived = searchParams.get('isArchived') !== null ? searchParams.get('isArchived') === 'true' : undefined;
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const response = await api.workspaceItem.getApiWorkspacesItems(
       workspaceId,
       page,
+      pageSize,
       isDraft,
       isArchived,
       assigneeId,

@@ -8,6 +8,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
+using Pecus.WebApi.Models.Requests;
 
 namespace Pecus.Services;
 
@@ -1605,5 +1606,217 @@ public class WorkspaceItemService
         _backgroundJobClient.Enqueue<ActivityTasks>(x =>
             x.RecordActivityAsync(workspaceId, itemId, userId, actionType, details)
         );
+    }
+
+    /// <summary>
+    /// ワークスペース内の全アイテムリレーションを取得
+    /// </summary>
+    public async Task<List<WorkspaceItemRelation>> GetWorkspaceRelationsAsync(int workspaceId, int userId)
+    {
+        // 権限チェック
+        await _accessHelper.EnsureWorkspaceAccessAsync(workspaceId, userId);
+
+        // ワークスペース内のアイテムIDを取得
+        var itemIds = await _context.WorkspaceItems
+            .Where(wi => wi.WorkspaceId == workspaceId)
+            .Select(wi => wi.Id)
+            .ToListAsync();
+
+        if (!itemIds.Any())
+        {
+            return new List<WorkspaceItemRelation>();
+        }
+
+        // 関連元または関連先がワークスペース内のアイテムであるリレーションを取得
+        // 親子関係(ParentOf)のみに絞ることも検討できるが、汎用的に全リレーションを返す
+        var relations = await _context.WorkspaceItemRelations
+            .Where(r => itemIds.Contains(r.FromItemId) && itemIds.Contains(r.ToItemId))
+            .ToListAsync();
+
+        return relations;
+    }
+
+    /// <summary>
+    /// アイテムの親を変更（移動）
+    /// </summary>
+    public async Task UpdateItemParentAsync(int workspaceId, UpdateItemParentRequest request, int userId)
+    {
+        // 権限チェック
+        await _accessHelper.EnsureWorkspaceAccessAsync(workspaceId, userId);
+
+        // トランザクション開始
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            WorkspaceItem? newParent = null;
+
+            // 対象アイテムの取得
+            var item = await _context.WorkspaceItems
+                .FirstOrDefaultAsync(wi => wi.Id == request.ItemId && wi.WorkspaceId == workspaceId);
+
+            if (item == null)
+            {
+                throw new NotFoundException("指定されたアイテムが見つかりません。");
+            }
+
+            // 楽観的ロックチェック
+            if (item.RowVersion != request.RowVersion)
+            {
+                throw new ConcurrencyException<WorkspaceItemDetailResponse>(
+                    "アイテムが他のユーザーによって更新されています。",
+                    null // ここでは詳細な競合モデルは返さない（必要なら実装）
+                );
+            }
+
+            // 新しい親アイテムの検証（指定がある場合）
+            if (request.NewParentItemId.HasValue)
+            {
+                newParent = await _context.WorkspaceItems
+                    .FirstOrDefaultAsync(wi => wi.Id == request.NewParentItemId.Value && wi.WorkspaceId == workspaceId);
+
+                if (newParent == null)
+                {
+                    throw new NotFoundException("新しい親アイテムが見つかりません。");
+                }
+
+                // 循環参照チェック
+                // 自分自身を親にはできない
+                if (request.ItemId == request.NewParentItemId.Value)
+                {
+                    throw new InvalidOperationException("自分自身を親にすることはできません。");
+                }
+
+                // 新しい親が、自分の子孫であってはならない
+                if (await IsDescendantAsync(request.ItemId, request.NewParentItemId.Value))
+                {
+                    throw new InvalidOperationException("自分の子孫を親にすることはできません（循環参照）。");
+                }
+            }
+
+            // 既存の親リレーション（自分が子である ParentOf リレーション）を削除
+            // ParentOf: From=Parent, To=Child
+            // 自分が子なので ToItemId = item.Id の ParentOf を探す
+            var existingParentRelations = await _context.WorkspaceItemRelations
+                .Where(r => r.ToItemId == item.Id && r.RelationType == RelationType.ParentOf)
+                .ToListAsync();
+
+            // Activity用に旧親のCodeを取得
+            var oldParentIds = existingParentRelations.Select(r => r.FromItemId).ToList();
+            var oldParents = await _context.WorkspaceItems
+                .Where(wi => oldParentIds.Contains(wi.Id))
+                .ToDictionaryAsync(wi => wi.Id, wi => wi.Code);
+
+            _context.WorkspaceItemRelations.RemoveRange(existingParentRelations);
+
+            // 新しい親リレーションを作成（指定がある場合）
+            if (request.NewParentItemId.HasValue && newParent != null)
+            {
+                var newRelation = new WorkspaceItemRelation
+                {
+                    FromItemId = request.NewParentItemId.Value,
+                    ToItemId = item.Id,
+                    RelationType = RelationType.ParentOf,
+                    CreatedByUserId = userId,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _context.WorkspaceItemRelations.Add(newRelation);
+            }
+
+            // アイテム自体の更新（RowVersion更新のため）
+            // 実質的な変更はないが、EntityState.ModifiedにしてRowVersionを進める
+            // またはUpdatedBy/UpdatedAtを更新する
+            item.UpdatedByUserId = userId;
+            item.UpdatedAt = DateTimeOffset.UtcNow;
+            // RowVersionはDB側で自動更新されるが、EF Coreに更新を認識させる
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // Activity記録（親削除）
+            foreach (var relation in existingParentRelations)
+            {
+                if (oldParents.TryGetValue(relation.FromItemId, out var oldParentCode))
+                {
+                    var details = ActivityDetailsBuilder.BuildRelationRemovedDetails(oldParentCode, RelationType.ParentOf.ToString());
+                    EnqueueActivityIfChanged(workspaceId, item.Id, userId, ActivityActionType.RelationRemoved, details);
+                }
+            }
+
+            // Activity記録（親追加）
+            if (newParent != null)
+            {
+                var details = ActivityDetailsBuilder.BuildRelationAddedDetails(newParent.Code, RelationType.ParentOf.ToString());
+                EnqueueActivityIfChanged(workspaceId, item.Id, userId, ActivityActionType.RelationAdded, details);
+            }
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync();
+            // 再取得して例外を投げる処理は共通化されている前提だが、ここではシンプルに
+            throw new ConcurrencyException<WorkspaceItemDetailResponse>("同時実行制御エラーが発生しました。", null);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// targetItemId が sourceItemId の子孫かどうかを判定
+    /// </summary>
+    private async Task<bool> IsDescendantAsync(int sourceItemId, int targetItemId)
+    {
+        // 再帰的にチェックする必要があるが、CTE (Common Table Expression) を使うのが効率的
+        // EF Core 8.0 以降なら再帰クエリがサポートされているが、ここでは簡易的に実装するか、
+        // または全リレーションをメモリにロードしてチェックする（アイテム数が少なければ）
+
+        // ここでは安全のため、深さ制限付きの探索を行う
+        // ParentOf: From=Parent, To=Child
+
+        var currentChildren = await _context.WorkspaceItemRelations
+            .Where(r => r.FromItemId == sourceItemId && r.RelationType == RelationType.ParentOf)
+            .Select(r => r.ToItemId)
+            .ToListAsync();
+
+        if (currentChildren.Contains(targetItemId))
+        {
+            return true;
+        }
+
+        // 幅優先探索
+        var queue = new Queue<int>(currentChildren);
+        var visited = new HashSet<int>(currentChildren);
+
+        // 無限ループ防止のための安全装置（深さ制限など）
+        int safetyCounter = 0;
+        const int MaxChecks = 1000;
+
+        while (queue.Count > 0 && safetyCounter++ < MaxChecks)
+        {
+            var currentId = queue.Dequeue();
+
+            var children = await _context.WorkspaceItemRelations
+                .Where(r => r.FromItemId == currentId && r.RelationType == RelationType.ParentOf)
+                .Select(r => r.ToItemId)
+                .ToListAsync();
+
+            foreach (var childId in children)
+            {
+                if (childId == targetItemId)
+                {
+                    return true;
+                }
+
+                if (!visited.Contains(childId))
+                {
+                    visited.Add(childId);
+                    queue.Enqueue(childId);
+                }
+            }
+        }
+
+        return false;
     }
 }

@@ -3415,6 +3415,17 @@
             }
           },
           {
+            "name": "PageSize",
+            "in": "query",
+            "description": "ページサイズ",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "IsDraft",
             "in": "query",
             "description": "下書きかどうか",
@@ -5046,6 +5057,138 @@
                 }
               },
               "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/workspaces/{workspaceId}/relations": {
+      "get": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "ワークスペース内の全アイテムリレーションを取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceItemRelationsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/workspaces/{workspaceId}/relations/parent": {
+      "put": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "アイテムの親を変更（移動）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemParentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemParentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemParentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -15241,6 +15384,32 @@
         },
         "description": "一時添付ファイルのレスポンス"
       },
+      "UpdateItemParentRequest": {
+        "required": [
+          "itemId",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "description": "対象アイテムID（子となるアイテム）",
+            "format": "int32"
+          },
+          "newParentItemId": {
+            "type": "integer",
+            "description": "新しい親アイテムID（ルートにする場合はnull）",
+            "format": "int32",
+            "nullable": true
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "楽観的ロック用のRowVersion",
+            "format": "uint32"
+          }
+        },
+        "description": "アイテムの親更新リクエスト"
+      },
       "UpdatePasswordRequest": {
         "required": [
           "currentPassword",
@@ -16598,9 +16767,6 @@
         "description": "ワークスペースアイテム詳細レスポンス"
       },
       "WorkspaceItemRelationResponse": {
-        "required": [
-          "id"
-        ],
         "type": "object",
         "properties": {
           "id": {
@@ -16613,26 +16779,10 @@
             "description": "関連元アイテムID",
             "format": "int32"
           },
-          "fromItemCode": {
-            "type": "string",
-            "description": "関連元アイテムコード"
-          },
-          "fromItemSubject": {
-            "type": "string",
-            "description": "関連元アイテム件名"
-          },
           "toItemId": {
             "type": "integer",
             "description": "関連先アイテムID",
             "format": "int32"
-          },
-          "toItemCode": {
-            "type": "string",
-            "description": "関連先アイテムコード"
-          },
-          "toItemSubject": {
-            "type": "string",
-            "description": "関連先アイテム件名"
           },
           "relationType": {
             "oneOf": [
@@ -16643,45 +16793,19 @@
                 "$ref": "#/components/schemas/RelationType"
               }
             ]
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "作成日時",
-            "format": "date-time"
-          },
-          "createdByUserId": {
-            "type": "integer",
-            "description": "作成者ID",
-            "format": "int32"
-          },
-          "createdByUsername": {
-            "type": "string",
-            "description": "作成者ユーザー名"
           }
         },
-        "description": "ワークスペースアイテム関連情報レスポンス"
+        "description": "ワークスペースアイテム関連レスポンス"
       },
       "WorkspaceItemRelationsResponse": {
         "type": "object",
         "properties": {
-          "relationsFrom": {
+          "relations": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
             },
-            "description": "関連元としての関連一覧（このアイテムから他へ）"
-          },
-          "relationsTo": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
-            },
-            "description": "関連先としての関連一覧（他からこのアイテムへ）"
-          },
-          "totalCount": {
-            "type": "integer",
-            "description": "全関連数",
-            "format": "int32"
+            "description": "関連リスト"
           }
         },
         "description": "ワークスペースアイテム関連一覧レスポンス"

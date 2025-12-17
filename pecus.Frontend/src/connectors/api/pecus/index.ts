@@ -149,6 +149,7 @@ export type { TaskSortBy } from './models/TaskSortBy';
 export type { TaskStatusFilter } from './models/TaskStatusFilter';
 export type { TaskWithItemResponse } from './models/TaskWithItemResponse';
 export type { TempAttachmentResponse } from './models/TempAttachmentResponse';
+export type { UpdateItemParentRequest } from './models/UpdateItemParentRequest';
 export type { UpdatePasswordRequest } from './models/UpdatePasswordRequest';
 export type { UpdateProfileRequest } from './models/UpdateProfileRequest';
 export type { UpdateSkillRequest } from './models/UpdateSkillRequest';

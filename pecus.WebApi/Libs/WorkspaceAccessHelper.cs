@@ -164,4 +164,19 @@ public class OrganizationAccessHelper
     {
         return await _context.Users.AnyAsync(u => u.Id == userId && u.IsActive);
     }
+
+    /// <summary>
+    /// ユーザーが指定したワークスペースにアクセス可能かチェックし、不可の場合は例外をスロー
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <exception cref="Exceptions.NotFoundException">アクセス権がない場合</exception>
+    public async Task EnsureWorkspaceAccessAsync(int workspaceId, int userId)
+    {
+        var hasAccess = await CanAccessWorkspaceAsync(userId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new Exceptions.NotFoundException("ワークスペースが見つかりません。");
+        }
+    }
 }

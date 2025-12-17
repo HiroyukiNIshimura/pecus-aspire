@@ -125,6 +125,15 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     // 表示モード（リスト/ツリー）
     const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
 
+    // ワークスペースモードが変更されたらビューモードをリセット
+    useEffect(() => {
+      if (currentWorkspace?.mode === 'Document') {
+        setViewMode('tree');
+      } else {
+        setViewMode('list');
+      }
+    }, [currentWorkspace?.mode]);
+
     // スクロールコンテナの ref
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -204,7 +213,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           setIsLoading(true);
           const searchParam = query !== undefined ? query : searchQueryRef.current;
           const currentFilters = appliedFilters !== undefined ? appliedFilters : filtersRef.current;
-          const baseUrl = `/api/workspaces/${workspaceId}/items?page=1`;
+
+          let baseUrl = `/api/workspaces/${workspaceId}/items?page=1`;
+          // ドキュメントモードかつツリー表示の場合は全件取得（上限1000件）
+          if (currentWorkspace?.mode === 'Document' && viewMode === 'tree') {
+            baseUrl += '&pageSize=1000';
+          }
+
           const url = buildFilterParams(baseUrl, currentFilters, searchParam || undefined);
           const response = await fetch(url);
 
@@ -230,7 +245,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           setIsLoading(false);
         }
       },
-      [workspaceId, buildFilterParams],
+      [workspaceId, buildFilterParams, currentWorkspace?.mode, viewMode],
     );
 
     // refreshItemsの最新値を参照するためのref（初期値を設定）
@@ -241,7 +256,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     useEffect(() => {
       refreshItems();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [workspaceId]);
+    }, [workspaceId, viewMode]); // viewMode変更時もリロード
 
     // 選択モードを開始
     const startSelectionMode = useCallback((currentItemId: number, excludeIds: number[]) => {
@@ -303,7 +318,12 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
       const currentFilters = filtersRef.current;
 
       try {
-        const baseUrl = `/api/workspaces/${workspaceId}/items?page=${nextPage}`;
+        let baseUrl = `/api/workspaces/${workspaceId}/items?page=${nextPage}`;
+        // ドキュメントモードかつツリー表示の場合は全件取得（上限1000件）
+        if (currentWorkspace?.mode === 'Document' && viewMode === 'tree') {
+          baseUrl += '&pageSize=1000';
+        }
+
         const url = buildFilterParams(baseUrl, currentFilters, currentSearchQuery || undefined);
         const response = await fetch(url);
 
@@ -327,7 +347,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
         console.error('Failed to load more items:', err);
         notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
       }
-    }, [workspaceId, buildFilterParams]);
+    }, [workspaceId, buildFilterParams, currentWorkspace?.mode, viewMode]);
 
     // 無限スクロール
     const {
@@ -520,11 +540,13 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           </div>
         ) : viewMode === 'tree' && currentWorkspace?.mode === 'Document' ? (
           <DocumentTreeSidebar
+            workspaceId={workspaceId}
             items={items}
             onItemSelect={(itemId, itemCode) => {
               setSelectedItemId(itemId);
               onItemSelect?.(itemId, itemCode);
             }}
+            selectedItemId={typeof selectedItemId === 'number' ? selectedItemId : null}
           />
         ) : (
           <div ref={scrollContainerRef} className="overflow-y-auto bg-base-200 flex-1" style={{ maxHeight: '750px' }}>

@@ -164,7 +164,7 @@ public class WorkspaceItemController : BaseSecureController
             pinnedByUserId = CurrentUserId;
         }
 
-        var pageSize = _config.Pagination.DefaultPageSize;
+        var pageSize = request.PageSize ?? _config.Pagination.DefaultPageSize;
         var (items, totalCount) = await _workspaceItemService.GetWorkspaceItemsAsync(
             workspaceId: workspaceId,
             page: request.Page,

@@ -8,16 +8,8 @@ import type { WorkspaceItemRelationResponse } from './WorkspaceItemRelationRespo
  */
 export type WorkspaceItemRelationsResponse = {
     /**
-     * 関連元としての関連一覧（このアイテムから他へ）
+     * 関連リスト
      */
-    relationsFrom?: Array<WorkspaceItemRelationResponse>;
-    /**
-     * 関連先としての関連一覧（他からこのアイテムへ）
-     */
-    relationsTo?: Array<WorkspaceItemRelationResponse>;
-    /**
-     * 全関連数
-     */
-    totalCount?: number;
+    relations?: Array<WorkspaceItemRelationResponse>;
 };
 
