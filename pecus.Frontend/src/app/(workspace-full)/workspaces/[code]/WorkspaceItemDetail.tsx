@@ -497,7 +497,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
 
           {/* 本文  */}
           {item.body && (
-            <div className="mb-4 border-1 border-base-300 rounded-lg p-4">
+            <div className="mb-4 border border-base-300 rounded-lg p-4">
               <WorkspaceItemBodyViewer body={item.body} workspaceId={item.workspaceId!} />
             </div>
           )}
