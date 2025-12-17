@@ -15,7 +15,7 @@ import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { SettingsContext } from '../context/SettingsContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
 import { TableContext } from '../plugins/TablePlugin';
-import NotionLikeEditorTheme from '../themes/NotionLikeEditorTheme';
+import NotionLikeViewerTheme from '../themes/NotionLikeViewerTheme';
 import { INITIAL_SETTINGS } from './appSettings';
 import { buildHTMLConfig } from './buildHTMLConfig';
 import Viewer from './Viewer';
@@ -60,7 +60,7 @@ export default function NotionLikeViewer({
         name: 'pecus/NotionLikeViewer',
         namespace: 'NotionLikeViewer',
         nodes: NotionLikeEditorNodes,
-        theme: NotionLikeEditorTheme,
+        theme: NotionLikeViewerTheme,
         editable: false,
       }),
     [initialViewerState],
