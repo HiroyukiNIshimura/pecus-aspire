@@ -1862,7 +1862,8 @@ public class WorkspaceItemService
                 wi.Code,
                 wi.Subject,
                 wi.IsDraft,
-                wi.ItemNumber
+                wi.ItemNumber,
+                wi.RowVersion
             })
             .ToListAsync();
 
@@ -1891,7 +1892,8 @@ public class WorkspaceItemService
             Subject = item.Subject ?? "（件名なし）",
             ParentId = parentRelations.TryGetValue(item.Id, out var parentId) ? parentId : null,
             IsDraft = item.IsDraft,
-            SortOrder = index // 現状はItemNumber順をそのまま使用
+            SortOrder = index, // 現状はItemNumber順をそのまま使用
+            RowVersion = item.RowVersion
         }).ToList();
 
         return new DocumentTreeResponse

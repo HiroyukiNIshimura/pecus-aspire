@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AddUserToWorkspaceRequest } from '../models/AddUserToWorkspaceRequest';
 import type { CreateWorkspaceRequest } from '../models/CreateWorkspaceRequest';
+import type { DocumentTreeResponse } from '../models/DocumentTreeResponse';
 import type { PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics } from '../models/PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics';
 import type { SetWorkspaceSkillsRequest } from '../models/SetWorkspaceSkillsRequest';
 import type { SuccessResponse } from '../models/SuccessResponse';
@@ -15,6 +16,30 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class WorkspaceService {
+    /**
+     * ドキュメントツリーを取得
+     * ワークスペース内の全アイテムと親子関係を解決して返す
+     * このエンドポイントはドキュメントモードのワークスペースでのみ使用可能です。
+     * 通常モードのワークスペースで呼び出すと 400 Bad Request が返されます。
+     * @param workspaceId
+     * @returns DocumentTreeResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesDocumentTree(
+        workspaceId: number,
+    ): CancelablePromise<DocumentTreeResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/document-tree',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            errors: {
+                400: `Bad Request`,
+                404: `Not Found`,
+            },
+        });
+    }
     /**
      * ワークスペースを新規作成する
      * @param requestBody ワークスペース作成リクエスト

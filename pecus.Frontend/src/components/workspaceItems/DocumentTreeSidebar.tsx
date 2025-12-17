@@ -4,31 +4,30 @@ import { type DropOptions, type NodeModel, Tree } from '@minoru/react-dnd-treevi
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { fetchWorkspaceRelations, updateItemParent } from '@/actions/workspaceRelation';
-import type { WorkspaceItemDetailResponse, WorkspaceItemDocRelationResponse } from '@/connectors/api/pecus';
+import { fetchDocumentTree, updateItemParent } from '@/actions/workspaceRelation';
+import type { DocumentTreeItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 
 interface DocumentTreeSidebarProps {
   workspaceId: number;
-  items: WorkspaceItemDetailResponse[];
   onItemSelect?: (itemId: number, itemCode: string) => void;
   selectedItemId?: number | null;
-  /** アイテムが移動された後に呼び出されるコールバック（親の items を再取得するため） */
+  /** アイテムが移動された後に呼び出されるコールバック */
   onItemMoved?: () => Promise<void> | void;
 }
 
-type CustomNodeModel = NodeModel<WorkspaceItemDetailResponse>;
+type CustomNodeModel = NodeModel<DocumentTreeItemResponse>;
 
 export default function DocumentTreeSidebar({
   workspaceId,
-  items,
   onItemSelect,
   selectedItemId,
   onItemMoved,
 }: DocumentTreeSidebarProps) {
   const [treeData, setTreeData] = useState<CustomNodeModel[]>([]);
-  const [relations, setRelations] = useState<WorkspaceItemDocRelationResponse[]>([]);
+  const [items, setItems] = useState<DocumentTreeItemResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // ドロップ処理中フラグ（楽観的更新を維持するため）
   const [isDropping, setIsDropping] = useState(false);
   const notify = useNotify();
@@ -39,63 +38,51 @@ export default function DocumentTreeSidebar({
     notifyRef.current = notify;
   }, [notify]);
 
-  // リレーションデータの取得
-  const loadRelations = useCallback(async () => {
+  // ドキュメントツリーデータの取得
+  const loadDocumentTree = useCallback(async () => {
     try {
-      const data = await fetchWorkspaceRelations(workspaceId);
-      console.log('[DocumentTree] Relations fetched:', JSON.stringify(data.relations, null, 2));
-      setRelations(data.relations || []);
-    } catch (error) {
-      console.error('Failed to fetch relations:', error);
-      notifyRef.current.error('リレーション情報の取得に失敗しました。');
+      setError(null);
+      const data = await fetchDocumentTree(workspaceId);
+      console.log('[DocumentTree] API Response:', JSON.stringify(data, null, 2));
+      console.log(
+        '[DocumentTree] Items with parentId:',
+        data.items?.map((i) => ({ id: i.id, subject: i.subject, parentId: i.parentId })),
+      );
+      setItems(data.items || []);
+    } catch (err) {
+      console.error('Failed to fetch document tree:', err);
+      const errorMessage = err instanceof Error ? err.message : 'ドキュメントツリーの取得に失敗しました。';
+      setError(errorMessage);
+      notifyRef.current.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   }, [workspaceId]);
 
   useEffect(() => {
-    loadRelations();
-  }, [loadRelations]);
+    loadDocumentTree();
+  }, [loadDocumentTree]);
 
   // ツリーデータの構築
   useEffect(() => {
     // ドロップ処理中は楽観的更新を維持するため再構築しない
     if (isLoading || isDropping) return;
 
-    // 親子関係のマッピングを作成 (ChildId -> ParentId)
-    // RelationType.ParentOf の場合、From=Parent, To=Child なので、ToItemId をキーに FromItemId を取得
-    const parentMap = new Map<number, number>();
-    relations.forEach((rel) => {
-      console.log(
-        '[DocumentTree] Processing relation:',
-        rel.relationType,
-        'from:',
-        rel.fromItemId,
-        'to:',
-        rel.toItemId,
-      );
-      if (rel.relationType === 'ParentOf' && rel.toItemId !== undefined && rel.fromItemId !== undefined) {
-        parentMap.set(rel.toItemId as number, rel.fromItemId as number);
-      }
-    });
-
-    console.log('[DocumentTree] ParentMap:', Object.fromEntries(parentMap));
-
     const nodes: CustomNodeModel[] = items.map((item) => ({
-      id: item.id,
-      parent: parentMap.get(item.id) || 0, // 0 はルート
+      id: item.id ?? 0,
+      parent: item.parentId ?? 0, // nullの場合は0（ルート）
       text: item.subject || '（件名なし）',
       droppable: true,
       data: item,
     }));
 
     console.log(
-      '[DocumentTree] TreeData:',
+      '[DocumentTree] Built tree nodes:',
       nodes.map((n) => ({ id: n.id, parent: n.parent, text: n.text })),
     );
 
     setTreeData(nodes);
-  }, [items, relations, isLoading, isDropping]);
+  }, [items, isLoading, isDropping]);
 
   // ドロップ時の処理
   const handleDrop = async (newTree: CustomNodeModel[], options: DropOptions) => {
@@ -112,31 +99,29 @@ export default function DocumentTreeSidebar({
     setTreeData(newTree);
 
     try {
-      // 対象アイテムの現在のRowVersionを取得
-      const targetItem = items.find((i) => i.id === targetItemId);
-      if (!targetItem) {
-        throw new Error('Target item not found');
-      }
+      // ドラッグ対象のアイテムからRowVersionを取得
+      const draggedItem = items.find((item) => item.id === targetItemId);
+      const rowVersion = draggedItem?.rowVersion ?? 0;
 
       await updateItemParent(workspaceId, {
         itemId: targetItemId,
         newParentItemId: newParentId,
-        rowVersion: targetItem.rowVersion,
+        rowVersion,
       });
 
       notifyRef.current.success('アイテムを移動しました。');
 
-      // リレーション情報を再取得
-      await loadRelations();
-      // 親コンポーネントのアイテムリストを更新
+      // ツリー情報を再取得
+      await loadDocumentTree();
+      // 親コンポーネントに通知
       if (onItemMoved) {
         await onItemMoved();
       }
-    } catch (error) {
-      console.error('Failed to update parent:', error);
+    } catch (err) {
+      console.error('Failed to update parent:', err);
       notifyRef.current.error('アイテムの移動に失敗しました。');
-      // エラー時はリレーションを再取得して元に戻す
-      await loadRelations();
+      // エラー時はツリーを再取得して元に戻す
+      await loadDocumentTree();
     } finally {
       // ドロップ処理完了後、フラグをOFF
       setIsDropping(false);
@@ -144,19 +129,43 @@ export default function DocumentTreeSidebar({
   };
 
   // ノードのレンダリング
-  const renderNode = (node: CustomNodeModel) => {
+  const renderNode = (
+    node: CustomNodeModel,
+    { depth, isOpen, onToggle, hasChild }: { depth: number; isOpen: boolean; onToggle: () => void; hasChild: boolean },
+  ) => {
     const isSelected = selectedItemId === Number(node.id);
     const item = node.data;
+    const indent = depth * 20; // 階層ごとに20pxインデント
 
     return (
       <div
         className={`flex items-center p-2 rounded cursor-pointer hover:bg-base-300 transition-colors ${
           isSelected ? 'bg-primary/10 text-primary font-semibold' : ''
         }`}
+        style={{ paddingLeft: `${indent + 8}px` }}
         onClick={() => onItemSelect?.(Number(node.id), item?.code || '')}
       >
+        {/* 展開/折りたたみトグル */}
+        {hasChild ? (
+          <button
+            type="button"
+            className="w-5 h-5 flex items-center justify-center flex-shrink-0 hover:bg-base-content/10 rounded"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+          >
+            <span
+              className={`icon-[mdi--chevron-right] w-4 h-4 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+        ) : (
+          <span className="w-5 h-5 flex-shrink-0" />
+        )}
         <div className="flex-1 truncate flex items-center gap-2">
           <span className="icon-[mdi--file-document-outline] w-4 h-4 flex-shrink-0 opacity-70" aria-hidden="true" />
+          <span className="text-xs text-base-content/50 flex-shrink-0">{item?.code}</span>
           <span className="truncate">{node.text}</span>
         </div>
         {item?.isDraft && <span className="badge badge-xs badge-ghost ml-2">Draft</span>}
@@ -167,7 +176,19 @@ export default function DocumentTreeSidebar({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <span className="loading loading-spinner loading-md"></span>
+        <span className="loading loading-spinner loading-md" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+        <span className="icon-[mdi--alert-circle-outline] w-8 h-8 text-error mb-2" aria-hidden="true" />
+        <p className="text-sm text-base-content/70">{error}</p>
+        <button type="button" className="btn btn-sm btn-ghost mt-2" onClick={() => loadDocumentTree()}>
+          再試行
+        </button>
       </div>
     );
   }
@@ -185,6 +206,7 @@ export default function DocumentTreeSidebar({
             rootId={0}
             onDrop={handleDrop}
             render={renderNode}
+            initialOpen={true}
             classes={{
               root: 'h-full',
               container: 'h-full',

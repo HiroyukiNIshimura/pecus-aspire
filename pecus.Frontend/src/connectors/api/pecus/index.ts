@@ -50,6 +50,8 @@ export type { DashboardWorkspaceStatistics } from './models/DashboardWorkspaceSt
 export type { DeleteTaskCommentRequest } from './models/DeleteTaskCommentRequest';
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';
+export type { DocumentTreeItemResponse } from './models/DocumentTreeItemResponse';
+export type { DocumentTreeResponse } from './models/DocumentTreeResponse';
 export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResponse';
 export type { EmailChangeVerifyResponse } from './models/EmailChangeVerifyResponse';
 export type { ErrorResponse } from './models/ErrorResponse';
@@ -173,6 +175,7 @@ export type { UserStatistics } from './models/UserStatistics';
 export type { WeeklyTaskTrend } from './models/WeeklyTaskTrend';
 export type { WorkspaceDetailResponse } from './models/WorkspaceDetailResponse';
 export type { WorkspaceDetailUserResponse } from './models/WorkspaceDetailUserResponse';
+export type { WorkspaceDocRelationsResponse } from './models/WorkspaceDocRelationsResponse';
 export type { WorkspaceFullDetailResponse } from './models/WorkspaceFullDetailResponse';
 export type { WorkspaceItemAttachmentResponse } from './models/WorkspaceItemAttachmentResponse';
 export type { WorkspaceItemDetailResponse } from './models/WorkspaceItemDetailResponse';

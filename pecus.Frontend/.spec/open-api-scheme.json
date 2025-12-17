@@ -393,6 +393,63 @@
         ]
       }
     },
+    "/api/workspaces/{workspaceId}/document-tree": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "ドキュメントツリーを取得\nワークスペース内の全アイテムと親子関係を解決して返す",
+        "description": "このエンドポイントはドキュメントモードのワークスペースでのみ使用可能です。\n通常モードのワークスペースで呼び出すと 400 Bad Request が返されます。",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentTreeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/downloads/{FileType}/{ResourceId}/{FileName}": {
       "get": {
         "tags": [
@@ -5094,7 +5151,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceItemRelationsResponse"
+                  "$ref": "#/components/schemas/WorkspaceDocRelationsResponse"
                 }
               }
             }
@@ -11428,6 +11485,67 @@
         "type": "string",
         "nullable": true
       },
+      "DocumentTreeItemResponse": {
+        "required": [
+          "code",
+          "subject"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "アイテムID",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string",
+            "description": "アイテムコード"
+          },
+          "subject": {
+            "type": "string",
+            "description": "件名"
+          },
+          "parentId": {
+            "type": "integer",
+            "description": "親アイテムID（nullの場合はルートアイテム）",
+            "format": "int32",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "下書きかどうか"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "description": "表示順序（同一親内での並び順）",
+            "format": "int32"
+          },
+          "rowVersion": {
+            "type": "integer",
+            "description": "行バージョン（楽観的ロック用）",
+            "format": "uint32"
+          }
+        },
+        "description": "ドキュメントツリーのアイテム情報"
+      },
+      "DocumentTreeResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentTreeItemResponse"
+            },
+            "description": "ツリーアイテム一覧"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          }
+        },
+        "description": "ドキュメントツリーレスポンス"
+      },
       "EmailChangeRequestResponse": {
         "required": [
           "message",
@@ -16427,6 +16545,19 @@
         },
         "description": "ワークスペース詳細取得用ユーザー情報"
       },
+      "WorkspaceDocRelationsResponse": {
+        "type": "object",
+        "properties": {
+          "relations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceItemDocRelationResponse"
+            },
+            "description": "関連リスト"
+          }
+        },
+        "description": "ワークスペースアイテム関連一覧レスポンス（ドキュメントツリー用）"
+      },
       "WorkspaceFullDetailResponse": {
         "required": [
           "id",
@@ -16864,12 +16995,24 @@
       "WorkspaceItemRelationsResponse": {
         "type": "object",
         "properties": {
-          "relations": {
+          "relationsFrom": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WorkspaceItemDocRelationResponse"
+              "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
             },
-            "description": "関連リスト"
+            "description": "関連元としての関連一覧（このアイテムから他へ）"
+          },
+          "relationsTo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceItemRelationResponse"
+            },
+            "description": "関連先としての関連一覧（他からこのアイテムへ）"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "全関連数",
+            "format": "int32"
           }
         },
         "description": "ワークスペースアイテム関連一覧レスポンス"
@@ -17494,6 +17637,9 @@
       "name": "Dashboard"
     },
     {
+      "name": "Workspace"
+    },
+    {
       "name": "File"
     },
     {
@@ -17516,9 +17662,6 @@
     },
     {
       "name": "User"
-    },
-    {
-      "name": "Workspace"
     },
     {
       "name": "WorkspaceItem"

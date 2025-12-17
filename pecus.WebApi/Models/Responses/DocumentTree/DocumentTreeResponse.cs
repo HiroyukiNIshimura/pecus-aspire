@@ -34,6 +34,11 @@ public class DocumentTreeItemResponse
     /// 表示順序（同一親内での並び順）
     /// </summary>
     public int SortOrder { get; set; }
+
+    /// <summary>
+    /// 行バージョン（楽観的ロック用）
+    /// </summary>
+    public uint RowVersion { get; set; }
 }
 
 /// <summary>

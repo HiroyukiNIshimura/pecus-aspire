@@ -15,6 +15,7 @@ import type { UpdateWorkspaceItemAssigneeRequest } from '../models/UpdateWorkspa
 import type { UpdateWorkspaceItemAttributeRequest } from '../models/UpdateWorkspaceItemAttributeRequest';
 import type { UpdateWorkspaceItemRequest } from '../models/UpdateWorkspaceItemRequest';
 import type { UpdateWorkspaceItemStatusRequest } from '../models/UpdateWorkspaceItemStatusRequest';
+import type { WorkspaceDocRelationsResponse } from '../models/WorkspaceDocRelationsResponse';
 import type { WorkspaceItemAttachmentResponse } from '../models/WorkspaceItemAttachmentResponse';
 import type { WorkspaceItemDetailResponse } from '../models/WorkspaceItemDetailResponse';
 import type { WorkspaceItemRelationsResponse } from '../models/WorkspaceItemRelationsResponse';
@@ -654,12 +655,12 @@ export class WorkspaceItemService {
     /**
      * ワークスペース内の全アイテムリレーションを取得
      * @param workspaceId
-     * @returns WorkspaceItemRelationsResponse OK
+     * @returns WorkspaceDocRelationsResponse OK
      * @throws ApiError
      */
     public static getApiWorkspacesRelations(
         workspaceId: number,
-    ): CancelablePromise<WorkspaceItemRelationsResponse> {
+    ): CancelablePromise<WorkspaceDocRelationsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/workspaces/{workspaceId}/relations',

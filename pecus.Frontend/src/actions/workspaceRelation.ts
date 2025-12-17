@@ -1,15 +1,16 @@
 'use server';
 
 import { createPecusApiClients } from '@/connectors/api/PecusApiClient';
-import type { UpdateItemParentRequest, WorkspaceItemRelationsResponse } from '@/connectors/api/pecus';
+import type { DocumentTreeResponse, UpdateItemParentRequest } from '@/connectors/api/pecus';
 
 /**
- * ワークスペース内の全アイテムリレーションを取得
+ * ドキュメントツリーを取得
+ * ワークスペース内の全アイテムと親子関係を解決して返す
  * @param workspaceId ワークスペースID
  */
-export async function fetchWorkspaceRelations(workspaceId: number): Promise<WorkspaceItemRelationsResponse> {
-  const { workspaceItem } = createPecusApiClients();
-  const response = await workspaceItem.getApiWorkspacesRelations(workspaceId);
+export async function fetchDocumentTree(workspaceId: number): Promise<DocumentTreeResponse> {
+  const { workspace } = createPecusApiClients();
+  const response = await workspace.getApiWorkspacesDocumentTree(workspaceId);
   return response;
 }
 

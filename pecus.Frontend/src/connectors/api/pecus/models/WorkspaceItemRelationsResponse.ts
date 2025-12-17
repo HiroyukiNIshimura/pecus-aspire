@@ -2,14 +2,22 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { WorkspaceItemDocRelationResponse } from './WorkspaceItemDocRelationResponse';
+import type { WorkspaceItemRelationResponse } from './WorkspaceItemRelationResponse';
 /**
  * ワークスペースアイテム関連一覧レスポンス
  */
 export type WorkspaceItemRelationsResponse = {
     /**
-     * 関連リスト
+     * 関連元としての関連一覧（このアイテムから他へ）
      */
-    relations?: Array<WorkspaceItemDocRelationResponse>;
+    relationsFrom?: Array<WorkspaceItemRelationResponse>;
+    /**
+     * 関連先としての関連一覧（他からこのアイテムへ）
+     */
+    relationsTo?: Array<WorkspaceItemRelationResponse>;
+    /**
+     * 全関連数
+     */
+    totalCount?: number;
 };
 
