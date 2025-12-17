@@ -15,7 +15,7 @@ const theme: EditorThemeClasses = {
   autocomplete: 'NotionLikeEditorTheme__autocomplete',
   blockCursor: 'NotionLikeEditorTheme__blockCursor',
   characterLimit: 'NotionLikeEditorTheme__characterLimit',
-  code: 'NotionLikeEditorTheme__code',
+  code: 'NotionLikeViewerTheme__code',
   codeHighlight: {
     atrule: 'NotionLikeEditorTheme__tokenAttr',
     attr: 'NotionLikeEditorTheme__tokenAttr',

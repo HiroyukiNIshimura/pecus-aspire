@@ -34,13 +34,50 @@
   background-color: #efefef;
 }
 
-.draggable-block-target-line {
-  pointer-events: none;
+/* --- Theme-aware adjustments --- */
+/* ライトテーマ（data-theme が absent か dark でない場合）: アイコンとターゲットラインをダーク寄りにする */
+:root:not([data-theme="dark"]) .draggable-block-menu .icon,
+:root:not([data-theme="dark"]) .draggable-block-menu .icon-plus {
+  /* SVG を暗めに表示（黒系） */
+  filter: brightness(0) saturate(100%);
+  opacity: 0.9;
+  transition: background-color 120ms ease, opacity 120ms ease, filter 120ms ease;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ホバー時の反応（ライト） */
+:root:not([data-theme="dark"]) .draggable-block-menu .icon:hover,
+:root:not([data-theme="dark"]) .draggable-block-menu .icon-plus:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  opacity: 1;
+}
+
+/* 選択範囲ターゲットライン（ライト）をダーク系に */
+:root:not([data-theme="dark"]) .draggable-block-target-line {
+  background: rgba(0, 0, 0, 0.6);
+  height: 3px;
+  opacity: 1; /* ホバーで明示的に見せたい場合はここで制御 */
+  will-change: transform, opacity;
+}
+
+/* ダークテーマでは既存の明色アクセントを維持（必要なら上書き） */
+[data-theme="dark"] .draggable-block-menu .icon,
+[data-theme="dark"] .draggable-block-menu .icon-plus {
+  /* ダークテーマではアイコンを明るめに表示 */
+  filter: invert(1) brightness(1.6) saturate(120%);
+  opacity: 0.85;
+}
+
+[data-theme="dark"] .draggable-block-menu .icon:hover,
+[data-theme="dark"] .draggable-block-menu .icon-plus:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+}
+
+/* ダークテーマのターゲットラインは既定（deepskyblue）を使うが、必要なら調整 */
+[data-theme="dark"] .draggable-block-target-line {
   background: deepskyblue;
   height: 4px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  will-change: transform;
+  opacity: 1;
 }

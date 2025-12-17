@@ -173,7 +173,7 @@ export default function DocumentTreeSidebar({
           <span className="text-xs text-base-content/50 flex-shrink-0">#{item?.code}</span>
           <span className="truncate">{node.text}</span>
         </div>
-        {item?.isDraft && <span className="badge badge-xs badge-ghost ml-2">Draft</span>}
+        {item?.isDraft && <span className="badge badge-xs badge-secondary ml-2">Draft</span>}
       </div>
     );
   };

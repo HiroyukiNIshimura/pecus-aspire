@@ -467,7 +467,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                     <div className="join">
                       <button
                         type="button"
-                        className={`btn btn-xs join-item ${viewMode === 'list' ? 'btn-active btn-primary' : ''}`}
+                        className={`btn btn-xs join-item ${viewMode === 'list' ? 'btn-active btn-primary' : 'btn-secondary'}`}
                         onClick={() => setViewMode('list')}
                         title="リスト表示"
                       >
@@ -475,7 +475,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
                       </button>
                       <button
                         type="button"
-                        className={`btn btn-xs join-item ${viewMode === 'tree' ? 'btn-active btn-primary' : ''}`}
+                        className={`btn btn-xs join-item ${viewMode === 'tree' ? 'btn-active btn-primary' : 'btn-secondary'}`}
                         onClick={() => setViewMode('tree')}
                         title="ツリー表示"
                       >
