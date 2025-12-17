@@ -1187,7 +1187,7 @@ export default function WorkspaceDetailClient({
                     <h3 className="text-sm font-semibold text-base-content/70 mb-2">必要なスキル</h3>
                     <div className="flex flex-wrap gap-2">
                       {currentWorkspaceDetail.skills.map((skill) => (
-                        <span key={skill.id} className="badge badge-accent badge-lg">
+                        <span key={skill.id} className="badge badge-accent badge-sm">
                           {skill.name}
                         </span>
                       ))}
