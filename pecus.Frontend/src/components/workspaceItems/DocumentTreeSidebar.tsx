@@ -48,11 +48,6 @@ export default function DocumentTreeSidebar({
     try {
       setError(null);
       const data = await fetchDocumentTree(workspaceId);
-      console.log('[DocumentTree] API Response:', JSON.stringify(data, null, 2));
-      console.log(
-        '[DocumentTree] Items with parentId:',
-        data.items?.map((i) => ({ id: i.id, subject: i.subject, parentId: i.parentId })),
-      );
       setItems(data.items || []);
     } catch (err) {
       console.error('Failed to fetch document tree:', err);
