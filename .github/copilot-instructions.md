@@ -64,7 +64,7 @@
 
 ## 開発フロー／コマンド
 
-- バックエンド: `dotnet format pecus.sln` → `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`（エージェントの実行禁止）
+- バックエンド: `dotnet format pecus.sln` → `dotnet clean pecus.sln`→ `dotnet build pecus.sln` → `dotnet run --project pecus.AppHost`（エージェントの実行禁止）
 - フロントエンド: `cd pecus.Frontend` → `npm run lint` → `npm run format` → `npx tsc --noEmit` → `npm run build`（エージェントの実行禁止） → `npm run dev`（エージェントの実行禁止）
 - API クライアント生成: `npm run full:api`（エージェントの実行禁止）
 
