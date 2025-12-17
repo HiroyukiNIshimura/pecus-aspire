@@ -76,11 +76,6 @@ export default function DocumentTreeSidebar({
       data: item,
     }));
 
-    console.log(
-      '[DocumentTree] Built tree nodes:',
-      nodes.map((n) => ({ id: n.id, parent: n.parent, text: n.text })),
-    );
-
     setTreeData(nodes);
   }, [items, isLoading, isDropping]);
 
