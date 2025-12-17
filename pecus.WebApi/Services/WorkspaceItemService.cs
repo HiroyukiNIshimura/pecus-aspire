@@ -1114,9 +1114,6 @@ public class WorkspaceItemService
             // アーカイブ時に子アイテムの処理（ドキュメントモード用）
             if (request.IsArchived.Value && request.KeepChildrenRelation.HasValue)
             {
-                _logger.LogInformation(
-                    "ProcessChildrenOnArchiveAsync called: workspaceId={WorkspaceId}, itemId={ItemId}, keepChildrenRelation={KeepChildrenRelation}",
-                    workspaceId, itemId, request.KeepChildrenRelation.Value);
                 await ProcessChildrenOnArchiveAsync(workspaceId, itemId, request.KeepChildrenRelation.Value, userId);
             }
         }

@@ -6,6 +6,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { fetchDocumentTree, updateItemParent } from '@/actions/workspaceRelation';
 import type { DocumentTreeItemResponse } from '@/connectors/api/pecus';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { useNotify } from '@/hooks/useNotify';
 
 interface DocumentTreeSidebarProps {
@@ -35,6 +36,7 @@ export default function DocumentTreeSidebar({
   const [isDropping, setIsDropping] = useState(false);
   const notify = useNotify();
   const notifyRef = useRef(notify);
+  const isMobile = useIsMobile();
 
   // notifyの最新値をrefで保持
   useEffect(() => {
@@ -198,7 +200,14 @@ export default function DocumentTreeSidebar({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex-1 overflow-y-auto bg-base-200 p-2 h-full">
+      <div className="flex-1 overflow-y-auto bg-base-200 p-2 h-full flex flex-col">
+        {/* モバイルサイズでのD&D無効案内 */}
+        {isMobile && (
+          <div className="flex items-center gap-2 px-3 py-2 mb-2 bg-info/10 text-info text-xs rounded-lg">
+            <span className="icon-[mdi--information-outline] w-4 h-4 flex-shrink-0" aria-hidden="true" />
+            <span>PCでドラッグ＆ドロップにより親子関係を変更できます</span>
+          </div>
+        )}
         {treeData.length === 0 ? (
           <div className="text-center text-base-content/70 mt-10">
             <p>表示するアイテムがありません。</p>
@@ -211,7 +220,7 @@ export default function DocumentTreeSidebar({
             render={renderNode}
             initialOpen={true}
             classes={{
-              root: 'h-full',
+              root: 'h-full flex-1',
               container: 'h-full',
               draggingSource: 'opacity-50',
               dropTarget: 'bg-primary/20',
