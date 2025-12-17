@@ -87,6 +87,8 @@ interface WorkspaceItemDetailProps {
     itemAssigneeId: number | null,
     itemCommitterId: number | null,
   ) => void;
+  /** アイテムアーカイブ完了時のコールバック（ツリー更新用） */
+  onArchiveComplete?: () => void;
 }
 
 /** WorkspaceItemDetail の外部公開メソッド */
@@ -112,6 +114,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       onShowTaskDetail,
       itemCode,
       onShowFlowMap,
+      onArchiveComplete,
     },
     ref,
   ) {
@@ -771,6 +774,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           members={members}
           onItemUpdate={(updatedItem) => setItem(updatedItem)}
           currentUserId={currentUserId}
+          workspaceMode={workspaceMode}
+          onArchiveComplete={onArchiveComplete}
         />
 
         {/* タイムラインモーダル */}

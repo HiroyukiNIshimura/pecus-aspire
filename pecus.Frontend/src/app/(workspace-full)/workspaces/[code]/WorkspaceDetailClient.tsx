@@ -854,6 +854,13 @@ export default function WorkspaceDetailClient({
     setIsAddingRelation(false);
   }, []);
 
+  // アーカイブ完了時のハンドラ（ドキュメントツリー更新用）
+  const handleArchiveComplete = useCallback(() => {
+    // サイドバーのリストを更新してツリー構造を反映
+    sidebarComponentRef.current?.refreshItems();
+    mobileSidebarComponentRef.current?.refreshItems();
+  }, []);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
@@ -1295,6 +1302,7 @@ export default function WorkspaceDetailClient({
                 onScrollComplete={handleScrollComplete}
                 onShowTaskDetail={handleShowTaskDetail}
                 onShowFlowMap={handleShowFlowMap}
+                onArchiveComplete={handleArchiveComplete}
               />
             )}
         </main>

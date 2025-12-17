@@ -17,6 +17,7 @@ export type { AdminUpdateOrganizationRequest } from './models/AdminUpdateOrganiz
 export type { AdminUpdateOrganizationSettingRequest } from './models/AdminUpdateOrganizationSettingRequest';
 export type { AssigneeTaskLoadResponse } from './models/AssigneeTaskLoadResponse';
 export type { AvatarType } from './models/AvatarType';
+export type { ChildrenCountResponse } from './models/ChildrenCountResponse';
 export type { ConcurrencyErrorResponseOfOrganizationResponse } from './models/ConcurrencyErrorResponseOfOrganizationResponse';
 export type { ConcurrencyErrorResponseOfOrganizationSettingResponse } from './models/ConcurrencyErrorResponseOfOrganizationSettingResponse';
 export type { ConcurrencyErrorResponseOfSkillDetailResponse } from './models/ConcurrencyErrorResponseOfSkillDetailResponse';

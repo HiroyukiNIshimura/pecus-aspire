@@ -454,4 +454,28 @@ public class WorkspaceItemController : BaseSecureController
             _ => attribute.ToString()
         };
     }
+
+    /// <summary>
+    /// アイテムの子アイテム数を取得（ドキュメントモード用）
+    /// </summary>
+    [HttpGet("{itemId}/children/count")]
+    [ProducesResponseType(typeof(ChildrenCountResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<Ok<ChildrenCountResponse>> GetChildrenCount(int workspaceId, int itemId)
+    {
+        var hasAccess = await _accessHelper.CanAccessWorkspaceAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        var count = await _workspaceItemService.GetChildrenCountAsync(workspaceId, itemId, CurrentUserId);
+
+        return TypedResults.Ok(new ChildrenCountResponse
+        {
+            ItemId = itemId,
+            ChildrenCount = count.DirectCount,
+            TotalDescendantsCount = count.TotalCount
+        });
+    }
 }

@@ -125,6 +125,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
     // 表示モード（リスト/ツリー）- ワークスペースモードに応じて初期値を設定
     const [viewMode, setViewMode] = useState<'list' | 'tree'>(currentWorkspace?.mode === 'Document' ? 'tree' : 'list');
 
+    // ツリー再取得用のキー
+    const [treeRefreshKey, setTreeRefreshKey] = useState(0);
+
     // ワークスペースモードが変更されたらビューモードをリセット
     useEffect(() => {
       if (currentWorkspace?.mode === 'Document') {
@@ -234,6 +237,9 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
           if (selectItemId !== undefined) {
             setSelectedItemId(selectItemId);
           }
+
+          // ツリービューも更新
+          setTreeRefreshKey((prev) => prev + 1);
         } catch (err) {
           console.error('Failed to fetch items:', err);
           notifyRef.current.error('サーバーとの通信でエラーが発生しました。', true);
@@ -539,6 +545,7 @@ const WorkspaceItemsSidebar = forwardRef<WorkspaceItemsSidebarHandle, WorkspaceI
             }}
             selectedItemId={typeof selectedItemId === 'number' ? selectedItemId : null}
             onItemMoved={() => refreshItems()}
+            refreshKey={treeRefreshKey}
           />
         ) : items.length === 0 ? (
           <div className="p-4 text-center text-base-content/70">

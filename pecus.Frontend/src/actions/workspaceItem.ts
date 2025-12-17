@@ -17,6 +17,7 @@ import type {
   UpdateWorkspaceItemAssigneeRequest,
   UpdateWorkspaceItemAttributeRequest,
   UpdateWorkspaceItemRequest,
+  UpdateWorkspaceItemStatusRequest,
   WorkspaceItemDetailResponse,
   WorkspaceItemResponse,
 } from '@/connectors/api/pecus';
@@ -303,6 +304,63 @@ export async function updateWorkspaceItemAssignee(
 }
 
 /**
+ * Server Action: ワークスペースアイテムのステータス（下書き/アーカイブ）を更新
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ * @param request 更新リクエスト
+ */
+export async function updateWorkspaceItemStatus(
+  workspaceId: number,
+  itemId: number,
+  request: UpdateWorkspaceItemStatusRequest,
+): Promise<ApiResponse<WorkspaceItemDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.patchApiWorkspacesItemsStatus(workspaceId, itemId, request);
+
+    if (response.workspaceItem) {
+      return {
+        success: true,
+        data: response.workspaceItem,
+      };
+    }
+
+    return serverError('アイテムの取得に失敗しました。');
+  } catch (error) {
+    console.error('Failed to update workspace item status:', error);
+
+    // 409 Conflict: 並行更新による競合
+    const concurrency = detectConcurrencyError(error);
+    if (concurrency) {
+      return {
+        success: false,
+        error: 'conflict',
+        message: concurrency.message,
+        latest:
+          concurrency.payload.current && typeof concurrency.payload.current === 'object'
+            ? {
+                type: 'workspaceItem',
+                data: concurrency.payload.current as WorkspaceItemDetailResponse,
+              }
+            : undefined,
+      };
+    }
+
+    // バリデーションエラー
+    const badRequest = detect400ValidationError(error);
+    if (badRequest) {
+      return badRequest;
+    }
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'ステータスの更新に失敗しました。');
+  }
+}
+
+/**
  * Server Action: ワークスペースアイテムの属性を更新
  * @param workspaceId ワークスペースID
  * @param itemId アイテムID
@@ -515,5 +573,36 @@ export async function exportWorkspaceItemJson(workspaceId: number, itemId: numbe
     }
 
     return parseErrorResponse(error, 'JSONエクスポートに失敗しました。');
+  }
+}
+
+/**
+ * Server Action: アイテムの子アイテム数を取得（ドキュメントモード用）
+ * @param workspaceId ワークスペースID
+ * @param itemId アイテムID
+ */
+export async function fetchChildrenCount(
+  workspaceId: number,
+  itemId: number,
+): Promise<ApiResponse<{ childrenCount: number; totalDescendantsCount: number }>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.getApiWorkspacesItemsChildrenCount(workspaceId, itemId);
+    return {
+      success: true,
+      data: {
+        childrenCount: response.childrenCount ?? 0,
+        totalDescendantsCount: response.totalDescendantsCount ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch children count:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, '子アイテム数の取得に失敗しました。');
   }
 }

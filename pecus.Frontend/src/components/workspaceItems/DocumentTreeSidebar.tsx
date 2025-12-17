@@ -14,6 +14,8 @@ interface DocumentTreeSidebarProps {
   selectedItemId?: number | null;
   /** アイテムが移動された後に呼び出されるコールバック */
   onItemMoved?: () => Promise<void> | void;
+  /** ツリーを再取得するためのキー（変更されると再取得） */
+  refreshKey?: number;
 }
 
 type CustomNodeModel = NodeModel<DocumentTreeItemResponse>;
@@ -23,6 +25,7 @@ export default function DocumentTreeSidebar({
   onItemSelect,
   selectedItemId,
   onItemMoved,
+  refreshKey,
 }: DocumentTreeSidebarProps) {
   const [treeData, setTreeData] = useState<CustomNodeModel[]>([]);
   const [items, setItems] = useState<DocumentTreeItemResponse[]>([]);
@@ -61,7 +64,7 @@ export default function DocumentTreeSidebar({
 
   useEffect(() => {
     loadDocumentTree();
-  }, [loadDocumentTree]);
+  }, [loadDocumentTree, refreshKey]);
 
   // ツリーデータの構築
   useEffect(() => {

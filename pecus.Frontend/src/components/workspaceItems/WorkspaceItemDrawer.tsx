@@ -1,14 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { updateWorkspaceItemAssignee, updateWorkspaceItemAttribute } from '@/actions/workspaceItem';
+import {
+  fetchChildrenCount,
+  updateWorkspaceItemAssignee,
+  updateWorkspaceItemAttribute,
+  updateWorkspaceItemStatus,
+} from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/filters/DatePicker';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
+import ArchiveConfirmModal from '@/components/workspaceItems/ArchiveConfirmModal';
 import type {
   ErrorResponse,
   TaskPriority,
   WorkspaceDetailUserResponse,
   WorkspaceItemDetailResponse,
+  WorkspaceMode,
 } from '@/connectors/api/pecus';
 
 /** 優先度のラベル定義 */
@@ -36,6 +43,10 @@ interface WorkspaceItemDrawerProps {
   members?: WorkspaceDetailUserResponse[];
   onItemUpdate?: (updatedItem: WorkspaceItemDetailResponse) => void;
   currentUserId?: number;
+  /** ワークスペースモード（ドキュメントモードの場合アーカイブ時に確認モーダルを表示） */
+  workspaceMode?: WorkspaceMode | null;
+  /** アーカイブ完了時のコールバック（ツリー更新用） */
+  onArchiveComplete?: () => void;
 }
 
 export default function WorkspaceItemDrawer({
@@ -46,6 +57,8 @@ export default function WorkspaceItemDrawer({
   members = [],
   onItemUpdate,
   currentUserId,
+  workspaceMode,
+  onArchiveComplete,
 }: WorkspaceItemDrawerProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +68,12 @@ export default function WorkspaceItemDrawer({
   const [dueDate, setDueDate] = useState<string>(item.dueDate ? item.dueDate.split('T')[0] : '');
   const [priority, setPriority] = useState<TaskPriority | null>(item.priority ?? null);
   const [currentRowVersion, setCurrentRowVersion] = useState<number>(item.rowVersion);
+
+  // アーカイブ確認モーダルの状態（ドキュメントモード用）
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [totalDescendantsCount, setTotalDescendantsCount] = useState(0);
+  const [isLoadingChildren, setIsLoadingChildren] = useState(false);
 
   // 権限フラグの計算
   const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
@@ -142,20 +161,83 @@ export default function WorkspaceItemDrawer({
 
   /** アーカイブ切り替えハンドラー */
   const handleArchivedChange = async (newIsArchived: boolean) => {
+    // アーカイブOFFにする場合は従来通り
+    if (!newIsArchived) {
+      await executeArchive(false, undefined);
+      return;
+    }
+
+    // ドキュメントモードでアーカイブONにする場合は子アイテム数をチェック
+    if (workspaceMode === 'Document') {
+      setIsLoadingChildren(true);
+      try {
+        const result = await fetchChildrenCount(item.workspaceId ?? 0, item.id);
+        if (result.success && result.data) {
+          const { childrenCount: count, totalDescendantsCount: total } = result.data;
+          if (count > 0) {
+            // 子アイテムがある場合は確認モーダルを表示
+            setChildrenCount(count);
+            setTotalDescendantsCount(total);
+            setIsArchiveModalOpen(true);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch children count:', err);
+      } finally {
+        setIsLoadingChildren(false);
+      }
+    }
+
+    // 子アイテムがない場合または通常モードの場合は従来通り
+    await executeArchive(true, undefined);
+  };
+
+  /** アーカイブ実行（keepChildrenRelation: true=親子関係維持, false=子はルートに移動, undefined=従来動作） */
+  const executeArchive = async (newIsArchived: boolean, keepChildrenRelation: boolean | undefined) => {
     const prevValue = isArchived;
     setIsArchived(newIsArchived);
 
-    await handleItemUpdate(
-      async () => {
-        const result = await updateWorkspaceItemAttribute(item.workspaceId ?? 0, item.id, 'archive', {
-          value: newIsArchived,
-          rowVersion: currentRowVersion,
-        });
-        return result;
-      },
-      'アーカイブ状態の更新に失敗しました。',
-      () => setIsArchived(prevValue),
-    );
+    try {
+      setIsUpdating(true);
+      setError(null);
+
+      const result = await updateWorkspaceItemStatus(item.workspaceId ?? 0, item.id, {
+        isArchived: newIsArchived,
+        keepChildrenRelation: keepChildrenRelation,
+        rowVersion: currentRowVersion,
+      });
+
+      if (!result.success) {
+        setError(result.message || 'アーカイブ状態の更新に失敗しました。');
+        setIsArchived(prevValue);
+        return;
+      }
+
+      if (result.data) {
+        setCurrentRowVersion(result.data.rowVersion);
+        onItemUpdate?.(result.data);
+        // ドキュメントモードでアーカイブ成功時にツリーを更新
+        if (workspaceMode === 'Document') {
+          onArchiveComplete?.();
+        }
+      }
+    } catch (err) {
+      if (typeof err === 'object' && err !== null && 'error' in err && err.error === 'conflict') {
+        setError('別のユーザーが同時に編集しました。ページをリロードしてください。');
+      } else {
+        setError((err as ErrorResponse).message || 'アーカイブ状態の更新に失敗しました。');
+      }
+      setIsArchived(prevValue);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  /** アーカイブ確認モーダルからの確定 */
+  const handleArchiveConfirm = async (keepChildrenRelation: boolean) => {
+    setIsArchiveModalOpen(false);
+    await executeArchive(true, keepChildrenRelation);
   };
 
   /** 期限変更ハンドラー */
@@ -356,11 +438,12 @@ export default function WorkspaceItemDrawer({
                     className="switch switch-primary"
                     checked={isArchived}
                     onChange={(e) => handleArchivedChange(e.target.checked)}
-                    disabled={isUpdating}
+                    disabled={isUpdating || isLoadingChildren}
                   />
                   <label htmlFor="archive-switch" className="label-text font-semibold cursor-pointer">
                     アーカイブ
                   </label>
+                  {isLoadingChildren && <span className="loading loading-spinner loading-xs" />}
                 </div>
                 <p className="text-xs text-base-content/60 mt-1">アーカイブされたアイテムは編集不可になります</p>
               </div>
@@ -429,6 +512,16 @@ export default function WorkspaceItemDrawer({
         {/* フッター */}
         <div className="flex gap-2 p-4 border-t border-base-300 bg-base-100" />
       </div>
+
+      {/* アーカイブ確認モーダル（ドキュメントモード用） */}
+      <ArchiveConfirmModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        onConfirm={handleArchiveConfirm}
+        childrenCount={childrenCount}
+        totalDescendantsCount={totalDescendantsCount}
+        isSubmitting={isUpdating}
+      />
     </>
   );
 }

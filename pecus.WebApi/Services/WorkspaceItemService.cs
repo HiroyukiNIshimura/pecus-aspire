@@ -1112,9 +1112,12 @@ public class WorkspaceItemService
             item.IsArchived = request.IsArchived.Value;
 
             // アーカイブ時に子アイテムの処理（ドキュメントモード用）
-            if (request.IsArchived.Value && request.ArchiveChildren.HasValue)
+            if (request.IsArchived.Value && request.KeepChildrenRelation.HasValue)
             {
-                await ProcessChildrenOnArchiveAsync(workspaceId, itemId, request.ArchiveChildren.Value, userId);
+                _logger.LogInformation(
+                    "ProcessChildrenOnArchiveAsync called: workspaceId={WorkspaceId}, itemId={ItemId}, keepChildrenRelation={KeepChildrenRelation}",
+                    workspaceId, itemId, request.KeepChildrenRelation.Value);
+                await ProcessChildrenOnArchiveAsync(workspaceId, itemId, request.KeepChildrenRelation.Value, userId);
             }
         }
 
@@ -1173,22 +1176,39 @@ public class WorkspaceItemService
     /// </summary>
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="parentItemId">アーカイブする親アイテムID</param>
-    /// <param name="archiveChildren">true: 子供もアーカイブ、false: 子供はルートに移動</param>
+    /// <param name="keepChildrenRelation">true: 親子関係を維持（子はツリーから除外されるがアーカイブ解除で復活）、false: 子供はルートに移動</param>
     /// <param name="userId">操作ユーザーID</param>
-    private async Task ProcessChildrenOnArchiveAsync(int workspaceId, int parentItemId, bool archiveChildren, int userId)
+    private async Task ProcessChildrenOnArchiveAsync(int workspaceId, int parentItemId, bool keepChildrenRelation, int userId)
     {
+        // keepChildrenRelation = true の場合は何もしない（親子関係を維持）
+        // 子アイテムは親がアーカイブされているためツリー表示から除外されるが、
+        // 親のアーカイブ解除時に自動的に復活する
+        if (keepChildrenRelation)
+        {
+            _logger.LogInformation(
+                "ProcessChildrenOnArchiveAsync: keepChildrenRelation=true, no action needed. workspaceId={WorkspaceId}, parentItemId={ParentItemId}",
+                workspaceId, parentItemId);
+            return;
+        }
+
+        _logger.LogInformation(
+            "ProcessChildrenOnArchiveAsync: workspaceId={WorkspaceId}, parentItemId={ParentItemId}, keepChildrenRelation={KeepChildrenRelation}",
+            workspaceId, parentItemId, keepChildrenRelation);
+
         // この親アイテムの直接の子供を取得（ParentOf: From=Parent, To=Child）
         var childRelations = await _context.WorkspaceItemRelations
             .Where(r => r.FromItemId == parentItemId && r.RelationType == RelationType.ParentOf)
             .Include(r => r.ToItem)
             .ToListAsync();
 
+        _logger.LogInformation(
+            "Found {Count} child relations for parentItemId={ParentItemId}",
+            childRelations.Count, parentItemId);
+
         if (!childRelations.Any())
         {
             return;
         }
-
-        var now = DateTime.UtcNow;
 
         foreach (var relation in childRelations)
         {
@@ -1198,33 +1218,13 @@ public class WorkspaceItemService
                 continue;
             }
 
-            if (archiveChildren)
-            {
-                // 子供もアーカイブする
-                childItem.IsArchived = true;
-                childItem.UpdatedAt = now;
-                childItem.UpdatedByUserId = userId;
+            // 子供はルートに移動（親子関係を解除）
+            _context.WorkspaceItemRelations.Remove(relation);
 
-                // Activity記録
-                EnqueueActivityIfChanged(workspaceId, childItem.Id, userId,
-                    ActivityActionType.ArchivedChanged,
-                    ActivityDetailsBuilder.BuildBoolChangeDetails(false, true));
-
-                // 孫以下も再帰的にアーカイブ
-                await ProcessChildrenOnArchiveAsync(workspaceId, childItem.Id, true, userId);
-            }
-            else
-            {
-                // 子供はルートに移動（親子関係を解除）
-                _context.WorkspaceItemRelations.Remove(relation);
-
-                // 親子関係解除のActivity記録
-                // Note: 親アーカイブによる自動移動のため、RelationRemovedではなく専用のActivityを検討
-                // 現状はRelationRemovedで記録（親アイテムのコードを取得する必要があるため、ここではID文字列で代用）
-                EnqueueActivityIfChanged(workspaceId, childItem.Id, userId,
-                    ActivityActionType.RelationRemoved,
-                    ActivityDetailsBuilder.BuildRelationRemovedDetails(parentItemId.ToString(), "ParentOf"));
-            }
+            // 親子関係解除のActivity記録
+            EnqueueActivityIfChanged(workspaceId, childItem.Id, userId,
+                ActivityActionType.RelationRemoved,
+                ActivityDetailsBuilder.BuildRelationRemovedDetails(parentItemId.ToString(), "ParentOf"));
         }
 
         await _context.SaveChangesAsync();
@@ -1666,6 +1666,67 @@ public class WorkspaceItemService
         {
             await _context.Entry(item).Reference(wi => wi.Committer).LoadAsync();
         }
+    }
+
+    /// <summary>
+    /// アイテムの子アイテム数を取得（直接の子と全子孫）
+    /// </summary>
+    public async Task<(int DirectCount, int TotalCount)> GetChildrenCountAsync(int workspaceId, int itemId, int userId)
+    {
+        // 権限チェック
+        await _accessHelper.EnsureWorkspaceAccessAsync(workspaceId, userId);
+
+        // アイテムの存在確認
+        var item = await _context.WorkspaceItems.FirstOrDefaultAsync(wi =>
+            wi.WorkspaceId == workspaceId && wi.Id == itemId && !wi.IsArchived);
+
+        if (item == null)
+        {
+            throw new NotFoundException("アイテムが見つかりません。");
+        }
+
+        // 直接の子アイテムを取得（ParentOf: From=Parent, To=Child）
+        var directChildIds = await _context.WorkspaceItemRelations
+            .Where(r => r.FromItemId == itemId && r.RelationType == RelationType.ParentOf)
+            .Join(_context.WorkspaceItems.Where(wi => !wi.IsArchived),
+                r => r.ToItemId,
+                wi => wi.Id,
+                (r, wi) => wi.Id)
+            .ToListAsync();
+
+        var directCount = directChildIds.Count;
+
+        if (directCount == 0)
+        {
+            return (0, 0);
+        }
+
+        // 全子孫を再帰的にカウント
+        var allDescendants = new HashSet<int>(directChildIds);
+        var queue = new Queue<int>(directChildIds);
+
+        while (queue.Count > 0)
+        {
+            var currentId = queue.Dequeue();
+
+            var children = await _context.WorkspaceItemRelations
+                .Where(r => r.FromItemId == currentId && r.RelationType == RelationType.ParentOf)
+                .Join(_context.WorkspaceItems.Where(wi => !wi.IsArchived),
+                    r => r.ToItemId,
+                    wi => wi.Id,
+                    (r, wi) => wi.Id)
+                .ToListAsync();
+
+            foreach (var childId in children)
+            {
+                if (allDescendants.Add(childId))
+                {
+                    queue.Enqueue(childId);
+                }
+            }
+        }
+
+        return (directCount, allDescendants.Count);
     }
 
     /// <summary>

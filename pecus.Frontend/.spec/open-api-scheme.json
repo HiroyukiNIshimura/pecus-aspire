@@ -4192,6 +4192,61 @@
         ]
       }
     },
+    "/api/workspaces/{workspaceId}/items/{itemId}/children/count": {
+      "get": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "アイテムの子アイテム数を取得（ドキュメントモード用）",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChildrenCountResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/export/json": {
       "get": {
         "tags": [
@@ -10423,6 +10478,27 @@
         "type": "string",
         "nullable": true
       },
+      "ChildrenCountResponse": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "description": "対象アイテムID",
+            "format": "int32"
+          },
+          "childrenCount": {
+            "type": "integer",
+            "description": "直接の子アイテム数",
+            "format": "int32"
+          },
+          "totalDescendantsCount": {
+            "type": "integer",
+            "description": "全子孫アイテム数（孫、ひ孫...を含む）",
+            "format": "int32"
+          }
+        },
+        "description": "子アイテム数レスポンス"
+      },
       "ConcurrencyErrorResponseOfOrganizationResponse": {
         "required": [
           "message"
@@ -15876,6 +15952,11 @@
           "isArchived": {
             "type": "boolean",
             "description": "アーカイブフラグ",
+            "nullable": true
+          },
+          "keepChildrenRelation": {
+            "type": "boolean",
+            "description": "アーカイブ時に子アイテムとの親子関係を維持するかどうか（ドキュメントモード用）\ntrue: 親子関係を維持する（子はツリーから除外されるが、親のアーカイブ解除で復活）\nfalse: 子アイテムはルートに移動（親子関係を解除）\nnull: 子アイテムはそのまま（従来の動作）",
             "nullable": true
           },
           "rowVersion": {

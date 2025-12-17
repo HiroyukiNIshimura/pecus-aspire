@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AddWorkspaceItemRelationRequest } from '../models/AddWorkspaceItemRelationRequest';
 import type { AddWorkspaceItemRelationResponse } from '../models/AddWorkspaceItemRelationResponse';
+import type { ChildrenCountResponse } from '../models/ChildrenCountResponse';
 import type { CreateWorkspaceItemRequest } from '../models/CreateWorkspaceItemRequest';
 import type { IFormFile } from '../models/IFormFile';
 import type { PagedResponseOfWorkspaceItemDetailResponse } from '../models/PagedResponseOfWorkspaceItemDetailResponse';
@@ -417,6 +418,29 @@ export class WorkspaceItemService {
                 404: `Not Found`,
                 409: `Conflict`,
                 500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * アイテムの子アイテム数を取得（ドキュメントモード用）
+     * @param workspaceId
+     * @param itemId
+     * @returns ChildrenCountResponse OK
+     * @throws ApiError
+     */
+    public static getApiWorkspacesItemsChildrenCount(
+        workspaceId: number,
+        itemId: number,
+    ): CancelablePromise<ChildrenCountResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/workspaces/{workspaceId}/items/{itemId}/children/count',
+            path: {
+                'workspaceId': workspaceId,
+                'itemId': itemId,
+            },
+            errors: {
+                404: `Not Found`,
             },
         });
     }

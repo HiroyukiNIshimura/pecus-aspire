@@ -18,12 +18,12 @@ public class UpdateWorkspaceItemStatusRequest
     public bool? IsArchived { get; set; }
 
     /// <summary>
-    /// アーカイブ時に子アイテムも一緒にアーカイブするかどうか（ドキュメントモード用）
-    /// true: 子アイテムもアーカイブする
-    /// false: 子アイテムはルートに移動してからアーカイブする
+    /// アーカイブ時に子アイテムとの親子関係を維持するかどうか（ドキュメントモード用）
+    /// true: 親子関係を維持する（子はツリーから除外されるが、親のアーカイブ解除で復活）
+    /// false: 子アイテムはルートに移動（親子関係を解除）
     /// null: 子アイテムはそのまま（従来の動作）
     /// </summary>
-    public bool? ArchiveChildren { get; set; }
+    public bool? KeepChildrenRelation { get; set; }
 
     /// <summary>
     /// アイテムの楽観的ロック用のRowVersion
