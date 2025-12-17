@@ -1,6 +1,7 @@
 .draggable-block-menu {
-  border-radius: 4px;
-  padding: 2px 1px;
+  border-radius: 6px;
+  padding: 3px 4px;          /* 4px 5px -> 3px 4px でコンパクトに */
+  margin-left: -6px;        /* コンテンツにかぶらないよう左へオフセット */
   cursor: grab;
   opacity: 0;
   position: absolute;
@@ -8,14 +9,37 @@
   top: 0;
   will-change: transform;
   display: flex;
-  gap: 2px;
+  gap: 4px;
+  border: none;                 /* ここを変更: 枠線なしに */
+  box-shadow: none;                      /* 影なし */
+  transform: translateY(1px) scale(0.98); /* ふわっと出す初期姿勢 */
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;                 /* transform もアニメ対象に */
+}
+
+.draggable-block-menu:hover {
+  box-shadow: none;                      /* 影なし（ホバー時も） */
+  transform: translateY(0) scale(1);
+}
+
+.draggable-block-menu .icon,
+.draggable-block-menu .icon-plus {
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.9;
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease,
+    filter 120ms ease;
 }
 
 .draggable-block-menu .icon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.3;
-  background-color: transparent;
   background-image: url(../../images/icons/draggable-block-menu.svg);
 }
 
@@ -23,6 +47,7 @@
   display: inline-block;
   border: none;
   cursor: pointer;
+  background-color: transparent;
   background-image: url(../../images/icons/plus.svg);
 }
 
@@ -30,54 +55,50 @@
   cursor: grabbing;
 }
 
-.draggable-block-menu .icon:hover {
-  background-color: #efefef;
-}
-
-/* --- Theme-aware adjustments --- */
-/* ライトテーマ（data-theme が absent か dark でない場合）: アイコンとターゲットラインをダーク寄りにする */
-:root:not([data-theme="dark"]) .draggable-block-menu .icon,
-:root:not([data-theme="dark"]) .draggable-block-menu .icon-plus {
-  /* SVG を暗めに表示（黒系） */
-  filter: brightness(0) saturate(100%);
-  opacity: 0.9;
-  transition: background-color 120ms ease, opacity 120ms ease, filter 120ms ease;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-/* ホバー時の反応（ライト） */
-:root:not([data-theme="dark"]) .draggable-block-menu .icon:hover,
-:root:not([data-theme="dark"]) .draggable-block-menu .icon-plus:hover {
+.draggable-block-menu .icon:hover,
+.draggable-block-menu .icon-plus:hover {
   background-color: rgba(0, 0, 0, 0.06);
   opacity: 1;
 }
 
-/* 選択範囲ターゲットライン（ライト）をダーク系に */
-:root:not([data-theme="dark"]) .draggable-block-target-line {
-  background: rgba(0, 0, 0, 0.6);
-  height: 3px;
-  opacity: 1; /* ホバーで明示的に見せたい場合はここで制御 */
-  will-change: transform, opacity;
+/* ライトテーマ（フラット・淡色） */
+:root:not([data-theme='dark']) .draggable-block-menu {
+  background-color: var(--color-base-200); /* ← 変更 */
+  box-shadow: none;                      /* 影なし */
 }
 
-/* ダークテーマでは既存の明色アクセントを維持（必要なら上書き） */
-[data-theme="dark"] .draggable-block-menu .icon,
-[data-theme="dark"] .draggable-block-menu .icon-plus {
-  /* ダークテーマではアイコンを明るめに表示 */
-  filter: invert(1) brightness(1.6) saturate(120%);
-  opacity: 0.85;
+/* ダークテーマ（フラット・淡色） */
+[data-theme='dark'] .draggable-block-menu {
+  background-color: var(--color-base-200); /* ← 変更 */
+  box-shadow: none;                      /* 影なし */
 }
 
-[data-theme="dark"] .draggable-block-menu .icon:hover,
-[data-theme="dark"] .draggable-block-menu .icon-plus:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  opacity: 1;
+/* アクティブ時はわずかに押し込む */
+[data-theme='dark'] .draggable-block-menu:active {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.32);
+  transform: translateY(1px);
 }
 
-/* ダークテーマのターゲットラインは既定（deepskyblue）を使うが、必要なら調整 */
-[data-theme="dark"] .draggable-block-target-line {
+/* ターゲットラインはそのまま */
+.draggable-block-target-line {
+  pointer-events: none;
   background: deepskyblue;
   height: 4px;
-  opacity: 1;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform;
+}
+
+:root:not([data-theme='dark']) .draggable-block-menu .icon,
+:root:not([data-theme='dark']) .draggable-block-menu .icon-plus {
+  filter: none;              /* 黒アイコンそのまま */
+  opacity: 0.95;             /* 視認性を少しだけ上げる */
+}
+
+[data-theme='dark'] .draggable-block-menu .icon,
+[data-theme='dark'] .draggable-block-menu .icon-plus {
+  filter: invert(1) brightness(1.2) contrast(1.05); /* 白寄りに固定 */
+  opacity: 0.95;
 }
