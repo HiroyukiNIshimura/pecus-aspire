@@ -6,6 +6,17 @@
  *
  *
  */
+
+ :root {
+  --inline-code-bg: #f6e9c7;
+  --inline-code-fg: #b94a00;
+}
+[data-theme="dark"] {
+  --inline-code-bg: #2d2d2d;
+  --inline-code-fg: #ffb86c;
+}
+
+
 .NotionLikeEditorTheme__paragraph {
   margin: 0;
   position: relative;
@@ -117,11 +128,14 @@
   vertical-align: super;
 }
 .NotionLikeEditorTheme__textCode {
-  background-color: var(--color-yellow-100);
-  color: var(--color-red-400);
-  padding: 1px 0.25rem;
+  background-color: var(--inline-code-bg, #f6e9c7);
+  color: var(--inline-code-fg, #b94a00);
+  padding: 1px 0.4em;
+  border-radius: 4px;
   font-family: Menlo, Consolas, Monaco, monospace;
   font-size: 94%;
+  /* 追加: 行内で折り返し */
+  word-break: break-word;
 }
 .NotionLikeEditorTheme__textLowercase {
   text-transform: lowercase;
