@@ -42,15 +42,7 @@ public class EmailTasks
     )
         where TModel : IEmailTemplateModel<TModel>
     {
-        _logger.LogInformation(
-            "Sending templated email to {To} using template {Template}",
-            to,
-            TModel.TemplateName
-        );
-
         await _emailService.SendTemplatedEmailAsync(to, subject, model);
-
-        _logger.LogInformation("Templated email sent to {To}", to);
     }
 
 }
