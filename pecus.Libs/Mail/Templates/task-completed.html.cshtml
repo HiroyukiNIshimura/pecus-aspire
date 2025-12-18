@@ -25,6 +25,15 @@
     {
         <li>完了者: @Model.CompletedByName</li>
     }
+    @if (string.IsNullOrWhiteSpace(Model.DiscardReason))
+    {
+        <li>状態: 完了</li>
+    }
+    else
+    {
+        <li>状態: 廃棄</li>
+        <li>廃棄理由: @Model.DiscardReason</li>
+    }
     <li>完了日時 (JST): @Model.CompletedAt.ToString("yyyy/MM/dd HH:mm")</li>
     <li>ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)</li>
 </ul>

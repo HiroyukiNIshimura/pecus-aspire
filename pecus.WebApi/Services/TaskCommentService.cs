@@ -3,6 +3,7 @@ using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
 using Pecus.Models.Config;
 
 namespace Pecus.Services;
@@ -376,6 +377,21 @@ public class TaskCommentService
     }
 
     /// <summary>
+    /// メール送信用にタスク情報を詳細取得（担当者、ワークスペース、アイテム、組織情報を含む）
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <returns>タスク情報（存在しない場合はnull）</returns>
+    public async Task<WorkspaceTask?> GetTaskWithDetailsForEmailAsync(int taskId)
+    {
+        return await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.Workspace)
+            .Include(t => t.WorkspaceItem)
+            .Include(t => t.Organization)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+    }
+
+    /// <summary>
     /// TaskCommentエンティティからレスポンスを生成（内部ヘルパー）
     /// </summary>
     private static TaskCommentDetailResponse BuildCommentDetailResponse(TaskComment comment)
@@ -403,5 +419,57 @@ public class TaskCommentService
             UpdatedAt = comment.UpdatedAt,
             RowVersion = comment.RowVersion,
         };
+    }
+
+    /// <summary>
+    /// ヘルプ通知先のユーザー一覧を取得（OrganizationSettingのHelpNotificationTargetに基づく）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="excludeUserId">除外するユーザーID（コメント作成者）</param>
+    /// <returns>通知先ユーザー一覧（メールアドレスを持つ有効なユーザーのみ）</returns>
+    public async Task<List<User>> GetHelpNotificationTargetUsersAsync(
+        int organizationId,
+        int workspaceId,
+        int excludeUserId
+    )
+    {
+        // 組織設定を取得
+        var setting = await _context.OrganizationSettings
+            .FirstOrDefaultAsync(s => s.OrganizationId == organizationId);
+
+        var helpTarget = setting?.HelpNotificationTarget ?? HelpNotificationTarget.WorkspaceUsers;
+
+        List<User> users;
+
+        if (helpTarget == HelpNotificationTarget.Organization)
+        {
+            // 組織全体の有効なユーザーを取得
+            users = await _context.Users
+                .Where(u =>
+                    u.OrganizationId == organizationId &&
+                    u.IsActive &&
+                    u.Email != null &&
+                    u.Id != excludeUserId
+                )
+                .ToListAsync();
+        }
+        else
+        {
+            // ワークスペースの有効なメンバーを取得
+            users = await _context.WorkspaceUsers
+                .Include(wu => wu.User)
+                .Where(wu =>
+                    wu.WorkspaceId == workspaceId &&
+                    wu.User != null &&
+                    wu.User.IsActive &&
+                    wu.User.Email != null &&
+                    wu.UserId != excludeUserId
+                )
+                .Select(wu => wu.User!)
+                .ToListAsync();
+        }
+
+        return users;
     }
 }

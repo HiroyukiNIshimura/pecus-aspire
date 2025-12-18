@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -21,19 +26,25 @@ public class TaskCommentController : BaseSecureController
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly PecusConfig _config;
     private readonly ILogger<TaskCommentController> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
     public TaskCommentController(
         TaskCommentService taskCommentService,
         OrganizationAccessHelper accessHelper,
         PecusConfig config,
         ProfileService profileService,
-        ILogger<TaskCommentController> logger
+        ILogger<TaskCommentController> logger,
+        IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver
     ) : base(profileService, logger)
     {
         _taskCommentService = taskCommentService;
         _accessHelper = accessHelper;
         _config = config;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -166,6 +177,18 @@ public class TaskCommentController : BaseSecureController
             CurrentUserId
         );
 
+        // 督促コメントの場合、タスク担当者にメール送信
+        if (request.CommentType == TaskCommentType.Reminder)
+        {
+            await SendReminderEmailAsync(workspaceId, itemId, taskId, comment);
+        }
+
+        // ヘルプコメントの場合、通知先ユーザーにメール送信
+        if (request.CommentType == TaskCommentType.HelpWanted)
+        {
+            await SendHelpEmailAsync(workspaceId, itemId, taskId, comment);
+        }
+
         var response = new TaskCommentResponse
         {
             Success = true,
@@ -290,6 +313,155 @@ public class TaskCommentController : BaseSecureController
         };
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// 督促コメント時にタスク担当者へメール送信
+    /// </summary>
+    private async Task SendReminderEmailAsync(
+        int workspaceId,
+        int itemId,
+        int taskId,
+        TaskComment comment
+    )
+    {
+        // タスク情報を取得（担当者、ワークスペース、アイテム情報を含む）
+        var taskInfo = await _taskCommentService.GetTaskWithDetailsForEmailAsync(taskId);
+        if (taskInfo == null)
+        {
+            _logger.LogWarning(
+                "督促メール送信: タスク情報が取得できませんでした。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        // 担当者のメールアドレスがない場合はスキップ
+        if (string.IsNullOrEmpty(taskInfo.AssignedUser?.Email))
+        {
+            _logger.LogWarning(
+                "督促メール送信: 担当者のメールアドレスがありません。TaskId={TaskId}, AssignedUserId={AssignedUserId}",
+                taskId,
+                taskInfo.AssignedUserId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var itemUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
+
+        var emailModel = new ReminderCommentEmailModel
+        {
+            UserName = taskInfo.AssignedUser.Username,
+            RemindedByName = CurrentUser?.Username ?? "",
+            ItemTitle = taskInfo.WorkspaceItem?.Subject ?? "",
+            ItemCode = taskInfo.WorkspaceItem?.Code,
+            TaskContent = taskInfo.Content,
+            TaskPriority = taskInfo.Priority?.ToString(),
+            TaskAssigneeName = taskInfo.AssignedUser.Username,
+            CommentBody = comment.Content,
+            CommentedAt = comment.CreatedAt,
+            TaskDueDate = taskInfo.DueDate,
+            WorkspaceName = taskInfo.Workspace?.Name ?? "",
+            WorkspaceCode = taskInfo.Workspace?.Code ?? "",
+            ItemUrl = itemUrl,
+            OrganizationName = taskInfo.Organization?.Name ?? "",
+        };
+
+        _backgroundJobClient.Enqueue<EmailTasks>(x =>
+            x.SendTemplatedEmailAsync(
+                taskInfo.AssignedUser.Email,
+                "タスクへの督促コメントが届きました",
+                emailModel
+            )
+        );
+
+        _logger.LogInformation(
+            "督促メールをキューに追加しました。TaskId={TaskId}, To={Email}",
+            taskId,
+            taskInfo.AssignedUser.Email
+        );
+    }
+
+    /// <summary>
+    /// ヘルプコメント時に通知先ユーザーへメール送信
+    /// </summary>
+    private async Task SendHelpEmailAsync(
+        int workspaceId,
+        int itemId,
+        int taskId,
+        TaskComment comment
+    )
+    {
+        // タスク情報を取得
+        var taskInfo = await _taskCommentService.GetTaskWithDetailsForEmailAsync(taskId);
+        if (taskInfo == null)
+        {
+            _logger.LogWarning(
+                "ヘルプメール送信: タスク情報が取得できませんでした。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        // 通知先ユーザー一覧を取得（OrganizationSettingのHelpNotificationTargetに基づく）
+        var targetUsers = await _taskCommentService.GetHelpNotificationTargetUsersAsync(
+            taskInfo.OrganizationId,
+            workspaceId,
+            CurrentUserId // コメント作成者は除外
+        );
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "ヘルプメール送信: 通知先ユーザーがいません。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var itemUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new HelpCommentEmailModel
+            {
+                UserName = user.Username,
+                RequesterName = CurrentUser?.Username ?? "",
+                ItemTitle = taskInfo.WorkspaceItem?.Subject ?? "",
+                ItemCode = taskInfo.WorkspaceItem?.Code,
+                TaskContent = taskInfo.Content,
+                TaskPriority = taskInfo.Priority?.ToString(),
+                TaskAssigneeName = taskInfo.AssignedUser?.Username,
+                CommentBody = comment.Content,
+                CommentedAt = comment.CreatedAt,
+                WorkspaceName = taskInfo.Workspace?.Name ?? "",
+                WorkspaceCode = taskInfo.Workspace?.Code ?? "",
+                ItemUrl = itemUrl,
+                OrganizationName = taskInfo.Organization?.Name ?? "",
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "ヘルプが求められています",
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "ヘルプメールをキューに追加しました。TaskId={TaskId}, TargetCount={Count}",
+            taskId,
+            targetUsers.Count
+        );
     }
 
     /// <summary>

@@ -65,6 +65,9 @@ public class TaskCompletedEmailModel : IEmailTemplateModel<TaskCompletedEmailMod
     /// <summary>完了者名（任意）</summary>
     public string? CompletedByName { get; set; }
 
+    /// <summary>破棄の場合の理由</summary>
+    public string? DiscardReason { get; set; }
+
     /// <summary>完了日時（JST表示想定）</summary>
     public DateTimeOffset CompletedAt { get; set; }
 

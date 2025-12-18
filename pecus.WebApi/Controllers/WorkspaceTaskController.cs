@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Services;
 using System.Collections.Generic;
 
@@ -21,17 +25,23 @@ public class WorkspaceTaskController : BaseSecureController
     private readonly WorkspaceTaskService _workspaceTaskService;
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<WorkspaceTaskController> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
     public WorkspaceTaskController(
         WorkspaceTaskService workspaceTaskService,
         OrganizationAccessHelper accessHelper,
         ProfileService profileService,
-        ILogger<WorkspaceTaskController> logger
+        ILogger<WorkspaceTaskController> logger,
+        IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver
     ) : base(profileService, logger)
     {
         _workspaceTaskService = workspaceTaskService;
         _accessHelper = accessHelper;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -74,6 +84,9 @@ public class WorkspaceTaskController : BaseSecureController
             request,
             CurrentUserId
         );
+
+        // タスク作成通知メールを送信
+        await SendTaskCreatedEmailAsync(task.Id);
 
         var response = new WorkspaceTaskResponse
         {
@@ -327,6 +340,12 @@ public class WorkspaceTaskController : BaseSecureController
             CurrentUserId
         );
 
+        // タスク完了または破棄時にメール送信
+        if (request.IsCompleted == true || request.IsDiscarded == true)
+        {
+            await SendTaskCompletedEmailAsync(task.Id, request.IsDiscarded == true);
+        }
+
         var response = new WorkspaceTaskResponse
         {
             Success = true,
@@ -335,6 +354,157 @@ public class WorkspaceTaskController : BaseSecureController
         };
 
         return TypedResults.Ok(response);
+    }
+
+    /// <summary>
+    /// タスク作成時に関係者へメール送信
+    /// </summary>
+    private async Task SendTaskCreatedEmailAsync(int taskId)
+    {
+        // タスク情報を取得
+        var taskInfo = await _workspaceTaskService.GetTaskWithDetailsForEmailAsync(taskId);
+        if (taskInfo == null)
+        {
+            _logger.LogWarning(
+                "タスク作成メール送信: タスク情報が取得できませんでした。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        // 通知先ユーザー一覧を取得（タスク担当者、アイテム担当者、コミッタ、オーナー）
+        var targetUsers = await _workspaceTaskService.GetTaskCreationNotificationTargetsAsync(
+            taskId,
+            CurrentUserId // タスク作成者は除外
+        );
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "タスク作成メール送信: 通知先ユーザーがいません。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var taskUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new TaskCreatedEmailModel
+            {
+                UserName = user.Username,
+                TaskTitle = taskInfo.Content,
+                TaskCode = $"{taskInfo.WorkspaceItem?.Code}-{taskInfo.Sequence}",
+                Priority = taskInfo.Priority?.ToString(),
+                DueDate = taskInfo.DueDate,
+                AssigneeName = taskInfo.AssignedUser?.Username,
+                CreatedByName = CurrentUser?.Username ?? "",
+                CreatedAt = taskInfo.CreatedAt,
+                WorkspaceName = taskInfo.Workspace?.Name ?? "",
+                WorkspaceCode = taskInfo.Workspace?.Code ?? "",
+                TaskUrl = taskUrl,
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "新しいタスクが作成されました",
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "タスク作成メールをキューに追加しました。TaskId={TaskId}, TargetCount={Count}",
+            taskId,
+            targetUsers.Count
+        );
+    }
+
+    /// <summary>
+    /// タスク完了/破棄時に関係者へメール送信
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="isDiscarded">破棄の場合true</param>
+    private async Task SendTaskCompletedEmailAsync(int taskId, bool isDiscarded)
+    {
+        // タスク情報を取得
+        var taskInfo = await _workspaceTaskService.GetTaskWithDetailsForEmailAsync(taskId);
+        if (taskInfo == null)
+        {
+            _logger.LogWarning(
+                "タスク完了メール送信: タスク情報が取得できませんでした。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        // 通知先ユーザー一覧を取得（アイテム担当者、コミッタ、オーナー）
+        var targetUsers = await _workspaceTaskService.GetTaskCompletionNotificationTargetsAsync(
+            taskId,
+            CurrentUserId // 完了/破棄実行者は除外
+        );
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "タスク完了メール送信: 通知先ユーザーがいません。TaskId={TaskId}",
+                taskId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var taskUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
+
+        var subject = isDiscarded ? "タスクが破棄されました" : "タスクが完了しました";
+        var completedAt = isDiscarded ? taskInfo.DiscardedAt ?? DateTimeOffset.UtcNow : taskInfo.CompletedAt ?? DateTimeOffset.UtcNow;
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new TaskCompletedEmailModel
+            {
+                UserName = user.Username,
+                TaskTitle = taskInfo.Content,
+                TaskCode = $"{taskInfo.WorkspaceItem?.Code}-{taskInfo.Sequence}",
+                AssigneeName = taskInfo.AssignedUser?.Username,
+                CompletedByName = CurrentUser?.Username,
+                DiscardReason = isDiscarded ? taskInfo.DiscardReason : null,
+                CompletedAt = completedAt,
+                WorkspaceName = taskInfo.Workspace?.Name ?? "",
+                WorkspaceCode = taskInfo.Workspace?.Code ?? "",
+                TaskUrl = taskUrl,
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    subject,
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "タスク完了メールをキューに追加しました。TaskId={TaskId}, IsDiscarded={IsDiscarded}, TargetCount={Count}",
+            taskId,
+            isDiscarded,
+            targetUsers.Count
+        );
     }
 
     /// <summary>

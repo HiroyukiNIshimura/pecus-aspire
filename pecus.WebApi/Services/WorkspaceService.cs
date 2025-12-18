@@ -1038,4 +1038,63 @@ public class WorkspaceService
             throw;
         }
     }
+
+    /// <summary>
+    /// ワークスペース作成通知の送信先ユーザー一覧を取得
+    /// （組織内で有効なユーザー、作成者を除外）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="excludeUserId">除外するユーザーID（ワークスペース作成者）</param>
+    /// <returns>通知先ユーザー一覧（メールアドレスを持つ有効なユーザーのみ）</returns>
+    public async Task<List<User>> GetWorkspaceCreationNotificationTargetsAsync(int organizationId, int excludeUserId)
+    {
+        return await _context.Users
+            .Where(u =>
+                u.OrganizationId == organizationId &&
+                u.IsActive &&
+                !string.IsNullOrEmpty(u.Email) &&
+                u.Id != excludeUserId
+            )
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 組織内の全アクティブユーザー一覧を取得（削除通知用）
+    /// </summary>
+    /// <param name="organizationId">組織ID</param>
+    /// <returns>組織内の全アクティブユーザー一覧（メールアドレスを持つユーザーのみ）</returns>
+    public async Task<List<User>> GetOrganizationActiveUsersAsync(int organizationId)
+    {
+        return await _context.Users
+            .Where(u =>
+                u.OrganizationId == organizationId &&
+                u.IsActive &&
+                !string.IsNullOrEmpty(u.Email)
+            )
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// メール送信用にワークスペース情報を詳細取得（組織情報を含む）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>ワークスペース情報（存在しない場合はnull）</returns>
+    public async Task<Workspace?> GetWorkspaceWithOrganizationForEmailAsync(int workspaceId)
+    {
+        return await _context.Workspaces
+            .Include(w => w.Organization)
+            .Include(w => w.Genre)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+    }
+
+    /// <summary>
+    /// ジャンル名を取得
+    /// </summary>
+    /// <param name="genreId">ジャンルID</param>
+    /// <returns>ジャンル名（存在しない場合はnull）</returns>
+    public async Task<string?> GetGenreNameAsync(int genreId)
+    {
+        var genre = await _context.Genres.FindAsync(genreId);
+        return genre?.Name;
+    }
 }

@@ -70,9 +70,7 @@ public class WorkspaceItemTempAttachmentController : ControllerBase
             file: file,
             uploadedByUserId: CurrentUserId);
 
-        return TypedResults.Created(
-            $"/api/workspaces/{workspaceId}/temp-attachments/{sessionId}/{result.TempFileId}",
-            result);
+        return TypedResults.Created("", result);
     }
 
     /// <summary>

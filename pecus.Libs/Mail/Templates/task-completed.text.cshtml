@@ -23,6 +23,17 @@
 @:完了者: @Model.CompletedByName
 @:
 }
+@if (string.IsNullOrWhiteSpace(Model.DiscardReason))
+{
+@:状態: 完了
+@:
+}
+else
+{
+@:状態: 廃棄
+@:廃棄理由: @Model.DiscardReason
+@:
+}
 完了日時 (JST): @Model.CompletedAt.ToString("yyyy/MM/dd HH:mm")
 ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
 

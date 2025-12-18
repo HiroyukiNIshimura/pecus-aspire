@@ -1854,4 +1854,139 @@ public class WorkspaceTaskService
             DiscardedCount = discardedCount,
         };
     }
+
+    /// <summary>
+    /// タスク作成通知の送信先ユーザー一覧を取得
+    /// （タスク担当者、アイテム担当者、アイテムコミッタ、アイテムオーナー）
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="excludeUserId">除外するユーザーID（タスク作成者）</param>
+    /// <returns>通知先ユーザー一覧（重複なし、メールアドレスを持つ有効なユーザーのみ）</returns>
+    public async Task<List<User>> GetTaskCreationNotificationTargetsAsync(int taskId, int excludeUserId)
+    {
+        var task = await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Assignee)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Committer)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+
+        if (task == null)
+        {
+            return new List<User>();
+        }
+
+        var targetUsers = new HashSet<User>();
+
+        // タスク担当者
+        if (task.AssignedUser != null &&
+            task.AssignedUser.IsActive &&
+            !string.IsNullOrEmpty(task.AssignedUser.Email) &&
+            task.AssignedUserId != excludeUserId)
+        {
+            targetUsers.Add(task.AssignedUser);
+        }
+
+        // アイテムオーナー
+        if (task.WorkspaceItem?.Owner != null &&
+            task.WorkspaceItem.Owner.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Owner.Email) &&
+            task.WorkspaceItem.OwnerId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Owner);
+        }
+
+        // アイテム担当者（設定されている場合）
+        if (task.WorkspaceItem?.Assignee != null &&
+            task.WorkspaceItem.Assignee.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Assignee.Email) &&
+            task.WorkspaceItem.AssigneeId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Assignee);
+        }
+
+        // アイテムコミッタ（設定されている場合）
+        if (task.WorkspaceItem?.Committer != null &&
+            task.WorkspaceItem.Committer.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Committer.Email) &&
+            task.WorkspaceItem.CommitterId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Committer);
+        }
+
+        return targetUsers.ToList();
+    }
+
+    /// <summary>
+    /// メール送信用にタスク情報を詳細取得（ワークスペース、アイテム情報を含む）
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <returns>タスク情報（存在しない場合はnull）</returns>
+    public async Task<WorkspaceTask?> GetTaskWithDetailsForEmailAsync(int taskId)
+    {
+        return await _context.WorkspaceTasks
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatedByUser)
+            .Include(t => t.Workspace)
+            .Include(t => t.WorkspaceItem)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+    }
+
+    /// <summary>
+    /// タスク完了/破棄通知の送信先ユーザー一覧を取得
+    /// （アイテム担当者、アイテムコミッタ、アイテムオーナー）
+    /// </summary>
+    /// <param name="taskId">タスクID</param>
+    /// <param name="excludeUserId">除外するユーザーID（タスク完了/破棄を実行したユーザー）</param>
+    /// <returns>通知先ユーザー一覧（重複なし、メールアドレスを持つ有効なユーザーのみ）</returns>
+    public async Task<List<User>> GetTaskCompletionNotificationTargetsAsync(int taskId, int excludeUserId)
+    {
+        var task = await _context.WorkspaceTasks
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Assignee)
+            .Include(t => t.WorkspaceItem)
+                .ThenInclude(wi => wi.Committer)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+
+        if (task == null)
+        {
+            return new List<User>();
+        }
+
+        var targetUsers = new HashSet<User>();
+
+        // アイテムオーナー
+        if (task.WorkspaceItem?.Owner != null &&
+            task.WorkspaceItem.Owner.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Owner.Email) &&
+            task.WorkspaceItem.OwnerId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Owner);
+        }
+
+        // アイテム担当者（設定されている場合）
+        if (task.WorkspaceItem?.Assignee != null &&
+            task.WorkspaceItem.Assignee.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Assignee.Email) &&
+            task.WorkspaceItem.AssigneeId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Assignee);
+        }
+
+        // アイテムコミッタ（設定されている場合）
+        if (task.WorkspaceItem?.Committer != null &&
+            task.WorkspaceItem.Committer.IsActive &&
+            !string.IsNullOrEmpty(task.WorkspaceItem.Committer.Email) &&
+            task.WorkspaceItem.CommitterId != excludeUserId)
+        {
+            targetUsers.Add(task.WorkspaceItem.Committer);
+        }
+
+        return targetUsers.ToList();
+    }
 }

@@ -94,7 +94,7 @@ public class AdminWorkspaceController : BaseAdminController
                 : null,
             RowVersion = workspace.RowVersion!,
         };
-        return TypedResults.Created($"/api/admin/workspaces/{response.Id}", response);
+        return TypedResults.Created($"/workspaces/{response.Code}", response);
     }
 
     /// <summary>
@@ -483,7 +483,7 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
+        var (workspaceUser, _) = await _workspaceService.AddUserToWorkspaceAsync(
             id,
             request
         );
@@ -506,7 +506,7 @@ public class AdminWorkspaceController : BaseAdminController
             LastAccessedAt = workspaceUser.LastAccessedAt,
             IsActive = workspaceUser.User?.IsActive ?? false,
         };
-        return TypedResults.Created($"/api/admin/workspaces/{id}/users/{workspaceUser.UserId}", response);
+        return TypedResults.Created($"/workspaces/{workspace.Code}", response);
     }
 
     /// <summary>

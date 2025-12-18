@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.DB.Models;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
@@ -67,10 +68,13 @@ public class WorkspaceController : BaseSecureController
             createdByUserId: CurrentUserId
         );
 
+        // ワークスペース作成通知メールを送信
+        await SendWorkspaceCreatedEmailAsync(workspace.Id, CurrentUser.OrganizationId.Value);
+
         // 作成されたワークスペースの詳細情報を取得
         var response = await _workspaceService.GetWorkspaceDetailAsync(workspace.Id, CurrentUserId);
 
-        return TypedResults.Created($"/api/workspaces/{response.Id}", response);
+        return TypedResults.Created($"/workspaces/{response.Code}", response);
     }
 
     /// <summary>
@@ -93,6 +97,9 @@ public class WorkspaceController : BaseSecureController
         // ワークスペース編集権限チェック（Member以上）
         await _workspaceService.CheckWorkspaceMemberOrOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
+        // 更新前のワークスペース情報を取得（変更内容比較用）
+        var oldWorkspace = await _workspaceService.GetWorkspaceWithOrganizationForEmailAsync(id);
+
         // ワークスペースを更新
         await _workspaceService.UpdateWorkspaceAsync(
             workspaceId: id,
@@ -102,6 +109,12 @@ public class WorkspaceController : BaseSecureController
 
         // 更新後のワークスペース詳細情報を取得（currentUserIdを渡してCurrentUserRoleを設定）
         var response = await _workspaceService.GetWorkspaceDetailAsync(id, CurrentUserId);
+
+        // ワークスペース更新通知メールを送信
+        if (oldWorkspace != null)
+        {
+            await SendWorkspaceUpdatedEmailAsync(id, oldWorkspace, request);
+        }
 
         return TypedResults.Ok(response);
     }
@@ -318,7 +331,7 @@ public class WorkspaceController : BaseSecureController
             );
         }
 
-        return TypedResults.Created($"/api/workspaces/{workspace?.Code ?? ""}", response);
+        return TypedResults.Created($"/workspaces/{workspace?.Code ?? ""}", response);
     }
 
     /// <summary>
@@ -504,6 +517,13 @@ public class WorkspaceController : BaseSecureController
         // Admin権限チェック
         RequireAdminRole();
 
+        // 削除前にワークスペース情報を取得（メール送信用）
+        var workspace = await _workspaceService.GetWorkspaceWithOrganizationForEmailAsync(id);
+        if (workspace == null)
+        {
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
         // ワークスペースを削除
         var result = await _workspaceService.DeleteWorkspaceAsync(workspaceId: id);
 
@@ -511,6 +531,9 @@ public class WorkspaceController : BaseSecureController
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
+
+        // ワークスペース削除通知メールを送信
+        await SendWorkspaceDeletedEmailAsync(workspace);
 
         return TypedResults.NoContent();
     }
@@ -557,5 +580,235 @@ public class WorkspaceController : BaseSecureController
         }
 
         return TypedResults.Ok(new SuccessResponse { Message = "スキルを設定しました。" });
+    }
+
+    /// <summary>
+    /// ワークスペース作成時に組織内ユーザーへメール送信
+    /// </summary>
+    private async Task SendWorkspaceCreatedEmailAsync(int workspaceId, int organizationId)
+    {
+        // ワークスペース情報を取得
+        var workspace = await _workspaceService.GetWorkspaceWithOrganizationForEmailAsync(workspaceId);
+        if (workspace == null)
+        {
+            _logger.LogWarning(
+                "ワークスペース作成メール送信: ワークスペース情報が取得できませんでした。WorkspaceId={WorkspaceId}",
+                workspaceId
+            );
+            return;
+        }
+
+        // 通知先ユーザー一覧を取得（組織内の有効なユーザー、作成者を除外）
+        var targetUsers = await _workspaceService.GetWorkspaceCreationNotificationTargetsAsync(
+            organizationId,
+            CurrentUserId // ワークスペース作成者は除外
+        );
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "ワークスペース作成メール送信: 通知先ユーザーがいません。WorkspaceId={WorkspaceId}",
+                workspaceId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var workspaceUrl = $"{baseUrl}/workspaces/{workspace.Code}";
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new WorkspaceCreatedEmailModel
+            {
+                UserName = user.Username,
+                WorkspaceName = workspace.Name,
+                WorkspaceCode = workspace.Code ?? "",
+                CategoryName = workspace.Genre?.Name,
+                Description = workspace.Description,
+                CreatedByName = CurrentUser?.Username ?? "",
+                CreatedAt = workspace.CreatedAt,
+                OrganizationName = workspace.Organization?.Name ?? "",
+                WorkspaceUrl = workspaceUrl,
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "新しいワークスペースが作成されました",
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "ワークスペース作成メールをキューに追加しました。WorkspaceId={WorkspaceId}, TargetCount={Count}",
+            workspaceId,
+            targetUsers.Count
+        );
+    }
+
+    /// <summary>
+    /// ワークスペース更新時に組織内ユーザーへメール送信
+    /// </summary>
+    private async Task SendWorkspaceUpdatedEmailAsync(
+        int workspaceId,
+        Workspace oldWorkspace,
+        UpdateWorkspaceRequest request
+    )
+    {
+        // 変更内容を検出
+        var changes = new List<string>();
+        string? oldName = null, newName = null;
+        string? oldCategory = null, newCategory = null;
+        string? oldDescription = null, newDescription = null;
+
+        if (oldWorkspace.Name != request.Name)
+        {
+            changes.Add("名前を変更");
+            oldName = oldWorkspace.Name;
+            newName = request.Name;
+        }
+
+        if (oldWorkspace.GenreId != request.GenreId)
+        {
+            changes.Add("カテゴリを変更");
+            oldCategory = oldWorkspace.Genre?.Name;
+            newCategory = await _workspaceService.GetGenreNameAsync(request.GenreId);
+        }
+
+        if (oldWorkspace.Description != request.Description)
+        {
+            changes.Add("説明を変更");
+            oldDescription = oldWorkspace.Description;
+            newDescription = request.Description;
+        }
+
+        // 変更がない場合はメール送信しない
+        if (changes.Count == 0)
+        {
+            _logger.LogInformation(
+                "ワークスペース更新メール送信: 変更内容がありません。WorkspaceId={WorkspaceId}",
+                workspaceId
+            );
+            return;
+        }
+
+        // 通知先ユーザー一覧を取得（組織内の有効なユーザー、更新者を除外）
+        var targetUsers = await _workspaceService.GetWorkspaceCreationNotificationTargetsAsync(
+            oldWorkspace.OrganizationId,
+            CurrentUserId // ワークスペース更新者は除外
+        );
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "ワークスペース更新メール送信: 通知先ユーザーがいません。WorkspaceId={WorkspaceId}",
+                workspaceId
+            );
+            return;
+        }
+
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var workspaceUrl = $"{baseUrl}/workspaces/{oldWorkspace.Code}";
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new WorkspaceUpdatedEmailModel
+            {
+                UserName = user.Username,
+                WorkspaceName = request.Name,
+                WorkspaceCode = oldWorkspace.Code ?? "",
+                UpdatedByName = CurrentUser?.Username ?? "",
+                UpdatedAt = DateTimeOffset.UtcNow,
+                Changes = changes,
+                OldWorkspaceName = oldName,
+                NewWorkspaceName = newName,
+                OldCategoryName = oldCategory,
+                NewCategoryName = newCategory,
+                OldDescription = oldDescription,
+                NewDescription = newDescription,
+                OrganizationName = oldWorkspace.Organization?.Name ?? "",
+                WorkspaceUrl = workspaceUrl,
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "ワークスペースが更新されました",
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "ワークスペース更新メールをキューに追加しました。WorkspaceId={WorkspaceId}, Changes={Changes}, TargetCount={Count}",
+            workspaceId,
+            string.Join(", ", changes),
+            targetUsers.Count
+        );
+    }
+
+    /// <summary>
+    /// ワークスペース削除時に組織内ユーザーへメール送信
+    /// </summary>
+    private async Task SendWorkspaceDeletedEmailAsync(Workspace workspace)
+    {
+        // 通知先ユーザー一覧を取得（組織内の有効なユーザー全員）
+        var targetUsers = await _workspaceService.GetOrganizationActiveUsersAsync(workspace.OrganizationId);
+
+        if (targetUsers.Count == 0)
+        {
+            _logger.LogInformation(
+                "ワークスペース削除メール送信: 通知先ユーザーがいません。WorkspaceCode={WorkspaceCode}",
+                workspace.Code
+            );
+            return;
+        }
+
+        // 各ユーザーにメール送信ジョブを登録
+        foreach (var user in targetUsers)
+        {
+            if (string.IsNullOrEmpty(user.Email))
+            {
+                continue;
+            }
+
+            var emailModel = new WorkspaceDeletedEmailModel
+            {
+                UserName = user.Username,
+                WorkspaceName = workspace.Name,
+                WorkspaceCode = workspace.Code ?? "",
+                CategoryName = workspace.Genre?.Name,
+                DeletedByName = CurrentUser?.Username ?? "",
+                DeletedAt = DateTimeOffset.UtcNow,
+                OrganizationName = workspace.Organization?.Name ?? "",
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    user.Email,
+                    "ワークスペースが削除されました",
+                    emailModel
+                )
+            );
+        }
+
+        _logger.LogInformation(
+            "ワークスペース削除メールをキューに追加しました。WorkspaceCode={WorkspaceCode}, TargetCount={Count}",
+            workspace.Code,
+            targetUsers.Count
+        );
     }
 }
