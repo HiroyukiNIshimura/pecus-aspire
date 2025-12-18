@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Libs;
 using Pecus.Models.Config;
+using Pecus.Models.Enums;
 using Pecus.Services;
 
 namespace Pecus.Controllers;
@@ -49,24 +50,43 @@ public class MyItemController : BaseSecureController
     )
     {
         var pageSize = _config.Pagination.DefaultPageSize;
-        var (items, totalCount) = await _workspaceItemService.GetMyItemsAsync(
+        var (items, totalCount, workspaces) = await _workspaceItemService.GetMyItemsAsync(
             userId: CurrentUserId,
             relation: request.Relation,
             page: request.Page,
             pageSize: pageSize,
-            includeArchived: request.IncludeArchived
+            includeArchived: request.IncludeArchived,
+            workspaceIds: request.WorkspaceIds,
+            sortBy: request.SortBy,
+            order: request.Order
         );
 
         var itemResponses = items
             .Select(item => WorkspaceItemResponseHelper.BuildItemDetailResponse(item, CurrentUserId))
             .ToList();
 
+        var statistics = new WorkspaceItemStatistics
+        {
+            Workspaces = workspaces.Select(w => new SummaryWorkspaceResponse
+            {
+                Id = w.Id,
+                Name = w.Name,
+                Code = w.Code,
+                GenreId = w.GenreId,
+                GenreName = w.Genre?.Name,
+                GenreIcon = w.Genre?.Icon,
+                Mode = w.Mode
+            }).ToList()
+        };
+
         var response = PaginationHelper.CreatePagedResponse(
             data: itemResponses,
             totalCount: totalCount,
             page: request.Page,
-            pageSize: pageSize
+            pageSize: pageSize,
+            summary: statistics
         );
+
 
         return TypedResults.Ok(response);
     }

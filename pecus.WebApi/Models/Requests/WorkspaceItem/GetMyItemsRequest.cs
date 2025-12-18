@@ -1,4 +1,5 @@
 using Pecus.Libs.DB.Models.Enums;
+using Pecus.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceItem;
@@ -25,4 +26,19 @@ public class GetMyItemsRequest
     /// false または未指定の場合、アーカイブ済みアイテムを除外
     /// </summary>
     public bool? IncludeArchived { get; set; }
+
+    /// <summary>
+    /// ワークスペースIDの配列（フィルタリング用）
+    /// </summary>
+    public int[]? WorkspaceIds { get; set; }
+
+    /// <summary>
+    /// ソート項目(省略時はUpdatedAt)
+    /// </summary>
+    public ItemSortBy? SortBy { get; set; }
+
+    /// <summary>
+    /// ソート順序(省略時はAsc)
+    /// </summary>
+    public SortOrder? Order { get; set; }
 }

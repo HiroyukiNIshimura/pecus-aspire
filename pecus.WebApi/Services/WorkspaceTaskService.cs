@@ -7,6 +7,7 @@ using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Models.Config;
+using Pecus.Models.Enums;
 
 namespace Pecus.Services;
 

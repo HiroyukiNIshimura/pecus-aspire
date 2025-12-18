@@ -8,6 +8,7 @@ using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Utils;
 using Pecus.Models.Config;
+using Pecus.Models.Enums;
 using Pecus.WebApi.Models.Requests;
 
 namespace Pecus.Services;
@@ -710,12 +711,18 @@ public class WorkspaceItemService
     /// <param name="page">ページ番号（1から開始）</param>
     /// <param name="pageSize">ページサイズ</param>
     /// <param name="includeArchived">アーカイブ済みアイテムを含めるかどうか（trueの場合はアーカイブ済みのみ表示、デフォルト: null = アーカイブ除外）</param>
-    public async Task<(List<WorkspaceItem> Items, int TotalCount)> GetMyItemsAsync(
+    /// <param name="workspaceIds">ワークスペースIDの配列（フィルタリング用）</param>
+    /// <param name="sortBy">ソート項目（デフォルト: UpdatedAt）</param>
+    /// <param name="order">ソート順序（デフォルト: Desc）</param>
+    public async Task<(List<WorkspaceItem> Items, int TotalCount, List<Workspace> Workspaces)> GetMyItemsAsync(
         int userId,
         MyItemRelationType? relation = null,
         int page = 1,
         int pageSize = 20,
-        bool? includeArchived = null
+        bool? includeArchived = null,
+        int[]? workspaceIds = null,
+        ItemSortBy? sortBy = null,
+        SortOrder? order = null
     )
     {
         var relationType = relation ?? MyItemRelationType.All;
@@ -762,17 +769,52 @@ public class WorkspaceItemService
             query = query.Where(wi => !wi.IsArchived);
         }
 
+        // ワークスペースIDフィルタ
+        if (workspaceIds != null && workspaceIds.Length > 0)
+        {
+            query = query.Where(wi => workspaceIds.Contains(wi.WorkspaceId));
+        }
+
         var totalCount = await query.CountAsync();
 
-        // ページネーション（更新日時の降順）
+        // 総検索結果に含まれるワークスペースのリストを取得（重複排除）
+        var resultWorkspaceIds = await query
+            .Select(wi => wi.WorkspaceId)
+            .Distinct()
+            .ToListAsync();
+        var workspaces = await _context.Workspaces
+            .Include(w => w.Genre)
+            .Where(w => resultWorkspaceIds.Contains(w.Id))
+            .ToListAsync();
+
+        // ソート
+        var sortByField = sortBy ?? ItemSortBy.UpdatedAt;
+        var sortOrder = order ?? SortOrder.Desc;
+
+        query = sortByField switch
+        {
+            ItemSortBy.CreatedAt => sortOrder == SortOrder.Asc
+                ? query.OrderBy(wi => wi.CreatedAt)
+                : query.OrderByDescending(wi => wi.CreatedAt),
+            ItemSortBy.Priority => sortOrder == SortOrder.Asc
+                ? query.OrderBy(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt)
+                : query.OrderByDescending(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt),
+            ItemSortBy.DueDate => sortOrder == SortOrder.Asc
+                ? query.OrderBy(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt)
+                : query.OrderByDescending(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt),
+            _ => sortOrder == SortOrder.Asc
+                ? query.OrderBy(wi => wi.UpdatedAt)
+                : query.OrderByDescending(wi => wi.UpdatedAt),
+        };
+
+        // ページネーション
         var items = await query
             .AsSplitQuery()
-            .OrderByDescending(wi => wi.UpdatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        return (items, totalCount);
+        return (items, totalCount, workspaces);
     }
 
     /// <summary>

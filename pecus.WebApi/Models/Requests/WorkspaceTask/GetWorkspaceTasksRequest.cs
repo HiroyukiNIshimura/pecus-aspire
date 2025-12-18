@@ -1,69 +1,8 @@
+using Pecus.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceTask;
 
-/// <summary>
-/// タスクのステータスフィルター
-/// </summary>
-public enum TaskStatusFilter
-{
-    /// <summary>
-    /// すべてのタスク
-    /// </summary>
-    All,
-
-    /// <summary>
-    /// 未完了のタスク（完了でも破棄でもない）
-    /// </summary>
-    Active,
-
-    /// <summary>
-    /// 完了したタスク（破棄は除く）
-    /// </summary>
-    Completed,
-
-    /// <summary>
-    /// 破棄されたタスク
-    /// </summary>
-    Discarded,
-}
-
-/// <summary>
-/// タスクのソート項目
-/// </summary>
-public enum TaskSortBy
-{
-    /// <summary>
-    /// シーケンス番号順
-    /// </summary>
-    Sequence,
-
-    /// <summary>
-    /// 優先度順
-    /// </summary>
-    Priority,
-
-    /// <summary>
-    /// 期限日時順
-    /// </summary>
-    DueDate,
-}
-
-/// <summary>
-/// ソート順序
-/// </summary>
-public enum SortOrder
-{
-    /// <summary>
-    /// 昇順
-    /// </summary>
-    Asc,
-
-    /// <summary>
-    /// 降順
-    /// </summary>
-    Desc,
-}
 
 /// <summary>
 /// ワークスペースタスク一覧取得リクエスト

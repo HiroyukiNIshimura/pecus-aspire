@@ -1,3 +1,4 @@
+using Pecus.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Pecus.Models.Requests.WorkspaceTask;
