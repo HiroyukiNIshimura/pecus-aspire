@@ -7,10 +7,7 @@ using Pecus.Libs.Mail.Templates;
 namespace Pecus.Libs.Hangfire.Tasks;
 
 /// <summary>
-/// 【注意】このクラスは汎用的なメール送信専用です。
-/// 業務固有のメール送信処理（例：デバイス通知、パスワードリセット等）は
-/// サービス層や専用クラスで実装してください。
-/// EmailTasksへの追加は禁止です。
+/// このクラスはHangfireタスクとしてメール送信を担当する
 /// </summary>
 public class EmailTasks
 {
@@ -29,35 +26,6 @@ public class EmailTasks
         _emailService = emailService;
         _logger = logger;
         _config = config;
-    }
-
-    /// <summary>
-    /// 単純なメールを送信
-    /// </summary>
-    /// <param name="to">宛先メールアドレス</param>
-    /// <param name="subject">件名</param>
-    /// <param name="htmlBody">HTML本文</param>
-    /// <param name="textBody">テキスト本文</param>
-    public async Task SendSimpleEmailAsync(
-        string to,
-        string subject,
-        string? htmlBody = null,
-        string? textBody = null
-    )
-    {
-        _logger.LogInformation("Sending simple email to {To}", to);
-
-        var message = new EmailMessage
-        {
-            To = new List<string> { to },
-            Subject = subject,
-            HtmlBody = htmlBody,
-            TextBody = textBody,
-        };
-
-        await _emailService.SendAsync(message);
-
-        _logger.LogInformation("Simple email sent to {To}", to);
     }
 
     /// <summary>
@@ -85,58 +53,4 @@ public class EmailTasks
         _logger.LogInformation("Templated email sent to {To}", to);
     }
 
-    /// <summary>
-    /// カスタマイズ可能なテンプレートメールを送信（複数宛先、添付ファイル、カスタムヘッダーなど）
-    /// </summary>
-    /// <typeparam name="TModel">IEmailTemplateModel を実装したモデルの型</typeparam>
-    /// <param name="message">メールメッセージ（宛先、件名、添付ファイル、カスタムヘッダーなど）</param>
-    /// <param name="model">テンプレートにバインドするモデル</param>
-    public async Task SendCustomTemplatedEmailAsync<TModel>(
-        EmailMessage message,
-        TModel model
-    )
-        where TModel : IEmailTemplateModel<TModel>
-    {
-        _logger.LogInformation(
-            "Sending custom templated email to {Recipients} using template {Template}",
-            string.Join(", ", message.To),
-            TModel.TemplateName
-        );
-
-        await _emailService.SendTemplatedEmailAsync(message, model);
-
-        _logger.LogInformation(
-            "Custom templated email sent to {Recipients}",
-            string.Join(", ", message.To)
-        );
-    }
-
-    /// <summary>
-    /// 複数の宛先に同じメールを一括送信
-    /// </summary>
-    /// <typeparam name="TModel">IEmailTemplateModel を実装したモデルの型</typeparam>
-    /// <param name="recipients">宛先メールアドレスのリスト</param>
-    /// <param name="subject">件名</param>
-    /// <param name="model">テンプレートにバインドするモデル</param>
-    public async Task SendBulkTemplatedEmailAsync<TModel>(
-        List<string> recipients,
-        string subject,
-        TModel model
-    )
-        where TModel : IEmailTemplateModel<TModel>
-    {
-        _logger.LogInformation(
-            "Sending bulk templated email to {Count} recipients using template {Template}",
-            recipients.Count,
-            TModel.TemplateName
-        );
-
-        var tasks = recipients.Select(recipient =>
-            _emailService.SendTemplatedEmailAsync(recipient, subject, model)
-        );
-
-        await Task.WhenAll(tasks);
-
-        _logger.LogInformation("Bulk templated email sent to {Count} recipients", recipients.Count);
-    }
 }
