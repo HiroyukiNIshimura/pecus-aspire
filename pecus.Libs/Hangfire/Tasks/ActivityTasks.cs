@@ -45,13 +45,6 @@ public class ActivityTasks
     {
         try
         {
-            _logger.LogInformation(
-                "Recording activity: WorkspaceId={WorkspaceId}, ItemId={ItemId}, ActionType={ActionType}",
-                workspaceId,
-                itemId,
-                actionType
-            );
-
             var activity = new Activity
             {
                 WorkspaceId = workspaceId,
@@ -64,12 +57,6 @@ public class ActivityTasks
 
             _context.Activities.Add(activity);
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation(
-                "Activity recorded successfully: Id={ActivityId}, ActionType={ActionType}",
-                activity.Id,
-                actionType
-            );
         }
         catch (Exception ex)
         {

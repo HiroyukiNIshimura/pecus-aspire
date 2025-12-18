@@ -1,0 +1,38 @@
+@model Pecus.Libs.Mail.Templates.Models.ItemUpdatedEmailModel
+
+アイテムが更新されました
+@Model.WorkspaceName でアイテムが更新されました。
+
+アイテムコード: @Model.ItemCode
+件名: @Model.ItemTitle
+@if (!string.IsNullOrWhiteSpace(Model.ItemType))
+{
+@:種別: @Model.ItemType
+}
+ワークスペース: @Model.WorkspaceName (@Model.WorkspaceCode)
+
+@if (Model.Activities.Count > 0)
+{
+@:
+@:更新内容:
+@:--------------------
+@foreach (var activity in Model.Activities)
+{
+@:・@activity.EffectMessage
+@:  @activity.UpdatedByName — @activity.UpdatedAt.ToString("yyyy/MM/dd HH:mm")
+}
+@:--------------------
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.BodyText))
+{
+@:
+@:本文:
+@:--------------------
+@Model.BodyText
+@:--------------------
+}
+
+アイテムを確認: @Model.ItemUrl
+
+このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。

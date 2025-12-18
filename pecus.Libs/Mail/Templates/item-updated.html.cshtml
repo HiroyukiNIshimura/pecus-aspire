@@ -1,0 +1,68 @@
+@model Pecus.Libs.Mail.Templates.Models.ItemUpdatedEmailModel
+@{
+    Layout = "_Layout.html.cshtml";
+}
+
+<h2>アイテムが更新されました</h2>
+
+<p>@Model.WorkspaceName でアイテムが更新されました。</p>
+
+<table style="width:100%; border-collapse:collapse; margin:16px 0;">
+    <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3; color:#666; width:120px;">アイテムコード</td>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3; font-weight:bold;">@Model.ItemCode</td>
+    </tr>
+    <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3; color:#666;">件名</td>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3;">@Model.ItemTitle</td>
+    </tr>
+    @if (!string.IsNullOrWhiteSpace(Model.ItemType))
+    {
+        <tr>
+            <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3; color:#666;">種別</td>
+            <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3;">@Model.ItemType</td>
+        </tr>
+    }
+    <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3; color:#666;">ワークスペース</td>
+        <td style="padding:8px 12px; border-bottom:1px solid #e3e3e3;">@Model.WorkspaceName (@Model.WorkspaceCode)</td>
+    </tr>
+</table>
+
+@if (Model.Activities.Count > 0)
+{
+    <h3 style="margin:20px 0 12px 0; font-size:15px;">更新内容</h3>
+    <ul style="margin:0; padding:0 0 0 20px;">
+        @foreach (var activity in Model.Activities)
+        {
+            <li style="margin:8px 0; line-height:1.6;">
+                <strong>@activity.EffectMessage</strong>
+                <br />
+                <span style="font-size:13px; color:#666;">
+                    @activity.UpdatedByName — @activity.UpdatedAt.ToString("yyyy/MM/dd HH:mm")
+                </span>
+            </li>
+        }
+    </ul>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.BodyHtml) || !string.IsNullOrWhiteSpace(Model.BodyText))
+{
+    <h3 style="margin:20px 0 12px 0; font-size:15px;">本文</h3>
+    @if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
+    {
+        <div style="margin:12px 0; padding:12px; background:#f8f9fa; border-radius:4px; border:1px solid #e3e3e3;">
+            @Html.Raw(Model.BodyHtml)
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.BodyText))
+    {
+        <div style="margin:12px 0; padding:12px; background:#f8f9fa; border-radius:4px; border:1px solid #e3e3e3; white-space:pre-wrap;">@Model.BodyText</div>
+    }
+}
+
+<div style="text-align:center; margin:24px 0;">
+    <a href="@Model.ItemUrl" class="button">アイテムを確認</a>
+</div>
+
+<p style="font-size:14px; color:#666;">このメールに心当たりがない場合は、管理者またはサポートまでご連絡ください。</p>
