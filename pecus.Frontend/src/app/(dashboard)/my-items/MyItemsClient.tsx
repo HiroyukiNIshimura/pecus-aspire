@@ -647,9 +647,9 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         )}
 
                         {/* 期限 */}
-                        {item.dueDate && (
-                          <div className="flex items-center text-sm gap-2">
-                            <span className="text-base-content/70 w-20 flex-shrink-0">期限</span>
+                        <div className="flex items-center text-sm gap-2">
+                          <span className="text-base-content/70 w-20 flex-shrink-0">期限</span>
+                          {item.dueDate ? (
                             <span
                               className={
                                 new Date(item.dueDate) < new Date(new Date().setHours(0, 0, 0, 0))
@@ -659,8 +659,10 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                             >
                               {new Date(item.dueDate).toLocaleDateString('ja-JP')}
                             </span>
-                          </div>
-                        )}
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </div>
 
                         {/* 作成日 */}
                         <div className="flex items-center text-sm gap-2">
