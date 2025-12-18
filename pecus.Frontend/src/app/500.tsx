@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function ServerErrorPage() {
   return (
-    <div className="relative flex items-center justify-center flex-1 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="relative flex items-center justify-center flex-1 overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* 背景アニメーション用の浮遊要素 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* 赤系グラデーション円 */}
@@ -23,10 +23,10 @@ export default function ServerErrorPage() {
       <div className="relative z-10 text-center px-4 sm:px-6">
         {/* エラーコード */}
         <div className="mb-8">
-          <h1 className="text-9xl font-bold bg-gradient-to-r from-red-400 via-pink-400 to-orange-400 bg-clip-text text-transparent mb-4 animate-pulse">
+          <h1 className="text-9xl font-bold bg-linear-to-r from-red-400 via-pink-400 to-orange-400 bg-clip-text text-transparent mb-4 animate-pulse">
             500
           </h1>
-          <div className="h-1 w-24 bg-gradient-to-r from-red-400 to-orange-400 rounded-full mx-auto mb-6"></div>
+          <div className="h-1 w-24 bg-linear-to-r from-red-400 to-orange-400 rounded-full mx-auto mb-6"></div>
         </div>
 
         {/* エラータイトル */}
@@ -55,7 +55,7 @@ export default function ServerErrorPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 mb-6 max-w-xs mx-auto">
           <Link
             href="/"
-            className="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/50"
+            className="px-6 py-3 bg-linear-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/50"
           >
             ホームに戻る
           </Link>
