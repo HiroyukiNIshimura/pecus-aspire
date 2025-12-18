@@ -11,6 +11,7 @@ import type {
   PagedResponseOfActivityResponse,
 } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { formatDate, formatFullDateJa, formatTime } from '@/libs/utils/date';
 
 interface ActivityClientProps {
   initialUserName: string;
@@ -71,8 +72,7 @@ const actionTypeLabels: Record<ActivityActionType, string> = {
 
 /** 日付をグループ化するためのキーを取得 */
 function getDateKey(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+  return formatFullDateJa(dateString);
 }
 
 /** ファイルサイズを人間が読みやすい形式に変換 */
@@ -121,8 +121,8 @@ function formatDetails(actionType: ActivityActionType, details: string | null | 
       case 'RelationRemoved':
         return `#${parsed.relatedItemCode}${parsed.relationType ? ` (${parsed.relationType})` : ''}`;
       case 'DueDateChanged': {
-        const oldDate = parsed.old ? new Date(parsed.old).toLocaleDateString('ja-JP') : 'なし';
-        const newDate = parsed.new ? new Date(parsed.new).toLocaleDateString('ja-JP') : 'なし';
+        const oldDate = parsed.old ? formatDate(parsed.old) : 'なし';
+        const newDate = parsed.new ? formatDate(parsed.new) : 'なし';
         return `${oldDate} → ${newDate}`;
       }
       case 'TaskAdded':
@@ -283,12 +283,7 @@ export default function ActivityClient({
                       ? actionTypeLabels[activity.actionType]
                       : '不明な操作';
                   const details = activity.actionType ? formatDetails(activity.actionType, activity.details) : null;
-                  const time = activity.createdAt
-                    ? new Date(activity.createdAt).toLocaleTimeString('ja-JP', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : '';
+                  const time = activity.createdAt ? formatTime(activity.createdAt) : '';
 
                   // アイテムへの遷移URL
                   const itemUrl = activity.workspaceCode

@@ -24,6 +24,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { taskPriorityOptions, updateWorkspaceTaskSchemaWithRequiredEstimate } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
@@ -1193,8 +1194,8 @@ export default function WorkspaceTaskDetailPage({
                           />
                         </div>
                       )}
-                      {task.createdAt && <div>作成日時: {new Date(task.createdAt).toLocaleString('ja-JP')}</div>}
-                      {task.updatedAt && <div>更新日時: {new Date(task.updatedAt).toLocaleString('ja-JP')}</div>}
+                      {task.createdAt && <div>作成日時: {formatDateTime(task.createdAt)}</div>}
+                      {task.updatedAt && <div>更新日時: {formatDateTime(task.updatedAt)}</div>}
                     </div>
                   </div>
 

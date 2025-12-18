@@ -9,6 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { TagDetailResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { editTagSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -198,17 +199,13 @@ export default function EditTagClient({ initialUser, tagDetail, fetchError }: Ed
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">
-                      {tagDetail.createdAt ? new Date(tagDetail.createdAt).toLocaleString('ja-JP') : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(tagDetail.createdAt)}</p>
                   </div>
 
                   {tagDetail.updatedAt && (
                     <div>
                       <p className="text-sm text-base-content/60">更新日時</p>
-                      <p className="text-lg font-semibold">
-                        {tagDetail.updatedAt ? new Date(tagDetail.updatedAt).toLocaleString('ja-JP') : '-'}
-                      </p>
+                      <p className="text-lg font-semibold">{formatDateTime(tagDetail.updatedAt)}</p>
                     </div>
                   )}
                 </div>

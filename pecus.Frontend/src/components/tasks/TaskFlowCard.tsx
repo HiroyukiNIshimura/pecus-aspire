@@ -2,6 +2,7 @@
 
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskFlowNode, TaskPriority } from '@/connectors/api/pecus';
+import { formatShortDate } from '@/libs/utils/date';
 
 interface TaskFlowCardProps {
   task: TaskFlowNode;
@@ -162,11 +163,7 @@ export default function TaskFlowCard({ task, clickable = false, onClick }: TaskF
           ) : (
             <span className="text-base-content/30 text-xs">未割当</span>
           )}
-          {task.dueDate && (
-            <span className="text-xs">
-              {new Date(task.dueDate).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })}
-            </span>
-          )}
+          {task.dueDate && <span className="text-xs">{formatShortDate(task.dueDate)}</span>}
         </div>
       </div>
     </div>

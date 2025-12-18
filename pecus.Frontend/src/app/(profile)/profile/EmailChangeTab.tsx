@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { requestEmailChange } from '@/actions/profile';
 import type { PendingEmailChangeResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { formatDateTime } from '@/libs/utils/date';
 import { updateEmailFormSchema } from '@/schemas/profileSchemas';
 
 interface EmailChangeTabProps {
@@ -100,7 +101,7 @@ export default function EmailChangeTab({
               <p>
                 新しいメールアドレス: <strong>{pendingEmail}</strong>
               </p>
-              <p>有効期限: {pendingExpiresAt.toLocaleString('ja-JP')}</p>
+              <p>有効期限: {formatDateTime(pendingExpiresAt)}</p>
               <p className="mt-1">メールに記載されたリンクをクリックして変更を完了してください。</p>
             </div>
           </div>

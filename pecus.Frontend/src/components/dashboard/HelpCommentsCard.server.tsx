@@ -1,24 +1,7 @@
 import Link from 'next/link';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { DashboardHelpCommentsResponse } from '@/connectors/api/pecus';
-
-/**
- * 相対時間をフォーマット（例: "3時間前", "2日前"）
- */
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMinutes < 1) return 'たった今';
-  if (diffMinutes < 60) return `${diffMinutes}分前`;
-  if (diffHours < 24) return `${diffHours}時間前`;
-  if (diffDays < 7) return `${diffDays}日前`;
-  return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
-}
+import { formatRelativeTime } from '@/libs/utils/date';
 
 /**
  * コメント内容を省略表示（最大100文字）

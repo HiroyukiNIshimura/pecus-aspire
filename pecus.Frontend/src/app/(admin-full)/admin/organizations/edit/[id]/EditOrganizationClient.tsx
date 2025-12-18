@@ -9,6 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { OrganizationResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { editOrganizationSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -152,11 +153,7 @@ export default function EditOrganizationClient({
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">
-                      {organizationDetail.createdAt
-                        ? new Date(organizationDetail.createdAt).toLocaleString('ja-JP')
-                        : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(organizationDetail.createdAt)}</p>
                   </div>
                 </div>
               </div>
@@ -288,11 +285,7 @@ export default function EditOrganizationClient({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
-                    <p className="text-lg font-semibold">
-                      {organizationDetail.updatedAt
-                        ? new Date(organizationDetail.updatedAt).toLocaleString('ja-JP')
-                        : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(organizationDetail.updatedAt)}</p>
                   </div>
                 </div>
               </div>

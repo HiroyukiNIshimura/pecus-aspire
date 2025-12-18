@@ -26,6 +26,7 @@ import type {
   WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDate, formatDateTime } from '@/libs/utils/date';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
 
@@ -409,7 +410,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 {item.dueDate && (
                   <span className="badge badge-outline badge-success badge-md gap-1">
                     <span className="text-xs">期限:</span>
-                    {new Date(item.dueDate).toLocaleDateString('ja-JP')}
+                    {formatDate(item.dueDate)}
                   </span>
                 )}
               </div>
@@ -508,7 +509,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {item.createdAt && (
               <div>
                 <span className="text-xs text-base-content/70">作成日時</span>
-                <p className="font-semibold">{new Date(item.createdAt).toLocaleString('ja-JP')}</p>
+                <p className="font-semibold">{formatDateTime(item.createdAt)}</p>
               </div>
             )}
 
@@ -531,7 +532,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
             {item.updatedAt && (
               <div>
                 <span className="text-xs text-base-content/70">更新日時</span>
-                <p className="font-semibold">{new Date(item.updatedAt).toLocaleString('ja-JP')}</p>
+                <p className="font-semibold">{formatDateTime(item.updatedAt)}</p>
               </div>
             )}
 

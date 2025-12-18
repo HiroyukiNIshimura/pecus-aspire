@@ -16,6 +16,7 @@ import type {
   WorkspaceTaskStatistics,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatShortDateJa } from '@/libs/utils/date';
 import CreateWorkspaceTaskModal from './CreateWorkspaceTaskModal';
 import TaskCommentModal from './TaskCommentModal';
 
@@ -711,14 +712,7 @@ const WorkspaceTasks = ({
                             d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
                           />
                         </svg>
-                        <span>
-                          {task.dueDate
-                            ? new Date(task.dueDate).toLocaleDateString('ja-JP', {
-                                month: 'short',
-                                day: 'numeric',
-                              })
-                            : '—'}
-                        </span>
+                        <span>{task.dueDate ? formatShortDateJa(task.dueDate) : '—'}</span>
                       </div>
                     </div>
 

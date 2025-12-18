@@ -14,6 +14,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDate } from '@/libs/utils/date';
 
 interface MyItemsClientProps {
   initialItems?: PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics | null;
@@ -657,7 +658,7 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                                   : ''
                               }
                             >
-                              {new Date(item.dueDate).toLocaleDateString('ja-JP')}
+                              {formatDate(item.dueDate)}
                             </span>
                           ) : (
                             <span>-</span>
@@ -667,13 +668,13 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                         {/* 作成日 */}
                         <div className="flex items-center text-sm gap-2">
                           <span className="text-base-content/70 w-20 flex-shrink-0">作成日</span>
-                          <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('ja-JP') : '-'}</span>
+                          <span>{formatDate(item.createdAt)}</span>
                         </div>
 
                         {/* 更新日 */}
                         <div className="flex items-center text-sm gap-2">
                           <span className="text-base-content/70 w-20 flex-shrink-0">更新日</span>
-                          <span>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('ja-JP') : '-'}</span>
+                          <span>{formatDate(item.updatedAt)}</span>
                         </div>
                       </div>
                     </div>

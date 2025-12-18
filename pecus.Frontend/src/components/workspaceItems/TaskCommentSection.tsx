@@ -10,6 +10,7 @@ import {
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { CreateTaskCommentRequest, TaskCommentDetailResponse, TaskCommentType } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 
 /** コメントタイプのラベルと色 */
 /** コメントの最大文字数 */
@@ -355,7 +356,7 @@ export default function TaskCommentSection({
                         ) : null;
                       })()}
                       <span className="text-xs text-base-content/50">
-                        {comment.createdAt ? new Date(comment.createdAt).toLocaleString('ja-JP') : ''}
+                        {comment.createdAt ? formatDateTime(comment.createdAt) : ''}
                       </span>
                     </div>
 

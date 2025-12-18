@@ -17,6 +17,7 @@ import type {
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
+import { formatDate } from '@/libs/utils/date';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -404,9 +405,7 @@ export default function AdminWorkspacesClient({ initialUser, initialGenres }: Ad
                               {workspace.isActive ? 'アクティブ' : '非アクティブ'}
                             </div>
                           </td>
-                          <td>
-                            {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '不明'}
-                          </td>
+                          <td>{formatDate(workspace.createdAt) !== '-' ? formatDate(workspace.createdAt) : '不明'}</td>
                           <td>
                             <div className="flex gap-2">
                               <a href={`/admin/workspaces/edit/${workspace.id}`} className="btn btn-sm btn-outline">

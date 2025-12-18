@@ -1,6 +1,7 @@
 'use client';
 
 import type { FocusTaskResponse } from '@/connectors/api/pecus';
+import { formatDate } from '@/libs/utils/date';
 
 interface FocusTaskCardProps {
   task: FocusTaskResponse;
@@ -64,7 +65,7 @@ function getDueDateBadge(dueDate: string) {
     return <span className="badge badge-xs badge-info">今週中</span>;
   }
 
-  return <span className="badge badge-xs badge-secondary">{due.toLocaleDateString('ja-JP')}</span>;
+  return <span className="badge badge-xs badge-secondary">{formatDate(due)}</span>;
 }
 
 /**

@@ -13,6 +13,7 @@ import type { SkillListItemResponse, UserDetailResponse } from '@/connectors/api
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
+import { formatDate } from '@/libs/utils/date';
 import { usernameFilterSchema } from '@/schemas/filterSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -522,7 +523,7 @@ export default function AdminUsersClient({ initialUser }: AdminUsersClientProps)
                                 {user.isActive ? 'アクティブ' : '非アクティブ'}
                               </div>
                             </td>
-                            <td>{new Date(user.createdAt).toLocaleDateString('ja-JP')}</td>
+                            <td>{formatDate(user.createdAt)}</td>
                             <td>
                               <div className="flex gap-2">
                                 <button

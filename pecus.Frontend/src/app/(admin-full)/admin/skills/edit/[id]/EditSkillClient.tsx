@@ -9,6 +9,7 @@ import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import type { SkillDetailResponse } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { editSkillSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -226,16 +227,12 @@ export default function EditSkillClient({ initialUser, skillDetail, fetchError }
 
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">
-                      {skillDetail.createdAt ? new Date(skillDetail.createdAt).toLocaleString('ja-JP') : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(skillDetail.createdAt)}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
-                    <p className="text-lg font-semibold">
-                      {skillDetail.updatedAt ? new Date(skillDetail.updatedAt).toLocaleString('ja-JP') : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(skillDetail.updatedAt)}</p>
                   </div>
                 </div>
               </div>

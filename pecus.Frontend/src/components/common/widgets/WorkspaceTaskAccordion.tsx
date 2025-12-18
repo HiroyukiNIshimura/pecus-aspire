@@ -8,6 +8,7 @@ import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { uiConfig } from '@/config/ui';
 import type { TasksByDueDateResponse, TaskWithItemResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDate, formatShortDateJa } from '@/libs/utils/date';
 
 type CommentTypeCounts = {
   HelpWanted?: number;
@@ -131,7 +132,7 @@ function getDueDateLabel(dueDateStr: string): { label: string; isOverdue: boolea
     };
   }
   return {
-    label: dueDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' }),
+    label: formatDate(dueDate, 'yyyy年M月d日'),
     isOverdue: false,
     isDueToday: false,
   };
@@ -392,10 +393,7 @@ export default function WorkspaceTaskAccordion({
                           <span className="flex items-center gap-1">
                             <span className="icon-[mdi--calendar-alert] w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
                             <span className="hidden sm:inline">最古期限:</span>
-                            {new Date(workspace.oldestDueDate).toLocaleDateString('ja-JP', {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            {formatShortDateJa(workspace.oldestDueDate)}
                           </span>
                         </>
                       )}

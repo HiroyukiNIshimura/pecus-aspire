@@ -6,6 +6,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { formatDate } from '@/libs/utils/date';
 import { type ApiErrorResponse, isAuthenticationError } from '@/types/errors';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -125,9 +126,7 @@ export default function AdminClient({
                         <span className="label-text font-semibold">作成日</span>
                       </label>
                       <div id="org-created" className="text-lg">
-                        {organization?.createdAt
-                          ? new Date(organization.createdAt).toLocaleDateString('ja-JP')
-                          : '未設定'}
+                        {formatDate(organization?.createdAt) !== '-' ? formatDate(organization?.createdAt) : '未設定'}
                       </div>
                     </div>
 

@@ -14,7 +14,7 @@ export default function HeaderLogo() {
     return (
       <a href="/" className="hidden md:flex items-end gap-1 text-sm font-bold">
         <div className="h-16 w-32" /> {/* プレースホルダー */}
-        <span className="pb-2 font-mono">TASK TRACKING</span>
+        <span className="pb-2 font-mono">DOC & TASK TRACKING</span>
       </a>
     );
   }
@@ -26,7 +26,7 @@ export default function HeaderLogo() {
         alt="Coati Logo"
         className="h-16 w-auto"
       />
-      <span className="pb-2 font-mono">TASK TRACKING</span>
+      <span className="pb-2 font-mono">DOC & TASK TRACKING</span>
     </a>
   );
 }

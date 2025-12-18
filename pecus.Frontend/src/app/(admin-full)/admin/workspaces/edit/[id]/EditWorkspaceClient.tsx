@@ -25,6 +25,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import { editWorkspaceSchema } from '@/schemas/editSchemas';
 import type { UserInfo } from '@/types/userInfo';
 
@@ -471,16 +472,12 @@ export default function EditWorkspaceClient({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <p className="text-sm text-base-content/60">作成日時</p>
-                    <p className="text-lg font-semibold">
-                      {workspaceDetail.createdAt ? new Date(workspaceDetail.createdAt).toLocaleString('ja-JP') : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(workspaceDetail.createdAt)}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-base-content/60">更新日時</p>
-                    <p className="text-lg font-semibold">
-                      {workspaceDetail.updatedAt ? new Date(workspaceDetail.updatedAt).toLocaleString('ja-JP') : '-'}
-                    </p>
+                    <p className="text-lg font-semibold">{formatDateTime(workspaceDetail.updatedAt)}</p>
                   </div>
                 </div>
               </div>

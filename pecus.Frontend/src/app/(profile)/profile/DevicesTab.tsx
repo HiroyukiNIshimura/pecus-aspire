@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { deleteDevice } from '@/actions/profile';
 import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
 import type { DeviceResponse } from '@/connectors/api/pecus';
+import { formatDateTime } from '@/libs/utils/date';
 
 interface DevicesTabProps {
   devices: DeviceResponse[];
@@ -18,16 +19,6 @@ interface DevicesTabProps {
   };
   onRefreshDevices?: () => Promise<void>;
 }
-
-const formatDateTime = (value?: string) => {
-  if (!value) return '-';
-  try {
-    return new Date(value).toLocaleString('ja-JP');
-  } catch (error) {
-    console.error('Failed to format datetime:', error);
-    return value;
-  }
-};
 
 const InfoItem = ({ label, value }: { label: string; value?: string | null }) => (
   <div>

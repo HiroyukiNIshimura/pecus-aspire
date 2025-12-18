@@ -15,6 +15,7 @@ import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useNotify } from '@/hooks/useNotify';
 import { useValidation } from '@/hooks/useValidation';
+import { formatDate } from '@/libs/utils/date';
 import { workspaceNameFilterSchema } from '@/schemas/filterSchemas';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
 
@@ -406,9 +407,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                         </div>
                         <div className="flex items-center justify-between text-sm gap-2">
                           <span className="text-base-content/70 flex-shrink-0">作成日</span>
-                          <span className="font-medium">
-                            {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString('ja-JP') : '-'}
-                          </span>
+                          <span className="font-medium">{formatDate(workspace.createdAt)}</span>
                         </div>
                       </div>
 

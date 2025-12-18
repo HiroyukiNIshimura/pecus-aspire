@@ -35,6 +35,7 @@ import type {
   WorkspaceTaskDetailResponse,
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { formatDateTime } from '@/libs/utils/date';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
 import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
@@ -1157,9 +1158,7 @@ export default function WorkspaceDetailClient({
                   {currentWorkspaceDetail.createdAt && (
                     <div>
                       <span className="text-xs text-base-content/70">作成日時</span>
-                      <p className="font-semibold">
-                        {new Date(currentWorkspaceDetail.createdAt).toLocaleString('ja-JP')}
-                      </p>
+                      <p className="font-semibold">{formatDateTime(currentWorkspaceDetail.createdAt)}</p>
                     </div>
                   )}
 
@@ -1182,9 +1181,7 @@ export default function WorkspaceDetailClient({
                   {currentWorkspaceDetail.updatedAt && (
                     <div>
                       <span className="text-xs text-base-content/70">更新日時</span>
-                      <p className="font-semibold">
-                        {new Date(currentWorkspaceDetail.updatedAt).toLocaleString('ja-JP')}
-                      </p>
+                      <p className="font-semibold">{formatDateTime(currentWorkspaceDetail.updatedAt)}</p>
                     </div>
                   )}
                 </div>
