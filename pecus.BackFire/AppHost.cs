@@ -7,6 +7,7 @@ using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
+using Pecus.Libs.Security;
 
 #if DEBUG
 // Windows環境でデバッグの場合LexicalConverterのgRPCサービスに接続できない問題の対処
@@ -34,6 +35,9 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 // メール関連サービスの登録
 builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// FrontendUrlResolver の登録
+builder.Services.AddSingleton<FrontendUrlResolver>();
 
 // Lexical Converter gRPC サービスの登録
 var lexicalConverterEndpoint = builder.Configuration["LexicalConverter:Endpoint"] ?? "http://localhost:5100";
