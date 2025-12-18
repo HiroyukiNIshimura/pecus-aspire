@@ -124,6 +124,46 @@ export function useItemUpdates(itemId: number | undefined, workspaceId: number |
 }
 
 /**
+ * タスク詳細表示時のリアルタイム更新を購読する Hook
+ *
+ * 排他的参加：このタスクに参加すると、前のタスクから自動離脱する。
+ * ワークスペース/アイテムのグループにもサーバー側で同期される。
+ */
+export function useTaskUpdates(
+  taskId: number | undefined,
+  workspaceId: number | undefined,
+  itemId?: number,
+  handlers?: EventHandlers,
+) {
+  const { connectionState, joinTask, leaveTask, onNotification } = useSignalRContext();
+
+  useEffect(() => {
+    if (!taskId || !workspaceId || connectionState !== 'connected') {
+      return;
+    }
+
+    joinTask(taskId, workspaceId, itemId);
+
+    return () => {
+      leaveTask(taskId);
+    };
+  }, [connectionState, itemId, joinTask, leaveTask, taskId, workspaceId]);
+
+  useEffect(() => {
+    if (!handlers) {
+      return;
+    }
+
+    return onNotification((notification: SignalRNotification) => {
+      const handler = handlers[notification.eventType];
+      if (handler) {
+        handler(notification.payload, notification.timestamp);
+      }
+    });
+  }, [handlers, onNotification]);
+}
+
+/**
  * 全ての通知を購読する汎用 Hook
  *
  * @param handler 通知ハンドラー

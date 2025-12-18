@@ -55,6 +55,15 @@ export interface ItemPresenceUser {
 }
 
 /**
+ * タスクプレゼンスユーザー情報（サーバーから返される）
+ */
+export interface TaskPresenceUser {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+/**
  * アイテム編集者情報
  */
 export interface ItemEditor {
@@ -75,6 +84,16 @@ export interface WorkspaceEditor {
 }
 
 /**
+ * タスク編集者情報
+ */
+export interface TaskEditor {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+  connectionId?: string | null;
+}
+
+/**
  * アイテム編集状態
  */
 export interface ItemEditStatus {
@@ -88,6 +107,14 @@ export interface ItemEditStatus {
 export interface WorkspaceEditStatus {
   isEditing: boolean;
   editor?: WorkspaceEditor;
+}
+
+/**
+ * タスク編集状態
+ */
+export interface TaskEditStatus {
+  isEditing: boolean;
+  editor?: TaskEditor;
 }
 
 interface ItemEditStartedPayload {
@@ -114,12 +141,25 @@ interface WorkspaceEditEndedPayload {
   userId: number;
 }
 
+interface TaskEditStartedPayload {
+  taskId: number;
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+interface TaskEditEndedPayload {
+  taskId: number;
+  userId: number;
+}
+
 /**
  * 現在参加中のグループ情報
  */
 interface CurrentGroups {
   workspaceId: number | null;
   itemId: number | null;
+  taskId: number | null;
 }
 
 /**
@@ -148,6 +188,12 @@ interface SignalRContextValue {
 
   /** アイテムグループから離脱 */
   leaveItem: (itemId: number) => Promise<void>;
+
+  /** タスクグループに参加（排他的：前のタスクから自動離脱、ワークスペース/アイテムも同期） */
+  joinTask: (taskId: number, workspaceId: number, itemId?: number) => Promise<TaskPresenceUser[]>;
+
+  /** タスクグループから離脱 */
+  leaveTask: (taskId: number) => Promise<void>;
 
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
@@ -182,6 +228,21 @@ interface SignalRContextValue {
   /** ワークスペース編集終了イベント購読 */
   onWorkspaceEditEnded: (handler: (payload: WorkspaceEditEndedPayload) => void) => () => void;
 
+  /** タスク編集開始 */
+  startTaskEdit: (taskId: number) => Promise<void>;
+
+  /** タスク編集終了 */
+  endTaskEdit: (taskId: number) => Promise<void>;
+
+  /** タスク編集状態を取得 */
+  getTaskEditStatus: (taskId: number) => Promise<TaskEditStatus>;
+
+  /** タスク編集開始イベント購読 */
+  onTaskEditStarted: (handler: (payload: TaskEditStartedPayload) => void) => () => void;
+
+  /** タスク編集終了イベント購読 */
+  onTaskEditEnded: (handler: (payload: TaskEditEndedPayload) => void) => () => void;
+
   /** 現在参加中のグループ情報 */
   currentGroups: CurrentGroups;
 }
@@ -214,6 +275,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   const [currentGroups, setCurrentGroups] = useState<CurrentGroups>({
     workspaceId: null,
     itemId: null,
+    taskId: null,
   });
 
   const connectionRef = useRef<HubConnection | null>(null);
@@ -290,7 +352,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       connection.onclose((error) => {
         console.log('[SignalR] Connection closed', error);
         setConnectionState('disconnected');
-        setCurrentGroups({ workspaceId: null, itemId: null });
+        setCurrentGroups({ workspaceId: null, itemId: null, taskId: null });
       });
 
       // 通知受信ハンドラー
@@ -329,7 +391,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
         console.error('[SignalR] Disconnect error:', error);
       }
       connectionRef.current = null;
-      setCurrentGroups({ workspaceId: null, itemId: null });
+      setCurrentGroups({ workspaceId: null, itemId: null, taskId: null });
       setConnectionState('disconnected');
     }
   }, []);
@@ -358,6 +420,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
         ...prev,
         workspaceId,
         itemId: null, // ワークスペース移動時はアイテムもクリア
+        taskId: null,
       }));
       return existingUsers ?? [];
     } catch (error) {
@@ -376,6 +439,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
         ...prev,
         workspaceId: prev.workspaceId === workspaceId ? null : prev.workspaceId,
         itemId: null,
+        taskId: null,
       }));
       return;
     }
@@ -386,6 +450,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
         ...prev,
         workspaceId: prev.workspaceId === workspaceId ? null : prev.workspaceId,
         itemId: null,
+        taskId: null,
       }));
       console.log(`[SignalR] Left workspace: ${workspaceId}`);
     } catch (error) {
@@ -416,6 +481,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       setCurrentGroups({
         workspaceId,
         itemId,
+        taskId: null,
       });
       console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
       return existingUsers ?? [];
@@ -434,6 +500,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       setCurrentGroups((prev) => ({
         ...prev,
         itemId: prev.itemId === itemId ? null : prev.itemId,
+        taskId: null,
       }));
       return;
     }
@@ -443,10 +510,69 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
       setCurrentGroups((prev) => ({
         ...prev,
         itemId: prev.itemId === itemId ? null : prev.itemId,
+        taskId: null,
       }));
       console.log(`[SignalR] Left item: ${itemId}`);
     } catch (error) {
       console.error('[SignalR] Failed to leave item:', error);
+    }
+  }, []);
+
+  /**
+   * タスクグループに参加（排他的、ワークスペース/アイテムも同期）
+   */
+  const joinTask = useCallback(
+    async (taskId: number, workspaceId: number, itemId?: number): Promise<TaskPresenceUser[]> => {
+      const connection = connectionRef.current;
+      if (!connection || connection.state !== HubConnectionState.Connected) {
+        console.warn('[SignalR] Cannot join task: not connected');
+        return [];
+      }
+
+      if (currentGroups.taskId === taskId) {
+        console.log(`[SignalR] Already in task: ${taskId}`);
+        return [];
+      }
+
+      try {
+        const existingUsers = await connection.invoke<TaskPresenceUser[]>('JoinTask', workspaceId, taskId);
+        setCurrentGroups({
+          workspaceId,
+          itemId: itemId ?? currentGroups.itemId,
+          taskId,
+        });
+        console.log(`[SignalR] Joined task: ${taskId} in workspace: ${workspaceId}`);
+        return existingUsers ?? [];
+      } catch (error) {
+        console.error('[SignalR] Failed to join task:', error);
+        return [];
+      }
+    },
+    [currentGroups.itemId, currentGroups.taskId],
+  );
+
+  /**
+   * タスクグループから離脱
+   */
+  const leaveTask = useCallback(async (taskId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      setCurrentGroups((prev) => ({
+        ...prev,
+        taskId: prev.taskId === taskId ? null : prev.taskId,
+      }));
+      return;
+    }
+
+    try {
+      await connection.invoke('LeaveTask', taskId);
+      setCurrentGroups((prev) => ({
+        ...prev,
+        taskId: prev.taskId === taskId ? null : prev.taskId,
+      }));
+      console.log(`[SignalR] Left task: ${taskId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to leave task:', error);
     }
   }, []);
 
@@ -646,6 +772,96 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     [onNotification],
   );
 
+  /**
+   * タスク編集開始
+   */
+  const startTaskEdit = useCallback(async (taskId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot start task edit: not connected');
+      throw new Error('Not connected');
+    }
+
+    if (taskId <= 0) {
+      console.warn('[SignalR] Invalid taskId for startTaskEdit');
+      throw new Error('Invalid taskId');
+    }
+
+    // invokeのエラーはそのまま呼び出し元にスロー
+    await connection.invoke('StartTaskEdit', taskId);
+  }, []);
+
+  /**
+   * タスク編集終了
+   */
+  const endTaskEdit = useCallback(async (taskId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    if (taskId <= 0) {
+      return;
+    }
+
+    try {
+      await connection.invoke('EndTaskEdit', taskId);
+    } catch (error) {
+      console.error('[SignalR] Failed to end task edit:', error);
+    }
+  }, []);
+
+  /**
+   * タスク編集状態取得
+   */
+  const getTaskEditStatus = useCallback(async (taskId: number): Promise<TaskEditStatus> => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return { isEditing: false };
+    }
+
+    if (taskId <= 0) {
+      return { isEditing: false };
+    }
+
+    try {
+      const status = await connection.invoke<TaskEditStatus>('GetTaskEditStatus', taskId);
+      if (!status) return { isEditing: false };
+      return status;
+    } catch (error) {
+      console.error('[SignalR] Failed to get task edit status:', error);
+      return { isEditing: false };
+    }
+  }, []);
+
+  /**
+   * タスク編集開始イベント購読
+   */
+  const onTaskEditStarted = useCallback(
+    (handler: (payload: TaskEditStartedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'task:edit_started') return;
+        const payload = notification.payload as TaskEditStartedPayload;
+        if (!payload || typeof payload.taskId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
+  /**
+   * タスク編集終了イベント購読
+   */
+  const onTaskEditEnded = useCallback(
+    (handler: (payload: TaskEditEndedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'task:edit_ended') return;
+        const payload = notification.payload as TaskEditEndedPayload;
+        if (!payload || typeof payload.taskId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
   // 自動接続
   useEffect(() => {
     let isMounted = true;
@@ -675,6 +891,8 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     leaveWorkspace,
     joinItem,
     leaveItem,
+    joinTask,
+    leaveTask,
     onNotification,
     startItemEdit,
     endItemEdit,
@@ -686,6 +904,11 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     getWorkspaceEditStatus,
     onWorkspaceEditStarted,
     onWorkspaceEditEnded,
+    startTaskEdit,
+    endTaskEdit,
+    getTaskEditStatus,
+    onTaskEditStarted,
+    onTaskEditEnded,
     currentGroups,
   };
 

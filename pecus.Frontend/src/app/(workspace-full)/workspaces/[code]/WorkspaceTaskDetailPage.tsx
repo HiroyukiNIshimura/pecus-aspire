@@ -14,6 +14,7 @@ import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskCommentSection from '@/components/workspaceItems/TaskCommentSection';
+import TaskEditStatus from '@/components/workspaces/TaskEditStatus';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,
@@ -25,6 +26,8 @@ import type {
 import { useFormValidation } from '@/hooks/useFormValidation';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
+import type { TaskEditStatus as TaskEditStatusType } from '@/providers/SignalRProvider';
+import { useSignalRContext } from '@/providers/SignalRProvider';
 import { taskPriorityOptions, updateWorkspaceTaskSchemaWithRequiredEstimate } from '@/schemas/workspaceTaskSchemas';
 
 /** 選択されたユーザー情報 */
@@ -116,6 +119,16 @@ export default function WorkspaceTaskDetailPage({
   }, [notify]);
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoadingTask, setIsLoadingTask] = useState(false);
+  const { joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus, connectionState } = useSignalRContext();
+  const [taskEditStatus, setTaskEditStatus] = useState<TaskEditStatusType>({ isEditing: false });
+  const [taskEditStatusFetched, setTaskEditStatusFetched] = useState(false);
+  const startedTaskEditRef = useRef<number | null>(null);
+  const prevTaskIdRef = useRef<number | null>(null);
+  const effectiveCurrentUserIdRef = useRef<number>(0);
+
+  // SignalR関数をrefで保持（useEffect依存配列から外すため）
+  const signalRRef = useRef({ joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus });
+  signalRRef.current = { joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus };
 
   // 現在のタスクデータ
   const [task, setTask] = useState<WorkspaceTaskDetailResponse | null>(null);
@@ -178,6 +191,68 @@ export default function WorkspaceTaskDetailPage({
     }
     return false;
   }, [predecessorTaskId, predecessorTaskOptions, task?.predecessorTask, task?.predecessorTaskId]);
+
+  const effectiveCurrentUserId = currentUser?.id ?? 0;
+  effectiveCurrentUserIdRef.current = effectiveCurrentUserId;
+
+  // ロック判定：他ユーザーが編集中、またはステータス未取得の場合はロック扱い
+  const isLockedByOther = taskEditStatus.isEditing
+    ? taskEditStatus.editor
+      ? taskEditStatus.editor.userId !== effectiveCurrentUserId
+      : true
+    : false;
+
+  // ステータス取得完了前は編集不可（ロック状態を正確に判定できないため）
+  const isPendingStatusCheck = !taskEditStatusFetched && connectionState === 'connected';
+
+  // SignalRイベントによる状態変更ハンドラー
+  // task:edit_ended を受け取った時にロック取得を試行
+  const handleStatusChange = useCallback(
+    async (newStatus: TaskEditStatusType) => {
+      const targetTaskId = task?.id;
+      if (!targetTaskId) {
+        setTaskEditStatus(newStatus);
+        return;
+      }
+
+      // 自分がすでにロックを持っている場合は、状態変更を無視
+      if (startedTaskEditRef.current === targetTaskId) {
+        // ただし、他ユーザーからの edit_started イベントは無視
+        // （自分がロックを持っているので、状態は変わらない）
+        return;
+      }
+
+      // 編集終了イベント（isEditing: false）の場合、ロック取得を試行
+      if (!newStatus.isEditing) {
+        const { startTaskEdit: start, getTaskEditStatus: getStatus } = signalRRef.current;
+        try {
+          await start(targetTaskId);
+          startedTaskEditRef.current = targetTaskId;
+          // ロック取得成功 → 編集可能
+          setTaskEditStatus({ isEditing: false });
+        } catch {
+          // ロック取得失敗 → 他のユーザーが先にロックを取得した
+          try {
+            const status = await getStatus(targetTaskId);
+            setTaskEditStatus(status);
+          } catch {
+            setTaskEditStatus({ isEditing: true, editor: undefined });
+          }
+        }
+      } else {
+        // 編集開始イベント（isEditing: true）→ そのまま状態を設定
+        setTaskEditStatus(newStatus);
+      }
+    },
+    [task?.id],
+  );
+
+  // 接続断・再接続時はステータス取得完了フラグをリセット
+  useEffect(() => {
+    if (connectionState !== 'connected') {
+      setTaskEditStatusFetched(false);
+    }
+  }, [connectionState]);
 
   // タスクデータをフォーム状態に反映
   const syncTaskToForm = useCallback((taskData: WorkspaceTaskDetailResponse) => {
@@ -276,6 +351,80 @@ export default function WorkspaceTaskDetailPage({
       fetchTask(taskId);
     }
   }, [taskId, workspaceId, itemId, initialNavigation, fetchTask]);
+
+  // タスク変更時に編集状態をリセット
+  useEffect(() => {
+    const currentId = task?.id ?? null;
+    if (prevTaskIdRef.current === currentId) {
+      return;
+    }
+    prevTaskIdRef.current = currentId;
+    setTaskEditStatus({ isEditing: false });
+    setTaskEditStatusFetched(false);
+    startedTaskEditRef.current = null;
+  }, [task?.id]);
+
+  // SignalR: タスクグループ参加 → 編集開始を1つのフローで実行
+  // joinTask後に即座にstartTaskEditを呼び、ロック取得を試行する
+  useEffect(() => {
+    const targetTaskId = task?.id;
+    if (!targetTaskId) return;
+    if (connectionState !== 'connected') return;
+
+    let active = true;
+    let hasStartedEdit = false;
+
+    const initializeTaskEdit = async () => {
+      const { joinTask: join, startTaskEdit: start, getTaskEditStatus: getStatus } = signalRRef.current;
+      try {
+        // 1. タスクグループに参加
+        await join(targetTaskId, workspaceId, itemId);
+        if (!active) return;
+
+        // 2. 即座に編集開始を試行（ロック取得）
+        try {
+          await start(targetTaskId);
+          if (!active) return;
+          hasStartedEdit = true;
+          startedTaskEditRef.current = targetTaskId;
+          // 自分がこのタブでロック取得成功 → 編集可能、アラート不要
+          setTaskEditStatus({ isEditing: false });
+          setTaskEditStatusFetched(true);
+        } catch {
+          // ロック取得失敗 → 他のユーザーまたは別タブが編集中
+          if (!active) return;
+          // 現在の状態を取得して表示
+          try {
+            const status = await getStatus(targetTaskId);
+            if (!active) return;
+            setTaskEditStatus(status);
+          } catch {
+            // 取得失敗時はロック中として扱う
+            setTaskEditStatus({ isEditing: true, editor: undefined });
+          }
+          setTaskEditStatusFetched(true);
+        }
+      } catch (err) {
+        console.warn('[SignalR] initializeTaskEdit failed:', err);
+        if (active) {
+          setTaskEditStatusFetched(true);
+        }
+      }
+    };
+
+    initializeTaskEdit();
+
+    return () => {
+      active = false;
+      // クリーンアップ: 編集終了とグループ離脱
+      const { endTaskEdit: end, leaveTask: leave } = signalRRef.current;
+      if (hasStartedEdit && startedTaskEditRef.current === targetTaskId) {
+        end(targetTaskId).catch((err) => console.warn('[SignalR] endTaskEdit failed', err));
+        startedTaskEditRef.current = null;
+      }
+      leave(targetTaskId).catch((err) => console.warn('[SignalR] leaveTask failed:', err));
+    };
+  }, [connectionState, itemId, task?.id, workspaceId]);
 
   // 次のタスクに移動
   const handleNextTask = useCallback(async () => {
@@ -393,6 +542,11 @@ export default function WorkspaceTaskDetailPage({
         if (!task) return;
         setServerErrors([]);
 
+        if (isLockedByOther) {
+          notifyRef.current.warning('他のユーザーが編集中です。編集できません。');
+          return;
+        }
+
         // 日付を ISO 8601 形式（UTC）に変換
         const toISODateString = (dateStr: string | undefined | null): string | null => {
           if (!dateStr) return null;
@@ -440,6 +594,8 @@ export default function WorkspaceTaskDetailPage({
         onSuccess();
       },
     });
+
+  const isFormDisabled = isSubmitting || isLoadingTask || isLockedByOther || isPendingStatusCheck;
 
   // 担当者検索
   const handleAssigneeSearch = useCallback(async (query: string) => {
@@ -662,6 +818,15 @@ export default function WorkspaceTaskDetailPage({
         <div className="flex flex-col lg:flex-row flex-1 gap-4 min-h-0">
           {/* 左パネル：編集フォーム */}
           <div className="flex-1 min-w-0">
+            {task && (
+              <TaskEditStatus
+                taskId={task.id}
+                currentUserId={effectiveCurrentUserId}
+                status={taskEditStatus}
+                onStatusChange={handleStatusChange}
+                className="mb-4"
+              />
+            )}
             {isLoadingTask && !task ? (
               <div className="flex justify-center items-center py-8">
                 <span className="loading loading-spinner loading-lg"></span>
@@ -671,9 +836,26 @@ export default function WorkspaceTaskDetailPage({
             ) : (
               <>
                 {/* ローディングオーバーレイ */}
-                {isLoadingTask && (
-                  <div className="absolute inset-0 bg-base-100/50 flex items-center justify-center z-10">
+                {(isLoadingTask || isLockedByOther || isPendingStatusCheck) && (
+                  <div className="absolute inset-0 bg-base-100/60 flex items-center justify-center z-10 pointer-events-none">
                     <span className="loading loading-spinner loading-lg"></span>
+                  </div>
+                )}
+
+                {/* 他ユーザー編集中のブロッカー */}
+                {isLockedByOther && (
+                  <div className="absolute inset-0 z-20 bg-base-100/70 flex flex-col items-center justify-center gap-3">
+                    <div className="alert alert-soft alert-warning shadow-md w-full max-w-xl">
+                      <div className="flex items-center gap-2">
+                        <span className="icon-[mdi--alert] w-5 h-5" aria-hidden="true" />
+                        <div className="flex flex-col">
+                          <span className="font-semibold">他のユーザーが編集中です</span>
+                          <span className="text-sm text-base-content/70">
+                            編集画面はロックされています。編集中のユーザーが終了するまでお待ちください。
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -694,7 +876,7 @@ export default function WorkspaceTaskDetailPage({
                         taskTypes={taskTypes}
                         value={taskTypeId}
                         error={shouldShowError('taskTypeId')}
-                        disabled={isSubmitting || isLoadingTask}
+                        disabled={isFormDisabled}
                         onChange={(val) => {
                           setTaskTypeId(val);
                           validateField('taskTypeId', val || '');
@@ -718,7 +900,7 @@ export default function WorkspaceTaskDetailPage({
                         className="select select-bordered"
                         value={priority ?? ''}
                         onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                        disabled={isSubmitting || isLoadingTask}
+                        disabled={isFormDisabled}
                       >
                         {taskPriorityOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -738,7 +920,12 @@ export default function WorkspaceTaskDetailPage({
                         </span>
                       </label>
                       {currentUser && (
-                        <button type="button" className="link link-primary text-xs" onClick={handleSelectSelf}>
+                        <button
+                          type="button"
+                          className="link link-primary text-xs"
+                          onClick={handleSelectSelf}
+                          disabled={isFormDisabled}
+                        >
                           （自分を設定）
                         </button>
                       )}
@@ -758,7 +945,7 @@ export default function WorkspaceTaskDetailPage({
                           className="p-1 hover:bg-base-300 rounded transition-colors flex-shrink-0"
                           onClick={handleClearAssignee}
                           aria-label="選択解除"
-                          disabled={isSubmitting || isLoadingTask}
+                          disabled={isFormDisabled}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -784,6 +971,7 @@ export default function WorkspaceTaskDetailPage({
                           debounceMs={300}
                           size="md"
                           isLoading={isSearchingAssignee}
+                          disabled={isFormDisabled}
                           showSearchIcon={true}
                           showClearButton={true}
                         />
@@ -839,7 +1027,7 @@ export default function WorkspaceTaskDetailPage({
                         }
                       }}
                       onBlur={(e) => validateField('content', e.target.value)}
-                      disabled={isSubmitting || isLoadingTask}
+                      disabled={isFormDisabled}
                     />
                     {shouldShowError('content') && (
                       <div className="label">
@@ -860,7 +1048,7 @@ export default function WorkspaceTaskDetailPage({
                         value={startDate}
                         onChange={setStartDate}
                         placeholder="開始日を選択"
-                        disabled={isSubmitting || isLoadingTask}
+                        disabled={isFormDisabled}
                       />
                     </div>
 
@@ -882,7 +1070,7 @@ export default function WorkspaceTaskDetailPage({
                           validateField('dueDate', val);
                         }}
                         placeholder="期限日を選択"
-                        disabled={isSubmitting || isLoadingTask}
+                        disabled={isFormDisabled}
                         error={shouldShowError('dueDate')}
                       />
                       {shouldShowError('dueDate') && (
@@ -924,7 +1112,7 @@ export default function WorkspaceTaskDetailPage({
                       className="select select-bordered"
                       value={predecessorTaskId || ''}
                       onChange={(e) => setPredecessorTaskId(e.target.value ? Number(e.target.value) : null)}
-                      disabled={isSubmitting || isLoadingTask}
+                      disabled={isFormDisabled}
                     >
                       <option value="">なし</option>
                       {predecessorTaskOptions.map((t) => (
@@ -976,7 +1164,7 @@ export default function WorkspaceTaskDetailPage({
                           onBlur={() => validateField('estimatedHours', estimatedHours)}
                           className="flex-1 bg-transparent outline-none min-w-0"
                           placeholder="0"
-                          disabled={isSubmitting || isLoadingTask}
+                          disabled={isFormDisabled}
                           aria-label="予定工数入力"
                         />
                         <span className="my-auto flex gap-2">
@@ -985,7 +1173,7 @@ export default function WorkspaceTaskDetailPage({
                             className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
                             aria-label="0.5時間減らす"
                             onClick={() => setEstimatedHours((prev) => Math.max(0, (prev || 0) - 0.5))}
-                            disabled={isSubmitting || isLoadingTask || estimatedHours <= 0}
+                            disabled={isFormDisabled || estimatedHours <= 0}
                           >
                             <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
                           </button>
@@ -994,7 +1182,7 @@ export default function WorkspaceTaskDetailPage({
                             className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
                             aria-label="0.5時間増やす"
                             onClick={() => setEstimatedHours((prev) => (prev || 0) + 0.5)}
-                            disabled={isSubmitting || isLoadingTask}
+                            disabled={isFormDisabled}
                           >
                             <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
                           </button>
@@ -1032,7 +1220,7 @@ export default function WorkspaceTaskDetailPage({
                           }}
                           className="flex-1 bg-transparent outline-none min-w-0"
                           placeholder="0"
-                          disabled={isSubmitting || isLoadingTask}
+                          disabled={isFormDisabled}
                           aria-label="実績工数入力"
                         />
                         <span className="my-auto flex gap-2">
@@ -1041,7 +1229,7 @@ export default function WorkspaceTaskDetailPage({
                             className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
                             aria-label="0.5時間減らす"
                             onClick={() => setActualHours((prev) => Math.max(0, (prev || 0) - 0.5))}
-                            disabled={isSubmitting || isLoadingTask || actualHours <= 0}
+                            disabled={isFormDisabled || actualHours <= 0}
                           >
                             <span className="icon-[mdi--minus-circle-outline] size-4" aria-hidden="true" />
                           </button>
@@ -1050,7 +1238,7 @@ export default function WorkspaceTaskDetailPage({
                             className="btn btn-primary btn-soft size-6 min-h-0 rounded-sm p-0"
                             aria-label="0.5時間増やす"
                             onClick={() => setActualHours((prev) => (prev || 0) + 0.5)}
-                            disabled={isSubmitting || isLoadingTask}
+                            disabled={isFormDisabled}
                           >
                             <span className="icon-[mdi--plus-circle-outline] size-4" aria-hidden="true" />
                           </button>
@@ -1074,7 +1262,7 @@ export default function WorkspaceTaskDetailPage({
                       className="range range-primary"
                       value={progressPercentage}
                       onChange={(e) => setProgressPercentage(Number(e.target.value))}
-                      disabled={isSubmitting || isLoadingTask}
+                      disabled={isFormDisabled}
                     />
                     <div className="flex justify-between text-xs px-2 mt-1">
                       <span>0%</span>
@@ -1104,8 +1292,7 @@ export default function WorkspaceTaskDetailPage({
                             }
                           }}
                           disabled={
-                            isSubmitting ||
-                            isLoadingTask ||
+                            isFormDisabled ||
                             (itemCommitterId != null && currentUser?.id !== itemCommitterId) ||
                             (taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
@@ -1144,7 +1331,7 @@ export default function WorkspaceTaskDetailPage({
                               setIsCompleted(false);
                             }
                           }}
-                          disabled={isSubmitting || isLoadingTask}
+                          disabled={isFormDisabled}
                         />
                         <label htmlFor="isDiscarded" className="label-text cursor-pointer">
                           破棄
@@ -1169,7 +1356,7 @@ export default function WorkspaceTaskDetailPage({
                         value={discardReason}
                         onChange={(e) => setDiscardReason(e.target.value)}
                         onBlur={(e) => validateField('discardReason', e.target.value)}
-                        disabled={isSubmitting || isLoadingTask}
+                        disabled={isFormDisabled}
                         required
                       />
                       {shouldShowError('discardReason') && (
@@ -1224,7 +1411,7 @@ export default function WorkspaceTaskDetailPage({
                     >
                       閉じる
                     </button>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoadingTask}>
+                    <button type="submit" className="btn btn-primary" disabled={isFormDisabled}>
                       {isSubmitting ? (
                         <>
                           <span className="loading loading-spinner loading-sm"></span>

@@ -21,13 +21,15 @@ public class WorkspaceTaskService
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly SignalRPresenceService _presenceService;
 
     public WorkspaceTaskService(
         ApplicationDbContext context,
         ILogger<WorkspaceTaskService> logger,
         OrganizationAccessHelper accessHelper,
         PecusConfig config,
-        IBackgroundJobClient backgroundJobClient
+        IBackgroundJobClient backgroundJobClient,
+        SignalRPresenceService presenceService
     )
     {
         _context = context;
@@ -35,6 +37,7 @@ public class WorkspaceTaskService
         _accessHelper = accessHelper;
         _config = config;
         _backgroundJobClient = backgroundJobClient;
+        _presenceService = presenceService;
     }
 
     /// <summary>
@@ -473,6 +476,15 @@ public class WorkspaceTaskService
             Content = task.Content,
             AssigneeName = task.AssignedUser?.Username
         };
+
+        // 他ユーザーの編集中は更新を拒否
+        var taskEditor = await _presenceService.GetTaskEditorAsync(taskId);
+        if (taskEditor != null && taskEditor.UserId != currentUserId)
+        {
+            throw new InvalidOperationException(
+                $"{taskEditor.UserName} さんが編集中のため更新できません。"
+            );
+        }
 
         // 担当者が変更される場合、新しい担当者がワークスペースのメンバーか確認
         if (request.AssignedUserId.HasValue && request.AssignedUserId.Value != task.AssignedUserId)

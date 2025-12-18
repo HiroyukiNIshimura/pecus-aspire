@@ -100,6 +100,29 @@ public class NotificationHub : Hub
     {
         var userId = GetUserId();
 
+        // タスク編集中であれば解除して通知
+        var editingTaskId = await _presenceService.GetConnectionEditingTaskIdAsync(Context.ConnectionId);
+        if (editingTaskId.HasValue)
+        {
+            await _presenceService.RemoveTaskEditorAsync(editingTaskId.Value, Context.ConnectionId);
+
+            var editTaskGroup = $"task:{editingTaskId.Value}";
+            await Clients.Group(editTaskGroup).SendAsync("ReceiveNotification", new
+            {
+                EventType = "task:edit_ended",
+                Payload = new
+                {
+                    TaskId = editingTaskId.Value,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: User {UserId} ended editing task {TaskId} on disconnect",
+                userId, editingTaskId.Value);
+        }
+
         // 編集状態があれば解除して通知
         var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
         if (editingItemId.HasValue)
@@ -143,6 +166,16 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} ended editing workspace {WorkspaceId} on disconnect",
                 userId, editingWorkspaceId.Value);
+        }
+
+        // 参加中のタスクがあれば離脱通知を送信
+        var taskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (taskId.HasValue)
+        {
+            await NotifyTaskUserLeft(taskId.Value, userId);
+            _logger.LogDebug(
+                "SignalR: User {UserId} left task {TaskId} on disconnect",
+                userId, taskId.Value);
         }
 
         // 参加中のアイテムがあれば離脱通知を送信
@@ -226,6 +259,13 @@ public class NotificationHub : Hub
         {
             var prevGroupName = $"workspace:{currentWorkspaceId.Value}";
 
+            // 旧ワークスペース配下で編集中/参加中のタスクがあれば解除
+            var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+            if (currentTaskId.HasValue)
+            {
+                await CleanupTaskStateAsync(currentTaskId.Value, userId, removeGroup: true, notifyLeft: true);
+            }
+
             var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
             if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == currentWorkspaceId.Value)
             {
@@ -307,6 +347,12 @@ public class NotificationHub : Hub
             userId, workspaceId, Context.ConnectionId);
 
         var groupName = $"workspace:{workspaceId}";
+
+        var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (currentTaskId.HasValue)
+        {
+            await CleanupTaskStateAsync(currentTaskId.Value, userId, removeGroup: true, notifyLeft: true);
+        }
 
         var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
         if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == workspaceId)
@@ -496,6 +542,13 @@ public class NotificationHub : Hub
         {
             var prevItemGroup = $"item:{currentItemId.Value}";
 
+            // アイテム切替時にタスク参加状態もクリア
+            var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+            if (currentTaskId.HasValue)
+            {
+                await CleanupTaskStateAsync(currentTaskId.Value, userId, removeGroup: true, notifyLeft: true);
+            }
+
             // 以前のアイテムを編集中であれば解除して通知
             var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
             if (editingItemId.HasValue && editingItemId.Value == currentItemId.Value)
@@ -622,6 +675,14 @@ public class NotificationHub : Hub
             "SignalR LeaveItem: itemId={ItemId}, connectionId={ConnectionId}",
             itemId, Context.ConnectionId);
 
+        var userId = GetUserId();
+
+        var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (currentTaskId.HasValue)
+        {
+            await CleanupTaskStateAsync(currentTaskId.Value, userId, removeGroup: true, notifyLeft: true);
+        }
+
         var groupName = $"item:{itemId}";
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
@@ -637,7 +698,7 @@ public class NotificationHub : Hub
                 Payload = new
                 {
                     ItemId = itemId,
-                    UserId = GetUserId()
+                    UserId = userId
                 },
                 Timestamp = DateTimeOffset.UtcNow
             });
@@ -647,7 +708,6 @@ public class NotificationHub : Hub
         await _presenceService.RemoveConnectionFromItemAsync(Context.ConnectionId, itemId);
 
         // アイテム参加者に離脱を通知
-        var userId = GetUserId();
         if (userId != 0)
         {
             await NotifyItemUserLeft(itemId, userId);
@@ -775,6 +835,385 @@ public class NotificationHub : Hub
     }
 
     /// <summary>
+    /// タスクグループに参加する。タスクは排他的に参加し、ワークスペース/アイテムの状態も同期する。
+    /// </summary>
+    public async Task<List<PresenceUser>> JoinTask(int workspaceId, int taskId)
+    {
+        var userId = GetUserId();
+
+        _logger.LogDebug(
+            "SignalR JoinTask: userId={UserId}, taskId={TaskId}, workspaceId={WorkspaceId}, connectionId={ConnectionId}",
+            userId, taskId, workspaceId, Context.ConnectionId);
+
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping task join",
+                userId, workspaceId);
+            return [];
+        }
+
+        var taskInfo = await _context.WorkspaceTasks
+            .Where(t => t.Id == taskId && t.WorkspaceId == workspaceId)
+            .Select(t => new
+            {
+                t.WorkspaceItemId
+            })
+            .FirstOrDefaultAsync();
+
+        if (taskInfo == null)
+        {
+            _logger.LogDebug(
+                "SignalR: Task {TaskId} not found in workspace {WorkspaceId}, skipping join",
+                taskId, workspaceId);
+            return [];
+        }
+
+        var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (currentTaskId.HasValue && currentTaskId.Value != taskId)
+        {
+            await CleanupTaskStateAsync(currentTaskId.Value, userId, removeGroup: true, notifyLeft: true);
+        }
+
+        var currentWorkspaceId = await _presenceService.GetConnectionWorkspaceAsync(Context.ConnectionId);
+        if (currentWorkspaceId.HasValue && currentWorkspaceId.Value != workspaceId)
+        {
+            var prevWorkspaceGroup = $"workspace:{currentWorkspaceId.Value}";
+
+            var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
+            if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == currentWorkspaceId.Value)
+            {
+                await _presenceService.RemoveWorkspaceEditorAsync(currentWorkspaceId.Value, Context.ConnectionId);
+
+                await Clients.Group(prevWorkspaceGroup).SendAsync("ReceiveNotification", new
+                {
+                    EventType = "workspace:edit_ended",
+                    Payload = new
+                    {
+                        WorkspaceId = currentWorkspaceId.Value,
+                        UserId = userId
+                    },
+                    Timestamp = DateTimeOffset.UtcNow
+                });
+            }
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevWorkspaceGroup);
+            await NotifyWorkspaceUserLeft(currentWorkspaceId.Value, userId);
+
+            _logger.LogDebug(
+                "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching workspace via task)",
+                Context.ConnectionId, prevWorkspaceGroup);
+        }
+
+        var targetItemId = taskInfo.WorkspaceItemId;
+        var currentItemId = await _presenceService.GetConnectionItemAsync(Context.ConnectionId);
+        if (currentItemId.HasValue && currentItemId.Value != targetItemId)
+        {
+            var prevItemGroup = $"item:{currentItemId.Value}";
+
+            var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
+            if (editingItemId.HasValue && editingItemId.Value == currentItemId.Value)
+            {
+                await _presenceService.RemoveItemEditorAsync(currentItemId.Value, Context.ConnectionId);
+
+                await Clients.Group(prevItemGroup).SendAsync("ReceiveNotification", new
+                {
+                    EventType = "item:edit_ended",
+                    Payload = new
+                    {
+                        ItemId = currentItemId.Value,
+                        UserId = userId
+                    },
+                    Timestamp = DateTimeOffset.UtcNow
+                });
+            }
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevItemGroup);
+            await _presenceService.RemoveConnectionFromItemAsync(Context.ConnectionId, currentItemId.Value);
+            await NotifyItemUserLeft(currentItemId.Value, userId);
+
+            _logger.LogDebug(
+                "SignalR: ConnectionId={ConnectionId} left {GroupName} (switching item via task)",
+                Context.ConnectionId, prevItemGroup);
+        }
+
+        var existingUserIds = await _presenceService.GetTaskUserIdsAsync(taskId, Context.ConnectionId);
+
+        var userInfos = await _context.Users
+            .Where(u => existingUserIds.Contains(u.Id) && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .ToListAsync();
+
+        var existingUsers = userInfos.Select(u => new PresenceUser(
+            u.Id,
+            u.Username,
+            IdentityIconHelper.GetIdentityIconUrl(u.AvatarType, u.Id, u.Username, u.Email, u.UserAvatarPath)
+        )).ToList();
+
+        var workspaceGroup = $"workspace:{workspaceId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, workspaceGroup);
+        await _presenceService.AddConnectionToWorkspaceAsync(Context.ConnectionId, workspaceId);
+
+        if (!currentWorkspaceId.HasValue || currentWorkspaceId.Value != workspaceId)
+        {
+            await NotifyWorkspaceUserJoined(workspaceId, userId);
+        }
+
+        var itemGroup = $"item:{targetItemId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, itemGroup);
+        await _presenceService.AddConnectionToItemAsync(Context.ConnectionId, targetItemId);
+
+        if (!currentItemId.HasValue || currentItemId.Value != targetItemId)
+        {
+            await NotifyItemUserJoined(targetItemId, userId);
+        }
+
+        var taskGroup = $"task:{taskId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, taskGroup);
+        await _presenceService.AddConnectionToTaskAsync(Context.ConnectionId, taskId);
+
+        if (!currentTaskId.HasValue || currentTaskId.Value != taskId)
+        {
+            await NotifyTaskUserJoined(taskId, userId);
+        }
+
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} joined {TaskGroup} (workspace={WorkspaceId}, item={ItemId})",
+            Context.ConnectionId, taskGroup, workspaceId, targetItemId);
+
+        return existingUsers;
+    }
+
+    /// <summary>
+    /// タスクグループから離脱する。
+    /// </summary>
+    public async Task LeaveTask(int taskId)
+    {
+        _logger.LogDebug(
+            "SignalR LeaveTask: taskId={TaskId}, connectionId={ConnectionId}",
+            taskId, Context.ConnectionId);
+
+        var userId = GetUserId();
+        var groupName = $"task:{taskId}";
+
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+        var editingTaskId = await _presenceService.GetConnectionEditingTaskIdAsync(Context.ConnectionId);
+        if (editingTaskId.HasValue && editingTaskId.Value == taskId)
+        {
+            await _presenceService.RemoveTaskEditorAsync(taskId, Context.ConnectionId);
+
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "task:edit_ended",
+                Payload = new
+                {
+                    TaskId = taskId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
+        await _presenceService.RemoveConnectionFromTaskAsync(Context.ConnectionId, taskId);
+        var mappedTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (mappedTaskId.HasValue && mappedTaskId.Value == taskId)
+        {
+            await _presenceService.ClearConnectionTaskAsync(Context.ConnectionId);
+        }
+
+        if (userId != 0)
+        {
+            await NotifyTaskUserLeft(taskId, userId);
+        }
+
+        _logger.LogDebug(
+            "SignalR: ConnectionId={ConnectionId} left {GroupName}",
+            Context.ConnectionId, groupName);
+    }
+
+    /// <summary>
+    /// タスク編集を開始する。
+    /// </summary>
+    public async Task StartTaskEdit(int taskId)
+    {
+        if (taskId <= 0)
+        {
+            throw new HubException("Invalid taskId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        var taskContext = await _context.WorkspaceTasks
+            .Where(t => t.Id == taskId)
+            .Select(t => new
+            {
+                t.WorkspaceId
+            })
+            .FirstOrDefaultAsync();
+
+        if (taskContext == null)
+        {
+            _logger.LogWarning("SignalR: Task {TaskId} not found when starting task edit", taskId);
+            return;
+        }
+
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, taskContext.WorkspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skip start task edit",
+                userId, taskContext.WorkspaceId);
+            return;
+        }
+
+        var user = await _context.Users
+            .Where(u => u.Id == userId && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            _logger.LogWarning("SignalR: User {UserId} not found when starting task edit", userId);
+            return;
+        }
+
+        var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+            user.AvatarType,
+            user.Id,
+            user.Username,
+            user.Email,
+            user.UserAvatarPath);
+
+        // アトミックにロック取得を試行（既に別ユーザーがロック中の場合は失敗）
+        var lockAcquired = await _presenceService.TrySetTaskEditorAsync(taskId, userId, user.Username, identityIconUrl, Context.ConnectionId);
+        if (!lockAcquired)
+        {
+            _logger.LogDebug(
+                "SignalR: Task {TaskId} is already edited by another user, skip start by User {UserId}",
+                taskId, userId);
+            // 呼び出し元に明示的なエラーを返す
+            throw new HubException("Task is locked by another user");
+        }
+
+        var groupName = $"task:{taskId}";
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "task:edit_started",
+            Payload = new
+            {
+                TaskId = taskId,
+                UserId = userId,
+                UserName = user.Username,
+                IdentityIconUrl = identityIconUrl
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} started editing task {TaskId}",
+            userId, taskId);
+    }
+
+    /// <summary>
+    /// タスク編集を終了する。
+    /// </summary>
+    public async Task EndTaskEdit(int taskId)
+    {
+        if (taskId <= 0)
+        {
+            throw new HubException("Invalid taskId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        await _presenceService.RemoveTaskEditorAsync(taskId, Context.ConnectionId);
+
+        var groupName = $"task:{taskId}";
+        await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+        {
+            EventType = "task:edit_ended",
+            Payload = new
+            {
+                TaskId = taskId,
+                UserId = userId
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} ended editing task {TaskId}",
+            userId, taskId);
+    }
+
+    /// <summary>
+    /// 現在のタスク編集状態を取得する。
+    /// </summary>
+    public async Task<TaskEditStatus> GetTaskEditStatus(int taskId)
+    {
+        if (taskId <= 0)
+        {
+            throw new HubException("Invalid taskId");
+        }
+
+        var taskWorkspaceId = await _context.WorkspaceTasks
+            .Where(t => t.Id == taskId)
+            .Select(t => t.WorkspaceId)
+            .FirstOrDefaultAsync();
+
+        if (taskWorkspaceId == 0)
+        {
+            return new TaskEditStatus(false, null);
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, taskWorkspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skip task edit status",
+                userId, taskWorkspaceId);
+            return new TaskEditStatus(false, null);
+        }
+
+        var editor = await _presenceService.GetTaskEditorAsync(taskId);
+        if (editor == null)
+        {
+            return new TaskEditStatus(false, null);
+        }
+
+        return new TaskEditStatus(true, editor);
+    }
+
+    /// <summary>
     /// JWT トークンからユーザーIDを取得する。
     /// </summary>
     private int GetUserId()
@@ -815,6 +1254,48 @@ public class NotificationHub : Hub
         {
             _logger.LogWarning(ex, "SignalR: Failed to get OrganizationId from principal");
             return null;
+        }
+    }
+
+    /// <summary>
+    /// タスク参加やコンテキスト切替時に、タスク編集・参加状態をクリーンアップする。
+    /// </summary>
+    private async Task CleanupTaskStateAsync(int taskId, int userId, bool removeGroup, bool notifyLeft)
+    {
+        var groupName = $"task:{taskId}";
+
+        var editingTaskId = await _presenceService.GetConnectionEditingTaskIdAsync(Context.ConnectionId);
+        if (editingTaskId.HasValue && editingTaskId.Value == taskId)
+        {
+            await _presenceService.RemoveTaskEditorAsync(taskId, Context.ConnectionId);
+
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "task:edit_ended",
+                Payload = new
+                {
+                    TaskId = taskId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
+        if (removeGroup)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        }
+
+        await _presenceService.RemoveConnectionFromTaskAsync(Context.ConnectionId, taskId);
+        var mappedTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
+        if (mappedTaskId.HasValue && mappedTaskId.Value == taskId)
+        {
+            await _presenceService.ClearConnectionTaskAsync(Context.ConnectionId);
+        }
+
+        if (notifyLeft)
+        {
+            await NotifyTaskUserLeft(taskId, userId);
         }
     }
 
@@ -987,6 +1468,91 @@ public class NotificationHub : Hub
         catch (Exception ex)
         {
             _logger.LogError(ex, "SignalR: Failed to notify organization user left");
+        }
+    }
+
+    /// <summary>
+    /// タスクにユーザーが参加したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyTaskUserJoined(int taskId, int userId)
+    {
+        try
+        {
+            var user = await _context.Users
+                .Where(u => u.Id == userId && u.IsActive)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.AvatarType,
+                    u.UserAvatarPath
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                _logger.LogWarning("SignalR: User {UserId} not found for task presence notification", userId);
+                return;
+            }
+
+            var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                user.AvatarType,
+                user.Id,
+                user.Username,
+                user.Email,
+                user.UserAvatarPath);
+
+            var groupName = $"task:{taskId}";
+            await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+            {
+                EventType = "task:user_joined",
+                Payload = new
+                {
+                    TaskId = taskId,
+                    UserId = userId,
+                    UserName = user.Username,
+                    IdentityIconUrl = identityIconUrl
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified task:{TaskId} that user {UserId} joined",
+                taskId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify task user joined");
+        }
+    }
+
+    /// <summary>
+    /// タスクからユーザーが離脱したことを他のメンバーに通知する。
+    /// </summary>
+    private async Task NotifyTaskUserLeft(int taskId, int userId)
+    {
+        try
+        {
+            var groupName = $"task:{taskId}";
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "task:user_left",
+                Payload = new
+                {
+                    TaskId = taskId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: Notified task:{TaskId} that user {UserId} left",
+                taskId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "SignalR: Failed to notify task user left");
         }
     }
 

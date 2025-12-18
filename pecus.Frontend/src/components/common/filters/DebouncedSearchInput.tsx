@@ -21,6 +21,8 @@ interface DebouncedSearchInputProps {
   showClearButton?: boolean;
   /** ローディング中か */
   isLoading?: boolean;
+  /** 入力を無効化するか */
+  disabled?: boolean;
 }
 
 /**
@@ -38,6 +40,7 @@ export default function DebouncedSearchInput({
   showSearchIcon = true,
   showClearButton = true,
   isLoading = false,
+  disabled = false,
 }: DebouncedSearchInputProps) {
   const [value, setValue] = useState(defaultValue);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -118,6 +121,7 @@ export default function DebouncedSearchInput({
         placeholder={placeholder}
         className={`input input-bordered ${inputSizeClass} w-full ${showSearchIcon ? 'pl-9' : ''} ${showClearButton && value ? 'pr-9' : ''}`}
         value={value}
+        disabled={disabled}
         onChange={handleChange}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}

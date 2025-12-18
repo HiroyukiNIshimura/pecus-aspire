@@ -26,13 +26,17 @@ public class SignalRPresenceService
     private const string ConnectionUserPrefix = "presence:conn_user:";           // ConnectionId → UserId
     private const string ConnectionWorkspacePrefix = "presence:conn_ws:";        // ConnectionId → WorkspaceId
     private const string ConnectionItemPrefix = "presence:conn_item:";           // ConnectionId → ItemId
+    private const string ConnectionTaskPrefix = "presence:conn_task:";           // ConnectionId → TaskId
     private const string ConnectionOrganizationPrefix = "presence:conn_org:";    // ConnectionId → OrganizationId
     private const string ItemEditorPrefix = "presence:item_editor:";             // ItemId → ItemEditor (Hash)
     private const string ItemEditorConnectionPrefix = "presence:item_editor_conn:"; // ConnectionId → ItemId
     private const string WorkspaceEditorPrefix = "presence:ws_editor:";          // WorkspaceId → WorkspaceEditor (Hash)
     private const string WorkspaceEditorConnectionPrefix = "presence:ws_editor_conn:"; // ConnectionId → WorkspaceId
+    private const string TaskEditorPrefix = "presence:task_editor:";             // TaskId → TaskEditor (Hash)
+    private const string TaskEditorConnectionPrefix = "presence:task_editor_conn:"; // ConnectionId → TaskId
     private const string WorkspaceConnectionsPrefix = "presence:ws_conns:";      // WorkspaceId → Set<ConnectionId>
     private const string ItemConnectionsPrefix = "presence:item_conns:";         // ItemId → Set<ConnectionId>
+    private const string TaskConnectionsPrefix = "presence:task_conns:";         // TaskId → Set<ConnectionId>
     private const string OrganizationConnectionsPrefix = "presence:org_conns:";  // OrganizationId → Set<ConnectionId>
 
     public SignalRPresenceService(IConnectionMultiplexer redis, ILogger<SignalRPresenceService> logger)
@@ -68,6 +72,13 @@ public class SignalRPresenceService
             await RemoveConnectionFromWorkspaceAsync(connectionId, workspaceId.Value);
         }
 
+        // タスクから削除
+        var taskId = await GetConnectionTaskAsync(connectionId);
+        if (taskId.HasValue)
+        {
+            await RemoveConnectionFromTaskAsync(connectionId, taskId.Value);
+        }
+
         // アイテムから削除
         var itemId = await GetConnectionItemAsync(connectionId);
         if (itemId.HasValue)
@@ -86,8 +97,9 @@ public class SignalRPresenceService
         var userKey = $"{ConnectionUserPrefix}{connectionId}";
         var wsKey = $"{ConnectionWorkspacePrefix}{connectionId}";
         var itemKey = $"{ConnectionItemPrefix}{connectionId}";
+        var taskKey = $"{ConnectionTaskPrefix}{connectionId}";
         var orgKey = $"{ConnectionOrganizationPrefix}{connectionId}";
-        await _db.KeyDeleteAsync([userKey, wsKey, itemKey, orgKey]);
+        await _db.KeyDeleteAsync([userKey, wsKey, itemKey, taskKey, orgKey]);
     }
 
     /// <summary>
@@ -205,6 +217,100 @@ public class SignalRPresenceService
         }
 
         var key = $"{ConnectionItemPrefix}{connectionId}";
+        await _db.KeyDeleteAsync(key);
+    }
+
+    // ========================================
+    // タスク管理（Set ベース）
+    // ========================================
+
+    /// <summary>
+    /// タスクに接続を追加
+    /// </summary>
+    public async Task AddConnectionToTaskAsync(string connectionId, int taskId)
+    {
+        // 前のタスクから削除
+        var previousTaskId = await GetConnectionTaskAsync(connectionId);
+        if (previousTaskId.HasValue && previousTaskId.Value != taskId)
+        {
+            await RemoveConnectionFromTaskAsync(connectionId, previousTaskId.Value);
+        }
+
+        var taskConnsKey = $"{TaskConnectionsPrefix}{taskId}";
+        await _db.SetAddAsync(taskConnsKey, connectionId);
+        await _db.KeyExpireAsync(taskConnsKey, ConnectionTtl);
+
+        var key = $"{ConnectionTaskPrefix}{connectionId}";
+        await _db.StringSetAsync(key, taskId.ToString(), ConnectionTtl);
+    }
+
+    /// <summary>
+    /// タスクから接続を削除
+    /// </summary>
+    public async Task RemoveConnectionFromTaskAsync(string connectionId, int taskId)
+    {
+        var taskConnsKey = $"{TaskConnectionsPrefix}{taskId}";
+        await _db.SetRemoveAsync(taskConnsKey, connectionId);
+    }
+
+    /// <summary>
+    /// タスクに参加中のユーザーID一覧を取得（指定した接続を除く）
+    /// </summary>
+    public async Task<List<int>> GetTaskUserIdsAsync(int taskId, string? excludeConnectionId = null)
+    {
+        var taskConnsKey = $"{TaskConnectionsPrefix}{taskId}";
+        var connectionIds = await _db.SetMembersAsync(taskConnsKey);
+
+        var userIds = new HashSet<int>();
+        foreach (var connId in connectionIds)
+        {
+            if (connId.IsNullOrEmpty) continue;
+            var connectionIdStr = connId.ToString();
+
+            if (excludeConnectionId != null && connectionIdStr == excludeConnectionId) continue;
+
+            var userId = await GetConnectionUserIdAsync(connectionIdStr);
+            if (userId.HasValue)
+            {
+                userIds.Add(userId.Value);
+            }
+        }
+
+        return [.. userIds];
+    }
+
+    /// <summary>
+    /// 接続の現在のタスクIDを取得
+    /// </summary>
+    public async Task<int?> GetConnectionTaskAsync(string connectionId)
+    {
+        var key = $"{ConnectionTaskPrefix}{connectionId}";
+        var value = await _db.StringGetAsync(key);
+        if (value.IsNullOrEmpty) return null;
+        return int.TryParse(value.ToString(), out var taskId) ? taskId : null;
+    }
+
+    /// <summary>
+    /// 接続のタスクIDを設定
+    /// </summary>
+    public async Task SetConnectionTaskAsync(string connectionId, int taskId)
+    {
+        var key = $"{ConnectionTaskPrefix}{connectionId}";
+        await _db.StringSetAsync(key, taskId.ToString(), ConnectionTtl);
+    }
+
+    /// <summary>
+    /// 接続のタスク情報をクリア
+    /// </summary>
+    public async Task ClearConnectionTaskAsync(string connectionId)
+    {
+        var taskId = await GetConnectionTaskAsync(connectionId);
+        if (taskId.HasValue)
+        {
+            await RemoveConnectionFromTaskAsync(connectionId, taskId.Value);
+        }
+
+        var key = $"{ConnectionTaskPrefix}{connectionId}";
         await _db.KeyDeleteAsync(key);
     }
 
@@ -481,6 +587,153 @@ public class SignalRPresenceService
         var value = await _db.StringGetAsync(connectionKey);
         if (value.IsNullOrEmpty) return null;
         return int.TryParse(value.ToString(), out var workspaceId) ? workspaceId : null;
+    }
+
+    // ========================================
+    // タスク編集状態管理（Hash ベース）
+    // ========================================
+
+    /// <summary>
+    /// タスク編集ロックをアトミックに取得する。
+    /// 既に別ユーザーがロックを持っている場合は false を返す。
+    /// 同じユーザーがロックを持っている場合は更新して true を返す。
+    /// </summary>
+    /// <returns>ロック取得成功時は true、別ユーザーがロック中の場合は false</returns>
+    public async Task<bool> TrySetTaskEditorAsync(int taskId, int userId, string userName, string? identityIconUrl, string connectionId)
+    {
+        var editorKey = $"{TaskEditorPrefix}{taskId}";
+        var connectionKey = $"{TaskEditorConnectionPrefix}{connectionId}";
+        var ttlSeconds = (int)ConnectionTtl.TotalSeconds;
+
+        // Luaスクリプトでアトミックにチェック＆セット
+        // 既存のエディターがいない、または同じユーザーの場合のみ設定
+        const string luaScript = """
+            local existingUserId = redis.call('HGET', KEYS[1], 'userId')
+            if existingUserId and tonumber(existingUserId) ~= tonumber(ARGV[1]) then
+                return 0  -- 別ユーザーがロック中
+            end
+            redis.call('HSET', KEYS[1], 'userId', ARGV[1], 'userName', ARGV[2], 'identityIconUrl', ARGV[3], 'connectionId', ARGV[4])
+            redis.call('SET', KEYS[2], ARGV[5], 'EX', ARGV[6])
+            redis.call('EXPIRE', KEYS[1], ARGV[6])
+            return 1  -- ロック取得成功
+            """;
+
+        var result = await _db.ScriptEvaluateAsync(
+            luaScript,
+            [editorKey, connectionKey],
+            [userId, userName, identityIconUrl ?? string.Empty, connectionId, taskId, ttlSeconds]);
+
+        var success = (int)result == 1;
+
+        if (!success)
+        {
+            _logger.LogDebug(
+                "SignalRPresence: Failed to acquire task edit lock. TaskId={TaskId}, UserId={UserId} - Another user holds the lock",
+                taskId, userId);
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// タスク編集ロックを設定する（後方互換性のため残す - 新規コードはTrySetTaskEditorAsyncを使用）
+    /// </summary>
+    [Obsolete("Use TrySetTaskEditorAsync for atomic lock acquisition")]
+    public async Task SetTaskEditorAsync(int taskId, int userId, string userName, string? identityIconUrl, string connectionId)
+    {
+        var editorKey = $"{TaskEditorPrefix}{taskId}";
+        var connectionKey = $"{TaskEditorConnectionPrefix}{connectionId}";
+
+        var entries = new HashEntry[]
+        {
+            new("userId", userId),
+            new("userName", userName),
+            new("identityIconUrl", identityIconUrl ?? string.Empty),
+            new("connectionId", connectionId)
+        };
+
+        await _db.HashSetAsync(editorKey, entries);
+        await _db.StringSetAsync(connectionKey, taskId.ToString(), ConnectionTtl);
+        await _db.KeyExpireAsync(editorKey, ConnectionTtl);
+    }
+
+    public async Task RemoveTaskEditorAsync(int taskId, string connectionId)
+    {
+        var editor = await GetTaskEditorAsync(taskId);
+        if (editor == null)
+        {
+            return;
+        }
+
+        if (!string.Equals(editor.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            _logger.LogDebug(
+                "SignalRPresence: Skip removing task editor because connectionId mismatch. TaskId={TaskId}, Expected={Expected}, Actual={Actual}",
+                taskId, editor.ConnectionId, connectionId);
+            return;
+        }
+
+        var editorKey = $"{TaskEditorPrefix}{taskId}";
+        await _db.KeyDeleteAsync(editorKey);
+
+        var connectionKey = $"{TaskEditorConnectionPrefix}{connectionId}";
+        var mappedTaskId = await GetConnectionEditingTaskIdAsync(connectionId);
+        if (mappedTaskId.HasValue && mappedTaskId.Value == taskId)
+        {
+            await _db.KeyDeleteAsync(connectionKey);
+        }
+    }
+
+    public async Task<ItemEditor?> GetTaskEditorAsync(int taskId)
+    {
+        var editorKey = $"{TaskEditorPrefix}{taskId}";
+        var entries = await _db.HashGetAllAsync(editorKey);
+        if (entries == null || entries.Length == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var dict = entries.ToDictionary(x => x.Name.ToString(), x => x.Value);
+
+            if (!dict.TryGetValue("userId", out var userIdValue) || !int.TryParse(userIdValue.ToString(), out var userId))
+            {
+                return null;
+            }
+
+            var userName = dict.TryGetValue("userName", out var userNameValue)
+                ? userNameValue.ToString()
+                : null;
+
+            var identityIconUrl = dict.TryGetValue("identityIconUrl", out var iconValue)
+                ? iconValue.ToString()
+                : null;
+
+            var connectionId = dict.TryGetValue("connectionId", out var connectionValue)
+                ? connectionValue.ToString()
+                : null;
+
+            if (userName == null || string.IsNullOrEmpty(connectionId))
+            {
+                return null;
+            }
+
+            return new ItemEditor(userId, userName, string.IsNullOrEmpty(identityIconUrl) ? null : identityIconUrl, connectionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SignalRPresence: Failed to parse task editor for TaskId={TaskId}", taskId);
+            return null;
+        }
+    }
+
+    public async Task<int?> GetConnectionEditingTaskIdAsync(string connectionId)
+    {
+        var connectionKey = $"{TaskEditorConnectionPrefix}{connectionId}";
+        var value = await _db.StringGetAsync(connectionKey);
+        if (value.IsNullOrEmpty) return null;
+        return int.TryParse(value.ToString(), out var taskId) ? taskId : null;
     }
 
     // ========================================
