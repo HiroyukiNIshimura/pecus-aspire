@@ -1,4 +1,5 @@
 @model Pecus.Libs.Mail.Templates.Models.ItemUpdatedEmailModel
+@using RazorLight.Text
 @{
     Layout = "_Layout.html.cshtml";
 }
@@ -52,7 +53,7 @@
     @if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
     {
         <div style="margin:12px 0; padding:12px; background:#f8f9fa; border-radius:4px; border:1px solid #e3e3e3;">
-            @Raw(Model.BodyHtml)
+            @(new RawString(Model.BodyHtml))
         </div>
     }
     else if (!string.IsNullOrWhiteSpace(Model.BodyText))

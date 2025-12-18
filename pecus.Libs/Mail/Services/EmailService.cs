@@ -7,7 +7,6 @@ using MimeKit;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Models;
 using Pecus.Libs.Mail.Templates;
-using System.Text.Json;
 
 namespace Pecus.Libs.Mail.Services;
 
@@ -50,15 +49,18 @@ public class EmailService : IEmailService
         // 開発環境でSendMailInDevelopment=falseの場合はメール送信をスキップ
         if (_hostEnvironment.IsDevelopment() && !_settings.SendMailInDevelopment)
         {
-            var jsonOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            };
-            var messageJson = JsonSerializer.Serialize(message, jsonOptions);
             _logger.LogInformation(
-                "[Development] Email sending skipped. Message content: {MessageJson}",
-                messageJson
+                "[Development] Email sending skipped.\n" +
+                "  To: {To}\n" +
+                "  Cc: {Cc}\n" +
+                "  Bcc: {Bcc}\n" +
+                "  Subject: {Subject}\n" +
+                "  TextBody: {TextBody}",
+                string.Join(", ", message.To),
+                message.Cc.Count > 0 ? string.Join(", ", message.Cc) : "(none)",
+                message.Bcc.Count > 0 ? string.Join(", ", message.Bcc) : "(none)",
+                message.Subject,
+                message.TextBody ?? "(none)"
             );
             return;
         }
