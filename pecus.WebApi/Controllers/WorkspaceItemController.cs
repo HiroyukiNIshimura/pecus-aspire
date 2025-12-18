@@ -77,12 +77,6 @@ public class WorkspaceItemController : BaseSecureController
             CurrentUserId
         );
 
-        // 下書きでない場合はアイテム作成通知メールを送信
-        if (!item.IsDraft)
-        {
-            await SendItemCreatedEmailAsync(workspaceId, item);
-        }
-
         var response = new WorkspaceItemResponse
         {
             Success = true,
@@ -247,12 +241,6 @@ public class WorkspaceItemController : BaseSecureController
             request,
             CurrentUserId
         );
-
-        // 下書きでない場合はアイテム更新通知メールを送信
-        if (!item.IsDraft)
-        {
-            await SendItemUpdatedEmailAsync(workspaceId, item, "アイテムが更新されました");
-        }
 
         var response = new WorkspaceItemResponse
         {
@@ -499,162 +487,5 @@ public class WorkspaceItemController : BaseSecureController
             ChildrenCount = count.DirectCount,
             TotalDescendantsCount = count.TotalCount
         });
-    }
-
-    /// <summary>
-    /// アイテム作成時にワークスペース内メンバーへメール送信
-    /// </summary>
-    private async Task SendItemCreatedEmailAsync(int workspaceId, Libs.DB.Models.WorkspaceItem item)
-    {
-        // ワークスペース情報を取得
-        var workspace = await _workspaceItemService.GetWorkspaceForEmailAsync(workspaceId);
-        if (workspace == null)
-        {
-            _logger.LogWarning(
-                "アイテム作成メール送信: ワークスペース情報が取得できませんでした。WorkspaceId={WorkspaceId}",
-                workspaceId
-            );
-            return;
-        }
-
-        // 通知先ユーザー一覧を取得（ワークスペース内の有効なメンバー、作成者を除外）
-        var targetUsers = await _workspaceItemService.GetWorkspaceActiveMembersAsync(
-            workspaceId,
-            CurrentUserId // アイテム作成者は除外
-        );
-
-        if (targetUsers.Count == 0)
-        {
-            _logger.LogInformation(
-                "アイテム作成メール送信: 通知先ユーザーがいません。WorkspaceId={WorkspaceId}, ItemId={ItemId}",
-                workspaceId,
-                item.Id
-            );
-            return;
-        }
-
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
-        var itemUrl = $"{baseUrl}/workspaces/{workspace.Code}?itemCode={item.Code}";
-
-        // 各ユーザーにメール送信ジョブを登録
-        foreach (var user in targetUsers)
-        {
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                continue;
-            }
-
-            var emailModel = new ItemCreatedEmailModel
-            {
-                UserName = user.Username,
-                ItemTitle = item.Subject ?? "",
-                ItemCode = item.Code,
-                BodyText = item.RawBody,
-                CreatedByName = CurrentUser?.Username ?? "",
-                CreatedAt = item.CreatedAt,
-                WorkspaceName = workspace.Name,
-                WorkspaceCode = workspace.Code ?? "",
-                ItemUrl = itemUrl,
-            };
-
-            _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                x.SendTemplatedEmailAsync(
-                    user.Email,
-                    "新しいアイテムが作成されました",
-                    emailModel
-                )
-            );
-        }
-
-        _logger.LogInformation(
-            "アイテム作成メールをキューに追加しました。WorkspaceId={WorkspaceId}, ItemId={ItemId}, TargetCount={Count}",
-            workspaceId,
-            item.Id,
-            targetUsers.Count
-        );
-    }
-
-    /// <summary>
-    /// アイテム更新時にワークスペース内メンバーへメール送信
-    /// </summary>
-    private async Task SendItemUpdatedEmailAsync(
-        int workspaceId,
-        Libs.DB.Models.WorkspaceItem item,
-        string effectMessage
-    )
-    {
-        // ワークスペース情報を取得
-        var workspace = await _workspaceItemService.GetWorkspaceForEmailAsync(workspaceId);
-        if (workspace == null)
-        {
-            _logger.LogWarning(
-                "アイテム更新メール送信: ワークスペース情報が取得できませんでした。WorkspaceId={WorkspaceId}",
-                workspaceId
-            );
-            return;
-        }
-
-        // 通知先ユーザー一覧を取得（ワークスペース内の有効なメンバー、更新者を除外）
-        var targetUsers = await _workspaceItemService.GetWorkspaceActiveMembersAsync(
-            workspaceId,
-            CurrentUserId // アイテム更新者は除外
-        );
-
-        if (targetUsers.Count == 0)
-        {
-            _logger.LogInformation(
-                "アイテム更新メール送信: 通知先ユーザーがいません。WorkspaceId={WorkspaceId}, ItemId={ItemId}",
-                workspaceId,
-                item.Id
-            );
-            return;
-        }
-
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
-        var itemUrl = $"{baseUrl}/workspaces/{workspace.Code}?itemCode={item.Code}";
-
-        // 各ユーザーにメール送信ジョブを登録
-        foreach (var user in targetUsers)
-        {
-            if (string.IsNullOrEmpty(user.Email))
-            {
-                continue;
-            }
-
-            var emailModel = new ItemUpdatedEmailModel
-            {
-                UserName = user.Username,
-                ItemTitle = item.Subject ?? "",
-                ItemCode = item.Code ?? "",
-                BodyText = item.RawBody,
-                Activities =
-                [
-                    new ItemActivityEntry
-                    {
-                        EffectMessage = effectMessage,
-                        UpdatedByName = CurrentUser?.Username ?? "",
-                        UpdatedAt = item.UpdatedAt,
-                    }
-                ],
-                WorkspaceName = workspace.Name,
-                WorkspaceCode = workspace.Code ?? "",
-                ItemUrl = itemUrl,
-            };
-
-            _backgroundJobClient.Enqueue<EmailTasks>(x =>
-                x.SendTemplatedEmailAsync(
-                    user.Email,
-                    "アイテムが更新されました",
-                    emailModel
-                )
-            );
-        }
-
-        _logger.LogInformation(
-            "アイテム更新メールをキューに追加しました。WorkspaceId={WorkspaceId}, ItemId={ItemId}, TargetCount={Count}",
-            workspaceId,
-            item.Id,
-            targetUsers.Count
-        );
     }
 }
