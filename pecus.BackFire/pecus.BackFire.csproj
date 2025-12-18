@@ -18,4 +18,10 @@
     <ProjectReference Include="..\pecus.Libs\pecus.Libs.csproj" />
     <ProjectReference Include="..\pecus.DbManager\pecus.DbManager.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\pecus.Libs\Mail\Templates\**\*.cshtml" LinkBase="Mail\Templates">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

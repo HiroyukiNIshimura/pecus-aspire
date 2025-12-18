@@ -5,6 +5,12 @@ using Pecus.Libs.DB;
 using Pecus.Libs.DB.Seed;
 using Pecus.Libs.Lexical;
 
+#if DEBUG
+// HTTP/2非暗号化通信(h2c)を有効化
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+#endif
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Aspire Service Defaultsの追加
