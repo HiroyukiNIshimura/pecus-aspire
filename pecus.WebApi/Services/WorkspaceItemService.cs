@@ -2128,4 +2128,43 @@ public class WorkspaceItemService
             TotalCount = treeItems.Count
         };
     }
+
+    /// <summary>
+    /// ワークスペース内のアクティブなメンバー一覧を取得（メール送信用）
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="excludeUserId">除外するユーザーID（作成者など）</param>
+    /// <returns>ワークスペース内のアクティブなメンバー一覧（メールアドレスを持つユーザーのみ）</returns>
+    public async Task<List<User>> GetWorkspaceActiveMembersAsync(int workspaceId, int? excludeUserId = null)
+    {
+        var query = _context.WorkspaceUsers
+            .Include(wu => wu.User)
+            .Where(wu =>
+                wu.WorkspaceId == workspaceId &&
+                wu.User != null &&
+                wu.User.IsActive &&
+                !string.IsNullOrEmpty(wu.User.Email)
+            );
+
+        if (excludeUserId.HasValue)
+        {
+            query = query.Where(wu => wu.UserId != excludeUserId.Value);
+        }
+
+        return await query
+            .Select(wu => wu.User!)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// ワークスペース情報をメール送信用に取得
+    /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <returns>ワークスペース情報（コード、名前を含む）</returns>
+    public async Task<Workspace?> GetWorkspaceForEmailAsync(int workspaceId)
+    {
+        return await _context.Workspaces
+            .AsNoTracking()
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+    }
 }
