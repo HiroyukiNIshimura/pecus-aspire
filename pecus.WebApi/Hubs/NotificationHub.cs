@@ -123,6 +123,28 @@ public class NotificationHub : Hub
                 userId, editingItemId.Value);
         }
 
+        var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
+        if (editingWorkspaceId.HasValue)
+        {
+            await _presenceService.RemoveWorkspaceEditorAsync(editingWorkspaceId.Value, Context.ConnectionId);
+
+            var editGroupName = $"workspace:{editingWorkspaceId.Value}";
+            await Clients.Group(editGroupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "workspace:edit_ended",
+                Payload = new
+                {
+                    WorkspaceId = editingWorkspaceId.Value,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: User {UserId} ended editing workspace {WorkspaceId} on disconnect",
+                userId, editingWorkspaceId.Value);
+        }
+
         // 参加中のアイテムがあれば離脱通知を送信
         var itemId = await _presenceService.GetConnectionItemAsync(Context.ConnectionId);
         if (itemId.HasValue)
@@ -203,6 +225,24 @@ public class NotificationHub : Hub
         if (currentWorkspaceId.HasValue && currentWorkspaceId.Value != workspaceId)
         {
             var prevGroupName = $"workspace:{currentWorkspaceId.Value}";
+
+            var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
+            if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == currentWorkspaceId.Value)
+            {
+                await _presenceService.RemoveWorkspaceEditorAsync(currentWorkspaceId.Value, Context.ConnectionId);
+
+                await Clients.Group(prevGroupName).SendAsync("ReceiveNotification", new
+                {
+                    EventType = "workspace:edit_ended",
+                    Payload = new
+                    {
+                        WorkspaceId = currentWorkspaceId.Value,
+                        UserId = userId
+                    },
+                    Timestamp = DateTimeOffset.UtcNow
+                });
+            }
+
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevGroupName);
 
             // 前のワークスペースのメンバーに離脱を通知
@@ -267,6 +307,24 @@ public class NotificationHub : Hub
             userId, workspaceId, Context.ConnectionId);
 
         var groupName = $"workspace:{workspaceId}";
+
+        var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
+        if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == workspaceId)
+        {
+            await _presenceService.RemoveWorkspaceEditorAsync(workspaceId, Context.ConnectionId);
+
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "workspace:edit_ended",
+                Payload = new
+                {
+                    WorkspaceId = workspaceId,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
         // Redis からワークスペース情報を削除
@@ -278,6 +336,131 @@ public class NotificationHub : Hub
         _logger.LogDebug(
             "SignalR: ConnectionId={ConnectionId} left {GroupName}",
             Context.ConnectionId, groupName);
+    }
+
+    /// <summary>
+    /// ワークスペース編集を開始する。
+    /// </summary>
+    public async Task StartWorkspaceEdit(int workspaceId)
+    {
+        if (workspaceId <= 0)
+        {
+            throw new HubException("Invalid workspaceId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(userId, workspaceId);
+        if (!isMember)
+        {
+            _logger.LogDebug(
+                "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skip start workspace edit",
+                userId, workspaceId);
+            return;
+        }
+
+        var user = await _context.Users
+            .Where(u => u.Id == userId && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            _logger.LogWarning("SignalR: User {UserId} not found when starting workspace edit", userId);
+            return;
+        }
+
+        var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+            user.AvatarType,
+            user.Id,
+            user.Username,
+            user.Email,
+            user.UserAvatarPath);
+
+        await _presenceService.SetWorkspaceEditorAsync(workspaceId, userId, user.Username, identityIconUrl, Context.ConnectionId);
+
+        var groupName = $"workspace:{workspaceId}";
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "workspace:edit_started",
+            Payload = new
+            {
+                WorkspaceId = workspaceId,
+                UserId = userId,
+                UserName = user.Username,
+                IdentityIconUrl = identityIconUrl
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} started editing workspace {WorkspaceId}",
+            userId, workspaceId);
+    }
+
+    /// <summary>
+    /// ワークスペース編集を終了する。
+    /// </summary>
+    public async Task EndWorkspaceEdit(int workspaceId)
+    {
+        if (workspaceId <= 0)
+        {
+            throw new HubException("Invalid workspaceId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        await _presenceService.RemoveWorkspaceEditorAsync(workspaceId, Context.ConnectionId);
+
+        var groupName = $"workspace:{workspaceId}";
+        await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+        {
+            EventType = "workspace:edit_ended",
+            Payload = new
+            {
+                WorkspaceId = workspaceId,
+                UserId = userId
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} ended editing workspace {WorkspaceId}",
+            userId, workspaceId);
+    }
+
+    /// <summary>
+    /// 現在のワークスペース編集状態を取得する。
+    /// </summary>
+    public async Task<WorkspaceEditStatus> GetWorkspaceEditStatus(int workspaceId)
+    {
+        if (workspaceId <= 0)
+        {
+            throw new HubException("Invalid workspaceId");
+        }
+
+        var editor = await _presenceService.GetWorkspaceEditorAsync(workspaceId);
+        if (editor == null)
+        {
+            return new WorkspaceEditStatus(false, null);
+        }
+
+        return new WorkspaceEditStatus(true, editor);
     }
 
     /// <summary>
@@ -346,6 +529,23 @@ public class NotificationHub : Hub
         if (currentWorkspaceId.HasValue && currentWorkspaceId.Value != workspaceId)
         {
             var prevWorkspaceGroup = $"workspace:{currentWorkspaceId.Value}";
+
+            var editingWorkspaceId = await _presenceService.GetConnectionEditingWorkspaceIdAsync(Context.ConnectionId);
+            if (editingWorkspaceId.HasValue && editingWorkspaceId.Value == currentWorkspaceId.Value)
+            {
+                await _presenceService.RemoveWorkspaceEditorAsync(currentWorkspaceId.Value, Context.ConnectionId);
+
+                await Clients.Group(prevWorkspaceGroup).SendAsync("ReceiveNotification", new
+                {
+                    EventType = "workspace:edit_ended",
+                    Payload = new
+                    {
+                        WorkspaceId = currentWorkspaceId.Value,
+                        UserId = userId
+                    },
+                    Timestamp = DateTimeOffset.UtcNow
+                });
+            }
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevWorkspaceGroup);
 
             // 前のワークスペースのメンバーに離脱を通知

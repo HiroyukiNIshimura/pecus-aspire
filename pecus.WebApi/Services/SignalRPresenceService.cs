@@ -29,6 +29,8 @@ public class SignalRPresenceService
     private const string ConnectionOrganizationPrefix = "presence:conn_org:";    // ConnectionId → OrganizationId
     private const string ItemEditorPrefix = "presence:item_editor:";             // ItemId → ItemEditor (Hash)
     private const string ItemEditorConnectionPrefix = "presence:item_editor_conn:"; // ConnectionId → ItemId
+    private const string WorkspaceEditorPrefix = "presence:ws_editor:";          // WorkspaceId → WorkspaceEditor (Hash)
+    private const string WorkspaceEditorConnectionPrefix = "presence:ws_editor_conn:"; // ConnectionId → WorkspaceId
     private const string WorkspaceConnectionsPrefix = "presence:ws_conns:";      // WorkspaceId → Set<ConnectionId>
     private const string ItemConnectionsPrefix = "presence:item_conns:";         // ItemId → Set<ConnectionId>
     private const string OrganizationConnectionsPrefix = "presence:org_conns:";  // OrganizationId → Set<ConnectionId>
@@ -378,6 +380,107 @@ public class SignalRPresenceService
         var value = await _db.StringGetAsync(connectionKey);
         if (value.IsNullOrEmpty) return null;
         return int.TryParse(value.ToString(), out var itemId) ? itemId : null;
+    }
+
+    // ========================================
+    // ワークスペース編集状態管理（Hash ベース）
+    // ========================================
+
+    public async Task SetWorkspaceEditorAsync(int workspaceId, int userId, string userName, string? identityIconUrl, string connectionId)
+    {
+        var editorKey = $"{WorkspaceEditorPrefix}{workspaceId}";
+        var connectionKey = $"{WorkspaceEditorConnectionPrefix}{connectionId}";
+
+        var entries = new HashEntry[]
+        {
+            new("userId", userId),
+            new("userName", userName),
+            new("identityIconUrl", identityIconUrl ?? string.Empty),
+            new("connectionId", connectionId)
+        };
+
+        await _db.HashSetAsync(editorKey, entries);
+        await _db.StringSetAsync(connectionKey, workspaceId.ToString(), ConnectionTtl);
+        await _db.KeyExpireAsync(editorKey, ConnectionTtl);
+    }
+
+    public async Task RemoveWorkspaceEditorAsync(int workspaceId, string connectionId)
+    {
+        var editor = await GetWorkspaceEditorAsync(workspaceId);
+        if (editor == null)
+        {
+            return;
+        }
+
+        if (!string.Equals(editor.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            _logger.LogDebug(
+                "SignalRPresence: Skip removing workspace editor because connectionId mismatch. WorkspaceId={WorkspaceId}, Expected={Expected}, Actual={Actual}",
+                workspaceId, editor.ConnectionId, connectionId);
+            return;
+        }
+
+        var editorKey = $"{WorkspaceEditorPrefix}{workspaceId}";
+        await _db.KeyDeleteAsync(editorKey);
+
+        var connectionKey = $"{WorkspaceEditorConnectionPrefix}{connectionId}";
+        var mappedWorkspaceId = await GetConnectionEditingWorkspaceIdAsync(connectionId);
+        if (mappedWorkspaceId.HasValue && mappedWorkspaceId.Value == workspaceId)
+        {
+            await _db.KeyDeleteAsync(connectionKey);
+        }
+    }
+
+    public async Task<ItemEditor?> GetWorkspaceEditorAsync(int workspaceId)
+    {
+        var editorKey = $"{WorkspaceEditorPrefix}{workspaceId}";
+        var entries = await _db.HashGetAllAsync(editorKey);
+        if (entries == null || entries.Length == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var dict = entries.ToDictionary(x => x.Name.ToString(), x => x.Value);
+
+            if (!dict.TryGetValue("userId", out var userIdValue) || !int.TryParse(userIdValue.ToString(), out var userId))
+            {
+                return null;
+            }
+
+            var userName = dict.TryGetValue("userName", out var userNameValue)
+                ? userNameValue.ToString()
+                : null;
+
+            var identityIconUrl = dict.TryGetValue("identityIconUrl", out var iconValue)
+                ? iconValue.ToString()
+                : null;
+
+            var connectionId = dict.TryGetValue("connectionId", out var connectionValue)
+                ? connectionValue.ToString()
+                : null;
+
+            if (userName == null || string.IsNullOrEmpty(connectionId))
+            {
+                return null;
+            }
+
+            return new ItemEditor(userId, userName, string.IsNullOrEmpty(identityIconUrl) ? null : identityIconUrl, connectionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SignalRPresence: Failed to parse workspace editor for WorkspaceId={WorkspaceId}", workspaceId);
+            return null;
+        }
+    }
+
+    public async Task<int?> GetConnectionEditingWorkspaceIdAsync(string connectionId)
+    {
+        var connectionKey = $"{WorkspaceEditorConnectionPrefix}{connectionId}";
+        var value = await _db.StringGetAsync(connectionKey);
+        if (value.IsNullOrEmpty) return null;
+        return int.TryParse(value.ToString(), out var workspaceId) ? workspaceId : null;
     }
 
     // ========================================

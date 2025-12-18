@@ -6,8 +6,8 @@
 
 ## TODO
 
-- [ ] アイテム編集状態通知の実装
-- [ ] ワークスペース編集に同じ仕組みを流用
+- [x] アイテム編集状態通知の実装
+- [x] ワークスペース編集に同じ仕組みを流用
 - [ ] タスク編集に同じ仕組みを流用（新規 `task:{taskId}` グループ作成が必要）
 
 ### なぜ必要か
@@ -102,11 +102,13 @@ DB層の排他制御（`DbUpdateConcurrencyException` → 409 Conflict）は既�
 
 ## サーバー側状態管理について
 
-本機能では「サーバー側で編集状態を保持しない」設計とする。編集状態の伝達・通知は全てSignalRのリアルタイムイベントのみで行い、サーバー側でアイテムごとの編集状態を永続・一時的に保存することはない。
+現在の実装は **Redis(db2) に編集状態を保持** し、接続IDとアイテム/ワークスペースを相互に引けるようにしています。
 
-> 途中参加者への編集状態の伝達も、SignalRのイベント購読・ブロードキャストのみで実現する。
+- 保存形式: Hash（`presence:item_editor:{itemId}` / `presence:ws_editor:{workspaceId}`）と connection → entity の String
+- TTL: 24h（異常切断時のクリーンアップ用）
+- OnDisconnected / グループ切替時に自動解除し、`item:edit_ended` / `workspace:edit_ended` をブロードキャスト
 
-> Redis等のストレージは利用しない。
+途中参加者への編集状態伝達は、保持している状態を `GetItemEditStatus` / `GetWorkspaceEditStatus` で返却しつつ、イベントも購読させるハイブリッド方式。
 
 ## イベント
 
@@ -116,29 +118,32 @@ DB層の排他制御（`DbUpdateConcurrencyException` → 409 Conflict）は既�
 
 ## Hub メソッド
 
-### StartItemEdit
+### StartItemEdit / StartWorkspaceEdit
 
 ```csharp
 public async Task StartItemEdit(int itemId)
+public async Task StartWorkspaceEdit(int workspaceId)
 ```
 
-- サーバー側で編集状態を管理（内部的にRedis等を利用する場合も）
-- SignalRグループに `item:edit_started` を通知
+- サーバー側で編集状態を管理（Redis）
+- SignalRグループに `item:edit_started` / `workspace:edit_started` を通知
 - 同一ユーザーが別タブで既に編集中の場合は何もしない（UI側で判定）
 
-### EndItemEdit
+### EndItemEdit / EndWorkspaceEdit
 
 ```csharp
 public async Task EndItemEdit(int itemId)
+public async Task EndWorkspaceEdit(int workspaceId)
 ```
 
-- サーバー側で編集状態を解除（内部的にRedis等を利用する場合も）
-- SignalRグループに `item:edit_ended` を通知
+- サーバー側で編集状態を解除（Redis）
+- SignalRグループに `item:edit_ended` / `workspace:edit_ended` を通知
 
-### GetItemEditStatus
+### GetItemEditStatus / GetWorkspaceEditStatus
 
 ```csharp
 public async Task<ItemEditStatus?> GetItemEditStatus(int itemId)
+public async Task<WorkspaceEditStatus?> GetWorkspaceEditStatus(int workspaceId)
 ```
 
 - 戻り値: `{ isEditing: bool, editor?: { userId, userName, identityIconUrl } }`
@@ -150,7 +155,7 @@ public async Task<ItemEditStatus?> GetItemEditStatus(int itemId)
 
 ```csharp
 
-// ※本設計ではサーバー側で編集状態を保持しないため、これらのメソッドは不要
+// Redisでアイテム/ワークスペース編集状態を保持するメソッド群を実装済み
 ```
 
 ---
@@ -171,14 +176,28 @@ interface ItemEditStatus {
   editor?: ItemEditor;
 }
 
+interface WorkspaceEditor {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+interface WorkspaceEditStatus {
+  isEditing: boolean;
+  editor?: WorkspaceEditor;
+}
+
 // 編集開始
 startItemEdit: (itemId: number) => Promise<void>;
+startWorkspaceEdit: (workspaceId: number) => Promise<void>;
 
 // 編集終了
 endItemEdit: (itemId: number) => Promise<void>;
+endWorkspaceEdit: (workspaceId: number) => Promise<void>;
 
 // 編集状態取得
 getItemEditStatus: (itemId: number) => Promise<ItemEditStatus>;
+getWorkspaceEditStatus: (workspaceId: number) => Promise<WorkspaceEditStatus>;
 ```
 
 ### イベントハンドラ
@@ -186,9 +205,11 @@ getItemEditStatus: (itemId: number) => Promise<ItemEditStatus>;
 ```typescript
 // 編集開始通知
 onItemEditStarted: (callback: (data: { itemId: number; userId: number; userName: string; identityIconUrl: string | null }) => void) => void;
+onWorkspaceEditStarted: (callback: (data: { workspaceId: number; userId: number; userName: string; identityIconUrl: string | null }) => void) => void;
 
 // 編集終了通知
 onItemEditEnded: (callback: (data: { itemId: number; userId: number }) => void) => void;
+onWorkspaceEditEnded: (callback: (data: { workspaceId: number; userId: number }) => void) => void;
 ```
 
 ### 使用例
@@ -266,6 +287,8 @@ function EditItemModal({ itemId, onClose }: { itemId: number; onClose: () => voi
 }
 ```
 
+ワークスペース編集モーダルでも同様に `startWorkspaceEdit` / `endWorkspaceEdit` をモーダルの開閉に合わせて呼び出し、`WorkspaceEditStatus` コンポーネントでロック表示を行う。
+
 ---
 
 ## 同一ユーザーの複数タブ対応
@@ -331,9 +354,9 @@ public override async Task OnDisconnectedAsync(Exception? exception)
 ```
 pecus.WebApi/
 ├── Hubs/
-│   └── NotificationHub.cs          # StartItemEdit, EndItemEdit, GetItemEditStatus 追加
+│   └── NotificationHub.cs          # Start/End/Get Item & Workspace Edit 状態、切断時クリーンアップ
 └── Services/
-    └── SignalRPresenceService.cs   # 編集状態管理メソッド追加
+  └── SignalRPresenceService.cs   # アイテム/ワークスペース編集状態をRedisで管理
 ```
 
 ### フロントエンド（変更）
@@ -341,10 +364,12 @@ pecus.WebApi/
 ```
 pecus.Frontend/src/
 ├── providers/
-│   └── SignalRProvider.tsx         # startItemEdit, endItemEdit, getItemEditStatus 追加
+│   └── SignalRProvider.tsx         # Item/Workspace の start/end/get とイベント購読を提供
 └── components/
-    └── items/
-        └── ItemEditStatus.tsx      # 編集状態表示コンポーネント（新規）
+  ├── items/
+  │   └── ItemEditStatus.tsx          # アイテム編集状態表示
+  └── workspaces/
+    └── WorkspaceEditStatus.tsx     # ワークスペース編集状態表示
 ```
 
 ---

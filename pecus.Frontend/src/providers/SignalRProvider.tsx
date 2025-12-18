@@ -65,11 +65,29 @@ export interface ItemEditor {
 }
 
 /**
+ * ワークスペース編集者情報
+ */
+export interface WorkspaceEditor {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+  connectionId?: string | null;
+}
+
+/**
  * アイテム編集状態
  */
 export interface ItemEditStatus {
   isEditing: boolean;
   editor?: ItemEditor;
+}
+
+/**
+ * ワークスペース編集状態
+ */
+export interface WorkspaceEditStatus {
+  isEditing: boolean;
+  editor?: WorkspaceEditor;
 }
 
 interface ItemEditStartedPayload {
@@ -81,6 +99,18 @@ interface ItemEditStartedPayload {
 
 interface ItemEditEndedPayload {
   itemId: number;
+  userId: number;
+}
+
+interface WorkspaceEditStartedPayload {
+  workspaceId: number;
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+interface WorkspaceEditEndedPayload {
+  workspaceId: number;
   userId: number;
 }
 
@@ -136,6 +166,21 @@ interface SignalRContextValue {
 
   /** アイテム編集終了イベント購読 */
   onItemEditEnded: (handler: (payload: ItemEditEndedPayload) => void) => () => void;
+
+  /** ワークスペース編集開始 */
+  startWorkspaceEdit: (workspaceId: number) => Promise<void>;
+
+  /** ワークスペース編集終了 */
+  endWorkspaceEdit: (workspaceId: number) => Promise<void>;
+
+  /** ワークスペース編集状態を取得 */
+  getWorkspaceEditStatus: (workspaceId: number) => Promise<WorkspaceEditStatus>;
+
+  /** ワークスペース編集開始イベント購読 */
+  onWorkspaceEditStarted: (handler: (payload: WorkspaceEditStartedPayload) => void) => () => void;
+
+  /** ワークスペース編集終了イベント購読 */
+  onWorkspaceEditEnded: (handler: (payload: WorkspaceEditEndedPayload) => void) => () => void;
 
   /** 現在参加中のグループ情報 */
   currentGroups: CurrentGroups;
@@ -508,6 +553,99 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     [onNotification],
   );
 
+  /**
+   * ワークスペース編集開始
+   */
+  const startWorkspaceEdit = useCallback(async (workspaceId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot start workspace edit: not connected');
+      return;
+    }
+
+    if (workspaceId <= 0) {
+      console.warn('[SignalR] Invalid workspaceId for startWorkspaceEdit');
+      return;
+    }
+
+    try {
+      await connection.invoke('StartWorkspaceEdit', workspaceId);
+    } catch (error) {
+      console.error('[SignalR] Failed to start workspace edit:', error);
+    }
+  }, []);
+
+  /**
+   * ワークスペース編集終了
+   */
+  const endWorkspaceEdit = useCallback(async (workspaceId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    if (workspaceId <= 0) {
+      return;
+    }
+
+    try {
+      await connection.invoke('EndWorkspaceEdit', workspaceId);
+    } catch (error) {
+      console.error('[SignalR] Failed to end workspace edit:', error);
+    }
+  }, []);
+
+  /**
+   * ワークスペース編集状態取得
+   */
+  const getWorkspaceEditStatus = useCallback(async (workspaceId: number): Promise<WorkspaceEditStatus> => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return { isEditing: false };
+    }
+
+    if (workspaceId <= 0) {
+      return { isEditing: false };
+    }
+
+    try {
+      const status = await connection.invoke<WorkspaceEditStatus>('GetWorkspaceEditStatus', workspaceId);
+      if (!status) return { isEditing: false };
+      return status;
+    } catch (error) {
+      console.error('[SignalR] Failed to get workspace edit status:', error);
+      return { isEditing: false };
+    }
+  }, []);
+
+  /**
+   * ワークスペース編集開始イベント購読
+   */
+  const onWorkspaceEditStarted = useCallback(
+    (handler: (payload: WorkspaceEditStartedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'workspace:edit_started') return;
+        const payload = notification.payload as WorkspaceEditStartedPayload;
+        if (!payload || typeof payload.workspaceId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
+  /**
+   * ワークスペース編集終了イベント購読
+   */
+  const onWorkspaceEditEnded = useCallback(
+    (handler: (payload: WorkspaceEditEndedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'workspace:edit_ended') return;
+        const payload = notification.payload as WorkspaceEditEndedPayload;
+        if (!payload || typeof payload.workspaceId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
   // 自動接続
   useEffect(() => {
     let isMounted = true;
@@ -543,6 +681,11 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     getItemEditStatus,
     onItemEditStarted,
     onItemEditEnded,
+    startWorkspaceEdit,
+    endWorkspaceEdit,
+    getWorkspaceEditStatus,
+    onWorkspaceEditStarted,
+    onWorkspaceEditEnded,
     currentGroups,
   };
 

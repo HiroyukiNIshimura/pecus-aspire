@@ -22,6 +22,7 @@ import EditWorkspaceModal from '@/components/workspaces/EditWorkspaceModal';
 import EditWorkspaceSkillsModal from '@/components/workspaces/EditWorkspaceSkillsModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
+import WorkspaceEditStatus from '@/components/workspaces/WorkspaceEditStatus';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
@@ -37,7 +38,11 @@ import type {
 import { useNotify } from '@/hooks/useNotify';
 import { formatDateTime } from '@/libs/utils/date';
 import type { WorkspacePresenceUser } from '@/providers/SignalRProvider';
-import { type SignalRNotification, useSignalRContext } from '@/providers/SignalRProvider';
+import {
+  type SignalRNotification,
+  useSignalRContext,
+  type WorkspaceEditStatus as WorkspaceEditStatusType,
+} from '@/providers/SignalRProvider';
 import type { UserInfo } from '@/types/userInfo';
 import CreateWorkspaceItem from './CreateWorkspaceItem';
 import TaskFlowMapPage from './TaskFlowMapPage';
@@ -94,7 +99,8 @@ export default function WorkspaceDetailClient({
   const router = useRouter();
   const pathname = usePathname();
   const notify = useNotify();
-  const { connectionState, joinWorkspace, leaveWorkspace, onNotification } = useSignalRContext();
+  const { connectionState, joinWorkspace, leaveWorkspace, onNotification, startWorkspaceEdit, endWorkspaceEdit } =
+    useSignalRContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [_isLoading, _setIsLoading] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -150,6 +156,7 @@ export default function WorkspaceDetailClient({
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
+  const [workspaceEditStatus, setWorkspaceEditStatus] = useState<WorkspaceEditStatusType>({ isEditing: false });
 
   // ===== メンバー管理の状態 =====
   // ログインユーザーがOwnerかどうか
@@ -183,6 +190,11 @@ export default function WorkspaceDetailClient({
 
   // サイドバー幅（初期値: null → クライアントサイドでローカルストレージから復元）
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
+
+  const currentUserId = userInfo?.id ?? 0;
+  const isWorkspaceLockedByOther =
+    workspaceEditStatus.isEditing && workspaceEditStatus.editor?.userId !== currentUserId;
+  const workspaceEditingUserName = workspaceEditStatus.editor?.userName ?? '他のユーザー';
 
   // クライアントサイドでローカルストレージから幅を復元
   useEffect(() => {
@@ -500,6 +512,10 @@ export default function WorkspaceDetailClient({
 
   /** 編集モーダルを開く */
   const handleEdit = () => {
+    if (isWorkspaceLockedByOther) {
+      notify.warning(`${workspaceEditingUserName} さんがワークスペースを編集中です。`);
+      return;
+    }
     setOpenActionMenu(false);
     setIsEditModalOpen(true);
   };
@@ -523,6 +539,18 @@ export default function WorkspaceDetailClient({
     // 成功通知
     notify.success('ワークスペースを更新しました。');
   };
+
+  // ===== ワークスペース編集開始・終了 (SignalR) =====
+  useEffect(() => {
+    if (!isEditModalOpen) return undefined;
+
+    const workspaceId = currentWorkspaceDetail.id;
+    startWorkspaceEdit(workspaceId);
+
+    return () => {
+      endWorkspaceEdit(workspaceId);
+    };
+  }, [currentWorkspaceDetail.id, endWorkspaceEdit, isEditModalOpen, startWorkspaceEdit]);
 
   /** 有効化/無効化を実行 */
   const handleToggleActive = async () => {
@@ -951,7 +979,13 @@ export default function WorkspaceDetailClient({
                     e.stopPropagation();
                     handleEdit();
                   }}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 disabled:opacity-60"
+                  disabled={isWorkspaceLockedByOther}
+                  title={
+                    isWorkspaceLockedByOther
+                      ? `${workspaceEditingUserName} さんがワークスペースを編集中です`
+                      : undefined
+                  }
                 >
                   <span className="icon-[mdi--pencil-outline] w-4 h-4" aria-hidden="true" />
                   <span>編集</span>
@@ -1084,6 +1118,13 @@ export default function WorkspaceDetailClient({
                 <div className="hidden lg:block">
                   <WorkspaceHeader />
                 </div>
+
+                <WorkspaceEditStatus
+                  workspaceId={currentWorkspaceDetail.id}
+                  currentUserId={userInfo?.id ?? 0}
+                  onStatusChange={setWorkspaceEditStatus}
+                  className="mb-3"
+                />
 
                 {/* 説明 */}
                 {currentWorkspaceDetail.description && (
