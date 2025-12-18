@@ -106,7 +106,7 @@ public class EmailChangeController : BaseSecureController
         _backgroundJobClient.Enqueue<EmailTasks>(x =>
             x.SendTemplatedEmailAsync(
                 request.NewEmail, // to
-                "【Pecus】メールアドレス変更の確認", // subject
+                "メールアドレス変更の確認", // subject
                 emailModel // model
             )
         );
