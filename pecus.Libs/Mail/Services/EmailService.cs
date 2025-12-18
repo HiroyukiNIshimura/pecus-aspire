@@ -1,3 +1,4 @@
+using System.Net;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Hosting;
@@ -49,6 +50,12 @@ public class EmailService : IEmailService
         // 開発環境でSendMailInDevelopment=falseの場合はメール送信をスキップ
         if (_hostEnvironment.IsDevelopment() && !_settings.SendMailInDevelopment)
         {
+            var textBodyForLog = message.TextBody ?? "(none)";
+            if (textBodyForLog.Length > 200)
+            {
+                textBodyForLog = textBodyForLog.Substring(0, 200) + "...(truncated)";
+            }
+
             _logger.LogInformation(
                 "[Development] Email sending skipped.\n" +
                 "  To: {To}\n" +
@@ -60,7 +67,7 @@ public class EmailService : IEmailService
                 message.Cc.Count > 0 ? string.Join(", ", message.Cc) : "(none)",
                 message.Bcc.Count > 0 ? string.Join(", ", message.Bcc) : "(none)",
                 message.Subject,
-                message.TextBody ?? "(none)"
+                textBodyForLog
             );
             return;
         }
@@ -164,7 +171,9 @@ public class EmailService : IEmailService
         var textTemplatePath = $"{templateName}.text.cshtml";
         try
         {
-            message.TextBody = await _templateService.RenderTemplateAsync(textTemplatePath, model);
+            var renderedText = await _templateService.RenderTemplateAsync(textTemplatePath, model);
+            // RazorLight は出力を HTML エンコードするため、テキストテンプレートはログ/プレーンメール用にデコードする
+            message.TextBody = WebUtility.HtmlDecode(renderedText);
         }
         catch (Exception ex)
         {
