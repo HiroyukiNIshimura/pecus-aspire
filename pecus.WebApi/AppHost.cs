@@ -52,7 +52,8 @@ builder.Services.ConfigureDbContext<ApplicationDbContext>(options =>
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 
 // メール関連サービスの登録
-builder.Services.AddScoped<ITemplateService, RazorTemplateService>();
+builder.Services.AddSingleton<RazorTemplateService>();
+builder.Services.AddSingleton<RazorNonEncodeTemplateService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 // セキュリティ関連サービスの登録

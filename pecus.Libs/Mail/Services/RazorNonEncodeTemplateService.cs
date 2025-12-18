@@ -8,20 +8,19 @@ namespace Pecus.Libs.Mail.Services;
 /// <summary>
 /// RazorLightを使用したテンプレートレンダリングサービス
 /// </summary>
-public class RazorTemplateService : ITemplateService
+public class RazorNonEncodeTemplateService : ITemplateService
 {
     private readonly IRazorLightEngine _razorEngine;
     private readonly EmailSettings _settings;
-    private readonly ILogger<RazorTemplateService> _logger;
-
+    private readonly ILogger<RazorNonEncodeTemplateService> _logger;
     /// <summary>
     /// コンストラクタ
     /// </summary>
     /// <param name="settings"></param>
     /// <param name="logger"></param>
-    public RazorTemplateService(
+    public RazorNonEncodeTemplateService(
         IOptions<EmailSettings> settings,
-        ILogger<RazorTemplateService> logger
+        ILogger<RazorNonEncodeTemplateService> logger
     )
     {
         _settings = settings.Value;
@@ -33,6 +32,7 @@ public class RazorTemplateService : ITemplateService
         _razorEngine = new RazorLightEngineBuilder()
             .UseFileSystemProject(templateRootPath)
             .UseMemoryCachingProvider()
+            .DisableEncoding()
             .EnableDebugMode(false)
             .Build();
     }

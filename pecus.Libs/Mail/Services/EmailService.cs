@@ -1,4 +1,3 @@
-using System.Net;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +7,7 @@ using MimeKit;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Models;
 using Pecus.Libs.Mail.Templates;
+using System.Net;
 
 namespace Pecus.Libs.Mail.Services;
 
@@ -18,7 +18,8 @@ namespace Pecus.Libs.Mail.Services;
 public class EmailService : IEmailService
 {
     private readonly EmailSettings _settings;
-    private readonly ITemplateService _templateService;
+    private readonly RazorTemplateService _templateService;
+    private readonly RazorNonEncodeTemplateService _nonEncodeTemplateService;
     private readonly ILogger<EmailService> _logger;
     private readonly IHostEnvironment _hostEnvironment;
 
@@ -27,17 +28,20 @@ public class EmailService : IEmailService
     /// </summary>
     /// <param name="settings"></param>
     /// <param name="templateService"></param>
+    /// <param name="nonEncodeRazorTemplateService"></param>
     /// <param name="logger"></param>
     /// <param name="hostEnvironment"></param>
     public EmailService(
         IOptions<EmailSettings> settings,
-        ITemplateService templateService,
+        RazorTemplateService templateService,
+        RazorNonEncodeTemplateService nonEncodeRazorTemplateService,
         ILogger<EmailService> logger,
         IHostEnvironment hostEnvironment
     )
     {
         _settings = settings.Value;
         _templateService = templateService;
+        _nonEncodeTemplateService = nonEncodeRazorTemplateService;
         _logger = logger;
         _hostEnvironment = hostEnvironment;
     }
@@ -171,9 +175,7 @@ public class EmailService : IEmailService
         var textTemplatePath = $"{templateName}.text.cshtml";
         try
         {
-            var renderedText = await _templateService.RenderTemplateAsync(textTemplatePath, model);
-            // RazorLight は出力を HTML エンコードするため、テキストテンプレートはログ/プレーンメール用にデコードする
-            message.TextBody = WebUtility.HtmlDecode(renderedText);
+            message.TextBody = await _nonEncodeTemplateService.RenderTemplateAsync(textTemplatePath, model);
         }
         catch (Exception ex)
         {
