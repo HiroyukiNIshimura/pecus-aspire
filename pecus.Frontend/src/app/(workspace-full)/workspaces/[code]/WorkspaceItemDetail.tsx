@@ -14,6 +14,7 @@ import {
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
+import ItemEditStatus from '@/components/items/ItemEditStatus';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
@@ -27,6 +28,7 @@ import type {
 } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import { formatDate, formatDateTime } from '@/libs/utils/date';
+import { type ItemEditStatus as ItemEditState, useSignalRContext } from '@/providers/SignalRProvider';
 import EditWorkspaceItem from './EditWorkspaceItem';
 import WorkspaceTasks from './WorkspaceTasks';
 
@@ -120,6 +122,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     ref,
   ) {
     const notify = useNotify();
+    const { joinItem, leaveItem } = useSignalRContext();
     // ドキュメントモードかどうか
     const isDocumentMode = workspaceMode === 'Document';
     const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
@@ -138,6 +141,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       relation: RelatedItemInfo | null;
     }>({ isOpen: false, relation: null });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [itemEditStatus, setItemEditStatus] = useState<ItemEditState>({ isEditing: false });
 
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
@@ -158,6 +162,19 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
         setIsLoading(false);
       }
     }, [workspaceId, itemId]);
+
+    // SignalR: アイテムグループ参加
+    useEffect(() => {
+      joinItem(itemId, workspaceId).catch((err) => {
+        console.warn('[SignalR] joinItem failed:', err);
+      });
+
+      return () => {
+        leaveItem(itemId).catch((err) => {
+          console.warn('[SignalR] leaveItem failed:', err);
+        });
+      };
+    }, [itemId, joinItem, leaveItem, workspaceId]);
 
     // 外部から呼び出せるメソッドを公開
     useImperativeHandle(ref, () => ({
@@ -226,9 +243,21 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }
     };
 
+    const effectiveCurrentUserId = currentUserId ?? 0;
+    const isOwner = item && currentUserId !== undefined && item.ownerId === currentUserId;
+    const isDraftAndNotOwner = item?.isDraft && !isOwner;
+    const isLockedByOther = itemEditStatus.isEditing && itemEditStatus.editor?.userId !== effectiveCurrentUserId;
+    const isEditDisabled = isDraftAndNotOwner || isLockedByOther;
+    const editingUserName = itemEditStatus.editor?.userName ?? '他のユーザー';
+
     // 編集ボタンクリック時の権限チェック
     const handleEditClick = () => {
       if (!item) return;
+
+      if (isLockedByOther) {
+        notify.warning(`${editingUserName} さんが編集中です。`);
+        return;
+      }
 
       // オーナーまたは担当者かどうかをチェック
       const isOwner = currentUserId !== undefined && item.ownerId === currentUserId;
@@ -246,12 +275,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       setIsEditModalOpen(true);
     };
 
-    // 下書き時はオーナー以外は編集不可
-    const isOwner = item && currentUserId !== undefined && item.ownerId === currentUserId;
-    const isDraftAndNotOwner = item?.isDraft && !isOwner;
-
     // 編集ボタンのツールチップを決定
     const getEditButtonTooltip = () => {
+      if (isLockedByOther) {
+        return `${editingUserName} さんが編集中です`;
+      }
       if (isDraftAndNotOwner) {
         return 'オーナーが下書き中です';
       }
@@ -468,7 +496,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 className="btn btn-primary btn-sm gap-2"
                 title={getEditButtonTooltip()}
                 style={{ pointerEvents: 'auto' }}
-                disabled={isDraftAndNotOwner}
+                disabled={isEditDisabled}
               >
                 <span className="icon-[mdi--pencil-outline] size-4" aria-hidden="true" />
                 編集
@@ -478,11 +506,19 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                 onClick={openDrawer}
                 className="btn btn-secondary btn-sm gap-2"
                 title="詳細オプション"
+                disabled={isEditDisabled}
               >
                 <span className="icon-[mdi--menu] size-4" aria-hidden="true" />
               </button>
             </div>
           </div>
+
+          <ItemEditStatus
+            itemId={itemId}
+            currentUserId={effectiveCurrentUserId}
+            onStatusChange={setItemEditStatus}
+            className="mb-3"
+          />
 
           {/* ステータスバッジ */}
           <div className="flex flex-wrap gap-2 mb-4">

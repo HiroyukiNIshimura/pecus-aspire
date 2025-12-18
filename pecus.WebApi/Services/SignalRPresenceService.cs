@@ -27,6 +27,8 @@ public class SignalRPresenceService
     private const string ConnectionWorkspacePrefix = "presence:conn_ws:";        // ConnectionId → WorkspaceId
     private const string ConnectionItemPrefix = "presence:conn_item:";           // ConnectionId → ItemId
     private const string ConnectionOrganizationPrefix = "presence:conn_org:";    // ConnectionId → OrganizationId
+    private const string ItemEditorPrefix = "presence:item_editor:";             // ItemId → ItemEditor (Hash)
+    private const string ItemEditorConnectionPrefix = "presence:item_editor_conn:"; // ConnectionId → ItemId
     private const string WorkspaceConnectionsPrefix = "presence:ws_conns:";      // WorkspaceId → Set<ConnectionId>
     private const string ItemConnectionsPrefix = "presence:item_conns:";         // ItemId → Set<ConnectionId>
     private const string OrganizationConnectionsPrefix = "presence:org_conns:";  // OrganizationId → Set<ConnectionId>
@@ -263,6 +265,119 @@ public class SignalRPresenceService
         }
 
         return [.. userIds];
+    }
+
+    // ========================================
+    // アイテム編集状態管理（Hash ベース）
+    // ========================================
+
+    /// <summary>
+    /// アイテムの編集者を設定する。
+    /// </summary>
+    public async Task SetItemEditorAsync(int itemId, int userId, string userName, string? identityIconUrl, string connectionId)
+    {
+        var editorKey = $"{ItemEditorPrefix}{itemId}";
+        var connectionKey = $"{ItemEditorConnectionPrefix}{connectionId}";
+
+        var entries = new HashEntry[]
+        {
+            new("userId", userId),
+            new("userName", userName),
+            new("identityIconUrl", identityIconUrl ?? string.Empty),
+            new("connectionId", connectionId)
+        };
+
+        await _db.HashSetAsync(editorKey, entries);
+        await _db.StringSetAsync(connectionKey, itemId.ToString(), ConnectionTtl);
+        await _db.KeyExpireAsync(editorKey, ConnectionTtl);
+    }
+
+    /// <summary>
+    /// アイテムの編集者を解除する（connectionId が一致する場合のみ）。
+    /// </summary>
+    public async Task RemoveItemEditorAsync(int itemId, string connectionId)
+    {
+        var editor = await GetItemEditorAsync(itemId);
+        if (editor == null)
+        {
+            return;
+        }
+
+        if (!string.Equals(editor.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            _logger.LogDebug(
+                "SignalRPresence: Skip removing item editor because connectionId mismatch. ItemId={ItemId}, Expected={Expected}, Actual={Actual}",
+                itemId, editor.ConnectionId, connectionId);
+            return;
+        }
+
+        var editorKey = $"{ItemEditorPrefix}{itemId}";
+        await _db.KeyDeleteAsync(editorKey);
+
+        var connectionKey = $"{ItemEditorConnectionPrefix}{connectionId}";
+        var mappedItemId = await GetConnectionEditingItemIdAsync(connectionId);
+        if (mappedItemId.HasValue && mappedItemId.Value == itemId)
+        {
+            await _db.KeyDeleteAsync(connectionKey);
+        }
+    }
+
+    /// <summary>
+    /// 現在のアイテム編集者を取得する。
+    /// </summary>
+    public async Task<ItemEditor?> GetItemEditorAsync(int itemId)
+    {
+        var editorKey = $"{ItemEditorPrefix}{itemId}";
+        var entries = await _db.HashGetAllAsync(editorKey);
+        if (entries == null || entries.Length == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var dict = entries.ToDictionary(x => x.Name.ToString(), x => x.Value);
+
+            if (!dict.TryGetValue("userId", out var userIdValue) || !int.TryParse(userIdValue.ToString(), out var userId))
+            {
+                return null;
+            }
+
+            var userName = dict.TryGetValue("userName", out var userNameValue)
+                ? userNameValue.ToString()
+                : null;
+
+            var identityIconUrl = dict.TryGetValue("identityIconUrl", out var iconValue)
+                ? iconValue.ToString()
+                : null;
+
+            var connectionId = dict.TryGetValue("connectionId", out var connectionValue)
+                ? connectionValue.ToString()
+                : null;
+
+            if (userName == null || string.IsNullOrEmpty(connectionId))
+            {
+                return null;
+            }
+
+            return new ItemEditor(userId, userName, string.IsNullOrEmpty(identityIconUrl) ? null : identityIconUrl, connectionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SignalRPresence: Failed to parse item editor for ItemId={ItemId}", itemId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 接続が編集中のアイテムIDを取得する。
+    /// </summary>
+    public async Task<int?> GetConnectionEditingItemIdAsync(string connectionId)
+    {
+        var connectionKey = $"{ItemEditorConnectionPrefix}{connectionId}";
+        var value = await _db.StringGetAsync(connectionKey);
+        if (value.IsNullOrEmpty) return null;
+        return int.TryParse(value.ToString(), out var itemId) ? itemId : null;
     }
 
     // ========================================

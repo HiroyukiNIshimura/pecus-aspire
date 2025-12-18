@@ -55,6 +55,36 @@ export interface ItemPresenceUser {
 }
 
 /**
+ * アイテム編集者情報
+ */
+export interface ItemEditor {
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+  connectionId?: string | null;
+}
+
+/**
+ * アイテム編集状態
+ */
+export interface ItemEditStatus {
+  isEditing: boolean;
+  editor?: ItemEditor;
+}
+
+interface ItemEditStartedPayload {
+  itemId: number;
+  userId: number;
+  userName: string;
+  identityIconUrl: string | null;
+}
+
+interface ItemEditEndedPayload {
+  itemId: number;
+  userId: number;
+}
+
+/**
  * 現在参加中のグループ情報
  */
 interface CurrentGroups {
@@ -91,6 +121,21 @@ interface SignalRContextValue {
 
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
+
+  /** アイテム編集開始 */
+  startItemEdit: (itemId: number) => Promise<void>;
+
+  /** アイテム編集終了 */
+  endItemEdit: (itemId: number) => Promise<void>;
+
+  /** アイテム編集状態を取得 */
+  getItemEditStatus: (itemId: number) => Promise<ItemEditStatus>;
+
+  /** アイテム編集開始イベント購読 */
+  onItemEditStarted: (handler: (payload: ItemEditStartedPayload) => void) => () => void;
+
+  /** アイテム編集終了イベント購読 */
+  onItemEditEnded: (handler: (payload: ItemEditEndedPayload) => void) => () => void;
 
   /** 現在参加中のグループ情報 */
   currentGroups: CurrentGroups;
@@ -370,6 +415,99 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     };
   }, []);
 
+  /**
+   * アイテム編集開始
+   */
+  const startItemEdit = useCallback(async (itemId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot start item edit: not connected');
+      return;
+    }
+
+    if (itemId <= 0) {
+      console.warn('[SignalR] Invalid itemId for startItemEdit');
+      return;
+    }
+
+    try {
+      await connection.invoke('StartItemEdit', itemId);
+    } catch (error) {
+      console.error('[SignalR] Failed to start item edit:', error);
+    }
+  }, []);
+
+  /**
+   * アイテム編集終了
+   */
+  const endItemEdit = useCallback(async (itemId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    if (itemId <= 0) {
+      return;
+    }
+
+    try {
+      await connection.invoke('EndItemEdit', itemId);
+    } catch (error) {
+      console.error('[SignalR] Failed to end item edit:', error);
+    }
+  }, []);
+
+  /**
+   * アイテム編集状態取得
+   */
+  const getItemEditStatus = useCallback(async (itemId: number): Promise<ItemEditStatus> => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return { isEditing: false };
+    }
+
+    if (itemId <= 0) {
+      return { isEditing: false };
+    }
+
+    try {
+      const status = await connection.invoke<ItemEditStatus>('GetItemEditStatus', itemId);
+      if (!status) return { isEditing: false };
+      return status;
+    } catch (error) {
+      console.error('[SignalR] Failed to get item edit status:', error);
+      return { isEditing: false };
+    }
+  }, []);
+
+  /**
+   * アイテム編集開始イベント購読
+   */
+  const onItemEditStarted = useCallback(
+    (handler: (payload: ItemEditStartedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'item:edit_started') return;
+        const payload = notification.payload as ItemEditStartedPayload;
+        if (!payload || typeof payload.itemId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
+  /**
+   * アイテム編集終了イベント購読
+   */
+  const onItemEditEnded = useCallback(
+    (handler: (payload: ItemEditEndedPayload) => void) =>
+      onNotification((notification) => {
+        if (notification.eventType !== 'item:edit_ended') return;
+        const payload = notification.payload as ItemEditEndedPayload;
+        if (!payload || typeof payload.itemId !== 'number') return;
+        handler(payload);
+      }),
+    [onNotification],
+  );
+
   // 自動接続
   useEffect(() => {
     let isMounted = true;
@@ -400,6 +538,11 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     joinItem,
     leaveItem,
     onNotification,
+    startItemEdit,
+    endItemEdit,
+    getItemEditStatus,
+    onItemEditStarted,
+    onItemEditEnded,
     currentGroups,
   };
 

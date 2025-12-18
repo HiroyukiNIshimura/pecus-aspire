@@ -7,6 +7,7 @@ import TagInput from '@/components/common/forms/TagInput';
 import { PecusNotionLikeEditor, useExistingItemImageUploadHandler } from '@/components/editor';
 import type { WorkspaceItemDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { useSignalRContext } from '@/providers/SignalRProvider';
 import { updateWorkspaceItemSchema } from '@/schemas/editSchemas';
 
 interface EditWorkspaceItemProps {
@@ -19,6 +20,7 @@ interface EditWorkspaceItemProps {
 
 export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, currentUserId }: EditWorkspaceItemProps) {
   const notify = useNotify();
+  const { startItemEdit, endItemEdit } = useSignalRContext();
 
   // 最新アイテムデータ
   const [latestItem, setLatestItem] = useState<WorkspaceItemDetailResponse>(item);
@@ -130,6 +132,9 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
   useEffect(() => {
     if (!isOpen) return;
 
+    // 編集開始を通知
+    startItemEdit(item.id).catch((err) => console.warn('[SignalR] startItemEdit failed', err));
+
     const fetchLatestItem = async () => {
       setIsLoadingItem(true);
       setItemLoadError(null);
@@ -164,7 +169,11 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
     };
 
     fetchLatestItem();
-  }, [isOpen, item.workspaceId, item.id]);
+
+    return () => {
+      endItemEdit(item.id).catch((err) => console.warn('[SignalR] endItemEdit failed', err));
+    };
+  }, [endItemEdit, isOpen, item.id, item.workspaceId, startItemEdit]);
 
   // 入力時の検証とフォーム状態更新
   const handleFieldChange = useCallback((fieldName: string, value: unknown) => {
@@ -189,6 +198,7 @@ export default function EditWorkspaceItem({ item, isOpen, onClose, onSave, curre
   // モーダルを閉じる際の処理
   const handleClose = () => {
     if (!isSubmitting && !isLoadingItem) {
+      endItemEdit(item.id).catch((err) => console.warn('[SignalR] endItemEdit failed', err));
       onClose();
     }
   };

@@ -100,6 +100,29 @@ public class NotificationHub : Hub
     {
         var userId = GetUserId();
 
+        // 編集状態があれば解除して通知
+        var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
+        if (editingItemId.HasValue)
+        {
+            await _presenceService.RemoveItemEditorAsync(editingItemId.Value, Context.ConnectionId);
+
+            var editGroupName = $"item:{editingItemId.Value}";
+            await Clients.Group(editGroupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "item:edit_ended",
+                Payload = new
+                {
+                    ItemId = editingItemId.Value,
+                    UserId = userId
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+            _logger.LogDebug(
+                "SignalR: User {UserId} ended editing item {ItemId} on disconnect",
+                userId, editingItemId.Value);
+        }
+
         // 参加中のアイテムがあれば離脱通知を送信
         var itemId = await _presenceService.GetConnectionItemAsync(Context.ConnectionId);
         if (itemId.HasValue)
@@ -289,6 +312,25 @@ public class NotificationHub : Hub
         if (currentItemId.HasValue && currentItemId.Value != itemId)
         {
             var prevItemGroup = $"item:{currentItemId.Value}";
+
+            // 以前のアイテムを編集中であれば解除して通知
+            var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
+            if (editingItemId.HasValue && editingItemId.Value == currentItemId.Value)
+            {
+                await _presenceService.RemoveItemEditorAsync(currentItemId.Value, Context.ConnectionId);
+
+                await Clients.Group(prevItemGroup).SendAsync("ReceiveNotification", new
+                {
+                    EventType = "item:edit_ended",
+                    Payload = new
+                    {
+                        ItemId = currentItemId.Value,
+                        UserId = userId
+                    },
+                    Timestamp = DateTimeOffset.UtcNow
+                });
+            }
+
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, prevItemGroup);
 
             // 前のアイテムのメンバーに離脱を通知
@@ -383,6 +425,24 @@ public class NotificationHub : Hub
         var groupName = $"item:{itemId}";
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
 
+        // 編集状態がこの接続に紐付いていれば解除して通知
+        var editingItemId = await _presenceService.GetConnectionEditingItemIdAsync(Context.ConnectionId);
+        if (editingItemId.HasValue && editingItemId.Value == itemId)
+        {
+            await _presenceService.RemoveItemEditorAsync(itemId, Context.ConnectionId);
+
+            await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+            {
+                EventType = "item:edit_ended",
+                Payload = new
+                {
+                    ItemId = itemId,
+                    UserId = GetUserId()
+                },
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
         // Redis からアイテム情報を削除
         await _presenceService.RemoveConnectionFromItemAsync(Context.ConnectionId, itemId);
 
@@ -396,6 +456,122 @@ public class NotificationHub : Hub
         _logger.LogDebug(
             "SignalR: ConnectionId={ConnectionId} left {GroupName}",
             Context.ConnectionId, groupName);
+    }
+
+    /// <summary>
+    /// アイテム編集を開始する。
+    /// </summary>
+    public async Task StartItemEdit(int itemId)
+    {
+        if (itemId <= 0)
+        {
+            throw new HubException("Invalid itemId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        var user = await _context.Users
+            .Where(u => u.Id == userId && u.IsActive)
+            .Select(u => new
+            {
+                u.Id,
+                u.Username,
+                u.Email,
+                u.AvatarType,
+                u.UserAvatarPath
+            })
+            .FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            _logger.LogWarning("SignalR: User {UserId} not found when starting item edit", userId);
+            return;
+        }
+
+        var identityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+            user.AvatarType,
+            user.Id,
+            user.Username,
+            user.Email,
+            user.UserAvatarPath);
+
+        await _presenceService.SetItemEditorAsync(itemId, userId, user.Username, identityIconUrl, Context.ConnectionId);
+
+        var groupName = $"item:{itemId}";
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "item:edit_started",
+            Payload = new
+            {
+                ItemId = itemId,
+                UserId = userId,
+                UserName = user.Username,
+                IdentityIconUrl = identityIconUrl
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} started editing item {ItemId}",
+            userId, itemId);
+    }
+
+    /// <summary>
+    /// アイテム編集を終了する。
+    /// </summary>
+    public async Task EndItemEdit(int itemId)
+    {
+        if (itemId <= 0)
+        {
+            throw new HubException("Invalid itemId");
+        }
+
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        await _presenceService.RemoveItemEditorAsync(itemId, Context.ConnectionId);
+
+        var groupName = $"item:{itemId}";
+        await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+        {
+            EventType = "item:edit_ended",
+            Payload = new
+            {
+                ItemId = itemId,
+                UserId = userId
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} ended editing item {ItemId}",
+            userId, itemId);
+    }
+
+    /// <summary>
+    /// 現在のアイテム編集状態を取得する。
+    /// </summary>
+    public async Task<ItemEditStatus> GetItemEditStatus(int itemId)
+    {
+        if (itemId <= 0)
+        {
+            throw new HubException("Invalid itemId");
+        }
+
+        var editor = await _presenceService.GetItemEditorAsync(itemId);
+        if (editor == null)
+        {
+            return new ItemEditStatus(false, null);
+        }
+
+        return new ItemEditStatus(true, editor);
     }
 
     /// <summary>
