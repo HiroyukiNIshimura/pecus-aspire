@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Libs.Hangfire.Tasks;
@@ -59,6 +60,12 @@ public class EntranceOrganizationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<OrganizationWithAdminResponse>> CreateOrganization([FromBody] CreateOrganizationRequest request)
     {
+        if (!_config.Application.EnableEntranceOrganization)
+        {
+            _logger.LogWarning("組織登録機能が無効化されています。");
+            throw new NotFoundException("現在、組織登録機能は公開されていません。");
+        }
+
         var (organization, adminUser, passwordSetupToken, tokenExpiresAt) =
             await _organizationService.CreateOrganizationWithUserAsync(request);
 
