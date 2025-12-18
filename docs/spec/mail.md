@@ -83,6 +83,33 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 テンプレートで使われるモデルは `Templates/Models` に定義されています（例: `WelcomeEmailModel`, `PasswordResetEmailModel` など）。
 
+## 型安全なテンプレートモデル
+
+テンプレートモデルは `IEmailTemplateModel<TSelf>` インターフェースを実装することで、テンプレート名とモデル型を型安全に紐付けます。
+
+```csharp
+// インターフェース定義（pecus.Libs/Mail/Templates/IEmailTemplateModel.cs）
+public interface IEmailTemplateModel<TSelf> where TSelf : IEmailTemplateModel<TSelf>
+{
+    static abstract string TemplateName { get; }
+}
+
+// モデル実装例
+public class WelcomeEmailModel : IEmailTemplateModel<WelcomeEmailModel>
+{
+    public static string TemplateName => "welcome";
+
+    public string UserName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    // ... その他のプロパティ
+}
+```
+
+この設計により:
+- **テンプレート名の指定が不要**: `SendTemplatedEmailAsync` 呼び出し時にテンプレート名を渡す必要がなくなります
+- **コンパイル時型チェック**: 間違ったモデル型を渡すとコンパイルエラーになります
+- **一貫性の保証**: テンプレートファイル名とモデルが常に対応します
+
 ## 優先度・ヘッダ・添付の扱い
 
 - 優先度: `EmailMessage.Priority` は 1=高, 3=通常, 5=低（`MimeMessage.Priority` にマッピングされます）
@@ -106,7 +133,8 @@ public class AccountService
     public async Task SendWelcomeEmailAsync(string to, string userName)
     {
         var model = new WelcomeEmailModel { UserName = userName };
-        await _emailService.SendTemplatedEmailAsync(to, "Welcome to Coati", "welcome", model);
+        // テンプレート名はモデルの static TemplateName から自動取得
+        await _emailService.SendTemplatedEmailAsync(to, "Welcome to Coati", model);
     }
 }
 ```
@@ -124,7 +152,8 @@ var message = new EmailMessage
     }
 };
 
-await emailService.SendTemplatedEmailAsync(message, "monthly-report", new { Month = "2025-12" });
+// IEmailTemplateModel<T> を実装したモデルを渡す
+await emailService.SendTemplatedEmailAsync(message, new MonthlyReportEmailModel { Month = "2025-12" });
 ```
 
 または直接 MIME 作成済みテキスト/HTML を渡して送信:

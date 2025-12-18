@@ -87,7 +87,6 @@ public class EntranceOrganizationController : ControllerBase
             x.SendTemplatedEmailAsync(
                 organization.Email ?? string.Empty,
                 "組織登録完了",
-                "organization-created",
                 emailModel
             )
         );

@@ -112,7 +112,6 @@ public class EntrancePasswordController : ControllerBase
                 x.SendTemplatedEmailAsync(
                     user.Email,
                     "パスワードリセット",
-                    "password-reset",
                     emailModel
                 )
             );

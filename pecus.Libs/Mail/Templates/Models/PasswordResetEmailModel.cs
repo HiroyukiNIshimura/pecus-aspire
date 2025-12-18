@@ -3,8 +3,11 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// パスワードリセットメールテンプレート用のモデル
 /// </summary>
-public class PasswordResetEmailModel
+public class PasswordResetEmailModel : IEmailTemplateModel<PasswordResetEmailModel>
 {
+    /// <inheritdoc />
+    public static string TemplateName => "password-reset";
+
     /// <summary>
     /// ユーザー名
     /// </summary>

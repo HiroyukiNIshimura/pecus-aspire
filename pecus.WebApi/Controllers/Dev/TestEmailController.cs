@@ -68,7 +68,7 @@ public class TestEmailController : ControllerBase
                     LoginUrl = $"{baseUrl}/login",
                     CreatedAt = DateTime.UtcNow
                 };
-                await _emailService.SendTemplatedEmailAsync(to, "ようこそ - Pecus", "welcome", welcomeModel);
+                await _emailService.SendTemplatedEmailAsync(to, "ようこそ - Pecus", welcomeModel);
                 break;
 
             case "password-setup":
@@ -81,7 +81,7 @@ public class TestEmailController : ControllerBase
                     TokenExpiresAt = DateTime.UtcNow.AddHours(24),
                     CreatedAt = DateTime.UtcNow
                 };
-                await _emailService.SendTemplatedEmailAsync(to, "パスワード設定のお知らせ", "password-setup", setupModel);
+                await _emailService.SendTemplatedEmailAsync(to, "パスワード設定のお知らせ", setupModel);
                 break;
 
             case "password-reset":
@@ -93,13 +93,13 @@ public class TestEmailController : ControllerBase
                     TokenExpiresAt = DateTime.UtcNow.AddHours(1),
                     RequestedAt = DateTime.UtcNow
                 };
-                await _emailService.SendTemplatedEmailAsync(to, "パスワードリセット", "password-reset", resetModel);
+                await _emailService.SendTemplatedEmailAsync(to, "パスワードリセット", resetModel);
                 break;
 
             case "test-email":
             default:
-                var model = new { Email = to };
-                await _emailService.SendTemplatedEmailAsync(to, "テストメール - Pecus", "test-email", model);
+                var testModel = new TestEmailModel { Email = to };
+                await _emailService.SendTemplatedEmailAsync(to, "テストメール - Pecus", testModel);
                 break;
         }
 

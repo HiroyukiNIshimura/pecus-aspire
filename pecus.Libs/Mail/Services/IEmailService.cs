@@ -1,4 +1,5 @@
 using Pecus.Libs.Mail.Models;
+using Pecus.Libs.Mail.Templates;
 
 namespace Pecus.Libs.Mail.Services;
 
@@ -15,34 +16,32 @@ public interface IEmailService
     Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// テンプレートを使用してメールを送信
+    /// 型安全なテンプレートメール送信（テンプレート名は型から自動取得）
     /// </summary>
-    /// <typeparam name="TModel">テンプレートにバインドするモデルの型</typeparam>
+    /// <typeparam name="TModel">IEmailTemplateModel を実装したモデルの型</typeparam>
     /// <param name="to">宛先メールアドレス</param>
     /// <param name="subject">件名</param>
-    /// <param name="templateName">テンプレート名（拡張子なし）</param>
     /// <param name="model">テンプレートにバインドするモデル</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     Task SendTemplatedEmailAsync<TModel>(
         string to,
         string subject,
-        string templateName,
         TModel model,
         CancellationToken cancellationToken = default
-    );
+    )
+        where TModel : IEmailTemplateModel<TModel>;
 
     /// <summary>
-    /// テンプレートを使用してメールを送信（複数宛先、カスタマイズ可能）
+    /// 型安全なテンプレートメール送信（複数宛先、カスタマイズ可能）
     /// </summary>
-    /// <typeparam name="TModel">テンプレートにバインドするモデルの型</typeparam>
+    /// <typeparam name="TModel">IEmailTemplateModel を実装したモデルの型</typeparam>
     /// <param name="message">基本的なメールメッセージ情報（宛先、件名など）</param>
-    /// <param name="templateName">テンプレート名（拡張子なし）</param>
     /// <param name="model">テンプレートにバインドするモデル</param>
     /// <param name="cancellationToken">キャンセルトークン</param>
     Task SendTemplatedEmailAsync<TModel>(
         EmailMessage message,
-        string templateName,
         TModel model,
         CancellationToken cancellationToken = default
-    );
+    )
+        where TModel : IEmailTemplateModel<TModel>;
 }

@@ -163,7 +163,6 @@ public class EntranceAuthController : ControllerBase
                 x.SendTemplatedEmailAsync(
                     user.Email,
                     "セキュリティ通知: 新しいデバイスからのログインを検知しました",
-                    "security-notification",
                     model
                 )
             );

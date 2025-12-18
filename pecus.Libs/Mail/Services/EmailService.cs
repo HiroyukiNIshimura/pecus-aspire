@@ -1,10 +1,13 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Models;
+using Pecus.Libs.Mail.Templates;
+using System.Text.Json;
 
 namespace Pecus.Libs.Mail.Services;
 
@@ -17,6 +20,7 @@ public class EmailService : IEmailService
     private readonly EmailSettings _settings;
     private readonly ITemplateService _templateService;
     private readonly ILogger<EmailService> _logger;
+    private readonly IHostEnvironment _hostEnvironment;
 
     /// <summary>
     ///  コンストラクタ
@@ -24,15 +28,18 @@ public class EmailService : IEmailService
     /// <param name="settings"></param>
     /// <param name="templateService"></param>
     /// <param name="logger"></param>
+    /// <param name="hostEnvironment"></param>
     public EmailService(
         IOptions<EmailSettings> settings,
         ITemplateService templateService,
-        ILogger<EmailService> logger
+        ILogger<EmailService> logger,
+        IHostEnvironment hostEnvironment
     )
     {
         _settings = settings.Value;
         _templateService = templateService;
         _logger = logger;
+        _hostEnvironment = hostEnvironment;
     }
 
     /// <summary>
@@ -40,6 +47,22 @@ public class EmailService : IEmailService
     /// </summary>
     public async Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
+        // 開発環境でSendMailInDevelopment=falseの場合はメール送信をスキップ
+        if (_hostEnvironment.IsDevelopment() && !_settings.SendMailInDevelopment)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            };
+            var messageJson = JsonSerializer.Serialize(message, jsonOptions);
+            _logger.LogInformation(
+                "[Development] Email sending skipped. Message content: {MessageJson}",
+                messageJson
+            );
+            return;
+        }
+
         var mimeMessage = CreateMimeMessage(message);
 
         using var client = new SmtpClient();
@@ -90,15 +113,15 @@ public class EmailService : IEmailService
     }
 
     /// <summary>
-    /// テンプレートを使用してメールを送信（簡易版）
+    /// 型安全なテンプレートメール送信（簡易版）
     /// </summary>
     public async Task SendTemplatedEmailAsync<TModel>(
         string to,
         string subject,
-        string templateName,
         TModel model,
         CancellationToken cancellationToken = default
     )
+        where TModel : IEmailTemplateModel<TModel>
     {
         var message = new EmailMessage
         {
@@ -106,19 +129,20 @@ public class EmailService : IEmailService
             Subject = subject,
         };
 
-        await SendTemplatedEmailAsync(message, templateName, model, cancellationToken);
+        await SendTemplatedEmailAsync(message, model, cancellationToken);
     }
 
     /// <summary>
-    /// テンプレートを使用してメールを送信（詳細版）
+    /// 型安全なテンプレートメール送信（詳細版）
     /// </summary>
     public async Task SendTemplatedEmailAsync<TModel>(
         EmailMessage message,
-        string templateName,
         TModel model,
         CancellationToken cancellationToken = default
     )
+        where TModel : IEmailTemplateModel<TModel>
     {
+        var templateName = TModel.TemplateName;
         // HTML本文をレンダリング
         var htmlTemplatePath = $"{templateName}.html.cshtml";
         try

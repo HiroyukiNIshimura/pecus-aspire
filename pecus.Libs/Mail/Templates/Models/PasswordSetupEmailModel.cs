@@ -3,8 +3,11 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// パスワード設定メールテンプレート用のモデル
 /// </summary>
-public class PasswordSetupEmailModel
+public class PasswordSetupEmailModel : IEmailTemplateModel<PasswordSetupEmailModel>
 {
+    /// <inheritdoc />
+    public static string TemplateName => "password-setup";
+
     /// <summary>
     /// ユーザー名
     /// </summary>

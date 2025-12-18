@@ -44,4 +44,9 @@ public class EmailSettings
     /// テンプレートファイルのルートディレクトリ
     /// </summary>
     public string TemplateRootPath { get; set; } = "Mail/Templates";
+
+    /// <summary>
+    /// 開発環境でメール送信を実行するかどうか
+    /// </summary>
+    public bool SendMailInDevelopment { get; set; } = false;
 }

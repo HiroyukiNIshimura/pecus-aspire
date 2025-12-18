@@ -3,8 +3,11 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// アイテム作成通知メールテンプレート用のモデル
 /// </summary>
-public class ItemCreatedEmailModel
+public class ItemCreatedEmailModel : IEmailTemplateModel<ItemCreatedEmailModel>
 {
+    /// <inheritdoc />
+    public static string TemplateName => "item-created";
+
     /// <summary>宛先ユーザー名（受信者表示名）</summary>
     public string UserName { get; set; } = string.Empty;
 
@@ -45,6 +48,10 @@ public class ItemCreatedEmailModel
 /// <summary>
 /// アイテム更新通知メールテンプレート用のモデル
 /// </summary>
+/// <remarks>
+/// 対応テンプレートが未作成のため、現時点では IEmailTemplateModel は未実装。
+/// テンプレート作成時に実装すること。
+/// </remarks>
 public class ItemUpdatedEmailModel
 {
     /// <summary>宛先ユーザー名（受信者表示名）</summary>

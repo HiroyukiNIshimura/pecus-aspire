@@ -3,8 +3,11 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// ウェルカムメールテンプレート用のモデル
 /// </summary>
-public class WelcomeEmailModel
+public class WelcomeEmailModel : IEmailTemplateModel<WelcomeEmailModel>
 {
+    /// <inheritdoc />
+    public static string TemplateName => "welcome";
+
     /// <summary>
     /// ユーザー名
     /// </summary>

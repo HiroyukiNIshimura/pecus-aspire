@@ -446,7 +446,6 @@ public class AdminUserController : BaseAdminController
             x.SendTemplatedEmailAsync(
                 user.Email,
                 "パスワード設定のお知らせ",
-                "password-setup",
                 new PasswordSetupEmailModel
                 {
                     UserName = user.Username,
@@ -558,7 +557,6 @@ public class AdminUserController : BaseAdminController
                 x.SendTemplatedEmailAsync(
                     user.Email,
                     "パスワードリセット",
-                    "password-reset",
                     emailModel
                 )
             );

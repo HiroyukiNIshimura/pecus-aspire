@@ -107,7 +107,6 @@ public class EmailChangeController : BaseSecureController
             x.SendTemplatedEmailAsync(
                 request.NewEmail, // to
                 "【Pecus】メールアドレス変更の確認", // subject
-                "email-change-confirmation", // templateName
                 emailModel // model
             )
         );

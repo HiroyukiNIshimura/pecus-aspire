@@ -3,8 +3,11 @@ namespace Pecus.Libs.Mail.Templates.Models;
 /// <summary>
 /// セキュリティ通知メールテンプレート用のモデル
 /// </summary>
-public class SecurityNotificationEmailModel
+public class SecurityNotificationEmailModel : IEmailTemplateModel<SecurityNotificationEmailModel>
 {
+    /// <inheritdoc />
+    public static string TemplateName => "security-notification";
+
     /// <summary>
     /// ユーザー名
     /// </summary>
