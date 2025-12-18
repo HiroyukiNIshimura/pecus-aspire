@@ -797,11 +797,11 @@ public class WorkspaceItemService
                 ? query.OrderBy(wi => wi.CreatedAt)
                 : query.OrderByDescending(wi => wi.CreatedAt),
             ItemSortBy.Priority => sortOrder == SortOrder.Asc
-                ? query.OrderBy(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt)
-                : query.OrderByDescending(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt),
+                ? query.OrderBy(wi => wi.Priority == null).ThenBy(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt)
+                : query.OrderBy(wi => wi.Priority == null).ThenByDescending(wi => wi.Priority).ThenByDescending(wi => wi.UpdatedAt),
             ItemSortBy.DueDate => sortOrder == SortOrder.Asc
-                ? query.OrderBy(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt)
-                : query.OrderByDescending(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt),
+                ? query.OrderBy(wi => wi.DueDate == null).ThenBy(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt)
+                : query.OrderBy(wi => wi.DueDate == null).ThenByDescending(wi => wi.DueDate).ThenByDescending(wi => wi.UpdatedAt),
             _ => sortOrder == SortOrder.Asc
                 ? query.OrderBy(wi => wi.UpdatedAt)
                 : query.OrderByDescending(wi => wi.UpdatedAt),
@@ -2067,7 +2067,7 @@ public class WorkspaceItemService
             .ToDictionaryAsync(r => r.ToItemId, r => r.FromItemId);
 
         // アーカイブされた親を持つアイテムを再帰的に除外
-        // 親がアーカイブ済み = parentRelationsに親IDがあるが、itemIdsに含まれていない
+        // 親がアーカイブ済み＝parentRelationsに親IDがあるが、itemIdsに含まれていない
         var validItemIds = new HashSet<int>(itemIds);
         var itemsToExclude = new HashSet<int>();
 
@@ -2096,7 +2096,7 @@ public class WorkspaceItemService
             var childId = relation.Key;
             var parentId = relation.Value;
 
-            // 親が取得対象に含まれていない = 親がアーカイブ済み
+            // 親が取得対象に含まれていない＝親がアーカイブ済み
             if (!validItemIds.Contains(parentId))
             {
                 if (itemsToExclude.Add(childId))
