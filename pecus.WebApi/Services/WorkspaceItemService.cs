@@ -755,7 +755,7 @@ public class WorkspaceItemService
         };
 
         // 下書きは除外（自分がオーナーの下書きのみ表示）
-        query = query.Where(wi => !wi.IsDraft || wi.OwnerId == userId);
+        //query = query.Where(wi => !wi.IsDraft || wi.OwnerId == userId);
 
         // アーカイブフィルタ
         // includeArchived = true の場合、アーカイブ済みのみ表示
