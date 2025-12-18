@@ -39,12 +39,12 @@ public class MyItemController : BaseSecureController
     /// <returns>ワークスペースアイテム一覧</returns>
     [HttpGet]
     [ProducesResponseType(
-        typeof(PagedResponse<WorkspaceItemDetailResponse>),
+        typeof(PagedResponse<WorkspaceItemDetailResponse, WorkspaceItemStatistics>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse>>> GetMyItems(
+    public async Task<Ok<PagedResponse<WorkspaceItemDetailResponse, WorkspaceItemStatistics>>> GetMyItems(
         [FromQuery] GetMyItemsRequest request
     )
     {
