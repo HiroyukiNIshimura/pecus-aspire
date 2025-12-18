@@ -11,7 +11,7 @@ import type {
   AddWorkspaceItemRelationResponse,
   CreateWorkspaceItemRequest,
   MyItemRelationType,
-  PagedResponseOfWorkspaceItemDetailResponse,
+  PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics,
   RelationType,
   SuccessResponse,
   UpdateWorkspaceItemAssigneeRequest,
@@ -34,15 +34,17 @@ export type WorkspaceItemAttributeType = 'assignee' | 'committer' | 'priority' |
  * @param page ページ番号
  * @param relation 関連タイプ（All, Owner, Assignee, Committer, Pinned）
  * @param includeArchived アーカイブ済みアイテムを含めるかどうか（true: アーカイブ済みのみ、false/undefined: アーカイブ除外）
+ * @param workspaceIds ワークスペースIDの配列（フィルタリング用）
  */
 export async function fetchMyItems(
   page: number = 1,
   relation?: MyItemRelationType,
   includeArchived?: boolean,
-): Promise<ApiResponse<PagedResponseOfWorkspaceItemDetailResponse>> {
+  workspaceIds?: number[],
+): Promise<ApiResponse<PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics>> {
   try {
     const api = createPecusApiClients();
-    const response = await api.my.getApiMyWorkspaceItems(page, relation, includeArchived);
+    const response = await api.my.getApiMyWorkspaceItems(page, relation, includeArchived, workspaceIds);
     return { success: true, data: response };
   } catch (error) {
     console.error('Failed to fetch my items:', error);

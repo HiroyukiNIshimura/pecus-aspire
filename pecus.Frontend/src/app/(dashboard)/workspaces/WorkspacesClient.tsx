@@ -346,7 +346,7 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                 {workspaces.map((workspace) => (
                   <div
                     key={workspace.id}
-                    className="card hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
+                    className="card bg-base-200/50 hover:shadow-xl transition-shadow overflow-hidden relative flex flex-col"
                   >
                     <div className="card-body p-4 flex flex-col flex-1">
                       {/* ヘッダー */}

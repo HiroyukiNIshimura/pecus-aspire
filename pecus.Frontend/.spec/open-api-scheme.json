@@ -1179,6 +1179,34 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "WorkspaceIds",
+            "in": "query",
+            "description": "ワークスペースIDの配列（フィルタリング用）",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "description": "ソート項目(省略時はUpdatedAt)",
+            "schema": {
+              "$ref": "#/components/schemas/ItemSortBy"
+            }
+          },
+          {
+            "name": "Order",
+            "in": "query",
+            "description": "ソート順序(省略時はAsc)",
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder"
+            }
           }
         ],
         "responses": {
@@ -1187,7 +1215,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfWorkspaceItemDetailResponse"
+                  "$ref": "#/components/schemas/PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics"
                 }
               }
             }
@@ -12275,6 +12303,16 @@
         "type": "string",
         "format": "binary"
       },
+      "ItemSortBy": {
+        "enum": [
+          "CreatedAt",
+          "UpdatedAt",
+          "Priority",
+          "DueDate"
+        ],
+        "type": "string",
+        "nullable": true
+      },
       "ItemWithTasksResponse": {
         "required": [
           "item",
@@ -13644,6 +13682,60 @@
         },
         "description": "ページネーション付きレスポンス"
       },
+      "PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "summary": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceItemStatistics"
+              }
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceItemDetailResponse"
+            },
+            "description": "データのリスト"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "現在のページ番号（1から始まる）",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "1ページあたりのアイテム数",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "総アイテム数",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "総ページ数",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "前のページが存在するか"
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "次のページが存在するか"
+          }
+        },
+        "description": "ページネーション付きレスポンス（統計情報付き）"
+      },
       "PagedResponseOfWorkspaceListItemResponseAndWorkspaceStatistics": {
         "required": [
           "data"
@@ -14679,6 +14771,55 @@
           }
         },
         "description": "成功メッセージレスポンス"
+      },
+      "SummaryWorkspaceResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ワークスペースID",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "ワークスペース名"
+          },
+          "code": {
+            "type": "string",
+            "description": "ワークスペースコード",
+            "nullable": true
+          },
+          "genreId": {
+            "type": "integer",
+            "description": "ジャンルID",
+            "format": "int32",
+            "nullable": true
+          },
+          "genreName": {
+            "type": "string",
+            "description": "ジャンル名",
+            "nullable": true
+          },
+          "genreIcon": {
+            "type": "string",
+            "description": "ジャンルのアイコン（例: FontAwesome のクラス名）",
+            "nullable": true
+          },
+          "mode": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/WorkspaceMode"
+              }
+            ]
+          }
+        }
       },
       "TagDetailResponse": {
         "required": [
@@ -17245,6 +17386,19 @@
           }
         },
         "description": "ワークスペースアイテム操作レスポンス"
+      },
+      "WorkspaceItemStatistics": {
+        "type": "object",
+        "properties": {
+          "workspaces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryWorkspaceResponse"
+            },
+            "description": "検索結果に該当するワークスペース"
+          }
+        },
+        "description": "ワークスペースアイテム統計情報レスポンス"
       },
       "WorkspaceListItemResponse": {
         "required": [

@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { ActivityPeriod } from '../models/ActivityPeriod';
 import type { DashboardTaskFilter } from '../models/DashboardTaskFilter';
+import type { ItemSortBy } from '../models/ItemSortBy';
 import type { MyCommitterWorkspaceResponse } from '../models/MyCommitterWorkspaceResponse';
 import type { MyItemRelationType } from '../models/MyItemRelationType';
 import type { MyTaskWorkspaceResponse } from '../models/MyTaskWorkspaceResponse';
@@ -12,6 +13,8 @@ import type { PagedResponseOfActivityResponse } from '../models/PagedResponseOfA
 import type { PagedResponseOfItemWithTasksResponse } from '../models/PagedResponseOfItemWithTasksResponse';
 import type { PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics } from '../models/PagedResponseOfMyTaskDetailResponseAndWorkspaceTaskStatistics';
 import type { PagedResponseOfWorkspaceItemDetailResponse } from '../models/PagedResponseOfWorkspaceItemDetailResponse';
+import type { PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics } from '../models/PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics';
+import type { SortOrder } from '../models/SortOrder';
 import type { TasksByDueDateResponse } from '../models/TasksByDueDateResponse';
 import type { TaskStatusFilter } from '../models/TaskStatusFilter';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -114,14 +117,20 @@ export class MyService {
      * @param includeArchived アーカイブ済みアイテムを含めるかどうか（デフォルト: false）
      * true の場合、アーカイブ済みアイテムのみ表示
      * false または未指定の場合、アーカイブ済みアイテムを除外
-     * @returns PagedResponseOfWorkspaceItemDetailResponse OK
+     * @param workspaceIds ワークスペースIDの配列（フィルタリング用）
+     * @param sortBy ソート項目(省略時はUpdatedAt)
+     * @param order ソート順序(省略時はAsc)
+     * @returns PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics OK
      * @throws ApiError
      */
     public static getApiMyWorkspaceItems(
         page?: number,
         relation?: MyItemRelationType,
         includeArchived?: boolean,
-    ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponse> {
+        workspaceIds?: Array<number>,
+        sortBy?: ItemSortBy,
+        order?: SortOrder,
+    ): CancelablePromise<PagedResponseOfWorkspaceItemDetailResponseAndWorkspaceItemStatistics> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/my/workspace-items',
@@ -129,6 +138,9 @@ export class MyService {
                 'Page': page,
                 'Relation': relation,
                 'IncludeArchived': includeArchived,
+                'WorkspaceIds': workspaceIds,
+                'SortBy': sortBy,
+                'Order': order,
             },
             errors: {
                 401: `Unauthorized`,
