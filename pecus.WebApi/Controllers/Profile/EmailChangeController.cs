@@ -89,8 +89,8 @@ public class EmailChangeController : BaseSecureController
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        // Origin ヘッダーからフロントエンドURLを検証・取得
-        var frontendUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+        var frontendUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var confirmationUrl = $"{frontendUrl}/verify-email?token={response.Token}";
 
         var emailModel = new EmailChangeConfirmationEmailModel

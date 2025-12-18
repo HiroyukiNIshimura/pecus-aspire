@@ -311,7 +311,7 @@ public class WorkspaceController : BaseSecureController
         // ワークスペース参加通知メールを送信
         if (workspaceUser.User?.Email != null && workspace != null)
         {
-            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
             var emailModel = new WorkspaceJoinedEmailModel
             {
                 UserName = workspaceUser.User.Username,
@@ -613,7 +613,7 @@ public class WorkspaceController : BaseSecureController
             return;
         }
 
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var workspaceUrl = $"{baseUrl}/workspaces/{workspace.Code}";
 
         // 各ユーザーにメール送信ジョブを登録
@@ -714,7 +714,7 @@ public class WorkspaceController : BaseSecureController
             return;
         }
 
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var workspaceUrl = $"{baseUrl}/workspaces/{oldWorkspace.Code}";
 
         // 各ユーザーにメール送信ジョブを登録

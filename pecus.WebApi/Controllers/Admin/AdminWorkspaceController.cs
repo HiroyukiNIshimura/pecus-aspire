@@ -520,7 +520,7 @@ public class AdminWorkspaceController : BaseAdminController
         // ワークスペース参加通知メールを送信
         if (workspaceUser.User?.Email != null && returnedWorkspace != null)
         {
-            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
             var emailModel = new WorkspaceJoinedEmailModel
             {
                 UserName = workspaceUser.User.Username,

@@ -13,12 +13,14 @@ try
 
     var username = builder.AddParameter("username", secret: true);
     var password = builder.AddParameter("password", secret: true);
+    var frontendUrl = builder.AddParameter("frontendUrl");
+    var lexicalConverterUrl = builder.AddParameter("lexicalConverterUrl");
 
     var redis = builder.AddRedis("redis");
 
     var postgres = builder
-        .AddPostgres("postgres", userName: username, password: password, port: 5432)
-        .WithImage("groonga/pgroonga", "latest-debian-18")
+            .AddPostgres("postgres", userName: username, password: password, port: 5432)
+            .WithImage("groonga/pgroonga", "latest-debian-18")
         .WithVolume("postgres-data", "/var/lib/postgresql");
     var pecusDb = postgres.AddDatabase("pecusdb");
 
@@ -56,7 +58,8 @@ try
     .WaitFor(pecusDb)
     .WaitFor(lexicalConverter)
     .WithEnvironment("UploadsCleanup__UploadsBasePath", uploadsPath)
-    .WithEnvironment("LexicalConverter__Endpoint", "http://localhost:5100");
+    .WithEnvironment("Frontend__Endpoint", frontendUrl)
+    .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl);
 
     var pecusApi = builder
         .AddProject<Projects.pecus_WebApi>("pecusapi")
@@ -70,7 +73,8 @@ try
         .WaitFor(lexicalConverter)
         .WithExternalHttpEndpoints()
         .WithHttpHealthCheck("/")
-        .WithEnvironment("LexicalConverter__Endpoint", "http://localhost:5100");
+        .WithEnvironment("LexicalConverter__Endpoint", lexicalConverterUrl)
+        .WithEnvironment("Frontend__Endpoint", frontendUrl);
 
     // Frontendの設定(開発環境モード)
     var redisFrontend = builder.AddRedis("redisFrontend").WithDbGate();

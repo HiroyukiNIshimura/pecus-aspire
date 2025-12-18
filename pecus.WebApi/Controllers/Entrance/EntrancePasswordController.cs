@@ -93,8 +93,8 @@ public class EntrancePasswordController : ControllerBase
         var (success, user) = await _userService.RequestPasswordResetAsync(request);
         if (success && user != null)
         {
-            // Origin ヘッダーからフロントエンドURLを検証・取得
-            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
             var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
             // パスワードリセットメールを送信

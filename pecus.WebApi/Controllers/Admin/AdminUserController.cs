@@ -437,8 +437,8 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("組織が見つかりません。");
         }
 
-        // Origin ヘッダーからフロントエンドURLを検証・取得
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var passwordSetupUrl = $"{baseUrl}/password-setup?token={user.PasswordResetToken}";
 
         // パスワード設定メールを送信
@@ -538,8 +538,8 @@ public class AdminUserController : BaseAdminController
         (bool success, User? user) = await _userService.RequestPasswordResetByUserIdAsync(id);
         if (success && user != null)
         {
-            // Origin ヘッダーからフロントエンドURLを検証・取得
-            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            // Aspire の Frontend:Endpoint からフロントエンドURLを取得
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
             var resetUrl = $"{baseUrl}/password-reset?token={user.PasswordResetToken}";
 
             // パスワードリセットメールを送信

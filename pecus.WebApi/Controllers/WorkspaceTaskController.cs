@@ -387,7 +387,7 @@ public class WorkspaceTaskController : BaseSecureController
             return;
         }
 
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var taskUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
 
         // 各ユーザーにメール送信ジョブを登録
@@ -462,7 +462,7 @@ public class WorkspaceTaskController : BaseSecureController
             return;
         }
 
-        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+        var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
         var taskUrl = $"{baseUrl}/workspaces/{taskInfo.Workspace?.Code}?itemCode={taskInfo.WorkspaceItem?.Code}&task={taskInfo.Sequence}";
 
         var subject = isDiscarded ? "タスクが破棄されました" : "タスクが完了しました";
