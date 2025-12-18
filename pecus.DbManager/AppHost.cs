@@ -6,6 +6,7 @@ using Pecus.Libs.DB.Seed;
 using Pecus.Libs.Lexical;
 
 #if DEBUG
+// Windows環境でデバッグの場合LexicalConverterのgRPCサービスに接続できない問題の対処
 // HTTP/2非暗号化通信(h2c)を有効化
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 #endif

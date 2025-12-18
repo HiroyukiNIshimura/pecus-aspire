@@ -8,6 +8,12 @@ using Pecus.Libs.Lexical;
 using Pecus.Libs.Mail.Configuration;
 using Pecus.Libs.Mail.Services;
 
+#if DEBUG
+// Windows環境でデバッグの場合LexicalConverterのgRPCサービスに接続できない問題の対処
+// HTTP/2非暗号化通信(h2c)を有効化
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+#endif
+
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddRedisClient("redis");
