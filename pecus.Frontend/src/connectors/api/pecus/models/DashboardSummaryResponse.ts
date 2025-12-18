@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { DashboardItemSummary } from './DashboardItemSummary';
 import type { DashboardTaskSummary } from './DashboardTaskSummary';
+import type { DashboardWorkspaceSummary } from './DashboardWorkspaceSummary';
 /**
  * ダッシュボード統計サマリレスポンス
  * タスクとアイテムの現在状態を集計したサマリ情報
@@ -11,5 +12,6 @@ import type { DashboardTaskSummary } from './DashboardTaskSummary';
 export type DashboardSummaryResponse = {
     taskSummary: DashboardTaskSummary;
     itemSummary: DashboardItemSummary;
+    workspaceSummary: DashboardWorkspaceSummary;
 };
 

@@ -51,11 +51,13 @@ public class DashboardStatisticsService
         var todayStart = new DateTimeOffset(now.Date, TimeSpan.Zero);
         var endOfWeek = GetEndOfWeek(todayStart);
 
-        // 組織内のワークスペースID一覧を取得
-        var workspaceIds = await _context.Workspaces
+        // 組織内のワークスペース情報を取得
+        var workspaces = await _context.Workspaces
             .Where(w => w.OrganizationId == organizationId && w.IsActive)
-            .Select(w => w.Id)
+            .Select(w => new { w.Id, w.Mode })
             .ToListAsync();
+
+        var workspaceIds = workspaces.Select(w => w.Id).ToList();
 
         // タスク統計
         var taskQuery = _context.WorkspaceTasks
@@ -69,10 +71,18 @@ public class DashboardStatisticsService
 
         var itemSummary = await GetItemSummaryAsync(itemQuery);
 
+        // ワークスペース統計
+        var workspaceSummary = new DashboardWorkspaceSummary
+        {
+            TotalCount = workspaces.Count,
+            DocumentModeCount = workspaces.Count(w => w.Mode == WorkspaceMode.Document),
+        };
+
         return new DashboardSummaryResponse
         {
             TaskSummary = taskSummary,
             ItemSummary = itemSummary,
+            WorkspaceSummary = workspaceSummary,
         };
     }
 

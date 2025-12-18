@@ -6,13 +6,15 @@ interface TaskSummarySectionProps {
   taskSummary: DashboardTaskSummary;
   /** アイテムサマリデータ */
   itemSummary: DashboardItemSummary;
+  /** ワークスペースサマリデータ */
+  workspaceSummary?: { totalCount: number; documentModeCount: number };
 }
 
 /**
  * タスクサマリセクション
  * 組織全体のタスクとアイテムの統計を表示
  */
-export default function TaskSummarySection({ taskSummary, itemSummary }: TaskSummarySectionProps) {
+export default function TaskSummarySection({ taskSummary, itemSummary, workspaceSummary }: TaskSummarySectionProps) {
   return (
     <section aria-labelledby="task-summary-heading">
       <h2 id="task-summary-heading" className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -21,7 +23,7 @@ export default function TaskSummarySection({ taskSummary, itemSummary }: TaskSum
       </h2>
 
       {/* タスク統計 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <StatCard
           title="進行中タスク"
           value={taskSummary.inProgressCount}
@@ -52,10 +54,22 @@ export default function TaskSummarySection({ taskSummary, itemSummary }: TaskSum
           iconColorClass="text-warning"
           isWarning={taskSummary.unassignedCount > 0}
         />
+        <StatCard
+          title="ワークスペース"
+          value={workspaceSummary?.totalCount ?? 0}
+          description="アクティブなワークスペースの総数"
+          iconClass="icon-[mdi--folder-multiple-outline]"
+          iconColorClass="text-primary"
+        >
+          <div className="mt-2 text-sm text-base-content/70 pl-1">
+            <span className="text-xs text-base-content/60">内ドキュメントモード</span>
+            <div className="text-lg font-medium">{workspaceSummary?.documentModeCount?.toLocaleString() ?? 0}</div>
+          </div>
+        </StatCard>
       </div>
 
       {/* アイテム統計（小さめ） */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="stat bg-base-200 rounded-lg p-3">
           <div className="stat-title text-xs">公開アイテム</div>
           <div className="stat-value text-xl">{itemSummary.publishedCount.toLocaleString()}</div>
@@ -69,6 +83,8 @@ export default function TaskSummarySection({ taskSummary, itemSummary }: TaskSum
           <div className="stat-value text-xl">{itemSummary.archivedCount.toLocaleString()}</div>
         </div>
       </div>
+
+      {/* （ワークスペース統計はタスク統計の横に移動しました） */}
     </section>
   );
 }

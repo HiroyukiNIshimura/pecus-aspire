@@ -20,6 +20,12 @@ public class DashboardSummaryResponse
     /// </summary>
     [Required]
     public required DashboardItemSummary ItemSummary { get; set; }
+
+    /// <summary>
+    /// ワークスペース統計
+    /// </summary>
+    [Required]
+    public required DashboardWorkspaceSummary WorkspaceSummary { get; set; }
 }
 
 /// <summary>
@@ -98,6 +104,24 @@ public class DashboardItemSummary
     /// </summary>
     [Required]
     public required int TotalCount { get; set; }
+}
+
+/// <summary>
+/// ワークスペースサマリ
+/// </summary>
+public class DashboardWorkspaceSummary
+{
+    /// <summary>
+    /// ワークスペース総数（アクティブなワークスペース）
+    /// </summary>
+    [Required]
+    public required int TotalCount { get; set; }
+
+    /// <summary>
+    /// ドキュメントモードのワークスペース数
+    /// </summary>
+    [Required]
+    public required int DocumentModeCount { get; set; }
 }
 
 /// <summary>

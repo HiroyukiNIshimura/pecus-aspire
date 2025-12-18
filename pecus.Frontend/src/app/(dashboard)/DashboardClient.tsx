@@ -77,7 +77,13 @@ export default function DashboardClient({
       {personalSummary && <PersonalSummarySection data={personalSummary} />}
 
       {/* 組織サマリセクション */}
-      {summary && <TaskSummarySection taskSummary={summary.taskSummary} itemSummary={summary.itemSummary} />}
+      {summary && (
+        <TaskSummarySection
+          taskSummary={summary.taskSummary}
+          itemSummary={summary.itemSummary}
+          workspaceSummary={summary.workspaceSummary}
+        />
+      )}
 
       {/* 2カラムレイアウト: 優先度別（狭め） + ワークスペース別（広め） */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

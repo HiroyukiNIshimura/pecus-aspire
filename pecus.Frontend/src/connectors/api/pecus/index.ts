@@ -48,6 +48,7 @@ export type { DashboardTaskSummary } from './models/DashboardTaskSummary';
 export type { DashboardTaskTrendResponse } from './models/DashboardTaskTrendResponse';
 export type { DashboardWorkspaceBreakdownResponse } from './models/DashboardWorkspaceBreakdownResponse';
 export type { DashboardWorkspaceStatistics } from './models/DashboardWorkspaceStatistics';
+export type { DashboardWorkspaceSummary } from './models/DashboardWorkspaceSummary';
 export type { DeleteTaskCommentRequest } from './models/DeleteTaskCommentRequest';
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';
