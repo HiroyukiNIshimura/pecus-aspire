@@ -1,8 +1,12 @@
+using Hangfire;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -20,19 +24,25 @@ public class AdminWorkspaceController : BaseAdminController
     private readonly OrganizationAccessHelper _accessHelper;
     private readonly ILogger<AdminWorkspaceController> _logger;
     private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
     public AdminWorkspaceController(
         WorkspaceService workspaceService,
         OrganizationAccessHelper accessHelper,
         ILogger<AdminWorkspaceController> logger,
         PecusConfig config,
-        ProfileService profileService
+        ProfileService profileService,
+        IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver
     ) : base(profileService, logger)
     {
         _workspaceService = workspaceService;
         _accessHelper = accessHelper;
         _logger = logger;
         _config = config;
+        _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -483,7 +493,7 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var (workspaceUser, _) = await _workspaceService.AddUserToWorkspaceAsync(
+        var (workspaceUser, returnedWorkspace) = await _workspaceService.AddUserToWorkspaceAsync(
             id,
             request
         );
@@ -506,6 +516,30 @@ public class AdminWorkspaceController : BaseAdminController
             LastAccessedAt = workspaceUser.LastAccessedAt,
             IsActive = workspaceUser.User?.IsActive ?? false,
         };
+
+        // ワークスペース参加通知メールを送信
+        if (workspaceUser.User?.Email != null && returnedWorkspace != null)
+        {
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            var emailModel = new WorkspaceJoinedEmailModel
+            {
+                UserName = workspaceUser.User.Username,
+                WorkspaceName = returnedWorkspace.Name,
+                WorkspaceCode = returnedWorkspace.Code ?? "",
+                InviterName = CurrentUser?.Username,
+                JoinedAt = workspaceUser.JoinedAt,
+                FrontendWorkspaceUrl = $"{baseUrl}/workspaces/{returnedWorkspace.Code ?? ""}",
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    workspaceUser.User.Email,
+                    "ワークスペースへの参加のお知らせ",
+                    emailModel
+                )
+            );
+        }
+
         return TypedResults.Created($"/workspaces/{workspace.Code}", response);
     }
 
