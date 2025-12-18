@@ -279,7 +279,7 @@ builder
                     var logger = context.HttpContext.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("JwtBearerEvents");
                     if (await blacklist.IsTokenRevokedAsync(userId, iat, jti))
                     {
-                        logger?.LogInformation("JwtBearer: Token revoked. UserId={UserId} Jti={Jti} Iat={Iat}", userId, jti, iat);
+                        logger?.LogDebug("JwtBearer: Token revoked. UserId={UserId} Jti={Jti} Iat={Iat}", userId, jti, iat);
                         context.Fail("Token has been revoked or invalidated");
                         return;
                     }
@@ -289,7 +289,7 @@ builder
                     var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
                     if (user == null || !user.IsActive)
                     {
-                        logger?.LogInformation("JwtBearer: User is inactive or not found. UserId={UserId}", userId);
+                        logger?.LogDebug("JwtBearer: User is inactive or not found. UserId={UserId}", userId);
                         context.Fail("User is inactive or not found");
                         return;
                     }

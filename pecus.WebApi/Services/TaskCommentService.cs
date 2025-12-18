@@ -71,7 +71,7 @@ public class TaskCommentService
         _context.TaskComments.Add(comment);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "タスクコメントを作成しました。CommentId={CommentId}, TaskId={TaskId}, UserId={UserId}",
             comment.Id,
             taskId,
@@ -275,7 +275,7 @@ public class TaskCommentService
             );
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "タスクコメントを更新しました。CommentId={CommentId}, TaskId={TaskId}, UserId={UserId}",
             comment.Id,
             taskId,
@@ -365,7 +365,7 @@ public class TaskCommentService
             );
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "タスクコメントを削除しました。CommentId={CommentId}, TaskId={TaskId}, UserId={UserId}",
             comment.Id,
             taskId,

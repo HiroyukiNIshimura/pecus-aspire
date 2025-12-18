@@ -109,7 +109,7 @@ public class FileUploadService
                     // リサイズ後のファイルパスを使用（.webp に変更される）
                     filePath = resizedFilePath;
 
-                    _logger.LogInformation(
+                    _logger.LogDebug(
                         "画像をリサイズしました。Original: {OriginalPath}, Resized: {ResizedPath}",
                         originalFilePath,
                         resizedFilePath
@@ -129,12 +129,12 @@ public class FileUploadService
                 if (File.Exists(originalFilePath) && !File.Exists(filePath))
                 {
                     File.Move(originalFilePath, filePath);
-                    _logger.LogInformation("元ファイルを復元しました。FilePath: {FilePath}", filePath);
+                    _logger.LogDebug("元ファイルを復元しました。FilePath: {FilePath}", filePath);
                 }
             }
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ファイルをアップロードしました。FilePath: {FilePath}, FileType: {FileType}, ResourceId: {ResourceId}, OrganizationId: {OrganizationId}",
             filePath,
             fileType,
@@ -153,7 +153,7 @@ public class FileUploadService
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
-            _logger.LogInformation("ファイルを削除しました。FilePath: {FilePath}", filePath);
+            _logger.LogDebug("ファイルを削除しました。FilePath: {FilePath}", filePath);
         }
         else
         {

@@ -31,7 +31,7 @@ public class FocusRecommendationService
     /// <returns>フォーカス推奨レスポンス</returns>
     public async Task<FocusRecommendationResponse> GetFocusRecommendationAsync(int userId)
     {
-        _logger.LogInformation("フォーカス推奨タスク取得開始: UserId={UserId}", userId);
+        _logger.LogDebug("フォーカス推奨タスク取得開始: UserId={UserId}", userId);
 
         // ユーザー設定を取得（デフォルト値使用）
         var userSetting = await _context.UserSettings
@@ -76,7 +76,7 @@ public class FocusRecommendationService
                 && !t.IsDiscarded)
             .ToListAsync();
 
-        _logger.LogInformation("対象タスク数: {Count}", tasks.Count);
+        _logger.LogDebug("対象タスク数: {Count}", tasks.Count);
 
         if (tasks.Count == 0)
         {

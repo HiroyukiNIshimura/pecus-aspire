@@ -111,7 +111,7 @@ public class EmailChangeController : BaseSecureController
             )
         );
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "メールアドレス変更リクエストを受け付けました。UserId: {UserId}, NewEmail: {NewEmail}",
             CurrentUserId,
             request.NewEmail

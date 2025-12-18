@@ -102,7 +102,7 @@ public class WorkspaceItemRelationService
             .Include(r => r.CreatedByUser)
             .FirstAsync(r => r.Id == relation.Id);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ワークスペースアイテム関連を追加しました。FromItemId: {FromItemId}, ToItemId: {ToItemId}, RelationType: {RelationType}",
             fromItemId,
             request.ToItemId,
@@ -205,7 +205,7 @@ public class WorkspaceItemRelationService
 
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ワークスペースアイテム関連を削除しました。RelationId: {RelationId}, FromItemId: {FromItemId}, ToItemCode: {ToItemCode}",
             relationId,
             relation.FromItemId,

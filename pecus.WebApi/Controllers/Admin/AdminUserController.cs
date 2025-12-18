@@ -381,7 +381,7 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "管理者がユーザーのスキルを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, SkillCount: {SkillCount}",
             CurrentUserId,
             id,
@@ -561,7 +561,7 @@ public class AdminUserController : BaseAdminController
                 )
             );
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "管理者によるパスワードリセットリクエスト: AdminUserId={AdminUserId}, TargetUserId={TargetUserId}, TargetEmail={TargetEmail}",
                 CurrentUserId,
                 id,
@@ -630,7 +630,7 @@ public class AdminUserController : BaseAdminController
             throw new NotFoundException("ユーザーが見つかりません。");
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "管理者がユーザーのロールを更新しました。AdminId: {AdminId}, TargetUserId: {TargetUserId}, RoleCount: {RoleCount}",
             CurrentUserId,
             id,

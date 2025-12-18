@@ -136,7 +136,7 @@ public class FileDownloadController : BaseSecureController
 
         if (deletedFiles.Count > 0)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "アイコンファイルを削除しました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}, DeletedFiles: {DeletedFiles}",
                 CurrentUser.OrganizationId.Value,
                 request.FileType,
@@ -147,7 +147,7 @@ public class FileDownloadController : BaseSecureController
         }
         else
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "削除対象のファイルが既に存在しないため、削除をスキップしました。OrganizationId: {OrganizationId}, FileType: {FileType}, ResourceId: {ResourceId}, FileName: {FileName}",
                 CurrentUser.OrganizationId.Value,
                 request.FileType,

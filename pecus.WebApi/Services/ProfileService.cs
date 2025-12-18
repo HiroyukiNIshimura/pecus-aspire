@@ -217,7 +217,7 @@ public class ProfileService
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "ユーザー設定を更新しました。UserId: {UserId}, CanReceiveEmail: {CanReceiveEmail}",
                 userId,
                 request.CanReceiveEmail
@@ -284,7 +284,7 @@ public class ProfileService
             {
                 await _refreshTokenService.RevokeRefreshTokenAsync(refreshToken.Token);
             }
-            _logger.LogInformation("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, device.RefreshTokens.Count(rt => !rt.IsRevoked));
+            _logger.LogDebug("デバイスに関連するリフレッシュトークンを無効化しました。DeviceId: {DeviceId}, TokenCount: {TokenCount}", deviceId, device.RefreshTokens.Count(rt => !rt.IsRevoked));
         }
 
         return true;
@@ -498,7 +498,7 @@ public class ProfileService
 
                         if (deletedFiles.Count > 0)
                         {
-                            _logger.LogInformation(
+                            _logger.LogDebug(
                                 "古いアバターファイルを削除しました。UserId: {UserId}, DeletedFiles: {DeletedFiles}",
                                 userId,
                                 string.Join(", ", deletedFiles)
@@ -518,7 +518,7 @@ public class ProfileService
                 }
             }
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "プロフィール情報を更新しました。UserId: {UserId}, UpdatedFields: {UpdatedFields}",
                 userId,
                 "username, avatar"
@@ -615,7 +615,7 @@ public class ProfileService
             return false;
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "自身のスキルを更新しました。UserId: {UserId}, SkillCount: {SkillCount}",
             userId,
             skillIds?.Count ?? 0

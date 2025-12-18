@@ -117,7 +117,7 @@ public class WorkspaceItemTempAttachmentService
             }
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Temp file uploaded: {TempFileId} for workspace {WorkspaceId}, session {SessionId}, user {UserId}",
             tempFileId, workspaceId, sessionId, uploadedByUserId);
 
@@ -261,7 +261,7 @@ public class WorkspaceItemTempAttachmentService
             File.Move(tempFileInfo.ThumbnailSmallPath, newThumbnailSmallPath);
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Temp file promoted: {TempFileId} -> Item {WorkspaceItemId}, new path: {NewFilePath}",
             tempFileId, workspaceItemId, newFilePath);
 
@@ -293,7 +293,7 @@ public class WorkspaceItemTempAttachmentService
         if (Directory.Exists(tempFolder))
         {
             Directory.Delete(tempFolder, recursive: true);
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Cleaned up temp files for workspace {WorkspaceId}, session {SessionId}",
                 workspaceId, sessionId);
         }
@@ -329,7 +329,7 @@ public class WorkspaceItemTempAttachmentService
                     {
                         Directory.Delete(sessionDir, recursive: true);
                         deletedCount++;
-                        _logger.LogInformation("Deleted old temp session: {SessionDir}", sessionDir);
+                        _logger.LogDebug("Deleted old temp session: {SessionDir}", sessionDir);
                     }
                     catch (Exception ex)
                     {

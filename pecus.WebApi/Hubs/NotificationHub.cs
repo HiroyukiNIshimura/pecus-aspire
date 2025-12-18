@@ -77,13 +77,13 @@ public class NotificationHub : Hub
             // 組織メンバーに参加を通知
             await NotifyOrganizationUserJoined(organizationId.Value, userId);
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "SignalR: User {UserId} connected and joined {GroupName}. ConnectionId={ConnectionId}",
                 userId, groupName, Context.ConnectionId);
         }
         else
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "SignalR: User {UserId} connected (no organization). ConnectionId={ConnectionId}",
                 userId, Context.ConnectionId);
         }
@@ -141,7 +141,7 @@ public class NotificationHub : Hub
         }
         else
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "SignalR: User {UserId} disconnected. ConnectionId={ConnectionId}",
                 userId, Context.ConnectionId);
         }

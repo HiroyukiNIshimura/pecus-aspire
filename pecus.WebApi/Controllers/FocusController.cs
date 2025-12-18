@@ -37,14 +37,14 @@ public class FocusController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<FocusRecommendationResponse>> GetMyFocusRecommendation()
     {
-        _logger.LogInformation(
+        _logger.LogDebug(
             "フォーカス推奨タスク取得リクエスト: UserId={UserId}",
             CurrentUserId
         );
 
         var response = await _focusService.GetFocusRecommendationAsync(CurrentUserId);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "フォーカス推奨タスク取得完了: UserId={UserId}, FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
             CurrentUserId,
             response.FocusTasks.Count,

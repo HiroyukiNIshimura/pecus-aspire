@@ -221,7 +221,7 @@ public class WorkspaceItemService
                         var tempUrlPattern = $"/api/workspaces/{workspaceId}/temp-attachments/{request.TempSessionId}/{tempFileId}";
                         urlReplacements[tempUrlPattern] = promotedInfo.DownloadUrl;
 
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Promoted temp file {TempFileId} to attachment for item {ItemId}",
                             tempFileId,
                             item.Id
@@ -1224,13 +1224,13 @@ public class WorkspaceItemService
         // 親のアーカイブ解除時に自動的に復活する
         if (keepChildrenRelation)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "ProcessChildrenOnArchiveAsync: keepChildrenRelation=true, no action needed. workspaceId={WorkspaceId}, parentItemId={ParentItemId}",
                 workspaceId, parentItemId);
             return;
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ProcessChildrenOnArchiveAsync: workspaceId={WorkspaceId}, parentItemId={ParentItemId}, keepChildrenRelation={KeepChildrenRelation}",
             workspaceId, parentItemId, keepChildrenRelation);
 
@@ -1240,7 +1240,7 @@ public class WorkspaceItemService
             .Include(r => r.ToItem)
             .ToListAsync();
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Found {Count} child relations for parentItemId={ParentItemId}",
             childRelations.Count, parentItemId);
 

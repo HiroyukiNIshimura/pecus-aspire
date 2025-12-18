@@ -621,7 +621,7 @@ public class WorkspaceTaskService
             );
         }
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "ワークスペースタスクを更新しました。TaskId={TaskId}, WorkspaceItemId={WorkspaceItemId}",
             task.Id,
             itemId
