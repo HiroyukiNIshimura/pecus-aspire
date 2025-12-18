@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
+using Pecus.Libs.Hangfire.Tasks;
+using Pecus.Libs.Mail.Templates.Models;
+using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
 
@@ -18,17 +22,23 @@ public class WorkspaceController : BaseSecureController
     private readonly WorkspaceService _workspaceService;
     private readonly ILogger<WorkspaceController> _logger;
     private readonly PecusConfig _config;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly FrontendUrlResolver _frontendUrlResolver;
 
     public WorkspaceController(
         WorkspaceService workspaceService,
         ProfileService profileService,
         ILogger<WorkspaceController> logger,
-        PecusConfig config
+        PecusConfig config,
+        IBackgroundJobClient backgroundJobClient,
+        FrontendUrlResolver frontendUrlResolver
     ) : base(profileService, logger)
     {
         _workspaceService = workspaceService;
         _logger = logger;
         _config = config;
+        _backgroundJobClient = backgroundJobClient;
+        _frontendUrlResolver = frontendUrlResolver;
     }
 
     /// <summary>
@@ -261,7 +271,7 @@ public class WorkspaceController : BaseSecureController
         await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
         // メンバーを追加
-        var workspaceUser = await _workspaceService.AddUserToWorkspaceAsync(
+        var (workspaceUser, workspace) = await _workspaceService.AddUserToWorkspaceAsync(
             workspaceId: id,
             request: request
         );
@@ -285,7 +295,30 @@ public class WorkspaceController : BaseSecureController
             IsActive = workspaceUser.User?.IsActive ?? false,
         };
 
-        return TypedResults.Created($"/api/workspaces/{id}/members/{workspaceUser.UserId}", response);
+        // ワークスペース参加通知メールを送信
+        if (workspaceUser.User?.Email != null && workspace != null)
+        {
+            var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl(HttpContext);
+            var emailModel = new WorkspaceJoinedEmailModel
+            {
+                UserName = workspaceUser.User.Username,
+                WorkspaceName = workspace.Name,
+                WorkspaceCode = workspace.Code ?? "",
+                InviterName = CurrentUser?.Username,
+                JoinedAt = workspaceUser.JoinedAt,
+                FrontendWorkspaceUrl = $"{baseUrl}/workspaces/{workspace.Code ?? ""}",
+            };
+
+            _backgroundJobClient.Enqueue<EmailTasks>(x =>
+                x.SendTemplatedEmailAsync(
+                    workspaceUser.User.Email,
+                    "ワークスペースへの参加のお知らせ",
+                    emailModel
+                )
+            );
+        }
+
+        return TypedResults.Created($"/api/workspaces/{workspace?.Code ?? ""}", response);
     }
 
     /// <summary>

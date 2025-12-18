@@ -350,7 +350,7 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースにユーザーを参加させる
     /// </summary>
-    public async Task<WorkspaceUser> AddUserToWorkspaceAsync(
+    public async Task<(WorkspaceUser, Workspace)> AddUserToWorkspaceAsync(
         int workspaceId,
         AddUserToWorkspaceRequest request
     )
@@ -403,7 +403,7 @@ public class WorkspaceService
         // ユーザー情報を含めて再ロード
         await _context.Entry(workspaceUser).Reference(wu => wu.User).LoadAsync();
 
-        return workspaceUser;
+        return (workspaceUser, workspace);
     }
 
     /// <summary>
