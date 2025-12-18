@@ -36,7 +36,7 @@
     @if (!string.IsNullOrWhiteSpace(Model.BodyHtml))
     {
         <div style="margin:16px 0;">
-            @Html.Raw(Model.BodyHtml)
+            @Raw(Model.BodyHtml)
         </div>
     }
     else if (!string.IsNullOrWhiteSpace(Model.BodyText))
