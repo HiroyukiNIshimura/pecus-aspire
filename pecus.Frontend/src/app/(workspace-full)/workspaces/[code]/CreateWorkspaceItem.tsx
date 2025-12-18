@@ -131,7 +131,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
       subject: '',
       dueDate: '',
       priority: undefined,
-      isDraft: true,
+      isDraft: false,
     });
     setEditorState('');
     setTags([]);
