@@ -80,6 +80,9 @@ export default function ChatMessageInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // IME 入力中（日本語変換中など）は無視
+    if (e.nativeEvent.isComposing) return;
+
     // Enter で送信（Shift+Enter は改行）
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();

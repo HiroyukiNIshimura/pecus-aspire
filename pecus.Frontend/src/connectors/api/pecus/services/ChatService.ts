@@ -96,7 +96,9 @@ export class ChatService {
         });
     }
     /**
-     * グループルームを取得
+     * グループルームを取得（組織単位のグループチャット）
+     * 組織設定の GroupChatScope が Organization の場合のみ利用可能。
+     * Workspace の場合は 404 を返す。
      * @returns ChatRoomDetailResponse OK
      * @throws ApiError
      */
@@ -127,6 +129,8 @@ export class ChatService {
     }
     /**
      * ワークスペースのグループルームを取得
+     * 組織設定の GroupChatScope が Workspace（デフォルト）の場合のみ利用可能。
+     * Organization の場合は 404 を返す。
      * @param workspaceId ワークスペースID
      * @returns ChatRoomDetailResponse OK
      * @throws ApiError

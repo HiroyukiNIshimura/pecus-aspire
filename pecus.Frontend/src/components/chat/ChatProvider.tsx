@@ -22,9 +22,11 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
 
   // ルーム一覧を取得
   const fetchRooms = useCallback(async () => {
+    console.log('[ChatProvider] fetchRooms called');
     setLoading(true);
     try {
       const result = await getChatRooms();
+      console.log('[ChatProvider] getChatRooms result:', result);
       if (result.success && result.data) {
         setRooms(result.data);
       }

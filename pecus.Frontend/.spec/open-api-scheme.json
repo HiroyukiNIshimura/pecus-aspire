@@ -237,7 +237,8 @@
         "tags": [
           "Chat"
         ],
-        "summary": "グループルームを取得",
+        "summary": "グループルームを取得（組織単位のグループチャット）",
+        "description": "組織設定の GroupChatScope が Organization の場合のみ利用可能。\nWorkspace の場合は 404 を返す。",
         "responses": {
           "200": {
             "description": "OK",
@@ -320,6 +321,7 @@
           "Chat"
         ],
         "summary": "ワークスペースのグループルームを取得",
+        "description": "組織設定の GroupChatScope が Workspace（デフォルト）の場合のみ利用可能。\nOrganization の場合は 404 を返す。",
         "parameters": [
           {
             "name": "workspaceId",
