@@ -9,7 +9,7 @@
 
 import './Editor.css';
 import { $generateHtmlFromNodes } from '@lexical/html';
-import { $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
+import { $convertFromMarkdownString, $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
@@ -23,6 +23,7 @@ import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
 import { ToolbarContext } from '../context/ToolbarContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
+import { PLAYGROUND_TRANSFORMERS } from '../plugins/MarkdownTransformers';
 import OnChangePlugin from '../plugins/OnChangePlugin';
 import { TableContext } from '../plugins/TablePlugin';
 import TypingPerfPlugin from '../plugins/TypingPerfPlugin';
@@ -46,8 +47,15 @@ export interface NotionLikeEditorProps {
 
   /**
    * エディタの初期値（EditorState JSON文字列）
+   * initialMarkdownと同時に指定した場合、initialEditorStateが優先される
    */
   initialEditorState?: string;
+
+  /**
+   * エディタの初期値（Markdown文字列）
+   * initialEditorStateと同時に指定した場合、initialEditorStateが優先される
+   */
+  initialMarkdown?: string;
 
   /**
    * エディタ内容変更時のコールバック（EditorState JSON）
@@ -107,6 +115,7 @@ export default function NotionLikeEditor({
   autoFocus = true,
   measureTypingPerf = false,
   initialEditorState,
+  initialMarkdown,
   onChange,
   onChangePlainText,
   onChangeHtml,
@@ -131,14 +140,20 @@ export default function NotionLikeEditor({
   const app = useMemo(
     () =>
       defineExtension({
-        $initialEditorState: initialEditorState,
+        $initialEditorState: initialEditorState
+          ? initialEditorState
+          : initialMarkdown
+            ? () => {
+                $convertFromMarkdownString(initialMarkdown, PLAYGROUND_TRANSFORMERS);
+              }
+            : undefined,
         html: buildHTMLConfig(),
         name: 'pecus/NotionLikeEditor',
         namespace: 'NotionLikeEditor',
         nodes: NotionLikeEditorNodes,
         theme: NotionLikeEditorTheme,
       }),
-    [initialEditorState],
+    [initialEditorState, initialMarkdown],
   );
 
   const debouncedOnChange = useDebouncedCallback((editorState: EditorState) => {
