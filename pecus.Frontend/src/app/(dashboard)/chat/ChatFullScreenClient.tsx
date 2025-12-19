@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
-import type { ChatRoomItem } from '@/connectors/api/pecus';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createOrGetDmRoom, getChatRooms, getChatUnreadCounts, getDmCandidateUsers, searchUsers } from '@/actions/chat';
+import type { ChatRoomItem, DmCandidateUserItem, UserSearchResultResponse } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { formatRelativeTime } from '@/libs/utils/date';
@@ -138,7 +138,7 @@ export default function ChatFullScreenClient({
 
       {/* ルーム一覧 */}
       <div className="flex-1 overflow-hidden">
-        <ChatRoomListMobile rooms={rooms} onRoomSelect={handleRoomSelect} />
+        <ChatRoomListMobile rooms={rooms} onRoomSelect={handleRoomSelect} onRoomCreated={fetchRooms} />
       </div>
     </div>
   );
@@ -150,11 +150,62 @@ export default function ChatFullScreenClient({
 function ChatRoomListMobile({
   rooms,
   onRoomSelect,
+  onRoomCreated,
 }: {
   rooms: ChatRoomItem[];
   onRoomSelect: (roomId: number) => void;
+  onRoomCreated?: () => void;
 }) {
-  const { activeTab, setActiveTab, unreadCounts } = useChatStore();
+  const { activeTab, setActiveTab, unreadCounts, selectRoom } = useChatStore();
+  const router = useRouter();
+  const [dmCandidates, setDmCandidates] = useState<DmCandidateUserItem[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [startingDm, setStartingDm] = useState<number | null>(null);
+
+  // DM候補ユーザーを取得
+  const fetchDmCandidates = useCallback(async () => {
+    if (activeTab !== 'dm') return;
+    setCandidatesLoading(true);
+    try {
+      const result = await getDmCandidateUsers(10);
+      if (result.success) {
+        setDmCandidates(result.data);
+      }
+    } finally {
+      setCandidatesLoading(false);
+    }
+  }, [activeTab]);
+
+  // DMタブに切り替えた時にDM候補を取得
+  useEffect(() => {
+    if (activeTab === 'dm') {
+      fetchDmCandidates();
+    }
+  }, [activeTab, fetchDmCandidates]);
+
+  // DM候補ユーザーをクリックしてDM開始
+  const handleStartDm = async (userId: number) => {
+    setStartingDm(userId);
+    try {
+      const result = await createOrGetDmRoom(userId);
+      if (result.success) {
+        selectRoom(result.data.id);
+        setDmCandidates((prev) => prev.filter((u) => u.id !== userId));
+        onRoomCreated?.();
+        // スマホでは直接メッセージ画面へ遷移
+        router.push(`/chat/rooms/${result.data.id}`);
+      }
+    } finally {
+      setStartingDm(null);
+    }
+  };
+
+  // 検索モーダルからのDM開始
+  const handleSearchDmStart = async (userId: number) => {
+    setIsSearchModalOpen(false);
+    await handleStartDm(userId);
+  };
 
   // タブに応じたルームをフィルタリング
   const filteredRooms = rooms.filter((room) => {
@@ -207,28 +258,74 @@ function ChatRoomListMobile({
 
       {/* ルーム一覧 */}
       <div className="flex-1 overflow-y-auto">
-        {filteredRooms.length === 0 ? (
+        {/* 既存ルーム */}
+        {filteredRooms.length === 0 && activeTab !== 'dm' && (
           <div className="flex items-center justify-center h-32 text-base-content/50">
-            {activeTab === 'dm' && 'DMはありません'}
             {activeTab === 'group' && 'グループはありません'}
             {activeTab === 'system' && '通知はありません'}
           </div>
-        ) : (
-          filteredRooms.map((room) => (
-            <ChatRoomListItemMobile key={room.id} room={room} onClick={() => onRoomSelect(room.id)} />
-          ))
+        )}
+        {filteredRooms.map((room) => (
+          <ChatRoomListItemMobile key={room.id} room={room} onClick={() => onRoomSelect(room.id)} />
+        ))}
+
+        {/* DMタブ: 他のメンバーセクション */}
+        {activeTab === 'dm' && (
+          <>
+            {filteredRooms.length === 0 && dmCandidates.length === 0 && !candidatesLoading && (
+              <div className="flex items-center justify-center h-32 text-base-content/50">DMはありません</div>
+            )}
+
+            {/* セパレーター */}
+            {dmCandidates.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 text-xs text-base-content/50">
+                <div className="flex-1 h-px bg-base-300" />
+                <span>他のメンバー</span>
+                <div className="flex-1 h-px bg-base-300" />
+              </div>
+            )}
+
+            {/* DM候補ユーザー一覧 */}
+            {candidatesLoading ? (
+              <div className="flex items-center justify-center h-16">
+                <span className="loading loading-spinner loading-sm" />
+              </div>
+            ) : (
+              dmCandidates.map((user) => (
+                <DmCandidateUserListItemMobile
+                  key={user.id}
+                  user={user}
+                  onClick={() => handleStartDm(user.id)}
+                  loading={startingDm === user.id}
+                />
+              ))
+            )}
+
+            {/* 他のユーザーを探すボタン */}
+            <div className="p-3 border-t border-base-300">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm w-full"
+                onClick={() => setIsSearchModalOpen(true)}
+              >
+                <span className="icon-[tabler--search] size-4" aria-hidden="true" />
+                他のユーザーを探す
+              </button>
+            </div>
+          </>
         )}
       </div>
 
-      {/* 新規DMボタン（DMタブ時のみ） */}
-      {activeTab === 'dm' && (
-        <div className="p-3 border-t border-base-300">
-          <button type="button" className="btn btn-primary btn-sm w-full">
-            <span className="icon-[tabler--plus] size-4" aria-hidden="true" />
-            新規DM
-          </button>
-        </div>
-      )}
+      {/* ユーザー検索モーダル */}
+      <DmUserSearchModalMobile
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSelectUser={handleSearchDmStart}
+        existingDmUserIds={filteredRooms
+          .filter((r) => r.type === 'Dm')
+          .map((r) => r.otherUser?.id)
+          .filter((id): id is number => id !== undefined)}
+      />
     </div>
   );
 }
@@ -309,5 +406,196 @@ function ChatRoomListItemMobile({ room, onClick }: { room: ChatRoomItem; onClick
         </div>
       </div>
     </button>
+  );
+}
+
+/**
+ * スマホ用DM候補ユーザーリストアイテム
+ */
+function DmCandidateUserListItemMobile({
+  user,
+  onClick,
+  loading,
+}: {
+  user: DmCandidateUserItem;
+  onClick: () => void;
+  loading?: boolean;
+}) {
+  const lastActiveText = user.lastActiveAt ? formatRelativeTime(user.lastActiveAt) : null;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="w-full flex items-center gap-3 px-3 py-2 hover:bg-base-200 active:bg-base-300 transition-colors text-left disabled:opacity-50 border-b border-base-200"
+    >
+      <div className="relative shrink-0">
+        {user.identityIconUrl ? (
+          <img src={user.identityIconUrl} alt="" className="size-10 rounded-full object-cover" />
+        ) : (
+          <div className="size-10 rounded-full bg-base-300 flex items-center justify-center">
+            <span className="icon-[tabler--user] size-5 text-base-content/50" aria-hidden="true" />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-sm truncate">{user.username}</span>
+          {lastActiveText && <span className="text-xs text-base-content/50 shrink-0">{lastActiveText}</span>}
+        </div>
+      </div>
+      {loading && <span className="loading loading-spinner loading-xs" />}
+    </button>
+  );
+}
+
+/**
+ * スマホ用ユーザー検索モーダル
+ */
+function DmUserSearchModalMobile({
+  isOpen,
+  onClose,
+  onSelectUser,
+  existingDmUserIds,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectUser: (userId: number) => void;
+  existingDmUserIds: number[];
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<UserSearchResultResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setQuery('');
+      setResults([]);
+      setError(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const handleSearch = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.length < 2) {
+        setResults([]);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      const result = await searchUsers(searchQuery, 20);
+      if (result.success) {
+        const filtered = result.data.filter((u) => u.id && !existingDmUserIds.includes(u.id));
+        setResults(filtered);
+      } else {
+        setError(result.error || '検索に失敗しました');
+        setResults([]);
+      }
+      setLoading(false);
+    },
+    [existingDmUserIds],
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-base-100 rounded-t-box w-full max-h-[80vh] flex flex-col animate-slide-up">
+        <div className="flex items-center justify-between p-4 border-b border-base-300 shrink-0">
+          <h2 className="text-lg font-bold">ユーザーを検索</h2>
+          <button type="button" className="btn btn-sm btn-circle btn-ghost" aria-label="閉じる" onClick={onClose}>
+            <span className="icon-[tabler--x] size-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="p-4 border-b border-base-300 shrink-0">
+          <div className="relative">
+            <span className="icon-[tabler--search] size-5 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50" />
+            <input
+              type="text"
+              className="input input-bordered w-full pl-10"
+              placeholder="名前またはメールで検索..."
+              value={query}
+              onChange={handleInputChange}
+            />
+            {loading && (
+              <span className="loading loading-spinner loading-sm absolute right-3 top-1/2 -translate-y-1/2" />
+            )}
+          </div>
+          {query.length > 0 && query.length < 2 && (
+            <p className="text-xs text-base-content/50 mt-1">2文字以上入力してください</p>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {error && (
+            <div className="p-4">
+              <div className="alert alert-error alert-soft">
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+          {!loading && query.length >= 2 && results.length === 0 && !error && (
+            <div className="flex items-center justify-center h-32 text-base-content/50">該当するユーザーがいません</div>
+          )}
+          {results.map((user) => (
+            <button
+              key={user.id}
+              type="button"
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-base-200 active:bg-base-300 transition-colors text-left border-b border-base-200"
+              onClick={() => user.id && onSelectUser(user.id)}
+            >
+              <div className="shrink-0">
+                {user.identityIconUrl ? (
+                  <img src={user.identityIconUrl} alt="" className="size-10 rounded-full object-cover" />
+                ) : (
+                  <div className="size-10 rounded-full bg-base-300 flex items-center justify-center">
+                    <span className="icon-[tabler--user] size-5 text-base-content/50" aria-hidden="true" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm truncate">{user.username}</div>
+                <div className="text-xs text-base-content/50 truncate">{user.email}</div>
+              </div>
+            </button>
+          ))}
+          {!loading && query.length === 0 && (
+            <div className="flex items-center justify-center h-32 text-base-content/50">
+              ユーザー名またはメールで検索
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

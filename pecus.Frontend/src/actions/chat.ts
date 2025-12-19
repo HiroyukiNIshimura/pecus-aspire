@@ -8,6 +8,8 @@ import type {
   ChatRoomItem,
   ChatRoomType,
   ChatUnreadCountByCategoryResponse,
+  DmCandidateUserItem,
+  UserSearchResultResponse,
 } from '@/connectors/api/pecus';
 import { type ApiResponse, serverError } from './types';
 
@@ -153,5 +155,39 @@ export async function notifyTyping(roomId: number, isTyping: boolean): Promise<A
     const errorDetail = parseErrorResponse(error);
     console.error('notifyTyping error:', errorDetail);
     return serverError(errorDetail.message || '入力中通知の送信に失敗しました');
+  }
+}
+
+/**
+ * Server Action: DM候補ユーザー一覧を取得
+ * 既存DMがない、最近アクティブなユーザーを取得
+ * @param limit 取得件数（デフォルト10、最大50）
+ */
+export async function getDmCandidateUsers(limit = 10): Promise<ApiResponse<DmCandidateUserItem[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.getApiChatDmCandidates(limit);
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('getDmCandidateUsers error:', errorDetail);
+    return serverError(errorDetail.message || 'DM候補ユーザーの取得に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ユーザーをあいまい検索
+ * @param query 検索クエリ（2文字以上）
+ * @param limit 取得件数（デフォルト20、最大50）
+ */
+export async function searchUsers(query: string, limit = 20): Promise<ApiResponse<UserSearchResultResponse[]>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.user.getApiUsersSearch(query, limit);
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('searchUsers error:', errorDetail);
+    return serverError(errorDetail.message || 'ユーザーの検索に失敗しました');
   }
 }

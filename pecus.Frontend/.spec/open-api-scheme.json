@@ -191,6 +191,53 @@
         ]
       }
     },
+    "/api/chat/dm-candidates": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "DM候補ユーザー一覧を取得（既存DMがないアクティブユーザー）",
+        "description": "DMタブで「他のメンバー」セクションに表示する、既存DMがないユーザーを取得します。\n最終ログイン日時でソートされ、最近アクティブなユーザーが優先されます。",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "取得件数（デフォルト10、最大50）",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DmCandidateUserItem"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/chat/rooms/ai": {
       "post": {
         "tags": [
@@ -1470,7 +1517,7 @@
         "tags": [
           "Focus"
         ],
-        "summary": "自分のフォーカス推奨タスクを取得",
+        "summary": "自分のやることピックアップタスクを取得",
         "responses": {
           "200": {
             "description": "OK",
@@ -12872,6 +12919,46 @@
         "type": "string",
         "nullable": true
       },
+      "DmCandidateUserItem": {
+        "required": [
+          "id",
+          "username",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ユーザーID",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "description": "ユーザー名"
+          },
+          "email": {
+            "type": "string",
+            "description": "メールアドレス"
+          },
+          "avatarType": {
+            "type": "string",
+            "description": "アバタータイプ",
+            "nullable": true
+          },
+          "identityIconUrl": {
+            "type": "string",
+            "description": "アイデンティティアイコンURL",
+            "nullable": true
+          },
+          "lastActiveAt": {
+            "type": "string",
+            "description": "最終アクティブ日時（最終ログイン日時）",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "description": "DM候補ユーザー項目（既存DMがないアクティブユーザー）"
+      },
       "DocumentTreeItemResponse": {
         "required": [
           "code",
@@ -13085,7 +13172,7 @@
             "format": "date-time"
           }
         },
-        "description": "フォーカス推奨レスポンス"
+        "description": "やることピックアップレスポンス"
       },
       "FocusScorePriority": {
         "enum": [
@@ -13241,7 +13328,7 @@
             ]
           }
         },
-        "description": "フォーカス推奨タスクレスポンス"
+        "description": "やることピックアップタスクレスポンス"
       },
       "GenerativeApiVendor": {
         "enum": [
@@ -17377,7 +17464,7 @@
             "maximum": 20,
             "minimum": 5,
             "type": "integer",
-            "description": "フォーカス推奨タスクの表示件数（5-20）",
+            "description": "やることピックアップタスクの表示件数（5-20）",
             "format": "int32"
           },
           "waitingTasksLimit": {
@@ -17925,7 +18012,7 @@
             "maximum": 20,
             "minimum": 5,
             "type": "integer",
-            "description": "フォーカス推奨タスクの表示件数（5-20）",
+            "description": "やることピックアップタスクの表示件数（5-20）",
             "format": "int32"
           },
           "waitingTasksLimit": {

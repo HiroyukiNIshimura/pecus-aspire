@@ -154,5 +154,5 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
   useSignalREvent<ChatUnreadUpdatedPayload>('chat:unread_updated', handleUnreadUpdated);
 
   // ドロワーは常にレンダリング（CSS で md 以上のみ表示）
-  return <ChatBottomDrawer rooms={rooms} currentUserId={currentUserId} loading={loading} />;
+  return <ChatBottomDrawer rooms={rooms} currentUserId={currentUserId} loading={loading} onRoomCreated={fetchRooms} />;
 }

@@ -10,6 +10,7 @@ import type { ChatRoomType } from '../models/ChatRoomType';
 import type { ChatUnreadCountByCategoryResponse } from '../models/ChatUnreadCountByCategoryResponse';
 import type { ChatUnreadCountResponse } from '../models/ChatUnreadCountResponse';
 import type { CreateDmRoomRequest } from '../models/CreateDmRoomRequest';
+import type { DmCandidateUserItem } from '../models/DmCandidateUserItem';
 import type { NotifyTypingRequest } from '../models/NotifyTypingRequest';
 import type { SendMessageRequest } from '../models/SendMessageRequest';
 import type { UpdateNotificationSettingRequest } from '../models/UpdateNotificationSettingRequest';
@@ -77,6 +78,28 @@ export class ChatService {
             errors: {
                 400: `Bad Request`,
                 404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * DM候補ユーザー一覧を取得（既存DMがないアクティブユーザー）
+     * DMタブで「他のメンバー」セクションに表示する、既存DMがないユーザーを取得します。
+     * 最終ログイン日時でソートされ、最近アクティブなユーザーが優先されます。
+     * @param limit 取得件数（デフォルト10、最大50）
+     * @returns DmCandidateUserItem OK
+     * @throws ApiError
+     */
+    public static getApiChatDmCandidates(
+        limit: number = 10,
+    ): CancelablePromise<Array<DmCandidateUserItem>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/chat/dm-candidates',
+            query: {
+                'limit': limit,
+            },
+            errors: {
                 500: `Internal Server Error`,
             },
         });

@@ -219,6 +219,52 @@ public class ChatController : BaseSecureController
     }
 
     /// <summary>
+    /// DM候補ユーザー一覧を取得（既存DMがないアクティブユーザー）
+    /// </summary>
+    /// <param name="limit">取得件数（デフォルト10、最大50）</param>
+    /// <remarks>
+    /// DMタブで「他のメンバー」セクションに表示する、既存DMがないユーザーを取得します。
+    /// 最終ログイン日時でソートされ、最近アクティブなユーザーが優先されます。
+    /// </remarks>
+    [HttpGet("dm-candidates")]
+    [ProducesResponseType(typeof(List<DmCandidateUserItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<List<DmCandidateUserItem>>> GetDmCandidateUsers([FromQuery] int limit = 10)
+    {
+        if (CurrentUser?.OrganizationId == null)
+        {
+            throw new NotFoundException("組織情報が見つかりません。");
+        }
+
+        // 上限を50に制限
+        var effectiveLimit = Math.Min(limit, 50);
+
+        var users = await _chatRoomService.GetDmCandidateUsersAsync(
+            CurrentUserId,
+            CurrentUser.OrganizationId.Value,
+            effectiveLimit
+        );
+
+        var response = users.Select(u => new DmCandidateUserItem
+        {
+            Id = u.Id,
+            Username = u.Username,
+            Email = u.Email,
+            AvatarType = u.AvatarType?.ToString()?.ToLowerInvariant(),
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                u.AvatarType,
+                u.Id,
+                u.Username,
+                u.Email,
+                u.UserAvatarPath
+            ),
+            LastActiveAt = u.LastLoginAt,
+        }).ToList();
+
+        return TypedResults.Ok(response);
+    }
+
+    /// <summary>
     /// AI ルームを作成または取得
     /// </summary>
     [HttpPost("rooms/ai")]

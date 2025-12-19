@@ -10,13 +10,19 @@ interface ChatBottomDrawerProps {
   rooms: ChatRoomItem[];
   currentUserId: number;
   loading?: boolean;
+  onRoomCreated?: () => void;
 }
 
 /**
  * PC用ボトムドロワー
  * 画面下部からスライドして出現し、作業コンテキストを維持しながらチャット可能
  */
-export default function ChatBottomDrawer({ rooms, currentUserId, loading = false }: ChatBottomDrawerProps) {
+export default function ChatBottomDrawer({
+  rooms,
+  currentUserId,
+  loading = false,
+  onRoomCreated,
+}: ChatBottomDrawerProps) {
   const { isDrawerOpen, closeDrawer, selectedRoomId } = useChatStore();
 
   // Escape キーでドロワーを閉じる
@@ -56,7 +62,7 @@ export default function ChatBottomDrawer({ rooms, currentUserId, loading = false
       <div className="flex h-[calc(100%-48px)]">
         {/* 左: ルーム一覧 */}
         <div className="w-80 border-r border-base-300 flex-shrink-0">
-          <ChatRoomList rooms={rooms} loading={loading} />
+          <ChatRoomList rooms={rooms} loading={loading} onRoomCreated={onRoomCreated} />
         </div>
 
         {/* 右: メッセージエリア */}

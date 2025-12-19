@@ -826,5 +826,48 @@ public class ChatRoomService
         );
     }
 
+    /// <summary>
+    /// 既存DMがないアクティブユーザーを取得
+    /// </summary>
+    /// <param name="currentUserId">現在のユーザーID</param>
+    /// <param name="organizationId">組織ID</param>
+    /// <param name="limit">取得件数（デフォルト10）</param>
+    /// <returns>DM候補ユーザーリスト</returns>
+    public async Task<List<User>> GetDmCandidateUsersAsync(
+        int currentUserId,
+        int organizationId,
+        int limit = 10
+    )
+    {
+        // 既存のDMルームの相手ユーザーIDを取得
+        var existingDmUserIds = await _context
+            .ChatRooms.Where(r =>
+                r.OrganizationId == organizationId
+                && r.Type == ChatRoomType.Dm
+                && r.Members.Any(m => m.UserId == currentUserId)
+            )
+            .SelectMany(r => r.Members)
+            .Where(m => m.UserId != currentUserId)
+            .Select(m => m.UserId)
+            .Distinct()
+            .ToListAsync();
+
+        // 同一組織のアクティブユーザーで、自分自身と既存DM相手を除外
+        // LastLoginAt が NULL でないユーザーのみ、最終ログイン日時降順でソート
+        var candidateUsers = await _context
+            .Users.Where(u =>
+                u.OrganizationId == organizationId
+                && u.Id != currentUserId
+                && u.IsActive
+                && u.LastLoginAt != null
+                && !existingDmUserIds.Contains(u.Id)
+            )
+            .OrderByDescending(u => u.LastLoginAt)
+            .Take(limit)
+            .ToListAsync();
+
+        return candidateUsers;
+    }
+
     #endregion
 }
