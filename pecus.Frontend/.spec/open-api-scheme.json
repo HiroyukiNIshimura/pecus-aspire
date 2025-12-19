@@ -669,6 +669,77 @@
         ]
       }
     },
+    "/api/chat/rooms/{roomId}/typing": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "入力中通知を送信",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "ルームID",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "入力中通知リクエスト",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotifyTypingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotifyTypingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotifyTypingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/chat/unread": {
       "get": {
         "tags": [
@@ -14253,6 +14324,19 @@
         },
         "description": "マイタスクワークスペースレスポンス\nログインユーザーが担当のタスクを持つワークスペースの情報"
       },
+      "NotifyTypingRequest": {
+        "required": [
+          "isTyping"
+        ],
+        "type": "object",
+        "properties": {
+          "isTyping": {
+            "type": "boolean",
+            "description": "入力中かどうか\ntrue: 入力開始, false: 入力終了"
+          }
+        },
+        "description": "入力中通知リクエスト"
+      },
       "OrganizationInfoResponse": {
         "required": [
           "id",
@@ -17149,6 +17233,12 @@
             "type": "string",
             "description": "既読日時",
             "format": "date-time"
+          },
+          "readMessageId": {
+            "type": "integer",
+            "description": "既読したメッセージID（省略可能）\nSignalR で他のメンバーに通知する際に使用",
+            "format": "int32",
+            "nullable": true
           }
         },
         "description": "既読位置更新リクエスト"

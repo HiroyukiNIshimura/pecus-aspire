@@ -10,6 +10,7 @@ import type { ChatRoomType } from '../models/ChatRoomType';
 import type { ChatUnreadCountByCategoryResponse } from '../models/ChatUnreadCountByCategoryResponse';
 import type { ChatUnreadCountResponse } from '../models/ChatUnreadCountResponse';
 import type { CreateDmRoomRequest } from '../models/CreateDmRoomRequest';
+import type { NotifyTypingRequest } from '../models/NotifyTypingRequest';
 import type { SendMessageRequest } from '../models/SendMessageRequest';
 import type { UpdateNotificationSettingRequest } from '../models/UpdateNotificationSettingRequest';
 import type { UpdateReadPositionRequest } from '../models/UpdateReadPositionRequest';
@@ -244,6 +245,31 @@ export class ChatService {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/chat/rooms/{roomId}/read',
+            path: {
+                'roomId': roomId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                404: `Not Found`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * 入力中通知を送信
+     * @param roomId ルームID
+     * @param requestBody 入力中通知リクエスト
+     * @returns void
+     * @throws ApiError
+     */
+    public static postApiChatRoomsTyping(
+        roomId: number,
+        requestBody: NotifyTypingRequest,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/chat/rooms/{roomId}/typing',
             path: {
                 'roomId': roomId,
             },

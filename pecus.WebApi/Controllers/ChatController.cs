@@ -544,7 +544,32 @@ public class ChatController : BaseSecureController
             throw new NotFoundException("このルームのメンバーではありません。");
         }
 
-        await _chatRoomService.UpdateLastReadAtAsync(roomId, CurrentUserId, request.ReadAt);
+        await _chatRoomService.UpdateLastReadAtAsync(roomId, CurrentUserId, request.ReadAt, request.ReadMessageId);
+
+        return TypedResults.NoContent();
+    }
+
+    /// <summary>
+    /// 入力中通知を送信
+    /// </summary>
+    /// <param name="roomId">ルームID</param>
+    /// <param name="request">入力中通知リクエスト</param>
+    [HttpPost("rooms/{roomId:int}/typing")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<NoContent> NotifyTyping(
+        int roomId,
+        [FromBody] NotifyTypingRequest request
+    )
+    {
+        // メンバーチェック
+        if (!await _chatRoomService.IsRoomMemberAsync(roomId, CurrentUserId))
+        {
+            throw new NotFoundException("このルームのメンバーではありません。");
+        }
+
+        await _chatRoomService.SendTypingNotificationAsync(roomId, CurrentUserId, CurrentUser?.Username ?? "", request.IsTyping);
 
         return TypedResults.NoContent();
     }

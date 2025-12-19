@@ -99,6 +99,7 @@ export type { MyCommitterWorkspaceResponse } from './models/MyCommitterWorkspace
 export type { MyItemRelationType } from './models/MyItemRelationType';
 export type { MyTaskDetailResponse } from './models/MyTaskDetailResponse';
 export type { MyTaskWorkspaceResponse } from './models/MyTaskWorkspaceResponse';
+export type { NotifyTypingRequest } from './models/NotifyTypingRequest';
 export type { OrganizationInfoResponse } from './models/OrganizationInfoResponse';
 export type { OrganizationPlan } from './models/OrganizationPlan';
 export type { OrganizationResponse } from './models/OrganizationResponse';

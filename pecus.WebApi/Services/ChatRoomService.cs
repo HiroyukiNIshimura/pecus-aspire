@@ -418,7 +418,8 @@ public class ChatRoomService
     /// <param name="roomId">ルームID</param>
     /// <param name="userId">ユーザーID</param>
     /// <param name="readAt">既読日時</param>
-    public async Task UpdateLastReadAtAsync(int roomId, int userId, DateTimeOffset readAt)
+    /// <param name="readMessageId">既読したメッセージID（省略可能）</param>
+    public async Task UpdateLastReadAtAsync(int roomId, int userId, DateTimeOffset readAt, int? readMessageId = null)
     {
         var member = await _context.ChatRoomMembers.FirstOrDefaultAsync(m =>
             m.ChatRoomId == roomId && m.UserId == userId
@@ -436,7 +437,7 @@ public class ChatRoomService
             await _context.SaveChangesAsync();
 
             // 既読通知を送信（ルームメンバーに通知）
-            await SendReadNotificationAsync(roomId, userId, readAt);
+            await SendReadNotificationAsync(roomId, userId, readAt, readMessageId);
         }
     }
 
@@ -723,10 +724,15 @@ public class ChatRoomService
     /// <summary>
     /// 既読通知を送信
     /// </summary>
+    /// <param name="roomId">ルームID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="readAt">既読日時</param>
+    /// <param name="readMessageId">既読したメッセージID（省略可能）</param>
     private async Task SendReadNotificationAsync(
         int roomId,
         int userId,
-        DateTimeOffset readAt
+        DateTimeOffset readAt,
+        int? readMessageId = null
     )
     {
         // ルーム情報を取得
@@ -750,6 +756,7 @@ public class ChatRoomService
                         RoomId = roomId,
                         UserId = userId,
                         ReadAt = readAt,
+                        ReadMessageId = readMessageId,
                     },
                     Timestamp = DateTimeOffset.UtcNow,
                 }
@@ -776,6 +783,47 @@ public class ChatRoomService
                     Timestamp = DateTimeOffset.UtcNow,
                 }
             );
+    }
+
+    /// <summary>
+    /// 入力中通知を送信
+    /// </summary>
+    /// <param name="roomId">ルームID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <param name="userName">ユーザー名</param>
+    /// <param name="isTyping">入力中かどうか</param>
+    public async Task SendTypingNotificationAsync(
+        int roomId,
+        int userId,
+        string userName,
+        bool isTyping
+    )
+    {
+        var chatGroupName = $"chat:{roomId}";
+        await _hubContext
+            .Clients.Group(chatGroupName)
+            .SendAsync(
+                "ReceiveNotification",
+                new
+                {
+                    EventType = "chat:user_typing",
+                    Payload = new
+                    {
+                        RoomId = roomId,
+                        UserId = userId,
+                        UserName = userName,
+                        IsTyping = isTyping,
+                    },
+                    Timestamp = DateTimeOffset.UtcNow,
+                }
+            );
+
+        _logger.LogDebug(
+            "Typing notification sent: RoomId={RoomId}, UserId={UserId}, IsTyping={IsTyping}",
+            roomId,
+            userId,
+            isTyping
+        );
     }
 
     #endregion

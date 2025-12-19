@@ -1763,7 +1763,8 @@ public class NotificationHub : Hub
     /// 入力中通知を送信する。
     /// </summary>
     /// <param name="chatRoomId">チャットルームID</param>
-    public async Task SendChatTyping(int chatRoomId)
+    /// <param name="isTyping">入力中かどうか（true: 入力開始, false: 入力終了）</param>
+    public async Task SendChatTyping(int chatRoomId, bool isTyping = true)
     {
         var userId = GetUserId();
         if (userId == 0)
@@ -1782,13 +1783,17 @@ public class NotificationHub : Hub
             EventType = "chat:user_typing",
             Payload = new
             {
-                ChatRoomId = chatRoomId,
+                RoomId = chatRoomId,
                 UserId = userId,
-                Username = user?.Username ?? "",
-                Timestamp = DateTimeOffset.UtcNow
+                UserName = user?.Username ?? "",
+                IsTyping = isTyping,
             },
             Timestamp = DateTimeOffset.UtcNow
         });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} typing in chat room {ChatRoomId}, IsTyping={IsTyping}",
+            userId, chatRoomId, isTyping);
     }
 
     #endregion
