@@ -1,5 +1,6 @@
 'use client';
 
+import ChatIconButton from '@/components/chat/ChatIconButton';
 import type { UserInfo } from '@/types/userInfo';
 import HeaderLogo from '../navigation/HeaderLogo';
 import HeaderNavItem from '../navigation/HeaderNavItem';
@@ -62,6 +63,7 @@ export default function AppHeader({
 
         <div className="navbar-end">
           <ThemeToggle />
+          <ChatIconButton />
           <UserMenu
             userInfo={userInfo}
             hideProfileMenu={hideProfileMenu}
