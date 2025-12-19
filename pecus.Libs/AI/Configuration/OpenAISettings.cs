@@ -1,0 +1,42 @@
+namespace Pecus.Libs.AI.Configuration;
+
+/// <summary>
+/// OpenAI APIに関する設定
+/// </summary>
+public class OpenAISettings
+{
+    /// <summary>
+    /// 設定セクション名
+    /// </summary>
+    public const string SectionName = "OpenAI";
+
+    /// <summary>
+    /// OpenAI APIキー
+    /// </summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// OpenAI APIのベースURL
+    /// </summary>
+    public string BaseUrl { get; set; } = "https://api.openai.com/v1";
+
+    /// <summary>
+    /// デフォルトのモデル名
+    /// </summary>
+    public string DefaultModel { get; set; } = "gpt-4o-mini";
+
+    /// <summary>
+    /// リクエストタイムアウト（秒）
+    /// </summary>
+    public int TimeoutSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// デフォルトの最大トークン数
+    /// </summary>
+    public int DefaultMaxTokens { get; set; } = 2048;
+
+    /// <summary>
+    /// デフォルトのTemperature（0.0-2.0）
+    /// </summary>
+    public double DefaultTemperature { get; set; } = 0.7;
+}

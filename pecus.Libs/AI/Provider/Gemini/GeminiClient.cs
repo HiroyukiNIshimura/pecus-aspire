@@ -1,0 +1,213 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Pecus.Libs.AI.Configuration;
+using Pecus.Libs.AI.Models.Gemini;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+namespace Pecus.Libs.AI.Provider.Gemini;
+
+/// <summary>
+/// Google Gemini APIクライアント
+/// IAiClientを実装し、バックエンド内部でプロバイダー非依存で使用可能
+/// </summary>
+public class GeminiClient : IGeminiClient, IAiClient
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly GeminiSettings _settings;
+    private readonly ILogger<GeminiClient> _logger;
+
+    /// <summary>
+    /// HttpClient名
+    /// </summary>
+    public const string HttpClientName = nameof(GeminiClient);
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    public GeminiClient(
+        IHttpClientFactory httpClientFactory,
+        IOptions<GeminiSettings> settings,
+        ILogger<GeminiClient> logger)
+    {
+        _httpClientFactory = httpClientFactory;
+        _settings = settings.Value;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// 設定済みのHttpClientを作成
+    /// </summary>
+    private HttpClient CreateClient()
+    {
+        var client = _httpClientFactory.CreateClient(HttpClientName);
+        client.BaseAddress = new Uri(_settings.BaseUrl);
+        return client;
+    }
+
+    /// <inheritdoc />
+    public async Task<GeminiResponse> GenerateContentAsync(
+        GeminiRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var client = CreateClient();
+
+        _logger.LogDebug(
+            "Gemini API request: Model={Model}, Contents={ContentCount}",
+            _settings.DefaultModel,
+            request.Contents.Count);
+
+        // Gemini APIはURLにモデル名とAPIキーを含める
+        var url = $"/models/{_settings.DefaultModel}:generateContent?key={_settings.ApiKey}";
+
+        var response = await client.PostAsJsonAsync(
+            url,
+            request,
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError(
+                "Gemini API error: Status={StatusCode}, Content={Content}",
+                response.StatusCode,
+                errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<GeminiResponse>(cancellationToken);
+
+        if (result == null)
+        {
+            throw new InvalidOperationException("Gemini API returned null response");
+        }
+
+        _logger.LogDebug(
+            "Gemini API response: TotalTokens={TotalTokens}",
+            result.UsageMetadata?.TotalTokenCount);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<string> GenerateTextAsync(
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new GeminiRequest
+        {
+            SystemInstruction = new GeminiContent
+            {
+                Parts = [new GeminiPart { Text = systemPrompt }]
+            },
+            Contents =
+            [
+                new GeminiContent
+                {
+                    Role = "user",
+                    Parts = [new GeminiPart { Text = userPrompt }]
+                }
+            ],
+            GenerationConfig = new GeminiGenerationConfig
+            {
+                Temperature = _settings.DefaultTemperature,
+                MaxOutputTokens = _settings.DefaultMaxTokens
+            }
+        };
+
+        var response = await GenerateContentAsync(request, cancellationToken);
+        return response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
+    }
+
+    /// <inheritdoc />
+    public async Task<string> GenerateMarkdownFromTitleAsync(
+        string title,
+        string? additionalContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        var systemPrompt = """
+            あなたはビジネス文書作成のアシスタントです。
+            与えられたタイトルから、適切な本文をMarkdown形式で作成してください。
+
+            ルール:
+            - 簡潔で分かりやすい文章を心がける
+            - 必要に応じて見出し（##, ###）、箇条書き、表を使用する
+            - 最初の行はタイトルの見出し（#）から始めない（タイトルは別途表示されるため）
+            - 日本語で記述する
+            """;
+
+        var userPrompt = string.IsNullOrEmpty(additionalContext)
+            ? $"タイトル: {title}"
+            : $"タイトル: {title}\n\n補足情報: {additionalContext}";
+
+        return await GenerateTextAsync(systemPrompt, userPrompt, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<T> GenerateJsonAsync<T>(
+        string systemPrompt,
+        string userPrompt,
+        CancellationToken cancellationToken = default) where T : class
+    {
+        // システムプロンプトにJSON指示を追加
+        var jsonSystemPrompt = $"""
+            {systemPrompt}
+
+            必ずJSON形式で回答してください。マークダウンのコードブロック（```json など）は使用しないでください。
+            純粋なJSONのみを返してください。
+            """;
+
+        var request = new GeminiRequest
+        {
+            SystemInstruction = new GeminiContent
+            {
+                Parts = [new GeminiPart { Text = jsonSystemPrompt }]
+            },
+            Contents =
+            [
+                new GeminiContent
+                {
+                    Role = "user",
+                    Parts = [new GeminiPart { Text = userPrompt }]
+                }
+            ],
+            GenerationConfig = new GeminiGenerationConfig
+            {
+                Temperature = _settings.DefaultTemperature,
+                MaxOutputTokens = _settings.DefaultMaxTokens,
+                ResponseMimeType = "application/json"
+            }
+        };
+
+        var response = await GenerateContentAsync(request, cancellationToken);
+        var content = response.Candidates.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text;
+
+        if (string.IsNullOrEmpty(content))
+        {
+            throw new InvalidOperationException("Gemini API returned empty content for JSON request");
+        }
+
+        _logger.LogDebug("Gemini JSON response content: {Content}", content);
+
+        try
+        {
+            var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result == null)
+            {
+                throw new InvalidOperationException($"Failed to deserialize JSON response to {typeof(T).Name}");
+            }
+
+            return result;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to parse JSON response: {Content}", content);
+            throw new InvalidOperationException($"Failed to parse JSON response: {ex.Message}", ex);
+        }
+    }
+}
