@@ -374,12 +374,11 @@ pecus.WebApi/
 pecus.Frontend/src/
 ├── providers/
 │   └── SignalRProvider.tsx         # startTaskEdit が例外をスロー
-├── components/
-│   └── workspaces/
-│       └── TaskEditStatus.tsx      # タスク編集状態表示、イベント購読
 └── app/(workspace-full)/workspaces/[code]/
-    └── WorkspaceTaskDetailPage.tsx # handleStatusChange でロック解放時の自動取得
+    └── WorkspaceTaskDetailPage.tsx # joinTask→startTaskEdit フロー、イベント購読、handleStatusChange でロック解放時の自動取得
 ```
+
+※ タスクはアイテム/ワークスペースと異なり、詳細画面=編集画面のため `TaskEditStatus.tsx` コンポーネントは使用せず、`WorkspaceTaskDetailPage.tsx` 内で直接イベント購読とブロッカー表示を行う。
 
 ---
 
@@ -436,13 +435,17 @@ pecus.WebApi/
 ```
 pecus.Frontend/src/
 ├── providers/
-│   └── SignalRProvider.tsx         # Item/Workspace の start/end/get とイベント購読を提供
-└── components/
-  ├── items/
-  │   └── ItemEditStatus.tsx          # アイテム編集状態表示
-  └── workspaces/
-    └── WorkspaceEditStatus.tsx     # ワークスペース編集状態表示
+│   └── SignalRProvider.tsx             # Item/Workspace/Task の start/end/get とイベント購読を提供
+├── components/
+│   └── common/
+│       └── feedback/
+│           ├── ItemEditStatus.tsx      # アイテム編集状態表示
+│           └── WorkspaceEditStatus.tsx # ワークスペース編集状態表示
+└── app/(workspace-full)/workspaces/[code]/
+    └── WorkspaceTaskDetailPage.tsx     # タスク編集状態は直接イベント購読（詳細=編集画面のため）
 ```
+
+※ タスクは `TaskEditStatus.tsx` コンポーネントを使用せず、`WorkspaceTaskDetailPage.tsx` で直接実装
 
 ---
 
