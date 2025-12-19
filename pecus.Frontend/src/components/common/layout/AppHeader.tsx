@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import ChatIconButton from '@/components/chat/ChatIconButton';
 import type { UserInfo } from '@/types/userInfo';
 import HeaderLogo from '../navigation/HeaderLogo';
@@ -32,6 +33,9 @@ export default function AppHeader({
   hideSettingsMenu = false,
   onLogout,
 }: AppHeaderProps) {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith('/admin');
+
   return (
     <header className="sticky top-0 z-50 bg-base-100 shadow-sm border-b border-base-300">
       <nav className="navbar">
@@ -63,7 +67,7 @@ export default function AppHeader({
 
         <div className="navbar-end flex items-center">
           <ThemeToggle />
-          <ChatIconButton />
+          {!isAdminPage && <ChatIconButton />}
           <UserMenu
             userInfo={userInfo}
             hideProfileMenu={hideProfileMenu}
