@@ -4,6 +4,7 @@ import { z } from 'zod';
 const generativeVendors = ['None', 'OpenAi', 'AzureOpenAi', 'Anthropic', 'GoogleGemini'] as const;
 const organizationPlans = ['Unknown', 'Free', 'Standard', 'Enterprise'] as const;
 const helpNotificationTargets = ['Organization', 'WorkspaceUsers'] as const;
+const groupChatScopes = ['Workspace', 'Organization'] as const;
 
 export const organizationSettingSchema = z.object({
   taskOverdueThreshold: z.preprocess(
@@ -66,6 +67,12 @@ export const organizationSettingSchema = z.object({
       .min(5, 'ヘルプコメント表示件数は5以上で入力してください。')
       .max(20, 'ヘルプコメント表示件数は20以下で入力してください。'),
   ),
+  groupChatScope: z
+    .enum(groupChatScopes, {
+      message: 'グループチャットスコープを選択してください。',
+    })
+    .optional()
+    .nullable(),
 });
 
 export const organizationSettingSchemaWithRules = organizationSettingSchema.superRefine((data, ctx) => {

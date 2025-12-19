@@ -78,6 +78,7 @@ export async function updateOrganizationSetting(request: {
   requireEstimateOnTaskCreation?: boolean;
   enforcePredecessorCompletion?: boolean;
   dashboardHelpCommentMaxCount?: number;
+  groupChatScope?: OrganizationSettingResponse['groupChatScope'];
   rowVersion: number;
 }): Promise<ApiResponse<OrganizationSettingResponse>> {
   try {

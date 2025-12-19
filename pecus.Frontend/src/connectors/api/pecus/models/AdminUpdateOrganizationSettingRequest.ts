@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { GenerativeApiVendor } from './GenerativeApiVendor';
+import type { GroupChatScope } from './GroupChatScope';
 import type { HelpNotificationTarget } from './HelpNotificationTarget';
 import type { OrganizationPlan } from './OrganizationPlan';
 /**
@@ -44,6 +45,7 @@ export type AdminUpdateOrganizationSettingRequest = {
      * ダッシュボードに表示するヘルプコメントの最大件数（5〜20）
      */
     dashboardHelpCommentMaxCount?: number;
+    groupChatScope?: GroupChatScope;
     /**
      * 楽観的ロック用RowVersion
      */

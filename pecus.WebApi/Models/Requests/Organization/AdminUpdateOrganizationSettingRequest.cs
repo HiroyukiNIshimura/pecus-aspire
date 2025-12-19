@@ -1,5 +1,6 @@
 using Pecus.Libs.DB.Models.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pecus.Models.Requests.Organization;
 
@@ -78,6 +79,7 @@ public class AdminUpdateOrganizationSettingRequest
     /// Workspace: ワークスペース単位（デフォルト）
     /// Organization: 組織全体で1つのグループチャット
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<GroupChatScope>))]
     public GroupChatScope? GroupChatScope { get; set; }
 
     /// <summary>

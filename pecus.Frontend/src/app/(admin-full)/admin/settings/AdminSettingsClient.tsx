@@ -115,6 +115,11 @@ const helpNotificationTargetOptions: { value: NonNullable<HelpNotificationTarget
   { value: 'WorkspaceUsers', label: 'ワークスペースユーザー' },
 ];
 
+const groupChatScopeOptions: { value: 'Workspace' | 'Organization'; label: string }[] = [
+  { value: 'Workspace', label: 'ワークスペース単位' },
+  { value: 'Organization', label: '組織単位' },
+];
+
 export default function AdminSettingsClient({ initialUser, organization, fetchError }: AdminSettingsClientProps) {
   const notify = useNotify();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -133,6 +138,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     requireEstimateOnTaskCreation: false,
     enforcePredecessorCompletion: false,
     dashboardHelpCommentMaxCount: 6,
+    groupChatScope: null as OrganizationSettingResponse['groupChatScope'],
     rowVersion: 0,
   };
 
@@ -149,6 +155,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
     requireEstimateOnTaskCreation: initialSetting.requireEstimateOnTaskCreation ?? false,
     enforcePredecessorCompletion: initialSetting.enforcePredecessorCompletion ?? false,
     dashboardHelpCommentMaxCount: initialSetting.dashboardHelpCommentMaxCount ?? 6,
+    groupChatScope: initialSetting.groupChatScope ?? null,
   });
 
   const { formRef, isSubmitting, handleSubmit, validateField, shouldShowError, getFieldError, resetForm } =
@@ -168,6 +175,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
             requireEstimateOnTaskCreation: data.requireEstimateOnTaskCreation ?? false,
             enforcePredecessorCompletion: data.enforcePredecessorCompletion ?? false,
             dashboardHelpCommentMaxCount: data.dashboardHelpCommentMaxCount ?? 6,
+            groupChatScope: data.groupChatScope ?? undefined,
             rowVersion,
           });
 
@@ -207,6 +215,7 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
       requireEstimateOnTaskCreation: setting.requireEstimateOnTaskCreation ?? false,
       enforcePredecessorCompletion: setting.enforcePredecessorCompletion ?? false,
       dashboardHelpCommentMaxCount: setting.dashboardHelpCommentMaxCount ?? 6,
+      groupChatScope: setting.groupChatScope ?? null,
     });
   };
 
@@ -585,6 +594,44 @@ export default function AdminSettingsClient({ initialUser, organization, fetchEr
                       {shouldShowError('dashboardHelpCommentMaxCount') && (
                         <p className="text-sm text-error">{getFieldError('dashboardHelpCommentMaxCount')}</p>
                       )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* チャット設定 */}
+                <div className="card bg-base-100 shadow-sm">
+                  <div className="card-body">
+                    <h2 className="card-title text-lg mb-4">
+                      <span className="icon-[mdi--chat-outline] size-5" aria-hidden="true" />
+                      チャット設定
+                    </h2>
+
+                    <div className="form-control">
+                      <label className="label" htmlFor="select-group-chat-scope">
+                        <span className="label-text font-semibold">グループチャットのスコープ</span>
+                      </label>
+                      <select
+                        id="select-group-chat-scope"
+                        name="groupChatScope"
+                        className={`select select-bordered ${shouldShowError('groupChatScope') ? 'select-error' : ''}`}
+                        value={formData.groupChatScope ?? 'Workspace'}
+                        onChange={(e) =>
+                          handleFieldChange('groupChatScope', e.target.value as 'Workspace' | 'Organization')
+                        }
+                        disabled={isSubmitting}
+                      >
+                        {groupChatScopeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {shouldShowError('groupChatScope') && (
+                        <span className="label-text-alt text-error">{getFieldError('groupChatScope')}</span>
+                      )}
+                      <span className="label-text-alt text-xs text-base-content/60 mt-1">
+                        グループチャットをワークスペースごとに作成するか、組織全体で1つのチャットルームを共有するかを設定します。
+                      </span>
                     </div>
                   </div>
                 </div>
