@@ -2,11 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { getChatMessages, sendChatMessage } from '@/actions/chat';
+import { getChatMessages, sendChatMessage, updateReadPosition } from '@/actions/chat';
 import ChatMessageInput from '@/components/chat/ChatMessageInput';
 import ChatMessageList from '@/components/chat/ChatMessageList';
 import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSignalREvent } from '@/hooks/useSignalR';
+import { useSignalRContext } from '@/providers/SignalRProvider';
 
 interface ChatRoomMessageClientProps {
   room: ChatRoomDetailResponse;
@@ -14,6 +16,21 @@ interface ChatRoomMessageClientProps {
   hasMore: boolean;
   nextCursor: number | null;
   currentUserId: number;
+}
+
+/** SignalR chat:message_received イベントのペイロード型 */
+interface ChatMessageReceivedPayload {
+  roomId: number;
+  roomType: string;
+  message: {
+    id: number;
+    senderUserId: number;
+    senderUsername?: string;
+    messageType: string;
+    content: string;
+    replyToMessageId?: number;
+    createdAt: string;
+  };
 }
 
 /**
@@ -28,6 +45,7 @@ export default function ChatRoomMessageClient({
 }: ChatRoomMessageClientProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const { joinChat, leaveChat } = useSignalRContext();
   const [messages, setMessages] = useState<ChatMessageItem[]>(initialMessages);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [nextCursor, setNextCursor] = useState<number | null>(initialNextCursor);
@@ -41,6 +59,14 @@ export default function ChatRoomMessageClient({
       router.replace('/');
     }
   }, [isMobile, router]);
+
+  // チャットルームグループに参加/離脱
+  useEffect(() => {
+    joinChat(room.id);
+    return () => {
+      leaveChat(room.id);
+    };
+  }, [room.id, joinChat, leaveChat]);
 
   // ルーム名を取得
   const getRoomName = () => {
@@ -88,6 +114,42 @@ export default function ChatRoomMessageClient({
     },
     [room.id],
   );
+
+  // SignalR: 現在開いているルームのメッセージをリアルタイム受信
+  const handleMessageReceived = useCallback(
+    (payload: ChatMessageReceivedPayload) => {
+      // 現在開いているルームのメッセージのみ処理
+      if (payload.roomId !== room.id) {
+        return;
+      }
+      // 自分が送信したメッセージは既にローカルで追加済みなのでスキップ
+      if (payload.message.senderUserId === currentUserId) {
+        return;
+      }
+      // 新しいメッセージを追加
+      const newMessage: ChatMessageItem = {
+        id: payload.message.id,
+        senderUserId: payload.message.senderUserId,
+        sender: payload.message.senderUsername
+          ? {
+              id: payload.message.senderUserId,
+              username: payload.message.senderUsername,
+              email: '',
+            }
+          : undefined,
+        messageType: payload.message.messageType as ChatMessageItem['messageType'],
+        content: payload.message.content,
+        replyToMessageId: payload.message.replyToMessageId,
+        createdAt: payload.message.createdAt,
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      // 既読位置を更新
+      updateReadPosition(room.id);
+    },
+    [room.id, currentUserId],
+  );
+
+  useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden bg-base-100">

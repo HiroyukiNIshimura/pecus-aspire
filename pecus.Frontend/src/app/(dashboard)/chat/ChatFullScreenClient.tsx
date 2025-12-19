@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSignalREvent } from '@/hooks/useSignalR';
 import { formatRelativeTime } from '@/libs/utils/date';
 import { useChatStore } from '@/stores/chatStore';
 
@@ -16,15 +18,36 @@ interface ChatFullScreenClientProps {
     ai: number;
     system: number;
   };
+  currentUserId: number;
+}
+
+/** SignalR chat:message_received イベントのペイロード型 */
+interface ChatMessageReceivedPayload {
+  roomId: number;
+  roomType: string;
+  message: {
+    id: number;
+    senderUserId: number;
+    senderUsername?: string;
+    messageType: string;
+    content: string;
+    replyToMessageId?: number;
+    createdAt: string;
+  };
 }
 
 /**
  * スマホ用チャットフル画面（ルーム一覧）
  */
-export default function ChatFullScreenClient({ initialRooms, initialUnreadCounts }: ChatFullScreenClientProps) {
+export default function ChatFullScreenClient({
+  initialRooms,
+  initialUnreadCounts,
+  currentUserId,
+}: ChatFullScreenClientProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { setUnreadCounts, selectRoom } = useChatStore();
+  const [rooms, setRooms] = useState<ChatRoomItem[]>(initialRooms);
 
   // PC表示時はダッシュボードへリダイレクト（ドロワーを使うため）
   // isMobile === null は初期化中なのでスキップ
@@ -38,6 +61,52 @@ export default function ChatFullScreenClient({ initialRooms, initialUnreadCounts
   useEffect(() => {
     setUnreadCounts(initialUnreadCounts);
   }, [initialUnreadCounts, setUnreadCounts]);
+
+  // ルーム一覧を再取得
+  const fetchRooms = useCallback(async () => {
+    try {
+      const result = await getChatRooms();
+      if (result.success && result.data) {
+        setRooms(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch chat rooms:', error);
+    }
+  }, []);
+
+  // 未読数を再取得
+  const fetchUnreadCounts = useCallback(async () => {
+    try {
+      const result = await getChatUnreadCounts();
+      if (result.success && result.data) {
+        setUnreadCounts({
+          total: result.data.totalUnreadCount,
+          dm: result.data.dmUnreadCount,
+          group: result.data.groupUnreadCount,
+          ai: result.data.aiUnreadCount,
+          system: result.data.systemUnreadCount,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread counts:', error);
+    }
+  }, [setUnreadCounts]);
+
+  // SignalR: 新メッセージ受信時にルーム一覧と未読数を更新
+  const handleMessageReceived = useCallback(
+    (payload: ChatMessageReceivedPayload) => {
+      // 自分が送信したメッセージは未読数に影響しない
+      if (payload.message.senderUserId === currentUserId) {
+        return;
+      }
+      // ルーム一覧と未読数を再取得
+      fetchRooms();
+      fetchUnreadCounts();
+    },
+    [currentUserId, fetchRooms, fetchUnreadCounts],
+  );
+
+  useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   // ルーム選択時にメッセージ画面へ遷移
   const handleRoomSelect = (roomId: number) => {
@@ -62,7 +131,7 @@ export default function ChatFullScreenClient({ initialRooms, initialUnreadCounts
 
       {/* ルーム一覧 */}
       <div className="flex-1 overflow-hidden">
-        <ChatRoomListMobile rooms={initialRooms} onRoomSelect={handleRoomSelect} />
+        <ChatRoomListMobile rooms={rooms} onRoomSelect={handleRoomSelect} />
       </div>
     </div>
   );

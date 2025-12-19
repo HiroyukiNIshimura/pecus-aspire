@@ -223,6 +223,12 @@ interface SignalRContextValue {
   /** タスクグループから離脱 */
   leaveTask: (taskId: number) => Promise<void>;
 
+  /** チャットルームグループに参加 */
+  joinChat: (chatRoomId: number) => Promise<void>;
+
+  /** チャットルームグループから離脱 */
+  leaveChat: (chatRoomId: number) => Promise<void>;
+
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
 
@@ -592,6 +598,41 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   }, []);
 
   /**
+   * チャットルームグループに参加
+   */
+  const joinChat = useCallback(async (chatRoomId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      console.warn('[SignalR] Cannot join chat: not connected');
+      return;
+    }
+
+    try {
+      await connection.invoke('JoinChat', chatRoomId);
+      console.log(`[SignalR] Joined chat: ${chatRoomId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to join chat:', error);
+    }
+  }, []);
+
+  /**
+   * チャットルームグループから離脱
+   */
+  const leaveChat = useCallback(async (chatRoomId: number) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    try {
+      await connection.invoke('LeaveChat', chatRoomId);
+      console.log(`[SignalR] Left chat: ${chatRoomId}`);
+    } catch (error) {
+      console.error('[SignalR] Failed to leave chat:', error);
+    }
+  }, []);
+
+  /**
    * 通知ハンドラーを登録
    */
   const onNotification = useCallback((handler: NotificationHandler) => {
@@ -908,6 +949,8 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     leaveItem,
     joinTask,
     leaveTask,
+    joinChat,
+    leaveChat,
     onNotification,
     startItemEdit,
     endItemEdit,

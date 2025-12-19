@@ -457,7 +457,9 @@ public class ChatRoomService
             return 0;
         }
 
-        var query = _context.ChatMessages.Where(m => m.ChatRoomId == roomId);
+        var query = _context.ChatMessages.Where(m =>
+            m.ChatRoomId == roomId && m.SenderUserId != userId
+        );
 
         if (member.LastReadAt.HasValue)
         {
@@ -487,7 +489,9 @@ public class ChatRoomService
         var totalUnread = 0;
         foreach (var member in members)
         {
-            var query = _context.ChatMessages.Where(m => m.ChatRoomId == member.ChatRoomId);
+            var query = _context.ChatMessages.Where(m =>
+                m.ChatRoomId == member.ChatRoomId && m.SenderUserId != userId
+            );
 
             if (member.LastReadAt.HasValue)
             {
@@ -530,7 +534,9 @@ public class ChatRoomService
 
         foreach (var member in members)
         {
-            var query = _context.ChatMessages.Where(m => m.ChatRoomId == member.ChatRoomId);
+            var query = _context.ChatMessages.Where(m =>
+                m.ChatRoomId == member.ChatRoomId && m.SenderUserId != userId
+            );
 
             if (member.LastReadAt.HasValue)
             {

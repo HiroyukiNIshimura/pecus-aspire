@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
+import { useSignalREvent } from '@/hooks/useSignalR';
 import { useChatStore } from '@/stores/chatStore';
 import ChatBottomDrawer from './ChatBottomDrawer';
 
@@ -10,9 +11,25 @@ interface ChatProviderProps {
   currentUserId: number;
 }
 
+/** SignalR chat:message_received イベントのペイロード型 */
+interface ChatMessageReceivedPayload {
+  roomId: number;
+  roomType: string;
+  message: {
+    id: number;
+    senderUserId: number;
+    senderUsername?: string;
+    messageType: string;
+    content: string;
+    replyToMessageId?: number;
+    createdAt: string;
+  };
+}
+
 /**
  * チャット用プロバイダー
  * - ルーム一覧と未読数を取得
+ * - SignalR で新メッセージ受信時に未読数を更新
  * - PC用のボトムドロワーを表示（md以上で表示、スマホは hidden）
  */
 export default function ChatProvider({ currentUserId }: ChatProviderProps) {
@@ -66,6 +83,26 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
       fetchRooms();
     }
   }, [isDrawerOpen, fetchRooms]);
+
+  // SignalR: 新メッセージ受信時に未読数を更新
+  // 自分が送信したメッセージの場合は未読数を更新しない
+  const handleMessageReceived = useCallback(
+    (payload: ChatMessageReceivedPayload) => {
+      // 自分が送信したメッセージは未読数に影響しない
+      if (payload.message.senderUserId === currentUserId) {
+        return;
+      }
+      // ドロワーが開いていればルーム一覧も更新
+      if (isDrawerOpen) {
+        fetchRooms();
+      }
+      // 未読数を再取得
+      fetchUnreadCounts();
+    },
+    [currentUserId, fetchUnreadCounts, fetchRooms, isDrawerOpen],
+  );
+
+  useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   // ドロワーは常にレンダリング（CSS で md 以上のみ表示）
   return <ChatBottomDrawer rooms={rooms} currentUserId={currentUserId} loading={loading} />;

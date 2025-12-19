@@ -292,20 +292,53 @@ interface ChatState {
 }
 ```
 
-### SignalR イベント購読
+### SignalR イベント購読（リアルタイム更新）
+
+バックエンドはメッセージ送信時に SignalR で `chat:message_received` イベントを通知する。
+フロントエンドはこのイベントを購読し、未読バッジをリアルタイムに更新する。
+
+#### バックエンド → フロントエンドの通知フロー
+
+```
+1. ユーザー A がメッセージ送信
+2. バックエンド: DB にメッセージ保存
+3. バックエンド: SignalR で chat:{roomId} グループに通知
+4. フロントエンド: ReceiveNotification イベントを受信
+5. フロントエンド: 未読数 API を再取得
+6. フロントエンド: Zustand ストアを更新 → バッジが即座に更新
+```
+
+#### 実装例
 
 ```typescript
-// 未読数の更新
+// ChatProvider.tsx 内で SignalR イベントを購読
 useEffect(() => {
-  const handleMessageReceived = (payload) => {
-    // 未読数を再取得 or インクリメント
-    refreshUnreadCounts();
+  const handleNotification = (notification: SignalRNotification) => {
+    if (notification.eventType === 'chat:message_received') {
+      // 未読数を API から再取得してストアを更新
+      fetchUnreadCounts();
+
+      // 開いているルームなら新メッセージをリストに追加
+      if (notification.payload.roomId === selectedRoomId) {
+        addMessage(notification.payload.message);
+      }
+    }
   };
 
-  signalR.on('chat:message_received', handleMessageReceived);
-  return () => signalR.off('chat:message_received', handleMessageReceived);
-}, []);
+  signalR.on('ReceiveNotification', handleNotification);
+  return () => signalR.off('ReceiveNotification', handleNotification);
+}, [selectedRoomId]);
 ```
+
+#### SignalR イベント一覧
+
+| イベント | タイミング | フロントの処理 |
+|---------|-----------|---------------|
+| `chat:message_received` | 新メッセージ受信時 | 未読数再取得、メッセージリスト更新 |
+| `chat:message_read` | 相手が既読にした時 | 既読表示の更新（将来） |
+| `chat:user_typing` | 相手が入力中 | 入力中インジケーター表示（将来） |
+
+> **Note**: 現在は `chat:message_received` のみ実装。他のイベントは Phase 2 以降で対応予定。
 
 ---
 

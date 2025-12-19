@@ -3,12 +3,29 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getChatMessages, getChatRoomDetail, sendChatMessage, updateReadPosition } from '@/actions/chat';
 import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
+import { useSignalREvent } from '@/hooks/useSignalR';
+import { useSignalRContext } from '@/providers/SignalRProvider';
 import ChatMessageInput from './ChatMessageInput';
 import ChatMessageList from './ChatMessageList';
 
 interface ChatMessageAreaProps {
   roomId: number;
   currentUserId: number;
+}
+
+/** SignalR chat:message_received イベントのペイロード型 */
+interface ChatMessageReceivedPayload {
+  roomId: number;
+  roomType: string;
+  message: {
+    id: number;
+    senderUserId: number;
+    senderUsername?: string;
+    messageType: string;
+    content: string;
+    replyToMessageId?: number;
+    createdAt: string;
+  };
 }
 
 /**
@@ -18,12 +35,21 @@ interface ChatMessageAreaProps {
  * - 既読位置の更新
  */
 export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAreaProps) {
+  const { joinChat, leaveChat } = useSignalRContext();
   const [room, setRoom] = useState<ChatRoomDetailResponse | null>(null);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
+
+  // チャットルームグループに参加/離脱
+  useEffect(() => {
+    joinChat(roomId);
+    return () => {
+      leaveChat(roomId);
+    };
+  }, [roomId, joinChat, leaveChat]);
 
   // ルーム詳細とメッセージを取得
   const fetchRoomAndMessages = useCallback(async () => {
@@ -89,6 +115,42 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   useEffect(() => {
     fetchRoomAndMessages();
   }, [fetchRoomAndMessages]);
+
+  // SignalR: 現在開いているルームのメッセージをリアルタイム受信
+  const handleMessageReceived = useCallback(
+    (payload: ChatMessageReceivedPayload) => {
+      // 現在開いているルームのメッセージのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+      // 自分が送信したメッセージは既にローカルで追加済みなのでスキップ
+      if (payload.message.senderUserId === currentUserId) {
+        return;
+      }
+      // 新しいメッセージを追加
+      const newMessage: ChatMessageItem = {
+        id: payload.message.id,
+        senderUserId: payload.message.senderUserId,
+        sender: payload.message.senderUsername
+          ? {
+              id: payload.message.senderUserId,
+              username: payload.message.senderUsername,
+              email: '',
+            }
+          : undefined,
+        messageType: payload.message.messageType as ChatMessageItem['messageType'],
+        content: payload.message.content,
+        replyToMessageId: payload.message.replyToMessageId,
+        createdAt: payload.message.createdAt,
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      // 既読位置を更新
+      updateReadPosition(roomId);
+    },
+    [roomId, currentUserId],
+  );
+
+  useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
 
   // ルーム名を取得
   const getRoomName = () => {
