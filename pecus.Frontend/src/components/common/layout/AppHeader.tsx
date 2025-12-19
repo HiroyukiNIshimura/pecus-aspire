@@ -61,7 +61,7 @@ export default function AppHeader({
           </ul>
         </div>
 
-        <div className="navbar-end">
+        <div className="navbar-end flex items-center">
           <ThemeToggle />
           <ChatIconButton />
           <UserMenu

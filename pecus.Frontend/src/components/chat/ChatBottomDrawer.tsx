@@ -53,7 +53,7 @@ export default function ChatBottomDrawer({ rooms, loading = false }: ChatBottomD
       {/* コンテンツエリア */}
       <div className="flex h-[calc(100%-48px)]">
         {/* 左: ルーム一覧 */}
-        <div className="w-64 border-r border-base-300 flex-shrink-0">
+        <div className="w-80 border-r border-base-300 flex-shrink-0">
           <ChatRoomList rooms={rooms} loading={loading} />
         </div>
 
