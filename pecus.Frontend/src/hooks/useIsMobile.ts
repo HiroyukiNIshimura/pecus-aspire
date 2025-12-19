@@ -5,9 +5,11 @@ const MOBILE_BREAKPOINT = 767;
 /**
  * モバイルサイズかどうかを判定するフック
  * 画面幅が767px以下の場合にtrueを返す（Tailwind md ブレークポイント基準）
+ *
+ * @returns true: モバイル, false: PC, null: 初期化中（SSR/クライアント初回）
  */
-export function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false);
+export function useIsMobile(): boolean | null {
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);

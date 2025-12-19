@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { formatRelativeTime } from '@/libs/utils/date';
 import { useChatStore } from '@/stores/chatStore';
 
@@ -22,7 +23,16 @@ interface ChatFullScreenClientProps {
  */
 export default function ChatFullScreenClient({ initialRooms, initialUnreadCounts }: ChatFullScreenClientProps) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const { setUnreadCounts, selectRoom } = useChatStore();
+
+  // PC表示時はダッシュボードへリダイレクト（ドロワーを使うため）
+  // isMobile === null は初期化中なのでスキップ
+  useEffect(() => {
+    if (isMobile === false) {
+      router.replace('/');
+    }
+  }, [isMobile, router]);
 
   // 未読数をストアに設定
   useEffect(() => {

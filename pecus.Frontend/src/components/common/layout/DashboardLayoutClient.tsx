@@ -45,7 +45,7 @@ export default function DashboardLayoutClient({ children, userInfo }: DashboardL
       </div>
 
       {/* Chat Bottom Drawer (PC only) */}
-      <ChatProvider />
+      {userInfo?.id && <ChatProvider currentUserId={userInfo.id} />}
     </div>
   );
 }

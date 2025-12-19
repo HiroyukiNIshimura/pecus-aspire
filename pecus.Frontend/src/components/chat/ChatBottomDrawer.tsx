@@ -3,10 +3,12 @@
 import { useCallback, useEffect } from 'react';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
 import { useChatStore } from '@/stores/chatStore';
+import ChatMessageArea from './ChatMessageArea';
 import ChatRoomList from './ChatRoomList';
 
 interface ChatBottomDrawerProps {
   rooms: ChatRoomItem[];
+  currentUserId: number;
   loading?: boolean;
 }
 
@@ -14,7 +16,7 @@ interface ChatBottomDrawerProps {
  * PC用ボトムドロワー
  * 画面下部からスライドして出現し、作業コンテキストを維持しながらチャット可能
  */
-export default function ChatBottomDrawer({ rooms, loading = false }: ChatBottomDrawerProps) {
+export default function ChatBottomDrawer({ rooms, currentUserId, loading = false }: ChatBottomDrawerProps) {
   const { isDrawerOpen, closeDrawer, selectedRoomId } = useChatStore();
 
   // Escape キーでドロワーを閉じる
@@ -60,10 +62,7 @@ export default function ChatBottomDrawer({ rooms, loading = false }: ChatBottomD
         {/* 右: メッセージエリア */}
         <div className="flex-1 flex flex-col">
           {selectedRoomId ? (
-            // TODO: ChatMessageArea コンポーネントを実装
-            <div className="flex-1 flex items-center justify-center text-base-content/50">
-              メッセージエリア（実装予定）
-            </div>
+            <ChatMessageArea roomId={selectedRoomId} currentUserId={currentUserId} />
           ) : (
             <div className="flex-1 flex items-center justify-center text-base-content/50">
               <div className="text-center">

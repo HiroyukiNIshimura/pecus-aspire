@@ -1,8 +1,15 @@
 'use server';
 
 import { createPecusApiClients, parseErrorResponse } from '@/connectors/api/PecusApiClient';
-import type { ChatRoomItem, ChatRoomType, ChatUnreadCountByCategoryResponse } from '@/connectors/api/pecus';
-import type { ApiResponse } from './types';
+import type {
+  ChatMessageItem,
+  ChatMessagesResponse,
+  ChatRoomDetailResponse,
+  ChatRoomItem,
+  ChatRoomType,
+  ChatUnreadCountByCategoryResponse,
+} from '@/connectors/api/pecus';
+import { type ApiResponse, serverError } from './types';
 
 /**
  * Server Action: チャットルーム一覧を取得
@@ -15,7 +22,22 @@ export async function getChatRooms(type?: ChatRoomType): Promise<ApiResponse<Cha
   } catch (error) {
     const errorDetail = parseErrorResponse(error);
     console.error('getChatRooms error:', errorDetail);
-    return { success: false, error: errorDetail.message || 'ルーム一覧の取得に失敗しました' };
+    return serverError(errorDetail.message || 'ルーム一覧の取得に失敗しました');
+  }
+}
+
+/**
+ * Server Action: ルーム詳細を取得
+ */
+export async function getChatRoomDetail(roomId: number): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.getApiChatRooms1(roomId);
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('getChatRoomDetail error:', errorDetail);
+    return serverError(errorDetail.message || 'ルーム詳細の取得に失敗しました');
   }
 }
 
@@ -30,6 +52,64 @@ export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCount
   } catch (error) {
     const errorDetail = parseErrorResponse(error);
     console.error('getChatUnreadCounts error:', errorDetail);
-    return { success: false, error: errorDetail.message || '未読数の取得に失敗しました' };
+    return serverError(errorDetail.message || '未読数の取得に失敗しました');
+  }
+}
+
+/**
+ * Server Action: メッセージ一覧を取得
+ */
+export async function getChatMessages(
+  roomId: number,
+  limit?: number,
+  cursor?: number,
+): Promise<ApiResponse<ChatMessagesResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.getApiChatRoomsMessages(roomId, limit, cursor);
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('getChatMessages error:', errorDetail);
+    return serverError(errorDetail.message || 'メッセージの取得に失敗しました');
+  }
+}
+
+/**
+ * Server Action: メッセージを送信
+ */
+export async function sendChatMessage(
+  roomId: number,
+  content: string,
+  replyToMessageId?: number,
+): Promise<ApiResponse<ChatMessageItem>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.postApiChatRoomsMessages(roomId, {
+      content,
+      replyToMessageId,
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('sendChatMessage error:', errorDetail);
+    return serverError(errorDetail.message || 'メッセージの送信に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 既読位置を更新
+ * @param roomId ルームID
+ * @param readAt 既読日時（ISO 8601形式）。省略時は現在時刻
+ */
+export async function updateReadPosition(roomId: number, readAt?: string): Promise<ApiResponse<void>> {
+  try {
+    const api = createPecusApiClients();
+    await api.chat.putApiChatRoomsRead(roomId, { readAt: readAt ?? new Date().toISOString() });
+    return { success: true, data: undefined };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('updateReadPosition error:', errorDetail);
+    return serverError(errorDetail.message || '既読位置の更新に失敗しました');
   }
 }

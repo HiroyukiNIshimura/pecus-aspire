@@ -20,7 +20,12 @@ export default function ChatIconButton() {
   const isOnChatPage = pathname?.startsWith('/chat');
 
   const handleClick = () => {
-    if (isMobile) {
+    // isMobile === false (PC判定確定) の場合のみドロワー
+    // null (初期化中) または true (スマホ) はフル画面遷移
+    if (isMobile === false) {
+      // PC: ボトムドロワーをトグル
+      toggleDrawer();
+    } else {
       if (isOnChatPage) {
         // スマホ: チャットページにいる場合は戻る
         router.back();
@@ -28,9 +33,6 @@ export default function ChatIconButton() {
         // スマホ: フル画面遷移
         router.push('/chat');
       }
-    } else {
-      // PC: ボトムドロワーをトグル
-      toggleDrawer();
     }
   };
 

@@ -3,18 +3,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getChatRooms, getChatUnreadCounts } from '@/actions/chat';
 import type { ChatRoomItem } from '@/connectors/api/pecus';
-import { useIsMobile } from '@/hooks/useIsMobile';
 import { useChatStore } from '@/stores/chatStore';
 import ChatBottomDrawer from './ChatBottomDrawer';
+
+interface ChatProviderProps {
+  currentUserId: number;
+}
 
 /**
  * チャット用プロバイダー
  * - ルーム一覧と未読数を取得
- * - PC用のボトムドロワーを表示
- * - スマホは /chat へ遷移するのでドロワーは表示しない
+ * - PC用のボトムドロワーを表示（md以上で表示、スマホは hidden）
  */
-export default function ChatProvider() {
-  const isMobile = useIsMobile();
+export default function ChatProvider({ currentUserId }: ChatProviderProps) {
   const { isDrawerOpen, setUnreadCounts } = useChatStore();
   const [rooms, setRooms] = useState<ChatRoomItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,15 +60,11 @@ export default function ChatProvider() {
 
   // ドロワーが開いた時にルーム一覧を取得
   useEffect(() => {
-    if (isDrawerOpen && !isMobile) {
+    if (isDrawerOpen) {
       fetchRooms();
     }
-  }, [isDrawerOpen, isMobile, fetchRooms]);
+  }, [isDrawerOpen, fetchRooms]);
 
-  // スマホの場合はドロワーを表示しない
-  if (isMobile) {
-    return null;
-  }
-
-  return <ChatBottomDrawer rooms={rooms} loading={loading} />;
+  // ドロワーは常にレンダリング（CSS で md 以上のみ表示）
+  return <ChatBottomDrawer rooms={rooms} currentUserId={currentUserId} loading={loading} />;
 }
