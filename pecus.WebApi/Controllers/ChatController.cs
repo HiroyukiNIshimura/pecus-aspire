@@ -16,11 +16,13 @@ public class ChatController : BaseSecureController
 {
     private readonly ChatRoomService _chatRoomService;
     private readonly ChatMessageService _chatMessageService;
+    private readonly OrganizationService _organizationService;
     private readonly ILogger<ChatController> _logger;
 
     public ChatController(
         ChatRoomService chatRoomService,
         ChatMessageService chatMessageService,
+        OrganizationService organizationService,
         ProfileService profileService,
         ILogger<ChatController> logger
     )
@@ -28,6 +30,7 @@ public class ChatController : BaseSecureController
     {
         _chatRoomService = chatRoomService;
         _chatMessageService = chatMessageService;
+        _organizationService = organizationService;
         _logger = logger;
     }
 
@@ -237,8 +240,12 @@ public class ChatController : BaseSecureController
     }
 
     /// <summary>
-    /// グループルームを取得
+    /// グループルームを取得（組織単位のグループチャット）
     /// </summary>
+    /// <remarks>
+    /// 組織設定の GroupChatScope が Organization の場合のみ利用可能。
+    /// Workspace の場合は 404 を返す。
+    /// </remarks>
     [HttpGet("rooms/group")]
     [ProducesResponseType(typeof(ChatRoomDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -248,6 +255,13 @@ public class ChatController : BaseSecureController
         if (CurrentUser?.OrganizationId == null)
         {
             throw new NotFoundException("組織情報が見つかりません。");
+        }
+
+        // GroupChatScope が Workspace の場合は利用不可
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        if (organization?.Setting?.GroupChatScope == GroupChatScope.Workspace)
+        {
+            throw new NotFoundException("この組織ではワークスペース単位のグループチャットが設定されています。");
         }
 
         var room = await _chatRoomService.GetOrCreateGroupRoomAsync(
@@ -329,6 +343,10 @@ public class ChatController : BaseSecureController
     /// <summary>
     /// ワークスペースのグループルームを取得
     /// </summary>
+    /// <remarks>
+    /// 組織設定の GroupChatScope が Workspace（デフォルト）の場合のみ利用可能。
+    /// Organization の場合は 404 を返す。
+    /// </remarks>
     /// <param name="workspaceId">ワークスペースID</param>
     [HttpGet("rooms/workspace/{workspaceId:int}/group")]
     [ProducesResponseType(typeof(ChatRoomDetailResponse), StatusCodes.Status200OK)]
@@ -336,6 +354,18 @@ public class ChatController : BaseSecureController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<Ok<ChatRoomDetailResponse>> GetWorkspaceGroupRoom(int workspaceId)
     {
+        if (CurrentUser?.OrganizationId == null)
+        {
+            throw new NotFoundException("組織情報が見つかりません。");
+        }
+
+        // GroupChatScope が Organization の場合は利用不可
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        if (organization?.Setting?.GroupChatScope == GroupChatScope.Organization)
+        {
+            throw new NotFoundException("この組織では組織単位のグループチャットが設定されています。");
+        }
+
         var room = await _chatRoomService.GetOrCreateWorkspaceGroupRoomAsync(
             workspaceId,
             CurrentUserId

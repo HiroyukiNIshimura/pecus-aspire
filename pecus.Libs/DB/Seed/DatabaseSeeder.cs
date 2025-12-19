@@ -236,6 +236,7 @@ public class DatabaseSeeder
         await SeedUserSettingsAsync();
         await SeedUserSkillsAsync();
         await SeedWorkspacesAsync();
+        await SeedChatRoomsAsync();
         await SeedWorkspaceSkillsAsync();
         await SeedWorkspaceItemsAsync();
         await SeedWorkspaceItemRelationsAsync();
@@ -1165,6 +1166,166 @@ public class DatabaseSeeder
         }
 
         _logger.LogInformation("Added {Count} workspace members", totalMembersAdded);
+    }
+
+    /// <summary>
+    /// チャットルームのシードデータを投入
+    /// 組織グループチャットとワークスペースグループチャットを作成
+    /// </summary>
+    private async Task SeedChatRoomsAsync()
+    {
+        if (await _context.ChatRooms.AnyAsync())
+        {
+            _logger.LogInformation("ChatRooms already seeded, skipping");
+            return;
+        }
+
+        _context.ChangeTracker.Clear();
+
+        var organizations = await _context.Organizations.ToListAsync();
+        var workspaces = await _context.Workspaces
+            .Include(w => w.WorkspaceUsers)
+            .ToListAsync();
+
+        // 組織ごとのユーザーを取得
+        var usersByOrganization = await _context.Users
+            .Where(u => u.OrganizationId != null && u.IsActive)
+            .GroupBy(u => u.OrganizationId!.Value)
+            .ToDictionaryAsync(g => g.Key, g => g.ToList());
+
+        var chatRoomsToAdd = new List<ChatRoom>();
+        var chatRoomMembersToAdd = new List<ChatRoomMember>();
+
+        // 1. 組織グループチャットを作成
+        foreach (var org in organizations)
+        {
+            if (!usersByOrganization.TryGetValue(org.Id, out var orgUsers) || !orgUsers.Any())
+            {
+                continue;
+            }
+
+            var ownerUser = orgUsers.First();
+
+            var orgGroupRoom = new ChatRoom
+            {
+                Type = ChatRoomType.Group,
+                Name = org.Name,
+                OrganizationId = org.Id,
+                WorkspaceId = null,  // 組織グループは WorkspaceId = null
+                CreatedByUserId = ownerUser.Id,
+            };
+
+            chatRoomsToAdd.Add(orgGroupRoom);
+        }
+
+        // 組織グループチャットを保存（ID を取得するため）
+        if (chatRoomsToAdd.Any())
+        {
+            _context.ChatRooms.AddRange(chatRoomsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} organization group chat rooms", chatRoomsToAdd.Count);
+        }
+
+        // 組織グループチャットのメンバーを追加
+        var orgGroupRooms = await _context.ChatRooms
+            .Where(r => r.Type == ChatRoomType.Group && r.WorkspaceId == null)
+            .ToDictionaryAsync(r => r.OrganizationId, r => r);
+
+        foreach (var org in organizations)
+        {
+            if (!orgGroupRooms.TryGetValue(org.Id, out var room))
+            {
+                continue;
+            }
+
+            if (!usersByOrganization.TryGetValue(org.Id, out var orgUsers))
+            {
+                continue;
+            }
+
+            var isFirst = true;
+            foreach (var user in orgUsers)
+            {
+                chatRoomMembersToAdd.Add(new ChatRoomMember
+                {
+                    ChatRoomId = room.Id,
+                    UserId = user.Id,
+                    Role = isFirst ? ChatRoomRole.Owner : ChatRoomRole.Member,
+                });
+                isFirst = false;
+            }
+        }
+
+        // 2. ワークスペースグループチャットを作成
+        var workspaceGroupRoomsToAdd = new List<ChatRoom>();
+
+        foreach (var workspace in workspaces)
+        {
+            if (workspace.OwnerId == null)
+            {
+                continue;
+            }
+
+            var wsGroupRoom = new ChatRoom
+            {
+                Type = ChatRoomType.Group,
+                Name = workspace.Name,
+                OrganizationId = workspace.OrganizationId,
+                WorkspaceId = workspace.Id,
+                CreatedByUserId = workspace.OwnerId.Value,
+            };
+
+            workspaceGroupRoomsToAdd.Add(wsGroupRoom);
+        }
+
+        // ワークスペースグループチャットを保存
+        if (workspaceGroupRoomsToAdd.Any())
+        {
+            _context.ChatRooms.AddRange(workspaceGroupRoomsToAdd);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Added {Count} workspace group chat rooms", workspaceGroupRoomsToAdd.Count);
+        }
+
+        // ワークスペースグループチャットのメンバーを追加
+        var wsGroupRooms = await _context.ChatRooms
+            .Where(r => r.Type == ChatRoomType.Group && r.WorkspaceId != null)
+            .ToDictionaryAsync(r => r.WorkspaceId!.Value, r => r);
+
+        foreach (var workspace in workspaces)
+        {
+            if (!wsGroupRooms.TryGetValue(workspace.Id, out var room))
+            {
+                continue;
+            }
+
+            // ワークスペースメンバーをチャットルームメンバーとして追加
+            foreach (var wsUser in workspace.WorkspaceUsers)
+            {
+                var role = wsUser.UserId == workspace.OwnerId
+                    ? ChatRoomRole.Owner
+                    : ChatRoomRole.Member;
+
+                chatRoomMembersToAdd.Add(new ChatRoomMember
+                {
+                    ChatRoomId = room.Id,
+                    UserId = wsUser.UserId,
+                    Role = role,
+                });
+            }
+        }
+
+        // メンバーを一括保存
+        if (chatRoomMembersToAdd.Any())
+        {
+            const int batchSize = 1000;
+            for (int i = 0; i < chatRoomMembersToAdd.Count; i += batchSize)
+            {
+                var batch = chatRoomMembersToAdd.Skip(i).Take(batchSize).ToList();
+                _context.ChatRoomMembers.AddRange(batch);
+                await _context.SaveChangesAsync();
+            }
+            _logger.LogInformation("Added {Count} chat room members", chatRoomMembersToAdd.Count);
+        }
     }
 
     /// <summary>

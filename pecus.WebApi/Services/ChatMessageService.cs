@@ -107,7 +107,7 @@ public class ChatMessageService
         // SignalR 通知を送信
         await SendMessageNotificationAsync(room, message);
 
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Message sent: MessageId={MessageId}, RoomId={RoomId}, SenderUserId={SenderUserId}",
             message.Id,
             roomId,

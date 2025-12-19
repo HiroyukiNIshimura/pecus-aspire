@@ -1660,4 +1660,136 @@ public class NotificationHub : Hub
             _logger.LogError(ex, "SignalR: Failed to notify item user left");
         }
     }
+
+    #region チャット関連
+
+    /// <summary>
+    /// チャットルームグループに参加する。
+    /// チャット画面を開いた時に呼び出す。
+    /// </summary>
+    /// <param name="chatRoomId">チャットルームID</param>
+    public async Task JoinChat(int chatRoomId)
+    {
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            throw new HubException("Unauthorized");
+        }
+
+        _logger.LogDebug(
+            "SignalR JoinChat: userId={UserId}, chatRoomId={ChatRoomId}, connectionId={ConnectionId}",
+            userId, chatRoomId, Context.ConnectionId);
+
+        // メンバーチェック
+        var isMember = await _context.ChatRoomMembers
+            .AnyAsync(m => m.ChatRoomId == chatRoomId && m.UserId == userId);
+
+        if (!isMember)
+        {
+            _logger.LogWarning(
+                "SignalR: User {UserId} tried to join chat room {ChatRoomId} but is not a member",
+                userId, chatRoomId);
+            throw new HubException("Not a member of this chat room");
+        }
+
+        var groupName = $"chat:{chatRoomId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+        // 他のメンバーに参加を通知
+        var user = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.Username })
+            .FirstOrDefaultAsync();
+
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "chat:user_joined",
+            Payload = new
+            {
+                ChatRoomId = chatRoomId,
+                UserId = userId,
+                Username = user?.Username ?? "",
+                Timestamp = DateTimeOffset.UtcNow
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} joined chat room {ChatRoomId}",
+            userId, chatRoomId);
+    }
+
+    /// <summary>
+    /// チャットルームグループから離脱する。
+    /// チャット画面を閉じた時に呼び出す。
+    /// </summary>
+    /// <param name="chatRoomId">チャットルームID</param>
+    public async Task LeaveChat(int chatRoomId)
+    {
+        var userId = GetUserId();
+
+        _logger.LogDebug(
+            "SignalR LeaveChat: userId={UserId}, chatRoomId={ChatRoomId}, connectionId={ConnectionId}",
+            userId, chatRoomId, Context.ConnectionId);
+
+        var groupName = $"chat:{chatRoomId}";
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+        // 他のメンバーに離脱を通知
+        var user = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.Username })
+            .FirstOrDefaultAsync();
+
+        await Clients.Group(groupName).SendAsync("ReceiveNotification", new
+        {
+            EventType = "chat:user_left",
+            Payload = new
+            {
+                ChatRoomId = chatRoomId,
+                UserId = userId,
+                Username = user?.Username ?? "",
+                Timestamp = DateTimeOffset.UtcNow
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+
+        _logger.LogDebug(
+            "SignalR: User {UserId} left chat room {ChatRoomId}",
+            userId, chatRoomId);
+    }
+
+    /// <summary>
+    /// 入力中通知を送信する。
+    /// </summary>
+    /// <param name="chatRoomId">チャットルームID</param>
+    public async Task SendChatTyping(int chatRoomId)
+    {
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            return;
+        }
+
+        var user = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new { u.Username })
+            .FirstOrDefaultAsync();
+
+        var groupName = $"chat:{chatRoomId}";
+        await Clients.GroupExcept(groupName, Context.ConnectionId).SendAsync("ReceiveNotification", new
+        {
+            EventType = "chat:user_typing",
+            Payload = new
+            {
+                ChatRoomId = chatRoomId,
+                UserId = userId,
+                Username = user?.Username ?? "",
+                Timestamp = DateTimeOffset.UtcNow
+            },
+            Timestamp = DateTimeOffset.UtcNow
+        });
+    }
+
+    #endregion
 }
