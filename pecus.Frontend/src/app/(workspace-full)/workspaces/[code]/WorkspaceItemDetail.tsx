@@ -12,9 +12,9 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
+import ItemEditStatus from '@/components/common/feedback/ItemEditStatus';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
-import ItemEditStatus from '@/components/items/ItemEditStatus';
 import WorkspaceItemDrawer from '@/components/workspaceItems/WorkspaceItemDrawer';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {

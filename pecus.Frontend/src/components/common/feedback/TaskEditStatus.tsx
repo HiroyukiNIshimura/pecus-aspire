@@ -59,12 +59,12 @@ export default function TaskEditStatus({
     const editor = status.editor;
     if (editor && editor.userId === currentUserId) {
       return {
-        variant: 'info' as const,
-        text: '別のタブで編集中です',
+        variant: 'warning' as const,
+        text: 'ブラウザの別のタブで編集中です',
       };
     }
     return {
-      variant: 'warning' as const,
+      variant: 'info' as const,
       text: `${editor?.userName ?? '誰か'} さんが編集中です`,
     };
   }, [currentUserId, status]);
@@ -75,7 +75,7 @@ export default function TaskEditStatus({
     <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
       <div className="flex items-center gap-2">
         <span
-          className={message.variant === 'warning' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
+          className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
         />
         <span>{message.text}</span>
       </div>

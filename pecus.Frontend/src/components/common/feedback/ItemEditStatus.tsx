@@ -1,37 +1,37 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { WorkspaceEditor, WorkspaceEditStatus as WorkspaceEditStatusType } from '@/providers/SignalRProvider';
+import type { ItemEditor, ItemEditStatus as ItemEditStatusType } from '@/providers/SignalRProvider';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 
-interface WorkspaceEditStatusProps {
-  workspaceId: number;
+interface ItemEditStatusProps {
+  itemId: number;
   currentUserId: number;
-  initialStatus?: WorkspaceEditStatusType;
-  onStatusChange?: (status: WorkspaceEditStatusType) => void;
+  initialStatus?: ItemEditStatusType;
+  onStatusChange?: (status: ItemEditStatusType) => void;
   className?: string;
 }
 
 /**
- * ワークスペース編集状態を表示するコンポーネント。
- * - 初期状態取得 (GetWorkspaceEditStatus)
- * - workspace:edit_started / workspace:edit_ended を購読
+ * アイテム編集状態を表示するコンポーネント。
+ * - 初期状態取得 (GetItemEditStatus)
+ * - item:edit_started / item:edit_ended を購読
  */
-export default function WorkspaceEditStatus({
-  workspaceId,
+export default function ItemEditStatus({
+  itemId,
   currentUserId,
   initialStatus,
   onStatusChange,
   className,
-}: WorkspaceEditStatusProps) {
-  const { getWorkspaceEditStatus, onWorkspaceEditStarted, onWorkspaceEditEnded, connectionState } = useSignalRContext();
-  const [status, setStatus] = useState<WorkspaceEditStatusType>(initialStatus ?? { isEditing: false });
+}: ItemEditStatusProps) {
+  const { getItemEditStatus, onItemEditStarted, onItemEditEnded, connectionState } = useSignalRContext();
+  const [status, setStatus] = useState<ItemEditStatusType>(initialStatus ?? { isEditing: false });
 
   // 初期取得
   useEffect(() => {
     let active = true;
     const fetchStatus = async () => {
-      const result = await getWorkspaceEditStatus(workspaceId);
+      const result = await getItemEditStatus(itemId);
       if (!active) return;
       setStatus(result);
       onStatusChange?.(result);
@@ -42,13 +42,13 @@ export default function WorkspaceEditStatus({
     return () => {
       active = false;
     };
-  }, [getWorkspaceEditStatus, workspaceId, onStatusChange]);
+  }, [getItemEditStatus, itemId, onStatusChange]);
 
   // イベント購読
   useEffect(() => {
-    const unsubStart = onWorkspaceEditStarted((payload) => {
-      if (payload.workspaceId !== workspaceId) return;
-      const next: WorkspaceEditStatusType = {
+    const unsubStart = onItemEditStarted((payload) => {
+      if (payload.itemId !== itemId) return;
+      const next: ItemEditStatusType = {
         isEditing: true,
         editor: mapEditor(payload.userId, payload.userName, payload.identityIconUrl),
       };
@@ -56,9 +56,9 @@ export default function WorkspaceEditStatus({
       onStatusChange?.(next);
     });
 
-    const unsubEnd = onWorkspaceEditEnded((payload) => {
-      if (payload.workspaceId !== workspaceId) return;
-      const next: WorkspaceEditStatusType = { isEditing: false };
+    const unsubEnd = onItemEditEnded((payload) => {
+      if (payload.itemId !== itemId) return;
+      const next: ItemEditStatusType = { isEditing: false };
       setStatus(next);
       onStatusChange?.(next);
     });
@@ -67,12 +67,12 @@ export default function WorkspaceEditStatus({
       unsubStart();
       unsubEnd();
     };
-  }, [workspaceId, onWorkspaceEditEnded, onWorkspaceEditStarted, onStatusChange]);
+  }, [itemId, onItemEditEnded, onItemEditStarted, onStatusChange]);
 
   // 接続断でローカル状態クリア
   useEffect(() => {
     if (connectionState === 'disconnected') {
-      const cleared = { isEditing: false } as WorkspaceEditStatusType;
+      const cleared = { isEditing: false } as ItemEditStatusType;
       setStatus(cleared);
       onStatusChange?.(cleared);
     }
@@ -83,12 +83,12 @@ export default function WorkspaceEditStatus({
     const { editor } = status;
     if (editor.userId === currentUserId) {
       return {
-        variant: 'info' as const,
-        text: '別のタブで編集中です',
+        variant: 'warning' as const,
+        text: 'ブラウザの別のタブで編集中です',
       };
     }
     return {
-      variant: 'warning' as const,
+      variant: 'info' as const,
       text: `${editor.userName ?? '誰か'} さんが編集中です`,
     };
   }, [currentUserId, status]);
@@ -99,7 +99,7 @@ export default function WorkspaceEditStatus({
     <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
       <div className="flex items-center gap-2">
         <span
-          className={message.variant === 'warning' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
+          className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
         />
         <span>{message.text}</span>
       </div>
@@ -107,7 +107,7 @@ export default function WorkspaceEditStatus({
   );
 }
 
-function mapEditor(userId: number, userName: string, identityIconUrl: string | null): WorkspaceEditor {
+function mapEditor(userId: number, userName: string, identityIconUrl: string | null): ItemEditor {
   return {
     userId,
     userName,

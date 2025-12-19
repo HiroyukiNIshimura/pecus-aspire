@@ -10,11 +10,11 @@ import {
   type PredecessorTaskOption,
   updateWorkspaceTask,
 } from '@/actions/workspaceTask';
+import TaskEditStatus from '@/components/common/feedback/TaskEditStatus';
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskCommentSection from '@/components/workspaceItems/TaskCommentSection';
-import TaskEditStatus from '@/components/workspaces/TaskEditStatus';
 import TaskTypeSelect, { type TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import type {
   TaskPriority,

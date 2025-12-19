@@ -11,6 +11,7 @@ import {
 } from '@/actions/workspace';
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { getWorkspaceTaskBySequence } from '@/actions/workspaceTask';
+import WorkspaceEditStatus from '@/components/common/feedback/WorkspaceEditStatus';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
@@ -22,7 +23,6 @@ import EditWorkspaceModal from '@/components/workspaces/EditWorkspaceModal';
 import EditWorkspaceSkillsModal from '@/components/workspaces/EditWorkspaceSkillsModal';
 import RemoveMemberModal from '@/components/workspaces/RemoveMemberModal';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
-import WorkspaceEditStatus from '@/components/workspaces/WorkspaceEditStatus';
 import WorkspaceMemberList from '@/components/workspaces/WorkspaceMemberList';
 import WorkspacePresence from '@/components/workspaces/WorkspacePresence';
 import type {
