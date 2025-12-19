@@ -863,6 +863,59 @@ entity.HasOne(cr => cr.Workspace)
 
 ---
 
+## システム通知ヘルパー（SystemNotificationService）
+
+組織のシステム通知ルームへのメッセージ送信と、SignalR によるリアルタイム通知を一括で行うヘルパーサービス。
+
+### 配置場所
+
+`pecus.WebApi/Services/SystemNotificationService.cs`
+
+### メソッド一覧
+
+| メソッド | 説明 |
+|---------|------|
+| `SendAsync(organizationId, content)` | 組織のシステムルームにメッセージを保存し、SignalR で通知 |
+| `SendToMultipleOrganizationsAsync(organizationIds, content)` | 複数組織に送信 |
+| `SendToAllOrganizationsAsync(content)` | 全組織に送信（運営アナウンス用） |
+| `PublishToOrganizationAsync(organizationId, eventType, payload)` | DB保存なしで SignalR 通知のみ |
+| `PublishToMultipleOrganizationsAsync(organizationIds, eventType, payload)` | 複数組織に SignalR 通知のみ |
+| `PublishToAllOrganizationsAsync(eventType, payload)` | 全組織に SignalR 通知のみ |
+
+### 使用例
+
+```csharp
+// DI でサービスを取得
+private readonly SystemNotificationService _systemNotificationService;
+
+// 特定組織にシステム通知を送信（DB保存 + SignalR）
+await _systemNotificationService.SendAsync(
+    organizationId: 1,
+    content: "メンテナンスのお知らせ：12/25 10:00 - 12:00"
+);
+
+// 全組織に運営アナウンス
+await _systemNotificationService.SendToAllOrganizationsAsync(
+    "新機能「チャット」をリリースしました！"
+);
+
+// DB保存なしでリアルタイム通知のみ（一時的なステータス通知など）
+await _systemNotificationService.PublishToOrganizationAsync(
+    organizationId: 1,
+    eventType: "system:maintenance_starting",
+    payload: new { StartAt = DateTimeOffset.UtcNow }
+);
+```
+
+### 注意事項
+
+- `SendAsync` 系メソッドは、システムルームが存在しない場合は自動作成する
+- システムメッセージは `SenderUserId = null`、`MessageType = System` で保存される
+- SignalR 通知は `organization:{organizationId}` グループに送信される
+
+---
+
 ## 参考
 
 - SignalR グループ設計: `docs/spec/signalr-implementation.md`
+
