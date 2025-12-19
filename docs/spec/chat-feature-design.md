@@ -12,6 +12,7 @@
 | ユーザーと AI アシスタント | AI との対話セッション |
 | ユーザー A とユーザー B の 1:1 DM | ダイレクトメッセージ |
 | グループチャット | 3人以上のチャットルーム |
+| システムからの通知 | システムからの通知を自由に送信できる |
 
 ※ ワークスペース全体のチャットは `workspace:{workspaceId}` グループで対応可能
 
@@ -29,25 +30,25 @@
 │ Type            │  │    │ ChatRoomId (FK)     │────┘  │ Username        │
 │ Name            │  └───>│ UserId (FK)         │───────│ ...             │
 │ OrganizationId  │       │ Role                │       └─────────────────┘
-│ DmUserPair      │       │ JoinedAt            │              │
-│ CreatedByUserId │       │ LastReadAt          │              │
-│ CreatedAt       │       └─────────────────────┘              │
-│ UpdatedAt       │                                            │
-└─────────────────┘                                            │
-        │                                                      │
-        │ 1:N                                                  │
-        ▼                                                      │
-┌─────────────────┐       ┌─────────────────────┐              │
-│   ChatMessage   │       │  ChatMessageRead    │              │
-├─────────────────┤       ├─────────────────────┤              │
-│ Id (PK)         │──────>│ ChatMessageId (FK)  │              │
-│ ChatRoomId (FK) │       │ UserId (FK)         │──────────────┘
-│ SenderUserId    │       │ ReadAt              │
-│ MessageType     │       └─────────────────────┘
+│ DmUserPair      │       │ JoinedAt            │
+│ CreatedByUserId │       │ LastReadAt          │
+│ CreatedAt       │       │ NotificationSetting │
+│ UpdatedAt       │       └─────────────────────┘
+│ RowVersion      │
+└─────────────────┘
+        │
+        │ 1:N
+        ▼
+┌─────────────────┐
+│   ChatMessage   │
+├─────────────────┤
+│ Id (PK)         │
+│ ChatRoomId (FK) │
+│ SenderUserId    │  ← AI メッセージの場合は null
+│ MessageType     │
 │ Content         │
 │ CreatedAt       │
-│ UpdatedAt       │
-│ IsDeleted       │
+│ ReplyToMessageId│
 └─────────────────┘
 ```
 
@@ -128,14 +129,24 @@ public enum ChatRoomType
     Dm = 0,
 
     /// <summary>
-    /// グループチャット（3人以上可）
+    /// グループチャット
+    /// 組織ごとに1つ存在し、全メンバーが参加
     /// </summary>
     Group = 1,
 
     /// <summary>
-    /// AI アシスタントとのチャット（メンバー1人 + AI）
+    /// AI アシスタントとのチャット
+    /// ChatRoomMember は人間ユーザー1人のみ
+    /// AI からのメッセージは SenderUserId = null, MessageType = Ai で表現
     /// </summary>
     Ai = 2,
+
+    /// <summary>
+    /// システム通知ルーム
+    /// 組織ごとに1つ存在し、全メンバーが参加
+    /// 運営からのお知らせ、アラートなどを配信
+    /// </summary>
+    System = 3,
 }
 ```
 
@@ -237,6 +248,8 @@ public enum ChatNotificationSetting
 
 チャットメッセージを管理するエンティティ。
 
+> **Note**: メッセージの編集・削除機能は MVP では対象外。将来必要になった場合は別途検討。
+
 ```csharp
 public class ChatMessage
 {
@@ -252,7 +265,8 @@ public class ChatMessage
     public ChatRoom ChatRoom { get; set; } = null!;
 
     /// <summary>
-    /// 送信者ユーザーID（AI の場合は null）
+    /// 送信者ユーザーID
+    /// AI からのメッセージの場合は null（MessageType = Ai と併用）
     /// </summary>
     public int? SenderUserId { get; set; }
     public User? SenderUser { get; set; }
@@ -273,23 +287,10 @@ public class ChatMessage
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
-    /// 編集日時
-    /// </summary>
-    public DateTimeOffset? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// 削除フラグ（論理削除）
-    /// </summary>
-    public bool IsDeleted { get; set; } = false;
-
-    /// <summary>
     /// 返信先メッセージID（スレッド返信の場合）
     /// </summary>
     public int? ReplyToMessageId { get; set; }
     public ChatMessage? ReplyToMessage { get; set; }
-
-    // Navigation Properties
-    public ICollection<ChatMessageRead> ReadBy { get; set; } = new List<ChatMessageRead>();
 }
 ```
 
@@ -304,7 +305,7 @@ public enum ChatMessageType
     Text = 0,
 
     /// <summary>
-    /// システムメッセージ（参加/退出通知など）
+    /// システムメッセージ（システム通知ルームで使用）
     /// </summary>
     System = 1,
 
@@ -319,36 +320,6 @@ public enum ChatMessageType
     File = 3,
 }
 ```
-
----
-
-### ChatMessageRead（メッセージ既読）
-
-メッセージごとの既読状態を管理する中間テーブル。
-
-```csharp
-public class ChatMessageRead
-{
-    /// <summary>
-    /// メッセージID
-    /// </summary>
-    public int ChatMessageId { get; set; }
-    public ChatMessage ChatMessage { get; set; } = null!;
-
-    /// <summary>
-    /// 既読したユーザーID
-    /// </summary>
-    public int UserId { get; set; }
-    public User User { get; set; } = null!;
-
-    /// <summary>
-    /// 既読日時
-    /// </summary>
-    public DateTimeOffset ReadAt { get; set; } = DateTimeOffset.UtcNow;
-}
-```
-
-> **Note**: 主キーは `(ChatMessageId, UserId)` の複合キー
 
 ---
 
@@ -384,22 +355,6 @@ entity.HasIndex(e => new { e.ChatRoomId, e.UserId }).IsUnique();
 ```csharp
 // ルーム内のメッセージ一覧取得用（日時降順）
 entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
-
-// 未読メッセージ取得用
-entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt, e.IsDeleted });
-```
-
-### ChatMessageRead
-
-```csharp
-// 複合主キー
-entity.HasKey(e => new { e.ChatMessageId, e.UserId });
-
-// ユーザーの既読メッセージ取得用
-entity.HasIndex(e => e.UserId);
-
-// メッセージの既読者一覧取得用（外部キーで自動作成されるが明示）
-entity.HasIndex(e => e.ChatMessageId);
 ```
 
 ---
@@ -461,17 +416,41 @@ public class ChatRoomService
         return room;
     }
 }
-```
+
 
 ---
 
 ## SignalR グループ
 
-チャット機能では以下のグループを使用：
+### DB とは独立したリアルタイム配信の仕組み
+
+SignalR グループは **DB のチャットルームとは独立した概念** である。
+
+- **DB（ChatRoom テーブル）**: メッセージの永続化、履歴管理、既読状態の保存
+- **SignalR グループ**: リアルタイム通知の配信先を管理する一時的なメモリ上の仕組み
+
+SignalR グループは「今この瞬間、どのクライアントにメッセージを届けるか」を管理するもので、DB のルーム ID をグループ名に利用しているだけ。両者に直接的な依存関係はない。
 
 ```
-chat:{chatRoomId}
+┌─────────────────────────────────────────────────────────────┐
+│                      メッセージ送信の流れ                     │
+├─────────────────────────────────────────────────────────────┤
+│  1. クライアント → API → DB に ChatMessage を INSERT         │
+│  2. INSERT 成功後、SignalR グループに通知を PUB              │
+│  3. グループに参加中のクライアントがリアルタイムで受信        │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+### グループ構成
+
+チャット機能では以下のグループを使用：
+
+| ChatRoomType | SignalR グループ | 説明 |
+|--------------|------------------|------|
+| Dm | `chat:{chatRoomId}` | DM ルーム専用 |
+| Group | `chat:{chatRoomId}` | グループチャット専用 |
+| Ai | `chat:{chatRoomId}` | AI チャット専用 |
+| System | `organization:{organizationId}` | 組織全体への通知 |
 
 ### 参加/離脱タイミング
 
@@ -481,6 +460,8 @@ chat:{chatRoomId}
 | チャット画面を閉じた | `LeaveChat(chatRoomId)` でグループ離脱 + 退室通知 |
 | 切断時 | SignalR が自動でグループ離脱 |
 
+> **Note**: `organization:{organizationId}` グループはログイン時に自動参加（既存実装）
+
 ### 通知イベント
 
 | イベント | 送信元 | 説明 |
@@ -488,8 +469,50 @@ chat:{chatRoomId}
 | `chat:user_joined` | Hub | 入室通知 |
 | `chat:user_left` | Hub | 退室通知 |
 | `chat:user_typing` | Hub | 入力中通知 |
-| `chat:message_sent` | NotificationService | メッセージ送信 |
+| `chat:message_received` | NotificationService | メッセージ受信（後述） |
 | `chat:message_read` | NotificationService | 既読通知（誰がどのメッセージまで読んだか） |
+
+---
+
+## リアルタイム通知
+
+### メッセージ受信イベント
+
+メッセージが DB に保存されたタイミングで SignalR 通知を送信する。
+
+```typescript
+// イベント名
+chat:message_received
+
+// Payload
+{
+  category: 'system' | 'dm' | 'group' | 'ai',  // ChatRoomType から判定
+  roomId: number,
+  message: {
+    id: number,
+    senderUserId: number | null,
+    messageType: ChatMessageType,
+    content: string,
+    createdAt: string,  // ISO 8601
+    replyToMessageId: number | null,
+  }
+}
+```
+
+### カテゴリ判定
+
+| ChatRoomType | category |
+|--------------|----------|
+| Dm | `'dm'` |
+| Group | `'group'` |
+| Ai | `'ai'` |
+| System | `'system'` |
+
+### 未読バッジ
+
+- ヘッダーに未読メッセージ数の合計を表示
+- `ChatNotificationSetting.Muted` のルームは未読カウントから**除外**
+- カテゴリ別の未読数はフロントエンドで `category` を見て集計
 
 ---
 
@@ -514,9 +537,8 @@ chat:{chatRoomId}
 
 | タイミング | 処理 |
 |-----------|------|
-| チャット画面フォーカス時 | 最新メッセージの時刻で `LastReadAt` を更新 |
-| 新着メッセージ受信時（画面アクティブ & 最下部表示中） | `LastReadAt` を更新 |
-| スクロールが最下部に到達 | `LastReadAt` を更新 |
+| メッセージが視覚範囲に入った時 | 該当メッセージの `CreatedAt` で `LastReadAt` を更新 |
+| 新着メッセージ受信時（画面アクティブ & 視覚範囲内） | `LastReadAt` を更新 |
 
 ### 未読カウントの計算
 
@@ -525,76 +547,46 @@ chat:{chatRoomId}
 var unreadCount = await _context.ChatMessages
     .Where(m => m.ChatRoomId == roomId)
     .Where(m => m.CreatedAt > member.LastReadAt)
-    .Where(m => !m.IsDeleted)
     .CountAsync();
 ```
 
 ### フロントエンド実装例
 
 ```typescript
-const markAsRead = async (roomId: number) => {
-  await updateLastReadAt(roomId, new Date());
+const markAsRead = async (roomId: number, messageCreatedAt: Date) => {
+  await updateLastReadAt(roomId, messageCreatedAt);
 };
 
-// チャット画面フォーカス時
-useEffect(() => {
-  if (isFocused && messages.length > 0) {
-    markAsRead(roomId);
-  }
-}, [isFocused]);
-
-// スクロールが最下部に到達時
-const handleScrollToBottom = () => {
-  markAsRead(roomId);
+// IntersectionObserver でメッセージが視覚範囲に入ったかを検知
+const observeMessage = (messageEl: HTMLElement, message: ChatMessage) => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          markAsRead(roomId, message.createdAt);
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.5 } // 50% 以上表示されたら既読
+  );
+  observer.observe(messageEl);
 };
 
-// 新着メッセージ受信時（画面アクティブなら）
+// 新着メッセージ受信時（画面アクティブ & 視覚範囲内なら即座に既読）
 onNewMessage((msg) => {
-  if (document.hasFocus() && isScrolledToBottom) {
-    markAsRead(roomId);
+  if (document.hasFocus() && isMessageInViewport(msg)) {
+    markAsRead(roomId, msg.createdAt);
   }
 });
 ```
 
-### 補足: メッセージ単位の既読（オプション）
+### 補足: メッセージ単位の既読について
 
-グループチャットで「誰が読んだか」を表示したい場合は `ChatMessageRead` テーブルを使用。
-ただし、メッセージ数 × ユーザー数のレコードが発生するためパフォーマンスに注意。
+MVP ではウォーターマーク方式（`LastReadAt`）のみで運用する。
 
-基本はウォーターマーク方式（`LastReadAt`）で運用し、必要に応じて個別既読を追加する。
-
----
-
-## API エンドポイント（案）
-
-### チャットルーム
-
-| メソッド | エンドポイント | 説明 |
-|---------|---------------|------|
-| GET | `/api/chat/rooms` | 自分が参加しているルーム一覧 |
-| POST | `/api/chat/rooms` | グループチャットルーム作成 |
-| POST | `/api/chat/rooms/dm/{userId}` | DM ルーム取得または作成 |
-| GET | `/api/chat/rooms/{roomId}` | ルーム詳細取得 |
-| PUT | `/api/chat/rooms/{roomId}` | ルーム設定更新 |
-| DELETE | `/api/chat/rooms/{roomId}` | ルーム削除（Owner のみ） |
-
-### メンバー管理
-
-| メソッド | エンドポイント | 説明 |
-|---------|---------------|------|
-| POST | `/api/chat/rooms/{roomId}/members` | メンバー追加（Admin 以上） |
-| DELETE | `/api/chat/rooms/{roomId}/members/{userId}` | メンバー削除 |
-| PUT | `/api/chat/rooms/{roomId}/members/{userId}/role` | 役割変更（Owner のみ） |
-
-### メッセージ
-
-| メソッド | エンドポイント | 説明 |
-|---------|---------------|------|
-| GET | `/api/chat/rooms/{roomId}/messages` | メッセージ一覧（ページング） |
-| POST | `/api/chat/rooms/{roomId}/messages` | メッセージ送信 |
-| PUT | `/api/chat/rooms/{roomId}/messages/{messageId}` | メッセージ編集 |
-| DELETE | `/api/chat/rooms/{roomId}/messages/{messageId}` | メッセージ削除（論理削除） |
-| POST | `/api/chat/rooms/{roomId}/read` | 既読マーク更新 |
+グループチャットで「誰が読んだか」を表示する要件が発生した場合は、`ChatMessageRead` テーブルの追加を検討する。
+ただし、メッセージ数 × ユーザー数のレコードが発生するためパフォーマンスに注意が必要。
 
 ---
 
@@ -606,6 +598,8 @@ onNewMessage((msg) => {
 - [ ] ピン留めメッセージ
 - [ ] リアクション（絵文字）
 - [ ] AI チャットの実装詳細（セッション管理、コンテキスト保持など）
+- [ ] メッセージ編集・削除機能
+- [ ] 古いメッセージの定期削除（バッチ処理）
 
 ---
 
