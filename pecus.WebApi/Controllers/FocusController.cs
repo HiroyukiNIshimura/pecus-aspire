@@ -6,8 +6,8 @@ using Pecus.Services;
 namespace Pecus.Controllers;
 
 /// <summary>
-/// フォーカス推奨コントローラー
-/// タスクのフォーカス推奨機能を提供します
+/// やることピックアップコントローラー
+/// タスクのやることピックアップ機能を提供します
 /// </summary>
 [Route("api/focus")]
 [Produces("application/json")]
@@ -28,9 +28,9 @@ public class FocusController : BaseSecureController
     }
 
     /// <summary>
-    /// 自分のフォーカス推奨タスクを取得
+    /// 自分のやることピックアップタスクを取得
     /// </summary>
-    /// <returns>フォーカス推奨タスクリスト</returns>
+    /// <returns>やることピックアップタスクリスト</returns>
     [HttpGet("me")]
     [ProducesResponseType(typeof(FocusRecommendationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -38,14 +38,14 @@ public class FocusController : BaseSecureController
     public async Task<Ok<FocusRecommendationResponse>> GetMyFocusRecommendation()
     {
         _logger.LogDebug(
-            "フォーカス推奨タスク取得リクエスト: UserId={UserId}",
+            "やることピックアップタスク取得リクエスト: UserId={UserId}",
             CurrentUserId
         );
 
         var response = await _focusService.GetFocusRecommendationAsync(CurrentUserId);
 
         _logger.LogDebug(
-            "フォーカス推奨タスク取得完了: UserId={UserId}, FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
+            "やることピックアップタスク取得完了: UserId={UserId}, FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
             CurrentUserId,
             response.FocusTasks.Count,
             response.WaitingTasks.Count

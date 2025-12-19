@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { FocusTaskResponse } from './FocusTaskResponse';
 /**
- * フォーカス推奨レスポンス
+ * やることピックアップレスポンス
  */
 export type FocusRecommendationResponse = {
     /**

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.Focus;
 
 /// <summary>
-/// フォーカス推奨レスポンス
+/// やることピックアップレスポンス
 /// </summary>
 public class FocusRecommendationResponse
 {

@@ -6,6 +6,8 @@ import { formatRelativeTime } from '@/libs/utils/date';
 interface ChatMessageItemComponentProps {
   message: ChatMessageItem;
   isOwnMessage: boolean;
+  /** 既読表示を表示するか（DM用） */
+  showReadStatus?: boolean;
 }
 
 /**
@@ -14,7 +16,11 @@ interface ChatMessageItemComponentProps {
  * - 相手のメッセージ: 左寄せ、グレー
  * - システム/AI: 中央、特別スタイル
  */
-export default function ChatMessageItemComponent({ message, isOwnMessage }: ChatMessageItemComponentProps) {
+export default function ChatMessageItemComponent({
+  message,
+  isOwnMessage,
+  showReadStatus = false,
+}: ChatMessageItemComponentProps) {
   const { messageType, content, sender, createdAt } = message;
 
   // システムメッセージ
@@ -49,8 +55,9 @@ export default function ChatMessageItemComponent({ message, isOwnMessage }: Chat
       <div className="flex justify-end my-2">
         <div className="max-w-[80%]">
           <div className="bg-primary text-primary-content px-3 py-2 rounded-lg rounded-tr-none">{content}</div>
-          <div className="text-xs text-base-content/50 mt-1 text-right">
-            {createdAt && formatRelativeTime(createdAt)}
+          <div className="flex items-center justify-end gap-2 mt-1">
+            <span className="text-xs text-base-content/50">{createdAt && formatRelativeTime(createdAt)}</span>
+            {showReadStatus && <span className="text-xs text-primary">既読</span>}
           </div>
         </div>
       </div>

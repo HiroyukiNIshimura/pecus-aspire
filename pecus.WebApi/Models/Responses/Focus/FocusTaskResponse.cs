@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Pecus.Models.Responses.Focus;
 
 /// <summary>
-/// フォーカス推奨タスクレスポンス
+/// やることピックアップタスクレスポンス
 /// </summary>
 public class FocusTaskResponse
 {

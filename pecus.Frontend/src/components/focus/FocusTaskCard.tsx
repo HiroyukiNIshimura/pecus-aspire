@@ -69,7 +69,7 @@ function getDueDateBadge(dueDate: string) {
 }
 
 /**
- * フォーカス推奨タスクカード
+ * やることピックアップタスクカード
  * 着手可能なタスクを表示
  */
 export default function FocusTaskCard({ task }: FocusTaskCardProps) {

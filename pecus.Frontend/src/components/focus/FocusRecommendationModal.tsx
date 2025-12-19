@@ -13,7 +13,7 @@ interface FocusRecommendationModalProps {
 }
 
 /**
- * フォーカス推奨モーダル
+ * やることピックアップモーダル
  * ユーザーが今すぐ取り組むべきタスクと待機中のタスクを表示
  */
 export default function FocusRecommendationModal({ isOpen, onClose }: FocusRecommendationModalProps) {

@@ -288,5 +288,5 @@ Hangfire がジョブを処理していくように、人間がタスクを処�
 ## 関連ドキュメント
 
 - [ダッシュボード統計機能](dashboard-statistics.md) - アイテム・タスク両方の統計
-- [タスクフォーカス推奨機能](task-focus-recommendation.md) - タスクの優先順位付け
+- [やることピックアップ機能](task-focus-recommendation.md) - タスクの優先順位付け
 - [アクティビティ要件定義](activity-requirements.md) - アイテム操作の記録

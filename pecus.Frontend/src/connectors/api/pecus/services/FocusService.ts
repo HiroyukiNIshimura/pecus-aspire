@@ -8,7 +8,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class FocusService {
     /**
-     * 自分のフォーカス推奨タスクを取得
+     * 自分のやることピックアップタスクを取得
      * @returns FocusRecommendationResponse OK
      * @throws ApiError
      */

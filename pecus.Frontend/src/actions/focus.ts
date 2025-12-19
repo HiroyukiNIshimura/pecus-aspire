@@ -5,7 +5,7 @@ import type { FocusRecommendationResponse } from '@/connectors/api/pecus';
 import type { ApiResponse } from './types';
 
 /**
- * ログインユーザーのフォーカス推奨タスクを取得
+ * ログインユーザーのやることピックアップタスクを取得
  */
 export async function fetchFocusRecommendation(): Promise<ApiResponse<FocusRecommendationResponse>> {
   try {
@@ -15,6 +15,6 @@ export async function fetchFocusRecommendation(): Promise<ApiResponse<FocusRecom
     return { success: true, data: response };
   } catch (error: unknown) {
     console.error('Failed to fetch focus recommendation:', error);
-    return parseErrorResponse(error, 'フォーカス推奨タスクの取得に失敗しました');
+    return parseErrorResponse(error, 'やることピックアップタスクの取得に失敗しました');
   }
 }

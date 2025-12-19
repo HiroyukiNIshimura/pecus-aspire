@@ -229,6 +229,9 @@ interface SignalRContextValue {
   /** チャットルームグループから離脱 */
   leaveChat: (chatRoomId: number) => Promise<void>;
 
+  /** チャット入力中通知を送信 */
+  sendChatTyping: (chatRoomId: number, isTyping?: boolean) => Promise<void>;
+
   /** 通知ハンドラーを登録（クリーンアップ関数を返す） */
   onNotification: (handler: NotificationHandler) => () => void;
 
@@ -633,6 +636,22 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
   }, []);
 
   /**
+   * チャット入力中通知を送信
+   */
+  const sendChatTyping = useCallback(async (chatRoomId: number, isTyping = true) => {
+    const connection = connectionRef.current;
+    if (!connection || connection.state !== HubConnectionState.Connected) {
+      return;
+    }
+
+    try {
+      await connection.invoke('SendChatTyping', chatRoomId, isTyping);
+    } catch (error) {
+      console.error('[SignalR] Failed to send chat typing:', error);
+    }
+  }, []);
+
+  /**
    * 通知ハンドラーを登録
    */
   const onNotification = useCallback((handler: NotificationHandler) => {
@@ -951,6 +970,7 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
     leaveTask,
     joinChat,
     leaveChat,
+    sendChatTyping,
     onNotification,
     startItemEdit,
     endItemEdit,

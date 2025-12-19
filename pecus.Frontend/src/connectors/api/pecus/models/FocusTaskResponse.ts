@@ -7,7 +7,7 @@ import type { SuccessorTaskInfo } from './SuccessorTaskInfo';
 import type { TaskPriority } from './TaskPriority';
 import type { TaskScoreDetail } from './TaskScoreDetail';
 /**
- * フォーカス推奨タスクレスポンス
+ * やることピックアップタスクレスポンス
  */
 export type FocusTaskResponse = {
     /**

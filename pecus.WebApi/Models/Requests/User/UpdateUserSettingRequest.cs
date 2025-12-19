@@ -41,14 +41,14 @@ public class UpdateUserSettingRequest
     public LandingPage? LandingPage { get; set; }
 
     /// <summary>
-    /// フォーカス推奨のスコアリング優先要素
+    /// やることピックアップのスコアリング優先要素
     /// Priority: 優先度重視、Deadline: 期限重視、SuccessorImpact: 後続タスク影響重視
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<FocusScorePriority>))]
     public FocusScorePriority? FocusScorePriority { get; set; }
 
     /// <summary>
-    /// フォーカス推奨タスクの表示件数（5-20）
+    /// やることピックアップタスクの表示件数（5-20）
     /// </summary>
     [Required(ErrorMessage = "フォーカスタスク表示件数は必須です。")]
     [Range(5, 20, ErrorMessage = "フォーカスタスク表示件数は5〜20の範囲で指定してください。")]

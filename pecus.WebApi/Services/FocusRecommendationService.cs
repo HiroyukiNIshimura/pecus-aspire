@@ -7,7 +7,7 @@ using Pecus.Models.Responses.Focus;
 namespace Pecus.Services;
 
 /// <summary>
-/// フォーカス推奨サービス
+/// やることピックアップサービス
 /// タスクのスコアリングと推奨タスクの選定を行います
 /// </summary>
 public class FocusRecommendationService
@@ -25,13 +25,13 @@ public class FocusRecommendationService
     }
 
     /// <summary>
-    /// ユーザーのフォーカス推奨タスクを取得
+    /// ユーザーのやることピックアップタスクを取得
     /// </summary>
     /// <param name="userId">ユーザーID</param>
-    /// <returns>フォーカス推奨レスポンス</returns>
+    /// <returns>やることピックアップレスポンス</returns>
     public async Task<FocusRecommendationResponse> GetFocusRecommendationAsync(int userId)
     {
-        _logger.LogDebug("フォーカス推奨タスク取得開始: UserId={UserId}", userId);
+        _logger.LogDebug("やることピックアップタスク取得開始: UserId={UserId}", userId);
 
         // ユーザー設定を取得（デフォルト値使用）
         var userSetting = await _context.UserSettings
@@ -156,7 +156,7 @@ public class FocusRecommendationService
             .ToList();
 
         _logger.LogDebug(
-            "フォーカス推奨タスク取得完了: FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
+            "やることピックアップタスク取得完了: FocusTasks={FocusCount}, WaitingTasks={WaitingCount}",
             focusTasks.Count,
             waitingTasks.Count
         );

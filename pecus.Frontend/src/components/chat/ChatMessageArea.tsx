@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getChatMessages, getChatRoomDetail, sendChatMessage, updateReadPosition } from '@/actions/chat';
 import type { ChatMessageItem, ChatRoomDetailResponse } from '@/connectors/api/pecus';
 import { useSignalREvent } from '@/hooks/useSignalR';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 import ChatMessageInput from './ChatMessageInput';
 import ChatMessageList from './ChatMessageList';
+import ChatTypingIndicator from './ChatTypingIndicator';
 
 interface ChatMessageAreaProps {
   roomId: number;
@@ -35,14 +36,38 @@ interface ChatMessageReceivedPayload {
   };
 }
 
+/** SignalR chat:user_typing イベントのペイロード型 */
+interface ChatUserTypingPayload {
+  roomId: number;
+  userId: number;
+  userName: string;
+  isTyping: boolean;
+}
+
+/** SignalR chat:message_read イベントのペイロード型 */
+interface ChatMessageReadPayload {
+  roomId: number;
+  userId: number;
+  readAt: string;
+  readMessageId?: number | null;
+}
+
+/** 入力中ユーザー情報 */
+interface TypingUser {
+  userId: number;
+  userName: string;
+  timeoutId: NodeJS.Timeout;
+}
+
 /**
  * メッセージエリアコンポーネント
  * - ルーム詳細とメッセージを取得
  * - メッセージ送信
  * - 既読位置の更新
+ * - 入力中インジケーター表示
  */
 export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAreaProps) {
-  const { joinChat, leaveChat } = useSignalRContext();
+  const { joinChat, leaveChat, sendChatTyping } = useSignalRContext();
   const [room, setRoom] = useState<ChatRoomDetailResponse | null>(null);
   const [messages, setMessages] = useState<ChatMessageItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +75,23 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
 
+  // 入力中ユーザー管理
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const typingUsersRef = useRef<Map<number, TypingUser>>(new Map());
+
+  // 既読状態管理（DM用）: 相手が読んだ最新のメッセージID
+  const [lastReadMessageId, setLastReadMessageId] = useState<number | null>(null);
+
   // チャットルームグループに参加/離脱
   useEffect(() => {
     joinChat(roomId);
     return () => {
       leaveChat(roomId);
+      // クリーンアップ: 入力中のタイムアウトをクリア
+      for (const user of typingUsersRef.current.values()) {
+        clearTimeout(user.timeoutId);
+      }
+      typingUsersRef.current.clear();
     };
   }, [roomId, joinChat, leaveChat]);
 
@@ -73,8 +110,13 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         setHasMore(messagesResult.data.hasMore ?? false);
         setNextCursor(messagesResult.data.nextCursor ?? null);
 
-        // 現在時刻で既読位置を更新
-        await updateReadPosition(roomId);
+        // 最新メッセージIDで既読位置を更新
+        const latestMessage = messagesResult.data.messages[messagesResult.data.messages.length - 1];
+        if (latestMessage) {
+          await updateReadPosition(roomId, undefined, latestMessage.id);
+        } else {
+          await updateReadPosition(roomId);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch room and messages:', error);
@@ -103,6 +145,8 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
   const handleSend = useCallback(
     async (content: string) => {
       setSending(true);
+      // 入力終了を通知
+      sendChatTyping(roomId, false);
       try {
         const result = await sendChatMessage(roomId, content);
         if (result.success && result.data) {
@@ -115,11 +159,24 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         setSending(false);
       }
     },
-    [roomId],
+    [roomId, sendChatTyping],
   );
+
+  // 入力中通知
+  const handleTyping = useCallback(() => {
+    sendChatTyping(roomId, true);
+  }, [roomId, sendChatTyping]);
 
   // roomId が変わったらデータを再取得
   useEffect(() => {
+    // 入力中状態をリセット
+    setTypingUsers([]);
+    for (const user of typingUsersRef.current.values()) {
+      clearTimeout(user.timeoutId);
+    }
+    typingUsersRef.current.clear();
+    setLastReadMessageId(null);
+
     fetchRoomAndMessages();
   }, [fetchRoomAndMessages]);
 
@@ -145,13 +202,95 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         createdAt: payload.message.createdAt,
       };
       setMessages((prev) => [...prev, newMessage]);
-      // 既読位置を更新
-      updateReadPosition(roomId);
+      // 既読位置を更新（新しいメッセージIDを含む）
+      updateReadPosition(roomId, undefined, payload.message.id);
+
+      // メッセージを受信したら、その送信者の入力中表示を消す
+      const existingUser = typingUsersRef.current.get(payload.message.senderUserId);
+      if (existingUser) {
+        clearTimeout(existingUser.timeoutId);
+        typingUsersRef.current.delete(payload.message.senderUserId);
+        setTypingUsers(Array.from(typingUsersRef.current.values()));
+      }
     },
     [roomId, currentUserId],
   );
 
   useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
+
+  // SignalR: 入力中通知
+  const handleUserTyping = useCallback(
+    (payload: ChatUserTypingPayload) => {
+      // 現在開いているルームのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+      // 自分自身は無視
+      if (payload.userId === currentUserId) {
+        return;
+      }
+
+      const existingUser = typingUsersRef.current.get(payload.userId);
+
+      if (payload.isTyping) {
+        // 入力開始
+        if (existingUser) {
+          // 既存のタイムアウトをクリアして延長
+          clearTimeout(existingUser.timeoutId);
+        }
+
+        // 5秒後に自動的に入力終了とみなす
+        const timeoutId = setTimeout(() => {
+          typingUsersRef.current.delete(payload.userId);
+          setTypingUsers(Array.from(typingUsersRef.current.values()));
+        }, 5000);
+
+        typingUsersRef.current.set(payload.userId, {
+          userId: payload.userId,
+          userName: payload.userName,
+          timeoutId,
+        });
+      } else {
+        // 入力終了
+        if (existingUser) {
+          clearTimeout(existingUser.timeoutId);
+          typingUsersRef.current.delete(payload.userId);
+        }
+      }
+
+      setTypingUsers(Array.from(typingUsersRef.current.values()));
+    },
+    [roomId, currentUserId],
+  );
+
+  useSignalREvent<ChatUserTypingPayload>('chat:user_typing', handleUserTyping);
+
+  // SignalR: 既読通知（DM用）
+  const handleMessageRead = useCallback(
+    (payload: ChatMessageReadPayload) => {
+      // 現在開いているルームのみ処理
+      if (payload.roomId !== roomId) {
+        return;
+      }
+      // 自分自身の既読は無視
+      if (payload.userId === currentUserId) {
+        return;
+      }
+      // DMの場合のみ既読表示を更新
+      if (room?.type === 'Dm' && payload.readMessageId) {
+        setLastReadMessageId((prev) => {
+          // より新しいメッセージIDの場合のみ更新
+          if (prev === null || payload.readMessageId! > prev) {
+            return payload.readMessageId!;
+          }
+          return prev;
+        });
+      }
+    },
+    [roomId, currentUserId, room?.type],
+  );
+
+  useSignalREvent<ChatMessageReadPayload>('chat:message_read', handleMessageRead);
 
   // ルーム名を取得
   const getRoomName = () => {
@@ -186,10 +325,15 @@ export default function ChatMessageArea({ roomId, currentUserId }: ChatMessageAr
         loading={loading}
         hasMore={hasMore}
         onLoadMore={loadMoreMessages}
+        lastReadMessageId={lastReadMessageId}
+        isDm={room?.type === 'Dm'}
       />
 
+      {/* 入力中インジケーター */}
+      <ChatTypingIndicator typingUsers={typingUsers} />
+
       {/* 入力欄 */}
-      <ChatMessageInput onSend={handleSend} disabled={sending} />
+      <ChatMessageInput onSend={handleSend} onTyping={handleTyping} disabled={sending} />
     </div>
   );
 }

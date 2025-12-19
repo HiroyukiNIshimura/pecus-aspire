@@ -160,7 +160,7 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                 <p className="text-sm text-base-content/70 mt-1">ログイン後に最初に表示されるページを選択できます</p>
               </div>
 
-              <div className="divider my-6">フォーカス推奨設定</div>
+              <div className="divider my-6">やることピックアップ設定</div>
 
               <div className="form-control">
                 <label htmlFor="focusScorePriority" className="label">
@@ -200,11 +200,11 @@ export default function UserSettingsClient({ initialSettings, fetchError }: User
                   name="focusTasksLimit"
                   value={formData.focusTasksLimit}
                   onChange={(value) => handleFieldChange('focusTasksLimit', value)}
-                  label="フォーカス推奨タスクの表示件数"
+                  label="やることピックアップタスクの表示件数"
                   showValue
                   valueFormatter={(value) => `${value}件`}
                   disabled={isSubmitting}
-                  ariaLabel="フォーカス推奨タスクの表示件数"
+                  ariaLabel="やることピックアップタスクの表示件数"
                 />
                 {shouldShowError('focusTasksLimit') && (
                   <span className="label-text-alt text-error">{getFieldError('focusTasksLimit')}</span>

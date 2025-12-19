@@ -42,6 +42,23 @@ export async function getChatRoomDetail(roomId: number): Promise<ApiResponse<Cha
 }
 
 /**
+ * Server Action: DM ルームを作成または取得
+ * 既存のDMルームがあればそれを返し、なければ新規作成
+ * @param targetUserId DM相手のユーザーID
+ */
+export async function createOrGetDmRoom(targetUserId: number): Promise<ApiResponse<ChatRoomDetailResponse>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.chat.postApiChatRoomsDm({ targetUserId });
+    return { success: true, data: response };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('createOrGetDmRoom error:', errorDetail);
+    return serverError(errorDetail.message || 'DMルームの作成に失敗しました');
+  }
+}
+
+/**
  * Server Action: カテゴリ別未読数を取得
  */
 export async function getChatUnreadCounts(): Promise<ApiResponse<ChatUnreadCountByCategoryResponse>> {
@@ -101,15 +118,40 @@ export async function sendChatMessage(
  * Server Action: 既読位置を更新
  * @param roomId ルームID
  * @param readAt 既読日時（ISO 8601形式）。省略時は現在時刻
+ * @param readMessageId 既読したメッセージID（省略可能）
  */
-export async function updateReadPosition(roomId: number, readAt?: string): Promise<ApiResponse<void>> {
+export async function updateReadPosition(
+  roomId: number,
+  readAt?: string,
+  readMessageId?: number,
+): Promise<ApiResponse<void>> {
   try {
     const api = createPecusApiClients();
-    await api.chat.putApiChatRoomsRead(roomId, { readAt: readAt ?? new Date().toISOString() });
+    await api.chat.putApiChatRoomsRead(roomId, {
+      readAt: readAt ?? new Date().toISOString(),
+      readMessageId,
+    });
     return { success: true, data: undefined };
   } catch (error) {
     const errorDetail = parseErrorResponse(error);
     console.error('updateReadPosition error:', errorDetail);
     return serverError(errorDetail.message || '既読位置の更新に失敗しました');
+  }
+}
+
+/**
+ * Server Action: 入力中通知を送信
+ * @param roomId ルームID
+ * @param isTyping 入力中かどうか
+ */
+export async function notifyTyping(roomId: number, isTyping: boolean): Promise<ApiResponse<void>> {
+  try {
+    const api = createPecusApiClients();
+    await api.chat.postApiChatRoomsTyping(roomId, { isTyping });
+    return { success: true, data: undefined };
+  } catch (error) {
+    const errorDetail = parseErrorResponse(error);
+    console.error('notifyTyping error:', errorDetail);
+    return serverError(errorDetail.message || '入力中通知の送信に失敗しました');
   }
 }

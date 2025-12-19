@@ -390,4 +390,4 @@ Hangfireがジョブを処理していくように、人間がタスクを処理
 
 - [ワークスペース・アイテム・タスクの関係](workspace-item-task-relationship.md) - エンティティの基本構造
 - [ダッシュボード統計機能](dashboard-statistics.md) - アクティビティを使った統計
-- [タスクフォーカス推奨機能](task-focus-recommendation.md) - 設計理念を共有
+- [やることピックアップ機能](task-focus-recommendation.md) - 設計理念を共有

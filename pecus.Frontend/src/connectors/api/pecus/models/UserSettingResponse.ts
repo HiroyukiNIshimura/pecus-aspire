@@ -28,7 +28,7 @@ export type UserSettingResponse = {
     landingPage?: LandingPage;
     focusScorePriority?: FocusScorePriority;
     /**
-     * フォーカス推奨タスクの表示件数（5-20）
+     * やることピックアップタスクの表示件数（5-20）
      */
     focusTasksLimit: number;
     /**

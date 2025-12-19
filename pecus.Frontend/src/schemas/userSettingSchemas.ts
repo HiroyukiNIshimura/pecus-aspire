@@ -22,10 +22,10 @@ export const userSettingSchema = z.object({
   focusTasksLimit: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? 10 : Number(val)),
     z
-      .number({ message: 'フォーカス推奨タスク表示件数は必須です。' })
-      .int('フォーカス推奨タスク表示件数は整数で入力してください。')
-      .min(5, 'フォーカス推奨タスク表示件数は5以上で入力してください。')
-      .max(20, 'フォーカス推奨タスク表示件数は20以下で入力してください。'),
+      .number({ message: 'やることピックアップタスク表示件数は必須です。' })
+      .int('やることピックアップタスク表示件数は整数で入力してください。')
+      .min(5, 'やることピックアップタスク表示件数は5以上で入力してください。')
+      .max(20, 'やることピックアップタスク表示件数は20以下で入力してください。'),
   ),
   waitingTasksLimit: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? 10 : Number(val)),

@@ -437,7 +437,7 @@ GROUP BY DATE(CreatedAt), WorkspaceId, ActionType;
 
 - [ワークスペース・アイテム・タスクの関係](workspace-item-task-relationship.md) - エンティティの基本構造
 - [アクティビティ要件定義](activity-requirements.md) - データソースの詳細
-- [タスクフォーカス推奨機能](task-focus-recommendation.md) - 同じデータを使った「次にやるべきタスク」推奨機能
+- [やることピックアップ機能](task-focus-recommendation.md) - 同じデータを使った「次にやるべきタスク」推奨機能
 
 ---
 
