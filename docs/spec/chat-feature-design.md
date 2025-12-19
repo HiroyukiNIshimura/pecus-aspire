@@ -586,13 +586,14 @@ SignalR グループは「今この瞬間、どのクライアントにメッセ
 
 ### 通知イベント
 
-| イベント | 送信元 | 説明 |
-|---------|--------|------|
-| `chat:user_joined` | Hub | 入室通知 |
-| `chat:user_left` | Hub | 退室通知 |
-| `chat:user_typing` | Hub | 入力中通知 |
-| `chat:message_received` | NotificationService | メッセージ受信（後述） |
-| `chat:message_read` | NotificationService | 既読通知（誰がどのメッセージまで読んだか） |
+| イベント | 送信先グループ | 送信元 | 説明 |
+|---------|----------------|--------|------|
+| `chat:user_joined` | `chat:{roomId}` | Hub | 入室通知 |
+| `chat:user_left` | `chat:{roomId}` | Hub | 退室通知 |
+| `chat:user_typing` | `chat:{roomId}` | Hub | 入力中通知 |
+| `chat:message_received` | `chat:{roomId}` | ChatMessageService | メッセージ受信（後述） |
+| `chat:unread_updated` | `organization:{orgId}` | ChatMessageService | 未読バッジ更新通知（後述） |
+| `chat:message_read` | `chat:{roomId}` | NotificationService | 既読通知（誰がどのメッセージまで読んだか） |
 
 ---
 
@@ -635,6 +636,68 @@ chat:message_received
 - ヘッダーに未読メッセージ数の合計を表示
 - `ChatNotificationSetting.Muted` のルームは未読カウントから**除外**
 - カテゴリ別の未読数はフロントエンドで `category` を見て集計
+
+### 未読バッジのリアルタイム更新
+
+メッセージ受信時、チャット画面を開いていないユーザーにも未読バッジを更新するため、`chat:unread_updated` イベントを `organization:{organizationId}` グループに送信する。
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    未読バッジ更新の流れ                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1. ユーザー A がメッセージを送信                                            │
+│  2. DB に ChatMessage を INSERT                                             │
+│  3. chat:message_received を chat:{roomId} グループに送信                   │
+│     → チャット画面を開いているユーザーがメッセージを受信                      │
+│  4. chat:unread_updated を organization:{organizationId} グループに送信     │
+│     → 組織内の全ユーザーが未読カウントを再取得してバッジを更新               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### chat:unread_updated イベント
+
+```typescript
+// イベント名
+chat:unread_updated
+
+// Payload（メッセージ送信時）
+{
+  roomId: number,           // 更新があったルームID
+  roomType: string,         // 'Dm' | 'Group' | 'Ai' | 'System'
+  senderUserId: number,     // 送信者のユーザーID（自分自身のメッセージは無視するため）
+}
+
+// Payload（既読更新時）
+{
+  roomId: number,           // 更新があったルームID
+  roomType: string,         // 'Dm' | 'Group' | 'Ai' | 'System'
+  updatedByUserId: number,  // 既読更新したユーザーID
+  updateType: 'read',       // 更新種別
+}
+```
+
+#### フロントエンド実装
+
+```typescript
+// ChatProvider.tsx
+useSignalREvent<ChatUnreadUpdatedPayload>('chat:unread_updated', (payload) => {
+  // 既読更新の場合は自分自身の更新のみ処理
+  if (payload.updateType === 'read') {
+    if (payload.updatedByUserId === currentUserId) {
+      fetchUnreadCounts();
+    }
+    return;
+  }
+
+  // メッセージ送信の場合は自分が送信したメッセージは無視
+  if (payload.senderUserId === currentUserId) return;
+
+  // 未読カウントを再取得してバッジを更新
+  fetchUnreadCounts();
+});
+```
+
+> **Note**: `chat:message_received` はチャット画面を開いているユーザーのみが受信するのに対し、`chat:unread_updated` は組織内の全ユーザーが受信する。これにより、チャット画面を開いていなくてもヘッダーの未読バッジがリアルタイムに更新される。
 
 ---
 

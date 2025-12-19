@@ -289,6 +289,7 @@ public class ChatMessageService
             },
         };
 
+        // チャットルームグループに新メッセージを通知（チャット画面を開いている人向け）
         await _hubContext
             .Clients.Group(groupName)
             .SendAsync(
@@ -306,6 +307,35 @@ public class ChatMessageService
             eventType,
             groupName
         );
+
+        // organization グループに未読バッジ更新を通知（全ユーザー向け）
+        // System ルームは既に organization に通知しているのでスキップ
+        if (room.Type != ChatRoomType.System)
+        {
+            var orgGroupName = $"organization:{room.OrganizationId}";
+            await _hubContext
+                .Clients.Group(orgGroupName)
+                .SendAsync(
+                    "ReceiveNotification",
+                    new
+                    {
+                        EventType = "chat:unread_updated",
+                        Payload = new
+                        {
+                            RoomId = room.Id,
+                            RoomType = room.Type.ToString(),
+                            SenderUserId = message.SenderUserId,
+                        },
+                        Timestamp = DateTimeOffset.UtcNow,
+                    }
+                );
+
+            _logger.LogDebug(
+                "Unread badge notification sent: OrganizationGroup={OrgGroupName}, RoomId={RoomId}",
+                orgGroupName,
+                room.Id
+            );
+        }
     }
 
     #endregion

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
+using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
 using Pecus.Services;
 
@@ -57,9 +58,32 @@ public class ChatController : BaseSecureController
             type
         );
 
+        // GroupChatScope に応じてグループルームをフィルタリング
+        var organization = await _organizationService.GetOrganizationByIdAsync(CurrentUser.OrganizationId.Value);
+        var groupChatScope = organization?.Setting?.GroupChatScope ?? GroupChatScope.Workspace;
+
+        // Group タイプのルームをフィルタ
+        var filteredRooms = rooms.Where(room =>
+        {
+            if (room.Type != ChatRoomType.Group)
+            {
+                return true; // Group 以外はそのまま返す
+            }
+
+            // GroupChatScope に応じてフィルタ
+            return groupChatScope switch
+            {
+                // Workspace モード: WorkspaceId が設定されているルームのみ
+                GroupChatScope.Workspace => room.WorkspaceId != null,
+                // Organization モード: WorkspaceId が null のルームのみ（組織全体のグループ）
+                GroupChatScope.Organization => room.WorkspaceId == null,
+                _ => true,
+            };
+        }).ToList();
+
         var response = new List<ChatRoomItem>();
 
-        foreach (var room in rooms)
+        foreach (var room in filteredRooms)
         {
             var member = room.Members.FirstOrDefault(m => m.UserId == CurrentUserId);
             var unreadCount = await _chatRoomService.GetUnreadCountAsync(room.Id, CurrentUserId);
@@ -592,6 +616,13 @@ public class ChatController : BaseSecureController
             Username = user.Username,
             Email = user.Email,
             AvatarType = user.AvatarType?.ToString()?.ToLowerInvariant(),
+            IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                user.AvatarType,
+                user.Id,
+                user.Username,
+                user.Email,
+                user.UserAvatarPath
+            ),
             IsActive = user.IsActive,
         };
     }

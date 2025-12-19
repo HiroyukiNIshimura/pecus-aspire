@@ -729,9 +729,17 @@ public class ChatRoomService
         DateTimeOffset readAt
     )
     {
-        var groupName = $"chat:{roomId}";
+        // ルーム情報を取得
+        var room = await _context.ChatRooms.AsNoTracking().FirstOrDefaultAsync(r => r.Id == roomId);
+        if (room == null)
+        {
+            return;
+        }
+
+        // 1. チャットルームグループに既読通知を送信（chat:message_read）
+        var chatGroupName = $"chat:{roomId}";
         await _hubContext
-            .Clients.Group(groupName)
+            .Clients.Group(chatGroupName)
             .SendAsync(
                 "ReceiveNotification",
                 new
@@ -742,6 +750,28 @@ public class ChatRoomService
                         RoomId = roomId,
                         UserId = userId,
                         ReadAt = readAt,
+                    },
+                    Timestamp = DateTimeOffset.UtcNow,
+                }
+            );
+
+        // 2. 組織グループに未読バッジ更新通知を送信（chat:unread_updated）
+        // 既読更新したユーザー自身のバッジ更新用
+        var organizationGroupName = $"organization:{room.OrganizationId}";
+        await _hubContext
+            .Clients.Group(organizationGroupName)
+            .SendAsync(
+                "ReceiveNotification",
+                new
+                {
+                    EventType = "chat:unread_updated",
+                    Payload = new
+                    {
+                        RoomId = roomId,
+                        RoomType = room.Type.ToString(),
+                        // 既読更新の場合は userId を設定（自分のバッジを更新するため）
+                        UpdatedByUserId = userId,
+                        UpdateType = "read",
                     },
                     Timestamp = DateTimeOffset.UtcNow,
                 }

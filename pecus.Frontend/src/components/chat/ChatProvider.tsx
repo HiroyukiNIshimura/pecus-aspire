@@ -26,6 +26,17 @@ interface ChatMessageReceivedPayload {
   };
 }
 
+/** SignalR chat:unread_updated イベントのペイロード型 */
+interface ChatUnreadUpdatedPayload {
+  roomId: number;
+  roomType: string;
+  // メッセージ送信時
+  senderUserId?: number;
+  // 既読更新時
+  updatedByUserId?: number;
+  updateType?: 'message' | 'read';
+}
+
 /**
  * チャット用プロバイダー
  * - ルーム一覧と未読数を取得
@@ -84,7 +95,7 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
     }
   }, [isDrawerOpen, fetchRooms]);
 
-  // SignalR: 新メッセージ受信時に未読数を更新
+  // SignalR: 新メッセージ受信時に未読数を更新（チャット画面を開いている時）
   // 自分が送信したメッセージの場合は未読数を更新しない
   const handleMessageReceived = useCallback(
     (payload: ChatMessageReceivedPayload) => {
@@ -103,6 +114,37 @@ export default function ChatProvider({ currentUserId }: ChatProviderProps) {
   );
 
   useSignalREvent<ChatMessageReceivedPayload>('chat:message_received', handleMessageReceived);
+
+  // SignalR: 未読バッジ更新通知（チャット画面を開いていなくても受信）
+  // organization グループに送信されるため、全ユーザーが受信可能
+  const handleUnreadUpdated = useCallback(
+    (payload: ChatUnreadUpdatedPayload) => {
+      // 既読更新の場合は自分自身の更新のみ処理
+      if (payload.updateType === 'read') {
+        if (payload.updatedByUserId === currentUserId) {
+          fetchUnreadCounts();
+          if (isDrawerOpen) {
+            fetchRooms();
+          }
+        }
+        return;
+      }
+
+      // メッセージ送信の場合は自分が送信したメッセージは無視
+      if (payload.senderUserId === currentUserId) {
+        return;
+      }
+      // 未読数を再取得
+      fetchUnreadCounts();
+      // ドロワーが開いていればルーム一覧も更新
+      if (isDrawerOpen) {
+        fetchRooms();
+      }
+    },
+    [currentUserId, fetchUnreadCounts, fetchRooms, isDrawerOpen],
+  );
+
+  useSignalREvent<ChatUnreadUpdatedPayload>('chat:unread_updated', handleUnreadUpdated);
 
   // ドロワーは常にレンダリング（CSS で md 以上のみ表示）
   return <ChatBottomDrawer rooms={rooms} currentUserId={currentUserId} loading={loading} />;
