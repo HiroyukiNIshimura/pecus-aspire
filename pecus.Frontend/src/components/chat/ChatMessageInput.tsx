@@ -24,6 +24,8 @@ export default function ChatMessageInput({
   const [content, setContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // IME 変換中かどうかを追跡（日本語入力対応）
+  const isComposingRef = useRef(false);
 
   // 入力中の通知（デバウンス）
   const handleTyping = () => {
@@ -79,9 +81,24 @@ export default function ChatMessageInput({
     }
   };
 
+  // IME 変換開始
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+  };
+
+  // IME 変換終了
+  const handleCompositionEnd = () => {
+    // 一部のブラウザでは compositionend 後に keydown が発火するため、
+    // 少し遅延させてフラグをリセット
+    setTimeout(() => {
+      isComposingRef.current = false;
+    }, 10);
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // IME 入力中（日本語変換中など）は無視
-    if (e.nativeEvent.isComposing) return;
+    // IME 変換中（日本語変換中など）は無視
+    // useRef で管理する方が e.nativeEvent.isComposing より確実
+    if (isComposingRef.current || e.nativeEvent.isComposing) return;
 
     // Enter で送信（Shift+Enter は改行）
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -111,6 +128,8 @@ export default function ChatMessageInput({
           value={content}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           placeholder={placeholder}
           disabled={disabled}
           rows={1}

@@ -25,11 +25,18 @@ interface ChatMessageReceivedPayload {
   message: {
     id: number;
     senderUserId: number;
-    senderUsername?: string;
     messageType: string;
     content: string;
     replyToMessageId?: number;
     createdAt: string;
+    sender?: {
+      id: number;
+      username: string;
+      email: string;
+      avatarType?: string;
+      identityIconUrl?: string;
+      isActive: boolean;
+    };
   };
 }
 
@@ -130,13 +137,7 @@ export default function ChatRoomMessageClient({
       const newMessage: ChatMessageItem = {
         id: payload.message.id,
         senderUserId: payload.message.senderUserId,
-        sender: payload.message.senderUsername
-          ? {
-              id: payload.message.senderUserId,
-              username: payload.message.senderUsername,
-              email: '',
-            }
-          : undefined,
+        sender: payload.message.sender,
         messageType: payload.message.messageType as ChatMessageItem['messageType'],
         content: payload.message.content,
         replyToMessageId: payload.message.replyToMessageId,

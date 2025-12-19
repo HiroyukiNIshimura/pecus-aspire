@@ -18,11 +18,18 @@ interface ChatMessageReceivedPayload {
   message: {
     id: number;
     senderUserId: number;
-    senderUsername?: string;
     messageType: string;
     content: string;
     replyToMessageId?: number;
     createdAt: string;
+    sender?: {
+      id: number;
+      username: string;
+      email: string;
+      avatarType?: string;
+      identityIconUrl?: string;
+      isActive: boolean;
+    };
   };
 }
 

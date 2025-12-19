@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Pecus.Exceptions;
 using Pecus.Hubs;
+using Pecus.Libs;
 using Pecus.Libs.DB;
 using Pecus.Libs.DB.Models;
 using Pecus.Libs.DB.Models.Enums;
@@ -281,11 +282,28 @@ public class ChatMessageService
             {
                 message.Id,
                 message.SenderUserId,
-                SenderUsername = message.SenderUser?.Username,
                 message.MessageType,
                 message.Content,
                 message.ReplyToMessageId,
                 message.CreatedAt,
+                // 送信者情報（アバター表示用）
+                Sender = message.SenderUser != null
+                    ? new
+                    {
+                        Id = message.SenderUser.Id,
+                        Username = message.SenderUser.Username,
+                        Email = message.SenderUser.Email,
+                        AvatarType = message.SenderUser.AvatarType?.ToString()?.ToLowerInvariant(),
+                        IdentityIconUrl = IdentityIconHelper.GetIdentityIconUrl(
+                            message.SenderUser.AvatarType,
+                            message.SenderUser.Id,
+                            message.SenderUser.Username,
+                            message.SenderUser.Email,
+                            message.SenderUser.UserAvatarPath
+                        ),
+                        IsActive = message.SenderUser.IsActive,
+                    }
+                    : null,
             },
         };
 
