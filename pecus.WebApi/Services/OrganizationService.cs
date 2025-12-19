@@ -118,6 +118,36 @@ public class OrganizationService
 
             await _context.SaveChangesAsync();
 
+            // グループチャットルームを作成
+            var groupRoom = new ChatRoom
+            {
+                Type = ChatRoomType.Group,
+                Name = "グループチャット",
+                OrganizationId = organization.Id,
+                CreatedByUserId = adminUser.Id,
+                Members = new List<ChatRoomMember>
+                {
+                    new() { UserId = adminUser.Id, Role = ChatRoomRole.Owner },
+                },
+            };
+            _context.ChatRooms.Add(groupRoom);
+
+            // システム通知ルームを作成
+            var systemRoom = new ChatRoom
+            {
+                Type = ChatRoomType.System,
+                Name = "システム通知",
+                OrganizationId = organization.Id,
+                CreatedByUserId = adminUser.Id,
+                Members = new List<ChatRoomMember>
+                {
+                    new() { UserId = adminUser.Id, Role = ChatRoomRole.Owner },
+                },
+            };
+            _context.ChatRooms.Add(systemRoom);
+
+            await _context.SaveChangesAsync();
+
             await transaction.CommitAsync();
             return (organization, adminUser, token, tokenExpiresAt);
         }

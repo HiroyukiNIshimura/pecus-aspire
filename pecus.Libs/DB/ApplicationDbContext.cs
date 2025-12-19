@@ -939,6 +939,13 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(r => r.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ChatRoom と Workspace の多対一リレーションシップ（オプショナル）
+            entity
+                .HasOne(r => r.Workspace)
+                .WithMany()
+                .HasForeignKey(r => r.WorkspaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // ChatRoom と User (CreatedBy) の多対一リレーションシップ
             entity
                 .HasOne(r => r.CreatedByUser)
@@ -952,8 +959,17 @@ public class ApplicationDbContext : DbContext
                 .IsUnique()
                 .HasFilter("\"Type\" = 0"); // Dm タイプのみ
 
+            // ワークスペースグループチャットの重複防止（1ワークスペース1グループ）
+            entity
+                .HasIndex(e => new { e.OrganizationId, e.WorkspaceId })
+                .IsUnique()
+                .HasFilter("\"Type\" = 1 AND \"WorkspaceId\" IS NOT NULL"); // Group タイプかつワークスペース指定あり
+
             // 組織内のチャットルーム一覧取得用
             entity.HasIndex(e => e.OrganizationId);
+
+            // ワークスペース内のチャットルーム取得用
+            entity.HasIndex(e => e.WorkspaceId);
         });
 
         // ChatRoomMember エンティティの設定

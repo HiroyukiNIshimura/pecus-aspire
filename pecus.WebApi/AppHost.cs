@@ -130,6 +130,8 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<DashboardStatisticsService>();
 builder.Services.AddScoped<FocusRecommendationService>();
+builder.Services.AddScoped<ChatRoomService>();
+builder.Services.AddScoped<ChatMessageService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();

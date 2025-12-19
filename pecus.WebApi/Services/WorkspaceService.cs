@@ -15,11 +15,17 @@ public class WorkspaceService
 {
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly ChatRoomService _chatRoomService;
 
-    public WorkspaceService(ApplicationDbContext context, IWebHostEnvironment environment)
+    public WorkspaceService(
+        ApplicationDbContext context,
+        IWebHostEnvironment environment,
+        ChatRoomService chatRoomService
+    )
     {
         _context = context;
         _environment = environment;
+        _chatRoomService = chatRoomService;
     }
 
     /// <summary>
@@ -84,6 +90,12 @@ public class WorkspaceService
                 };
                 _context.WorkspaceUsers.Add(workspaceUser);
                 await _context.SaveChangesAsync();
+
+                // ワークスペースのグループチャットルームを作成
+                await _chatRoomService.GetOrCreateWorkspaceGroupRoomAsync(
+                    workspace.Id,
+                    createdByUserId.Value
+                );
             }
 
             await transaction.CommitAsync();
@@ -400,6 +412,9 @@ public class WorkspaceService
         _context.WorkspaceUsers.Add(workspaceUser);
         await _context.SaveChangesAsync();
 
+        // ワークスペースのチャットルームにメンバーを追加
+        await _chatRoomService.AddUserToWorkspaceRoomAsync(request.UserId, workspaceId);
+
         // ユーザー情報を含めて再ロード
         await _context.Entry(workspaceUser).Reference(wu => wu.User).LoadAsync();
 
@@ -419,6 +434,9 @@ public class WorkspaceService
         {
             return false;
         }
+
+        // ワークスペースのチャットルームからメンバーを削除
+        await _chatRoomService.RemoveUserFromWorkspaceRoomAsync(userId, workspaceId);
 
         _context.WorkspaceUsers.Remove(workspaceUser);
         await _context.SaveChangesAsync();

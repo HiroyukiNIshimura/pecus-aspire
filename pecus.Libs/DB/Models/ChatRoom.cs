@@ -36,6 +36,17 @@ public class ChatRoom
     public Organization Organization { get; set; } = null!;
 
     /// <summary>
+    /// ワークスペースID（ワークスペース単位のグループチャットの場合）
+    /// null の場合は組織全体のグループチャット
+    /// </summary>
+    public int? WorkspaceId { get; set; }
+
+    /// <summary>
+    /// ワークスペース
+    /// </summary>
+    public Workspace? Workspace { get; set; }
+
+    /// <summary>
     /// DM の重複防止用ユーザーペア
     /// 小さいID_大きいID 形式（例: "5_12"）
     /// Dm タイプの場合のみ使用
