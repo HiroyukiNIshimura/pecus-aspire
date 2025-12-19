@@ -34,11 +34,12 @@ export default function ChatTypingIndicator({ typingUsers }: ChatTypingIndicator
     <div className="flex items-center gap-2 px-4 py-1 text-sm text-base-content/60">
       {/* アニメーションドット */}
       <div className="flex items-center gap-0.5">
-        <span className="w-1.5 h-1.5 bg-base-content/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-        <span className="w-1.5 h-1.5 bg-base-content/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
-        <span className="w-1.5 h-1.5 bg-base-content/40 rounded-full animate-bounce" />
+        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" />
       </div>
       <span>{getTypingText()}</span>
     </div>
   );
 }
+1;
