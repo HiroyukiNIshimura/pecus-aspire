@@ -142,6 +142,21 @@ public class ApplicationDbContext : DbContext
     public DbSet<EmailChangeToken> EmailChangeTokens { get; set; }
 
     /// <summary>
+    /// チャットルームテーブル
+    /// </summary>
+    public DbSet<ChatRoom> ChatRooms { get; set; }
+
+    /// <summary>
+    /// チャットルームメンバーテーブル
+    /// </summary>
+    public DbSet<ChatRoomMember> ChatRoomMembers { get; set; }
+
+    /// <summary>
+    /// チャットメッセージテーブル
+    /// </summary>
+    public DbSet<ChatMessage> ChatMessages { get; set; }
+
+    /// <summary>
     /// モデル作成時の設定（リレーションシップ、インデックス等）
     /// </summary>
     /// <param name="modelBuilder">モデルビルダー</param>
@@ -910,6 +925,96 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(t => t.ExpiresAt);
         });
 
+        // ChatRoom エンティティの設定
+        modelBuilder.Entity<ChatRoom>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.DmUserPair).HasMaxLength(50);
+
+            // ChatRoom と Organization の多対一リレーションシップ
+            entity
+                .HasOne(r => r.Organization)
+                .WithMany()
+                .HasForeignKey(r => r.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatRoom と User (CreatedBy) の多対一リレーションシップ
+            entity
+                .HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // DM の重複防止（同じ2人のDMは1つのみ）
+            entity
+                .HasIndex(e => new { e.OrganizationId, e.DmUserPair })
+                .IsUnique()
+                .HasFilter("\"Type\" = 0"); // Dm タイプのみ
+
+            // 組織内のチャットルーム一覧取得用
+            entity.HasIndex(e => e.OrganizationId);
+        });
+
+        // ChatRoomMember エンティティの設定
+        modelBuilder.Entity<ChatRoomMember>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // ChatRoomMember と ChatRoom の多対一リレーションシップ
+            entity
+                .HasOne(m => m.ChatRoom)
+                .WithMany(r => r.Members)
+                .HasForeignKey(m => m.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatRoomMember と User の多対一リレーションシップ
+            entity
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ユーザーの参加ルーム一覧取得用
+            entity.HasIndex(e => e.UserId);
+
+            // ルームのメンバー一覧取得用
+            entity.HasIndex(e => e.ChatRoomId);
+
+            // ユーザー × ルームの重複防止
+            entity.HasIndex(e => new { e.ChatRoomId, e.UserId }).IsUnique();
+        });
+
+        // ChatMessage エンティティの設定
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // ChatMessage と ChatRoom の多対一リレーションシップ
+            entity
+                .HasOne(m => m.ChatRoom)
+                .WithMany(r => r.Messages)
+                .HasForeignKey(m => m.ChatRoomId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ChatMessage と User (Sender) の多対一リレーションシップ（nullable）
+            entity
+                .HasOne(m => m.SenderUser)
+                .WithMany()
+                .HasForeignKey(m => m.SenderUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ChatMessage と ChatMessage (ReplyTo) の自己参照リレーションシップ
+            entity
+                .HasOne(m => m.ReplyToMessage)
+                .WithMany()
+                .HasForeignKey(m => m.ReplyToMessageId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ルーム内のメッセージ一覧取得用（日時降順）
+            entity.HasIndex(e => new { e.ChatRoomId, e.CreatedAt });
+        });
+
         // PostgreSQL の xmin を楽観的ロックに使用（全エンティティ共通設定）
         ConfigureRowVersionForAllEntities(modelBuilder);
     }
@@ -1076,6 +1181,15 @@ public class ApplicationDbContext : DbContext
         // Activity
         modelBuilder
             .Entity<Activity>()
+            .Property(e => e.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // ChatRoom
+        modelBuilder
+            .Entity<ChatRoom>()
             .Property(e => e.RowVersion)
             .HasColumnName("xmin")
             .HasColumnType("xid")
