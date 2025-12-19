@@ -10,7 +10,7 @@ import {
   type PredecessorTaskOption,
   updateWorkspaceTask,
 } from '@/actions/workspaceTask';
-import TaskEditStatus from '@/components/common/feedback/TaskEditStatus';
+
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
@@ -119,7 +119,16 @@ export default function WorkspaceTaskDetailPage({
   }, [notify]);
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
   const [isLoadingTask, setIsLoadingTask] = useState(false);
-  const { joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus, connectionState } = useSignalRContext();
+  const {
+    joinTask,
+    leaveTask,
+    startTaskEdit,
+    endTaskEdit,
+    getTaskEditStatus,
+    connectionState,
+    onTaskEditStarted,
+    onTaskEditEnded,
+  } = useSignalRContext();
   const [taskEditStatus, setTaskEditStatus] = useState<TaskEditStatusType>({ isEditing: false });
   const [taskEditStatusFetched, setTaskEditStatusFetched] = useState(false);
   const startedTaskEditRef = useRef<number | null>(null);
@@ -127,8 +136,24 @@ export default function WorkspaceTaskDetailPage({
   const effectiveCurrentUserIdRef = useRef<number>(0);
 
   // SignalR関数をrefで保持（useEffect依存配列から外すため）
-  const signalRRef = useRef({ joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus });
-  signalRRef.current = { joinTask, leaveTask, startTaskEdit, endTaskEdit, getTaskEditStatus };
+  const signalRRef = useRef({
+    joinTask,
+    leaveTask,
+    startTaskEdit,
+    endTaskEdit,
+    getTaskEditStatus,
+    onTaskEditStarted,
+    onTaskEditEnded,
+  });
+  signalRRef.current = {
+    joinTask,
+    leaveTask,
+    startTaskEdit,
+    endTaskEdit,
+    getTaskEditStatus,
+    onTaskEditStarted,
+    onTaskEditEnded,
+  };
 
   // 現在のタスクデータ
   const [task, setTask] = useState<WorkspaceTaskDetailResponse | null>(null);
@@ -375,13 +400,23 @@ export default function WorkspaceTaskDetailPage({
     let hasStartedEdit = false;
 
     const initializeTaskEdit = async () => {
-      const { joinTask: join, startTaskEdit: start, getTaskEditStatus: getStatus } = signalRRef.current;
+      const { joinTask: join, startTaskEdit: start } = signalRRef.current;
       try {
-        // 1. タスクグループに参加
-        await join(targetTaskId, workspaceId, itemId);
+        // 1. タスクグループに参加（編集状態も含めて返ってくる）
+        const joinResult = await join(targetTaskId, workspaceId, itemId);
         if (!active) return;
 
-        // 2. 即座に編集開始を試行（ロック取得）
+        // 2. joinTask の結果で既に他者が編集中なら、即座にロック状態を表示
+        if (
+          joinResult.editStatus?.isEditing &&
+          joinResult.editStatus.editor?.userId !== effectiveCurrentUserIdRef.current
+        ) {
+          setTaskEditStatus(joinResult.editStatus);
+          setTaskEditStatusFetched(true);
+          return;
+        }
+
+        // 3. 編集開始を試行（ロック取得）
         try {
           await start(targetTaskId);
           if (!active) return;
@@ -393,13 +428,11 @@ export default function WorkspaceTaskDetailPage({
         } catch {
           // ロック取得失敗 → 他のユーザーまたは別タブが編集中
           if (!active) return;
-          // 現在の状態を取得して表示
-          try {
-            const status = await getStatus(targetTaskId);
-            if (!active) return;
-            setTaskEditStatus(status);
-          } catch {
-            // 取得失敗時はロック中として扱う
+          // joinResult の editStatus を使用（追加のAPI呼び出し不要）
+          if (joinResult.editStatus?.isEditing) {
+            setTaskEditStatus(joinResult.editStatus);
+          } else {
+            // フォールバック: ロック中として扱う
             setTaskEditStatus({ isEditing: true, editor: undefined });
           }
           setTaskEditStatusFetched(true);
@@ -414,8 +447,34 @@ export default function WorkspaceTaskDetailPage({
 
     initializeTaskEdit();
 
+    // task:edit_started / task:edit_ended イベントを購読
+    const { onTaskEditStarted: onStart, onTaskEditEnded: onEnd } = signalRRef.current;
+    const unsubStart = onStart((payload) => {
+      if (payload.taskId !== targetTaskId) return;
+      // 自分がすでにロックを持っている場合は無視
+      if (startedTaskEditRef.current === targetTaskId) return;
+      setTaskEditStatus({
+        isEditing: true,
+        editor: {
+          userId: payload.userId,
+          userName: payload.userName ?? '',
+          identityIconUrl: payload.identityIconUrl ?? null,
+        },
+      });
+    });
+
+    const unsubEnd = onEnd((payload) => {
+      if (payload.taskId !== targetTaskId) return;
+      // 自分がすでにロックを持っている場合は無視
+      if (startedTaskEditRef.current === targetTaskId) return;
+      // 編集終了 → handleStatusChangeを呼んでロック取得を試行
+      handleStatusChange({ isEditing: false });
+    });
+
     return () => {
       active = false;
+      unsubStart();
+      unsubEnd();
       // クリーンアップ: 編集終了とグループ離脱
       const { endTaskEdit: end, leaveTask: leave } = signalRRef.current;
       if (hasStartedEdit && startedTaskEditRef.current === targetTaskId) {
@@ -424,7 +483,7 @@ export default function WorkspaceTaskDetailPage({
       }
       leave(targetTaskId).catch((err) => console.warn('[SignalR] leaveTask failed:', err));
     };
-  }, [connectionState, itemId, task?.id, workspaceId]);
+  }, [connectionState, handleStatusChange, itemId, task?.id, workspaceId]);
 
   // 次のタスクに移動
   const handleNextTask = useCallback(async () => {
@@ -818,15 +877,6 @@ export default function WorkspaceTaskDetailPage({
         <div className="flex flex-col lg:flex-row flex-1 gap-4 min-h-0">
           {/* 左パネル：編集フォーム */}
           <div className="flex-1 min-w-0">
-            {task && (
-              <TaskEditStatus
-                taskId={task.id}
-                currentUserId={effectiveCurrentUserId}
-                status={taskEditStatus}
-                onStatusChange={handleStatusChange}
-                className="mb-4"
-              />
-            )}
             {isLoadingTask && !task ? (
               <div className="flex justify-center items-center py-8">
                 <span className="loading loading-spinner loading-lg"></span>
@@ -836,7 +886,7 @@ export default function WorkspaceTaskDetailPage({
             ) : (
               <>
                 {/* ローディングオーバーレイ */}
-                {(isLoadingTask || isLockedByOther || isPendingStatusCheck) && (
+                {(isLoadingTask || isPendingStatusCheck) && (
                   <div className="absolute inset-0 bg-base-100/60 flex items-center justify-center z-10 pointer-events-none">
                     <span className="loading loading-spinner loading-lg"></span>
                   </div>
@@ -845,15 +895,15 @@ export default function WorkspaceTaskDetailPage({
                 {/* 他ユーザー編集中のブロッカー */}
                 {isLockedByOther && (
                   <div className="absolute inset-0 z-20 bg-base-100/70 flex flex-col items-center justify-center gap-3">
-                    <div className="alert alert-soft alert-warning shadow-md w-full max-w-xl">
-                      <div className="flex items-center gap-2">
-                        <span className="icon-[mdi--alert] w-5 h-5" aria-hidden="true" />
-                        <div className="flex flex-col">
-                          <span className="font-semibold">他のユーザーが編集中です</span>
-                          <span className="text-sm text-base-content/70">
-                            編集画面はロックされています。編集中のユーザーが終了するまでお待ちください。
-                          </span>
+                    <div className="alert alert-soft alert-info shadow-md w-full max-w-xl">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="icon-[mdi--information] w-5 h-5" aria-hidden="true" />
+                          <span>{taskEditStatus.editor?.userName ?? '誰か'} さんが編集中です</span>
                         </div>
+                        <button type="button" onClick={onClose} className="btn btn-sm btn-circle" aria-label="閉じる">
+                          <span className="icon-[mdi--close] w-5 h-5" aria-hidden="true" />
+                        </button>
                       </div>
                     </div>
                   </div>

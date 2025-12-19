@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { WorkspaceEditor, WorkspaceEditStatus as WorkspaceEditStatusType } from '@/providers/SignalRProvider';
 import { useSignalRContext } from '@/providers/SignalRProvider';
 
@@ -14,8 +14,9 @@ interface WorkspaceEditStatusProps {
 
 /**
  * ワークスペース編集状態を表示するコンポーネント。
- * - 初期状態取得 (GetWorkspaceEditStatus)
- * - workspace:edit_started / workspace:edit_ended を購読
+ * - JoinWorkspace の戻り値から initialStatus を受け取る（推奨）
+ * - initialStatus がない場合は GetWorkspaceEditStatus で取得
+ * - workspace:edit_started / workspace:edit_ended を購読してリアルタイム更新
  */
 export default function WorkspaceEditStatus({
   workspaceId,
@@ -25,10 +26,34 @@ export default function WorkspaceEditStatus({
   className,
 }: WorkspaceEditStatusProps) {
   const { getWorkspaceEditStatus, onWorkspaceEditStarted, onWorkspaceEditEnded, connectionState } = useSignalRContext();
-  const [status, setStatus] = useState<WorkspaceEditStatusType>(initialStatus ?? { isEditing: false });
+  const [status, setStatus] = useState<WorkspaceEditStatusType>({ isEditing: false });
+  const lastWorkspaceIdRef = useRef(workspaceId);
 
-  // 初期取得
+  // workspaceId が変わった場合、または initialStatus が渡されたら状態を更新
   useEffect(() => {
+    const workspaceChanged = workspaceId !== lastWorkspaceIdRef.current;
+    lastWorkspaceIdRef.current = workspaceId;
+
+    if (workspaceChanged) {
+      // ワークスペースが変わった場合はリセット
+      const newStatus = initialStatus ?? { isEditing: false };
+      setStatus(newStatus);
+      onStatusChange?.(newStatus);
+    } else if (initialStatus) {
+      // initialStatus が渡されたら状態を更新
+      setStatus(initialStatus);
+      onStatusChange?.(initialStatus);
+    }
+  }, [workspaceId, initialStatus, onStatusChange]);
+
+  // initialStatus がない場合、接続が完了した時に取得
+  useEffect(() => {
+    // initialStatus が渡されている場合はスキップ
+    if (initialStatus) return;
+
+    // 接続していない場合はスキップ
+    if (connectionState !== 'connected') return;
+
     let active = true;
     const fetchStatus = async () => {
       const result = await getWorkspaceEditStatus(workspaceId);
@@ -42,7 +67,7 @@ export default function WorkspaceEditStatus({
     return () => {
       active = false;
     };
-  }, [getWorkspaceEditStatus, workspaceId, onStatusChange]);
+  }, [getWorkspaceEditStatus, workspaceId, onStatusChange, connectionState, initialStatus]);
 
   // イベント購読
   useEffect(() => {
@@ -96,12 +121,14 @@ export default function WorkspaceEditStatus({
   if (!message) return null;
 
   return (
-    <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
-      <div className="flex items-center gap-2">
-        <span
-          className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
-        />
-        <span>{message.text}</span>
+    <div className="animate-gentle-blink">
+      <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
+        <div className="flex items-center gap-2">
+          <span
+            className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
+          />
+          <span>{message.text}</span>
+        </div>
       </div>
     </div>
   );

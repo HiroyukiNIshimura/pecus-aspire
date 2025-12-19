@@ -117,6 +117,30 @@ export interface TaskEditStatus {
   editor?: TaskEditor;
 }
 
+/**
+ * JoinItem の戻り値
+ */
+export interface JoinItemResult {
+  existingUsers: ItemPresenceUser[];
+  editStatus: ItemEditStatus;
+}
+
+/**
+ * JoinWorkspace の戻り値
+ */
+export interface JoinWorkspaceResult {
+  existingUsers: WorkspacePresenceUser[];
+  editStatus: WorkspaceEditStatus;
+}
+
+/**
+ * JoinTask の戻り値
+ */
+export interface JoinTaskResult {
+  existingUsers: TaskPresenceUser[];
+  editStatus: TaskEditStatus;
+}
+
 interface ItemEditStartedPayload {
   itemId: number;
   userId: number;
@@ -176,21 +200,25 @@ interface SignalRContextValue {
   disconnect: () => Promise<void>;
 
   /** ワークスペースグループに参加（排他的：前のワークスペースから自動離脱）
-   *  @returns 既にワークスペースにいるユーザー一覧
+   *  @returns 既にワークスペースにいるユーザー一覧と編集状態
    */
-  joinWorkspace: (workspaceId: number) => Promise<WorkspacePresenceUser[]>;
+  joinWorkspace: (workspaceId: number) => Promise<JoinWorkspaceResult>;
 
   /** ワークスペースグループから離脱 */
   leaveWorkspace: (workspaceId: number) => Promise<void>;
 
-  /** アイテムグループに参加（排他的：前のアイテムから自動離脱、ワークスペースにも参加） */
-  joinItem: (itemId: number, workspaceId: number) => Promise<ItemPresenceUser[]>;
+  /** アイテムグループに参加（排他的：前のアイテムから自動離脱、ワークスペースにも参加）
+   *  @returns 既にアイテムにいるユーザー一覧と編集状態
+   */
+  joinItem: (itemId: number, workspaceId: number) => Promise<JoinItemResult>;
 
   /** アイテムグループから離脱 */
   leaveItem: (itemId: number) => Promise<void>;
 
-  /** タスクグループに参加（排他的：前のタスクから自動離脱、ワークスペース/アイテムも同期） */
-  joinTask: (taskId: number, workspaceId: number, itemId?: number) => Promise<TaskPresenceUser[]>;
+  /** タスクグループに参加（排他的：前のタスクから自動離脱、ワークスペース/アイテムも同期）
+   *  @returns 既にタスクにいるユーザー一覧と編集状態
+   */
+  joinTask: (taskId: number, workspaceId: number, itemId?: number) => Promise<JoinTaskResult>;
 
   /** タスクグループから離脱 */
   leaveTask: (taskId: number) => Promise<void>;
@@ -398,34 +426,30 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
   /**
    * ワークスペースグループに参加（排他的）
+   * 注意: 同じワークスペースに再参加しても編集状態を取得するため、サーバーに問い合わせる
    */
-  const joinWorkspace = useCallback(async (workspaceId: number): Promise<WorkspacePresenceUser[]> => {
+  const joinWorkspace = useCallback(async (workspaceId: number): Promise<JoinWorkspaceResult> => {
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       console.warn('[SignalR] Cannot join workspace: not connected');
-      return [];
-    }
-
-    // 既に同じワークスペースに参加済みの場合はスキップ
-    if (currentGroups.workspaceId === workspaceId) {
-      console.log(`[SignalR] Already in workspace: ${workspaceId}`);
-      return [];
+      return { existingUsers: [], editStatus: { isEditing: false } };
     }
 
     try {
       // サーバー側で前のワークスペースからの離脱も処理（Redis で状態管理）
-      // 戻り値は既存のプレゼンスユーザー一覧
-      const existingUsers = await connection.invoke<WorkspacePresenceUser[]>('JoinWorkspace', workspaceId);
+      // 戻り値は既存のプレゼンスユーザー一覧と編集状態
+      const result = await connection.invoke<JoinWorkspaceResult>('JoinWorkspace', workspaceId);
       setCurrentGroups((prev) => ({
         ...prev,
         workspaceId,
         itemId: null, // ワークスペース移動時はアイテムもクリア
         taskId: null,
       }));
-      return existingUsers ?? [];
+      console.log(`[SignalR] Joined workspace: ${workspaceId}`);
+      return result ?? { existingUsers: [], editStatus: { isEditing: false } };
     } catch (error) {
       console.error('[SignalR] Failed to join workspace:', error);
-      return [];
+      return { existingUsers: [], editStatus: { isEditing: false } };
     }
   }, []);
 
@@ -460,34 +484,29 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
   /**
    * アイテムグループに参加（排他的、ワークスペースにも同時参加）
+   * 注意: 同じアイテムに再参加しても編集状態を取得するため、サーバーに問い合わせる
    */
-  const joinItem = useCallback(async (itemId: number, workspaceId: number): Promise<ItemPresenceUser[]> => {
+  const joinItem = useCallback(async (itemId: number, workspaceId: number): Promise<JoinItemResult> => {
     const connection = connectionRef.current;
     if (!connection || connection.state !== HubConnectionState.Connected) {
       console.warn('[SignalR] Cannot join item: not connected');
-      return [];
-    }
-
-    // 既に同じアイテムに参加済みの場合はスキップ
-    if (currentGroups.itemId === itemId) {
-      console.log(`[SignalR] Already viewing item: ${itemId}`);
-      return [];
+      return { existingUsers: [], editStatus: { isEditing: false } };
     }
 
     try {
       // サーバー側で前のアイテム/ワークスペースからの離脱も処理（Redis で状態管理）
-      // 戻り値は既存のプレゼンスユーザー一覧
-      const existingUsers = await connection.invoke<ItemPresenceUser[]>('JoinItem', itemId, workspaceId);
+      // 戻り値は既存のプレゼンスユーザー一覧と編集状態
+      const result = await connection.invoke<JoinItemResult>('JoinItem', itemId, workspaceId);
       setCurrentGroups({
         workspaceId,
         itemId,
         taskId: null,
       });
       console.log(`[SignalR] Joined item: ${itemId} in workspace: ${workspaceId}`);
-      return existingUsers ?? [];
+      return result ?? { existingUsers: [], editStatus: { isEditing: false } };
     } catch (error) {
       console.error('[SignalR] Failed to join item:', error);
-      return [];
+      return { existingUsers: [], editStatus: { isEditing: false } };
     }
   }, []);
 
@@ -520,35 +539,31 @@ export function SignalRProvider({ children, autoConnect = true }: SignalRProvide
 
   /**
    * タスクグループに参加（排他的、ワークスペース/アイテムも同期）
+   * 注意: 同じタスクに再参加しても編集状態を取得するため、サーバーに問い合わせる
    */
   const joinTask = useCallback(
-    async (taskId: number, workspaceId: number, itemId?: number): Promise<TaskPresenceUser[]> => {
+    async (taskId: number, workspaceId: number, itemId?: number): Promise<JoinTaskResult> => {
       const connection = connectionRef.current;
       if (!connection || connection.state !== HubConnectionState.Connected) {
         console.warn('[SignalR] Cannot join task: not connected');
-        return [];
-      }
-
-      if (currentGroups.taskId === taskId) {
-        console.log(`[SignalR] Already in task: ${taskId}`);
-        return [];
+        return { existingUsers: [], editStatus: { isEditing: false } };
       }
 
       try {
-        const existingUsers = await connection.invoke<TaskPresenceUser[]>('JoinTask', workspaceId, taskId);
+        const result = await connection.invoke<JoinTaskResult>('JoinTask', workspaceId, taskId);
         setCurrentGroups({
           workspaceId,
           itemId: itemId ?? currentGroups.itemId,
           taskId,
         });
         console.log(`[SignalR] Joined task: ${taskId} in workspace: ${workspaceId}`);
-        return existingUsers ?? [];
+        return result ?? { existingUsers: [], editStatus: { isEditing: false } };
       } catch (error) {
         console.error('[SignalR] Failed to join task:', error);
-        return [];
+        return { existingUsers: [], editStatus: { isEditing: false } };
       }
     },
-    [currentGroups.itemId, currentGroups.taskId],
+    [currentGroups.itemId],
   );
 
   /**

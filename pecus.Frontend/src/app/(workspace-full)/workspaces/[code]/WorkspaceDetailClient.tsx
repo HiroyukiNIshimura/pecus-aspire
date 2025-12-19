@@ -157,6 +157,10 @@ export default function WorkspaceDetailClient({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentWorkspaceDetail, setCurrentWorkspaceDetail] = useState<WorkspaceFullDetailResponse>(workspaceDetail);
   const [workspaceEditStatus, setWorkspaceEditStatus] = useState<WorkspaceEditStatusType>({ isEditing: false });
+  // JoinWorkspace の戻り値から取得した編集状態（initialStatus として渡す）
+  const [initialWorkspaceEditStatus, setInitialWorkspaceEditStatus] = useState<WorkspaceEditStatusType | undefined>(
+    undefined,
+  );
 
   // ===== メンバー管理の状態 =====
   // ログインユーザーがOwnerかどうか
@@ -269,7 +273,6 @@ export default function WorkspaceDetailClient({
 
   // ===== SignalR ワークスペースグループ参加・離脱 =====
   const workspaceIdRef = useRef<number | null>(null);
-  const hasJoinedRef = useRef(false);
   const joinWorkspaceRef = useRef(joinWorkspace);
   joinWorkspaceRef.current = joinWorkspace;
 
@@ -277,22 +280,39 @@ export default function WorkspaceDetailClient({
   const setInitialPresenceUsersRef = useRef(setInitialPresenceUsers);
   setInitialPresenceUsersRef.current = setInitialPresenceUsers;
 
+  // setInitialWorkspaceEditStatusをrefで保持
+  const setInitialWorkspaceEditStatusRef = useRef(setInitialWorkspaceEditStatus);
+  setInitialWorkspaceEditStatusRef.current = setInitialWorkspaceEditStatus;
+
+  // setWorkspaceEditStatusをrefで保持
+  const setWorkspaceEditStatusRef = useRef(setWorkspaceEditStatus);
+  setWorkspaceEditStatusRef.current = setWorkspaceEditStatus;
+
   useEffect(() => {
     const workspaceId = currentWorkspaceDetail.id;
 
-    // 接続が確立されていて、まだ参加していない場合のみ参加
-    if (connectionState === 'connected' && workspaceId && !hasJoinedRef.current) {
+    // ワークスペースが変わった場合は編集状態をリセット
+    if (workspaceIdRef.current !== null && workspaceIdRef.current !== workspaceId) {
+      setInitialWorkspaceEditStatusRef.current(undefined);
+      setWorkspaceEditStatusRef.current({ isEditing: false });
+    }
+
+    // 接続が確立されている場合のみ参加（常にサーバーから最新状態を取得）
+    if (connectionState === 'connected' && workspaceId) {
       workspaceIdRef.current = workspaceId;
-      hasJoinedRef.current = true;
-      // joinWorkspaceは既存ユーザー一覧を返す
-      joinWorkspaceRef.current(workspaceId).then((users) => {
-        setInitialPresenceUsersRef.current(users);
+      // joinWorkspaceは既存ユーザー一覧と編集状態を返す
+      joinWorkspaceRef.current(workspaceId).then((result) => {
+        setInitialPresenceUsersRef.current(result.existingUsers);
+        // 編集状態を更新
+        if (result.editStatus) {
+          setInitialWorkspaceEditStatusRef.current(result.editStatus);
+          setWorkspaceEditStatusRef.current(result.editStatus);
+        }
       });
     }
 
-    // 切断された場合はフラグをリセット（再接続時に再参加できるように）
+    // 切断された場合はプレゼンスをクリア
     if (connectionState === 'disconnected') {
-      hasJoinedRef.current = false;
       setInitialPresenceUsersRef.current([]);
     }
   }, [connectionState, currentWorkspaceDetail.id]); // joinWorkspace を依存配列から削除
@@ -317,7 +337,6 @@ export default function WorkspaceDetailClient({
       }, 100);
 
       workspaceIdRef.current = null;
-      hasJoinedRef.current = false;
     };
   }, []); // 空の依存配列 - アンマウント時のみ実行
 
@@ -966,6 +985,8 @@ export default function WorkspaceDetailClient({
               e.stopPropagation();
               handleActionMenuToggle();
             }}
+            disabled={isWorkspaceLockedByOther}
+            title={isWorkspaceLockedByOther ? `${workspaceEditingUserName} さんが編集中です` : 'アクション'}
             aria-label="アクション"
           >
             <span className="icon-[mdi--dots-vertical] w-5 h-5" aria-hidden="true" />
@@ -1122,6 +1143,7 @@ export default function WorkspaceDetailClient({
                 <WorkspaceEditStatus
                   workspaceId={currentWorkspaceDetail.id}
                   currentUserId={userInfo?.id ?? 0}
+                  initialStatus={initialWorkspaceEditStatus}
                   onStatusChange={setWorkspaceEditStatus}
                   className="mb-3"
                 />

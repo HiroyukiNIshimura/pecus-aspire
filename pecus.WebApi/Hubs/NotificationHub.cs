@@ -234,8 +234,8 @@ public class NotificationHub : Hub
     /// 参加時に他のメンバーへ通知を送信する。
     /// </summary>
     /// <param name="workspaceId">参加するワークスペースID</param>
-    /// <returns>既に入室しているユーザー一覧</returns>
-    public async Task<List<WorkspacePresenceUser>> JoinWorkspace(int workspaceId)
+    /// <returns>既に入室しているユーザー一覧と編集状態</returns>
+    public async Task<JoinWorkspaceResult> JoinWorkspace(int workspaceId)
     {
         var userId = GetUserId();
 
@@ -250,7 +250,7 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping join",
                 userId, workspaceId);
-            return [];
+            return new JoinWorkspaceResult([], new WorkspaceEditStatus(false, null));
         }
 
         // 前のワークスペースから離脱（Redis から取得して SignalR グループからも削除）
@@ -329,8 +329,14 @@ public class NotificationHub : Hub
             "SignalR: ConnectionId={ConnectionId} joined {GroupName}",
             Context.ConnectionId, groupName);
 
-        // 既存ユーザー一覧を返す
-        return existingUsers;
+        // 編集状態を取得
+        var editor = await _presenceService.GetWorkspaceEditorAsync(workspaceId);
+        var editStatus = editor == null
+            ? new WorkspaceEditStatus(false, null)
+            : new WorkspaceEditStatus(true, editor);
+
+        // 既存ユーザー一覧と編集状態を返す
+        return new JoinWorkspaceResult(existingUsers, editStatus);
     }
 
     /// <summary>
@@ -517,8 +523,8 @@ public class NotificationHub : Hub
     /// </summary>
     /// <param name="itemId">参加するアイテムID</param>
     /// <param name="workspaceId">アイテムが属するワークスペースID</param>
-    /// <returns>既に入室しているユーザー一覧</returns>
-    public async Task<List<PresenceUser>> JoinItem(int itemId, int workspaceId)
+    /// <returns>既に入室しているユーザー一覧と編集状態</returns>
+    public async Task<JoinItemResult> JoinItem(int itemId, int workspaceId)
     {
         var userId = GetUserId();
 
@@ -533,7 +539,7 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping item join",
                 userId, workspaceId);
-            return [];
+            return new JoinItemResult([], new ItemEditStatus(false, null));
         }
 
         // 前のアイテムから離脱（Redis から取得）
@@ -661,7 +667,13 @@ public class NotificationHub : Hub
             "SignalR: ConnectionId={ConnectionId} joined {ItemGroup} and {WorkspaceGroup}",
             Context.ConnectionId, itemGroup, workspaceGroup);
 
-        return existingUsers;
+        // 編集状態を取得
+        var editor = await _presenceService.GetItemEditorAsync(itemId);
+        var editStatus = editor == null
+            ? new ItemEditStatus(false, null)
+            : new ItemEditStatus(true, editor);
+
+        return new JoinItemResult(existingUsers, editStatus);
     }
 
     /// <summary>
@@ -837,7 +849,8 @@ public class NotificationHub : Hub
     /// <summary>
     /// タスクグループに参加する。タスクは排他的に参加し、ワークスペース/アイテムの状態も同期する。
     /// </summary>
-    public async Task<List<PresenceUser>> JoinTask(int workspaceId, int taskId)
+    /// <returns>既に入室しているユーザー一覧と編集状態</returns>
+    public async Task<JoinTaskResult> JoinTask(int workspaceId, int taskId)
     {
         var userId = GetUserId();
 
@@ -851,7 +864,7 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: User {UserId} is not a member of workspace {WorkspaceId}, skipping task join",
                 userId, workspaceId);
-            return [];
+            return new JoinTaskResult([], new TaskEditStatus(false, null));
         }
 
         var taskInfo = await _context.WorkspaceTasks
@@ -867,7 +880,7 @@ public class NotificationHub : Hub
             _logger.LogDebug(
                 "SignalR: Task {TaskId} not found in workspace {WorkspaceId}, skipping join",
                 taskId, workspaceId);
-            return [];
+            return new JoinTaskResult([], new TaskEditStatus(false, null));
         }
 
         var currentTaskId = await _presenceService.GetConnectionTaskAsync(Context.ConnectionId);
@@ -989,7 +1002,13 @@ public class NotificationHub : Hub
             "SignalR: ConnectionId={ConnectionId} joined {TaskGroup} (workspace={WorkspaceId}, item={ItemId})",
             Context.ConnectionId, taskGroup, workspaceId, targetItemId);
 
-        return existingUsers;
+        // 編集状態を取得
+        var editor = await _presenceService.GetTaskEditorAsync(taskId);
+        var editStatus = editor == null
+            ? new TaskEditStatus(false, null)
+            : new TaskEditStatus(true, editor);
+
+        return new JoinTaskResult(existingUsers, editStatus);
     }
 
     /// <summary>

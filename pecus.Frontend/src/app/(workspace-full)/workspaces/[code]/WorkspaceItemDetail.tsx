@@ -122,7 +122,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     ref,
   ) {
     const notify = useNotify();
-    const { joinItem, leaveItem } = useSignalRContext();
+    const { joinItem, leaveItem, connectionState } = useSignalRContext();
     // ドキュメントモードかどうか
     const isDocumentMode = workspaceMode === 'Document';
     const [item, setItem] = useState<WorkspaceItemDetailResponse | null>(null);
@@ -142,6 +142,8 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
     }>({ isOpen: false, relation: null });
     const [isDeleting, setIsDeleting] = useState(false);
     const [itemEditStatus, setItemEditStatus] = useState<ItemEditState>({ isEditing: false });
+    // JoinItem の戻り値から取得した編集状態（initialStatus として渡す）
+    const [initialEditStatus, setInitialEditStatus] = useState<ItemEditState | undefined>(undefined);
 
     // アイテム詳細を取得する関数
     const fetchItemDetail = useCallback(async () => {
@@ -163,18 +165,37 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
       }
     }, [workspaceId, itemId]);
 
-    // SignalR: アイテムグループ参加
+    // SignalR: アイテムグループ参加（接続完了後に実行）
     useEffect(() => {
-      joinItem(itemId, workspaceId).catch((err) => {
-        console.warn('[SignalR] joinItem failed:', err);
-      });
+      // 接続が完了していない場合はスキップ
+      if (connectionState !== 'connected') {
+        return;
+      }
+
+      let isMounted = true;
+
+      const join = async () => {
+        try {
+          const result = await joinItem(itemId, workspaceId);
+          if (isMounted && result.editStatus) {
+            // JoinItem の戻り値から編集状態を初期化
+            setInitialEditStatus(result.editStatus);
+            setItemEditStatus(result.editStatus);
+          }
+        } catch (err) {
+          console.warn('[SignalR] joinItem failed:', err);
+        }
+      };
+
+      join();
 
       return () => {
+        isMounted = false;
         leaveItem(itemId).catch((err) => {
           console.warn('[SignalR] leaveItem failed:', err);
         });
       };
-    }, [itemId, joinItem, leaveItem, workspaceId]);
+    }, [itemId, joinItem, leaveItem, workspaceId, connectionState]);
 
     // 外部から呼び出せるメソッドを公開
     useImperativeHandle(ref, () => ({
@@ -516,6 +537,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
           <ItemEditStatus
             itemId={itemId}
             currentUserId={effectiveCurrentUserId}
+            initialStatus={initialEditStatus}
             onStatusChange={setItemEditStatus}
             className="mb-3"
           />

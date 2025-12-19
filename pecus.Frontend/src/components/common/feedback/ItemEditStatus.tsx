@@ -14,8 +14,9 @@ interface ItemEditStatusProps {
 
 /**
  * アイテム編集状態を表示するコンポーネント。
- * - 初期状態取得 (GetItemEditStatus)
- * - item:edit_started / item:edit_ended を購読
+ * - JoinItem の戻り値から initialStatus を受け取る（推奨）
+ * - initialStatus がない場合は GetItemEditStatus で取得
+ * - item:edit_started / item:edit_ended を購読してリアルタイム更新
  */
 export default function ItemEditStatus({
   itemId,
@@ -26,9 +27,30 @@ export default function ItemEditStatus({
 }: ItemEditStatusProps) {
   const { getItemEditStatus, onItemEditStarted, onItemEditEnded, connectionState } = useSignalRContext();
   const [status, setStatus] = useState<ItemEditStatusType>(initialStatus ?? { isEditing: false });
+  const [lastItemId, setLastItemId] = useState(itemId);
 
-  // 初期取得
+  // itemId が変わった場合は状態をリセット
+  if (itemId !== lastItemId) {
+    setLastItemId(itemId);
+    setStatus(initialStatus ?? { isEditing: false });
+  }
+
+  // initialStatus が渡されたら状態を更新
   useEffect(() => {
+    if (initialStatus) {
+      setStatus(initialStatus);
+      onStatusChange?.(initialStatus);
+    }
+  }, [initialStatus, onStatusChange]);
+
+  // initialStatus がない場合、接続が完了した時に取得
+  useEffect(() => {
+    // initialStatus が渡されている場合はスキップ
+    if (initialStatus) return;
+
+    // 接続していない場合はスキップ
+    if (connectionState !== 'connected') return;
+
     let active = true;
     const fetchStatus = async () => {
       const result = await getItemEditStatus(itemId);
@@ -42,7 +64,7 @@ export default function ItemEditStatus({
     return () => {
       active = false;
     };
-  }, [getItemEditStatus, itemId, onStatusChange]);
+  }, [getItemEditStatus, itemId, onStatusChange, connectionState, initialStatus]);
 
   // イベント購読
   useEffect(() => {
@@ -96,12 +118,14 @@ export default function ItemEditStatus({
   if (!message) return null;
 
   return (
-    <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
-      <div className="flex items-center gap-2">
-        <span
-          className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
-        />
-        <span>{message.text}</span>
+    <div className="animate-gentle-blink">
+      <div className={`alert alert-soft alert-${message.variant} ${className ?? ''}`.trim()}>
+        <div className="flex items-center gap-2">
+          <span
+            className={message.variant !== 'info' ? 'icon-[mdi--alert] w-4 h-4' : 'icon-[mdi--information] w-4 h-4'}
+          />
+          <span>{message.text}</span>
+        </div>
       </div>
     </div>
   );
