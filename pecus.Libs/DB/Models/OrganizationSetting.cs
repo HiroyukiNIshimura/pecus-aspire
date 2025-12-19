@@ -78,6 +78,13 @@ public class OrganizationSetting
     public int DashboardHelpCommentMaxCount { get; set; } = 6;
 
     /// <summary>
+    /// グループチャットのスコープ設定
+    /// Workspace: ワークスペース単位（デフォルト）
+    /// Organization: 組織全体で1つのグループチャット
+    /// </summary>
+    public GroupChatScope? GroupChatScope { get; set; }
+
+    /// <summary>
     /// 更新日時
     /// </summary>
     public DateTimeOffset? UpdatedAt { get; set; }

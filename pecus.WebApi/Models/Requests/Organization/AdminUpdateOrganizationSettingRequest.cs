@@ -74,6 +74,13 @@ public class AdminUpdateOrganizationSettingRequest
     public int DashboardHelpCommentMaxCount { get; set; } = 6;
 
     /// <summary>
+    /// グループチャットのスコープ設定
+    /// Workspace: ワークスペース単位（デフォルト）
+    /// Organization: 組織全体で1つのグループチャット
+    /// </summary>
+    public GroupChatScope? GroupChatScope { get; set; }
+
+    /// <summary>
     /// 楽観的ロック用RowVersion
     /// </summary>
     [Required(ErrorMessage = "RowVersionは必須です。")]

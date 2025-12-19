@@ -11,10 +11,9 @@
 |-------------|------|
 | ユーザーと AI アシスタント | AI との対話セッション |
 | ユーザー A とユーザー B の 1:1 DM | ダイレクトメッセージ |
-| グループチャット | 3人以上のチャットルーム |
+| 組織グループチャット | 組織全体のチャットルーム（組織ごとに1つ） |
+| ワークスペースグループチャット | ワークスペースメンバーのチャットルーム（ワークスペースごとに1つ） |
 | システムからの通知 | システムからの通知を自由に送信できる |
-
-※ ワークスペース全体のチャットは `workspace:{workspaceId}` グループで対応可能
 
 ---
 
@@ -30,6 +29,7 @@
 │ Type            │  │    │ ChatRoomId (FK)     │────┘  │ Username        │
 │ Name            │  └───>│ UserId (FK)         │───────│ ...             │
 │ OrganizationId  │       │ Role                │       └─────────────────┘
+│ WorkspaceId     │  ← ワークスペースグループチャットの場合に使用（nullable）
 │ DmUserPair      │       │ JoinedAt            │
 │ CreatedByUserId │       │ LastReadAt          │
 │ CreatedAt       │       │ NotificationSetting │
@@ -84,6 +84,13 @@ public class ChatRoom
     public Organization Organization { get; set; } = null!;
 
     /// <summary>
+    /// ワークスペースID（ワークスペースグループチャットの場合）
+    /// null の場合は組織全体のグループチャット
+    /// </summary>
+    public int? WorkspaceId { get; set; }
+    public Workspace? Workspace { get; set; }
+
+    /// <summary>
     /// DM の重複防止用ユーザーペア
     /// 小さいID_大きいID 形式（例: "5_12"）
     /// Dm タイプの場合のみ使用
@@ -130,7 +137,8 @@ public enum ChatRoomType
 
     /// <summary>
     /// グループチャット
-    /// 組織ごとに1つ存在し、全メンバーが参加
+    /// - 組織グループ: WorkspaceId = null、組織ごとに1つ存在し全メンバーが参加
+    /// - ワークスペースグループ: WorkspaceId 指定、ワークスペースごとに1つ存在しメンバーのみ参加
     /// </summary>
     Group = 1,
 
@@ -333,8 +341,16 @@ entity.HasIndex(e => new { e.OrganizationId, e.DmUserPair })
     .IsUnique()
     .HasFilter("\"Type\" = 0");  // Dm タイプのみ
 
+// ワークスペースグループチャットの重複防止（1ワークスペース1グループ）
+entity.HasIndex(e => new { e.OrganizationId, e.WorkspaceId })
+    .IsUnique()
+    .HasFilter("\"Type\" = 1 AND \"WorkspaceId\" IS NOT NULL");  // Group タイプかつワークスペース指定あり
+
 // 組織内のチャットルーム一覧取得用
 entity.HasIndex(e => e.OrganizationId);
+
+// ワークスペース内のチャットルーム取得用
+entity.HasIndex(e => e.WorkspaceId);
 ```
 
 ### ChatRoomMember
@@ -417,6 +433,111 @@ public class ChatRoomService
     }
 }
 
+---
+
+## ワークスペースグループルーム管理
+
+```csharp
+public class ChatRoomService
+{
+    /// <summary>
+    /// ワークスペースのグループチャットルームを取得または作成
+    /// </summary>
+    public async Task<ChatRoom> GetOrCreateWorkspaceGroupRoomAsync(int workspaceId, int createdByUserId)
+    {
+        // 既存のワークスペースグループルームを検索
+        var existingRoom = await _context.ChatRooms
+            .Include(r => r.Members)
+            .FirstOrDefaultAsync(r =>
+                r.WorkspaceId == workspaceId &&
+                r.Type == ChatRoomType.Group);
+
+        if (existingRoom != null)
+        {
+            return existingRoom;
+        }
+
+        var workspace = await _context.Workspaces
+            .Include(w => w.Organization)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId)
+            ?? throw new NotFoundException($"Workspace {workspaceId} not found");
+
+        // 新規作成
+        var room = new ChatRoom
+        {
+            Type = ChatRoomType.Group,
+            Name = workspace.Name,  // ワークスペース名をルーム名に設定
+            OrganizationId = workspace.OrganizationId,
+            WorkspaceId = workspaceId,
+            CreatedByUserId = createdByUserId,
+            Members = new List<ChatRoomMember>
+            {
+                new() { UserId = createdByUserId, Role = ChatRoomRole.Owner },
+            }
+        };
+
+        _context.ChatRooms.Add(room);
+        await _context.SaveChangesAsync();
+
+        return room;
+    }
+
+    /// <summary>
+    /// ユーザーをワークスペースのグループチャットに追加
+    /// </summary>
+    public async Task AddUserToWorkspaceRoomAsync(int userId, int workspaceId)
+    {
+        var room = await _context.ChatRooms
+            .Include(r => r.Members)
+            .FirstOrDefaultAsync(r =>
+                r.WorkspaceId == workspaceId &&
+                r.Type == ChatRoomType.Group);
+
+        if (room == null)
+        {
+            return;  // ワークスペースにチャットルームがない場合は何もしない
+        }
+
+        if (room.Members.Any(m => m.UserId == userId))
+        {
+            return;  // 既に参加済み
+        }
+
+        room.Members.Add(new ChatRoomMember
+        {
+            UserId = userId,
+            Role = ChatRoomRole.Member,
+        });
+
+        await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// ユーザーをワークスペースのグループチャットから削除
+    /// </summary>
+    public async Task RemoveUserFromWorkspaceRoomAsync(int userId, int workspaceId)
+    {
+        var room = await _context.ChatRooms
+            .Include(r => r.Members)
+            .FirstOrDefaultAsync(r =>
+                r.WorkspaceId == workspaceId &&
+                r.Type == ChatRoomType.Group);
+
+        if (room == null)
+        {
+            return;
+        }
+
+        var member = room.Members.FirstOrDefault(m => m.UserId == userId);
+        if (member != null)
+        {
+            room.Members.Remove(member);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
+```
+
 
 ---
 
@@ -448,7 +569,8 @@ SignalR グループは「今この瞬間、どのクライアントにメッセ
 | ChatRoomType | SignalR グループ | 説明 |
 |--------------|------------------|------|
 | Dm | `chat:{chatRoomId}` | DM ルーム専用 |
-| Group | `chat:{chatRoomId}` | グループチャット専用 |
+| Group（組織） | `chat:{chatRoomId}` | 組織グループチャット専用 |
+| Group（ワークスペース） | `chat:{chatRoomId}` | ワークスペースグループチャット専用 |
 | Ai | `chat:{chatRoomId}` | AI チャット専用 |
 | System | `organization:{organizationId}` | 組織全体への通知 |
 
@@ -587,6 +709,63 @@ MVP ではウォーターマーク方式（`LastReadAt`）のみで運用する�
 
 グループチャットで「誰が読んだか」を表示する要件が発生した場合は、`ChatMessageRead` テーブルの追加を検討する。
 ただし、メッセージ数 × ユーザー数のレコードが発生するためパフォーマンスに注意が必要。
+
+---
+
+## ワークスペースグループチャットのライフサイクル管理
+
+### ワークスペース作成時
+
+ワークスペースが作成されると、自動的にワークスペースグループチャットルームが作成される。
+
+```csharp
+// WorkspaceService.CreateWorkspaceAsync 内
+var workspace = new Workspace { /* ... */ };
+await _context.Workspaces.AddAsync(workspace);
+await _context.SaveChangesAsync();
+
+// ワークスペースグループチャットルームを作成
+await _chatRoomService.GetOrCreateWorkspaceGroupRoomAsync(
+    workspace.Id,
+    currentUserId  // オーナーとして最初のメンバーになる
+);
+```
+
+### ワークスペースメンバー追加時
+
+ワークスペースにメンバーが追加されると、自動的にワークスペースグループチャットに参加する。
+
+```csharp
+// WorkspaceService.AddUserToWorkspaceAsync 内
+await _chatRoomService.AddUserToWorkspaceRoomAsync(userId, workspaceId);
+```
+
+### ワークスペースメンバー削除時
+
+ワークスペースからメンバーが削除されると、自動的にワークスペースグループチャットから退出する。
+
+```csharp
+// WorkspaceService.RemoveUserFromWorkspaceAsync 内
+await _chatRoomService.RemoveUserFromWorkspaceRoomAsync(userId, workspaceId);
+```
+
+### ワークスペース削除時
+
+ワークスペースが削除されると、関連するチャットルームは **FK の CASCADE DELETE** により自動削除される。
+
+```csharp
+// ApplicationDbContext.OnModelCreating 内
+entity.HasOne(cr => cr.Workspace)
+    .WithMany()
+    .HasForeignKey(cr => cr.WorkspaceId)
+    .OnDelete(DeleteBehavior.Cascade);  // ワークスペース削除時に自動削除
+```
+
+### API エンドポイント
+
+| メソッド | パス | 説明 |
+|---------|------|------|
+| GET | `/api/chat/rooms/workspace/{workspaceId}/group` | ワークスペースのグループチャットルームを取得（存在しない場合は作成） |
 
 ---
 

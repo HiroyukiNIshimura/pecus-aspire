@@ -82,6 +82,7 @@ public class AdminOrganizationController : BaseAdminController
                 RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
                 EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
+                GroupChatScope = organization.Setting?.GroupChatScope,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
@@ -143,6 +144,7 @@ public class AdminOrganizationController : BaseAdminController
                 RequireEstimateOnTaskCreation = organization.Setting?.RequireEstimateOnTaskCreation ?? false,
                 EnforcePredecessorCompletion = organization.Setting?.EnforcePredecessorCompletion ?? false,
                 DashboardHelpCommentMaxCount = organization.Setting?.DashboardHelpCommentMaxCount ?? 6,
+                GroupChatScope = organization.Setting?.GroupChatScope,
                 RowVersion = organization.Setting?.RowVersion ?? 0,
             },
         };
