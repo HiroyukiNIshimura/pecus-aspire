@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getMyWorkspacesPaged } from '@/actions/workspace';
 import type { WorkspaceListItemResponse } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { Tooltip } from '../common/feedback/Tooltip';
 
 interface WorkspaceSwitcherProps {
   /** 現在のワークスペースコード */
@@ -160,11 +161,12 @@ export default function WorkspaceSwitcher({ currentWorkspaceCode, currentWorkspa
             )}
             <span className="truncate">{currentWorkspace?.name || 'ワークスペース'}</span>
             {currentWorkspace?.mode === 'Document' && (
-              <span
-                className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
-                title="ドキュメントワークスペース"
-                aria-label="ドキュメントワークスペース"
-              />
+              <Tooltip text="ドキュメントモード" position="top">
+                <span
+                  className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+                  aria-label="ドキュメントモード"
+                />
+              </Tooltip>
             )}
           </div>
           {currentWorkspace?.code && (
@@ -212,11 +214,12 @@ export default function WorkspaceSwitcher({ currentWorkspaceCode, currentWorkspa
                     )}
                     <span className="truncate">{workspace.name}</span>
                     {workspace.mode === 'Document' && (
-                      <span
-                        className="icon-[mdi--file-document-outline] text-base align-middle ml-1"
-                        title="ドキュメントワークスペース"
-                        aria-label="ドキュメントワークスペース"
-                      />
+                      <Tooltip text="ドキュメントモード" position="top">
+                        <span
+                          className="icon-[mdi--file-document-outline] text-base align-middle ml-1"
+                          aria-label="ドキュメントモード"
+                        />
+                      </Tooltip>
                     )}
                   </div>
                   {workspace.code && (

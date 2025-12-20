@@ -5,6 +5,7 @@ import { getWorkspaceDetail, setWorkspaceSkills } from '@/actions/workspace';
 import MultiSelectDropdown from '@/components/common/filters/MultiSelectDropdown';
 import type { MasterSkillResponse, WorkspaceFullDetailResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
+import { Tooltip } from '../common/feedback/Tooltip';
 
 interface EditWorkspaceSkillsModalProps {
   isOpen: boolean;
@@ -184,11 +185,12 @@ export default function EditWorkspaceSkillsModal({
                   <h3 className="font-bold text-lg flex items-center gap-2">
                     <span className="truncate">{workspace.name}</span>
                     {workspace.mode === 'Document' && (
-                      <span
-                        className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
-                        title="ドキュメントワークスペース"
-                        aria-label="ドキュメントワークスペース"
-                      />
+                      <Tooltip text="ドキュメントモード" position="top">
+                        <span
+                          className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+                          aria-label="ドキュメントモード"
+                        />
+                      </Tooltip>
                     )}
                   </h3>
                   {workspace.code && <code className="text-sm text-base-content/70">{workspace.code}</code>}

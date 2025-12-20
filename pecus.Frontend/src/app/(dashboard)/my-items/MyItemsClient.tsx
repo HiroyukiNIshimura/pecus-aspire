@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchMyItems } from '@/actions/workspaceItem';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   ItemSortBy,
@@ -560,11 +561,12 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
                               )}
                               <span className="truncate">{item.workspaceName || 'ワークスペース'}</span>
                               {item.workspaceMode === 'Document' && (
-                                <span
-                                  className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
-                                  aria-label="ドキュメントワークスペース"
-                                  title="ドキュメントワークスペース"
-                                />
+                                <Tooltip text="ドキュメントモード" position="top">
+                                  <span
+                                    className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
+                                    aria-label="ドキュメントモード"
+                                  />
+                                </Tooltip>
                               )}
                             </span>
                           </div>

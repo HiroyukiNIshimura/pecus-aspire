@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { fetchMyActivities } from '@/actions/activity';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   ActivityActionType,
@@ -319,11 +320,12 @@ export default function ActivityClient({
                             {activity.workspaceName || 'Unknown'}
                           </span>
                           {activity.workspaceMode === 'Document' && (
-                            <span
-                              className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
-                              aria-label="ドキュメントワークスペース"
-                              title="ドキュメントワークスペース"
-                            />
+                            <Tooltip text="ドキュメントモード" position="top">
+                              <span
+                                className="icon-[mdi--file-document-outline] w-3.5 h-3.5 text-base-content/60 flex-shrink-0"
+                                aria-label="ドキュメントモード"
+                              />
+                            </Tooltip>
                           )}
                         </div>
 

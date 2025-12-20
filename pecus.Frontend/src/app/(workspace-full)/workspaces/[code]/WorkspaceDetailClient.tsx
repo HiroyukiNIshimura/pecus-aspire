@@ -11,6 +11,7 @@ import {
 } from '@/actions/workspace';
 import { addWorkspaceItemRelations, fetchLatestWorkspaceItem } from '@/actions/workspaceItem';
 import { getWorkspaceTaskBySequence } from '@/actions/workspaceTask';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
 import WorkspaceEditStatus from '@/components/common/feedback/WorkspaceEditStatus';
 import AppHeader from '@/components/common/layout/AppHeader';
 import DeleteWorkspaceModal from '@/components/common/overlays/DeleteWorkspaceModal';
@@ -960,11 +961,12 @@ export default function WorkspaceDetailClient({
           )}
           <span className="truncate">{currentWorkspaceDetail.name}</span>
           {currentWorkspaceDetail.mode === 'Document' && (
-            <span
-              className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
-              title="ドキュメントワークスペース"
-              aria-label="ドキュメントワークスペース"
-            />
+            <Tooltip text="ドキュメントモード" position="top">
+              <span
+                className="icon-[mdi--file-document-outline] text-lg align-middle ml-1"
+                aria-label="ドキュメントモード"
+              />
+            </Tooltip>
           )}
         </h2>
         {currentWorkspaceDetail.code && (

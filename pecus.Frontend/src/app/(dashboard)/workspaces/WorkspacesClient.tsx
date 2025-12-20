@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/common/feedback/EmptyState';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
+import { Tooltip } from '@/components/common/feedback/Tooltip';
 import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import GenreSelect from '@/components/workspaces/GenreSelect';
 import type {
@@ -381,11 +382,12 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
                               )}
                               <span className="truncate">{workspace.name}</span>
                               {workspace.mode === 'Document' && (
-                                <span
-                                  className="icon-[mdi--file-document-outline] w-4 h-4 text-base-content/60"
-                                  aria-label="ドキュメントワークスペース"
-                                  title="ドキュメントワークスペース"
-                                />
+                                <Tooltip text="ドキュメントモード" position="top">
+                                  <span
+                                    className="icon-[mdi--file-document-outline] w-4 h-4 text-base-content/60"
+                                    aria-label="ドキュメントモード"
+                                  />
+                                </Tooltip>
                               )}
                             </h3>
                           </Link>
