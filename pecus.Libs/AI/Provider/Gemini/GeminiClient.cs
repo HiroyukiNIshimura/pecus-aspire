@@ -130,13 +130,14 @@ public class GeminiClient : IGeminiClient, IAiClient
     {
         var systemPrompt = """
             あなたはビジネス文書作成のアシスタントです。
-            与えられたタイトルから、適切な本文をMarkdown形式で作成してください。
+            与えられたタイトルと補足情報から、適切な本文テンプレートをMarkdown形式で作成してください。
 
             ルール:
             - 簡潔で分かりやすい文章を心がける
             - 必要に応じて見出し（##, ###）、箇条書き、表を使用する
             - 最初の行はタイトルの見出し（#）から始めない（タイトルは別途表示されるため）
             - 日本語で記述する
+            - 最適解ではあくまで参考例として提供する
             """;
 
         var userPrompt = string.IsNullOrEmpty(additionalContext)
