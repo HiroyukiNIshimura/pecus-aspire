@@ -336,7 +336,7 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, CurrentUserId, existingWorkspace);
+        var workspace = await _workspaceService.UpdateWorkspaceAsync(id, request, CurrentUserId);
 
         var response = new WorkspaceDetailResponse
         {
@@ -389,7 +389,7 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        var result = await _workspaceService.DeleteWorkspaceAsync(id, workspace);
+        var result = await _workspaceService.DeleteWorkspaceAsync(id);
         if (!result)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -423,8 +423,7 @@ public class AdminWorkspaceController : BaseAdminController
         var result = await _workspaceService.DeactivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId,
-            existingWorkspace: workspace
+            updatedByUserId: CurrentUserId
         );
         if (!result)
         {
@@ -459,8 +458,7 @@ public class AdminWorkspaceController : BaseAdminController
         var result = await _workspaceService.ActivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId,
-            existingWorkspace: workspace
+            updatedByUserId: CurrentUserId
         );
         if (!result)
         {
@@ -497,8 +495,7 @@ public class AdminWorkspaceController : BaseAdminController
 
         var (workspaceUser, returnedWorkspace) = await _workspaceService.AddUserToWorkspaceAsync(
             id,
-            request,
-            workspace
+            request
         );
 
         var response = new WorkspaceUserDetailResponse
@@ -608,8 +605,7 @@ public class AdminWorkspaceController : BaseAdminController
         var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(
             workspaceId: id,
             userId: userId,
-            newRole: request.WorkspaceRole,
-            existingWorkspace: workspace
+            newRole: request.WorkspaceRole
         );
 
         var response = new WorkspaceUserDetailResponse

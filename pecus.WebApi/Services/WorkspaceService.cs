@@ -219,39 +219,10 @@ public class WorkspaceService
     public async Task<Workspace> UpdateWorkspaceAsync(
         int workspaceId,
         UpdateWorkspaceRequest request,
-        int? updatedByUserId = null,
-        Workspace? existingWorkspace = null
+        int? updatedByUserId = null
     )
     {
-        // If a tracked existingWorkspace was provided by the caller (to avoid re-query), prefer it.
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                // If the provided entity is attached to this DbContext and not detached, use it.
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-                else
-                {
-                    // Fallback to fetching a tracked entity from the current context
-                    workspace = await _context.Workspaces.FindAsync(workspaceId);
-                }
-            }
-            catch
-            {
-                // In case inspection fails for any reason, fallback to DB fetch
-                workspace = await _context.Workspaces.FindAsync(workspaceId);
-            }
-        }
-        else
-        {
-            workspace = await _context.Workspaces.FindAsync(workspaceId);
-        }
-
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -291,32 +262,9 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースを削除
     /// </summary>
-    public async Task<bool> DeleteWorkspaceAsync(int workspaceId, Workspace? existingWorkspace = null)
+    public async Task<bool> DeleteWorkspaceAsync(int workspaceId)
     {
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-                else
-                {
-                    workspace = await _context.Workspaces.FindAsync(workspaceId);
-                }
-            }
-            catch
-            {
-                workspace = await _context.Workspaces.FindAsync(workspaceId);
-            }
-        }
-        else
-        {
-            workspace = await _context.Workspaces.FindAsync(workspaceId);
-        }
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             return false;
@@ -344,35 +292,10 @@ public class WorkspaceService
     public async Task<bool> DeactivateWorkspaceAsync(
         int workspaceId,
         uint rowVersion,
-        int? updatedByUserId = null,
-        Workspace? existingWorkspace = null
+        int? updatedByUserId = null
     )
     {
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-                else
-                {
-                    workspace = await _context.Workspaces.FindAsync(workspaceId);
-                }
-            }
-            catch
-            {
-                workspace = await _context.Workspaces.FindAsync(workspaceId);
-            }
-        }
-        else
-        {
-            workspace = await _context.Workspaces.FindAsync(workspaceId);
-        }
-
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             return false;
@@ -401,35 +324,10 @@ public class WorkspaceService
     public async Task<bool> ActivateWorkspaceAsync(
         int workspaceId,
         uint rowVersion,
-        int? updatedByUserId = null,
-        Workspace? existingWorkspace = null
+        int? updatedByUserId = null
     )
     {
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-                else
-                {
-                    workspace = await _context.Workspaces.FindAsync(workspaceId);
-                }
-            }
-            catch
-            {
-                workspace = await _context.Workspaces.FindAsync(workspaceId);
-            }
-        }
-        else
-        {
-            workspace = await _context.Workspaces.FindAsync(workspaceId);
-        }
-
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             return false;
@@ -466,34 +364,13 @@ public class WorkspaceService
     /// </summary>
     public async Task<(WorkspaceUser, Workspace)> AddUserToWorkspaceAsync(
         int workspaceId,
-        AddUserToWorkspaceRequest request,
-        Workspace? existingWorkspace = null
+        AddUserToWorkspaceRequest request
     )
     {
         // ワークスペースの存在確認
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-            }
-            catch
-            {
-                // fallthrough
-            }
-        }
-
-        if (workspace == null)
-        {
-            workspace = await _context
-                .Workspaces.Include(w => w.Organization)
-                .FirstOrDefaultAsync(w => w.Id == workspaceId);
-        }
+        var workspace = await _context
+            .Workspaces.Include(w => w.Organization)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
         if (workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -576,33 +453,11 @@ public class WorkspaceService
     public async Task<WorkspaceUser> UpdateWorkspaceUserRoleAsync(
         int workspaceId,
         int userId,
-        WorkspaceRole newRole,
-        Workspace? existingWorkspace = null
+        WorkspaceRole newRole
     )
     {
         // ワークスペースの存在確認とオーナー情報取得
-        Workspace? workspace = null;
-        if (existingWorkspace != null)
-        {
-            try
-            {
-                var entry = _context.Entry(existingWorkspace);
-                if (entry != null && entry.Context == _context && entry.State != Microsoft.EntityFrameworkCore.EntityState.Detached)
-                {
-                    workspace = existingWorkspace;
-                }
-            }
-            catch
-            {
-                // fallthrough
-            }
-        }
-
-        if (workspace == null)
-        {
-            workspace = await _context.Workspaces.FindAsync(workspaceId);
-        }
-
+        var workspace = await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
