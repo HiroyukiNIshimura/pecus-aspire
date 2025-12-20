@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Pecus.Exceptions;
 using Pecus.Libs;
 using Pecus.Libs.DB.Models.Enums;
-using Pecus.Libs.Hangfire.Tasks;
-using Pecus.Libs.Mail.Templates.Models;
 using Pecus.Libs.Security;
 using Pecus.Models.Config;
 using Pecus.Services;
@@ -23,6 +21,7 @@ public class WorkspaceItemController : BaseSecureController
     private readonly PecusConfig _config;
     private readonly IBackgroundJobClient _backgroundJobClient;
     private readonly FrontendUrlResolver _frontendUrlResolver;
+    private readonly DocumentSuggestionService _documentSuggestionService;
 
     public WorkspaceItemController(
         WorkspaceItemService workspaceItemService,
@@ -31,7 +30,8 @@ public class WorkspaceItemController : BaseSecureController
         ILogger<WorkspaceItemController> logger,
         PecusConfig config,
         IBackgroundJobClient backgroundJobClient,
-        FrontendUrlResolver frontendUrlResolver
+        FrontendUrlResolver frontendUrlResolver,
+        DocumentSuggestionService documentSuggestionService
     ) : base(profileService, logger)
     {
         _workspaceItemService = workspaceItemService;
@@ -40,6 +40,7 @@ public class WorkspaceItemController : BaseSecureController
         _config = config;
         _backgroundJobClient = backgroundJobClient;
         _frontendUrlResolver = frontendUrlResolver;
+        _documentSuggestionService = documentSuggestionService;
     }
 
     /// <summary>
@@ -450,19 +451,36 @@ public class WorkspaceItemController : BaseSecureController
     }
 
     /// <summary>
-    /// 属性の表示名を取得
+    /// ドキュメント提案取得
     /// </summary>
-    private static string GetAttributeDisplayName(WorkspaceItemAttribute attribute)
+    [HttpPost("document-suggestion")]
+    [ProducesResponseType(typeof(DocumentSuggestionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<Ok<DocumentSuggestionResponse>> GetDocumentSuggestion(int workspaceId, [FromBody] DocumentSuggestionRequest request)
     {
-        return attribute switch
+        // ワークスペースへのアクセス権限をチェック
+        var (hasAccess, workspace) = await _accessHelper.CheckWorkspaceAccessAsync(CurrentUserId, workspaceId);
+        if (!hasAccess)
         {
-            WorkspaceItemAttribute.Assignee => "担当者",
-            WorkspaceItemAttribute.Committer => "コミッター",
-            WorkspaceItemAttribute.Priority => "優先度",
-            WorkspaceItemAttribute.Duedate => "期限日",
-            WorkspaceItemAttribute.Archive => "アーカイブ状態",
-            _ => attribute.ToString()
+            throw new NotFoundException("ワークスペースが見つかりません。");
+        }
+
+        // ユーザーがワークスペースのメンバーか確認
+        var isMember = await _accessHelper.IsActiveWorkspaceMemberAsync(CurrentUserId, workspaceId);
+        if (!isMember)
+        {
+            throw new InvalidOperationException(
+                "ワークスペースのメンバーのみが機能を使用できます。"
+            );
+        }
+
+        var suggestion = await _documentSuggestionService.SuggestDocumentContentAsync(workspace!, request.Title);
+        var response = new DocumentSuggestionResponse
+        {
+            SuggestedContent = suggestion
         };
+        return TypedResults.Ok(response);
     }
 
     /// <summary>
@@ -487,5 +505,21 @@ public class WorkspaceItemController : BaseSecureController
             ChildrenCount = count.DirectCount,
             TotalDescendantsCount = count.TotalCount
         });
+    }
+
+    /// <summary>
+    /// 属性の表示名を取得
+    /// </summary>
+    private static string GetAttributeDisplayName(WorkspaceItemAttribute attribute)
+    {
+        return attribute switch
+        {
+            WorkspaceItemAttribute.Assignee => "担当者",
+            WorkspaceItemAttribute.Committer => "コミッター",
+            WorkspaceItemAttribute.Priority => "優先度",
+            WorkspaceItemAttribute.Duedate => "期限日",
+            WorkspaceItemAttribute.Archive => "アーカイブ状態",
+            _ => attribute.ToString()
+        };
     }
 }

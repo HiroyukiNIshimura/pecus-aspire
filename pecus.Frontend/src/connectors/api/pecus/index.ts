@@ -67,6 +67,8 @@ export type { DeleteTaskCommentRequest } from './models/DeleteTaskCommentRequest
 export type { DeviceResponse } from './models/DeviceResponse';
 export type { DeviceType } from './models/DeviceType';
 export type { DmCandidateUserItem } from './models/DmCandidateUserItem';
+export type { DocumentSuggestionRequest } from './models/DocumentSuggestionRequest';
+export type { DocumentSuggestionResponse } from './models/DocumentSuggestionResponse';
 export type { DocumentTreeItemResponse } from './models/DocumentTreeItemResponse';
 export type { DocumentTreeResponse } from './models/DocumentTreeResponse';
 export type { EmailChangeRequestResponse } from './models/EmailChangeRequestResponse';

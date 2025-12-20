@@ -8,6 +8,7 @@ using Microsoft.OpenApi;
 using Pecus.Filters;
 using Pecus.Hubs;
 using Pecus.Libs;
+using Pecus.Libs.AI.Extensions;
 using Pecus.Libs.DB;
 using Pecus.Libs.Hangfire.Tasks;
 using Pecus.Libs.Lexical;
@@ -133,6 +134,7 @@ builder.Services.AddScoped<FocusRecommendationService>();
 builder.Services.AddScoped<ChatRoomService>();
 builder.Services.AddScoped<ChatMessageService>();
 builder.Services.AddScoped<SystemNotificationService>();
+builder.Services.AddScoped<DocumentSuggestionService>();
 
 // トークン管理サービス（プロトタイプ、メモリキャッシュベース）
 builder.Services.AddScoped<RefreshTokenService>();
@@ -363,6 +365,9 @@ builder.Services.AddHttpLogging(logging =>
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
 });
+
+// DeepSeek AI クライアントの登録
+builder.Services.AddDeepSeekClient(builder.Configuration);
 
 //-------------
 var app = builder.Build();

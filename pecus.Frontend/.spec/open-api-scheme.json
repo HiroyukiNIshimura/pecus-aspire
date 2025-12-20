@@ -5058,6 +5058,78 @@
         ]
       }
     },
+    "/api/workspaces/{workspaceId}/items/document-suggestion": {
+      "post": {
+        "tags": [
+          "WorkspaceItem"
+        ],
+        "summary": "ドキュメント提案取得",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSuggestionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSuggestionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentSuggestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": { }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/workspaces/{workspaceId}/items/{itemId}/children/count": {
       "get": {
         "tags": [
@@ -12958,6 +13030,29 @@
           }
         },
         "description": "DM候補ユーザー項目（既存DMがないアクティブユーザー）"
+      },
+      "DocumentSuggestionRequest": {
+        "required": [
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "件名"
+          }
+        }
+      },
+      "DocumentSuggestionResponse": {
+        "type": "object",
+        "properties": {
+          "suggestedContent": {
+            "type": "string",
+            "description": "提案されたドキュメント内容(Markdown)"
+          }
+        },
+        "description": "ドキュメント提案レスポンス"
       },
       "DocumentTreeItemResponse": {
         "required": [

@@ -6,6 +6,8 @@ import type { AddWorkspaceItemRelationRequest } from '../models/AddWorkspaceItem
 import type { AddWorkspaceItemRelationResponse } from '../models/AddWorkspaceItemRelationResponse';
 import type { ChildrenCountResponse } from '../models/ChildrenCountResponse';
 import type { CreateWorkspaceItemRequest } from '../models/CreateWorkspaceItemRequest';
+import type { DocumentSuggestionRequest } from '../models/DocumentSuggestionRequest';
+import type { DocumentSuggestionResponse } from '../models/DocumentSuggestionResponse';
 import type { IFormFile } from '../models/IFormFile';
 import type { PagedResponseOfWorkspaceItemDetailResponse } from '../models/PagedResponseOfWorkspaceItemDetailResponse';
 import type { SetTagsToItemRequest } from '../models/SetTagsToItemRequest';
@@ -417,6 +419,31 @@ export class WorkspaceItemService {
                 400: `Bad Request`,
                 404: `Not Found`,
                 409: `Conflict`,
+                500: `Internal Server Error`,
+            },
+        });
+    }
+    /**
+     * ドキュメント提案取得
+     * @param workspaceId
+     * @param requestBody
+     * @returns DocumentSuggestionResponse OK
+     * @throws ApiError
+     */
+    public static postApiWorkspacesItemsDocumentSuggestion(
+        workspaceId: number,
+        requestBody: DocumentSuggestionRequest,
+    ): CancelablePromise<DocumentSuggestionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/workspaces/{workspaceId}/items/document-suggestion',
+            path: {
+                'workspaceId': workspaceId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                404: `Not Found`,
                 500: `Internal Server Error`,
             },
         });
