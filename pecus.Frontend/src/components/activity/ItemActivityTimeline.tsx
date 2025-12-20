@@ -236,11 +236,7 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
                 <span>{error}</span>
               </div>
             ) : activities.length === 0 && !isLoading ? (
-              <EmptyState
-                iconClass="icon-[mdi--history]"
-                message="アクティビティはありません"
-                size="sm"
-              />
+              <EmptyState iconClass="icon-[mdi--history]" message="アクティビティはありません" size="sm" />
             ) : (
               <div className="space-y-4">
                 {groupedActivities.map((group, groupIndex) => {

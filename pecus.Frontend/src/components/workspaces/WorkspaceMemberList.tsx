@@ -93,11 +93,7 @@ export default function WorkspaceMemberList({
 
         {/* メンバーが0件の場合 */}
         {members.length === 0 ? (
-          <EmptyState
-            iconClass="icon-[mdi--account-group-outline]"
-            message="メンバーを追加しましょう"
-            size="sm"
-          />
+          <EmptyState iconClass="icon-[mdi--account-group-outline]" message="メンバーを追加しましょう" size="sm" />
         ) : (
           /* メンバーグリッド */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">

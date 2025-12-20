@@ -33,11 +33,7 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
             ヘルプリクエスト
             <span className="text-sm font-normal text-base-content/60 ml-auto">0件</span>
           </h2>
-          <EmptyState
-            iconClass="icon-[mdi--comment-check-outline]"
-            message="ヘルプリクエストはありません"
-            size="sm"
-          />
+          <EmptyState iconClass="icon-[mdi--comment-check-outline]" message="ヘルプリクエストはありません" size="sm" />
         </div>
       </section>
     );

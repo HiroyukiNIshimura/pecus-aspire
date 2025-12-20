@@ -883,11 +883,7 @@ export default function WorkspaceTaskDetailPage({
                 <span className="loading loading-spinner loading-lg"></span>
               </div>
             ) : !task ? (
-              <EmptyState
-                iconClass="icon-[mdi--clipboard-alert-outline]"
-                message="タスクが見つかりません"
-                size="sm"
-              />
+              <EmptyState iconClass="icon-[mdi--clipboard-alert-outline]" message="タスクが見つかりません" size="sm" />
             ) : (
               <>
                 {/* ローディングオーバーレイ */}

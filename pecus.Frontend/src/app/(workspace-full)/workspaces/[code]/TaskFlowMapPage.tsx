@@ -155,10 +155,7 @@ export default function TaskFlowMapPage({
               <TaskFlowMap data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
             </div>
           ) : (
-            <EmptyState
-              iconClass="icon-[mdi--clipboard-text-outline]"
-              message="データがありません"
-            />
+            <EmptyState iconClass="icon-[mdi--clipboard-text-outline]" message="データがありません" />
           )}
         </div>
       </div>

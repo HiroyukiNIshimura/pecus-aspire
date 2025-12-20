@@ -36,11 +36,7 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
         </h2>
 
         {weeklyTrends.length === 0 ? (
-          <EmptyState
-            iconClass="icon-[mdi--chart-line-variant]"
-            message="トレンドデータがありません"
-            size="sm"
-          />
+          <EmptyState iconClass="icon-[mdi--chart-line-variant]" message="トレンドデータがありません" size="sm" />
         ) : (
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">

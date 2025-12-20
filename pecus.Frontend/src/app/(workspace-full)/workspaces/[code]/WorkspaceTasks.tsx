@@ -597,11 +597,7 @@ const WorkspaceTasks = ({
         </div>
       </div>
       {tasks.length === 0 ? (
-        <EmptyState
-          iconClass="icon-[mdi--clipboard-check-outline]"
-          message="タスクを追加しましょう"
-          size="sm"
-        />
+        <EmptyState iconClass="icon-[mdi--clipboard-check-outline]" message="タスクを追加しましょう" size="sm" />
       ) : (
         <div className="relative px-9">
           {/* 左矢印 */}

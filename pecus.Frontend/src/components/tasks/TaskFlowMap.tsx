@@ -61,11 +61,7 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
       {!hasAnyTasks ? (
         /* タスクがない場合 */
         <div className="card bg-base-200 shadow-sm">
-          <EmptyStateCard
-            iconClass="icon-[mdi--clipboard-outline]"
-            message="タスクを追加しましょう"
-            size="sm"
-          />
+          <EmptyStateCard iconClass="icon-[mdi--clipboard-outline]" message="タスクを追加しましょう" size="sm" />
         </div>
       ) : (
         <>

@@ -255,11 +255,7 @@ export default function ActivityClient({
 
       {/* コンテンツ */}
       {activities.length === 0 && !isLoading && !error ? (
-        <EmptyState
-          iconClass="icon-[mdi--history]"
-          message="この期間のアクティビティはありません"
-          size="lg"
-        />
+        <EmptyState iconClass="icon-[mdi--history]" message="この期間のアクティビティはありません" size="lg" />
       ) : (
         <div className="space-y-6">
           {groupedActivities.map((group, groupIndex) => (

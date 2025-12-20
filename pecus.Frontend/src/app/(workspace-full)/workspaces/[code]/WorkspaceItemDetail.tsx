@@ -686,11 +686,7 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   ))}
                 </div>
               ) : (
-                <EmptyState
-                  iconClass="icon-[mdi--link-variant]"
-                  message="関連アイテムはありません"
-                  size="sm"
-                />
+                <EmptyState iconClass="icon-[mdi--link-variant]" message="関連アイテムはありません" size="sm" />
               )}
             </div>
           )}

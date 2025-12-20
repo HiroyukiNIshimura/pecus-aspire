@@ -38,11 +38,7 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
             <span className="icon-[mdi--folder-multiple-outline] w-5 h-5 text-primary" aria-hidden="true" />
             ワークスペース別状況
           </h2>
-          <EmptyState
-            iconClass="icon-[mdi--folder-open-outline]"
-            message="ワークスペースに参加しましょう"
-            size="sm"
-          />
+          <EmptyState iconClass="icon-[mdi--folder-open-outline]" message="ワークスペースに参加しましょう" size="sm" />
         </div>
       </section>
     );

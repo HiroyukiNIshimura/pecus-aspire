@@ -340,11 +340,7 @@ export default function WorkspaceTaskAccordion({
   if (workspaces.length === 0) {
     return (
       <div className="card">
-        <EmptyStateCard
-          iconClass={emptyIconClass}
-          message={emptyMessage}
-          size="sm"
-        />
+        <EmptyStateCard iconClass={emptyIconClass} message={emptyMessage} size="sm" />
       </div>
     );
   }
