@@ -108,3 +108,57 @@ public class UploadsCleanupSettings
     /// </summary>
     public int Minute { get; set; } = 0;
 }
+
+/// <summary>
+/// チャットクリーンアップの設定
+/// </summary>
+public class ChatCleanupSettings
+{
+    /// <summary>
+    /// バッチサイズ
+    /// </summary>
+    public int BatchSize { get; set; } = 1000;
+
+    /// <summary>
+    /// システムチャットの設定
+    /// </summary>
+    public ChatTypeSettings System { get; set; } = new ChatTypeSettings();
+
+    /// <summary>
+    /// グループチャットの設定
+    /// </summary>
+    /// <returns></returns>
+    public ChatTypeSettings Group { get; set; } = new ChatTypeSettings();
+
+    /// <summary>
+    /// ダイレクトチャットの設定
+    /// </summary>
+    public ChatTypeSettings Dm { get; set; } = new ChatTypeSettings();
+
+    /// <summary>
+    /// ボットチャットの設定
+    /// </summary>
+    public ChatTypeSettings Ai { get; set; } = new ChatTypeSettings();
+
+    /// <summary>
+    /// 実行時刻の時（0-23）
+    /// </summary>
+    public int Hour { get; set; } = 5;
+
+    /// <summary>
+    /// 実行時刻の分（0-59）
+    /// </summary>
+    public int Minute { get; set; } = 0;
+}
+
+/// <summary>
+///  ChatRoomTypeごとのクリーンアップ設定
+/// </summary>
+public class ChatTypeSettings
+{
+    /// <summary>
+    /// 古いチャットメッセージを削除する日数
+    /// </summary>
+    public int OlderThanDays { get; set; } = 90;
+
+}

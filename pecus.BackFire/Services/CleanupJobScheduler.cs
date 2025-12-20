@@ -16,6 +16,7 @@ public static class CleanupJobScheduler
         ConfigureRefreshTokenCleanupJob(configuration);
         ConfigureDeviceCleanupJob(configuration);
         ConfigureEmailChangeTokenCleanupJob(configuration);
+        ConfigureChatCleanupJob(configuration);
         ConfigureUploadsCleanupJob(configuration);
     }
 
@@ -76,6 +77,44 @@ public static class CleanupJobScheduler
             "EmailChangeTokenCleanup",
             task => task.CleanupExpiredEmailChangeTokensAsync(settings.BatchSize, settings.OlderThanDays),
             Cron.Daily(settings.Hour, settings.Minute) // 設定で指定した時刻に実行
+        );
+    }
+
+    /// <summary>
+    /// チャットメッセージのクリーンアップジョブを設定します
+    /// </summary>
+    /// <param name="configuration">設定</param>
+    private static void ConfigureChatCleanupJob(IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("ChatCleanup").Get<ChatCleanupSettings>() ?? new ChatCleanupSettings();
+
+        // 値の範囲を安全にクリップ（時刻）
+        settings.Hour = Math.Clamp(settings.Hour, 0, 23);
+        settings.Minute = Math.Clamp(settings.Minute, 0, 59);
+
+        // すべてのタイプが無効（<=0）なら登録しない
+        var allDisabled =
+            (settings.System?.OlderThanDays ?? 0) <= 0 &&
+            (settings.Group?.OlderThanDays ?? 0) <= 0 &&
+            (settings.Dm?.OlderThanDays ?? 0) <= 0 &&
+            (settings.Ai?.OlderThanDays ?? 0) <= 0;
+
+        if (allDisabled)
+        {
+            return;
+        }
+
+        // null 条件や式ツリーに含めないようにローカル変数へ展開してから渡す
+        var batchSize = settings.BatchSize;
+        var systemDays = settings.System?.OlderThanDays ?? 0;
+        var groupDays = settings.Group?.OlderThanDays ?? 0;
+        var dmDays = settings.Dm?.OlderThanDays ?? 0;
+        var aiDays = settings.Ai?.OlderThanDays ?? 0;
+
+        RecurringJob.AddOrUpdate<Pecus.Libs.Hangfire.Tasks.CleanupTasks>(
+            "ChatCleanup",
+            task => task.CleanupOldChatMessagesAsync(batchSize, systemDays, groupDays, dmDays, aiDays),
+            Cron.Daily(settings.Hour, settings.Minute)
         );
     }
 

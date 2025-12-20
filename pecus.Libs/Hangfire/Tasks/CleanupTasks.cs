@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Pecus.Libs.DB;
+using Pecus.Libs.DB.Models.Enums;
 
 namespace Pecus.Libs.Hangfire.Tasks;
 
@@ -140,5 +141,75 @@ public class CleanupTasks
         }
 
         _logger.LogInformation("EmailChangeToken cleanup completed. totalDeleted={Total}", totalDeleted);
+    }
+
+    /// <summary>
+    /// 古いチャットメッセージを ChatRoomType ごとにバッチで削除します。
+    /// - 各タイプの olderThanDays &lt;= 0 の場合はそのタイプをスキップ
+    /// - 削除対象: CreatedAt が cutoff 以前のメッセージ（CreatedAt &lt;= cutoff）
+    /// - また、ReplyToMessageId を持つメッセージで参照先メッセージが cutoff 以前の場合も削除対象に含める
+    /// </summary>
+    public async Task CleanupOldChatMessagesAsync(
+        int batchSize = 1000,
+        int systemOlderThanDays = 90,
+        int groupOlderThanDays = 90,
+        int dmOlderThanDays = 90,
+        int aiOlderThanDays = 90)
+    {
+        _logger.LogInformation("ChatMessage cleanup started. batchSize={BatchSize} systemOlderThanDays={System} groupOlderThanDays={Group} dmOlderThanDays={Dm} aiOlderThanDays={Ai}",
+            batchSize, systemOlderThanDays, groupOlderThanDays, dmOlderThanDays, aiOlderThanDays);
+
+        var totalDeleted = 0;
+        var now = DateTimeOffset.UtcNow;
+
+        // 内部関数: 指定タイプを処理
+        async Task<int> ProcessTypeAsync(ChatRoomType type, int olderThanDays)
+        {
+            if (olderThanDays <= 0) return 0;
+
+            var cutoff = now.AddDays(-olderThanDays);
+            var deletedForType = 0;
+
+            while (true)
+            {
+                // 削除対象:
+                // - 同じルームタイプで CreatedAt <= cutoff
+                // - または ReplyToMessageId があり、その参照先メッセージの CreatedAt <= cutoff
+                var items = await _context.ChatMessages
+                    .Where(m =>
+                        m.ChatRoom.Type == type &&
+                        (m.CreatedAt <= cutoff ||
+                         (m.ReplyToMessageId != null &&
+                          _context.ChatMessages.Any(r => r.Id == m.ReplyToMessageId && r.CreatedAt <= cutoff))
+                        )
+                    )
+                    .OrderBy(m => m.CreatedAt)
+                    .Take(batchSize)
+                    .ToListAsync();
+
+                if (!items.Any()) break;
+
+                _context.ChatMessages.RemoveRange(items);
+                await _context.SaveChangesAsync();
+
+                deletedForType += items.Count;
+                totalDeleted += items.Count;
+
+                _logger.LogInformation("Deleted {Count} chat messages in this batch for type {Type}", items.Count, type);
+
+                // DB負荷を抑えるため若干待機
+                await Task.Delay(200);
+            }
+
+            _logger.LogInformation("ChatMessage cleanup for {Type} completed. deleted={Deleted}", type, deletedForType);
+            return deletedForType;
+        }
+
+        await ProcessTypeAsync(ChatRoomType.System, systemOlderThanDays);
+        await ProcessTypeAsync(ChatRoomType.Group, groupOlderThanDays);
+        await ProcessTypeAsync(ChatRoomType.Dm, dmOlderThanDays);
+        await ProcessTypeAsync(ChatRoomType.Ai, aiOlderThanDays);
+
+        _logger.LogInformation("ChatMessage cleanup completed. totalDeleted={Total}", totalDeleted);
     }
 }
