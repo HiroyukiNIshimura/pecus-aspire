@@ -366,9 +366,10 @@ builder.Services.AddHttpLogging(logging =>
     logging.ResponseBodyLogLimit = 4096;
 });
 
-// DeepSeek AI クライアントの登録
-builder.Services.AddDeepSeekClient(builder.Configuration);
-
+// AI クライアントの登録
+builder.Services.AddOpenAIClient(builder.Configuration);
+//builder.Services.AddDeepSeekAIClient(builder.Configuration);
+//builder.Services.AddGeminiAIClient(builder.Configuration);
 //-------------
 var app = builder.Build();
 

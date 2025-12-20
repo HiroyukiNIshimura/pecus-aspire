@@ -41,7 +41,9 @@ public class OpenAIClient : IOpenAIClient, IAiClient
     private HttpClient CreateClient()
     {
         var client = _httpClientFactory.CreateClient(HttpClientName);
-        client.BaseAddress = new Uri(_settings.BaseUrl);
+        // 末尾スラッシュを確保（HttpClientのBaseAddress結合の仕様対応）
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
         return client;
@@ -60,7 +62,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             request.Messages.Count);
 
         var response = await client.PostAsJsonAsync(
-            "/chat/completions",
+            "chat/completions",
             request,
             cancellationToken);
 

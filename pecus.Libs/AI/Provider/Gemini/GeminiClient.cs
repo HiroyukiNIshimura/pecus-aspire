@@ -41,7 +41,9 @@ public class GeminiClient : IGeminiClient, IAiClient
     private HttpClient CreateClient()
     {
         var client = _httpClientFactory.CreateClient(HttpClientName);
-        client.BaseAddress = new Uri(_settings.BaseUrl);
+        // 末尾スラッシュを確保（HttpClientのBaseAddress結合の仕様対応）
+        var baseUrl = _settings.BaseUrl.TrimEnd('/') + "/";
+        client.BaseAddress = new Uri(baseUrl);
         return client;
     }
 
@@ -58,7 +60,7 @@ public class GeminiClient : IGeminiClient, IAiClient
             request.Contents.Count);
 
         // Gemini APIはURLにモデル名とAPIキーを含める
-        var url = $"/models/{_settings.DefaultModel}:generateContent?key={_settings.ApiKey}";
+        var url = $"models/{_settings.DefaultModel}:generateContent?key={_settings.ApiKey}";
 
         var response = await client.PostAsJsonAsync(
             url,

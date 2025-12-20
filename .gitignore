@@ -140,3 +140,5 @@ uploads/
 temp/*
 
 node_modules/
+
+*/appsettings.Development.json
