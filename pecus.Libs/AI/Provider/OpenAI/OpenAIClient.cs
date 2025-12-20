@@ -128,7 +128,7 @@ public class OpenAIClient : IOpenAIClient, IAiClient
             - 必要に応じて見出し（##, ###）、箇条書き、表を使用する
             - 最初の行はタイトルの見出し（#）から始めない（タイトルは別途表示されるため）
             - 日本語で記述する
-            - 最適解ではあくまで参考例として提供する
+            - 最適解ではなく、あくまで参考例として提供する
             """;
 
         var userPrompt = string.IsNullOrEmpty(additionalContext)
