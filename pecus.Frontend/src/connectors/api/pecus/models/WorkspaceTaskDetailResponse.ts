@@ -33,6 +33,18 @@ export type WorkspaceTaskDetailResponse = {
      */
     organizationId?: number;
     /**
+     * アイテムオーナーユーザーID
+     */
+    itemOwnerId?: number;
+    /**
+     * アイテム担当ユーザーID
+     */
+    itemAssigneeId?: number | null;
+    /**
+     * アイテムコミッターユーザーID
+     */
+    itemCommitterId?: number | null;
+    /**
      * 担当ユーザーID
      */
     assignedUserId?: number;

@@ -17239,6 +17239,22 @@
             "description": "アイテムオーナーアバターURL",
             "nullable": true
           },
+          "itemAssigneeId": {
+            "type": "integer",
+            "description": "アイテム担当ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemAssigneeUsername": {
+            "type": "string",
+            "description": "アイテム担当ユーザー名",
+            "nullable": true
+          },
+          "itemAssigneeAvatarUrl": {
+            "type": "string",
+            "description": "アイテム担当アバターURL",
+            "nullable": true
+          },
           "itemCommitterId": {
             "type": "integer",
             "description": "アイテムコミッターユーザーID",
@@ -19147,6 +19163,23 @@
             "type": "integer",
             "description": "組織ID",
             "format": "int32"
+          },
+          "itemOwnerId": {
+            "type": "integer",
+            "description": "アイテムオーナーユーザーID",
+            "format": "int32"
+          },
+          "itemAssigneeId": {
+            "type": "integer",
+            "description": "アイテム担当ユーザーID",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemCommitterId": {
+            "type": "integer",
+            "description": "アイテムコミッターユーザーID",
+            "format": "int32",
+            "nullable": true
           },
           "assignedUserId": {
             "type": "integer",

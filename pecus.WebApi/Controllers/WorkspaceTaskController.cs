@@ -627,6 +627,10 @@ public class WorkspaceTaskController : BaseSecureController
             Sequence = task.Sequence,
             WorkspaceId = task.WorkspaceId,
             OrganizationId = task.OrganizationId,
+            // アイテム権限情報（タスク編集権限チェック用）
+            ItemOwnerId = task.WorkspaceItem?.OwnerId ?? 0,
+            ItemAssigneeId = task.WorkspaceItem?.AssigneeId,
+            ItemCommitterId = task.WorkspaceItem?.CommitterId,
             AssignedUserId = task.AssignedUserId,
             AssignedUsername = task.AssignedUser?.Username,
             AssignedAvatarUrl = task.AssignedUser != null

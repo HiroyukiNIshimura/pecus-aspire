@@ -1286,6 +1286,8 @@ export default function WorkspaceDetailClient({
             <WorkspaceTaskDetailPage
               workspaceId={currentWorkspaceDetail.id}
               itemId={taskDetailItemId}
+              itemOwnerId={taskDetailItemOwnerId}
+              itemAssigneeId={taskDetailItemAssigneeId}
               itemCommitterId={taskDetailItemCommitterId}
               itemCommitterName={taskDetailItemCommitterName}
               itemCommitterAvatarUrl={taskDetailItemCommitterAvatarUrl}

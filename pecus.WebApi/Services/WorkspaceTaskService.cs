@@ -240,6 +240,7 @@ public class WorkspaceTaskService
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
             .Include(t => t.TaskType)
+            .Include(t => t.WorkspaceItem)
             .FirstOrDefaultAsync(t =>
                 t.Id == taskId &&
                 t.WorkspaceItemId == itemId &&
@@ -275,6 +276,7 @@ public class WorkspaceTaskService
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatedByUser)
             .Include(t => t.TaskType)
+            .Include(t => t.WorkspaceItem)
             .FirstOrDefaultAsync(t =>
                 t.Sequence == sequence &&
                 t.WorkspaceItemId == itemId &&
@@ -840,6 +842,10 @@ public class WorkspaceTaskService
             Sequence = task.Sequence,
             WorkspaceId = task.WorkspaceId,
             OrganizationId = task.OrganizationId,
+            // アイテム権限情報（タスク編集権限チェック用）
+            ItemOwnerId = task.WorkspaceItem?.OwnerId ?? 0,
+            ItemAssigneeId = task.WorkspaceItem?.AssigneeId,
+            ItemCommitterId = task.WorkspaceItem?.CommitterId,
             AssignedUserId = task.AssignedUserId,
             AssignedUsername = task.AssignedUser?.Username,
             AssignedAvatarUrl = task.AssignedUser != null
@@ -1276,6 +1282,8 @@ public class WorkspaceTaskService
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Owner)
             .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Assignee)
+            .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Committer)
             .Include(t => t.TaskType)
             .Include(t => t.AssignedUser)
@@ -1339,6 +1347,8 @@ public class WorkspaceTaskService
                 .ThenInclude(wi => wi.Workspace)
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Owner)
+            .Include(t => t.WorkspaceItem!)
+                .ThenInclude(wi => wi.Assignee)
             .Include(t => t.WorkspaceItem!)
                 .ThenInclude(wi => wi.Committer)
             .Include(t => t.TaskType)
@@ -1507,6 +1517,17 @@ public class WorkspaceTaskService
                     username: item.Owner.Username,
                     email: item.Owner.Email,
                     avatarPath: item.Owner.UserAvatarPath
+                )
+                : null,
+            ItemAssigneeId = item?.AssigneeId,
+            ItemAssigneeUsername = item?.Assignee?.Username,
+            ItemAssigneeAvatarUrl = item?.Assignee != null
+                ? IdentityIconHelper.GetIdentityIconUrl(
+                    iconType: item.Assignee.AvatarType,
+                    userId: item.Assignee.Id,
+                    username: item.Assignee.Username,
+                    email: item.Assignee.Email,
+                    avatarPath: item.Assignee.UserAvatarPath
                 )
                 : null,
             ItemCommitterId = item?.CommitterId,

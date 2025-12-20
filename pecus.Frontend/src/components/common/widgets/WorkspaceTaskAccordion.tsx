@@ -709,6 +709,8 @@ export default function WorkspaceTaskAccordion({
                 taskId={editingTask.taskId}
                 taskTypes={taskTypes}
                 currentUser={currentUser}
+                itemOwnerId={editingTask.itemOwnerId}
+                itemAssigneeId={editingTask.itemAssigneeId}
                 itemCommitterId={editingTask.itemCommitterId}
                 itemCommitterName={editingTask.itemCommitterUsername}
                 itemCommitterAvatarUrl={editingTask.itemCommitterAvatarUrl}

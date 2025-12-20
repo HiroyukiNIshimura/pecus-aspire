@@ -122,6 +122,18 @@ export type TaskWithItemResponse = {
      */
     itemOwnerAvatarUrl?: string | null;
     /**
+     * アイテム担当ユーザーID
+     */
+    itemAssigneeId?: number | null;
+    /**
+     * アイテム担当ユーザー名
+     */
+    itemAssigneeUsername?: string | null;
+    /**
+     * アイテム担当アバターURL
+     */
+    itemAssigneeAvatarUrl?: string | null;
+    /**
      * アイテムコミッターユーザーID
      */
     itemCommitterId?: number | null;

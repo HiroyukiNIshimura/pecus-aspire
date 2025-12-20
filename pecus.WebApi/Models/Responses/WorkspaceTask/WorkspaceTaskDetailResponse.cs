@@ -40,6 +40,23 @@ public class WorkspaceTaskDetailResponse : IConflictModel
     /// </summary>
     public int OrganizationId { get; set; }
 
+    // ===== アイテム権限情報（タスク編集権限チェック用） =====
+
+    /// <summary>
+    /// アイテムオーナーユーザーID
+    /// </summary>
+    public int ItemOwnerId { get; set; }
+
+    /// <summary>
+    /// アイテム担当ユーザーID
+    /// </summary>
+    public int? ItemAssigneeId { get; set; }
+
+    /// <summary>
+    /// アイテムコミッターユーザーID
+    /// </summary>
+    public int? ItemCommitterId { get; set; }
+
     /// <summary>
     /// 担当ユーザーID
     /// </summary>

@@ -61,6 +61,10 @@ export interface WorkspaceTaskDetailPageProps {
   onSuccess: () => void;
   workspaceId: number;
   itemId: number;
+  /** アイテムのオーナーID（権限チェック用） */
+  itemOwnerId?: number | null;
+  /** アイテムの担当者ID（権限チェック用） */
+  itemAssigneeId?: number | null;
   /** アイテムのコミッターID（完了操作の権限チェック用） */
   itemCommitterId?: number | null;
   /** アイテムのコミッター名 */
@@ -99,6 +103,8 @@ export default function WorkspaceTaskDetailPage({
   onSuccess,
   workspaceId,
   itemId,
+  itemOwnerId,
+  itemAssigneeId,
   itemCommitterId,
   itemCommitterName,
   itemCommitterAvatarUrl,
@@ -119,7 +125,8 @@ export default function WorkspaceTaskDetailPage({
     notifyRef.current = notify;
   }, [notify]);
   const [serverErrors, setServerErrors] = useState<{ key: number; message: string }[]>([]);
-  const [isLoadingTask, setIsLoadingTask] = useState(false);
+  // 初期ロード中はtrueにしておく（「タスクが見つかりません」が一瞬表示されるのを防ぐ）
+  const [isLoadingTask, setIsLoadingTask] = useState(true);
   const {
     joinTask,
     leaveTask,
@@ -132,9 +139,12 @@ export default function WorkspaceTaskDetailPage({
   } = useSignalRContext();
   const [taskEditStatus, setTaskEditStatus] = useState<TaskEditStatusType>({ isEditing: false });
   const [taskEditStatusFetched, setTaskEditStatusFetched] = useState(false);
+  // SignalR初期化が開始されたかどうか（初期化開始前はローディング表示しない）
+  const [signalRInitStarted, setSignalRInitStarted] = useState(false);
   const startedTaskEditRef = useRef<number | null>(null);
   const prevTaskIdRef = useRef<number | null>(null);
   const effectiveCurrentUserIdRef = useRef<number>(0);
+  const hasEditPermissionRef = useRef<boolean>(false);
 
   // SignalR関数をrefで保持（useEffect依存配列から外すため）
   const signalRRef = useRef({
@@ -229,7 +239,25 @@ export default function WorkspaceTaskDetailPage({
     : false;
 
   // ステータス取得完了前は編集不可（ロック状態を正確に判定できないため）
-  const isPendingStatusCheck = !taskEditStatusFetched && connectionState === 'connected';
+  // ただし、編集権限がない場合やtaskがない場合、SignalR初期化開始前はステータスチェックを待つ必要がない
+  // 編集権限: タスク担当者、アイテム担当者、アイテムコミッター、アイテムオーナー
+  const isPendingStatusCheck = useMemo(() => {
+    // SignalR初期化が開始されていない場合はローディング表示しない
+    if (!signalRInitStarted) {
+      return false;
+    }
+    if (!task || !currentUser || taskEditStatusFetched || connectionState !== 'connected') {
+      return false;
+    }
+    const userId = currentUser.id;
+    // 編集権限があるユーザーのみステータスチェックを待つ
+    const canEdit =
+      task.assignedUserId === userId ||
+      (task.itemAssigneeId != null && task.itemAssigneeId === userId) ||
+      (task.itemCommitterId != null && task.itemCommitterId === userId) ||
+      (task.itemOwnerId != null && task.itemOwnerId === userId);
+    return canEdit;
+  }, [signalRInitStarted, task, currentUser, taskEditStatusFetched, connectionState]);
 
   // SignalRイベントによる状態変更ハンドラー
   // task:edit_ended を受け取った時にロック取得を試行
@@ -387,6 +415,7 @@ export default function WorkspaceTaskDetailPage({
     prevTaskIdRef.current = currentId;
     setTaskEditStatus({ isEditing: false });
     setTaskEditStatusFetched(false);
+    setSignalRInitStarted(false); // SignalR初期化開始フラグもリセット
     startedTaskEditRef.current = null;
   }, [task?.id]);
 
@@ -400,6 +429,9 @@ export default function WorkspaceTaskDetailPage({
     let active = true;
     let hasStartedEdit = false;
 
+    // SignalR初期化開始フラグを設定（編集権限がある場合のみローディング表示）
+    setSignalRInitStarted(true);
+
     const initializeTaskEdit = async () => {
       const { joinTask: join, startTaskEdit: start } = signalRRef.current;
       try {
@@ -407,7 +439,14 @@ export default function WorkspaceTaskDetailPage({
         const joinResult = await join(targetTaskId, workspaceId, itemId);
         if (!active) return;
 
-        // 2. joinTask の結果で既に他者が編集中なら、即座にロック状態を表示
+        // 2. 編集権限がない場合は、編集状態を気にせずスキップ（保存ボタンが押せないため）
+        if (!hasEditPermissionRef.current) {
+          setTaskEditStatus({ isEditing: false });
+          setTaskEditStatusFetched(true);
+          return;
+        }
+
+        // 3. joinTask の結果で既に他者が編集中なら、即座にロック状態を表示
         if (
           joinResult.editStatus?.isEditing &&
           joinResult.editStatus.editor?.userId !== effectiveCurrentUserIdRef.current
@@ -417,7 +456,7 @@ export default function WorkspaceTaskDetailPage({
           return;
         }
 
-        // 3. 編集開始を試行（ロック取得）
+        // 4. 編集開始を試行（ロック取得）
         try {
           await start(targetTaskId);
           if (!active) return;
@@ -454,6 +493,8 @@ export default function WorkspaceTaskDetailPage({
       if (payload.taskId !== targetTaskId) return;
       // 自分がすでにロックを持っている場合は無視
       if (startedTaskEditRef.current === targetTaskId) return;
+      // 編集権限がない場合は編集状態通知を無視（保存ボタンが押せないため）
+      if (!hasEditPermissionRef.current) return;
       setTaskEditStatus({
         isEditing: true,
         editor: {
@@ -468,6 +509,8 @@ export default function WorkspaceTaskDetailPage({
       if (payload.taskId !== targetTaskId) return;
       // 自分がすでにロックを持っている場合は無視
       if (startedTaskEditRef.current === targetTaskId) return;
+      // 編集権限がない場合は編集状態通知を無視（保存ボタンが押せないため）
+      if (!hasEditPermissionRef.current) return;
       // 編集終了 → handleStatusChangeを呼んでロック取得を試行
       handleStatusChange({ isEditing: false });
     });
@@ -655,7 +698,28 @@ export default function WorkspaceTaskDetailPage({
       },
     });
 
-  const isFormDisabled = isSubmitting || isLoadingTask || isLockedByOther || isPendingStatusCheck;
+  // 編集権限チェック: タスク担当者、アイテム担当者、アイテムコミッター、アイテムオーナーのみ編集可能
+  // ※権限情報はAPIレスポンス（task）から取得する（propsは表示用のみ）
+  const hasEditPermission = useMemo(() => {
+    if (!currentUser || !task) return false;
+    const userId = currentUser.id;
+
+    // タスク担当者
+    if (task.assignedUserId === userId) return true;
+    // アイテム担当者（APIレスポンスから取得）
+    if (task.itemAssigneeId != null && task.itemAssigneeId === userId) return true;
+    // アイテムコミッター（APIレスポンスから取得）
+    if (task.itemCommitterId != null && task.itemCommitterId === userId) return true;
+    // アイテムオーナー（APIレスポンスから取得）
+    if (task.itemOwnerId != null && task.itemOwnerId === userId) return true;
+
+    return false;
+  }, [currentUser, task]);
+
+  // refに権限状態を反映（useEffect内で参照するため）
+  hasEditPermissionRef.current = hasEditPermission;
+
+  const isFormDisabled = isSubmitting || isLoadingTask || isLockedByOther || isPendingStatusCheck || !hasEditPermission;
 
   // 担当者検索
   const handleAssigneeSearch = useCallback(async (query: string) => {
@@ -886,8 +950,8 @@ export default function WorkspaceTaskDetailPage({
               <EmptyState iconClass="icon-[mdi--clipboard-alert-outline]" message="タスクが見つかりません" size="sm" />
             ) : (
               <>
-                {/* ローディングオーバーレイ */}
-                {(isLoadingTask || isPendingStatusCheck) && (
+                {/* ローディングオーバーレイ（タスク切り替え時のみ表示） */}
+                {isLoadingTask && (
                   <div className="absolute inset-0 bg-base-100/60 flex items-center justify-center z-10 pointer-events-none">
                     <span className="loading loading-spinner loading-lg"></span>
                   </div>
@@ -1344,20 +1408,20 @@ export default function WorkspaceTaskDetailPage({
                           }}
                           disabled={
                             isFormDisabled ||
-                            (itemCommitterId != null && currentUser?.id !== itemCommitterId) ||
+                            (task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId) ||
                             (taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete)
                           }
                           title={
                             taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete
                               ? '先行タスクが完了していないため、完了にできません'
-                              : itemCommitterId != null && currentUser?.id !== itemCommitterId
+                              : task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId
                                 ? '完了操作はコミッターのみ可能です'
                                 : undefined
                           }
                         />
                         <label htmlFor="isCompleted" className="label-text cursor-pointer">
                           完了
-                          {itemCommitterId != null && currentUser?.id !== itemCommitterId && (
+                          {task?.itemCommitterId != null && currentUser?.id !== task.itemCommitterId && (
                             <span className="text-xs text-base-content/50 ml-1">(コミッターのみ)</span>
                           )}
                           {taskSettings?.enforcePredecessorCompletion && isPredecessorIncomplete && (

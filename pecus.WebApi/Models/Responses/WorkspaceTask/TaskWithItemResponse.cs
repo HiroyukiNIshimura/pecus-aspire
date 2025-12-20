@@ -159,6 +159,21 @@ public class TaskWithItemResponse
     public string? ItemOwnerAvatarUrl { get; set; }
 
     /// <summary>
+    /// アイテム担当ユーザーID
+    /// </summary>
+    public int? ItemAssigneeId { get; set; }
+
+    /// <summary>
+    /// アイテム担当ユーザー名
+    /// </summary>
+    public string? ItemAssigneeUsername { get; set; }
+
+    /// <summary>
+    /// アイテム担当アバターURL
+    /// </summary>
+    public string? ItemAssigneeAvatarUrl { get; set; }
+
+    /// <summary>
     /// アイテムコミッターユーザーID
     /// </summary>
     public int? ItemCommitterId { get; set; }
