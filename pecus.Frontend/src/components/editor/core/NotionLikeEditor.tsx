@@ -10,10 +10,11 @@
 import './Editor.css';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { $convertFromMarkdownString, $convertToMarkdownString, TRANSFORMERS } from '@lexical/markdown';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalExtensionComposer } from '@lexical/react/LexicalExtensionComposer';
 import type { EditorState, LexicalEditor } from 'lexical';
 import { $getRoot, defineExtension } from 'lexical';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { AutoLinkProvider, type LinkMatcher } from '../context/AutoLinkContext';
 import { FlashMessageContext } from '../context/FlashMessageContext';
@@ -23,6 +24,7 @@ import { SettingsContext } from '../context/SettingsContext';
 import { SharedHistoryContext } from '../context/SharedHistoryContext';
 import { ToolbarContext } from '../context/ToolbarContext';
 import NotionLikeEditorNodes from '../nodes/NotionLikeEditorNodes';
+import InsertMarkdownPlugin from '../plugins/InsertMarkdownPlugin';
 import { PLAYGROUND_TRANSFORMERS } from '../plugins/MarkdownTransformers';
 import OnChangePlugin from '../plugins/OnChangePlugin';
 import { TableContext } from '../plugins/TablePlugin';
@@ -108,6 +110,13 @@ export interface NotionLikeEditorProps {
    * URLやメールアドレスの基本Matcherに追加される
    */
   customLinkMatchers?: LinkMatcher[];
+
+  /**
+   * エディタの準備完了時のコールバック
+   * editor instanceを使用して外部からエディタを操作できる
+   * @param editor - LexicalEditor インスタンス
+   */
+  onEditorReady?: (editor: LexicalEditor) => void;
 }
 
 export default function NotionLikeEditor({
@@ -124,6 +133,7 @@ export default function NotionLikeEditor({
   isCodeShiki = false,
   imageUploadHandler,
   customLinkMatchers,
+  onEditorReady,
 }: NotionLikeEditorProps) {
   // Props から settings を構築
   const settings = useMemo(
@@ -214,6 +224,7 @@ export default function NotionLikeEditor({
         onChangeMarkdown={onChangeMarkdown}
         handleChange={handleChange}
         measureTypingPerf={measureTypingPerf}
+        onEditorReady={onEditorReady}
       />
     </FullscreenProvider>
   );
@@ -234,6 +245,7 @@ function EditorContainer({
   onChangeMarkdown,
   handleChange,
   measureTypingPerf,
+  onEditorReady,
 }: {
   settings: ReturnType<
     typeof useMemo<
@@ -254,6 +266,7 @@ function EditorContainer({
   onChangeMarkdown?: (markdown: string) => void;
   handleChange: (editorState: EditorState, editor: LexicalEditor) => void;
   measureTypingPerf: boolean;
+  onEditorReady?: (editor: LexicalEditor) => void;
 }) {
   const { isFullscreen } = useFullscreen();
 
@@ -274,6 +287,8 @@ function EditorContainer({
                         <OnChangePlugin onChange={handleChange} />
                       )}
                       {measureTypingPerf && <TypingPerfPlugin />}
+                      <InsertMarkdownPlugin />
+                      {onEditorReady && <EditorReadyPlugin onReady={onEditorReady} />}
                     </ToolbarContext>
                   </TableContext>
                 </SharedHistoryContext>
@@ -284,4 +299,17 @@ function EditorContainer({
       </FlashMessageContext>
     </div>
   );
+}
+
+/**
+ * エディタの準備完了を通知するプラグイン
+ */
+function EditorReadyPlugin({ onReady }: { onReady: (editor: LexicalEditor) => void }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    onReady(editor);
+  }, [editor, onReady]);
+
+  return null;
 }

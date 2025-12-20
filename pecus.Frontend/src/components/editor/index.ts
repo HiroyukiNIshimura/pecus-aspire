@@ -40,6 +40,9 @@ export {
   useNewItemImageUploadHandler,
 } from './pecus';
 
+// Markdownを挿入するためのコマンド
+export { INSERT_MARKDOWN_COMMAND } from './plugins/InsertMarkdownPlugin';
+
 // 型定義のエクスポート
 export type {
   CoreEditorProps,

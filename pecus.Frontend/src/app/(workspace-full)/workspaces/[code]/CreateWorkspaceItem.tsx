@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { createWorkspaceItem } from '@/actions/workspaceItem';
+import type { LexicalEditor } from 'lexical';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { createWorkspaceItem, fetchDocumentSuggestion } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/filters/DatePicker';
 import TagInput from '@/components/common/forms/TagInput';
-import { PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
+import { INSERT_MARKDOWN_COMMAND, PecusNotionLikeEditor, useNewItemImageUploadHandler } from '@/components/editor';
 import type { CreateWorkspaceItemRequest, TaskPriority } from '@/connectors/api/pecus';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import type { CreateWorkspaceItemInput } from '@/schemas/editSchemas';
@@ -35,6 +36,10 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
   const [editorState, setEditorState] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  // エディタインスタンスの参照（提案機能用）
+  const editorRef = useRef<LexicalEditor | null>(null);
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
 
   // 一時ファイルアップロード完了時のコールバック
   const handleTempFileUploaded = useCallback((tempFileId: string, _previewUrl: string) => {
@@ -121,6 +126,34 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     setEditorState(json);
   };
 
+  // エディタ準備完了時のコールバック
+  const handleEditorReady = useCallback((editor: LexicalEditor) => {
+    editorRef.current = editor;
+  }, []);
+
+  // ドキュメント提案を取得
+  const handleSuggestContent = async () => {
+    const trimmedSubject = formData.subject.trim();
+    if (!trimmedSubject || isSuggestLoading || !editorRef.current) return;
+
+    setIsSuggestLoading(true);
+    setGlobalError(null);
+
+    try {
+      const result = await fetchDocumentSuggestion(workspaceId, trimmedSubject);
+      if (result.success && result.data.suggestedContent) {
+        // Markdownをエディタに挿入（既存コンテンツの末尾に追加）
+        editorRef.current.dispatchCommand(INSERT_MARKDOWN_COMMAND, result.data.suggestedContent);
+      } else if (!result.success) {
+        setGlobalError(result.message || '提案の取得に失敗しました。');
+      }
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : '提案の取得中にエラーが発生しました。');
+    } finally {
+      setIsSuggestLoading(false);
+    }
+  };
+
   // フォームリセット
   const resetForm = () => {
     // フォームバリデーションフックのリセット（fieldErrors、touchedFields、フォーム要素をリセット）
@@ -138,6 +171,8 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     setGlobalError(null);
     // 一時ファイルIDリストをリセット（次のモーダル表示時に新しいsessionIdが使われる）
     setTempFileIds([]);
+    setIsSuggestLoading(false);
+    // エディタの参照はリセットしない（モーダルが閉じられて再マウントされるため）
   };
 
   // モーダルを閉じる際の処理
@@ -164,7 +199,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
               type="button"
               className="btn btn-sm btn-circle"
               onClick={handleClose}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSuggestLoading}
               aria-label="閉じる"
             >
               <span className="icon-[mdi--close] size-5" aria-hidden="true" />
@@ -212,7 +247,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     value={formData.subject}
                     onChange={(e) => handleFieldChange('subject', e.target.value)}
                     onBlur={() => validateField('subject', formData.subject)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isSuggestLoading}
                     maxLength={200}
                   />
                   {shouldShowError('subject') && (
@@ -226,24 +261,49 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 </div>
                 {/* 本文（WYSIWYGエディタ） */}
                 <div className="form-control">
-                  <div className="label">
+                  <div className="label flex items-center gap-2">
                     <span className="label-text font-semibold">本文</span>
+                    <button
+                      type="button"
+                      onClick={handleSuggestContent}
+                      disabled={!formData.subject.trim() || isSubmitting || isSuggestLoading}
+                      className="btn btn-xs btn-outline btn-secondary gap-1"
+                      title={!formData.subject.trim() ? '件名を入力すると提案を利用できます' : 'AIが本文を提案します'}
+                    >
+                      <span className="icon-[mdi--auto-fix] size-4" aria-hidden="true" />
+                      提案を利用
+                    </button>
                   </div>
-                  <div className="overflow-auto max-h-[50vh]">
-                    <PecusNotionLikeEditor
-                      onChange={handleEditorChange}
-                      debounceMs={500}
-                      autoFocus={false}
-                      imageUploadHandler={imageUploadHandler}
-                    />
+                  <div className="relative">
+                    {/* ローディングオーバーレイ */}
+                    {isSuggestLoading && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
+                        <span className="loading loading-spinner loading-lg text-secondary"></span>
+                        <span className="mt-2 text-sm text-base-content/70">AIが本文を生成中...</span>
+                      </div>
+                    )}
+                    <div className="overflow-auto max-h-[50vh]">
+                      <PecusNotionLikeEditor
+                        onChange={handleEditorChange}
+                        onEditorReady={handleEditorReady}
+                        debounceMs={500}
+                        autoFocus={false}
+                        imageUploadHandler={imageUploadHandler}
+                      />
+                    </div>
                   </div>
-                </div>{' '}
+                </div>
                 {/* タグ */}
                 <div className="form-control">
                   <label htmlFor="tags" className="label">
                     <span className="label-text font-semibold">タグ</span>
                   </label>
-                  <TagInput tags={tags} onChange={setTags} placeholder="タグを入力..." disabled={isSubmitting} />
+                  <TagInput
+                    tags={tags}
+                    onChange={setTags}
+                    placeholder="タグを入力..."
+                    disabled={isSubmitting || isSuggestLoading}
+                  />
                   <div className="label">
                     <span className="label-text-alt text-xs">
                       タグを入力してEnterで追加。タグは50文字以内で入力してください。
@@ -258,7 +318,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                   <DatePicker
                     value={formData.dueDate ?? ''}
                     onChange={(date) => handleFieldChange('dueDate', date)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isSuggestLoading}
                     className={`w-full ${shouldShowError('dueDate') ? 'input-error' : ''}`}
                     placeholder="日付を選択"
                   />
@@ -281,7 +341,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                     onChange={(e) =>
                       handleFieldChange('priority', e.target.value ? (e.target.value as TaskPriority) : undefined)
                     }
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isSuggestLoading}
                   >
                     <option value="">未設定</option>
                     <option value="Low">低</option>
@@ -305,7 +365,7 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                       className="switch switch-outline switch-warning"
                       checked={formData.isDraft}
                       onChange={(e) => handleFieldChange('isDraft', e.target.checked)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isSuggestLoading}
                     />
                     <label htmlFor="isDraft" className="label-text cursor-pointer">
                       下書き
@@ -314,10 +374,15 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                 </div>
                 {/* ボタングループ */}
                 <div className="flex gap-2 justify-end pt-4 border-t border-base-300">
-                  <button type="button" onClick={handleClose} className="btn btn-outline" disabled={isSubmitting}>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="btn btn-outline"
+                    disabled={isSubmitting || isSuggestLoading}
+                  >
                     キャンセル
                   </button>
-                  <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  <button type="submit" className="btn btn-primary" disabled={isSubmitting || isSuggestLoading}>
                     {isSubmitting ? (
                       <>
                         <span className="loading loading-spinner loading-sm"></span>

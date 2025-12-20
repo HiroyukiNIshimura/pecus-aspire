@@ -621,3 +621,34 @@ export async function fetchChildrenCount(
     return parseErrorResponse(error, '子アイテム数の取得に失敗しました。');
   }
 }
+
+/**
+ * Server Action: ドキュメント提案を取得
+ * AIが件名から本文の提案を生成する
+ * @param workspaceId ワークスペースID
+ * @param title 件名
+ */
+export async function fetchDocumentSuggestion(
+  workspaceId: number,
+  title: string,
+): Promise<ApiResponse<{ suggestedContent: string }>> {
+  try {
+    const api = createPecusApiClients();
+    const response = await api.workspaceItem.postApiWorkspacesItemsDocumentSuggestion(workspaceId, { title });
+    return {
+      success: true,
+      data: {
+        suggestedContent: response.suggestedContent ?? '',
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch document suggestion:', error);
+
+    const notFound = detect404ValidationError(error);
+    if (notFound) {
+      return notFound;
+    }
+
+    return parseErrorResponse(error, 'ドキュメント提案の取得に失敗しました。');
+  }
+}
