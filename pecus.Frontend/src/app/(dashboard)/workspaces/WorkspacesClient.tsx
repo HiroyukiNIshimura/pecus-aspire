@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import LoadingOverlay from '@/components/common/feedback/LoadingOverlay';
 import ActiveStatusFilter from '@/components/common/filters/ActiveStatusFilter';
 import GenreSelect from '@/components/workspaces/GenreSelect';
@@ -338,9 +339,11 @@ export default function WorkspacesClient({ genres }: WorkspacesClientProps) {
           </div>
 
           {workspaces.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-base-content/70">ワークスペースが見つかりません</p>
-            </div>
+            <EmptyState
+              iconClass="icon-[mdi--folder-open-outline]"
+              message="ワークスペースが見つかりません"
+              description="フィルタ条件を変更してみてください"
+            />
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

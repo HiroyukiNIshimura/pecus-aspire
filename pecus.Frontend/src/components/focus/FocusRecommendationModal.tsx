@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchFocusRecommendation } from '@/actions/focus';
+import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
 import type { FocusRecommendationResponse } from '@/connectors/api/pecus';
 import { useNotify } from '@/hooks/useNotify';
 import FocusTaskCard from './FocusTaskCard';
@@ -122,13 +123,12 @@ export default function FocusRecommendationModal({ isOpen, onClose }: FocusRecom
                       </div>
                     ) : (
                       <div className="card bg-base-200 shadow-sm">
-                        <div className="card-body items-center text-center py-8">
-                          <span
-                            className="icon-[mdi--check-circle-outline] w-12 h-12 text-success mb-2"
-                            aria-hidden="true"
-                          />
-                          <p className="text-base-content/70">着手可能なタスクはありません</p>
-                        </div>
+                        <EmptyStateCard
+                          iconClass="icon-[mdi--check-circle-outline]"
+                          iconSize="w-12 h-12 text-success mb-2"
+                          message="着手可能なタスクはありません"
+                          size="sm"
+                        />
                       </div>
                     )}
                   </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { fetchMyActivities } from '@/actions/activity';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   ActivityActionType,
@@ -254,10 +255,11 @@ export default function ActivityClient({
 
       {/* コンテンツ */}
       {activities.length === 0 && !isLoading && !error ? (
-        <div className="text-center text-base-content/50 py-16">
-          <span className="icon-[mdi--history] size-16 mb-4 opacity-50" aria-hidden="true" />
-          <p className="text-lg">この期間のアクティビティはありません</p>
-        </div>
+        <EmptyState
+          iconClass="icon-[mdi--history]"
+          message="この期間のアクティビティはありません"
+          size="lg"
+        />
       ) : (
         <div className="space-y-6">
           {groupedActivities.map((group, groupIndex) => (

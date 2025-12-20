@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { DashboardHelpCommentsResponse } from '@/connectors/api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
@@ -32,10 +33,11 @@ export default function HelpCommentsCard({ data }: HelpCommentsCardProps) {
             ヘルプリクエスト
             <span className="text-sm font-normal text-base-content/60 ml-auto">0件</span>
           </h2>
-          <div className="text-center py-6 text-base-content/60">
-            <span className="icon-[mdi--comment-check-outline] w-10 h-10 mb-2" aria-hidden="true" />
-            <p className="text-sm">現在ヘルプリクエストはありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--comment-check-outline]"
+            message="ヘルプリクエストはありません"
+            size="sm"
+          />
         </div>
       </section>
     );

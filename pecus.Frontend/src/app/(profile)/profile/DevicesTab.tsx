@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { deleteDevice } from '@/actions/profile';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import DeleteConfirmModal from '@/components/common/overlays/DeleteConfirmModal';
 import type { DeviceResponse } from '@/connectors/api/pecus';
 import { formatDateTime } from '@/libs/utils/date';
@@ -97,8 +98,12 @@ export default function DevicesTab({
   if (!devices || devices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-base-300 bg-base-200/50 px-6 py-10 text-center">
-        <p className="text-lg font-semibold text-base-content">接続中の端末はありません</p>
-        <p className="mt-2 text-sm text-base-content/70">新しい端末からログインすると、ここに表示されます。</p>
+        <EmptyState
+          iconClass="icon-[mdi--devices]"
+          message="接続中の端末はありません"
+          description="新しい端末からログインすると、ここに表示されます。"
+          size="sm"
+        />
       </div>
     );
   }
@@ -183,8 +188,12 @@ export default function DevicesTab({
 
       {activeDevices.length === 0 && otherDevices.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-base-300 bg-base-200/50 px-6 py-10 text-center">
-          <p className="text-lg font-semibold text-base-content">接続中の端末はありません</p>
-          <p className="mt-2 text-sm text-base-content/70">新しい端末からログインすると、ここに表示されます。</p>
+          <EmptyState
+            iconClass="icon-[mdi--devices]"
+            message="接続中の端末はありません"
+            description="新しい端末からログインすると、ここに表示されます。"
+            size="sm"
+          />
         </div>
       )}
 

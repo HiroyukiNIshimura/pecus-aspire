@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { fetchDocumentTree, updateItemParent } from '@/actions/workspaceRelation';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DocumentTreeItemResponse } from '@/connectors/api/pecus';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useNotify } from '@/hooks/useNotify';
@@ -199,9 +200,12 @@ export default function DocumentTreeSidebar({
           </div>
         )}
         {treeData.length === 0 ? (
-          <div className="text-center text-base-content/70 mt-10">
-            <p>表示するアイテムがありません。</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--file-tree-outline]"
+            message="アイテムを作成しましょう"
+            size="sm"
+            className="mt-10"
+          />
         ) : (
           <Tree
             tree={treeData}

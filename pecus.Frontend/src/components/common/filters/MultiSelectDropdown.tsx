@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 
 /**
  * ドロップダウンで選択可能なアイテムの型
@@ -134,7 +135,9 @@ export default function MultiSelectDropdown({
         </summary>
         <ul className="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow-lg border border-base-300 max-h-60 overflow-y-auto z-1">
           {items.length === 0 ? (
-            <li className="text-center text-base-content/60 py-4">{emptyMessage}</li>
+            <li>
+              <EmptyState message={emptyMessage} size="sm" />
+            </li>
           ) : (
             items.map((item) => (
               <li key={item.id}>

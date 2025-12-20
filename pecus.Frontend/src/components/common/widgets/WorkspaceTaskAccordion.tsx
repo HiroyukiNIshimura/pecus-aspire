@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import WorkspaceTaskDetailPage from '@/app/(workspace-full)/workspaces/[code]/WorkspaceTaskDetailPage';
+import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { TaskTypeOption } from '@/components/workspaces/TaskTypeSelect';
 import { uiConfig } from '@/config/ui';
@@ -339,10 +340,11 @@ export default function WorkspaceTaskAccordion({
   if (workspaces.length === 0) {
     return (
       <div className="card">
-        <div className="card-body text-center py-12">
-          <span className={`${emptyIconClass} w-16 h-16 text-base-content/30 mx-auto mb-4`} aria-hidden="true" />
-          <p className="text-base-content/70">{emptyMessage}</p>
-        </div>
+        <EmptyStateCard
+          iconClass={emptyIconClass}
+          message={emptyMessage}
+          size="sm"
+        />
       </div>
     );
   }

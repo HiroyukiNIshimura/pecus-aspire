@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DashboardTasksByPriorityResponse, TaskPriority } from '@/connectors/api/pecus';
 
 interface PriorityBreakdownCardProps {
@@ -69,10 +70,11 @@ export default function PriorityBreakdownCard({ data }: PriorityBreakdownCardPro
         </div>
 
         {totalCount === 0 && (
-          <div className="text-center py-4 text-base-content/60">
-            <span className="icon-[mdi--checkbox-marked-circle-outline] w-8 h-8 mb-2" aria-hidden="true" />
-            <p>進行中のタスクはありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--checkbox-marked-circle-outline]"
+            message="進行中のタスクはありません"
+            size="sm"
+          />
         )}
       </div>
     </section>

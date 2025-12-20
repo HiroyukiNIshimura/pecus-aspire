@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DashboardHotWorkspacesResponse } from '@/connectors/api/pecus';
 
 interface HotWorkspacesCardProps {
@@ -23,10 +24,11 @@ export default function HotWorkspacesCard({ data }: HotWorkspacesCardProps) {
             タスク集中エリア
             <span className="text-sm font-normal text-base-content/60 ml-auto">{periodLabel}</span>
           </h2>
-          <div className="text-center py-6 text-base-content/60">
-            <span className="icon-[mdi--folder-outline] w-10 h-10 mb-2" aria-hidden="true" />
-            <p className="text-sm">{periodLabel}のタスク活動はありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--folder-outline]"
+            message={`${periodLabel}のタスク活動はありません`}
+            size="sm"
+          />
         </div>
       </section>
     );

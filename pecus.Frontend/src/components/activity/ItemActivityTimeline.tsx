@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { fetchItemActivities } from '@/actions/activity';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type { ActivityActionType, ActivityResponse } from '@/connectors/api/pecus';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
@@ -235,7 +236,11 @@ export default function ItemActivityTimeline({ workspaceId, itemId, isOpen, onCl
                 <span>{error}</span>
               </div>
             ) : activities.length === 0 && !isLoading ? (
-              <div className="text-center text-base-content/50 py-8">アクティビティはありません</div>
+              <EmptyState
+                iconClass="icon-[mdi--history]"
+                message="アクティビティはありません"
+                size="sm"
+              />
             ) : (
               <div className="space-y-4">
                 {groupedActivities.map((group, groupIndex) => {

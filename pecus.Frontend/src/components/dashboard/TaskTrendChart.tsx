@@ -1,6 +1,7 @@
 'use client';
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DashboardTaskTrendResponse } from '@/connectors/api/pecus';
 
 interface TaskTrendChartProps {
@@ -35,10 +36,11 @@ export default function TaskTrendChart({ data }: TaskTrendChartProps) {
         </h2>
 
         {weeklyTrends.length === 0 ? (
-          <div className="text-center py-8 text-base-content/60">
-            <span className="icon-[mdi--chart-line-variant] w-12 h-12 mb-2" aria-hidden="true" />
-            <p>トレンドデータがありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--chart-line-variant]"
+            message="トレンドデータがありません"
+            size="sm"
+          />
         ) : (
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">

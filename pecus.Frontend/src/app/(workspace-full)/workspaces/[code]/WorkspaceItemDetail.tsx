@@ -12,6 +12,7 @@ import {
   removeWorkspaceItemRelation,
 } from '@/actions/workspaceItem';
 import ItemActivityTimeline from '@/components/activity/ItemActivityTimeline';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import ItemEditStatus from '@/components/common/feedback/ItemEditStatus';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import { PecusNotionLikeViewer, useItemCodeLinkMatchers } from '@/components/editor';
@@ -685,7 +686,11 @@ const WorkspaceItemDetail = forwardRef<WorkspaceItemDetailHandle, WorkspaceItemD
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-base-content/50">関連アイテムはありません</p>
+                <EmptyState
+                  iconClass="icon-[mdi--link-variant]"
+                  message="関連アイテムはありません"
+                  size="sm"
+                />
               )}
             </div>
           )}

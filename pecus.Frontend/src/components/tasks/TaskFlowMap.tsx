@@ -1,5 +1,6 @@
 'use client';
 
+import { EmptyStateCard } from '@/components/common/feedback/EmptyState';
 import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
 import TaskFlowCard from './TaskFlowCard';
 import TaskFlowChain from './TaskFlowChain';
@@ -60,10 +61,11 @@ export default function TaskFlowMap({ data, onTaskClick, canEditTask }: TaskFlow
       {!hasAnyTasks ? (
         /* タスクがない場合 */
         <div className="card bg-base-200 shadow-sm">
-          <div className="card-body items-center text-center py-8">
-            <span className="icon-[mdi--clipboard-outline] w-12 h-12 text-base-content/30 mb-2" aria-hidden="true" />
-            <p className="text-base-content/70">タスクがありません</p>
-          </div>
+          <EmptyStateCard
+            iconClass="icon-[mdi--clipboard-outline]"
+            message="タスクを追加しましょう"
+            size="sm"
+          />
         </div>
       ) : (
         <>

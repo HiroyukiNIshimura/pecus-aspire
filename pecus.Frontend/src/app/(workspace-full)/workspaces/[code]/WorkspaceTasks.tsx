@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { searchUsersForWorkspace } from '@/actions/admin/user';
 import { getWorkspaceTasks } from '@/actions/workspaceTask';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import TaskStatusFilter, { type TaskStatus } from '@/components/common/filters/TaskStatusFilter';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
@@ -596,7 +597,11 @@ const WorkspaceTasks = ({
         </div>
       </div>
       {tasks.length === 0 ? (
-        <p className="text-sm text-base-content/50 text-center py-8">タスクはありません</p>
+        <EmptyState
+          iconClass="icon-[mdi--clipboard-check-outline]"
+          message="タスクを追加しましょう"
+          size="sm"
+        />
       ) : (
         <div className="relative px-9">
           {/* 左矢印 */}

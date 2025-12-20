@@ -114,3 +114,22 @@ https://daypicker.dev/docs/styling#css-variables */
 [class*="menuPortal"] {
   color: var(--color-base-content);
 }
+
+/* Tooltip: ホバー対応デバイス（PC）のみ表示 */
+.tooltip-content {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tooltip-content {
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .group:hover .tooltip-content,
+  .group:focus-within .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
+}

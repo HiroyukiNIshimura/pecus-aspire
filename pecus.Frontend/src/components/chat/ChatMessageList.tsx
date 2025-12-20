@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { ChatMessageItem } from '@/connectors/api/pecus';
 import ChatMessageItemComponent from './ChatMessageItem';
 
@@ -71,11 +72,12 @@ export default function ChatMessageList({
 
   if (messages.length === 0 && !loading) {
     return (
-      <div className="flex-1 flex items-center justify-center text-base-content/50">
-        <div className="text-center">
-          <span className="icon-[tabler--message] size-12 mb-2" aria-hidden="true" />
-          <p>メッセージはありません</p>
-        </div>
+      <div className="flex-1 flex items-center justify-center">
+        <EmptyState
+          iconClass="icon-[tabler--message-circle]"
+          message="メッセージを入力して会話を始めましょう"
+          size="sm"
+        />
       </div>
     );
   }

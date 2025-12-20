@@ -1,5 +1,6 @@
 'use client';
 
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import MemberActionMenu from '@/components/common/widgets/user/MemberActionMenu';
 import MemberCard from '@/components/common/widgets/user/MemberCard';
 import type { WorkspaceRole } from '@/connectors/api/pecus';
@@ -92,7 +93,11 @@ export default function WorkspaceMemberList({
 
         {/* メンバーが0件の場合 */}
         {members.length === 0 ? (
-          <div className="text-center py-8 text-base-content/60">メンバーが登録されていません</div>
+          <EmptyState
+            iconClass="icon-[mdi--account-group-outline]"
+            message="メンバーを追加しましょう"
+            size="sm"
+          />
         ) : (
           /* メンバーグリッド */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchMyItems } from '@/actions/workspaceItem';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import type {
   ItemSortBy,
@@ -529,9 +530,11 @@ export default function MyItemsClient({ initialItems, fetchError }: MyItemsClien
           </div>
 
           {items.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-base-content/70">該当するアイテムがありません</p>
-            </div>
+            <EmptyState
+              iconClass="icon-[mdi--file-document-outline]"
+              message="該当するアイテムがありません"
+              description="フィルタ条件を変更してみてください"
+            />
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

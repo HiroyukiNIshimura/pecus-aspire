@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getTaskFlowMap } from '@/actions/workspaceTask';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
 import TaskFlowMap from '@/components/tasks/TaskFlowMap';
 import type { TaskFlowMapResponse, TaskFlowNode } from '@/connectors/api/pecus';
@@ -154,9 +155,10 @@ export default function TaskFlowMapPage({
               <TaskFlowMap data={data} onTaskClick={handleTaskClick} canEditTask={canEditTask} />
             </div>
           ) : (
-            <div className="flex items-center justify-center py-12 text-base-content/50">
-              <p>データがありません</p>
-            </div>
+            <EmptyState
+              iconClass="icon-[mdi--clipboard-text-outline]"
+              message="データがありません"
+            />
           )}
         </div>
       </div>

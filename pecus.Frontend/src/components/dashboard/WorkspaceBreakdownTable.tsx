@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DashboardWorkspaceBreakdownResponse } from '@/connectors/api/pecus';
 
 /** 初期表示件数 */
@@ -37,10 +38,11 @@ export default function WorkspaceBreakdownTable({ data }: WorkspaceBreakdownTabl
             <span className="icon-[mdi--folder-multiple-outline] w-5 h-5 text-primary" aria-hidden="true" />
             ワークスペース別状況
           </h2>
-          <div className="text-center py-8 text-base-content/60">
-            <span className="icon-[mdi--folder-open-outline] w-12 h-12 mb-2" aria-hidden="true" />
-            <p>ワークスペースがありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--folder-open-outline]"
+            message="ワークスペースに参加しましょう"
+            size="sm"
+          />
         </div>
       </section>
     );

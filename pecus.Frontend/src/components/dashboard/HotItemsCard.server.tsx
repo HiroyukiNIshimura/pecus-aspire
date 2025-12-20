@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import type { DashboardHotItemsResponse } from '@/connectors/api/pecus';
 import { formatRelativeTime } from '@/libs/utils/date';
 import { getDisplayIconUrl } from '@/utils/imageUrl';
@@ -25,10 +26,11 @@ export default function HotItemsCard({ data }: HotItemsCardProps) {
             ホットアイテム
             <span className="text-sm font-normal text-base-content/60 ml-auto">{periodLabel}</span>
           </h2>
-          <div className="text-center py-6 text-base-content/60">
-            <span className="icon-[mdi--file-document-outline] w-10 h-10 mb-2" aria-hidden="true" />
-            <p className="text-sm">{periodLabel}のアクティビティはありません</p>
-          </div>
+          <EmptyState
+            iconClass="icon-[mdi--file-document-outline]"
+            message={`${periodLabel}のアクティビティはありません`}
+            size="sm"
+          />
         </div>
       </section>
     );

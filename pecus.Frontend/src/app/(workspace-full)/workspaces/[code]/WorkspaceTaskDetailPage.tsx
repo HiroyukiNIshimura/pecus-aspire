@@ -11,6 +11,7 @@ import {
   updateWorkspaceTask,
 } from '@/actions/workspaceTask';
 
+import { EmptyState } from '@/components/common/feedback/EmptyState';
 import DatePicker from '@/components/common/filters/DatePicker';
 import DebouncedSearchInput from '@/components/common/filters/DebouncedSearchInput';
 import UserAvatar from '@/components/common/widgets/user/UserAvatar';
@@ -882,7 +883,11 @@ export default function WorkspaceTaskDetailPage({
                 <span className="loading loading-spinner loading-lg"></span>
               </div>
             ) : !task ? (
-              <p className="text-center text-base-content/50 py-8">タスクが見つかりません</p>
+              <EmptyState
+                iconClass="icon-[mdi--clipboard-alert-outline]"
+                message="タスクが見つかりません"
+                size="sm"
+              />
             ) : (
               <>
                 {/* ローディングオーバーレイ */}
