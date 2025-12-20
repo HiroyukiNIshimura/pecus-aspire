@@ -289,13 +289,27 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースを無効化
     /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <param name="verifiedWorkspace">権限チェック済みのワークスペース（省略時は再取得）</param>
     public async Task<bool> DeactivateWorkspaceAsync(
         int workspaceId,
         uint rowVersion,
-        int? updatedByUserId = null
+        int? updatedByUserId = null,
+        Workspace? verifiedWorkspace = null
     )
     {
-        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        // 権限チェック済みの場合はトラッキングして再利用、そうでなければ再取得
+        Workspace? workspace;
+        if (verifiedWorkspace != null)
+        {
+            workspace = await _context.Workspaces.FindAsync(verifiedWorkspace.Id);
+        }
+        else
+        {
+            workspace = await _context.Workspaces.FindAsync(workspaceId);
+        }
         if (workspace == null)
         {
             return false;
@@ -321,13 +335,27 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースを有効化
     /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="rowVersion">楽観的ロック用のバージョン番号</param>
+    /// <param name="updatedByUserId">更新者のユーザーID</param>
+    /// <param name="verifiedWorkspace">権限チェック済みのワークスペース（省略時は再取得）</param>
     public async Task<bool> ActivateWorkspaceAsync(
         int workspaceId,
         uint rowVersion,
-        int? updatedByUserId = null
+        int? updatedByUserId = null,
+        Workspace? verifiedWorkspace = null
     )
     {
-        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        // 権限チェック済みの場合はトラッキングして再利用、そうでなければ再取得
+        Workspace? workspace;
+        if (verifiedWorkspace != null)
+        {
+            workspace = await _context.Workspaces.FindAsync(verifiedWorkspace.Id);
+        }
+        else
+        {
+            workspace = await _context.Workspaces.FindAsync(workspaceId);
+        }
         if (workspace == null)
         {
             return false;
@@ -362,13 +390,17 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースにユーザーを参加させる
     /// </summary>
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="request">メンバー追加リクエスト</param>
+    /// <param name="verifiedWorkspace">権限チェック済みのワークスペース（省略時は再取得）</param>
     public async Task<(WorkspaceUser, Workspace)> AddUserToWorkspaceAsync(
         int workspaceId,
-        AddUserToWorkspaceRequest request
+        AddUserToWorkspaceRequest request,
+        Workspace? verifiedWorkspace = null
     )
     {
-        // ワークスペースの存在確認
-        var workspace = await _context
+        // ワークスペースの存在確認（権限チェック済みの場合はスキップ）
+        var workspace = verifiedWorkspace ?? await _context
             .Workspaces.Include(w => w.Organization)
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
         if (workspace == null)
@@ -449,15 +481,17 @@ public class WorkspaceService
     /// <param name="workspaceId">ワークスペースID</param>
     /// <param name="userId">対象ユーザーID</param>
     /// <param name="newRole">新しいロール</param>
+    /// <param name="verifiedWorkspace">権限チェック済みのワークスペース（省略時は再取得）</param>
     /// <returns>更新後のワークスペースユーザー情報</returns>
     public async Task<WorkspaceUser> UpdateWorkspaceUserRoleAsync(
         int workspaceId,
         int userId,
-        WorkspaceRole newRole
+        WorkspaceRole newRole,
+        Workspace? verifiedWorkspace = null
     )
     {
-        // ワークスペースの存在確認とオーナー情報取得
-        var workspace = await _context.Workspaces.FindAsync(workspaceId);
+        // ワークスペースの存在確認とオーナー情報取得（権限チェック済みの場合はスキップ）
+        var workspace = verifiedWorkspace ?? await _context.Workspaces.FindAsync(workspaceId);
         if (workspace == null)
         {
             throw new NotFoundException("ワークスペースが見つかりません。");
@@ -807,11 +841,16 @@ public class WorkspaceService
     /// <summary>
     /// ワークスペースのオーナー権限をチェック（ユーザーがワークスペースのOwnerか確認）
     /// </summary>
-    public async Task CheckWorkspaceOwnerAsync(int workspaceId, int userId)
+    /// <param name="workspaceId">ワークスペースID</param>
+    /// <param name="userId">ユーザーID</param>
+    /// <returns>検証済みのワークスペース情報</returns>
+    public async Task<Workspace> CheckWorkspaceOwnerAsync(int workspaceId, int userId)
     {
         var workspaceUser = await _context.WorkspaceUsers
             .AsNoTracking()
             .Include(wu => wu.User)
+            .Include(wu => wu.Workspace)
+                .ThenInclude(w => w!.Organization)
             .FirstOrDefaultAsync(wu =>
                 wu.WorkspaceId == workspaceId &&
                 wu.UserId == userId
@@ -826,6 +865,8 @@ public class WorkspaceService
         {
             throw new InvalidOperationException("この操作を実行する権限がありません。Ownerのみが実行できます。");
         }
+
+        return workspaceUser.Workspace!;
     }
 
     /// <summary>

@@ -280,13 +280,14 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースのオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースのオーナー権限チェック（ワークスペース情報も同時に取得）
+        var workspace = await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
-        // メンバーを追加
-        var (workspaceUser, workspace) = await _workspaceService.AddUserToWorkspaceAsync(
+        // メンバーを追加（権限チェック済みのワークスペースを渡して再検索を省略）
+        var (workspaceUser, returnedWorkspace) = await _workspaceService.AddUserToWorkspaceAsync(
             workspaceId: id,
-            request: request
+            request: request,
+            verifiedWorkspace: workspace
         );
 
         var response = new WorkspaceUserDetailResponse
@@ -309,17 +310,17 @@ public class WorkspaceController : BaseSecureController
         };
 
         // ワークスペース参加通知メールを送信
-        if (workspaceUser.User?.Email != null && workspace != null)
+        if (workspaceUser.User?.Email != null && returnedWorkspace != null)
         {
             var baseUrl = _frontendUrlResolver.GetValidatedFrontendUrl();
             var emailModel = new WorkspaceJoinedEmailModel
             {
                 UserName = workspaceUser.User.Username,
-                WorkspaceName = workspace.Name,
-                WorkspaceCode = workspace.Code ?? "",
+                WorkspaceName = returnedWorkspace.Name,
+                WorkspaceCode = returnedWorkspace.Code ?? "",
                 InviterName = CurrentUser?.Username,
                 JoinedAt = workspaceUser.JoinedAt,
-                FrontendWorkspaceUrl = $"{baseUrl}/workspaces/{workspace.Code ?? ""}",
+                FrontendWorkspaceUrl = $"{baseUrl}/workspaces/{returnedWorkspace.Code ?? ""}",
             };
 
             _backgroundJobClient.Enqueue<EmailTasks>(x =>
@@ -331,7 +332,7 @@ public class WorkspaceController : BaseSecureController
             );
         }
 
-        return TypedResults.Created($"/workspaces/{workspace?.Code ?? ""}", response);
+        return TypedResults.Created($"/workspaces/{returnedWorkspace?.Code ?? ""}", response);
     }
 
     /// <summary>
@@ -395,14 +396,15 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースオーナー権限チェック（ワークスペース情報も同時に取得）
+        var workspace = await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
-        // ロール変更実行
+        // ロール変更実行（権限チェック済みのワークスペースを渡して再検索を省略）
         var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(
             workspaceId: id,
             userId: userId,
-            newRole: request.WorkspaceRole
+            newRole: request.WorkspaceRole,
+            verifiedWorkspace: workspace
         );
 
         var response = new WorkspaceUserDetailResponse
@@ -444,14 +446,15 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースオーナー権限チェック（ワークスペース情報も同時に取得）
+        var workspace = await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
-        // ワークスペースを有効化
+        // ワークスペースを有効化（権限チェック済みのワークスペースを渡して再検索を省略）
         var result = await _workspaceService.ActivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId
+            updatedByUserId: CurrentUserId,
+            verifiedWorkspace: workspace
         );
 
         if (!result)
@@ -482,14 +485,15 @@ public class WorkspaceController : BaseSecureController
     )
     {
         // CurrentUser は基底クラスで有効性チェック済み
-        // ワークスペースオーナー権限チェック
-        await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
+        // ワークスペースオーナー権限チェック（ワークスペース情報も同時に取得）
+        var workspace = await _workspaceService.CheckWorkspaceOwnerAsync(workspaceId: id, userId: CurrentUserId);
 
-        // ワークスペースを無効化
+        // ワークスペースを無効化（権限チェック済みのワークスペースを渡して再検索を省略）
         var result = await _workspaceService.DeactivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId
+            updatedByUserId: CurrentUserId,
+            verifiedWorkspace: workspace
         );
 
         if (!result)

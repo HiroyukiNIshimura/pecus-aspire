@@ -420,10 +420,12 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
+        // アクセスチェック済みのワークスペースを渡して再検索を省略
         var result = await _workspaceService.DeactivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId
+            updatedByUserId: CurrentUserId,
+            verifiedWorkspace: workspace
         );
         if (!result)
         {
@@ -455,10 +457,12 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
+        // アクセスチェック済みのワークスペースを渡して再検索を省略
         var result = await _workspaceService.ActivateWorkspaceAsync(
             workspaceId: id,
             rowVersion: rowVersion,
-            updatedByUserId: CurrentUserId
+            updatedByUserId: CurrentUserId,
+            verifiedWorkspace: workspace
         );
         if (!result)
         {
@@ -493,9 +497,11 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
+        // アクセスチェック済みのワークスペースを渡して再検索を省略
         var (workspaceUser, returnedWorkspace) = await _workspaceService.AddUserToWorkspaceAsync(
             id,
-            request
+            request,
+            verifiedWorkspace: workspace
         );
 
         var response = new WorkspaceUserDetailResponse
@@ -601,11 +607,12 @@ public class AdminWorkspaceController : BaseAdminController
             throw new NotFoundException("ワークスペースが見つかりません。");
         }
 
-        // ロール変更実行
+        // ロール変更実行（アクセスチェック済みのワークスペースを渡して再検索を省略）
         var workspaceUser = await _workspaceService.UpdateWorkspaceUserRoleAsync(
             workspaceId: id,
             userId: userId,
-            newRole: request.WorkspaceRole
+            newRole: request.WorkspaceRole,
+            verifiedWorkspace: workspace
         );
 
         var response = new WorkspaceUserDetailResponse
