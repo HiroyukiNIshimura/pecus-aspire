@@ -104,7 +104,8 @@ public class WorkspaceController : BaseSecureController
         await _workspaceService.UpdateWorkspaceAsync(
             workspaceId: id,
             request: request,
-            updatedByUserId: CurrentUserId
+            updatedByUserId: CurrentUserId,
+            existingWorkspace: oldWorkspace
         );
 
         // 更新後のワークスペース詳細情報を取得（currentUserIdを渡してCurrentUserRoleを設定）
@@ -525,7 +526,7 @@ public class WorkspaceController : BaseSecureController
         }
 
         // ワークスペースを削除
-        var result = await _workspaceService.DeleteWorkspaceAsync(workspaceId: id);
+        var result = await _workspaceService.DeleteWorkspaceAsync(workspaceId: id, existingWorkspace: workspace);
 
         if (!result)
         {
