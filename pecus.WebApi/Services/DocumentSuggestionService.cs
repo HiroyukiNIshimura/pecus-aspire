@@ -40,7 +40,7 @@ public class DocumentSuggestionService
         var request = new
         {
             Title = title,
-            AdditionalContext = $"{workspace.Genre?.Name}: {workspace.Description}",
+            AdditionalContext = $"{workspace.Genre?.Name}: {workspace.Name}: {workspace.Description}",
         };
 
         return await _aiClient.GenerateMarkdownFromTitleAsync(request.Title, request.AdditionalContext, cancellationToken);
