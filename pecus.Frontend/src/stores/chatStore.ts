@@ -72,7 +72,12 @@ export const useChatStore = create<ChatState>((set) => ({
 
   selectRoom: (roomId) => set({ selectedRoomId: roomId }),
 
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  setActiveTab: (tab) =>
+    set((state) => ({
+      activeTab: tab,
+      // タブを切り替えた時はルーム選択をリセット（誤送信防止）
+      selectedRoomId: state.activeTab !== tab ? null : state.selectedRoomId,
+    })),
 
   setUnreadCounts: (counts) => set({ unreadCounts: counts }),
 
