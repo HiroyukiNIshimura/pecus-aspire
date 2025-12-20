@@ -367,9 +367,9 @@ builder.Services.AddHttpLogging(logging =>
 });
 
 // AI クライアントの登録
-builder.Services.AddOpenAIClient(builder.Configuration);
-//builder.Services.AddDeepSeekAIClient(builder.Configuration);
-//builder.Services.AddGeminiAIClient(builder.Configuration);
+//builder.Services.AddOpenAIClient(builder.Configuration);
+builder.Services.AddDeepSeekClient(builder.Configuration);
+//builder.Services.AddGeminiClient(builder.Configuration);
 //-------------
 var app = builder.Build();
 
