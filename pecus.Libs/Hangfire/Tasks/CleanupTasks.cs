@@ -167,38 +167,78 @@ public class CleanupTasks
         {
             if (olderThanDays <= 0) return 0;
 
+
             var cutoff = now.AddDays(-olderThanDays);
             var deletedForType = 0;
 
-            while (true)
+            // 安全かつ確実な処理: 親メッセージ( CreatedAt <= cutoff ) をページングで取得し、
+            // 各チャンクごとに親を削除し、その親を参照するリプライを別バッチで削除する。
+            // これにより expiredParentIds を一度に全取得して巨大な IN リストを作ることを避ける。
+            // chunkSize は親IDのチャンク数（大きすぎるとパラメータ数が増える）、batchSize は削除バッチサイズ。
+            const int parentChunkSize = 1000;
+
+            try
             {
-                // 削除対象:
-                // - 同じルームタイプで CreatedAt <= cutoff
-                // - または ReplyToMessageId があり、その参照先メッセージの CreatedAt <= cutoff
-                var items = await _context.ChatMessages
-                    .Where(m =>
-                        m.ChatRoom.Type == type &&
-                        (m.CreatedAt <= cutoff ||
-                         (m.ReplyToMessageId != null &&
-                          _context.ChatMessages.Any(r => r.Id == m.ReplyToMessageId && r.CreatedAt <= cutoff))
-                        )
-                    )
-                    .OrderBy(m => m.CreatedAt)
-                    .Take(batchSize)
-                    .ToListAsync();
+                // 親メッセージを ID 昇順でページング取得
+                var lastParentId = 0;
+                while (true)
+                {
+                    var parentChunk = await _context.ChatMessages
+                        .Where(r => r.ChatRoom.Type == type && r.CreatedAt <= cutoff && r.Id > lastParentId)
+                        .OrderBy(r => r.Id)
+                        .Select(r => r.Id)
+                        .Take(parentChunkSize)
+                        .ToListAsync();
 
-                if (!items.Any()) break;
+                    if (!parentChunk.Any()) break;
 
-                _context.ChatMessages.RemoveRange(items);
-                await _context.SaveChangesAsync();
+                    // 更新 lastParentId for next page
+                    lastParentId = parentChunk.Max();
 
-                deletedForType += items.Count;
-                totalDeleted += items.Count;
+                    // 1) 親メッセージ自体を削除（ID が parentChunk に含まれるもの）
+                    var parentsToDelete = await _context.ChatMessages
+                        .Where(m => parentChunk.Contains(m.Id))
+                        .ToListAsync();
 
-                _logger.LogInformation("Deleted {Count} chat messages in this batch for type {Type}", items.Count, type);
+                    if (parentsToDelete.Any())
+                    {
+                        _context.ChatMessages.RemoveRange(parentsToDelete);
+                        await _context.SaveChangesAsync();
 
-                // DB負荷を抑えるため若干待機
-                await Task.Delay(200);
+                        deletedForType += parentsToDelete.Count;
+                        totalDeleted += parentsToDelete.Count;
+                        _logger.LogInformation("Deleted {Count} parent chat messages for type {Type}", parentsToDelete.Count, type);
+                    }
+
+                    // 2) その親を参照するリプライを削除する（ReplyToMessageId IN parentChunk）
+                    while (true)
+                    {
+                        var replies = await _context.ChatMessages
+                            .Where(m => m.ChatRoom.Type == type && m.ReplyToMessageId != null && parentChunk.Contains(m.ReplyToMessageId.Value))
+                            .OrderBy(m => m.Id)
+                            .Take(batchSize)
+                            .ToListAsync();
+
+                        if (!replies.Any()) break;
+
+                        _context.ChatMessages.RemoveRange(replies);
+                        await _context.SaveChangesAsync();
+
+                        deletedForType += replies.Count;
+                        totalDeleted += replies.Count;
+                        _logger.LogInformation("Deleted {Count} reply chat messages referencing parents for type {Type}", replies.Count, type);
+
+                        await Task.Delay(200);
+                    }
+
+                    // 若干待機して DB 負荷を抑える
+                    await Task.Delay(200);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ジョブなので可能な限り失敗させずログに残す
+                _logger.LogError(ex, "Error during chat cleanup for type {Type}. Continuing with next type.", type);
             }
 
             _logger.LogInformation("ChatMessage cleanup for {Type} completed. deleted={Deleted}", type, deletedForType);
