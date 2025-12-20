@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Pecus.Libs.AI.Configuration;
 using Pecus.Libs.AI.Provider.DeepSeek;
 
@@ -35,13 +36,25 @@ public static class DeepSeekServiceExtensions
             return services;
         }
 
+        var timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+
         // Named HttpClient を登録
         services.AddHttpClient(DeepSeekClient.HttpClientName, (sp, client) =>
         {
-            client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+            client.Timeout = timeout;
         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {
             AutomaticDecompression = System.Net.DecompressionMethods.GZip
+        })
+        // LLM API は応答に時間がかかるため、Resilience Handler のタイムアウトをカスタマイズ
+        .AddStandardResilienceHandler(options =>
+        {
+            // 各リクエスト試行のタイムアウト（デフォルト: 10秒 → 60秒）
+            options.AttemptTimeout.Timeout = timeout;
+            // リクエスト全体のタイムアウト（デフォルト: 30秒 → 120秒）
+            options.TotalRequestTimeout.Timeout = timeout * 2;
+            // サーキットブレーカーのサンプリング期間も延長
+            options.CircuitBreaker.SamplingDuration = timeout * 2;
         });
 
         // DeepSeekClient を登録（IDeepSeekClient と IAiClient の両方に対応）
