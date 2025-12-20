@@ -1,7 +1,7 @@
 'use client';
 
 import type { LexicalEditor } from 'lexical';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createWorkspaceItem, fetchDocumentSuggestion } from '@/actions/workspaceItem';
 import DatePicker from '@/components/common/filters/DatePicker';
 import TagInput from '@/components/common/forms/TagInput';
@@ -40,6 +40,9 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
   // エディタインスタンスの参照（提案機能用）
   const editorRef = useRef<LexicalEditor | null>(null);
   const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+
+  // 提案処理のキャンセル用ref
+  const suggestCancelledRef = useRef(false);
 
   // 一時ファイルアップロード完了時のコールバック
   const handleTempFileUploaded = useCallback((tempFileId: string, _previewUrl: string) => {
@@ -131,16 +134,48 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
     editorRef.current = editor;
   }, []);
 
+  // 提案処理のキャンセル
+  const cancelSuggestion = useCallback(() => {
+    if (isSuggestLoading) {
+      suggestCancelledRef.current = true;
+      setIsSuggestLoading(false);
+    }
+  }, [isSuggestLoading]);
+
+  // エスケープキーで提案処理をキャンセル
+  useEffect(() => {
+    if (!isSuggestLoading) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelSuggestion();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isSuggestLoading, cancelSuggestion]);
+
   // ドキュメント提案を取得
   const handleSuggestContent = async () => {
     const trimmedSubject = formData.subject.trim();
     if (!trimmedSubject || isSuggestLoading || !editorRef.current) return;
 
+    // キャンセルフラグをリセット
+    suggestCancelledRef.current = false;
     setIsSuggestLoading(true);
     setGlobalError(null);
 
     try {
       const result = await fetchDocumentSuggestion(workspaceId, trimmedSubject);
+
+      // キャンセルされていた場合は結果を無視
+      if (suggestCancelledRef.current) {
+        return;
+      }
+
       if (result.success && result.data.suggestedContent) {
         // Markdownをエディタに挿入（既存コンテンツの末尾に追加）
         editorRef.current.dispatchCommand(INSERT_MARKDOWN_COMMAND, result.data.suggestedContent);
@@ -148,9 +183,16 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
         setGlobalError(result.message || '提案の取得に失敗しました。');
       }
     } catch (err) {
+      // キャンセルされていた場合はエラーも無視
+      if (suggestCancelledRef.current) {
+        return;
+      }
       setGlobalError(err instanceof Error ? err.message : '提案の取得中にエラーが発生しました。');
     } finally {
-      setIsSuggestLoading(false);
+      // キャンセルされていない場合のみローディング状態を解除
+      if (!suggestCancelledRef.current) {
+        setIsSuggestLoading(false);
+      }
     }
   };
 
@@ -280,6 +322,14 @@ export default function CreateWorkspaceItem({ workspaceId, isOpen, onClose, onCr
                       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-100/80 backdrop-blur-sm rounded-box">
                         <span className="loading loading-spinner loading-lg text-secondary"></span>
                         <span className="mt-2 text-sm text-base-content/70">AIが本文を生成中...</span>
+                        <button
+                          type="button"
+                          onClick={cancelSuggestion}
+                          className="mt-3 btn btn-sm btn-secondary gap-1"
+                        >
+                          キャンセル
+                          <kbd className="kbd kbd-xs">Esc</kbd>
+                        </button>
                       </div>
                     )}
                     <div className="overflow-auto max-h-[50vh]">
